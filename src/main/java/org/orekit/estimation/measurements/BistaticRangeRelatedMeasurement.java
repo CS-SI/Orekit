@@ -157,7 +157,7 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
         final PVCoordinatesProvider receiverPVProvider = getReceiver().getPVCoordinatesProvider();
         final Frame frame = state.getFrame();
         final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
-        final PVCoordinatesProvider satellitePVProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(state,
+        final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
         final double[] delays = getTwoLegsSignalTimer().computeDelays(frame, receiverPV.getPosition(), receptionDate,
                 satellitePVProvider, getEmitter().getPVCoordinatesProvider());
@@ -197,7 +197,7 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
         // Compute light time delays
         final FieldPVCoordinatesProvider<Gradient> receiverPVProvider = getReceiver().getFieldPVCoordinatesProvider(nbParams, paramIndices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
-        final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state, pva);
+        final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
         final FieldPVCoordinatesProvider<Gradient> emitterPVProvider = getEmitter().getFieldPVCoordinatesProvider(nbParams, paramIndices);
         final Gradient[] delays = getTwoLegsSignalTimer().computeDelays(frame, receiverPV.getPosition(), receptionDate,
                 satellitePVProvider, emitterPVProvider);

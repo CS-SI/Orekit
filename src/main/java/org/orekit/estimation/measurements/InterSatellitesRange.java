@@ -153,8 +153,8 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         final TwoLeggedSignalTravelTimer travelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
         final SpacecraftState localAtReception = local.shiftedBy(receptionDate.durationFrom(local));
         final double[] delays = travelTimer.computeDelays(frame, localAtReception.getPosition(), receptionDate,
-                AbstractMeasurementObject.extractPVCoordinatesProvider(remote, remote.getPVCoordinates()),
-                AbstractMeasurementObject.extractPVCoordinatesProvider(local, local.getPVCoordinates()));
+                AbstractParticipant.extractPVCoordinatesProvider(remote, remote.getPVCoordinates()),
+                AbstractParticipant.extractPVCoordinatesProvider(local, local.getPVCoordinates()));
         final AbsoluteDate transitDate = receptionDate.shiftedBy(-delays[1]);
         final AbsoluteDate emissionDate = transitDate.shiftedBy(-delays[0]);
 
@@ -192,7 +192,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         final Frame           frame = local.getFrame();
         final SpacecraftState localAtReception = local.shiftedBy(receptionDate.durationFrom(local));
         final SignalTravelTimeAdjustableEmitter adjustableEmitterComputer = getSignalTravelTimeModel()
-                .getAdjustableEmitterComputer(AbstractMeasurementObject.extractPVCoordinatesProvider(remote, remote.getPVCoordinates()));
+                .getAdjustableEmitterComputer(AbstractParticipant.extractPVCoordinatesProvider(remote, remote.getPVCoordinates()));
         final double delay = adjustableEmitterComputer.computeDelay(localAtReception.getPosition(), receptionDate, frame);
         final AbsoluteDate emissionDate = receptionDate.shiftedBy(-delay);
 
@@ -279,8 +279,8 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
 
         // compute transit and emission dates
         final TwoLeggedSignalTravelTimer travelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
-        final FieldPVCoordinatesProvider<Gradient> localPVProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(local, pvaL);
-        final FieldPVCoordinatesProvider<Gradient> remotePVProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(remote, pvaR);
+        final FieldPVCoordinatesProvider<Gradient> localPVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(local, pvaL);
+        final FieldPVCoordinatesProvider<Gradient> remotePVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(remote, pvaR);
         final TimeStampedFieldPVCoordinates<Gradient> localPVAtReception = localPVProvider.getPVCoordinates(receptionDate, frame);
         final Gradient[] delays = travelTimer.computeDelays(frame, localPVAtReception.getPosition(), receptionDate,
                 remotePVProvider, localPVProvider);
@@ -327,8 +327,8 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         final FieldAbsoluteDate<Gradient> receptionDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         // compute emission date
-        final FieldPVCoordinatesProvider<Gradient> remotePVProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(remote, pvaR);
-        final TimeStampedFieldPVCoordinates<Gradient> localPVAtReception = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(local, pvaL)
+        final FieldPVCoordinatesProvider<Gradient> remotePVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(remote, pvaR);
+        final TimeStampedFieldPVCoordinates<Gradient> localPVAtReception = AbstractParticipant.extractFieldPVCoordinatesProvider(local, pvaL)
                 .getPVCoordinates(receptionDate, frame);
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitterComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(dtl.getField(), remotePVProvider);

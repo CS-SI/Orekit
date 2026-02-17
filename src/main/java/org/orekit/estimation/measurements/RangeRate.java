@@ -153,7 +153,7 @@ public class RangeRate extends SignalBasedMeasurement<RangeRate> {
         final int                  nbParams     = 6 * states.length + paramIndices.size();
         final SpacecraftState state = states[0];
         final TimeStampedFieldPVCoordinates<Gradient> pva = AbstractMeasurement.getCoordinates(state, 0, nbParams);
-        final FieldPVCoordinatesProvider<Gradient> observablePVProvider = AbstractMeasurementObject
+        final FieldPVCoordinatesProvider<Gradient> observablePVProvider = AbstractParticipant
                 .extractFieldPVCoordinatesProvider(state, pva);
 
         if (isTwoWay()) {
@@ -180,7 +180,7 @@ public class RangeRate extends SignalBasedMeasurement<RangeRate> {
         final Frame frame = state.getFrame();
         final PVCoordinatesProvider observerPVProvider = getObserver().getPVCoordinatesProvider();
         final TimeStampedPVCoordinates receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
-        final PVCoordinatesProvider satellitePVProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(state,
+        final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
         final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
         final double[] delays = twoLeggedSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
@@ -217,7 +217,7 @@ public class RangeRate extends SignalBasedMeasurement<RangeRate> {
                                                                                               final SpacecraftState state) {
         // compute light time delay
         final Frame frame = state.getFrame();
-        final PVCoordinatesProvider observablePVProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
+        final PVCoordinatesProvider observablePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final SignalTravelTimeAdjustableEmitter adjustableEmitter = getSignalTravelTimeModel()
                 .getAdjustableEmitterComputer(observablePVProvider);
         final TimeStampedPVCoordinates stationPVAtReception = getObserver().getPVCoordinatesProvider()

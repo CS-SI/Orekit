@@ -118,7 +118,7 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
                 new SpacecraftState[] { transitState }, participants);
 
         // Compute range rate
-        final PVCoordinatesProvider observablePVCoordinates = AbstractMeasurementObject.extractPVCoordinatesProvider(state,
+        final PVCoordinatesProvider observablePVCoordinates = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
         final double rangeRate = twoLeggedRangeRateModel.value(frame, participants[2], receptionDate,
                 observablePVCoordinates, transitDate, getEmitter().getPVCoordinatesProvider(), emissionDate);
@@ -167,7 +167,7 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
         // Compute range rate
         final FieldPVCoordinatesProvider<Gradient> emitter = getEmitter().getFieldPVCoordinatesProvider(nbParams,
                 paramIndices);
-        final FieldPVCoordinatesProvider<Gradient> observable = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state,
+        final FieldPVCoordinatesProvider<Gradient> observable = AbstractParticipant.extractFieldPVCoordinatesProvider(state,
                 AbstractMeasurement.getCoordinates(state, 0, nbParams));
         final Gradient rangeRate = twoLeggedRangeRateModel.value(frame, receiverPV, receptionDate, observable,
                 transitDate, emitter, emissionDate);

@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.orekit.estimation.measurements.AbstractMeasurementObject;
+import org.orekit.estimation.measurements.AbstractParticipant;
 import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
 import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -106,7 +106,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
      * @since 14.0
      */
     protected PVCoordinatesProvider getRemotePV(final SpacecraftState state) {
-        return AbstractMeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
+        return AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
     }
 
     /** Return the FieldPVCoordinatesProvider.
@@ -118,7 +118,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
     protected FieldPVCoordinatesProvider<Gradient> getRemotePV(final SpacecraftState state,
                                                                final int freeParameters) {
         final TimeStampedFieldPVCoordinates<Gradient> pv0 = getCoordinates(state, 6, freeParameters);
-        return AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state, pv0);
+        return AbstractParticipant.extractFieldPVCoordinatesProvider(state, pv0);
     }
 
     /** Compute common estimation parameters.

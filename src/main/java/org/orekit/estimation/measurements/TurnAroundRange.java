@@ -195,7 +195,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
                 .getPVCoordinates(measurementDate, state.getFrame());
 
         // Compute propagation times
-        final PVCoordinatesProvider localCoordsProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(state, pva);
+        final PVCoordinatesProvider localCoordsProvider = AbstractParticipant.extractPVCoordinatesProvider(state, pva);
         final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel().getAdjustableEmitterComputer(localCoordsProvider);
         final double primaryTauD = signalTimeOfFlight.computeDelay(pva.getDate(), primaryArrival.getPosition(), measurementDate, state.getFrame());
 
@@ -362,7 +362,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
                                                                        getPVCoordinates(measurementDateDS, states[0].getFrame());
 
         // Compute propagation times
-        final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractMeasurementObject
+        final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractParticipant
                 .extractFieldPVCoordinatesProvider(state, pvaDS);
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, satellitePVProvider);

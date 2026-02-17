@@ -317,7 +317,7 @@ public interface Observer extends MeasurementParticipant {
         final TimeStampedPVCoordinates satelliteDownlink = offsetToInertialDownlink.transformPVCoordinates(origin);
 
         // Coordinates provider for emitting object (observed spacecraft)
-        final PVCoordinatesProvider pvCoordinatesProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(states[0], pva);
+        final PVCoordinatesProvider pvCoordinatesProvider = AbstractParticipant.extractPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay / determine time of emission of signal by ObservableSatellite
         final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(pvCoordinatesProvider);
@@ -375,7 +375,7 @@ public interface Observer extends MeasurementParticipant {
                                                                                                             zero, zero, zero));
 
         // Form coordinates provider
-        final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(states[0], pva);
+        final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(fieldPVCoordinatesProvider);
