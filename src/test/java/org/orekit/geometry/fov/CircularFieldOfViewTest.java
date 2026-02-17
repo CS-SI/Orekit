@@ -81,6 +81,15 @@ public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
+    public void testFOVAwayFromEarthWithExtendedFootprint() {
+        doTestFootprintExistence(new CircularFieldOfView(Vector3D.MINUS_K, FastMath.toRadians(3.0), 0.0),
+                               new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
+                                             FastMath.toRadians(-10),
+                                             FastMath.toRadians(-39),
+                                             FastMath.toRadians(-5)));
+    }
+
+    @Test
     public void testBoundary() {
         doTestBoundary(new CircularFieldOfView(Vector3D.MINUS_K, FastMath.toRadians(3.0), 0.01),
                        new Well19937a(0x2fdf54d1c6f679afl),
