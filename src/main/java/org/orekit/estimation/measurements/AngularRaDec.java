@@ -31,15 +31,15 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modeling a Right Ascension - Declination measurement from a ground point (station, telescope).
+/** Class modeling a Right Ascension - Declination measurement from an optical sensor, typically via astrometry.
  * The angles are given using the axes of an inertial reference frame.
- * The date of the measurement corresponds to the reception on ground of the reflected signal.
+ * The date of the measurement corresponds to the reception of the reflected signal.
  *
  * @author Thierry Ceolin
  * @author Maxime Journot
  * @since 9.0
  */
-public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
+public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "AngularRaDec";
@@ -47,14 +47,14 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
     /** Reference frame in which the right ascension - declination angles are given. */
     private final Frame referenceFrame;
 
-    /** Ground station that receives signal from satellite. */
-    private final GroundStation station;
+    /** Observer that receives signal from satellite. */
+    private final Observer observer;
 
     /** Perfect measurement model. */
     private final RaDecModel measurementModel;
 
     /** Simple constructor using default light time delay.
-     * @param station ground station from which measurement is performed
+     * @param observer sensor from which measurement is performed
      * @param referenceFrame Reference frame in which the right ascension - declination angles are given
      * @param date date of the measurement
      * @param angular observed value
@@ -63,14 +63,14 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
+    public AngularRaDec(final Observer observer, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final ObservableSatellite satellite) {
-        this(station, referenceFrame, date, angular, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(observer, referenceFrame, date, angular, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
     }
 
     /** Constructor.
-     * @param station ground station from which measurement is performed
+     * @param observer sensor from which measurement is performed
      * @param referenceFrame Reference frame in which the right ascension - declination angles are given
      * @param date date of the measurement
      * @param angular observed value
@@ -80,13 +80,37 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
-    public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
+    public AngularRaDec(final Observer observer, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(station, date, angular, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(date, angular, sigma, baseWeight, signalTravelTimeModel, satellite);
         this.referenceFrame = referenceFrame;
         this.measurementModel = new RaDecModel(referenceFrame, getSignalTravelTimeModel().getWarmedUpModel());
-        this.station = station;
+        this.observer = observer;
+        observer.getParametersDrivers().forEach(this::addParameterDriver);
+    }
+
+    /**
+     * Getter for the observer.
+     * @return observer
+     * @since 14.0
+     */
+    public Observer getObserver() {
+        return observer;
+    }
+
+    /**
+     * Getter for the ground station.
+     * @return station
+     * @deprecated as of 14.0
+     */
+    @Deprecated
+    public GroundStation getStation() {
+        if (observer instanceof GroundStation) {
+            return (GroundStation) observer;
+        } else {
+            return null;
+        }
     }
 
     /** Get the reference frame in which the right ascension - declination angles are given.
@@ -102,8 +126,8 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
                                                                                              final int evaluation,
                                                                                              final SpacecraftState[] states) {
         // Compute emission date
-        final AbsoluteDate receptionDate = getStation().getCorrectedReceptionDate(getDate());
-        final PVCoordinatesProvider receiver = station.getPVCoordinatesProvider();
+        final AbsoluteDate receptionDate = observer.getCorrectedReceptionDate(getDate());
+        final PVCoordinatesProvider receiver = observer.getPVCoordinatesProvider();
         final SpacecraftState state = states[0];
         final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final AbsoluteDate emissionDate = computeEmissionDate(referenceFrame, receiver, receptionDate, emitter);
@@ -143,8 +167,8 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
         final TimeStampedFieldPVCoordinates<Gradient> pva = AbstractMeasurement.getCoordinates(state, 0, nbParams);
 
         // Compute emission date
-        final FieldAbsoluteDate<Gradient> receptionDate = getStation().getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
-        final FieldPVCoordinatesProvider<Gradient> receiver = station.getFieldPVCoordinatesProvider(nbParams, paramIndices);
+        final FieldAbsoluteDate<Gradient> receptionDate = observer.getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
+        final FieldPVCoordinatesProvider<Gradient> receiver = observer.getFieldPVCoordinatesProvider(nbParams, paramIndices);
         final FieldPVCoordinatesProvider<Gradient> emitter = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
         final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(referenceFrame, receiver, receptionDate, emitter);
 

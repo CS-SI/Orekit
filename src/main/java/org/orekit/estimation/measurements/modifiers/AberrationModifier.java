@@ -325,7 +325,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         final AbsoluteDate date = estimated.getDate();
 
         // Observation object
-        final Observer observer = estimated.getObservedMeasurement().getStation();
+        final Observer observer = estimated.getObservedMeasurement().getObserver();
 
         // Observation frame
         final Frame frame = estimated.getObservedMeasurement().getReferenceFrame();
@@ -370,7 +370,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         final Field<Gradient> field = GradientField.getField(nbParams);
 
         // Observation object location
-        final Observer observer = estimated.getObservedMeasurement().getStation();
+        final Observer observer = estimated.getObservedMeasurement().getObserver();
         final FieldPVCoordinatesProvider<Gradient> fieldCoordsProvider = observer.getFieldPVCoordinatesProvider(nbParams, indices);
 
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams), date);
