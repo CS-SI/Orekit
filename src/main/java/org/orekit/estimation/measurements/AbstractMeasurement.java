@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -388,6 +389,16 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
         return new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
 
+    }
+
+    /**
+     * Form the mapping between parameters' names and derivatives' indices.
+     * @param states observables
+     * @return map
+     * @since 14.0
+     */
+    protected Map<String, Integer> getParameterIndices(final SpacecraftState[] states) {
+        return Observer.getParameterIndices(states, getParametersDrivers());
     }
 
 }

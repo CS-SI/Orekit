@@ -102,7 +102,7 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
                                                                                              final int evaluation,
                                                                                              final SpacecraftState[] states) {
         // Compute emission date
-        final AbsoluteDate receptionDate = getCorrectedReceptionDate();
+        final AbsoluteDate receptionDate = getStation().getCorrectedReceptionDate(getDate());
         final PVCoordinatesProvider receiver = station.getPVCoordinatesProvider();
         final SpacecraftState state = states[0];
         final PVCoordinatesProvider emitter = AbstractMeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
@@ -137,13 +137,13 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
         //  - 6..n - station parameters (clock offset, station offsets, pole, prime meridian...)
 
         // Create the parameter indices map
-        final Map<String, Integer> paramIndices = station.getParameterIndices(states, getParametersDrivers());
+        final Map<String, Integer> paramIndices = getParameterIndices(states);
         final int                  nbParams     = 6 * states.length + paramIndices.size();
         final SpacecraftState state = states[0];
         final TimeStampedFieldPVCoordinates<Gradient> pva = AbstractMeasurement.getCoordinates(state, 0, nbParams);
 
         // Compute emission date
-        final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, paramIndices);
+        final FieldAbsoluteDate<Gradient> receptionDate = getStation().getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
         final FieldPVCoordinatesProvider<Gradient> receiver = station.getFieldPVCoordinatesProvider(nbParams, paramIndices);
         final FieldPVCoordinatesProvider<Gradient> emitter = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state, pva);
         final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(referenceFrame, receiver, receptionDate, emitter);

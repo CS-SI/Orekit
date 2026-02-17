@@ -258,8 +258,8 @@ class BistaticRangeTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation emitterParameter = ((BistaticRange) measurement).getEmitterStation();
-            final GroundStation receiverParameter = ((BistaticRange) measurement).getReceiverStation();
+            final GroundStation emitterParameter = (GroundStation) ((BistaticRange) measurement).getEmitter();
+            final GroundStation receiverParameter = (GroundStation) ((BistaticRange) measurement).getReceiver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -347,8 +347,8 @@ class BistaticRangeTest {
             ((BistaticRange) measurement).addModifier(modifier);
 
             // parameter corresponding to station position offset
-            final GroundStation emitterParameter  = ((BistaticRange) measurement).getEmitterStation();
-            final GroundStation receiverParameter = ((BistaticRange) measurement).getReceiverStation();
+            final GroundStation emitterParameter  = (GroundStation) ((BistaticRange) measurement).getEmitter();
+            final GroundStation receiverParameter = (GroundStation) ((BistaticRange) measurement).getReceiver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

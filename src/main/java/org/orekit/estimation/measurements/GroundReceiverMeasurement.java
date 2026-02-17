@@ -17,21 +17,9 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Collections;
-import java.util.Map;
 
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
-import org.orekit.frames.Frame;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.ClockOffset;
-import org.orekit.time.clocks.FieldClockOffset;
-import org.orekit.time.clocks.QuadraticFieldClockModel;
-import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.PVCoordinatesProvider;
 
 /** Base class modeling a measurement where receiver is a ground station.
  * @author Thierry Ceolin
@@ -71,73 +59,5 @@ public abstract class GroundReceiverMeasurement<T extends ObservedMeasurement<T>
      */
     public final GroundStation getReceiverStation() {
         return station;
-    }
-
-    /**
-     * Form the mapping between parameters' names and derivatives' indices.
-     * @param states observables
-     * @return map
-     */
-    protected Map<String, Integer> getParameterIndices(final SpacecraftState[] states) {
-        return getReceiverStation().getParameterIndices(states, getParametersDrivers());
-    }
-
-    /**
-     * Compute actual reception date taking into account clock offset.
-     * @return reception date
-     */
-    protected AbsoluteDate getCorrectedReceptionDate() {
-        final ClockOffset localClock = getReceiverStation().getQuadraticClockModel().getOffset(getDate());
-        return getDate().shiftedBy(-localClock.getOffset());
-    }
-
-    /**
-     * Compute actual reception date taking into account clock offset.
-     * @param nbParams number of independent variables for automatic differentiation
-     * @param paramIndices mapping between parameter name and variable index
-     * @return reception date
-     */
-    protected FieldAbsoluteDate<Gradient> getCorrectedReceptionDateField(final int nbParams,
-                                                                         final Map<String, Integer> paramIndices) {
-        final QuadraticFieldClockModel<Gradient> quadraticClockModel = getReceiverStation().getQuadraticFieldClock(nbParams,
-                getDate(), paramIndices);
-        final GradientField field = GradientField.getField(nbParams);
-        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, getDate());
-        final FieldClockOffset<Gradient> localClock = quadraticClockModel.getOffset(fieldDate);
-        return fieldDate.shiftedBy(localClock.getOffset().negate());
-    }
-
-    /**
-     * Compute the signal emission date.
-     * @param frame frame where to perform signal propagation
-     * @param receiver signal receiver
-     * @param receptionDate reception date
-     * @param emitter signal emitter
-     * @return emission date
-     */
-    protected AbsoluteDate computeEmissionDate(final Frame frame, final PVCoordinatesProvider receiver,
-                                               final AbsoluteDate receptionDate, final PVCoordinatesProvider emitter) {
-        final double signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
-                .computeDelay(receptionDate, receiver.getPosition(receptionDate, frame), receptionDate, frame);
-        return receptionDate.shiftedBy(-signalTravelTime);
-    }
-
-    /**
-     * Compute the signal emission date.
-     * @param frame frame where to perform signal propagation
-     * @param receiver signal receiver
-     * @param receptionDate reception date
-     * @param emitter signal emitter
-     * @return emission date
-     */
-    protected FieldAbsoluteDate<Gradient> computeEmissionDateField(final Frame frame,
-                                                                   final FieldPVCoordinatesProvider<Gradient> receiver,
-                                                                   final FieldAbsoluteDate<Gradient> receptionDate,
-                                                                   final FieldPVCoordinatesProvider<Gradient> emitter) {
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldSignalTravelTimeAdjustableEmitter = getSignalTravelTimeModel().
-                getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter);
-        final Gradient signalTravelTime = fieldSignalTravelTimeAdjustableEmitter.computeDelay(receptionDate,
-                receiver.getPosition(receptionDate, frame), receptionDate, frame);
-        return receptionDate.shiftedBy(signalTravelTime.negate());
     }
 }

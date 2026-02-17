@@ -84,7 +84,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
         // computed using finite differences.
 
         // Currently not calculating tropospheric delays for this type of observer
-        if (observer.getObserverType() == Observer.ObserverType.SATELLITE) {
+        if (observer.isSpaceBased()) {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
 
@@ -139,8 +139,8 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
                                                                                  final FieldSpacecraftState<T> state,
                                                                                  final T[] parameters) {
 
-        // Currently not calculating tropospheric delays for this type of observer
-        if (observer.getObserverType() == Observer.ObserverType.SATELLITE) {
+        // Check to make sure Observer is NOT space-based
+        if (observer.isSpaceBased()) {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
 

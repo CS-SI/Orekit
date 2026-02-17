@@ -31,8 +31,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
-import java.util.Arrays;
-
 public class OneWayRangeMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
@@ -62,17 +60,7 @@ public class OneWayRangeMeasurementCreator extends MeasurementCreator {
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                        station.getClockDriftDriver(),
-                                                        station.getEastOffsetDriver(),
-                                                        station.getNorthOffsetDriver(),
-                                                        station.getZenithOffsetDriver(),
-                                                        station.getPrimeMeridianOffsetDriver(),
-                                                        station.getPrimeMeridianDriftDriver(),
-                                                        station.getPolarOffsetXDriver(),
-                                                        station.getPolarDriftXDriver(),
-                                                        station.getPolarOffsetYDriver(),
-                                                        station.getPolarDriftYDriver())) {
+            for (ParameterDriver driver : station.getParametersDrivers()) {
                 if (driver.getReferenceDate() == null) {
                     driver.setReferenceDate(s0.getDate());
                 }

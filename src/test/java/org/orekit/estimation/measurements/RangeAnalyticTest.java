@@ -256,7 +256,7 @@ public class RangeAnalyticTest {
                     // Print results on console ?
                     if (printResults) {
                         final AbsoluteDate measurementDate = measurement.getDate();
-                        String stationName = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName = ((Range) measurement).getObserver().getName();
 
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19.6f  %19.6f  %13.6e  %13.6e%n",
                                          stationName, measurementDate, date,
@@ -423,7 +423,7 @@ public class RangeAnalyticTest {
                     }
                     // Print values in console ?
                     if (printResults) {
-                        String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Range) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                                         "%10.3e  %10.3e  %10.3e  " +
                                         "%10.3e  %10.3e  %10.3e  " +
@@ -540,7 +540,7 @@ public class RangeAnalyticTest {
                     }
 
                     // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Range) measurement).getStation();
+                    final GroundStation stationParameter = (GroundStation) ((Range) measurement).getObserver();
 
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
@@ -559,7 +559,7 @@ public class RangeAnalyticTest {
                     };
 
                     if (printResults) {
-                        String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Range) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
                                           stationName, measurement.getDate(), date);
                     }

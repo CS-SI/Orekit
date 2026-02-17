@@ -59,9 +59,9 @@ public class RangeIonosphericDelayModifier extends BaseRangeIonosphericDelayModi
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
 
         final Range    measurement = estimated.getObservedMeasurement();
-        final Observer station     = measurement.getStation();
+        final Observer observer     = measurement.getObserver();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated, station,
+        RangeModifierUtil.modifyWithoutDerivatives(estimated, observer,
                                                    this::rangeErrorIonosphericModel,
                                                    this);
 
@@ -72,12 +72,12 @@ public class RangeIonosphericDelayModifier extends BaseRangeIonosphericDelayModi
     public void modify(final EstimatedMeasurement<Range> estimated) {
 
         final Range           measurement = estimated.getObservedMeasurement();
-        final Observer        station     = measurement.getStation();
+        final Observer        observer    = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeModifierUtil.modify(estimated, getIonoModel(),
                                  new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
-                                 station,
+                                 observer,
                                  this::rangeErrorIonosphericModel,
                                  this::rangeErrorIonosphericModel,
                                  this);

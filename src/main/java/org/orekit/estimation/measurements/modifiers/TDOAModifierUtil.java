@@ -44,22 +44,22 @@ class TDOAModifierUtil {
     /** Apply a modifier to an estimated measurement.
      * @param <T> type of the measurement
      * @param estimated estimated measurement to modify
-     * @param primeStation prime station
-     * @param secondStation second station
+     * @param primeObserver primary observer
+     * @param secondObserver second observer
      * @param modelEffect model effect
      * @param modifier applied modifier
      * @since 12.1
      */
     public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
-                                                                                   final Observer primeStation,
-                                                                                   final Observer secondStation,
+                                                                                   final Observer primeObserver,
+                                                                                   final Observer secondObserver,
                                                                                    final ParametricModelEffect modelEffect,
                                                                                    final EstimationModifier<T> modifier) {
 
         final SpacecraftState state       = estimated.getStates()[0];
         final double[]        oldValue    = estimated.getEstimatedValue();
-        final double          primeDelay  = modelEffect.evaluate(primeStation, state);
-        final double          secondDelay = modelEffect.evaluate(secondStation, state);
+        final double          primeDelay  = modelEffect.evaluate(primeObserver, state);
+        final double          secondDelay = modelEffect.evaluate(secondObserver, state);
 
         // Update estimated value taking into account the delay for each downlink. The time delay is directly applied to the TDOA.
         final double[] newValue = oldValue.clone();
@@ -71,8 +71,8 @@ class TDOAModifierUtil {
     /** Apply a modifier to an estimated measurement.
      * @param <T> type of the measurement
      * @param estimated estimated measurement to modify
-     * @param primeStation prime station
-     * @param secondStation second station
+     * @param primeObserver primary observer
+     * @param secondObserver second observer
      * @param converter gradient converter
      * @param parametricModel parametric modifier model
      * @param modelEffect model effect
@@ -83,7 +83,7 @@ class TDOAModifierUtil {
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
                                                                  final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
-                                                                 final Observer primeStation, final Observer secondStation,
+                                                                 final Observer primeObserver, final Observer secondObserver,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient,
                                                                  final EstimationModifier<T> modifier) {
@@ -94,8 +94,8 @@ class TDOAModifierUtil {
         // Update estimated derivatives with Jacobian of the measure wrt state
         final FieldSpacecraftState<Gradient> gState = converter.getState(parametricModel);
         final Gradient[] gParameters       = converter.getParameters(gState, parametricModel);
-        final Gradient   primeGDelay       = modelEffectGradient.evaluate(primeStation, gState, gParameters);
-        final Gradient   secondGDelay      = modelEffectGradient.evaluate(secondStation, gState, gParameters);
+        final Gradient   primeGDelay       = modelEffectGradient.evaluate(primeObserver, gState, gParameters);
+        final Gradient   secondGDelay      = modelEffectGradient.evaluate(secondObserver, gState, gParameters);
         final double[]   primeDerivatives  = primeGDelay.getGradient();
         final double[]   secondDerivatives = secondGDelay.getGradient();
 
@@ -123,12 +123,12 @@ class TDOAModifierUtil {
         }
 
         // Update derivatives with respect to primary station position
-        for (final ParameterDriver driver : primeStation.getParametersDrivers()) {
+        for (final ParameterDriver driver : primeObserver.getParametersDrivers()) {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
                     double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(primeStation, state),
+                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(primeObserver, state),
                                                                      3, 10.0 * driver.getScale()).value(driver, state.getDate());
                     estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
@@ -136,12 +136,12 @@ class TDOAModifierUtil {
         }
 
         // Update derivatives with respect to secondary station position
-        for (final ParameterDriver driver : secondStation.getParametersDrivers()) {
+        for (final ParameterDriver driver : secondObserver.getParametersDrivers()) {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
                     double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative -= Differentiation.differentiate((d, t) -> modelEffect.evaluate(secondStation, state),
+                    parameterDerivative -= Differentiation.differentiate((d, t) -> modelEffect.evaluate(secondObserver, state),
                                                                      3, 10.0 * driver.getScale()).value(driver, state.getDate());
                     estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }

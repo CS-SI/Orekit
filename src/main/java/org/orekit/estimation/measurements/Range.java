@@ -32,17 +32,17 @@ import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modeling a range measurement from a ground station.
+/** Class modeling a range measurement received by an observer.
  * <p>
  * For one-way measurements, a signal is emitted by the satellite
- * and received by the ground station. The measurement value is the
+ * and received by the observer. The measurement value is the
  * elapsed time between emission and reception multiplied by c where
  * c is the speed of light.
  * </p>
  * <p>
  * For two-way measurements, the measurement is considered to be a signal
- * emitted from a ground station, reflected on spacecraft, and received
- * on the same ground station. Its value is the elapsed time between
+ * emitted from a observer, reflected on spacecraft, and received
+ * on the same observer. Its value is the elapsed time between
  * emission and reception multiplied by c/2 where c is the speed of light.
  * </p>
  * <p>
@@ -51,19 +51,19 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * corresponds to the reception on ground of the emitted or reflected signal.
  * </p>
  * <p>
- * The clock offsets of both the ground station and the satellite are taken
+ * The clock offsets of both the observer and the satellite are taken
  * into account. These offsets correspond to the values that must be subtracted
  * from station (resp. satellite) reading of time to compute the real physical
  * date. These offsets have two effects:
  * </p>
  * <ul>
  *   <li>as measurement date is evaluated at reception time, the real physical date
- *   of the measurement is the observed date to which the receiving ground station
+ *   of the measurement is the observed date to which the receiving observer
  *   clock offset is subtracted</li>
  *   <li>as range is evaluated using the total signal time of flight, for one-way
  *   measurements the observed range is the real physical signal time of flight to
  *   which (Δtg - Δts) ⨯ c is added, where Δtg (resp. Δts) is the clock offset for the
- *   receiving ground station (resp. emitting satellite). A similar effect exists in
+ *   receiving observer (resp. emitting satellite). A similar effect exists in
  *   two-way measurements but it is computed as (Δtg - Δtg) ⨯ c / 2 as the same ground
  *   station clock is used for initial emission and final reception and therefore it evaluates
  *   to zero.</li>
@@ -78,11 +78,11 @@ public class Range extends AbstractMeasurement<Range> {
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Range";
 
-    /** Ground station that receives signal from satellite. */
-    private final GroundStation station;
+    /** Observer that receives signal from satellite. */
+    private final Observer observer;
 
     /** Simple constructor.
-     * @param station ground station from which measurement is performed
+     * @param observer observer that performs the measurement
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param date date of the measurement
      * @param range observed value
@@ -91,20 +91,33 @@ public class Range extends AbstractMeasurement<Range> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
+    public Range(final Observer observer, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final ObservableSatellite satellite) {
         super(date, twoWay, range, sigma, baseWeight, Collections.singletonList(satellite));
-        addParametersDrivers(station.getParametersDrivers());
+        addParametersDrivers(observer.getParametersDrivers());
 
-        this.station = station;
+        this.observer = observer;
     }
 
     /** Get receiving ground station.
-     * @return ground station
+     * @return measurement ground station
+     * @deprecated as of 14.0, replaced by {@link #getObserver()}
      */
+    @Deprecated
     public final GroundStation getStation() {
-        return station;
+        if (!(observer instanceof GroundStation)) {
+            return null;
+        }
+        return (GroundStation) observer;
+    }
+
+    /** Get receiving object.
+     * @return measurement observer
+     * @since 14.0
+     */
+    public final Observer getObserver() {
+        return observer;
     }
 
     /** {@inheritDoc} */
@@ -114,7 +127,7 @@ public class Range extends AbstractMeasurement<Range> {
                                                                                       final SpacecraftState[] states) {
 
         final CommonParametersWithoutDerivatives common =
-            getStation().computeRemoteParametersWithout(states, getSatellites().get(0), getDate(), false);
+            getObserver().computeRemoteParametersWithout(states, getSatellites().get(0), getDate(), false);
         final TimeStampedPVCoordinates transitPV = common.getTransitState().getPVCoordinates();
 
         // prepare the evaluation
@@ -162,7 +175,7 @@ public class Range extends AbstractMeasurement<Range> {
             // Clock offsets
             final ObservableSatellite satellite = getSatellites().get(0);
             final double              dts       = satellite.getClockOffsetDriver().getValue(common.getState().getDate());
-            final double              dtg       = getStation().getClockOffsetDriver().getValue(common.getState().getDate());
+            final double              dtg       = getObserver().getClockOffsetDriver().getValue(common.getState().getDate());
 
             // Range value
             range = (common.getTauD() + dtg - dts) * Constants.SPEED_OF_LIGHT;
@@ -191,7 +204,7 @@ public class Range extends AbstractMeasurement<Range> {
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
 
-        final CommonParametersWithDerivatives common = getStation().
+        final CommonParametersWithDerivatives common = getObserver().
             computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
 
         final int nbParams = common.getTauD().getFreeParameters();
@@ -243,7 +256,7 @@ public class Range extends AbstractMeasurement<Range> {
             // Clock offsets
             final ObservableSatellite satellite = getSatellites().get(0);
             final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
-            final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+            final Gradient            dtg       = getObserver().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
 
             // Range value
             range = common.getTauD().add(dtg).subtract(dts).multiply(Constants.SPEED_OF_LIGHT);

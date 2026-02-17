@@ -21,8 +21,13 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.MathUtils;
+import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -54,6 +59,40 @@ public abstract class GroundBasedAngularMeasurement<T extends ObservedMeasuremen
      */
     public final GroundStation getStation() {
         return getReceiverStation();
+    }
+
+    /**
+     * Compute the signal emission date.
+     * @param frame frame where to perform signal propagation
+     * @param receiver signal receiver
+     * @param receptionDate reception date
+     * @param emitter signal emitter
+     * @return emission date
+     */
+    protected AbsoluteDate computeEmissionDate(final Frame frame, final PVCoordinatesProvider receiver,
+                                               final AbsoluteDate receptionDate, final PVCoordinatesProvider emitter) {
+        final double signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
+                .computeDelay(receptionDate, receiver.getPosition(receptionDate, frame), receptionDate, frame);
+        return receptionDate.shiftedBy(-signalTravelTime);
+    }
+
+    /**
+     * Compute the signal emission date.
+     * @param frame frame where to perform signal propagation
+     * @param receiver signal receiver
+     * @param receptionDate reception date
+     * @param emitter signal emitter
+     * @return emission date
+     */
+    protected FieldAbsoluteDate<Gradient> computeEmissionDateField(final Frame frame,
+                                                                   final FieldPVCoordinatesProvider<Gradient> receiver,
+                                                                   final FieldAbsoluteDate<Gradient> receptionDate,
+                                                                   final FieldPVCoordinatesProvider<Gradient> emitter) {
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldSignalTravelTimeAdjustableEmitter = getSignalTravelTimeModel().
+                getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter);
+        final Gradient signalTravelTime = fieldSignalTravelTimeAdjustableEmitter.computeDelay(receptionDate,
+                receiver.getPosition(receptionDate, frame), receptionDate, frame);
+        return receptionDate.shiftedBy(signalTravelTime.negate());
     }
 
     /**

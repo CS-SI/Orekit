@@ -2697,12 +2697,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 case Range.MEASUREMENT_TYPE:
                     measType = "RANGE";
                     stationName = ((EstimatedMeasurement<Range>) estimatedMeasurement).
-                            getObservedMeasurement().getStation().getBaseFrame().getName();
+                            getObservedMeasurement().getObserver().getName();
                     break;
                 case RangeRate.MEASUREMENT_TYPE:
                     measType = "RANGE_RATE";
                     stationName = ((EstimatedMeasurement<RangeRate>) estimatedMeasurement).
-                            getObservedMeasurement().getStation().getBaseFrame().getName();
+                            getObservedMeasurement().getObserver().getName();
                     break;
                 case AngularAzEl.MEASUREMENT_TYPE:
                     measType = "AZ_EL";

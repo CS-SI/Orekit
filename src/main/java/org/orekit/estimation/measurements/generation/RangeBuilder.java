@@ -17,8 +17,8 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -31,26 +31,26 @@ import java.util.Map;
  */
 public class RangeBuilder extends AbstractMeasurementBuilder<Range> {
 
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
+    /** Observer from which measurement is performed. */
+    private final Observer observer;
 
     /** Flag indicating whether it is a two-way measurement. */
     private final boolean twoway;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param station ground station from which measurement is performed
+     * @param observer observer from which measurement is performed
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
     public RangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                        final GroundStation station, final boolean twoWay,
+                        final Observer observer, final boolean twoWay,
                         final double sigma, final double baseWeight,
                         final ObservableSatellite satellite) {
         super(noiseSource, sigma, baseWeight, satellite);
-        this.station = station;
+        this.observer = observer;
         this.twoway  = twoWay;
     }
 
@@ -58,7 +58,7 @@ public class RangeBuilder extends AbstractMeasurementBuilder<Range> {
     @Override
     protected Range buildObserved(final AbsoluteDate date,
                                   final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new Range(station, twoway, date, Double.NaN,
+        return new Range(observer, twoway, date, Double.NaN,
                          getTheoreticalStandardDeviation()[0],
                          getBaseWeight()[0], getSatellites()[0]);
     }

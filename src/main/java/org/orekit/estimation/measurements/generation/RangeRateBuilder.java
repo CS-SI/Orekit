@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -31,26 +31,26 @@ import org.orekit.time.AbsoluteDate;
  */
 public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
 
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
+    /** Observer from which measurement is performed. */
+    private final Observer observer;
 
     /** Flag indicating whether it is a two-way measurement. */
     private final boolean twoway;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param station ground station from which measurement is performed
+     * @param observer observer from which measurement is performed
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
     public RangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                            final GroundStation station, final boolean twoWay,
+                            final Observer observer, final boolean twoWay,
                             final double sigma, final double baseWeight,
                             final ObservableSatellite satellite) {
         super(noiseSource, sigma, baseWeight, satellite);
-        this.station = station;
+        this.observer = observer;
         this.twoway  = twoWay;
     }
 
@@ -58,7 +58,7 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
     @Override
     protected RangeRate buildObserved(final AbsoluteDate date,
                                       final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new RangeRate(station, date, Double.NaN,
+        return new RangeRate(observer, date, Double.NaN,
                              getTheoreticalStandardDeviation()[0],
                              getBaseWeight()[0], twoway, getSatellites()[0]);
     }

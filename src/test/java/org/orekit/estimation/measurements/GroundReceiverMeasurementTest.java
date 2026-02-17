@@ -53,7 +53,7 @@ class GroundReceiverMeasurementTest {
         final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
         final GroundReceiverMeasurement<?> measurement = new TestMeasurement(groundStation, date, new SignalTravelTimeModel());
         // WHEN
-        final AbsoluteDate actualReceptionDate = measurement.getCorrectedReceptionDate();
+        final AbsoluteDate actualReceptionDate = groundStation.getCorrectedReceptionDate(measurement.getDate());
         // THEN
         final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getOffset());
         assertEquals(expectedDate, actualReceptionDate);
@@ -70,7 +70,7 @@ class GroundReceiverMeasurementTest {
         final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
         final GroundReceiverMeasurement<?> measurement = new TestMeasurement(groundStation, date, new SignalTravelTimeModel());
         // WHEN
-        final FieldAbsoluteDate<Gradient> actualReceptionDate = measurement.getCorrectedReceptionDateField(0, new HashMap<>());
+        final FieldAbsoluteDate<Gradient> actualReceptionDate = groundStation.getCorrectedReceptionDateField(measurement.getDate(), 0, new HashMap<>());
         // THEN
         final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getOffset());
         assertEquals(expectedDate, actualReceptionDate.toAbsoluteDate());

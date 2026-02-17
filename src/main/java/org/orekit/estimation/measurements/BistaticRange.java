@@ -54,8 +54,8 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
     /**
      * Simple constructor.
      *
-     * @param emitter     ground station from which transmission is performed
-     * @param receiver    ground station from which measurement is performed
+     * @param emitter     emitter object
+     * @param receiver    receiver object
      * @param date        date of the measurement
      * @param range       observed value
      * @param sigma       theoretical standard deviation
@@ -63,7 +63,7 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
      * @param satellite   satellite related to this measurement
      * @since 11.2
      */
-    public BistaticRange(final GroundStation emitter, final GroundStation receiver, final AbsoluteDate date,
+    public BistaticRange(final Observer emitter, final Observer receiver, final AbsoluteDate date,
                          final double range, final double sigma, final double baseWeight,
                          final ObservableSatellite satellite) {
         this(emitter, receiver, date, range, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
@@ -72,8 +72,8 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
     /**
      * Simple constructor.
      *
-     * @param emitter     ground station from which transmission is performed
-     * @param receiver    ground station from which measurement is performed
+     * @param emitter     emitter object
+     * @param receiver    receiver object
      * @param date        date of the measurement
      * @param range       observed value
      * @param sigma       theoretical standard deviation
@@ -82,11 +82,11 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
      * @param satellite   satellite related to this measurement
      * @since 14.0
      */
-    public BistaticRange(final GroundStation emitter, final GroundStation receiver, final AbsoluteDate date,
+    public BistaticRange(final Observer emitter, final Observer receiver, final AbsoluteDate date,
                          final double range, final double sigma, final double baseWeight,
                          final SignalTravelTimeModel signalTravelTimeModel,
                          final ObservableSatellite satellite) {
-        super(emitter, receiver, true, date, new double[] { range }, new double[] { sigma }, new double[] { baseWeight },
+        super(emitter, receiver, date, new double[] { range }, new double[] { sigma }, new double[] { baseWeight },
                 signalTravelTimeModel, satellite);
     }
 
@@ -113,8 +113,8 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
                 new SpacecraftState[] { transitState }, participants);
 
         // Clock offsets
-        final double dte = getEmitterStation().getClockOffsetDriver().getValue(emissionDate);
-        final double dtr = getReceiverStation().getClockOffsetDriver().getValue(receptionDate);
+        final double dte = getEmitter().getClockOffsetDriver().getValue(emissionDate);
+        final double dtr = getReceiver().getClockOffsetDriver().getValue(receptionDate);
 
         // Range value
         final double firstLegDelay = transitDate.durationFrom(emissionDate);
@@ -148,15 +148,15 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
         final EstimatedMeasurement<BistaticRange> estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                 new SpacecraftState[] { transitState },
                 new TimeStampedPVCoordinates[] {
-                        getEmitterStation().getPVCoordinatesProvider().getPVCoordinates(emissionDate.toAbsoluteDate(), frame),
+                        getEmitter().getPVCoordinatesProvider().getPVCoordinates(emissionDate.toAbsoluteDate(), frame),
                         transitState.getPVCoordinates(),
-                        getReceiverStation().getPVCoordinatesProvider().getPVCoordinates(receptionDate.toAbsoluteDate(), frame)});
+                        getReceiver().getPVCoordinatesProvider().getPVCoordinates(receptionDate.toAbsoluteDate(), frame)});
 
         // Clock offsets
         final int nbParams = field.getZero().getFreeParameters();
         final Map<String, Integer> paramIndices = getParameterIndices(states);
-        final Gradient dte = getEmitterStation().getClockOffsetDriver().getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
-        final Gradient dtr = getReceiverStation().getClockOffsetDriver().getValue(nbParams, paramIndices, receptionDate.toAbsoluteDate());
+        final Gradient dte = getEmitter().getClockOffsetDriver().getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
+        final Gradient dtr = getReceiver().getClockOffsetDriver().getValue(nbParams, paramIndices, receptionDate.toAbsoluteDate());
 
         // Range value
         final Gradient tau   = (shifts[1].add(shifts[2])).negate().add(dtr).subtract(dte);

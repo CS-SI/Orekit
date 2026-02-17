@@ -62,34 +62,34 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
     private final TwoLegsRangeRateModel twoLegsRangeRateModel;
 
     /** Simple constructor.
-     * @param emitter emitter ground station
-     * @param receiver receiver ground station
-     * @param date date of the measurement
-     * @param rangeRate observed value, m/s
-     * @param sigma theoretical standard deviation
+     * @param emitter    emitter object
+     * @param receiver   receiver object
+     * @param date       date of the measurement
+     * @param rangeRate  observed value, m/s
+     * @param sigma      theoretical standard deviation
      * @param baseWeight base weight
-     * @param satellite satellite related to this measurement
+     * @param satellite  satellite related to this measurement
      */
-    public BistaticRangeRate(final GroundStation emitter, final GroundStation receiver, final AbsoluteDate date,
+    public BistaticRangeRate(final Observer emitter, final Observer receiver, final AbsoluteDate date,
                              final double rangeRate, final double sigma, final double baseWeight,
                              final ObservableSatellite satellite) {
         this(emitter, receiver, date, rangeRate, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
     }
 
     /** Simple constructor.
-     * @param emitter emitter ground station
-     * @param receiver receiver ground station
-     * @param date date of the measurement
-     * @param rangeRate observed value, m/s
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param emitter               emitter object
+     * @param receiver              receiver object
+     * @param date                  date of the measurement
+     * @param rangeRate             observed value, m/s
+     * @param sigma                 theoretical standard deviation
+     * @param baseWeight            base weight
      * @param signalTravelTimeModel signal travel time model
-     * @param satellite satellite related to this measurement
+     * @param satellite             satellite related to this measurement
      */
-    public BistaticRangeRate(final GroundStation emitter, final GroundStation receiver, final AbsoluteDate date,
+    public BistaticRangeRate(final Observer emitter, final Observer receiver, final AbsoluteDate date,
                              final double rangeRate, final double sigma, final double baseWeight,
                              final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(emitter, receiver, true, date, new double[] {rangeRate}, new double[] {sigma}, new double[] {baseWeight},
+        super(emitter, receiver, date, new double[] {rangeRate}, new double[] {sigma}, new double[] {baseWeight},
                 signalTravelTimeModel, satellite);
 
         // Add class member values
@@ -121,7 +121,7 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
         final PVCoordinatesProvider observablePVCoordinates = AbstractMeasurementObject.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
         final double rangeRate = twoLegsRangeRateModel.value(frame, participants[2], receptionDate,
-                observablePVCoordinates, transitDate, getEmitterStation().getPVCoordinatesProvider(), emissionDate);
+                observablePVCoordinates, transitDate, getEmitter().getPVCoordinatesProvider(), emissionDate);
 
         estimated.setEstimatedValue(rangeRate);
         return estimated;
@@ -154,18 +154,18 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
         final SpacecraftState transitState = state.shiftedBy(shift);
         final int nbParams = field.getZero().getFreeParameters();
         final Map<String, Integer> paramIndices = getParameterIndices(states);
-        final FieldPVCoordinatesProvider<Gradient> receiver = getReceiverStation().getFieldPVCoordinatesProvider(nbParams,
-                paramIndices);
+        final FieldPVCoordinatesProvider<Gradient> receiver = getReceiver().getFieldPVCoordinatesProvider(field.getOne().getFreeParameters(),
+                getParameterIndices(states));
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiver.getPVCoordinates(receptionDate, frame);
         final EstimatedMeasurement<BistaticRangeRate> estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                 new SpacecraftState[] { transitState },
                 new TimeStampedPVCoordinates[] {
-                        getEmitterStation().getPVCoordinatesProvider().getPVCoordinates(emissionDate.toAbsoluteDate(), frame),
+                        getEmitter().getPVCoordinatesProvider().getPVCoordinates(emissionDate.toAbsoluteDate(), frame),
                         transitState.getPVCoordinates(),
                         receiverPV.toTimeStampedPVCoordinates()});
 
         // Compute range rate
-        final FieldPVCoordinatesProvider<Gradient> emitter = getEmitterStation().getFieldPVCoordinatesProvider(nbParams,
+        final FieldPVCoordinatesProvider<Gradient> emitter = getEmitter().getFieldPVCoordinatesProvider(nbParams,
                 paramIndices);
         final FieldPVCoordinatesProvider<Gradient> observable = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state,
                 AbstractMeasurement.getCoordinates(state, 0, nbParams));

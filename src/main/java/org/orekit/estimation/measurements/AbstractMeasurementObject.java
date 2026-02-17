@@ -44,7 +44,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Brianna Aubin
  * @since 14.0
  */
-public abstract class AbstractMeasurementObject implements MeasurementObject {
+public abstract class AbstractMeasurementObject implements MeasurementParticipant {
 
     /** Checkstyle is annoying sometimes. */
     private static final String CLOCK_STRING = "-clock";
