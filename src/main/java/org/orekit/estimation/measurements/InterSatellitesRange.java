@@ -73,7 +73,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 9.0
  */
-public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRange> {
+public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellitesRange> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "InterSatellitesRange";
@@ -111,7 +111,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                 final boolean twoWay, final AbsoluteDate date, final double range,
                                 final double sigma, final double baseWeight,
                                 final SignalTravelTimeModel signalTravelTimeModel) {
-        super(date, twoWay, new double[] {range}, new double[] {sigma}, new double[] {baseWeight}, signalTravelTimeModel,
+        super(date, twoWay, new double[] {range}, new MeasurementQuality(sigma, baseWeight), signalTravelTimeModel,
                 Arrays.asList(local, remote));
     }
 

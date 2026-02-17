@@ -55,7 +55,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Joris Olympio
  * @since 8.0
  */
-public class RangeRate extends AbstractMeasurement<RangeRate> {
+public class RangeRate extends SignalBasedMeasurement<RangeRate> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "RangeRate";

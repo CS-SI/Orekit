@@ -96,7 +96,8 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
         final BodyShape bodyShape = getStation().getBaseFrame().getParentShape();
         final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
         final GeodeticPoint geodeticPoint = bodyShape.transform(receiverPV.getPosition(), frame, receptionDate);
-        final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape, getSignalTravelTimeModel());
+        final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape,
+                getSignalTravelTimeModel().getWarmedUpModel());
         final double[] azEl = measurementModel.value(geodeticPoint, receptionDate, emitter, emissionDate);
 
         // Prepare the estimation
@@ -142,7 +143,8 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
         // Compute azimuth and elevation
         final BodyShape bodyShape = getStation().getBaseFrame().getParentShape();
         final FieldGeodeticPoint<Gradient> geodeticPoint = bodyShape.transform(receiverPV.getPosition(), frame, receptionDate);
-        final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape, getSignalTravelTimeModel());
+        final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape,
+                getSignalTravelTimeModel().getWarmedUpModel());
         final Gradient[] azEl = measurementModel.value(geodeticPoint, receptionDate, emitter, emissionDate);
 
         // Prepare the estimation

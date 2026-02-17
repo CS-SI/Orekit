@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements;
 
 import java.util.Collections;
 
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 
 /** Abstract class modeling a position(-velocity) measurement,
@@ -39,8 +38,7 @@ public abstract class PseudoMeasurement<T extends PseudoMeasurement<T>> extends 
      */
     protected PseudoMeasurement(final AbsoluteDate date, final double[] observed,
                                 final MeasurementQuality measurementQuality, final ObservableSatellite satellite) {
-        super(date, false, observed, measurementQuality, new SignalTravelTimeModel(),
-                Collections.singletonList(satellite));
+        super(date, observed, measurementQuality, Collections.singletonList(satellite));
     }
 
     /** Get the covariance matrix.

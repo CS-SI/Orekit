@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,9 +26,6 @@ import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
 
 class AbstractMeasurementTest {
 
@@ -60,7 +60,7 @@ class AbstractMeasurementTest {
     private static class TestMeasurementModel extends AbstractMeasurement<TestMeasurementModel> {
 
         TestMeasurementModel(AbsoluteDate date, double observed, List<ObservableSatellite> satellites) {
-            super(date, false, observed, 1., 1., satellites);
+            super(date, observed, 1., 1., satellites);
         }
 
         @Override

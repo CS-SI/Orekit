@@ -22,6 +22,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.optim.ConvergenceChecker;
 import org.hipparchus.optim.FieldScalarConvergenceCheckerProvider;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.FieldAbsoluteDate;
@@ -30,9 +31,30 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 class SignalTravelTimeModelTest {
+
+    @Test
+    void testGetWarmedUpModel() {
+        // GIVEN
+        final int maxIter = 10;
+        final ConvergenceChecker<Double> convergenceChecker = (iteration, previous, current) -> maxIter == iteration;
+        final SignalTravelTimeModel signalTravelTimeModel = new SignalTravelTimeModel(convergenceChecker,
+                new FieldScalarConvergenceCheckerProvider() {
+                    @Override
+                    public <T extends CalculusFieldElement<T>> ConvergenceChecker<T> getChecker(Field<T> field) {
+                        return (iteration, previous, current) -> maxIter == iteration;
+                    }
+                });
+        // WHEN
+        final SignalTravelTimeModel warmedUp = signalTravelTimeModel.getWarmedUpModel();
+        // THEN
+        final ConvergenceChecker<Double> warmedUpChecker = warmedUp.getConvergenceChecker();
+        assertTrue(warmedUpChecker.converged(maxIter - 1, null, null));
+        assertTrue(warmedUp.getFieldConvergenceCheckerProvider().getChecker(Binary64Field.getInstance()).converged(maxIter - 1, null, null));
+    }
 
     @Test
     void testGetAdjustableReceiverComputer() {

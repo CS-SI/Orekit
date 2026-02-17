@@ -22,6 +22,7 @@ import java.util.Collections;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -73,7 +74,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Maxime Journot
  * @since 8.0
  */
-public class Range extends AbstractMeasurement<Range> {
+public class Range extends SignalBasedMeasurement<Range> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Range";
@@ -94,7 +95,8 @@ public class Range extends AbstractMeasurement<Range> {
     public Range(final Observer observer, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final ObservableSatellite satellite) {
-        super(date, twoWay, range, sigma, baseWeight, Collections.singletonList(satellite));
+        super(date, twoWay, range, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
+                Collections.singletonList(satellite));
         addParametersDrivers(observer.getParametersDrivers());
 
         this.observer = observer;

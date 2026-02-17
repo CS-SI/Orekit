@@ -20,13 +20,15 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.AbstractMeasurement;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
 import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.Observer;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.SignalBasedMeasurement;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -49,7 +51,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Maxime Journot
  * @since 9.2
  */
-public class Phase extends AbstractMeasurement<Phase> {
+public class Phase extends SignalBasedMeasurement<Phase> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Phase";
@@ -78,7 +80,8 @@ public class Phase extends AbstractMeasurement<Phase> {
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final ObservableSatellite satellite,
                  final AmbiguityCache cache) {
-        super(date, false, phase, sigma, baseWeight, Collections.singletonList(satellite));
+        super(date, false, phase, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
+                Collections.singletonList(satellite));
         ambiguityDriver = cache.getAmbiguity(satellite.getName(),
                                              observer.getName(),
                                              wavelength);
