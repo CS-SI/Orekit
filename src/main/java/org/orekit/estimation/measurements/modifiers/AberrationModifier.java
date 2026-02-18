@@ -118,8 +118,8 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
 
         // Velocity of observer relative to barycentre (units of c)
         final PVCoordinates baryPV = context.getCelestialBodies().getSolarSystemBarycenter().getPVCoordinates(date, frame);
-        final PVCoordinates observerPV = observer.getPVCoordinatesProvider().getPVCoordinates(date, frame);
-        final Vector3D observerBaryVel = observerPV.getVelocity()
+        final Vector3D observerVelocity = observer.getPVCoordinatesProvider().getVelocity(date, frame);
+        final Vector3D observerBaryVel = observerVelocity
                 .subtract(baryPV.getVelocity())
                 .scalarMultiply(1.0 / Constants.SPEED_OF_LIGHT);
 

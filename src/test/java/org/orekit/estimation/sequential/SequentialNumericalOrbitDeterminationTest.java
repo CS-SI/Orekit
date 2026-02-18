@@ -16,6 +16,14 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -58,11 +66,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.*;
 
 class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
@@ -220,12 +223,12 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.043893,  0.044721,  -0.037796 };
+        final double[] stationOffSet = { 0.043891,  0.044723,  -0.037798 };
         final double rangeBias = 0.041171;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -5.910596, 3.306617, -0.037131, 1.454304 };
+        final double[] refStatRange = { -5.910601, 3.306715, -0.037126, 1.454295 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
                 smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,
@@ -253,7 +256,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -6.212086, 3.196686, -0.012196, 1.456780 };
+        final double[] refStatRange = { -6.212088, 3.196686, -0.012196, 1.456780 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
                 smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,

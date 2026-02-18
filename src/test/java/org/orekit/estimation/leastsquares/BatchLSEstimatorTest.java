@@ -47,8 +47,8 @@ import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
-import org.orekit.estimation.measurements.SpaceTwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.SpaceTDOAMeasurementCreator;
+import org.orekit.estimation.measurements.SpaceTwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
@@ -772,7 +772,7 @@ class BatchLSEstimatorTest {
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
                           determined.getPosition()), 6.2e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getVelocity(),
-                          determined.getVelocity()), 4.5e-9);
+                          determined.getVelocity()), 5.1e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -964,7 +964,7 @@ class BatchLSEstimatorTest {
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
-                          determined.getPosition()), 5.3e-6);
+                          determined.getPosition()), 6.6e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getVelocity(),
                           determined.getVelocity()), 4.6e-9);
 

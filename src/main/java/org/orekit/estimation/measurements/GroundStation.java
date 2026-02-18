@@ -479,36 +479,16 @@ public class GroundStation extends AbstractParticipant implements Observer {
     public final PVCoordinatesProvider getPVCoordinatesProvider() {
         return new PVCoordinatesProvider() {
             @Override
-            public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
-                final Vector3D        origin     = getOrigin(date);
-                final StaticTransform staticFromBodyFrame = getBaseFrame().getParentShape().getBodyFrame()
-                        .getStaticTransformTo(frame, date);
-                return staticFromBodyFrame.transformPosition(origin);
+            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
+                return getOffsetToInertial(frame, date, true)
+                        .transformPVCoordinates(new TimeStampedPVCoordinates(date, PVCoordinates.ZERO));
             }
 
             @Override
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-                final Vector3D        origin     = getOrigin(date);
-                final Transform fromBodyFrame = baseFrame.getParentShape().getBodyFrame().getTransformTo(frame, date);
-                return fromBodyFrame.transformPVCoordinates(new TimeStampedPVCoordinates(date,
-                        new PVCoordinates(origin)));
+            public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+                return getOffsetToInertial(frame, date, true).transformPosition(Vector3D.ZERO);
             }
         };
-    }
-
-    /**
-     * Retrieve station's position in body shape frame.
-     * @param date date
-     * @return origin position
-     */
-    private Vector3D getOrigin(final AbsoluteDate date) {
-        final double    x          = eastOffsetDriver.getValue(date);
-        final double    y          = northOffsetDriver.getValue(date);
-        final double    z          = zenithOffsetDriver.getValue(date);
-        final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
-        final StaticTransform staticTopoToBody = baseFrame.getStaticTransformTo(bodyFrame, date);
-        final Vector3D        originBeforeDisplacement     = staticTopoToBody.transformPosition(new Vector3D(x, y, z));
-        return originBeforeDisplacement.add(computeDisplacement(date, originBeforeDisplacement));
     }
 
     /** {@inheritDoc} */
@@ -516,22 +496,17 @@ public class GroundStation extends AbstractParticipant implements Observer {
     public FieldPVCoordinatesProvider<Gradient> getFieldPVCoordinatesProvider(final int freeParameters,
                                                                               final Map<String, Integer> parameterIndices) {
         return new FieldPVCoordinatesProvider<Gradient>() {
-
-            @Override
-            public FieldVector3D<Gradient> getPosition(final FieldAbsoluteDate<Gradient> date, final Frame frame) {
-                final FieldVector3D<Gradient>        origin     = getOrigin(date, parameterIndices);
-                final FieldStaticTransform<Gradient> staticFromBodyFrame = getBaseFrame().getParentShape().getBodyFrame()
-                        .getStaticTransformTo(frame, date);
-                return staticFromBodyFrame.transformPosition(origin);
-            }
-
             @Override
             public TimeStampedFieldPVCoordinates<Gradient> getPVCoordinates(final FieldAbsoluteDate<Gradient> date,
                                                                             final Frame frame) {
-                final FieldVector3D<Gradient>        origin     = getOrigin(date, parameterIndices);
-                final FieldTransform<Gradient> fromBodyFrame = baseFrame.getParentShape().getBodyFrame().getTransformTo(frame, date);
-                return fromBodyFrame.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(date,
-                        new FieldPVCoordinates<>(origin, FieldVector3D.getZero(date.getField()))));
+                return getOffsetToInertial(frame, date, freeParameters, parameterIndices)
+                        .transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(date, FieldPVCoordinates.getZero(date.getField())));
+            }
+
+            @Override
+            public FieldVector3D<Gradient> getPosition(final FieldAbsoluteDate<Gradient> date, final Frame frame) {
+                return getOffsetToInertial(frame, date, freeParameters, parameterIndices)
+                        .transformPosition(FieldVector3D.getZero(date.getField()));
             }
         };
     }
@@ -566,6 +541,21 @@ public class GroundStation extends AbstractParticipant implements Observer {
 
         return new Transform(offsetCompensatedDate, offsetToIntermediate, new Transform(offsetCompensatedDate, intermediateToBody, bodyToInert));
 
+    }
+
+    /**
+     * Retrieve station's position in body shape frame.
+     * @param date date
+     * @return origin position
+     */
+    private Vector3D getOrigin(final AbsoluteDate date) {
+        final double    x          = eastOffsetDriver.getValue(date);
+        final double    y          = northOffsetDriver.getValue(date);
+        final double    z          = zenithOffsetDriver.getValue(date);
+        final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
+        final StaticTransform staticTopoToBody = baseFrame.getStaticTransformTo(bodyFrame, date);
+        final Vector3D        originBeforeDisplacement     = staticTopoToBody.transformPosition(new Vector3D(x, y, z));
+        return originBeforeDisplacement.add(computeDisplacement(date, originBeforeDisplacement));
     }
 
     /** {@inheritDoc} */

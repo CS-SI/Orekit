@@ -34,14 +34,24 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -54,15 +64,20 @@ import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeAdjustableReceiver;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RangeTest {
 
@@ -93,9 +108,9 @@ class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsPMedian = 6.7e-10;
-        double refErrorsPMean   = 3.1e-09;
-        double refErrorsPMax    = 1.0e-07;
+        double refErrorsPMedian = 7.9e-09;
+        double refErrorsPMean   = 2.4e-08;
+        double refErrorsPMax    = 5.9e-07;
         double refErrorsVMedian = 2.1e-04;
         double refErrorsVMean   = 1.3e-03;
         double refErrorsVMax    = 5.2e-02;
@@ -117,9 +132,9 @@ class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsPMedian = 7.9e-10;
-        double refErrorsPMean   = 2.6e-09;
-        double refErrorsPMax    = 9.3e-08;
+        double refErrorsPMedian = 7.6e-09;
+        double refErrorsPMean   = 2.4e-08;
+        double refErrorsPMax    = 6.2e-07;
         double refErrorsVMedian = 2.1e-04;
         double refErrorsVMean   = 1.3e-03;
         double refErrorsVMax    = 5.2e-02;
@@ -143,7 +158,7 @@ class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsMedian = 5.8e-9;
+        double refErrorsMedian = 6.4e-9;
         double refErrorsMean   = 6.4e-8;
         double refErrorsMax    = 5.1e-6;
         this.genericTestParameterDerivatives(isModifier, printResults,
@@ -846,6 +861,60 @@ class RangeTest {
         Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
         Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
 
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testParticipantsField(final boolean twoWay) {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2010_EARTH_FLATTENING,
+                FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
+        final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
+        final GroundStation station = new GroundStation(baseFrame, new QuadraticClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2, 0, 0));
+        for (final ParameterDriver driver: station.getParametersDrivers()) {
+            driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
+        }
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN
+        final Range range = new Range(station, twoWay, epoch, 0., 1., 1., satellite);
+        final EstimatedMeasurementBase<Range> estimatedWithoutDerivatives = range.estimateWithoutDerivatives(state);
+        // THEN
+        final EstimatedMeasurement<Range> estimated = range.estimate(0, 0, state);
+        assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-8);
+        compareParticipants(estimated, estimatedWithoutDerivatives);
+    }
+
+    private void assertCloseDate(final AbsoluteDate expected, final AbsoluteDate actual) {
+        assertTrue(expected.isCloseTo(actual, 1e-11));
+    }
+
+    private void compareParticipants(final EstimatedMeasurementBase<Range> expected, final EstimatedMeasurementBase<Range> actual) {
+        final TimeStampedPVCoordinates firstParticipant = actual.getParticipants()[0];
+        final TimeStampedPVCoordinates secondParticipant = actual.getParticipants()[1];
+        final TimeStampedPVCoordinates expectedFirstParticipant = expected.getParticipants()[0];
+        final TimeStampedPVCoordinates expectedSecondParticipant = expected.getParticipants()[1];
+        final double tolerance = 1e-7;
+        assertCloseDate(expectedFirstParticipant.getDate(), firstParticipant.getDate());
+        assertArrayEquals(expectedFirstParticipant.getPosition().toArray(), firstParticipant.getPosition().toArray(), tolerance);
+        assertCloseDate(expectedSecondParticipant.getDate(), secondParticipant.getDate());
+        assertArrayEquals(expectedSecondParticipant.getPosition().toArray(), secondParticipant.getPosition().toArray(), tolerance);
+        if (expected.getObservedMeasurement().isTwoWay()) {
+            final TimeStampedPVCoordinates expectedThirdParticipant = expected.getParticipants()[2];
+            final TimeStampedPVCoordinates thirdParticipant = actual.getParticipants()[2];
+            assertCloseDate(expectedThirdParticipant.getDate(), thirdParticipant.getDate());
+            assertArrayEquals(expectedThirdParticipant.getPosition().toArray(), thirdParticipant.getPosition().toArray(), tolerance);
+        }
     }
 
 }

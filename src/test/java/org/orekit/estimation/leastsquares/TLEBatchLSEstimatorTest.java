@@ -213,9 +213,9 @@ public class TLEBatchLSEstimatorTest {
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
-                                     0.0, 1.3e-6,
-                                     0.0, 3.5e-6,
-                                     0.0, 5.5e-6,
+                                     0.0, 9e-6,
+                                     0.0, 2.6e-5,
+                                     0.0, 1.2e-5,
                                      0.0, 2.3e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
@@ -334,7 +334,7 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        EstimationTestUtils.checkFit(false, context, estimator, 4, 9,
+        EstimationTestUtils.checkFit(false, context, estimator, 4, 7,
                                      0.0, 6.0e-6,
                                      0.0, 4.6e-5,
                                      0.0, 3.9e-6,

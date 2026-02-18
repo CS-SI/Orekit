@@ -82,14 +82,16 @@ class GroundStationTest {
         for (final ParameterDriver driver: selectAllDrivers(station)) {
             driver.setReferenceDate(date);
         }
+        station.getPolarOffsetYDriver().setValue(0.1);
         station.getEastOffsetDriver().setValue(1);
         station.getNorthOffsetDriver().setValue(-1);
         station.getZenithOffsetDriver().setValue(2);
         final PVCoordinatesProvider pvCoordinatesProvider = station.getPVCoordinatesProvider();
         // WHEN
-        final PVCoordinates actualPV = pvCoordinatesProvider.getPVCoordinates(date, topocentricFrame);
+        final PVCoordinates actualPV = pvCoordinatesProvider.getPVCoordinates(date, ecef);
         // THEN
-        Assertions.assertArrayEquals(new Vector3D(1., -1., 2).toArray(), actualPV.getPosition().toArray(), 1e-8);
+        final Vector3D expectedPosition = station.getOffsetToInertial(ecef, date, true).transformPosition(Vector3D.ZERO);
+        Assertions.assertArrayEquals(expectedPosition.toArray(), actualPV.getPosition().toArray(), 1e-8);
         Assertions.assertEquals(0., actualPV.getVelocity().getNorm2());
     }
 
@@ -106,6 +108,8 @@ class GroundStationTest {
         for (final ParameterDriver driver: selectAllDrivers(station)) {
             driver.setReferenceDate(date);
         }
+        station.getClockOffsetDriver().setValue(0.1);
+        station.getPolarOffsetYDriver().setValue(2);
         station.getEastOffsetDriver().setValue(1);
         station.getNorthOffsetDriver().setValue(-1);
         station.getZenithOffsetDriver().setValue(2);
@@ -131,6 +135,8 @@ class GroundStationTest {
         for (final ParameterDriver driver: selectAllDrivers(station)) {
             driver.setReferenceDate(date);
         }
+        station.getClockOffsetDriver().setValue(-0.1);
+        station.getPolarOffsetXDriver().setValue(3);
         station.getEastOffsetDriver().setValue(1);
         station.getNorthOffsetDriver().setValue(-1);
         station.getZenithOffsetDriver().setValue(2);
@@ -144,7 +150,7 @@ class GroundStationTest {
         // THEN
         Assertions.assertEquals(pvCoordinates.getPosition(), pvCoordinatesProvider.getPosition(fieldDate, eci));
         final PVCoordinates nonFieldPV = station.getPVCoordinatesProvider().getPVCoordinates(date, eci);
-        Assertions.assertEquals(pvCoordinates.getVelocity().toVector3D(), nonFieldPV.getVelocity());
+        Assertions.assertArrayEquals(pvCoordinates.getVelocity().toVector3D().toArray(), nonFieldPV.getVelocity().toArray(), 1e-12);
     }
 
     @Test
@@ -413,12 +419,12 @@ class GroundStationTest {
         final double computedXpDot = station.getPolarDriftXDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
-        Assertions.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  4.4e-10);
-        Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     4.9e-10);
-        Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      5.9e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.5e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      1.1e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 1.1e-10);
+        Assertions.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  1.5e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     9.3e-10);
+        Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      1.3e-8);
+        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.9e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      5.5e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 5.5e-9);
 
         // thresholds to use if orbit is estimated
         // (i.e. when commenting out the loop above that sets orbital parameters drivers to "not selected")

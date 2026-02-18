@@ -465,7 +465,7 @@ class BistaticRangeTest {
         // THEN
         final Range range = new Range(station, true, epoch, 0., 1., 1., satellite);
         final EstimatedMeasurement<Range> estimatedRange = range.estimate(0, 0, state);
-        assertEquals(estimatedRange.getEstimatedValue()[0] * 2., estimatedBistatic.getEstimatedValue()[0], 1e-6);
+        assertEquals(estimatedRange.getEstimatedValue()[0] * 2., estimatedBistatic.getEstimatedValue()[0], 1e-9);
         final double[] doubleDerivatives = MatrixUtils.createRealVector(estimatedRange.getStateDerivatives(0)[0]).mapMultiply(2).toArray();
         assertArrayEquals(doubleDerivatives, estimatedBistatic.getStateDerivatives(0)[0], 1e-12);
         compareParticipants(estimatedRange, estimatedBistatic);
