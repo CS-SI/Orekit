@@ -56,6 +56,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.mock;
 
 class AngularRaDecTest {
 
@@ -112,6 +113,16 @@ class AngularRaDecTest {
         Assertions.assertEquals(0.0, decDiffStat.getStandardDeviation(), 3e-11);
     }
 
+    @Test
+    @Deprecated
+    void testGetStation() {
+        final Observer mockedObserver = mock();
+        final AngularRaDec angularRaDec = new AngularRaDec(mockedObserver, FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new double[2], new double[2], new double[2], new ObservableSatellite(0));
+        final GroundStation station = angularRaDec.getStation();
+        Assertions.assertNull(station);
+    }
+
     /** Test the values of the state derivatives using a numerical.
      * finite differences calculation as a reference
      */
@@ -147,7 +158,7 @@ class AngularRaDecTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((AngularRaDec) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((AngularRaDec) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -250,7 +261,7 @@ class AngularRaDecTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((AngularRaDec) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((AngularRaDec) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

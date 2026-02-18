@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -36,10 +37,9 @@ import org.orekit.utils.TimeSpanMap;
  * @author Romain Serra
  * @since 14.0
  */
-public abstract class GroundBasedAngularMeasurement<T extends ObservedMeasurement<T>> extends GroundReceiverMeasurement<T> {
+public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /** Simple constructor.
-     * @param station ground station from which measurement is performed
      * @param signalTravelTimeModel signal travel time model
      * @param date date of the measurement
      * @param angular observed value
@@ -47,18 +47,11 @@ public abstract class GroundBasedAngularMeasurement<T extends ObservedMeasuremen
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      */
-    protected GroundBasedAngularMeasurement(final GroundStation station, final AbsoluteDate date,
-                                            final double[] angular, final double[] sigma, final double[] baseWeight,
-                                            final SignalTravelTimeModel signalTravelTimeModel,
-                                            final ObservableSatellite satellite) {
-        super(station, false, date, angular, sigma, baseWeight, signalTravelTimeModel, satellite);
-    }
-
-    /** Get the ground station that receives the signal.
-     * @return ground station
-     */
-    public final GroundStation getStation() {
-        return getReceiverStation();
+    protected AngularMeasurement(final AbsoluteDate date,
+                                 final double[] angular, final double[] sigma, final double[] baseWeight,
+                                 final SignalTravelTimeModel signalTravelTimeModel,
+                                 final ObservableSatellite satellite) {
+        super(date, false, angular, sigma, baseWeight, signalTravelTimeModel, Collections.singletonList(satellite));
     }
 
     /**
