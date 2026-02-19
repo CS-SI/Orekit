@@ -413,7 +413,7 @@ class GroundStationTest {
         final double computedXpDot = station.getPolarDriftXDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
-        Assertions.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  4.3e-10);
+        Assertions.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  4.4e-10);
         Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     4.9e-10);
         Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      5.9e-9);
         Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.5e-9);

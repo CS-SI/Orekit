@@ -34,6 +34,7 @@ import java.util.Arrays;
  * A transform that only includes translation and rotation as well as their respective rates.
  * It is kinematic in the sense that it cannot transform an acceleration vector.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see FieldStaticTransform
  * @see FieldTransform

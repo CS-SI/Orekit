@@ -24,6 +24,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 /**
  * Wrapper for event detection triggering maneuvers.
  *
+ * @param <T> type of the event detector
  * @see AbstractManeuverTriggers
  * @author Romain Serra
  * @since 13.0

@@ -35,6 +35,7 @@ import org.orekit.utils.ExtendedPositionProvider;
  * <p>The default handler behavior is to {@link Action#STOP stop}
  * propagation when spacecraft enters the proximity zone. This can be changed by calling
  * {@code #withHandler(EventHandler)} after construction.</p>
+ * @param <T> type of the field elements
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @author Romain Serra

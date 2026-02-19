@@ -31,6 +31,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * It performs parameters initialization at each integration step for the Tesseral and Zonal contribution
  * to the central body gravitational perturbation.
  * </p>
+ * @param <T> type of the field elements
  * @author Bryan Cazabonne
  * @author Maxime Journot
  * @since 12.2

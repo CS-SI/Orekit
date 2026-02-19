@@ -32,6 +32,7 @@ import java.util.stream.Stream;
  * Interface to definite cost function in the frame of Pontryagin's Maximum Principle using Cartesian coordinates.
  * It provides the link between the optimal control and the adjoint variables. This relationship is obtained by maximizing the Hamiltonian.
  * The choice of control vector impacts on it.
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see CartesianAdjointDerivativesProvider
  * @since 13.0

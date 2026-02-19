@@ -34,6 +34,7 @@ import java.util.List;
 /**
  * Abstract class for propagator builders of analytical models (except for ephemeris i.e. interpolated ones).
  *
+ * @param <T> type of the propagator
  * @author Romain Serra
  * @since 12.2
  */

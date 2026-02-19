@@ -39,6 +39,7 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
  * by wrapping an {@link FieldEclipseDetector eclipse detector} into an instance
  * of this class with a positive times shift for increasing events (eclipse exit)
  * and a negative times shift for decreasing events (eclipse entry).</p>
+ * @param <T> type of the field elements
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @see FieldEventDetector
  * @see EventShifter

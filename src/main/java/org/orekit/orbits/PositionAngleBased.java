@@ -18,6 +18,7 @@ package org.orekit.orbits;
 
 /** This interface represent orbit-like trajectory whose definition is based on a so-called position angle.
  *
+ * @param <T> type of the instance
  * @see    PositionAngleType
  * @see    KeplerianOrbit
  * @see    CircularOrbit

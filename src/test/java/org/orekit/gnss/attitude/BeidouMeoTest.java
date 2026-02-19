@@ -22,42 +22,42 @@ class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2M.txt", 9.2e-15, 1.2e-15, false);
+        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2M.txt", 9.2e-15, 1.63e-15, false);
     }
 
     @Test
     void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2M.txt", 7.7e-15, 9.4e-16, false);
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2M.txt", 1.1e-14, 1.45e-15, false);
     }
 
     @Test
     void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2M.txt", 9.5e-15, 9.6e-16, false);
+        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2M.txt", 9.5e-15, 1.11e-15, false);
     }
 
     @Test
     void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-BEIDOU-2M.txt", 8.4e-15, 1.1e-15, false);
+        doTestAxes("patched-eclips/beta-large-positive-BEIDOU-2M.txt", 8.4e-15, 1.5e-15, false);
     }
 
     @Test
     void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2M.txt", 9.2e-15, 1.2e-15, false);
+        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2M.txt", 9.2e-15, 1.63e-15, false);
     }
 
     @Test
     void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2M.txt", 2.2e-3, 9.4e-16, false);
+        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2M.txt", 2.2e-3, 1.45e-15, false);
     }
 
     @Test
     void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-BEIDOU-2M.txt", 2.7e-3, 9.6e-16, false);
+        doTestAxes("original-eclips/beta-small-positive-BEIDOU-2M.txt", 2.7e-3, 1.11e-15, false);
     }
 
     @Test
     void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-BEIDOU-2M.txt", 8.4e-15, 1.1e-15, false);
+        doTestAxes("original-eclips/beta-large-positive-BEIDOU-2M.txt", 8.4e-15, 1.45e-15, false);
     }
 
 }

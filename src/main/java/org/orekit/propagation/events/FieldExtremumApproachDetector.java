@@ -74,6 +74,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *  }
  * </pre>
  *
+ * @param <T> type of the field elements
  * @author Vincent Cucchietti
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @see FieldEventSlopeFilter

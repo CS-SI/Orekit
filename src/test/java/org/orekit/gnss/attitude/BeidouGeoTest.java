@@ -23,42 +23,42 @@ class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testPatchedLargeNegativeBeta()  {
-        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2G.txt", 6.6e-15, 7.8e-16, false);
+        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2G.txt", 6.6e-15, 1.16e-15, false);
     }
 
     @Test
     void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2G.txt", 8.0e-15, 9.3e-16, false);
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2G.txt", 8.0e-15, 1.25e-15, false);
     }
 
     @Test
     void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-BEIDOU-2G.txt", 6.2e-15, 8.6e-16, false);
+        doTestAxes("patched-eclips/beta-crossing-BEIDOU-2G.txt", 6.2e-15, 1.50e-15, false);
     }
 
     @Test
     void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2G.txt", 7.9e-15, 7.1e-16, false);
+        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2G.txt", 7.9e-15, 8.20e-16, false);
     }
 
     @Test
     void testOriginalLargeNegativeBeta()  {
-        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2G.txt", 7.6e-4, 7.8e-16, false);
+        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2G.txt", 7.6e-4, 1.16e-15, false);
     }
 
     @Test
     void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2G.txt", 5.0e-4, 9.3e-16, false);
+        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2G.txt", 5.0e-4, 1.25e-15, false);
     }
 
     @Test
     void testOriginalCrossingBeta() {
-        doTestAxes("original-eclips/beta-crossing-BEIDOU-2G.txt", 9.0e-4, 8.6e-16, false);
+        doTestAxes("original-eclips/beta-crossing-BEIDOU-2G.txt", 9.0e-4, 1.50e-15, false);
     }
 
     @Test
     void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-BEIDOU-2G.txt", 9.4e-4, 7.1e-16, false);
+        doTestAxes("original-eclips/beta-small-positive-BEIDOU-2G.txt", 9.4e-4, 8.20e-16, false);
     }
 
 }

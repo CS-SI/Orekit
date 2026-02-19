@@ -23,6 +23,7 @@ import org.orekit.time.FieldAbsoluteDate;
 /**
  * Interface for bounded, Field PV coordinates providers.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.1
  * @see FieldPVCoordinatesProvider

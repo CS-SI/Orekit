@@ -112,12 +112,18 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
         new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME, manager, () -> utc).fillHistory(null, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
-                                            data, true);
+                data, true);
         AbsoluteDate date = new AbsoluteDate(2013, 8, 26, 12, 0, 0, TimeScalesFactory.getUTC());
         // the following values are from bulletina-xxvi-040.txt, final values section, lines 79-82
         Assertions.assertEquals(        (-3 * 0.04058 + 27 * 0.04000 + 27 * 0.03953 - 3 * 0.03917) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
         Assertions.assertEquals(asToRad((-3 * 0.1692  + 27 * 0.1689  + 27 * 0.1685  - 3 * 0.1684)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
         Assertions.assertEquals(asToRad((-3 * 0.3336  + 27 * 0.3322  + 27 * 0.3307  - 3 * 0.3294)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        double[] nroNutationCorrection = history.getNonRotatingOriginNutationCorrection(date);
+        double[] equinoxNutationCorrection = history.getEquinoxNutationCorrection(date);
+        Assertions.assertEquals(asToRad((-3 * -0.24  + 27 * -0.20  + 27 * -0.24  - 3 * -0.21) / 1000 / 48), nroNutationCorrection[0], 1.0e-10);
+        Assertions.assertEquals(asToRad((-3 * -0.13  + 27 * -0.09  + 27 * -0.12  - 3 * -0.18) / 1000 / 48), nroNutationCorrection[1], 1.0e-10);
+        Assertions.assertEquals(asToRad((-3 * -88.7  + 27 * -88.9  + 27 * -89.0  - 3 * -88.8) / 1000 / 48), equinoxNutationCorrection[0], 1.0e-10);
+        Assertions.assertEquals(asToRad((-3 * -13.1  + 27 * -13.0  + 27 * -13.0  - 3 * -13.1) / 1000 / 48), equinoxNutationCorrection[1], 1.0e-10);
         Assertions.assertEquals(EopDataType.FINAL, history.getEopDataType(date));
     }
 

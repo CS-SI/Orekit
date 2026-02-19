@@ -93,7 +93,6 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
     /**
      * Build a provider based on a tolerance provider for Cartesian coordinates.
      * <p> Orbits Jacobian matrices are used to get consistent errors on orbital parameters.
-     * <p>
      *
      * @param cartesianToleranceProvider tolerance provider dedicated to Cartesian propagation
      * @return tolerance provider

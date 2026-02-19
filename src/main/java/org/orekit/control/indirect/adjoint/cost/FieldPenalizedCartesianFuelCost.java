@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitMessages;
  * BERTRAND, Régis et EPENOY, Richard. New smoothing techniques for solving bang–bang optimal control problems—numerical results and statistical interpretation.
  * Optimal Control Applications and Methods, 2002, vol. 23, no 4, p. 171-197.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.0
  * @see FieldCartesianFuelCost

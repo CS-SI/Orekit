@@ -30,6 +30,7 @@ import org.orekit.propagation.events.FieldEventDetector;
  * Class for fuel cost with Cartesian coordinates.
  * It is the integral over time of the Euclidean norm of the thrust vector.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see CartesianCost
  * @since 13.0

@@ -23,6 +23,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 
 /**
  * Abstract class for handlers counting event occurrences. The {@link Action} can be modified according to the count.
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.0
  */

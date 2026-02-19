@@ -1186,8 +1186,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final ODEStateInterpolator interpolator) {
-
+        public void updateOnStep(final ODEStateInterpolator interpolator) {
             // Get the grid points to compute
             final double[] interpolationPoints =
                     interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
@@ -1209,6 +1208,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             for (DSSTForceModel forceModel : forceModels) {
                 forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(), meanStates);
             }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void handleStep(final ODEStateInterpolator interpolator) {
+
         }
     }
 }

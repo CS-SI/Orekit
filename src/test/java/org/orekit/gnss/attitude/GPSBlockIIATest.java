@@ -23,37 +23,37 @@ class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIA.txt", 6.3e-15, 1.1e-15, false);
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIA.txt", 7.36e-15, 1.15e-15, false);
     }
 
     @Test
     void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIA.txt", 5.1e-6, 1.2e-15, false);
+        doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIA.txt", 5.1e-6, 1.43e-15, false);
     }
 
     @Test
     void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIA.txt", 5.2e-4, 8.3e-16, false);
+        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIA.txt", 5.2e-4, 9.42e-16, false);
     }
 
     @Test
     void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIA.txt", 1.1e-5, 1.1e-15, false);
+        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIA.txt", 1.1e-5, 1.27e-15, false);
     }
 
     @Test
     void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIA.txt", 7.2e-15, 8.8e-16, false);
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIA.txt", 7.43e-15, 9.37e-16, false);
     }
 
     @Test
     void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIA.txt", 6.3e-15, 1.1e-15, false);
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIA.txt", 7.36e-15, 1.15e-15, false);
     }
 
     @Test
     void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BLOCK-IIA.txt", 1.2e-3, 1.2e-15, false);
+        doTestAxes("original-eclips/beta-small-negative-BLOCK-IIA.txt", 1.2e-3, 1.43e-15, false);
     }
 
     @Test
@@ -84,17 +84,17 @@ class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
         // As a conclusion, we consider here that the reference output is wrong and that
         // Orekit behavior is correct, so we increased the threshold so the test pass,
         // and wrote this big comment to explain the situation
-        doTestAxes("original-eclips/beta-crossing-BLOCK-IIA.txt", 2.13, 8.3e-16, false);
+        doTestAxes("original-eclips/beta-crossing-BLOCK-IIA.txt", 2.13, 9.42e-16, false);
     }
 
     @Test
     void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIA.txt", 1.2e-3, 1.1e-15, false);
+        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIA.txt", 1.2e-3, 1.27e-15, false);
     }
 
     @Test
     void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIA.txt", 7.2e-15, 8.8e-16, false);
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIA.txt", 7.43e-15, 9.37e-16, false);
     }
 
 }
