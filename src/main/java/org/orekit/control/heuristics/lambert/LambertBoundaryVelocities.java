@@ -57,4 +57,13 @@ public class LambertBoundaryVelocities {
     public Vector3D getTerminalVelocity() {
         return terminalVelocity;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return "LambertBoundaryVelocities{" +
+                "initialVelocity=" + initialVelocity +
+                ", terminalVelocity=" + terminalVelocity +
+                '}';
+    }
 }

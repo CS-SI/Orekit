@@ -130,4 +130,18 @@ public class LambertSolution {
     public LambertBoundaryVelocities getBoundaryVelocities() {
         return boundaryVelocities;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return "LambertSolution{" +
+                "nRev=" + nRev +
+                ", pathType=" + pathType +
+                ", orbitType=" + orbitType +
+                ", posigrade=" + posigrade +
+                ", boundaryConditions=" + boundaryConditions +
+                ", boundaryVelocities=" + boundaryVelocities +
+                "}";
+    }
+
 }
