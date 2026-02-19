@@ -100,4 +100,17 @@ public class LambertBoundaryConditions {
     public Frame getReferenceFrame() {
         return referenceFrame;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return "LambertBoundaryConditions{" +
+                "initialDate=" + initialDate +
+                ", initialPosition=" + initialPosition +
+                ", terminalDate=" + terminalDate +
+                ", terminalPosition=" + terminalPosition +
+                ", referenceFrame=" + referenceFrame +
+                '}';
+    }
+
 }
