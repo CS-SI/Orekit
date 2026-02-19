@@ -17,6 +17,7 @@
 package org.orekit.control.heuristics.lambert;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -103,11 +104,12 @@ public class LambertBoundaryConditions {
 
     /** {@inheritDoc} */
     @Override
+    @DefaultDataContext
     public String toString() {
         return "LambertBoundaryConditions{" +
-                "initialDate=" + initialDate +
+                "initialDate=" + initialDate.toString() +
                 ", initialPosition=" + initialPosition +
-                ", terminalDate=" + terminalDate +
+                ", terminalDate=" + terminalDate.toString() +
                 ", terminalPosition=" + terminalPosition +
                 ", referenceFrame=" + referenceFrame +
                 '}';
