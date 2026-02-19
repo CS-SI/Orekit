@@ -83,8 +83,10 @@ public interface IonosphericModel extends ParameterDriversProvider {
      * @param parameters     ionospheric model parameters at state date
      * @return the path delay due to the ionosphere in m
      */
-    default double pathDelay(SpacecraftState state, PVCoordinatesProvider coordsProvider,
-                             double frequency, double[] parameters) {
+    default double pathDelay(final SpacecraftState state,
+                             final PVCoordinatesProvider coordsProvider,
+                             final double frequency,
+                             final double[] parameters) {
 
         // Solve for the lowest altitude point between p1 and p2
         final OneAxisEllipsoid earth         = getEarth();
@@ -143,8 +145,10 @@ public interface IonosphericModel extends ParameterDriversProvider {
      * @param parameters     ionospheric model parameters at state date
      * @return the path delay due to the ionosphere in m
      */
-    default <T extends CalculusFieldElement<T>> T pathDelay(FieldSpacecraftState<T> state, PVCoordinatesProvider coordsProvider,
-                                                    double frequency, T[] parameters) {
+    default <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+                                                            final PVCoordinatesProvider coordsProvider,
+                                                            final double frequency,
+                                                            final T[] parameters) {
 
         // Solve for the lowest altitude point between p1 and p2
         final OneAxisEllipsoid     earth         = getEarth();

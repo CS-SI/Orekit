@@ -102,8 +102,10 @@ public interface Observer extends MeasurementParticipant {
      * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
      * @return transform between offset frame and inertial frame, at specified date
      */
-    default FieldTransform<Gradient> getOffsetToInertial(Frame inertial, AbsoluteDate clockDate,
-                                                         int freeParameters, Map<String, Integer> indices) {
+    default FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
+                                                         final AbsoluteDate clockDate,
+                                                         final int freeParameters,
+                                                         final Map<String, Integer> indices) {
         // take clock offset into account
         final Gradient offset = getClockOffsetDriver().getValue(freeParameters, indices, clockDate);
         final FieldAbsoluteDate<Gradient> offsetCompensatedDate = new FieldAbsoluteDate<>(clockDate, offset.negate());
@@ -133,8 +135,8 @@ public interface Observer extends MeasurementParticipant {
      * @param parameterDrivers list of all parameter values for the measurement
      * @return map of the free parameter values
      */
-    static Map<String, Integer> getParameterIndices(SpacecraftState[] states,
-                                                    List<ParameterDriver> parameterDrivers) {
+    static Map<String, Integer> getParameterIndices(final SpacecraftState[] states,
+                                                    final List<ParameterDriver> parameterDrivers) {
 
         // measurement derivatives are computed with respect to spacecraft state in inertial frame
         // Parameters:
@@ -158,7 +160,7 @@ public interface Observer extends MeasurementParticipant {
      * @param date listed datetime for measurement
      * @return reception date
      */
-    default AbsoluteDate getCorrectedReceptionDate(AbsoluteDate date) {
+    default AbsoluteDate getCorrectedReceptionDate(final AbsoluteDate date) {
         final ClockOffset localClock = getQuadraticClockModel().getOffset(date);
         return date.shiftedBy(-localClock.getOffset());
     }
@@ -170,9 +172,9 @@ public interface Observer extends MeasurementParticipant {
      * @param paramIndices mapping between parameter name and variable index
      * @return reception date
      */
-    default FieldAbsoluteDate<Gradient> getCorrectedReceptionDateField(AbsoluteDate date,
-                                                                       int nbParams,
-                                                                       Map<String, Integer> paramIndices) {
+    default FieldAbsoluteDate<Gradient> getCorrectedReceptionDateField(final AbsoluteDate date,
+                                                                       final int nbParams,
+                                                                       final Map<String, Integer> paramIndices) {
         final QuadraticFieldClockModel<Gradient> quadraticClockModel = getQuadraticFieldClock(nbParams, date, paramIndices);
         final GradientField field = GradientField.getField(nbParams);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
@@ -192,10 +194,10 @@ public interface Observer extends MeasurementParticipant {
      * the specified {@code date} was already compensated and is a physical absolute date
      * @return common parameters
      */
-    default CommonParametersWithoutDerivatives computeLocalParametersWithout(SpacecraftState[] states,
-                                                                             ObservableSatellite localSat,
-                                                                             AbsoluteDate measurementDate,
-                                                                             boolean receiverClockOffsetAlreadyApplied) {
+    default CommonParametersWithoutDerivatives computeLocalParametersWithout(final SpacecraftState[] states,
+                                                                             final ObservableSatellite localSat,
+                                                                             final AbsoluteDate measurementDate,
+                                                                             final boolean receiverClockOffsetAlreadyApplied) {
 
         // Coordinates of the observed spacecraft
         final Frame frame            = states[0].getFrame();
@@ -240,11 +242,11 @@ public interface Observer extends MeasurementParticipant {
      * the specified {@code date} was already compensated and is a physical absolute date
      * @return common parameters
      */
-    default CommonParametersWithDerivatives computeLocalParametersWith(SpacecraftState[] states,
-                                                                       ObservableSatellite localSat,
-                                                                       AbsoluteDate measurementDate,
-                                                                       boolean receiverClockOffsetAlreadyApplied,
-                                                                       List<ParameterDriver> parameterDrivers)  {
+    default CommonParametersWithDerivatives computeLocalParametersWith(final SpacecraftState[] states,
+                                                                       final ObservableSatellite localSat,
+                                                                       final AbsoluteDate measurementDate,
+                                                                       final boolean receiverClockOffsetAlreadyApplied,
+                                                                       final List<ParameterDriver> parameterDrivers)  {
         // Create the parameter indices map
         final Frame                frame        = states[0].getFrame();
         final Map<String, Integer> paramIndices = getParameterIndices(states, parameterDrivers);
@@ -297,10 +299,10 @@ public interface Observer extends MeasurementParticipant {
      * the specified {@code date} was already compensated and is a physical absolute date
      * @return common parameters
      */
-    default CommonParametersWithoutDerivatives computeRemoteParametersWithout(SpacecraftState[] states,
-                                                                              ObservableSatellite localSat,
-                                                                              AbsoluteDate measurementDate,
-                                                                              boolean receiverClockOffsetAlreadyApplied) {
+    default CommonParametersWithoutDerivatives computeRemoteParametersWithout(final SpacecraftState[] states,
+                                                                              final ObservableSatellite localSat,
+                                                                              final AbsoluteDate measurementDate,
+                                                                              final boolean receiverClockOffsetAlreadyApplied) {
 
         // Coordinates of the measured spacecraft
         final Frame                    frame = states[0].getFrame();
@@ -343,10 +345,10 @@ public interface Observer extends MeasurementParticipant {
      * @param parameterDrivers list of parameter drivers associated with measurement
      * @return common parameters
      */
-    default CommonParametersWithDerivatives computeRemoteParametersWith(SpacecraftState[] states,
-                                                                        ObservableSatellite localSat,
-                                                                        AbsoluteDate measurementDate,
-                                                                        List<ParameterDriver> parameterDrivers) {
+    default CommonParametersWithDerivatives computeRemoteParametersWith(final SpacecraftState[] states,
+                                                                        final ObservableSatellite localSat,
+                                                                        final AbsoluteDate measurementDate,
+                                                                        final List<ParameterDriver> parameterDrivers) {
 
         // Create the parameter indices map
         final Frame                frame        = states[0].getFrame();
