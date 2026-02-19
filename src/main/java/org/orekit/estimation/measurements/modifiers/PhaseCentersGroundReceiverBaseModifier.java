@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -57,12 +57,12 @@ public abstract class PhaseCentersGroundReceiverBaseModifier<T extends AbstractM
         return "mean phase center";
     }
 
-    /** Retrieve ground station observer.
+    /** Retrieve observer.
      * @param estimated estimated measurement to modify
-     * @return ground station associated with measurement
+     * @return observer associated with measurement
      * @since 14.0
      */
-    public abstract GroundStation getObserver(EstimatedMeasurementBase<T> estimated);
+    public abstract Observer getObserver(EstimatedMeasurementBase<T> estimated);
 
     /** Compute distance modification for one way measurement.
      * @param estimated estimated measurement to modify
@@ -77,9 +77,9 @@ public abstract class PhaseCentersGroundReceiverBaseModifier<T extends AbstractM
 
         // station at reception date
         final Frame         inertial       = estimated.getStates()[0].getFrame();
-        final GroundStation station        = getObserver(estimated);
+        final Observer      observer       = getObserver(estimated);
         final AbsoluteDate  receptionDate  = participants[1].getDate();
-        final Transform     stationToInert = station.getOffsetToInertial(inertial, receptionDate, false);
+        final Transform     stationToInert = observer.getOffsetToInertial(inertial, receptionDate, false);
 
         // spacecraft at emission date
         final AbsoluteDate    emissionDate      = participants[0].getDate();
@@ -105,7 +105,7 @@ public abstract class PhaseCentersGroundReceiverBaseModifier<T extends AbstractM
 
         // station at reception date
         final Frame         inertial                = estimated.getStates()[0].getFrame();
-        final GroundStation station                 = getObserver(estimated);
+        final Observer      station                 = getObserver(estimated);
         final AbsoluteDate  receptionDate           = participants[2].getDate();
         final Transform     stationToInertReception = station.getOffsetToInertial(inertial, receptionDate, false);
 

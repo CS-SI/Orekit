@@ -215,7 +215,7 @@ public class PhaseTest {
                     // Print results on console ?
                     if (printResults) {
                         final AbsoluteDate measurementDate = measurement.getDate();
-                        String stationName = ((Phase) measurement).getStation().getName();
+                        String stationName = ((Phase) measurement).getObserver().getName();
 
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s     %19.6f      %19.6f    %13.6e   %13.6e%n",
                                          stationName, measurementDate, date,
@@ -358,7 +358,7 @@ public class PhaseTest {
                     }
                     // Print values in console ?
                     if (printResults) {
-                        String stationName  = ((Phase) measurement).getStation().getName();
+                        String stationName  = ((Phase) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e  " +
@@ -469,7 +469,7 @@ public class PhaseTest {
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
                     // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Phase) measurement).getStation();
+                    final GroundStation stationParameter = (GroundStation) ((Phase) measurement).getObserver();
 
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
@@ -490,7 +490,7 @@ public class PhaseTest {
                     };
 
                     if (printResults) {
-                        String stationName  = ((Phase) measurement).getStation().getName();
+                        String stationName  = ((Phase) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
                                           stationName, measurement.getDate(), date);
                     }
@@ -619,7 +619,7 @@ public class PhaseTest {
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
-                    String stationName  = ((Phase) measurement).getStation().getName();
+                    String stationName  = ((Phase) measurement).getObserver().getName();
 
                     // Add modifier
                     final NiellMappingFunctionModel      mappingFunction = new NiellMappingFunctionModel();
@@ -844,7 +844,7 @@ public class PhaseTest {
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e%n",
-                                          phase.getStation().getName(), measurement.getDate(), date,
+                                          phase.getObserver().getName(), measurement.getDate(), date,
                                           dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
                                           dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
                                           dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],

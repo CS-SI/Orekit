@@ -160,7 +160,7 @@ class YawCompensationTest {
                                                                      1.0e-10),
                                                             satInert,
                                                             circOrbit.getFrame(), circOrbit.getDate());
-        PVCoordinates pEarth   = new PVCoordinates(earthShape.transform(gp), Vector3D.ZERO, Vector3D.ZERO);
+        PVCoordinates pEarth   = new PVCoordinates(earthShape.transform(gp), Vector3D.ZERO);
 
         double minYWithoutCompensation    = Double.POSITIVE_INFINITY;
         double maxYWithoutCompensation    = Double.NEGATIVE_INFINITY;

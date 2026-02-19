@@ -21,7 +21,6 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Test;
-
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 class EstimationArchUnitTest {
@@ -29,6 +28,7 @@ class EstimationArchUnitTest {
     private static final String MEASUREMENTS_NAME = "..measurements..";
     private static final String SEQUENTIAL_NAME = "..sequential..";
     private static final String IOD_NAME = "..iod..";
+    private static final String MODEL_NAME = "..model..";
     private static final String LEAST_SQUARES_NAME = "..leastsquares..";
 
     // GIVEN
@@ -42,6 +42,16 @@ class EstimationArchUnitTest {
         final ArchRule myRule = noClasses()
                 .that().resideInAPackage(MEASUREMENTS_NAME)
                 .should().dependOnClassesThat().resideInAnyPackage(SEQUENTIAL_NAME, IOD_NAME, LEAST_SQUARES_NAME);
+        // THEN
+        myRule.check(IMPORTED_CLASSES);
+    }
+
+    @Test
+    void testNoClassesModelPackageAccess() {
+        // WHEN
+        final ArchRule myRule = noClasses()
+                .that().resideInAPackage(MODEL_NAME)
+                .should().dependOnClassesThat().resideInAnyPackage(LEAST_SQUARES_NAME, SEQUENTIAL_NAME, IOD_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }
@@ -61,7 +71,7 @@ class EstimationArchUnitTest {
         // WHEN
         final ArchRule myRule = noClasses()
                 .that().resideInAPackage(LEAST_SQUARES_NAME)
-                .should().dependOnClassesThat().resideInAnyPackage(SEQUENTIAL_NAME, IOD_NAME);
+                .should().dependOnClassesThat().resideInAnyPackage(SEQUENTIAL_NAME, IOD_NAME, MODEL_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }
@@ -71,7 +81,7 @@ class EstimationArchUnitTest {
         // WHEN
         final ArchRule myRule = noClasses()
                 .that().resideInAPackage(SEQUENTIAL_NAME)
-                .should().dependOnClassesThat().resideInAnyPackage(LEAST_SQUARES_NAME, IOD_NAME);
+                .should().dependOnClassesThat().resideInAnyPackage(LEAST_SQUARES_NAME, IOD_NAME, MODEL_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }

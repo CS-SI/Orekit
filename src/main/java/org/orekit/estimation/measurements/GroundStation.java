@@ -92,7 +92,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class GroundStation extends AbstractMeasurementObject implements Observer {
+public class GroundStation extends AbstractParticipant implements Observer {
 
     /** Position offsets scaling factor.
      * <p>
@@ -269,8 +269,8 @@ public class GroundStation extends AbstractMeasurementObject implements Observer
 
     /** {@inheritDoc} */
     @Override
-    public final ObserverType getObserverType() {
-        return ObserverType.GROUNDSTATION;
+    public final boolean isSpaceBased() {
+        return false;
     }
 
     /** Get the displacement models.
@@ -549,8 +549,8 @@ public class GroundStation extends AbstractMeasurementObject implements Observer
         final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(offsetCompensatedDate).getInverse();
 
         // take station offsets into account
-        final BodyShape baseShape  = baseFrame.getParentShape();
-        final Vector3D        origin     = getOrigin(date);
+        final BodyShape baseShape = baseFrame.getParentShape();
+        final Vector3D  origin    = getOrigin(date);
 
         final GeodeticPoint originGP = baseShape.transform(origin, baseShape.getBodyFrame(), offsetCompensatedDate);
         final Transform offsetToIntermediate =

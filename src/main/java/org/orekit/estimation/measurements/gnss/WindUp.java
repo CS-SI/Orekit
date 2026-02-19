@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.frames.Frame;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -55,7 +55,7 @@ public class WindUp extends AbstractWindUp<Phase> {
     protected Rotation receiverToInert(final EstimatedMeasurementBase<Phase> estimated) {
         final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
         final Frame                      inertial     = estimated.getStates()[0].getFrame();
-        final GroundStation              station      = estimated.getObservedMeasurement().getStation();
+        final Observer                   station      = estimated.getObservedMeasurement().getObserver();
         return station.getOffsetToInertial(inertial, participants[1].getDate(), false).getRotation();
     }
 

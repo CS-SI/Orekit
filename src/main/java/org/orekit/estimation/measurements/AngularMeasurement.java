@@ -17,12 +17,18 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.MathUtils;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.frames.Frame;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -31,10 +37,9 @@ import org.orekit.utils.TimeSpanMap;
  * @author Romain Serra
  * @since 14.0
  */
-public abstract class GroundBasedAngularMeasurement<T extends ObservedMeasurement<T>> extends GroundReceiverMeasurement<T> {
+public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /** Simple constructor.
-     * @param station ground station from which measurement is performed
      * @param signalTravelTimeModel signal travel time model
      * @param date date of the measurement
      * @param angular observed value
@@ -42,18 +47,45 @@ public abstract class GroundBasedAngularMeasurement<T extends ObservedMeasuremen
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      */
-    protected GroundBasedAngularMeasurement(final GroundStation station, final AbsoluteDate date,
-                                            final double[] angular, final double[] sigma, final double[] baseWeight,
-                                            final SignalTravelTimeModel signalTravelTimeModel,
-                                            final ObservableSatellite satellite) {
-        super(station, false, date, angular, sigma, baseWeight, signalTravelTimeModel, satellite);
+    protected AngularMeasurement(final AbsoluteDate date,
+                                 final double[] angular, final double[] sigma, final double[] baseWeight,
+                                 final SignalTravelTimeModel signalTravelTimeModel,
+                                 final ObservableSatellite satellite) {
+        super(date, false, angular, sigma, baseWeight, signalTravelTimeModel, Collections.singletonList(satellite));
     }
 
-    /** Get the ground station that receives the signal.
-     * @return ground station
+    /**
+     * Compute the signal emission date.
+     * @param frame frame where to perform signal propagation
+     * @param receiver signal receiver
+     * @param receptionDate reception date
+     * @param emitter signal emitter
+     * @return emission date
      */
-    public final GroundStation getStation() {
-        return getReceiverStation();
+    protected AbsoluteDate computeEmissionDate(final Frame frame, final PVCoordinatesProvider receiver,
+                                               final AbsoluteDate receptionDate, final PVCoordinatesProvider emitter) {
+        final double signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
+                .computeDelay(receptionDate, receiver.getPosition(receptionDate, frame), receptionDate, frame);
+        return receptionDate.shiftedBy(-signalTravelTime);
+    }
+
+    /**
+     * Compute the signal emission date.
+     * @param frame frame where to perform signal propagation
+     * @param receiver signal receiver
+     * @param receptionDate reception date
+     * @param emitter signal emitter
+     * @return emission date
+     */
+    protected FieldAbsoluteDate<Gradient> computeEmissionDateField(final Frame frame,
+                                                                   final FieldPVCoordinatesProvider<Gradient> receiver,
+                                                                   final FieldAbsoluteDate<Gradient> receptionDate,
+                                                                   final FieldPVCoordinatesProvider<Gradient> emitter) {
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldSignalTravelTimeAdjustableEmitter = getSignalTravelTimeModel().
+                getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter);
+        final Gradient signalTravelTime = fieldSignalTravelTimeAdjustableEmitter.computeDelay(receptionDate,
+                receiver.getPosition(receptionDate, frame), receptionDate, frame);
+        return receptionDate.shiftedBy(signalTravelTime.negate());
     }
 
     /**

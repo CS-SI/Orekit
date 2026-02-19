@@ -25,9 +25,9 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.measurements.model.TopocentricAzElModel;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -43,10 +43,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
+public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "AngularAzEl";
+
+    /**
+     * Ground-based signal receiver.
+     */
+    private final GroundStation station;
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
@@ -61,7 +66,9 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
                        final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(station, date, angular, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(date, angular, sigma, baseWeight, signalTravelTimeModel, satellite);
+        this.station = station;
+        station.getParametersDrivers().forEach(this::addParameterDriver);
     }
 
     /** Simple constructor.
@@ -79,24 +86,33 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
         this(station, date, angular, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
     }
 
+    /**
+     * Getter for the ground receiver.
+     * @return station
+     */
+    public GroundStation getStation() {
+        return station;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurementBase<AngularAzEl> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                             final int evaluation,
                                                                                             final SpacecraftState[] states) {
         // Compute emission date
-        final AbsoluteDate receptionDate = getCorrectedReceptionDate();
-        final PVCoordinatesProvider receiverPVProvider = getStation().getPVCoordinatesProvider();
+        final AbsoluteDate receptionDate = station.getCorrectedReceptionDate(getDate());
+        final PVCoordinatesProvider receiverPVProvider = station.getPVCoordinatesProvider();
         final SpacecraftState state = states[0];
         final Frame frame = state.getFrame();
-        final PVCoordinatesProvider emitter = AbstractMeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
+        final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final AbsoluteDate emissionDate = computeEmissionDate(frame, receiverPVProvider, receptionDate, emitter);
 
         // Compute azimuth and elevation
-        final BodyShape bodyShape = getStation().getBaseFrame().getParentShape();
+        final BodyShape bodyShape = station.getBaseFrame().getParentShape();
         final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
         final GeodeticPoint geodeticPoint = bodyShape.transform(receiverPV.getPosition(), frame, receptionDate);
-        final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape, getSignalTravelTimeModel());
+        final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape,
+                getSignalTravelTimeModel().getWarmedUpModel());
         final double[] azEl = measurementModel.value(geodeticPoint, receptionDate, emitter, emissionDate);
 
         // Prepare the estimation
@@ -123,26 +139,27 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
         //  - 6..n - station parameters (clock offset, station offsets, pole, prime meridian...)
 
         // Create the parameter indices map
-        final Map<String, Integer> paramIndices = getStation().getParameterIndices(states, getParametersDrivers());
+        final Map<String, Integer> paramIndices = getParameterIndices(states);
         final int nbParams = 6 * states.length + paramIndices.size();
         final SpacecraftState state = states[0];
         final TimeStampedFieldPVCoordinates<Gradient> pva = AbstractMeasurement.getCoordinates(state, 0, nbParams);
 
         // Compute emission date
-        final FieldPVCoordinatesProvider<Gradient> receiverPVProvider = getStation().getFieldPVCoordinatesProvider(nbParams,
+        final FieldPVCoordinatesProvider<Gradient> receiverPVProvider = station.getFieldPVCoordinatesProvider(nbParams,
                 paramIndices);
         final Frame frame = state.getFrame();
-        final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, paramIndices);
+        final FieldAbsoluteDate<Gradient> receptionDate = station.getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
-        final FieldPVCoordinatesProvider<Gradient> emitter = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state, pva);
+        final FieldPVCoordinatesProvider<Gradient> emitter = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
         final Gradient signalTravelTime = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(receptionDate.getField(),
                         emitter).computeDelay(receptionDate, receiverPV.getPosition(), receptionDate, frame);
         final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(signalTravelTime.negate());
 
         // Compute azimuth and elevation
-        final BodyShape bodyShape = getStation().getBaseFrame().getParentShape();
+        final BodyShape bodyShape = station.getBaseFrame().getParentShape();
         final FieldGeodeticPoint<Gradient> geodeticPoint = bodyShape.transform(receiverPV.getPosition(), frame, receptionDate);
-        final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape, getSignalTravelTimeModel());
+        final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape,
+                getSignalTravelTimeModel().getWarmedUpModel());
         final Gradient[] azEl = measurementModel.value(geodeticPoint, receptionDate, emitter, emissionDate);
 
         // Prepare the estimation
@@ -160,7 +177,7 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
      * @return Vector3D the line of Sight of the measurement
      */
     public Vector3D getObservedLineOfSight(final Frame outputFrame) {
-        return getStation().getBaseFrame().getStaticTransformTo(outputFrame, getDate())
+        return station.getBaseFrame().getStaticTransformTo(outputFrame, getDate())
             .transformVector(new Vector3D(MathUtils.SEMI_PI - getObservedValue()[0], getObservedValue()[1]));
     }
 

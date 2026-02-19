@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.signal;
+package org.orekit.signal;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -84,6 +84,21 @@ public class SignalTravelTimeModel {
      */
     public FieldScalarConvergenceCheckerProvider getFieldConvergenceCheckerProvider() {
         return fieldConvergenceCheckerProvider;
+    }
+
+    /**
+     * Method returning a model assuming an iteration of the fixed point algorithm has already been performed.
+     * @return warmed-up signal model
+     */
+    public SignalTravelTimeModel getWarmedUpModel() {
+        return new SignalTravelTimeModel((iteration, previous, current) -> convergenceChecker.converged(iteration + 1, previous, current),
+                new FieldScalarConvergenceCheckerProvider() {
+                    @Override
+                    public <T extends CalculusFieldElement<T>> ConvergenceChecker<T> getChecker(final Field<T> field) {
+                        return (iteration, previous, current) -> fieldConvergenceCheckerProvider.getChecker(field)
+                                .converged(iteration + 1, previous, current);
+                    }
+                });
     }
 
     /**

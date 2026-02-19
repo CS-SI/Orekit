@@ -21,7 +21,7 @@ package org.orekit.estimation.measurements;
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class ObservableSatellite extends AbstractMeasurementObject  {
+public class ObservableSatellite extends AbstractParticipant {
 
     /** Prefix for satellite names. */
     private static final String SAT_PREFIX = "sat-";

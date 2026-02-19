@@ -21,7 +21,6 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Test;
-
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
@@ -44,6 +43,7 @@ class LibraryArchUnitTest {
     private static final String ERRORS_NAME = "..errors..";
     private static final String MODELS_NAME = "..models..";
     private static final String GNSS_NAME = "..gnss..";
+    private static final String SIGNAL_NAME = "..signal..";
 
     // sub-packages
     private static final String CR3BP_NAME = "..cr3bp..";
@@ -100,6 +100,17 @@ class LibraryArchUnitTest {
         final ArchRule myRule = noClasses()
                 .that().resideInAPackage(PROPAGATION_NAME)
                 .should().dependOnClassesThat().resideInAnyPackage(SSA_NAME, FILES_NAME);
+        // THEN
+        myRule.check(IMPORTED_CLASSES);
+    }
+
+    @Test
+    void testNoClassesSignalPackageAccess() {
+        // WHEN
+        final ArchRule myRule = noClasses()
+                .that().resideInAPackage(SIGNAL_NAME)
+                .should().dependOnClassesThat().resideInAnyPackage(SSA_NAME, ESTIMATION_NAME, CONTROL_NAME,
+                        FORCES_NAME, ORBITS_NAME, GNSS_NAME, FILES_NAME, DATA_NAME, PROPAGATION_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }

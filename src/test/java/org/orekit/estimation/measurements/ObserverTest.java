@@ -31,8 +31,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableReceiver;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableReceiver;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -42,6 +40,10 @@ import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableReceiver;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableReceiver;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.FieldClockOffset;
@@ -306,6 +308,191 @@ class ObserverTest {
         final FieldVector3D<Gradient> p3 = pvaLocal.shiftedBy(remoteOffset.negate()).getPosition();
         final FieldVector3D<Gradient> p4 = common.getTransitPV().getPosition();
         Assertions.assertEquals(0, p3.toVector3D().distance(p4.toVector3D()), 1e-8);
+    }
+
+
+
+    @Test
+    public void testGroundStationLocal() {
+
+        // Goes FROM GroundStation TO ObservableSatellite 
+        // Measured AT ObservableSatellite 
+
+        SpacecraftState[] states = new SpacecraftState[1];
+        states[0] = propagator.propagate(initDate);
+
+        // Time of flight from receiver to ground station emitter
+        final PVCoordinatesProvider groundEmitterCoordsProvider = station.getPVCoordinatesProvider();
+        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = 
+                        new SignalTravelTimeAdjustableEmitter(groundEmitterCoordsProvider);
+        final double tau = signalTimeOfFlight.computeDelay(states[0].getPosition(), initDate, states[0].getFrame());
+
+        final AbsoluteDate emissionDate = initDate.shiftedBy(-tau);
+
+        final CommonParametersWithoutDerivatives common =
+            station.computeLocalParametersWithout(states, observableSatellite, initDate, false);
+
+        final double localOffset = observableSatellite.getQuadraticClockModel().getOffset(initDate).getOffset();
+        Assertions.assertEquals(emissionDate.durationFrom(common.getRemotePV().getDate()), localOffset, 1e-10);
+        Assertions.assertEquals(initDate.durationFrom(common.getTransitPV().getDate()), localOffset, 1e-12);
+        Assertions.assertEquals(tau, common.getTauD(), 1e-9);
+
+        // Check position of local satellite at measurement/reception time
+        final Vector3D p1 = propagator.propagate(initDate.shiftedBy(-localOffset)).getPosition();
+        final Vector3D p2 = common.getTransitPV().getPosition();
+        Assertions.assertEquals(0, Vector3D.distance(p1, p2), 1e-8);
+
+        // Check position of remote ground station at emission time
+        final Vector3D p3 = groundEmitterCoordsProvider.getPosition(common.getRemotePV().getDate(), states[0].getFrame());
+        final Vector3D p4 = common.getRemotePV().getPosition();
+        Assertions.assertEquals(0, Vector3D.distance(p3, p4), 1e-12);
+    }
+
+    @Test
+    public void testSatelliteLocal() {
+
+        // Goes FROM ObserverSatellite TO ObservableSatellite 
+        // Measured AT ObservableSatellite 
+
+        SpacecraftState[] states = new SpacecraftState[1];
+        states[0] = propagator.propagate(initDate);
+
+        // Time of flight from local receiver to remote satellite emitter
+        final PVCoordinatesProvider remotePV = observerSatellite.getPVCoordinatesProvider();
+        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = 
+                        new SignalTravelTimeAdjustableEmitter(remotePV);
+        final double tau = signalTimeOfFlight.computeDelay(states[0].getPosition(), initDate, states[0].getFrame());
+        final AbsoluteDate emissionDate = initDate.shiftedBy(-tau);
+
+        final CommonParametersWithoutDerivatives common =
+            observerSatellite.computeLocalParametersWithout(states, observableSatellite, initDate, false);
+
+        //Assertions.assertEquals(common.getTransitState().getDate())
+        final double localOffset = observableSatellite.getQuadraticClockModel().getOffset(initDate).getOffset();
+        Assertions.assertEquals(initDate.durationFrom(common.getTransitPV().getDate()), localOffset, 1e-12);
+        Assertions.assertEquals(emissionDate.durationFrom(common.getRemotePV().getDate()), localOffset, 1e-10);
+        Assertions.assertEquals(tau, common.getTauD(), 1e-9);
+
+        // Check position of local satellite at measurement/reception time
+        final Vector3D p1 = propagator.propagate(initDate.shiftedBy(-localOffset)).getPosition();
+        final Vector3D p2 = common.getTransitPV().getPosition();
+        Assertions.assertEquals(0, Vector3D.distance(p1, p2), 1e-8);
+
+        // Check position of remote satellite at emission time
+        final Vector3D p3 = remotePV.getPosition(common.getRemotePV().getDate(), states[0].getFrame());
+        final Vector3D p4 = common.getRemotePV().getPosition();
+        Assertions.assertEquals(0, Vector3D.distance(p3, p4), 1e-12);
+    }
+
+    @Test
+    public void testGroundStationLocalWithDerivatives() {
+
+        // Goes FROM GroundStation TO ObservableSatellite 
+        // Measured AT ObservableSatellite 
+
+        SpacecraftState[] states = new SpacecraftState[1];
+        states[0] = propagator.propagate(initDate);
+
+        // Dummy values to call the gradient functions
+        final int nbParams = 6;
+        List<ParameterDriver> parametersDrivers = new ArrayList<>();
+        final Map<String, Integer> paramIndices = new HashMap<String, Integer>();
+        
+        final FieldAbsoluteDate<Gradient> gDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams),
+                                                                          initDate);
+
+        final TimeStampedFieldPVCoordinates<Gradient> pvaLocal = AbstractMeasurement.getCoordinates(states[0], 0, nbParams);
+
+        // Coords provider for remote ground station emitter
+        final FieldPVCoordinatesProvider<Gradient> remoteEmitterPVCoordsProvider = station.getFieldPVCoordinatesProvider(nbParams, paramIndices);
+
+        // Time of flight from emitter to second station
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> signalTimeOfFlight = 
+                                new FieldSignalTravelTimeAdjustableEmitter<>(remoteEmitterPVCoordsProvider);
+        final Gradient tau = signalTimeOfFlight.computeDelay(pvaLocal.getPosition(), gDate, states[0].getFrame());
+        final FieldAbsoluteDate<Gradient> emissionDate = gDate.shiftedBy(tau.negate());
+
+        final CommonParametersWithDerivatives common =
+            station.computeLocalParametersWith(states, observableSatellite, initDate, false, parametersDrivers);
+
+        final QuadraticFieldClockModel<Gradient> localClock  = observableSatellite.
+                                        getQuadraticFieldClock(nbParams, initDate, paramIndices);
+
+        final FieldClockOffset<Gradient> localClockOffset  = localClock.getOffset(gDate);
+        double measuredRemoteOffset  = emissionDate.toAbsoluteDate().durationFrom(common.getRemotePV().getDate().toAbsoluteDate());
+        double measuredTransitOffset = initDate.durationFrom(common.getTransitPV().getDate().toAbsoluteDate());
+
+        Assertions.assertEquals(measuredRemoteOffset, localClockOffset.getOffset().getValue(), 1e-12);
+        Assertions.assertEquals(measuredTransitOffset, localClockOffset.getOffset().getValue(), 1e-10);
+        Assertions.assertEquals(tau.getValue(), common.getTauD().getValue(), 1e-10);
+
+        // Check position of local satellite at measurement/reception time
+        final double localOffset = observableSatellite.getQuadraticClockModel().getOffset(initDate).getOffset();
+        final Vector3D p1 = propagator.propagate(initDate.shiftedBy(-localOffset)).getPosition();
+        final Vector3D p2 = common.getTransitPV().getPosition().toVector3D();
+        Assertions.assertEquals(0, Vector3D.distance(p1, p2), 1e-8);
+
+        // Check position of remote ground station at emission time
+        final Vector3D p3 = remoteEmitterPVCoordsProvider.getPosition(common.getRemotePV().getDate(), states[0].getFrame()).toVector3D();
+        final Vector3D p4 = common.getRemotePV().getPosition().toVector3D();
+        Assertions.assertEquals(0, Vector3D.distance(p3, p4), 1e-12);
+    }
+
+
+    @Test
+    public void testSatelliteLocalWithDerivatives() {
+
+        // Goes FROM Observer TO ObservableSatellite 
+        // Measured AT ObservableSatellite 
+
+        SpacecraftState[] states = new SpacecraftState[1];
+        states[0] = propagator.propagate(initDate);
+
+        // Dummy values to call the gradient functions
+        final int nbParams = 6;
+        List<ParameterDriver> parametersDrivers = new ArrayList<>();
+        final Map<String, Integer> paramIndices = new HashMap<String, Integer>();
+        
+        final FieldAbsoluteDate<Gradient> gDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams),
+                                                                          initDate);
+
+        final TimeStampedFieldPVCoordinates<Gradient> pvaLocal = AbstractMeasurement.getCoordinates(states[0], 0, nbParams);
+
+        // Time of flight from emitter to second station
+        final FieldPVCoordinatesProvider<Gradient> remoteCoordsProvider = observerSatellite.getFieldPVCoordinatesProvider(nbParams, paramIndices);
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> signalTimeOfFlight = 
+                        new FieldSignalTravelTimeAdjustableEmitter<>(remoteCoordsProvider);
+        final Gradient tau = signalTimeOfFlight.computeDelay(pvaLocal.getPosition(), gDate, states[0].getFrame());
+        final FieldAbsoluteDate<Gradient> emissionDate = gDate.shiftedBy(tau.negate());
+
+        final CommonParametersWithDerivatives common =
+            observerSatellite.computeLocalParametersWith(states, 
+                                                         observableSatellite, 
+                                                         initDate, 
+                                                         false, 
+                                                         parametersDrivers);
+
+        final QuadraticFieldClockModel<Gradient> localClock  = observableSatellite.
+                                        getQuadraticFieldClock(nbParams, initDate, paramIndices);
+
+        final FieldClockOffset<Gradient> localClockOffset = localClock.getOffset(gDate);
+        final double measuredRemoteOffset  = emissionDate.toAbsoluteDate().durationFrom(common.getRemotePV().getDate().toAbsoluteDate());
+        final double measuredTransitOffset = initDate.durationFrom(common.getTransitPV().getDate().toAbsoluteDate());
+
+        Assertions.assertEquals(measuredRemoteOffset, localClockOffset.getOffset().getValue(), 1e-12);
+        Assertions.assertEquals(measuredTransitOffset, localClockOffset.getOffset().getValue(), 1e-10);
+        Assertions.assertEquals(tau.getValue(), common.getTauD().getValue(), 1e-10);
+
+        // Check position of local satellite at measurement/reception time
+        final FieldClockOffset<Gradient> localOffset  = observableSatellite.getQuadraticFieldClock(nbParams, initDate, paramIndices).getOffset(gDate);
+        final Vector3D p1 = propagator.propagate(gDate.shiftedBy(localOffset.getOffset().negate()).toAbsoluteDate()).getPosition();
+        final Vector3D p2 = common.getTransitPV().getPosition().toVector3D();
+        Assertions.assertEquals(0, Vector3D.distance(p1, p2), 1e-8);
+
+        // Check position of remote satellite at emission time
+        final Vector3D p3 = remoteCoordsProvider.getPosition(common.getRemotePV().getDate(), states[0].getFrame()).toVector3D();
+        final Vector3D p4 = common.getRemotePV().getPosition().toVector3D();
+        Assertions.assertEquals(0, Vector3D.distance(p3, p4), 1e-12);
     }
 
 }

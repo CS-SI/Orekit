@@ -25,9 +25,8 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.gnss.Phase;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -35,6 +34,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /**
@@ -71,37 +71,37 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
     }
 
     /** Compute the measurement error due to ionosphere.
-     * @param station station
+     * @param observer measurement observer
      * @param state spacecraft state
      * @return the measurement error due to ionosphere
      */
-    private double phaseErrorIonosphericModel(final GroundStation station,
+    private double phaseErrorIonosphericModel(final Observer observer,
                                               final SpacecraftState state) {
 
-        // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
+        // Coordinates provider associated with the observer
+        final PVCoordinatesProvider coordsProvider = observer.getPVCoordinatesProvider();
         final double wavelength  = Constants.SPEED_OF_LIGHT / frequency;
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
         return delay / wavelength;
     }
 
     /** Compute the measurement error due to ionosphere.
      * @param <T> type of the element
-     * @param station station
+     * @param observer measurement observer
      * @param state spacecraft state
      * @param parameters ionospheric model parameters at state date
      * @return the measurement error due to ionosphere
      */
-    private <T extends CalculusFieldElement<T>> T phaseErrorIonosphericModel(final GroundStation station,
+    private <T extends CalculusFieldElement<T>> T phaseErrorIonosphericModel(final Observer observer,
                                                                              final FieldSpacecraftState<T> state,
                                                                              final T[] parameters) {
 
-        // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
+        // Coordinates provider associated with the observer
+        final PVCoordinatesProvider coordsProvider = observer.getPVCoordinatesProvider();
         final double wavelength  = Constants.SPEED_OF_LIGHT / frequency;
         // delay in meters
-        final T delay = ionoModel.pathDelay(state, baseFrame, frequency, parameters);
+        final T delay = ionoModel.pathDelay(state, coordsProvider, frequency, parameters);
         return delay.divide(wavelength);
     }
 
@@ -122,15 +122,15 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
 
     /** Compute the derivative of the delay term wrt parameters.
      *
-     * @param station ground station
-     * @param driver driver for the station offset parameter
+     * @param observer ground observer
+     * @param driver driver for the observer offset parameter
      * @param state spacecraft state
-     * @return derivative of the delay wrt station offset parameter
+     * @return derivative of the delay wrt observer offset parameter
      */
-    private double phaseErrorParameterDerivative(final GroundStation station,
+    private double phaseErrorParameterDerivative(final Observer observer,
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state) {
-        final ParameterFunction phaseError = (parameterDriver, date) -> phaseErrorIonosphericModel(station, state);
+        final ParameterFunction phaseError = (parameterDriver, date) -> phaseErrorIonosphericModel(observer, state);
         final ParameterFunction phaseErrorDerivative =
                         Differentiation.differentiate(phaseError, 3, 10.0 * driver.getScale());
         return phaseErrorDerivative.value(driver, state.getDate());
@@ -160,13 +160,13 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
 
         final Phase           measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        observer    = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
         // Update estimated value taking into account the ionospheric delay.
         // The ionospheric delay is directly subtracted to the phase.
         final double[] newValue = estimated.getEstimatedValue();
-        final double delay = phaseErrorIonosphericModel(station, state);
+        final double delay = phaseErrorIonosphericModel(observer, state);
         newValue[0] = newValue[0] - delay;
         estimated.modifyEstimatedValue(this, newValue);
 
@@ -176,7 +176,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
     public void modify(final EstimatedMeasurement<Phase> estimated) {
 
         final Phase           measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        observer    = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
         // Compute ionospheric delay (the division by the wavelength is performed)
@@ -184,7 +184,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
                         new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(ionoModel);
         final Gradient[] gParameters = converter.getParametersAtStateDate(gState, ionoModel);
-        final Gradient gDelay = phaseErrorIonosphericModel(station, gState, gParameters);
+        final Gradient gDelay = phaseErrorIonosphericModel(observer, gState, gParameters);
         final double[] derivatives = gDelay.getGradient();
 
         // Update state derivatives
@@ -213,16 +213,13 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
 
         }
 
-        // Update station parameter derivatives
-        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                          station.getEastOffsetDriver(),
-                                                          station.getNorthOffsetDriver(),
-                                                          station.getZenithOffsetDriver())) {
+        // Update observer parameter derivatives
+        for (final ParameterDriver driver : observer.getParametersDrivers()) {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    // update estimated derivatives with derivative of the modification wrt station parameters
+                    // update estimated derivatives with derivative of the modification wrt observer parameters
                     double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative -= phaseErrorParameterDerivative(station, driver, state);
+                    parameterDerivative -= phaseErrorParameterDerivative(observer, driver, state);
                     estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
             }

@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeBuilder;
 import org.orekit.attitudes.FieldAttitude;
@@ -247,7 +246,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
             final PVCoordinates pv = pvProv.getPVCoordinates(rawAttitude.getDate(), frame);
             final AngularCoordinates frame2Lof =
                             orf.isQuasiInertial() ?
-                            new AngularCoordinates(orf.getLofType().rotationFromInertial(pv), Vector3D.ZERO) :
+                            new AngularCoordinates(orf.getLofType().rotationFromInertial(pv)) :
                             orf.getLofType().transformFromInertial(att.getDate(), pv).getAngular();
 
             // compose with APM

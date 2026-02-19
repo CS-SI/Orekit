@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObserverSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -40,13 +40,13 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
-    /** Satellite which simply emits the signal. */
-    private final ObserverSatellite satellite;
+    /** Observer which simply emits the signal. */
+    private final Observer satellite;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
-     * @param remote satellite which simply emits the signal
+     * @param remote observer which simply emits the signal
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
@@ -54,7 +54,7 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
      * @since 12.1
      */
     public OneWayGNSSPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                  final ObservableSatellite local, final ObserverSatellite remote,
+                                  final ObservableSatellite local, final Observer remote,
                                   final double wavelength, final double sigma, final double baseWeight,
                                   final AmbiguityCache cache) {
         super(noiseSource, sigma, baseWeight, local);

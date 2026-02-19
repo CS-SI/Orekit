@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObserverSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -31,18 +31,18 @@ import org.orekit.time.AbsoluteDate;
  */
 public class OneWayGNSSRangeBuilder extends AbstractMeasurementBuilder<OneWayGNSSRange> {
 
-    /** Satellite which simply emits the signal. */
-    private final ObserverSatellite remote;
+    /** Observer which simply emits the signal. */
+    private final Observer remote;
 
    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
-     * @param remote satellite which simply emits the signal
+     * @param remote observer which simply emits the signal
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      */
     public OneWayGNSSRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                  final ObservableSatellite local, final ObserverSatellite remote,
+                                  final ObservableSatellite local, final Observer remote,
                                   final double sigma, final double baseWeight) {
         super(noiseSource, sigma, baseWeight, local);
         this.remote           = remote;

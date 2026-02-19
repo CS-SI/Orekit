@@ -153,6 +153,15 @@ public class EstimationTestUtils {
         // key/first    = primary station that dates the measurement
         // value/second = secondary station associated
         context.FDOAstations = context.TDOAstations;
+        
+        final Vector3D deltaP1 = new Vector3D(1000.0, 2000.0, 3000.0);
+        final Vector3D deltaV1 = new Vector3D(0.1, 0.17, -0.03);
+        final Vector3D deltaP2 = new Vector3D(-10000.0, -500.0, -6000.0);
+        final Vector3D deltaV2 = new Vector3D(-0.1, 0.01, 0.3);
+
+        context.satellites = Arrays.asList(
+                context.createObserverSatellite(deltaP1, deltaV1, "satellite-1", Force.DRAG),
+                context.createObserverSatellite(deltaP2, deltaV2, "satellite-2", Force.DRAG));
 
         return context;
     }

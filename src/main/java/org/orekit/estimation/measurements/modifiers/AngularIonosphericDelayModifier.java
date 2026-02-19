@@ -24,12 +24,13 @@ import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.frames.Frame;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
 
@@ -81,12 +82,12 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
      * @param state spacecraft state
      * @return the measurement error due to ionosphere
      */
-    private double angularErrorIonosphericModel(final GroundStation station,
+    private double angularErrorIonosphericModel(final Observer station,
                                                 final SpacecraftState state) {
         // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
+        final PVCoordinatesProvider coordsProvider = station.getPVCoordinatesProvider();
         // delay in meters
-        return ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
+        return ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
     }
 
     /** {@inheritDoc} */

@@ -179,7 +179,7 @@ class GroundStationTest {
                                                                 propagatorBuilder);
         for (final ObservedMeasurement<?> measurement : measurements) {
             final Range range = (Range) measurement;
-            final String name = range.getStation().getBaseFrame().getName() + changedSuffix;
+            final String name = range.getObserver().getName() + changedSuffix;
                 if (changed.getBaseFrame().getName().equals(name)) {
                     estimator.addMeasurement(new Range(changed, range.isTwoWay(),
                                                        range.getDate().shiftedBy(deltaClock),
@@ -210,7 +210,7 @@ class GroundStationTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals( Observer.ObserverType.GROUNDSTATION.equals( changed.getObserverType() ), true);
+        Assertions.assertEquals(changed.isSpaceBased(), false);
         Assertions.assertEquals(7,        normalizedCovariances.getRowDimension());
         Assertions.assertEquals(7,        normalizedCovariances.getColumnDimension());
         Assertions.assertEquals(7,        physicalCovariances.getRowDimension());
@@ -259,7 +259,7 @@ class GroundStationTest {
                                                                 propagatorBuilder);
         for (final ObservedMeasurement<?> measurement : measurements) {
             final Range range = (Range) measurement;
-            final String name = range.getStation().getBaseFrame().getName() + movedSuffix;
+            final String name = range.getObserver().getName() + movedSuffix;
                 if (moved.getBaseFrame().getName().equals(name)) {
                     estimator.addMeasurement(new Range(moved, range.isTwoWay(), range.getDate(),
                                                        range.getObservedValue()[0],
@@ -373,7 +373,7 @@ class GroundStationTest {
         for (final ObservedMeasurement<?> linearMeasurement : linearMeasurements) {
             Range linearRange = (Range) linearMeasurement;
             for (final GroundStation station : zeroEOPContext.stations) {
-                if (station.getBaseFrame().getName().equals(linearRange.getStation().getBaseFrame().getName())) {
+                if (station.getBaseFrame().getName().equals(linearRange.getObserver().getName())) {
                     Range zeroRange = new Range(station, linearRange.isTwoWay(),
                                                 linearRange.getDate(),
                                                 linearRange.getObservedValue()[0],

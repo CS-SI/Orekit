@@ -19,27 +19,52 @@ package org.orekit.estimation.measurements;
 import java.util.HashMap;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.Constants;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class GroundReceiverMeasurementTest {
+class AngularMeasurementTest {
 
     @BeforeAll
     static void setUp() {
         Utils.setDataRoot("regular-data");
+    }
+
+    @Test
+    void testWrapFirstAngle() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final AngularMeasurement<?> measurement = new TestMeasurement(date, new SignalTravelTimeModel());
+        final double angle = 7.;
+        // WHEN
+        final double actualAngle = measurement.wrapFirstAngle(angle);
+        // THEN
+        assertEquals(angle - MathUtils.TWO_PI, actualAngle);
+    }
+
+    @Test
+    void testWrapFirstAngleGradient() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final AngularMeasurement<?> measurement = new TestMeasurement(date, new SignalTravelTimeModel());
+        final Gradient angle = new Gradient(-7.);
+        // WHEN
+        final Gradient actualAngle = measurement.wrapFirstAngle(angle);
+        // THEN
+        assertEquals(measurement.wrapFirstAngle(angle.getValue()), actualAngle.getValue());
     }
 
     @Test
@@ -51,9 +76,9 @@ class GroundReceiverMeasurementTest {
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final QuadraticClockModel clockModel = new QuadraticClockModel(date, 1., 2., 3.);
         final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
-        final GroundReceiverMeasurement<?> measurement = new TestMeasurement(groundStation, date, new SignalTravelTimeModel());
+        final AngularMeasurement<?> measurement = new TestMeasurement(date, new SignalTravelTimeModel());
         // WHEN
-        final AbsoluteDate actualReceptionDate = measurement.getCorrectedReceptionDate();
+        final AbsoluteDate actualReceptionDate = groundStation.getCorrectedReceptionDate(measurement.getDate());
         // THEN
         final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getOffset());
         assertEquals(expectedDate, actualReceptionDate);
@@ -68,18 +93,18 @@ class GroundReceiverMeasurementTest {
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final QuadraticClockModel clockModel = new QuadraticClockModel(date.shiftedBy(10.), 1., 2., 3.);
         final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
-        final GroundReceiverMeasurement<?> measurement = new TestMeasurement(groundStation, date, new SignalTravelTimeModel());
+        final AngularMeasurement<?> measurement = new TestMeasurement(date, new SignalTravelTimeModel());
         // WHEN
-        final FieldAbsoluteDate<Gradient> actualReceptionDate = measurement.getCorrectedReceptionDateField(0, new HashMap<>());
+        final FieldAbsoluteDate<Gradient> actualReceptionDate = groundStation.getCorrectedReceptionDateField(measurement.getDate(), 0, new HashMap<>());
         // THEN
         final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getOffset());
         assertEquals(expectedDate, actualReceptionDate.toAbsoluteDate());
     }
 
-    static class TestMeasurement extends GroundReceiverMeasurement<AngularAzEl> {
+    static class TestMeasurement extends AngularMeasurement<AngularAzEl> {
 
-        protected TestMeasurement(GroundStation station, AbsoluteDate date, SignalTravelTimeModel signalTravelTimeModel) {
-            super(station, true, date, new double[2], new double[2], new double[2], signalTravelTimeModel, new ObservableSatellite(0));
+        protected TestMeasurement(AbsoluteDate date, SignalTravelTimeModel signalTravelTimeModel) {
+            super(date, new double[2], new double[2], new double[2], signalTravelTimeModel, new ObservableSatellite(0));
         }
 
         @Override

@@ -22,17 +22,17 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.orekit.estimation.measurements.AbstractMeasurement;
-import org.orekit.estimation.measurements.AbstractMeasurementObject;
+import org.orekit.estimation.measurements.AbstractParticipant;
 import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
 import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.estimation.measurements.SignalBasedMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.ClockOffset;
@@ -59,7 +59,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasurement<T>> extends AbstractMeasurement<T> {
+public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /** Constructor.
      * @param date date of the measurement
@@ -106,7 +106,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
      * @since 14.0
      */
     protected PVCoordinatesProvider getRemotePV(final SpacecraftState state) {
-        return AbstractMeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
+        return AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
     }
 
     /** Return the FieldPVCoordinatesProvider.
@@ -118,7 +118,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
     protected FieldPVCoordinatesProvider<Gradient> getRemotePV(final SpacecraftState state,
                                                                final int freeParameters) {
         final TimeStampedFieldPVCoordinates<Gradient> pv0 = getCoordinates(state, 6, freeParameters);
-        return AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state, pv0);
+        return AbstractParticipant.extractFieldPVCoordinatesProvider(state, pv0);
     }
 
     /** Compute common estimation parameters.

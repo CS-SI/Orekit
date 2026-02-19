@@ -25,11 +25,11 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -73,7 +73,7 @@ public class RangeAnalytic extends Range {
      * @param range parent class
      */
     public RangeAnalytic(final Range range) {
-        super(range.getStation(), true, range.getDate(), range.getObservedValue()[0],
+        super(range.getObserver(), true, range.getDate(), range.getObservedValue()[0],
               range.getTheoreticalStandardDeviation()[0],
               range.getBaseWeight()[0],
               new ObservableSatellite(0));
@@ -91,7 +91,7 @@ public class RangeAnalytic extends Range {
                                                                         final SpacecraftState state) {
 
         // Station attribute from parent Range class
-        final GroundStation groundStation = this.getStation();
+        final GroundStation groundStation = (GroundStation) this.getObserver();
 
         // Station position at signal arrival
         final AbsoluteDate downlinkDate = getDate();
@@ -267,7 +267,7 @@ public class RangeAnalytic extends Range {
                                                                           final SpacecraftState state) {
 
         // Station & DSFactory attributes from parent Range class
-        final GroundStation groundStation             =  getStation();
+        final GroundStation groundStation = (GroundStation) getObserver();
 
         // get the number of parameters used for derivation
         int nbParams = 6;

@@ -118,6 +118,22 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
      */
     public abstract int getMaximumIterationCount();
 
+    /**
+     * Create numerical propagator with input initial adjoint vector and mass.
+     * @param adjoint initial adjoint variables
+     * @param mass initial mass
+     * @return numerical propagator ready for use
+     * @since 14.0
+     */
+    public NumericalPropagator buildPropagator(final double[] adjoint, final double mass) {
+        final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
+        final SpacecraftState initialState = createInitialStateWithMass(mass).addAdditionalData(adjointName, adjoint);
+        final NumericalPropagator propagator = buildBasicPropagator(initialState);
+        final AdjointDynamicsProvider derivativesProvider = getPropagationSettings().getAdjointDynamicsProvider();
+        propagator.addAdditionalDerivativesProvider(derivativesProvider.buildAdditionalDerivativesProvider());
+        return propagator;
+    }
+
     /** {@inheritDoc} */
     @Override
     public ShootingBoundaryOutput solve(final double initialMass, final double[] initialGuess) {
@@ -146,8 +162,8 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
 
     /** {@inheritDoc} */
     @Override
-    protected NumericalPropagator buildPropagator(final SpacecraftState initialState) {
-        final NumericalPropagator propagator = super.buildPropagator(initialState);
+    protected NumericalPropagator buildInternalPropagator(final SpacecraftState initialState) {
+        final NumericalPropagator propagator = super.buildInternalPropagator(initialState);
         propagator.setStepHandler(propagationStepRecorder);
         final CartesianAdjointDerivativesProvider derivativesProvider = (CartesianAdjointDerivativesProvider)
             getPropagationSettings().getAdjointDynamicsProvider().buildAdditionalDerivativesProvider();
@@ -163,7 +179,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
      * @param iterationCount iteration count
      * @return candidate solution
      */
-    public abstract ShootingBoundaryOutput computeCandidateSolution(SpacecraftState initialState, int iterationCount);
+    protected abstract ShootingBoundaryOutput computeCandidateSolution(SpacecraftState initialState, int iterationCount);
 
     /**
      * Iterate on initial guess to solve boundary problem.

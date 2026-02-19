@@ -19,8 +19,8 @@ package org.orekit.estimation.measurements.model;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.signal.TwoLegsSignalTravelTimer;
 import org.orekit.frames.Frame;
+import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -34,16 +34,16 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public class TwoLegsRangeRateModel {
+public class TwoLeggedRangeRateModel {
 
     /** Signal travel time model. */
-    private final TwoLegsSignalTravelTimer twoWayTimer;
+    private final TwoLeggedSignalTravelTimer twoWayTimer;
 
     /**
      * Constructor.
      * @param twoWayTimer two-way time delay computer
      */
-    public TwoLegsRangeRateModel(final TwoLegsSignalTravelTimer twoWayTimer) {
+    public TwoLeggedRangeRateModel(final TwoLeggedSignalTravelTimer twoWayTimer) {
         this.twoWayTimer = twoWayTimer;
     }
 

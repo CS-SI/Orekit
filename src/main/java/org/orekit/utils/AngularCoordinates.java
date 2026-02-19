@@ -75,7 +75,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates> {
      * <p> Sets the Coordinates to default : Identity, Ω = (0 0 0), dΩ/dt = (0 0 0).</p>
      */
     public AngularCoordinates() {
-        this(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        this(Rotation.IDENTITY, Vector3D.ZERO);
     }
 
     /** Builds a rotation/rotation rate pair.

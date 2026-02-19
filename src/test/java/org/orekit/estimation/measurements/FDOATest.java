@@ -179,8 +179,8 @@ public class FDOATest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation primeParameter  = ((FDOA) measurement).getPrimeStation();
-            final GroundStation secondParameter = ((FDOA) measurement).getSecondStation();
+            final GroundStation primeParameter  = (GroundStation) ((FDOA) measurement).getPrimeObserver();
+            final GroundStation secondParameter = (GroundStation) ((FDOA) measurement).getSecondObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

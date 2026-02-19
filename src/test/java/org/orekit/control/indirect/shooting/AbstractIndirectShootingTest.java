@@ -16,6 +16,9 @@
  */
 package org.orekit.control.indirect.shooting;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,18 +39,15 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class AbstractIndirectShootingTest {
 
     @Test
-    void testBuildPropagatorOrbit() {
+    void testBuildInternalPropagatorOrbit() {
         // GIVEN
         final TestShooting testShooting = new TestShooting(createSettings());
         final SpacecraftState state = new SpacecraftState(createOrbit());
         // WHEN
-        final NumericalPropagator propagator = testShooting.buildPropagator(state);
+        final NumericalPropagator propagator = testShooting.buildInternalPropagator(state);
         // THEN
         Assertions.assertEquals(OrbitType.CARTESIAN, propagator.getOrbitType());
         Assertions.assertEquals(state.getDate(), propagator.getInitialState().getDate());
@@ -55,14 +55,14 @@ class AbstractIndirectShootingTest {
     }
 
     @Test
-    void testBuildPropagator() {
+    void testBuildInternalPropagator() {
         // GIVEN
         final TestShooting testShooting = new TestShooting(createSettings());
         final CartesianOrbit orbit = createOrbit();
         final SpacecraftState state = new SpacecraftState(new AbsolutePVCoordinates(orbit.getFrame(),
                 orbit.getDate(), orbit.getPVCoordinates()));
         // WHEN
-        final NumericalPropagator propagator = testShooting.buildPropagator(state);
+        final NumericalPropagator propagator = testShooting.buildInternalPropagator(state);
         // THEN
         Assertions.assertEquals(state.getDate(), propagator.getInitialState().getDate());
         Assertions.assertEquals(state.getPosition(propagator.getFrame()), propagator.getInitialState().getPosition());

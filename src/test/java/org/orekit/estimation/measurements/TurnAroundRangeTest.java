@@ -225,8 +225,8 @@ public class TurnAroundRangeTest {
             if (printResults) {
                 final AbsoluteDate measurementDate = measurement.getDate();
 
-                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
-                String secondaryStationName = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryObserver().getName();
+                String secondaryStationName = ((TurnAroundRange) measurement).getSecondaryObserver().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17.6f  %17.6f  %13.6e %13.6e%n",
                                   primaryStationName, secondaryStationName, measurementDate, date,
                                  TARobserved, TARestimated,
@@ -355,8 +355,8 @@ public class TurnAroundRangeTest {
             }
             // Print results on the console ? Print the Jacobian
             if (printResults) {
-                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
-                String secondaryStationName  = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryObserver().getName();
+                String secondaryStationName  = ((TurnAroundRange) measurement).getSecondaryObserver().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
                                   "%10.3e  %10.3e  %10.3e  " +
                                   "%10.3e  %10.3e  %10.3e  " +
@@ -460,8 +460,8 @@ public class TurnAroundRangeTest {
           }
 
             // parameter corresponding to station position offset
-            final GroundStation primaryStationParameter = ((TurnAroundRange) measurement).getPrimaryStation();
-            final GroundStation secondaryStationParameter = ((TurnAroundRange) measurement).getSecondaryStation();
+            final GroundStation primaryStationParameter = (GroundStation) ((TurnAroundRange) measurement).getPrimaryObserver();
+            final GroundStation secondaryStationParameter = (GroundStation) ((TurnAroundRange) measurement).getSecondaryObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

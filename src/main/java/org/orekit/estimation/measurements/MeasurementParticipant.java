@@ -31,7 +31,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @author Brianna Aubin
  * @since 14.0
  */
-public interface MeasurementObject extends ParameterDriversProvider {
+public interface MeasurementParticipant extends ParameterDriversProvider {
 
     /** Suffix for ground station position and clock offset parameters names. */
     String OFFSET_SUFFIX = "-offset";

@@ -214,7 +214,7 @@ class ReferenceFieldModel {
          *
          * @param provider the provider to delegate to
          */
-        public RawerSphericalHarmonicsProvider(SphericalHarmonicsProvider provider) {
+        protected RawerSphericalHarmonicsProvider(SphericalHarmonicsProvider provider) {
             this.provider = provider;
         }
 

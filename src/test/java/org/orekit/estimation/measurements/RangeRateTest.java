@@ -176,7 +176,7 @@ class RangeRateTest {
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         for (final ObservedMeasurement<?> m : measurements) {
-            Assertions.assertFalse(m.isTwoWay());
+            Assertions.assertFalse(((RangeRate) m).isTwoWay());
         }
         propagator.clearStepHandlers();
 
@@ -323,7 +323,7 @@ class RangeRateTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((RangeRate) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -407,7 +407,7 @@ class RangeRateTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((RangeRate) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -627,7 +627,7 @@ class RangeRateTest {
             ((RangeRate) measurement).addModifier(modifier);
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((RangeRate) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

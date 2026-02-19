@@ -23,9 +23,9 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObserverSatellite;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -33,7 +33,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 /** One-way GNSS range measurement.
  * <p>
  * This class can be used in precise orbit determination applications
- * for modeling a range measurement between a GNSS satellite (emitter)
+ * for modeling a range measurement between a GNSS emitter
  * and a LEO satellite (receiver).
  * <p>
  * The one-way GNSS range measurement assumes knowledge of the orbit and
@@ -55,7 +55,7 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
     public static final String MEASUREMENT_TYPE = "OneWayGNSSRange";
 
     /** Simple constructor.
-     * @param gnssSatellite GNSS observer satellite
+     * @param observer object that sends GNSS signal
      * @param date date of the measurement
      * @param range observed value
      * @param sigma theoretical standard deviation
@@ -63,12 +63,12 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
      * @param local satellite which receives the signal and perform the measurement
      * @since 12.1
      */
-    public OneWayGNSSRange(final ObserverSatellite gnssSatellite,
+    public OneWayGNSSRange(final Observer observer,
                            final AbsoluteDate date,
                            final double range, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(gnssSatellite, date, range, sigma, baseWeight, new SignalTravelTimeModel(), local);
+        super(observer, date, range, sigma, baseWeight, new SignalTravelTimeModel(), local);
     }
 
     /** {@inheritDoc} */
@@ -77,7 +77,7 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
                                                                                                 final int evaluation,
                                                                                                 final SpacecraftState[] states) {
 
-        final CommonParametersWithoutDerivatives common =
+        final CommonParametersWithoutDerivatives common = getObserver().
             computeLocalParametersWithout(states, getSatellites().get(0), getDate(), false);
 
         // Estimated measurement
@@ -109,7 +109,7 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        final CommonParametersWithDerivatives common =
+        final CommonParametersWithDerivatives common = getObserver().
             computeLocalParametersWith(states, getSatellites().get(0), getDate(),
                                        false, getParametersDrivers());
 

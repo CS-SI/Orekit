@@ -21,7 +21,7 @@ import org.orekit.estimation.measurements.BistaticRangeRate;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 
@@ -52,8 +52,8 @@ public class BistaticRangeRateTroposphericDelayModifier
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<BistaticRangeRate> estimated) {
 
         final BistaticRangeRate measurement = estimated.getObservedMeasurement();
-        final GroundStation     emitter     = measurement.getEmitterStation();
-        final GroundStation     receiver    = measurement.getReceiverStation();
+        final Observer     emitter     = measurement.getEmitter();
+        final Observer     receiver    = measurement.getReceiver();
 
         BistaticModifierUtil.modify(estimated, emitter, receiver,
                                     this::rangeRateErrorTroposphericModel, this);
@@ -65,8 +65,8 @@ public class BistaticRangeRateTroposphericDelayModifier
     public void modify(final EstimatedMeasurement<BistaticRangeRate> estimated) {
 
         final BistaticRangeRate measurement = estimated.getObservedMeasurement();
-        final GroundStation     emitter     = measurement.getEmitterStation();
-        final GroundStation     receiver    = measurement.getReceiverStation();
+        final Observer     emitter     = measurement.getEmitter();
+        final Observer     receiver    = measurement.getReceiver();
         final SpacecraftState   state       = estimated.getStates()[0];
 
         BistaticModifierUtil.modify(estimated, getTropoModel(),

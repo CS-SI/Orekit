@@ -14,42 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.signal;
+package org.orekit.signal;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.optim.ConvergenceChecker;
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 
 /**
  * Class for computing signal time of travel with an adjustable emitter and a fixed receiver's position and date.
  * The delay is calculated via a fixed-point algorithm with customizable settings (even enabling instantaneous transmission).
  * Note that a couple of iterations are usually enough for Earth orbits.
  * @since 14.0
+ * @see SignalTravelTimeAdjustableEmitter
  * @author Romain Serra
  */
-public class SignalTravelTimeAdjustableEmitter extends AbstractSignalTravelTime {
+public class FieldSignalTravelTimeAdjustableEmitter<T extends CalculusFieldElement<T>>
+        extends FieldAbstractSignalTravelTime<T> {
 
     /** Position/velocity provider of emitter. */
-    private final PVCoordinatesProvider adjustableEmitterPVProvider;
+    private final FieldPVCoordinatesProvider<T> adjustableEmitterPVProvider;
 
     /**
      * Constructor with default iteration settings.
      * @param adjustableEmitterPVProvider adjustable emitter
      */
-    public SignalTravelTimeAdjustableEmitter(final PVCoordinatesProvider adjustableEmitterPVProvider) {
+    public FieldSignalTravelTimeAdjustableEmitter(final FieldPVCoordinatesProvider<T> adjustableEmitterPVProvider) {
         this(adjustableEmitterPVProvider, getDefaultConvergenceChecker());
     }
 
     /**
      * Constructor.
      * @param adjustableEmitterPVProvider adjustable emitter
-     * @param checker convergence checker for fixed-point algorithm
+     * @param convergenceChecker convergence checker for fixed-point algorithm
      */
-    public SignalTravelTimeAdjustableEmitter(final PVCoordinatesProvider adjustableEmitterPVProvider,
-                                             final ConvergenceChecker<Double> checker) {
-        super(checker);
+    public FieldSignalTravelTimeAdjustableEmitter(final FieldPVCoordinatesProvider<T> adjustableEmitterPVProvider,
+                                                  final ConvergenceChecker<T> convergenceChecker) {
+        super(convergenceChecker);
         this.adjustableEmitterPVProvider = adjustableEmitterPVProvider;
     }
 
@@ -59,10 +62,11 @@ public class SignalTravelTimeAdjustableEmitter extends AbstractSignalTravelTime 
      * @param frame Inertial frame in which receiver is defined.
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    public double computeDelay(final Vector3D receiverPosition, final AbsoluteDate signalArrivalDate, final Frame frame) {
-        final Vector3D emitterPosition = adjustableEmitterPVProvider.getPosition(signalArrivalDate, frame);
-        final double distance = receiverPosition.subtract(emitterPosition).getNorm();
-        final AbsoluteDate approxEmissionDate = signalArrivalDate.shiftedBy(-distance * C_RECIPROCAL);
+    public T computeDelay(final FieldVector3D<T> receiverPosition, final FieldAbsoluteDate<T> signalArrivalDate,
+                          final Frame frame) {
+        final FieldVector3D<T> emitterPosition = adjustableEmitterPVProvider.getPosition(signalArrivalDate, frame);
+        final T distance = receiverPosition.subtract(emitterPosition).getNorm();
+        final FieldAbsoluteDate<T> approxEmissionDate = signalArrivalDate.shiftedBy(distance.multiply(-C_RECIPROCAL));
         return computeDelay(approxEmissionDate, receiverPosition, signalArrivalDate, frame);
     }
 
@@ -73,17 +77,17 @@ public class SignalTravelTimeAdjustableEmitter extends AbstractSignalTravelTime 
      * @param frame Inertial frame in which receiver is defined.
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    public double computeDelay(final AbsoluteDate approxEmissionDate, final Vector3D receiverPosition,
-                               final AbsoluteDate signalArrivalDate, final Frame frame) {
+    public T computeDelay(final FieldAbsoluteDate<T> approxEmissionDate, final FieldVector3D<T> receiverPosition,
+                          final FieldAbsoluteDate<T> signalArrivalDate, final Frame frame) {
 
-        // initialize emission date search loop assuming the state is already correct
-        final double offset = signalArrivalDate.durationFrom(approxEmissionDate);
+        // Initialize emission date search loop assuming the emitter PV is almost correct
+        final T offset = signalArrivalDate.durationFrom(approxEmissionDate);
 
         return compute(adjustableEmitterPVProvider, offset, receiverPosition, approxEmissionDate, frame);
     }
 
     @Override
-    protected double computeShift(final double offset, final double delay) {
-        return offset - delay;
+    protected T computeShift(final T offset, final T delay) {
+        return offset.subtract(delay);
     }
 }

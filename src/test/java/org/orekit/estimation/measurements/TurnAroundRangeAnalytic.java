@@ -26,11 +26,11 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -76,7 +76,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * @param turnAroundRange parent class
      */
     public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange) {
-        super(turnAroundRange.getPrimaryStation(), turnAroundRange.getSecondaryStation(),
+        super(turnAroundRange.getPrimaryObserver(), turnAroundRange.getSecondaryObserver(),
               turnAroundRange.getDate(), turnAroundRange.getObservedValue()[0],
               turnAroundRange.getTheoreticalStandardDeviation()[0],
               turnAroundRange.getBaseWeight()[0],
@@ -99,8 +99,8 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                                                                   final SpacecraftState state) {
 
         // Stations attributes from parent Range class
-        final GroundStation primaryGroundStation = this.getPrimaryStation();
-        final GroundStation secondaryGroundStation  = this.getSecondaryStation();
+        final GroundStation primaryGroundStation   = (GroundStation) this.getPrimaryObserver();
+        final GroundStation secondaryGroundStation = (GroundStation) this.getSecondaryObserver();
 
         // Compute propagation times:
         //
@@ -561,8 +561,8 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationValidation(final int iteration, final int evaluation,
                                                                                     final SpacecraftState state) {
         // Stations & DSFactory attributes from parent TurnArounsRange class
-        final GroundStation primaryGroundStation       = getPrimaryStation();
-        final GroundStation secondaryGroundStation        = getSecondaryStation();
+        final GroundStation primaryGroundStation   = (GroundStation) getPrimaryObserver();
+        final GroundStation secondaryGroundStation = (GroundStation) getSecondaryObserver();
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {

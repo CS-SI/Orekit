@@ -17,13 +17,12 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableReceiver;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableReceiver;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableReceiver;
+import org.orekit.signal.SignalTravelTimeAdjustableReceiver;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -34,7 +33,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a Time Difference of Arrival measurement with a satellite as emitter
- * and two ground stations as receivers.
+ * and two observers as receivers.
  * <p>
  * TDOA measures the difference in signal arrival time between the emitter and receivers,
  * corresponding to a difference in ranges from the two receivers to the emitter.
@@ -49,35 +48,29 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Pascal Parraud
  * @since 11.2
  */
-public class TDOA extends AbstractMeasurement<TDOA> {
+public class TDOA extends DualReceiverMeasurement<TDOA> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "TDOA";
 
-    /** First ground station to receiver the measurement. */
-    private final GroundStation primeStation;
-
-    /** Second ground station, the one that gives the measurement, i.e. the delay. */
-    private final GroundStation secondStation;
-
     /** Constructor.
-     * @param primeStation ground station that gives the date of the measurement
-     * @param secondStation ground station that gives the measurement
+     * @param primeObserver observer that gives the measurement date
+     * @param secondObserver observer that gives the measurement value
      * @param date date of the measurement
      * @param tdoa observed value (s)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      */
-    public TDOA(final GroundStation primeStation, final GroundStation secondStation,
+    public TDOA(final Observer primeObserver, final Observer secondObserver,
                 final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
                 final ObservableSatellite satellite) {
-        this(primeStation, secondStation, date, tdoa, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(primeObserver, secondObserver, date, tdoa, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
     }
 
     /** Constructor.
-     * @param primeStation ground station that gives the date of the measurement
-     * @param secondStation ground station that gives the measurement
+     * @param primeObserver observer that gives the measurement date
+     * @param secondObserver observer that gives the measurement value
      * @param date date of the measurement
      * @param tdoa observed value (s)
      * @param sigma theoretical standard deviation
@@ -86,31 +79,11 @@ public class TDOA extends AbstractMeasurement<TDOA> {
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
-    public TDOA(final GroundStation primeStation, final GroundStation secondStation,
+    public TDOA(final Observer primeObserver, final Observer secondObserver,
                 final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
                 final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(date, false, new double[] {tdoa}, new double[] {sigma}, new double[] {baseWeight},
-                signalTravelTimeModel, Collections.singletonList(satellite));
-
-        // add parameter drivers for the secondary station
-        addParametersDrivers(primeStation.getParametersDrivers());
-        addParametersDrivers(secondStation.getParametersDrivers());
-        this.primeStation = primeStation;
-        this.secondStation = secondStation;
-    }
-
-    /** Get the prime ground station, the one that receives the signal first.
-     * @return prime ground station
-     */
-    public GroundStation getPrimeStation() {
-        return primeStation;
-    }
-
-    /** Get the second ground station, the one that gives the measurement.
-     * @return second ground station
-     */
-    public GroundStation getSecondStation() {
-        return secondStation;
+        super(primeObserver, secondObserver, date, new double[] {tdoa}, new double[] {sigma}, new double[] {baseWeight},
+                signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
@@ -119,22 +92,22 @@ public class TDOA extends AbstractMeasurement<TDOA> {
     protected EstimatedMeasurementBase<TDOA> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
                                                                                      final SpacecraftState[] states) {
 
-        final CommonParametersWithoutDerivatives common = getPrimeStation().
+        final CommonParametersWithoutDerivatives common = getPrimeObserver().
             computeRemoteParametersWithout(states, getSatellites().get(0), getDate(), false);
         final TimeStampedPVCoordinates emitterPV = common.getTransitPV();
         final AbsoluteDate emitterDate = emitterPV.getDate();
 
-        // Time of flight from emitter to second station
-        final PVCoordinatesProvider secondPVCoordinatesProvider = getSecondStation().getPVCoordinatesProvider();
+        // Time of flight from emitter to second observer
+        final PVCoordinatesProvider secondPVCoordinatesProvider = getSecondObserver().getPVCoordinatesProvider();
         final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = getSignalTravelTimeModel().getAdjustableReceiverComputer(secondPVCoordinatesProvider);
         final double tau2 = signalTimeOfFlight.computeDelay(emitterPV.getPosition(), emitterDate, states[0].getFrame());
 
-        // Secondary station PV in inertial frame at receive at second station
+        // Secondary station PV in inertial frame at receive at second observer
         final TimeStampedPVCoordinates secondPV = secondPVCoordinatesProvider.getPVCoordinates(emitterDate.shiftedBy(tau2), states[0].getFrame());
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final double offset1 = getPrimeStation().getClockOffsetDriver().getValue(emitterDate);
-        final double offset2 = getSecondStation().getClockOffsetDriver().getValue(emitterDate);
+        final double offset1 = getPrimeObserver().getClockOffsetDriver().getValue(emitterDate);
+        final double offset2 = getSecondObserver().getClockOffsetDriver().getValue(emitterDate);
         final double tdoa = (common.getTauD() + offset1) - (tau2 + offset2);
 
         // Evaluate the TDOA value
@@ -169,26 +142,26 @@ public class TDOA extends AbstractMeasurement<TDOA> {
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
-        final CommonParametersWithDerivatives common = getPrimeStation().
+        final CommonParametersWithDerivatives common = getPrimeObserver().
             computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
         final int nbParams = common.getTauD().getFreeParameters();
         final TimeStampedFieldPVCoordinates<Gradient> emitterPV = common.getTransitPV();
         final FieldAbsoluteDate<Gradient> emitterDate = emitterPV.getDate();
 
-        // Obtain time at which signal arrives at second station from emitter
-        final FieldPVCoordinatesProvider<Gradient> fieldPvCoordinatesProvider = getSecondStation().getFieldPVCoordinatesProvider(nbParams, common.getIndices());
+        // Obtain time at which signal arrives at second observer from emitter
+        final FieldPVCoordinatesProvider<Gradient> fieldPvCoordinatesProvider = getSecondObserver().getFieldPVCoordinatesProvider(nbParams, common.getIndices());
         final FieldSignalTravelTimeAdjustableReceiver<Gradient> fieldComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableReceiverComputer(emitterDate.getField(), fieldPvCoordinatesProvider);
         final Gradient tau2 = fieldComputer.computeDelay(emitterPV.getPosition(), emitterDate, emitterDate, states[0].getFrame());
 
-        // Second station coordinates at receive time
+        // Second observer coordinates at receive time
         final TimeStampedFieldPVCoordinates<Gradient> secondPV =
                                 fieldPvCoordinatesProvider.getPVCoordinates(emitterDate.shiftedBy(tau2), states[0].getFrame());
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final Gradient offset1 = getPrimeStation().getClockOffsetDriver()
+        final Gradient offset1 = getPrimeObserver().getClockOffsetDriver()
                                 .getValue(nbParams, common.getIndices(), emitterDate.toAbsoluteDate());
-        final Gradient offset2 = getSecondStation().getClockOffsetDriver()
+        final Gradient offset2 = getSecondObserver().getClockOffsetDriver()
                                 .getValue(nbParams, common.getIndices(), emitterDate.toAbsoluteDate());
         final Gradient tdoaG   = common.getTauD().add(offset1).subtract(tau2.add(offset2));
         final double   tdoa    = tdoaG.getValue();

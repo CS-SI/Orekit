@@ -17,10 +17,10 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.estimation.measurements.Observer;
+import org.orekit.signal.SignalTravelTimeModel;
 
 /** Abstract builder for scalar measurements based on one signal emitter and one receiver.
  * @author Romain Serra
@@ -29,22 +29,22 @@ import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 public abstract class AbstractBistaticBuilder<T extends ObservedMeasurement<T>> extends AbstractSignalBasedBuilder<T> {
 
     /** Signal emitter. */
-    private final GroundStation emitter;
+    private final Observer emitter;
 
     /** Signal receiver. */
-    private final GroundStation receiver;
+    private final Observer receiver;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param emitter ground station that emits the signal
-     * @param receiver ground station that receiver the signal at the very end of the transmissions
+     * @param emitter observer that emits the signal
+     * @param receiver observer that receiver the signal at the very end of the transmissions
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      */
     protected AbstractBistaticBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                      final GroundStation emitter, final GroundStation receiver,
+                                      final Observer emitter, final Observer receiver,
                                       final double sigma, final double baseWeight,
                                       final SignalTravelTimeModel signalTravelTimeModel,
                                       final ObservableSatellite satellite) {
@@ -55,17 +55,17 @@ public abstract class AbstractBistaticBuilder<T extends ObservedMeasurement<T>> 
 
     /**
      * Getter for signal emitter.
-     * @return station
+     * @return observer
      */
-    public GroundStation getEmitter() {
+    public Observer getEmitter() {
         return emitter;
     }
 
     /**
      * Getter for signal receiver.
-     * @return station
+     * @return observer
      */
-    public GroundStation getReceiver() {
+    public Observer getReceiver() {
         return receiver;
     }
 

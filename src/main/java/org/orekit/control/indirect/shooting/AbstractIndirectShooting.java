@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.FieldExplicitRungeKuttaIntegrator;
+import org.orekit.control.indirect.shooting.propagation.AdjointDynamicsProvider;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -29,7 +30,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.FieldExplicitRungeKuttaIntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
 /**
@@ -71,14 +71,28 @@ public abstract class AbstractIndirectShooting {
     public abstract ShootingBoundaryOutput solve(double initialMass, double[] initialGuess);
 
     /**
-     * Create numerical propagator.
+     * Create numerical propagator for internal use only.
      * @param initialState initial state
      * @return numerical propagator
+     * @since 14.0
      */
-    protected NumericalPropagator buildPropagator(final SpacecraftState initialState) {
+    protected NumericalPropagator buildInternalPropagator(final SpacecraftState initialState) {
+        final NumericalPropagator propagator = buildBasicPropagator(initialState);
+        final AdjointDynamicsProvider adjointDynamicsProvider = propagationSettings.getAdjointDynamicsProvider();
+        propagator.addAdditionalDerivativesProvider(adjointDynamicsProvider.buildAdditionalDerivativesProvider());
+        return propagator;
+    }
+
+    /**
+     * Create numerical propagator without adjoint derivatives.
+     * @param initialState initial state
+     * @return numerical propagator
+     * @since 14.0
+     */
+    protected NumericalPropagator buildBasicPropagator(final SpacecraftState initialState) {
         final ODEIntegrator integrator = buildIntegrator(initialState);
         final NumericalPropagator propagator =
-              new NumericalPropagator(integrator, propagationSettings.getAttitudeProvider());
+                new NumericalPropagator(integrator, propagationSettings.getAttitudeProvider());
         propagator.setIgnoreCentralAttraction(true);
         propagator.setInitialState(initialState);
         propagator.setIgnoreCentralAttraction(false);
@@ -94,9 +108,6 @@ public abstract class AbstractIndirectShooting {
         for (final ForceModel forceModel: propagationSettings.getForceModels()) {
             propagator.addForceModel(forceModel);
         }
-        final AdditionalDerivativesProvider derivativesProvider = propagationSettings.getAdjointDynamicsProvider()
-                .buildAdditionalDerivativesProvider();
-        propagator.addAdditionalDerivativesProvider(derivativesProvider);
         return propagator;
     }
 

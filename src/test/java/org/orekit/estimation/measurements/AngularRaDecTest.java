@@ -30,7 +30,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.generation.AngularRaDecBuilder;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -42,6 +41,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
@@ -56,6 +56,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.mock;
 
 class AngularRaDecTest {
 
@@ -112,6 +113,16 @@ class AngularRaDecTest {
         Assertions.assertEquals(0.0, decDiffStat.getStandardDeviation(), 3e-11);
     }
 
+    @Test
+    @Deprecated
+    void testGetStation() {
+        final Observer mockedObserver = mock();
+        final AngularRaDec angularRaDec = new AngularRaDec(mockedObserver, FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new double[2], new double[2], new double[2], new ObservableSatellite(0));
+        final GroundStation station = angularRaDec.getStation();
+        Assertions.assertNull(station);
+    }
+
     /** Test the values of the state derivatives using a numerical.
      * finite differences calculation as a reference
      */
@@ -147,7 +158,7 @@ class AngularRaDecTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((AngularRaDec) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((AngularRaDec) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -250,7 +261,7 @@ class AngularRaDecTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((AngularRaDec) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((AngularRaDec) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
