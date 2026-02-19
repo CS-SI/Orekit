@@ -17,6 +17,7 @@
 package org.orekit.control.heuristics.lambert;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
 
 /**
  * Class holding a solution to the Lambert problem.
@@ -133,6 +134,7 @@ public class LambertSolution {
 
     /** {@inheritDoc} */
     @Override
+    @DefaultDataContext
     public String toString() {
         return "LambertSolution{" +
                 "nRev=" + nRev +
