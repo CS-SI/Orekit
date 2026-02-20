@@ -16,20 +16,16 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
+import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableReceiver;
 import org.orekit.signal.SignalTravelTimeAdjustableReceiver;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a Time Difference of Arrival measurement with a satellite as emitter
@@ -43,7 +39,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * the date of reception of the signal by the second station:
  * <code>tdoa = tr<sub>1</sub> - tr<sub>2</sub></code>
  * </p><p>
- * The motion of the stations and the satellite during the signal flight time are taken into account.
+ * The motion of the sensors and the satellite during the signal flight time are taken into account.
  * </p>
  * @author Pascal Parraud
  * @since 11.2
@@ -91,37 +87,34 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
     @Override
     protected EstimatedMeasurementBase<TDOA> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
                                                                                      final SpacecraftState[] states) {
+        // Compute emission date
+        final SpacecraftState state = states[0];
+        final Frame frame = state.getFrame();
+        final AbsoluteDate firstReceptionDate = getPrimeObserver().getCorrectedReceptionDate(getDate());
+        final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
+        final AbsoluteDate emissionDate = computeEmissionDate(frame, getPrimeObserver().getPVCoordinatesProvider(), firstReceptionDate, emitter);
 
-        final CommonParametersWithoutDerivatives common = getPrimeObserver().
-            computeRemoteParametersWithout(states, getSatellites().get(0), getDate(), false);
-        final TimeStampedPVCoordinates emitterPV = common.getTransitPV();
-        final AbsoluteDate emitterDate = emitterPV.getDate();
-
-        // Time of flight from emitter to second observer
-        final PVCoordinatesProvider secondPVCoordinatesProvider = getSecondObserver().getPVCoordinatesProvider();
-        final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = getSignalTravelTimeModel().getAdjustableReceiverComputer(secondPVCoordinatesProvider);
-        final double tau2 = signalTimeOfFlight.computeDelay(emitterPV.getPosition(), emitterDate, states[0].getFrame());
-
-        // Secondary station PV in inertial frame at receive at second observer
-        final TimeStampedPVCoordinates secondPV = secondPVCoordinatesProvider.getPVCoordinates(emitterDate.shiftedBy(tau2), states[0].getFrame());
+        // Secondary PV in inertial frame at receive at second sensor
+        final PVCoordinatesProvider secondReceiver = getSecondObserver().getPVCoordinatesProvider();
+        final SignalTravelTimeAdjustableReceiver signalTravelTimeAdjustableReceiver = getSignalTravelTimeModel()
+                .getAdjustableReceiverComputer(secondReceiver);
+        final TimeStampedPVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, frame);
+        final double secondReceptionDelay = signalTravelTimeAdjustableReceiver.computeDelay(emitterPV.getPosition(),
+                emissionDate, frame);
+        final AbsoluteDate secondReceptionDate = emissionDate.shiftedBy(secondReceptionDelay);
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final double offset1 = getPrimeObserver().getClockOffsetDriver().getValue(emitterDate);
-        final double offset2 = getSecondObserver().getClockOffsetDriver().getValue(emitterDate);
-        final double tdoa = (common.getTauD() + offset1) - (tau2 + offset2);
+        final double offset1 = getPrimeObserver().getClockOffsetDriver().getValue(firstReceptionDate);
+        final double offset2 = getSecondObserver().getClockOffsetDriver().getValue(secondReceptionDate);
+        final double tdoa = (firstReceptionDate.durationFrom(emissionDate) + offset1) - (secondReceptionDate.durationFrom(emissionDate) + offset2);
 
-        // Evaluate the TDOA value
-        // -------------------------------------------
+        // Prepare the evaluation
+        final TimeStampedPVCoordinates primePV = getPrimeObserver().getPVCoordinatesProvider().getPVCoordinates(firstReceptionDate, frame);
+        final TimeStampedPVCoordinates secondPV = secondReceiver.getPVCoordinates(secondReceptionDate, frame);
         final EstimatedMeasurement<TDOA> estimated =
                 new EstimatedMeasurement<>(this, iteration, evaluation,
-                        new SpacecraftState[] {
-                            common.getTransitState()
-                        },
-                        new TimeStampedPVCoordinates[] {
-                            emitterPV,
-                            tdoa > 0.0 ? secondPV : common.getRemotePV(),
-                            tdoa > 0.0 ? common.getRemotePV() : secondPV
-                        });
+                        new SpacecraftState[] { state.shiftedBy(emissionDate.durationFrom(state.getDate())) },
+                        new TimeStampedPVCoordinates[] { emitterPV, tdoa > 0.0 ? secondPV : primePV, tdoa > 0.0 ? primePV : secondPV });
 
         // set TDOA value
         estimated.setEstimatedValue(tdoa);
@@ -129,75 +122,55 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
         return estimated;
     }
 
+    /**
+     * Compute the signal emission date.
+     * @param frame frame where to perform signal propagation
+     * @param receiver signal receiver
+     * @param receptionDate reception date
+     * @param emitter signal emitter
+     * @return emission date
+     */
+    protected AbsoluteDate computeEmissionDate(final Frame frame, final PVCoordinatesProvider receiver,
+                                               final AbsoluteDate receptionDate, final PVCoordinatesProvider emitter) {
+        final double signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
+                .computeDelay(receptionDate, receiver.getPosition(receptionDate, frame), receptionDate, frame);
+        return receptionDate.shiftedBy(-signalTravelTime);
+    }
+
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<TDOA> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                final SpacecraftState[] states) {
-
-        // TDOA derivatives are computed with respect to spacecraft state in inertial frame
-        // and station parameters
-        // ----------------------
-        //
-        // Parameters:
-        //  - 0..2 - Position of the spacecraft in inertial frame
-        //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
-        final CommonParametersWithDerivatives common = getPrimeObserver().
-            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
-        final int nbParams = common.getTauD().getFreeParameters();
-        final TimeStampedFieldPVCoordinates<Gradient> emitterPV = common.getTransitPV();
-        final FieldAbsoluteDate<Gradient> emitterDate = emitterPV.getDate();
-
-        // Obtain time at which signal arrives at second observer from emitter
-        final FieldPVCoordinatesProvider<Gradient> fieldPvCoordinatesProvider = getSecondObserver().getFieldPVCoordinatesProvider(nbParams, common.getIndices());
-        final FieldSignalTravelTimeAdjustableReceiver<Gradient> fieldComputer = getSignalTravelTimeModel()
-                .getFieldAdjustableReceiverComputer(emitterDate.getField(), fieldPvCoordinatesProvider);
-        final Gradient tau2 = fieldComputer.computeDelay(emitterPV.getPosition(), emitterDate, emitterDate, states[0].getFrame());
-
-        // Second observer coordinates at receive time
-        final TimeStampedFieldPVCoordinates<Gradient> secondPV =
-                                fieldPvCoordinatesProvider.getPVCoordinates(emitterDate.shiftedBy(tau2), states[0].getFrame());
+        final Map<String, Integer> paramIndices = getParameterIndices(states);
+        final int                  nbParams     = 6 * states.length + paramIndices.size();
+        final Gradient[] delays = computeDelays(states);
+        final Gradient firstDelay = delays[0];
+        final Gradient secondDelay = delays[1];
+        final FieldAbsoluteDate<Gradient> firstReceptionDate = getPrimeObserver().getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
+        final FieldAbsoluteDate<Gradient> emissionDate = firstReceptionDate.shiftedBy(firstDelay.negate());
+        final FieldAbsoluteDate<Gradient> secondReceptionDate = emissionDate.shiftedBy(secondDelay);
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
         final Gradient offset1 = getPrimeObserver().getClockOffsetDriver()
-                                .getValue(nbParams, common.getIndices(), emitterDate.toAbsoluteDate());
+                                .getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
         final Gradient offset2 = getSecondObserver().getClockOffsetDriver()
-                                .getValue(nbParams, common.getIndices(), emitterDate.toAbsoluteDate());
-        final Gradient tdoaG   = common.getTauD().add(offset1).subtract(tau2.add(offset2));
+                                .getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
+        final Gradient tdoaG   = firstDelay.add(offset1).subtract(secondDelay.add(offset2));
         final double   tdoa    = tdoaG.getValue();
 
         // Evaluate the TDOA value and derivatives
-        // -------------------------------------------
-        final TimeStampedPVCoordinates pv1 = common.getRemotePV().toTimeStampedPVCoordinates();
-        final TimeStampedPVCoordinates pv2 = secondPV.toTimeStampedPVCoordinates();
+        final SpacecraftState state = states[0];
+        final Frame frame = state.getFrame();
+        final TimeStampedPVCoordinates primePV = getPrimeObserver().getPVCoordinatesProvider().getPVCoordinates(firstReceptionDate.toAbsoluteDate(), frame);
+        final TimeStampedPVCoordinates secondPV = getSecondObserver().getPVCoordinatesProvider().getPVCoordinates(secondReceptionDate.toAbsoluteDate(), frame);
+        final SpacecraftState emitterState = state.shiftedBy(emissionDate.toAbsoluteDate().durationFrom(state.getDate()));
         final EstimatedMeasurement<TDOA> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   new SpacecraftState[] {
-                                                       common.getTransitState()
-                                                   },
-                                                   new TimeStampedPVCoordinates[] {
-                                                       emitterPV.toTimeStampedPVCoordinates(),
-                                                       tdoa > 0 ? pv2 : pv1,
-                                                       tdoa > 0 ? pv1 : pv2
-                                                   });
+                                new SpacecraftState[] { emitterState },
+                                new TimeStampedPVCoordinates[] { emitterState.getPVCoordinates(), tdoa > 0.0 ? secondPV : primePV, tdoa > 0.0 ? primePV : secondPV });
 
         // set TDOA value
-        estimated.setEstimatedValue(tdoa);
-
-        // set first order derivatives with respect to state
-        final double[] derivatives = tdoaG.getGradient();
-        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
-
-        // Set first order derivatives with respect to parameters
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
-            }
-        }
-
+        fillEstimation(tdoaG, paramIndices, estimated);
         return estimated;
     }
 

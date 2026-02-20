@@ -17,10 +17,22 @@
 
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.frames.Frame;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableReceiver;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /**
  * Class modeling a twice-received measurement using a primary and secondary observer.
@@ -61,14 +73,14 @@ abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends
      * @param baseWeight            base weight
      * @param signalTravelTimeModel signal travel time model
      * @param satellite             satellite related to this measurement
-     * @since 14.0
      */
     protected DualReceiverMeasurement(final Observer primeObserver, final Observer secondObserver,
                                       final AbsoluteDate date,
                                       final double[] value, final double[] sigma, final double[] baseWeight,
                                       final SignalTravelTimeModel signalTravelTimeModel,
                                       final ObservableSatellite satellite) {
-        super(date, false, value, sigma, baseWeight, signalTravelTimeModel, Collections.singletonList(satellite));
+        super(date, false, value, new MeasurementQuality(sigma, baseWeight), signalTravelTimeModel,
+                Collections.singletonList(satellite));
 
         // Add the parameters for the receiver
         addParametersDrivers(primeObserver.getParametersDrivers());
@@ -93,7 +105,6 @@ abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends
 
     /** Get the prime observer, the one that receives the signal first.
      * @return prime observer
-     * @since 14.0
      */
     public Observer getPrimeObserver() {
         return primeObserver;
@@ -113,9 +124,73 @@ abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends
 
     /** Get the second observer, the one that gives the measurement.
      * @return second observer
-     * @since 14.0
      */
     public Observer getSecondObserver() {
         return secondObserver;
+    }
+
+    /**
+     * Compute signal delays (always positive).
+     * @param states observed states
+     * @return delays (to prime and second sensors)
+     */
+    protected Gradient[] computeDelays(final SpacecraftState[] states) {
+        // Derivatives are computed with respect to spacecraft state in inertial frame and measurement model parameters
+        // ----------------------
+        //
+        // Parameters:
+        //  - 0..2 - Position of the spacecraft in inertial frame
+        //  - 3..5 - Velocity of the spacecraft in inertial frame
+        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
+        final SpacecraftState state = states[0];
+        final Frame frame = state.getFrame();
+        final Map<String, Integer> paramIndices = getParameterIndices(states);
+        final int                  nbParams     = 6 * states.length + paramIndices.size();
+        final TimeStampedFieldPVCoordinates<Gradient> pva = AbstractMeasurement.getCoordinates(state, 0, nbParams);
+        final FieldPVCoordinatesProvider<Gradient> emitter = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
+        final FieldAbsoluteDate<Gradient> firstReceptionDate = getPrimeObserver().getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
+
+        // Compute emission date
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> signalTravelTimeAdjustableEmitter =
+                new FieldSignalTravelTimeAdjustableEmitter<>(emitter);
+        final FieldPVCoordinatesProvider<Gradient> primePVProvider = getPrimeObserver().getFieldPVCoordinatesProvider(nbParams, paramIndices);
+        final Gradient firstDelay = signalTravelTimeAdjustableEmitter.computeDelay(firstReceptionDate,
+                primePVProvider.getPosition(firstReceptionDate, frame), firstReceptionDate, frame);
+        final FieldAbsoluteDate<Gradient> emissionDate = firstReceptionDate.shiftedBy(firstDelay.negate());
+
+        // Secondary PV in inertial frame at receive at second sensor
+        final FieldPVCoordinatesProvider<Gradient> secondReceiver = getSecondObserver().getFieldPVCoordinatesProvider(nbParams,
+                paramIndices);
+        final FieldSignalTravelTimeAdjustableReceiver<Gradient> signalTravelTimeAdjustableReceiver = getSignalTravelTimeModel()
+                .getFieldAdjustableReceiverComputer(pva.getDate().getField(), secondReceiver);
+        final TimeStampedFieldPVCoordinates<Gradient> emitterPV = emitter.getPVCoordinates(emissionDate, frame);
+        final Gradient secondDelay = signalTravelTimeAdjustableReceiver.computeDelay(emitterPV.getPosition(),
+                emissionDate, frame);
+        return new Gradient[] {firstDelay, secondDelay};
+    }
+
+    /**
+     * Fill estimated measurements with value and derivatives.
+     * @param quantity estimated quantity
+     * @param paramIndices indices mapping parameter names to derivative indices
+     * @param estimated theoretical measurement class
+     */
+    protected void fillEstimation(final Gradient quantity, final Map<String, Integer> paramIndices,
+                                  final EstimatedMeasurement<T> estimated) {
+        estimated.setEstimatedValue(quantity.getValue());
+
+        // First order derivatives with respect to state
+        final double[] derivatives = quantity.getGradient();
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
+
+        // Set first order derivatives with respect to parameters
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            for (TimeSpanMap.Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = paramIndices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
+            }
+        }
     }
 }

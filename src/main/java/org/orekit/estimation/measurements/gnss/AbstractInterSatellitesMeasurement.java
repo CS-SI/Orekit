@@ -25,6 +25,7 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.AbstractParticipant;
 import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
 import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.SignalBasedMeasurement;
@@ -77,7 +78,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
                                                  final ObservableSatellite local,
                                                  final ObservableSatellite remote) {
         // Call to super constructor
-        super(date, false, new double[] {observed}, new double[] {sigma}, new double[] {baseWeight},
+        super(date, false, new double[] {observed}, new MeasurementQuality(sigma, baseWeight),
                 signalTravelTimeModel, Arrays.asList(local, remote));
     }
 
