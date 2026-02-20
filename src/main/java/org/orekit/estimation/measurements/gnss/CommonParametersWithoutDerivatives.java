@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.gnss;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.clocks.ClockOffset;
@@ -24,7 +24,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class CommonParametersWithoutDerivatives {
+class CommonParametersWithoutDerivatives {
 
     /** Spacecraft state. */
     private final SpacecraftState state;
@@ -56,7 +56,7 @@ public class CommonParametersWithoutDerivatives {
     * @param transitPV transit position/velocity
     * @param remotePV position/velocity of remote observer
     */
-    public CommonParametersWithoutDerivatives(final SpacecraftState state, final double tauD,
+    CommonParametersWithoutDerivatives(final SpacecraftState state, final double tauD,
                                               final ClockOffset localOffset, final ClockOffset remoteOffset,
                                               final SpacecraftState transitState,
                                               final TimeStampedPVCoordinates transitPV,

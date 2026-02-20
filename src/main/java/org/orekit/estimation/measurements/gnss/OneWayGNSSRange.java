@@ -17,8 +17,6 @@
 package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
-import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
@@ -77,8 +75,8 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
                                                                                                 final int evaluation,
                                                                                                 final SpacecraftState[] states) {
 
-        final CommonParametersWithoutDerivatives common = getObserver().
-            computeLocalParametersWithout(states, getSatellites().get(0), getDate(), false);
+        final CommonParametersWithoutDerivatives common =
+            computeLocalParametersWithout(states, getSatellites().get(0), getDate());
 
         // Estimated measurement
         final EstimatedMeasurementBase<OneWayGNSSRange> estimatedRange =
@@ -109,9 +107,8 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        final CommonParametersWithDerivatives common = getObserver().
-            computeLocalParametersWith(states, getSatellites().get(0), getDate(),
-                                       false, getParametersDrivers());
+        final CommonParametersWithDerivatives common =
+            computeLocalParametersWith(states, getSatellites().get(0), getDate());
 
         // Estimated measurement
         final EstimatedMeasurement<OneWayGNSSRange> estimatedRange =

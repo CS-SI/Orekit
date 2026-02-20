@@ -19,8 +19,6 @@ package org.orekit.estimation.measurements.gnss;
 import java.util.Arrays;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
-import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -122,7 +120,7 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
                                                                                                      final int evaluation,
                                                                                                      final SpacecraftState[] states) {
 
-        final CommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
+        final CommonParametersWithoutDerivatives common = computeCommonParametersWithout(states);
 
         // prepare the evaluation
         final EstimatedMeasurementBase<InterSatellitesPhase> estimatedPhase =
@@ -155,7 +153,7 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
                                                                                final int evaluation,
                                                                                final SpacecraftState[] states) {
 
-        final CommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
+        final CommonParametersWithDerivatives common = computeCommonParametersWith(states);
 
        // prepare the evaluation
         final EstimatedMeasurement<InterSatellitesPhase> estimatedPhase =

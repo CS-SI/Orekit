@@ -21,8 +21,6 @@ import java.util.Arrays;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
-import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -86,7 +84,7 @@ public class InterSatellitesOneWayRangeRate
                                                                                                                final int evaluation,
                                                                                                                final SpacecraftState[] states) {
 
-        final CommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
+        final CommonParametersWithoutDerivatives common = computeCommonParametersWithout(states);
 
         // prepare the evaluation
         final EstimatedMeasurementBase<InterSatellitesOneWayRangeRate> estimatedPhase =
@@ -117,7 +115,7 @@ public class InterSatellitesOneWayRangeRate
                                                                                          final int evaluation,
                                                                                          final SpacecraftState[] states) {
 
-        final CommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
+        final CommonParametersWithDerivatives common = computeCommonParametersWith(states);
 
         // prepare the evaluation
         final EstimatedMeasurement<InterSatellitesOneWayRangeRate> estimatedPhase =

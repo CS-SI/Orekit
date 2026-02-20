@@ -18,22 +18,35 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
-import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.estimation.measurements.AbstractMeasurement;
+import org.orekit.estimation.measurements.AbstractParticipant;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.SignalBasedMeasurement;
+import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a phase measurement from a ground station.
@@ -82,9 +95,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
                  final AmbiguityCache cache) {
         super(date, false, phase, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
                 Collections.singletonList(satellite));
-        ambiguityDriver = cache.getAmbiguity(satellite.getName(),
-                                             observer.getName(),
-                                             wavelength);
+        ambiguityDriver = cache.getAmbiguity(satellite.getName(), observer.getName(), wavelength);
         addParametersDrivers(observer.getParametersDrivers());
         addParameterDriver(ambiguityDriver);
         this.observer = observer;
@@ -118,29 +129,50 @@ public class Phase extends SignalBasedMeasurement<Phase> {
     protected EstimatedMeasurementBase<Phase> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                       final int evaluation,
                                                                                       final SpacecraftState[] states) {
+        // Coordinates of the measured spacecraft
+        final SpacecraftState state = states[0];
+        final Frame frame = state.getFrame();
+        final TimeStampedPVCoordinates pva   = state.getPVCoordinates();
 
-        final CommonParametersWithoutDerivatives common = getObserver().
-            computeRemoteParametersWithout(states, getSatellites().get(0), getDate(), false);
+        // transform between remote observer frame and inertial frame
+        final AbsoluteDate measurementDate = getDate();
+        final Transform offsetToInertialDownlink = getObserver().getOffsetToInertial(frame, measurementDate, false);
+        final AbsoluteDate downlinkDate             = offsetToInertialDownlink.getDate();
+
+        // Observer position in inertial frame at end of the downlink leg
+        final TimeStampedPVCoordinates origin = new TimeStampedPVCoordinates(downlinkDate, PVCoordinates.ZERO);
+        final TimeStampedPVCoordinates satelliteDownlink = offsetToInertialDownlink.transformPVCoordinates(origin);
+
+        // Coordinates provider for emitting object (observed spacecraft)
+        final PVCoordinatesProvider pvCoordinatesProvider = AbstractParticipant.extractPVCoordinatesProvider(states[0], pva);
+
+        // Downlink delay / determine time of emission of signal by ObservableSatellite
+        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(pvCoordinatesProvider);
+        final double tauD = signalTimeOfFlight.computeDelay(pva.getDate(), satelliteDownlink.getPosition(), downlinkDate, frame);
+
+        // Transit state & Transit state (re)computed with gradients
+        final double          delta             = downlinkDate.durationFrom(state.getDate());
+        final double          deltaMTauD        = delta - tauD;
+        final SpacecraftState transitState      = states[0].shiftedBy(deltaMTauD);
 
         // prepare the evaluation
         final EstimatedMeasurementBase<Phase> estimated =
                         new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
-                                                           common.getTransitState()
+                                                           transitState
                                                        }, new TimeStampedPVCoordinates[] {
-                                                           common.getTransitPV(),
-                                                           common.getRemotePV()
+                                                           transitState.getPVCoordinates(), satelliteDownlink
                                                        });
 
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
-        final double              dts       = satellite.getClockOffsetDriver().getValue(common.getState().getDate());
+        final double              dts       = satellite.getClockOffsetDriver().getValue(state.getDate());
         final double              dtg       = getObserver().getClockOffsetDriver().getValue(getDate());
 
         // Phase value
         final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final double ambiguity   = ambiguityDriver.getValue(common.getState().getDate());
-        final double phase       = (common.getTauD() + dtg - dts) * cOverLambda + ambiguity;
+        final double ambiguity   = ambiguityDriver.getValue(state.getDate());
+        final double phase       = (tauD + dtg - dts) * cOverLambda + ambiguity;
 
         estimated.setEstimatedValue(phase);
 
@@ -153,40 +185,59 @@ public class Phase extends SignalBasedMeasurement<Phase> {
     protected EstimatedMeasurement<Phase> theoreticalEvaluation(final int iteration,
                                                                 final int evaluation,
                                                                 final SpacecraftState[] states) {
-
+        // Create the parameter indices map
         final SpacecraftState state = states[0];
+        final Frame                frame        = state.getFrame();
+        final Map<String, Integer> paramIndices = getParameterIndices(states);
+        final int                  nbParams     = 6 * states.length + paramIndices.size();
 
-        // Phase derivatives are computed with respect to spacecraft state in inertial frame
-        // and station parameters
-        // ----------------------
-        //
-        // Parameters:
-        //  - 0..2 - Position of the spacecraft in inertial frame
-        //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - station parameters (ambiguity, clock offset, station offsets, pole, prime meridian...)
-        final CommonParametersWithDerivatives common = getObserver().
-            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
-        final int nbParams = common.getTauD().getFreeParameters();
+        // Coordinates of the spacecraft expressed as a gradient
+        final TimeStampedFieldPVCoordinates<Gradient> pva = AbstractMeasurement.getCoordinates(states[0], 0, nbParams);
+
+        // transform between Observer object and inertial frame, expressed as a gradient
+        // The components of the Observer's position in offset frame are the 3 last derivative parameters
+        final FieldTransform<Gradient> offsetToInertialDownlink = getObserver().
+                getOffsetToInertial(frame, getDate(), nbParams, paramIndices);
+        final FieldAbsoluteDate<Gradient> downlinkDate = offsetToInertialDownlink.getFieldDate();
+
+        // Observer position in inertial frame at end of the downlink leg
+        final GradientField field = GradientField.getField(nbParams);
+        final FieldVector3D<Gradient> zero  = FieldVector3D.getZero(field);
+        final TimeStampedFieldPVCoordinates<Gradient> satelliteDownlink =
+                offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDate,
+                        zero, zero, zero));
+
+        // Form coordinates provider
+        final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(states[0], pva);
+
+        // Downlink delay
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(fieldPVCoordinatesProvider);
+        final Gradient tauD = fieldComputer.computeDelay(pva.getDate(), satelliteDownlink.getPosition(), downlinkDate, frame);
+
+        // Transit state & Transit state (re)computed with gradients
+        final Gradient        delta        = downlinkDate.durationFrom(states[0].getDate());
+        final Gradient        deltaMTauD   = tauD.negate().add(delta);
+        final SpacecraftState transitState = states[0].shiftedBy(deltaMTauD.getValue());
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, states[0].getDate()).shiftedBy(deltaMTauD);
+        final TimeStampedFieldPVCoordinates<Gradient> transitPV = fieldPVCoordinatesProvider.getPVCoordinates(fieldDate, frame);
 
         // prepare the evaluation
         final EstimatedMeasurement<Phase> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   new SpacecraftState[] {
-                                                       common.getTransitState()
-                                                   }, new TimeStampedPVCoordinates[] {
-                                                       common.getTransitPV().toTimeStampedPVCoordinates(),
-                                                       common.getRemotePV().toTimeStampedPVCoordinates()
-                                                   });
+                                new SpacecraftState[] { transitState},
+                                new TimeStampedPVCoordinates[] {
+                                        transitPV.toTimeStampedPVCoordinates(),
+                                        satelliteDownlink.toTimeStampedPVCoordinates()});
 
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
-        final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
-        final Gradient            dtg       = getObserver().getClockOffsetDriver().getValue(nbParams, common.getIndices(), getDate());
+        final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, paramIndices, state.getDate());
+        final Gradient            dtg       = getObserver().getClockOffsetDriver().getValue(nbParams, paramIndices, getDate());
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, common.getIndices(), state.getDate());
-        final Gradient phase       = common.getTauD().add(dtg).subtract(dts).multiply(cOverLambda).add(ambiguity);
+        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, paramIndices, state.getDate());
+        final Gradient phase       = tauD.add(dtg).subtract(dts).multiply(cOverLambda).add(ambiguity);
 
         estimated.setEstimatedValue(phase.getValue());
 
@@ -198,7 +249,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                final Integer index = common.getIndices().get(span.getData());
+                final Integer index = paramIndices.get(span.getData());
                 if (index != null) {
                     estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }
