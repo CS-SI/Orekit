@@ -16,20 +16,19 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Map;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
+import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -47,14 +46,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * emission and reception multiplied by c/2 where c is the speed of light.
  * </p>
  * <p>
- * The motion of both the station and the spacecraft during the signal
+ * The motion of both the sensor and the spacecraft during the signal
  * flight time are taken into account. The date of the measurement
  * corresponds to the reception on ground of the emitted or reflected signal.
  * </p>
  * <p>
  * The clock offsets of both the observer and the satellite are taken
  * into account. These offsets correspond to the values that must be subtracted
- * from station (resp. satellite) reading of time to compute the real physical
+ * from sensor (resp. satellite) reading of time to compute the real physical
  * date. These offsets have two effects:
  * </p>
  * <ul>
@@ -65,8 +64,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   measurements the observed range is the real physical signal time of flight to
  *   which (Δtg - Δts) ⨯ c is added, where Δtg (resp. Δts) is the clock offset for the
  *   receiving observer (resp. emitting satellite). A similar effect exists in
- *   two-way measurements but it is computed as (Δtg - Δtg) ⨯ c / 2 as the same ground
- *   station clock is used for initial emission and final reception and therefore it evaluates
+ *   two-way measurements but it is computed as (Δtg - Δtg) ⨯ c / 2 as the same clock
+ *   is used for initial emission and final reception and therefore it evaluates
  *   to zero.</li>
  * </ul>
  * @author Thierry Ceolin
@@ -74,13 +73,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Maxime Journot
  * @since 8.0
  */
-public class Range extends SignalBasedMeasurement<Range> {
+public class Range extends AbstractRangeRelatedMeasurement<Range> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Range";
-
-    /** Observer that receives signal from satellite. */
-    private final Observer observer;
 
     /** Simple constructor.
      * @param observer observer that performs the measurement
@@ -95,31 +91,7 @@ public class Range extends SignalBasedMeasurement<Range> {
     public Range(final Observer observer, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final ObservableSatellite satellite) {
-        super(date, twoWay, range, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
-                Collections.singletonList(satellite));
-        addParametersDrivers(observer.getParametersDrivers());
-
-        this.observer = observer;
-    }
-
-    /** Get receiving ground station.
-     * @return measurement ground station
-     * @deprecated as of 14.0, replaced by {@link #getObserver()}
-     */
-    @Deprecated
-    public final GroundStation getStation() {
-        if (!(observer instanceof GroundStation)) {
-            return null;
-        }
-        return (GroundStation) observer;
-    }
-
-    /** Get receiving object.
-     * @return measurement observer
-     * @since 14.0
-     */
-    public final Observer getObserver() {
-        return observer;
+        super(observer, date, range, sigma, baseWeight, twoWay, new SignalTravelTimeModel(), satellite);
     }
 
     /** {@inheritDoc} */
@@ -127,162 +99,134 @@ public class Range extends SignalBasedMeasurement<Range> {
     protected EstimatedMeasurementBase<Range> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                       final int evaluation,
                                                                                       final SpacecraftState[] states) {
-
-        final CommonParametersWithoutDerivatives common =
-            getObserver().computeRemoteParametersWithout(states, getSatellites().get(0), getDate(), false);
-        final TimeStampedPVCoordinates transitPV = common.getTransitState().getPVCoordinates();
-
-        // prepare the evaluation
-        final EstimatedMeasurementBase<Range> estimated;
-        final double range;
+        // compute reception date
+        final double clockOffset = getObserver().getQuadraticClockModel().getOffset(getDate()).getOffset();
+        final AbsoluteDate receptionDate = getDate().shiftedBy(-clockOffset);
 
         if (isTwoWay()) {
-
-            // Station at transit state date (derivatives of tauD taken into account)
-            final TimeStampedPVCoordinates stationAtTransitDate = common.getRemotePV().shiftedBy(-common.getTauD());
-            // Uplink delay
-            final SignalTravelTimeAdjustableEmitter signalTimeOfFlight =
-                getSignalTravelTimeModel().getAdjustableEmitterComputer(new AbsolutePVCoordinates(common.getState().getFrame(), stationAtTransitDate));
-            final double tauU = signalTimeOfFlight.computeDelay(stationAtTransitDate.getDate(),
-                                                           transitPV.getPosition(),
-                                                           transitPV.getDate(),
-                                                           common.getState().getFrame());
-            final TimeStampedPVCoordinates stationUplink = common.getRemotePV().shiftedBy(-common.getTauD() - tauU);
-
-            // Prepare the evaluation
-            estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
-                                                        new SpacecraftState[] {
-                                                            common.getTransitState()
-                                                        }, new TimeStampedPVCoordinates[] {
-                                                            stationUplink,
-                                                            transitPV,
-                                                            common.getRemotePV()
-                                                        });
-
-            // Range value
-            final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
-            final double tau    = common.getTauD() + tauU;
-            range               = tau * cOver2;
-
+            return twoWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0]);
         } else {
-
-            estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
-                                                       new SpacecraftState[] {
-                                                           common.getTransitState()
-                                                       }, new TimeStampedPVCoordinates[] {
-                                                           transitPV,
-                                                           common.getRemotePV()
-                                                       });
-
-            // Clock offsets
-            final ObservableSatellite satellite = getSatellites().get(0);
-            final double              dts       = satellite.getClockOffsetDriver().getValue(common.getState().getDate());
-            final double              dtg       = getObserver().getClockOffsetDriver().getValue(common.getState().getDate());
-
-            // Range value
-            range = (common.getTauD() + dtg - dts) * Constants.SPEED_OF_LIGHT;
-
+            return oneWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0]);
         }
+    }
 
+
+    /** Evaluate measurement in two-way without derivatives.
+     * @param iteration iteration number
+     * @param evaluation evaluations counter
+     * @param receptionDate signal final reception date
+     * @param state state
+     * @return theoretical value
+     * @since 14.0
+     */
+    private EstimatedMeasurementBase<Range> twoWayTheoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                          final int evaluation,
+                                                                                          final AbsoluteDate receptionDate,
+                                                                                          final SpacecraftState state) {
+        final EstimatedMeasurementBase<Range> estimated = initializeTwoWayTheoreticalEvaluation(this, iteration, evaluation,
+                receptionDate, state);
+
+        // Compute range
+        final AbsoluteDate emissionDate = estimated.getParticipants()[0].getDate();
+        final double range = receptionDate.durationFrom(emissionDate) * Constants.SPEED_OF_LIGHT / 2.;
         estimated.setEstimatedValue(range);
+        return estimated;
+    }
 
+    /** Evaluate measurement in one-way without derivatives.
+     * @param iteration iteration number
+     * @param evaluation evaluations counter
+     * @param receptionDate signal reception date
+     * @param state state
+     * @return theoretical value
+     * @since 14.0
+     */
+    private EstimatedMeasurementBase<Range> oneWayTheoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                          final int evaluation,
+                                                                                          final AbsoluteDate receptionDate,
+                                                                                          final SpacecraftState state) {
+        final EstimatedMeasurementBase<Range> estimated = initializeOneWayTheoreticalEvaluation(this, iteration, evaluation,
+                receptionDate, state);
+        final AbsoluteDate emissionDate = estimated.getParticipants()[0].getDate();
+
+        // clock bias, taken in account only in case of one way
+        final ObservableSatellite satellite    = getSatellites().get(0);
+        final double              dts       = satellite.getClockOffsetDriver().getValue(emissionDate);
+        final double              dtg       = getObserver().getClockOffsetDriver().getValue(receptionDate);
+        final double clockBias = dtg - dts;
+
+        final double range = (clockBias + receptionDate.durationFrom(emissionDate)) * Constants.SPEED_OF_LIGHT;
+        estimated.setEstimatedValue(range);
         return estimated;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurement<Range> theoreticalEvaluation(final int iteration,
-                                                                final int evaluation,
-                                                                final SpacecraftState[] states) {
+    protected EstimatedMeasurement<Range> twoWayTheoreticalEvaluation(final int iteration, final int evaluation,
+                                                                    final FieldPVCoordinatesProvider<Gradient> satellitePVProvider,
+                                                                    final SpacecraftState state,
+                                                                    final Map<String, Integer> indices,
+                                                                    final int nbParams) {
+        // Compute light time delays
+        final Frame frame = state.getFrame();
+        final FieldPVCoordinatesProvider<Gradient> observerPVProvider = getObserver().getFieldPVCoordinatesProvider(nbParams, indices);
+        final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
+        final TimeStampedFieldPVCoordinates<Gradient> receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
+        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
+        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
+                satellitePVProvider, observerPVProvider);
 
-        final SpacecraftState state = states[0];
+        // Prepare the evaluation
+        final FieldAbsoluteDate<Gradient> transitDate = receptionDate.shiftedBy(delays[1].negate());
+        final SpacecraftState transitState = state.shiftedBy(transitDate.toAbsoluteDate().durationFrom(state));
+        final FieldAbsoluteDate<Gradient> emissionDate = transitDate.shiftedBy(delays[0].negate());
+        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
+                new SpacecraftState[] { transitState },
+                new TimeStampedPVCoordinates[] {
+                        getObserver().getPVCoordinatesProvider().getPVCoordinates(emissionDate.toAbsoluteDate(), frame),
+                        transitState.getPVCoordinates(),
+                        receiverPV.toTimeStampedPVCoordinates()});
 
-        // Range derivatives are computed with respect to spacecraft state in inertial frame
-        // and station parameters
-        // ----------------------
-        //
-        // Parameters:
-        //  - 0..2 - Position of the spacecraft in inertial frame
-        //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
+        // Compute range
+        final Gradient range = delays[0].add(delays[1]).multiply(Constants.SPEED_OF_LIGHT / 2.);
+        fillEstimation(range, indices, estimated);
+        return estimated;
+    }
 
-        final CommonParametersWithDerivatives common = getObserver().
-            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
-
-        final int nbParams = common.getTauD().getFreeParameters();
-        final TimeStampedFieldPVCoordinates<Gradient> transitPV = common.getTransitPV();
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurement<Range> oneWayTheoreticalEvaluation(final int iteration, final int evaluation,
+                                                                     final FieldPVCoordinatesProvider<Gradient> satellitePVProvider,
+                                                                     final SpacecraftState state,
+                                                                     final Map<String, Integer> indices,
+                                                                     final int nbParams) {
+        // compute reception and emission dates
+        final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
+        final Frame frame = state.getFrame();
+        final Field<Gradient> field = receptionDate.getField();
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
+                field, satellitePVProvider);
+        final TimeStampedFieldPVCoordinates<Gradient> observerPVAtReception = getObserver().getFieldPVCoordinatesProvider(nbParams, indices)
+                .getPVCoordinates(receptionDate, frame);
+        final Gradient delay = adjustableEmitter.computeDelay(observerPVAtReception.getPosition(), receptionDate, frame);
 
         // prepare the evaluation
-        final EstimatedMeasurement<Range> estimated;
-        final Gradient range;
+        final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(delay.negate());
+        final SpacecraftState emissionState = state.shiftedBy(emissionDate.toAbsoluteDate().durationFrom(state));
+        final EstimatedMeasurement<Range> estimated =
+                new EstimatedMeasurement<>(this, iteration, evaluation,
+                        new SpacecraftState[] { emissionState }, new TimeStampedPVCoordinates[] {
+                        emissionState.getPVCoordinates(), observerPVAtReception.toTimeStampedPVCoordinates() });
 
-        if (isTwoWay()) {
+        // clock offset, taken in account only in case of one way
+        final ObservableSatellite satellite    = getSatellites().get(0);
+        final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices, emissionDate.toAbsoluteDate());
+        final Gradient            dtg       = getObserver().getClockOffsetDriver().getValue(nbParams, indices, receptionDate.toAbsoluteDate());
+        final Gradient clockBias = dtg.subtract(dts);
 
-            // Station at transit state date (derivatives of tauD taken into account)
-            final TimeStampedFieldPVCoordinates<Gradient> stationAtTransitDate =
-                            common.getRemotePV().shiftedBy(common.getTauD().negate());
-            // Uplink delay
-            final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
-                    .getFieldAdjustableEmitterComputer(transitPV.getDate().getField(),
-                            new FieldAbsolutePVCoordinates<>(state.getFrame(), stationAtTransitDate));
-            final Gradient tauU =
-                fieldComputer.computeDelay(stationAtTransitDate.getDate(), transitPV.getPosition(), transitPV.getDate(), state.getFrame());
-            final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
-                common.getRemotePV().shiftedBy(-common.getTauD().getValue() - tauU.getValue());
-
-            // Prepare the evaluation
-            estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                            new SpacecraftState[] {
-                                                                common.getTransitState()
-                                                            }, new TimeStampedPVCoordinates[] {
-                                                                stationUplink.toTimeStampedPVCoordinates(),
-                                                                transitPV.toTimeStampedPVCoordinates(),
-                                                                common.getRemotePV().toTimeStampedPVCoordinates()
-                                                            });
-
-            // Range value
-            final double   cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
-            final Gradient tau    = common.getTauD().add(tauU);
-            range                 = tau.multiply(cOver2);
-
-        } else {
-
-            estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
-                            new SpacecraftState[] {
-                                common.getTransitState()
-                            }, new TimeStampedPVCoordinates[] {
-                                transitPV.toTimeStampedPVCoordinates(),
-                                common.getRemotePV().toTimeStampedPVCoordinates()
-                            });
-
-            // Clock offsets
-            final ObservableSatellite satellite = getSatellites().get(0);
-            final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
-            final Gradient            dtg       = getObserver().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
-
-            // Range value
-            range = common.getTauD().add(dtg).subtract(dts).multiply(Constants.SPEED_OF_LIGHT);
-
-        }
-
-        estimated.setEstimatedValue(range.getValue());
-
-        // Range first order derivatives with respect to state
-        final double[] derivatives = range.getGradient();
-        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
-
-        // Set first order derivatives with respect to parameters
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
-            }
-        }
-
+        final Gradient range = clockBias.add(delay).multiply(Constants.SPEED_OF_LIGHT);
+        fillEstimation(range, indices, estimated);
         return estimated;
-
     }
 
 }

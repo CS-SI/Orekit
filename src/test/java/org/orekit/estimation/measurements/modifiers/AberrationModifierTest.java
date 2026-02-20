@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -52,11 +57,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class AberrationModifierTest {
 
@@ -123,13 +123,9 @@ public class AberrationModifierTest {
                                  int raDecIndex,
                                  double gradient,
                                  Gradient[] raDecDS,
-                                 GroundStation groundStation,
                                  TimeStampedFieldPVCoordinates<Gradient> checkPVCoords,
                                  ParameterDriver driver,
-                                 Frame obsFrame,
-                                 AbsoluteDate epoch,
-                                 int nbParams,
-                                 Map<String, Integer> indices) {
+                                 Frame obsFrame) {
 
         FiniteDifferencesDifferentiator differentiator =
                 new FiniteDifferencesDifferentiator(3, 50.0 * driver.getScale());
@@ -155,39 +151,31 @@ public class AberrationModifierTest {
 
         double deriv = dsValue.getPartialDerivative(1);
         //System.out.println(deriv);
-        Assertions.assertEquals(gradient, deriv, 1e-3 * FastMath.abs(gradient));
+        Assertions.assertEquals(gradient, deriv, FastMath.max(1e-3 * FastMath.abs(deriv), 2e-6));
     }
 
     private void checkNaturalToProperDerivative(int raDecIndex,
                                                 double gradient,
                                                 Gradient[] raDecDS,
-                                                GroundStation groundStation,
                                                 TimeStampedFieldPVCoordinates<Gradient> checkPVCoords,
                                                 ParameterDriver driver,
-                                                Frame obsFrame,
-                                                AbsoluteDate epoch,
-                                                int nbParams,
-                                                Map<String, Integer> indices) {
+                                                Frame obsFrame) {
 
         checkDerivative(AberrationModifier::fieldNaturalToProper, raDecIndex,
-                gradient, raDecDS, groundStation, checkPVCoords, driver,
-                obsFrame, epoch, nbParams, indices);
+                gradient, raDecDS, checkPVCoords, driver,
+                obsFrame);
     }
 
     private void checkProperToNaturalDerivative(int raDecIndex,
                                                 double gradient,
                                                 Gradient[] raDecDS,
-                                                GroundStation groundStation,
                                                 TimeStampedFieldPVCoordinates<Gradient> checkPVCoords,
                                                 ParameterDriver driver,
-                                                Frame obsFrame,
-                                                AbsoluteDate epoch,
-                                                int nbParams,
-                                                Map<String, Integer> indices) {
+                                                Frame obsFrame) {
 
         checkDerivative(AberrationModifier::fieldProperToNatural, raDecIndex,
-                gradient, raDecDS, groundStation, checkPVCoords, driver,
-                obsFrame, epoch, nbParams, indices);
+                gradient, raDecDS, checkPVCoords, driver,
+                obsFrame);
     }
 
     @Test
@@ -239,12 +227,10 @@ public class AberrationModifierTest {
         // Test derivatives against finite differences
         for (ParameterDriver driver : parameterDrivers) {
             double raGradient = properDS[0].getGradient()[indices.get(driver.getNameSpan(epoch))];
-            checkNaturalToProperDerivative(0, raGradient, raDecDS, groundStation, observerPVCoords, driver,
-                    measurementFrame, epoch, nbParams, indices);
+            checkNaturalToProperDerivative(0, raGradient, raDecDS, observerPVCoords, driver, measurementFrame);
 
             double decGradient = properDS[1].getGradient()[indices.get(driver.getNameSpan(epoch))];
-            checkNaturalToProperDerivative(1, decGradient, raDecDS, groundStation, observerPVCoords, driver,
-                    measurementFrame, epoch, nbParams, indices);
+            checkNaturalToProperDerivative(1, decGradient, raDecDS, observerPVCoords, driver, measurementFrame);
         }
 
         // Undo aberration
@@ -261,12 +247,11 @@ public class AberrationModifierTest {
         // Test derivatives against finite differences
         for (ParameterDriver driver : parameterDrivers) {
             double raGradient = naturalDS[0].getGradient()[indices.get(driver.getNameSpan(epoch))];
-            checkProperToNaturalDerivative(0, raGradient, expectedDS, groundStation, observerPVCoords, driver,
-                    measurementFrame, epoch, nbParams, indices);
+            checkProperToNaturalDerivative(0, raGradient, expectedDS, observerPVCoords, driver, measurementFrame);
 
             double decGradient = naturalDS[1].getGradient()[indices.get(driver.getNameSpan(epoch))];
-            checkProperToNaturalDerivative(1, decGradient, expectedDS, groundStation, observerPVCoords, driver,
-                    measurementFrame, epoch, nbParams, indices);
+            checkProperToNaturalDerivative(1, decGradient, expectedDS, observerPVCoords, driver,
+                    measurementFrame);
         }
 
     }

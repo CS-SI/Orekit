@@ -16,6 +16,15 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
@@ -66,12 +75,12 @@ import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.*;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPropagatorBuilder> {
 
@@ -300,7 +309,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final long nbRange = 95;
         // Batch LS values
         //final double[] RefStatRange = { -67.7496, 87.1117, 6.4482E-5, 33.6349 };
-        final double[] RefStatRange = { -13.191873, 10.038898, 0.134278, 4.189626 };
+        final double[] RefStatRange = { -13.191878, 10.038903, 0.134279, 4.189626 };
         Assertions.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               parameterAccuracy);
         Assertions.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               parameterAccuracy);

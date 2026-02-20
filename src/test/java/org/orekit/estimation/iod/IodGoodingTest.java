@@ -80,6 +80,7 @@ class IodGoodingTest extends AbstractIodTest {
         GeodeticPoint stationCoord = new GeodeticPoint(FastMath.toRadians(43.05722), FastMath.toRadians(76.971667), 2735.0);
         TopocentricFrame stationFrame = new TopocentricFrame(earth, stationCoord, "N42");
         GroundStation ground_station = new GroundStation(stationFrame);
+        ground_station.getParametersDrivers().forEach(driver -> driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH));
 
         double[] angular1 = {FastMath.toRadians(RA.getX()), FastMath.toRadians(DEC.getX())};
         double[] angular2 = {FastMath.toRadians(RA.getY()), FastMath.toRadians(DEC.getY())};
@@ -97,15 +98,15 @@ class IodGoodingTest extends AbstractIodTest {
         // BEFORE the fix -> Gooding: {a: 6.993021221010809E7; e: 0.3347390725866758; i: 0.5890565053278204; pa: -108.07120996868652; raan: -12.64337508041537; v: 2.587189785272028;}
         // Values changed slightly after updating to new Lambert solver
         // BEFORE the update -> Gooding {a: 4.242929828622434E7; e: 0.005085550484861005; i: 0.09455751549021724; pa: 162.64799060142445; raan: 90.00027281152558; v: -10.884841988914873;}
-        // AFTER the update (still forcing an intermediate planar solution) -> Gooding: {a: 4.241177632328943E7; e: 0.004736060203413131; i: 0.09325899964608757; pa: 165.8244285539966; raan: 90.44187169480168; v: -14.502881368143266;}
+        // AFTER the update (still forcing an intermediate planar solution) -> Gooding: Keplerian parameters: {a: 4.2507210004136026E7; e: 0.0068098175825985685; i: 0.09820481096721752; pa: 155.7137014938509; raan: 88.79120017129338; v: -2.7414622551244596;}
         Orbit estimatedOrbitGooding = new IodGooding(mu).estimate(eme2000, raDec1,raDec2,raDec3);
         KeplerianOrbit orbitGooding = new KeplerianOrbit(estimatedOrbitGooding);
-        Assertions.assertEquals(4.241177632328943E7, orbitGooding.getA(), 1.0e-6);
-        Assertions.assertEquals(0.004736060203413131, orbitGooding.getE(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(0.09325899964608757), orbitGooding.getI(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(165.8244285539966), orbitGooding.getPerigeeArgument(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(90.44187169480168), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(-14.502881368143266), orbitGooding.getTrueAnomaly(), 1.0e-10);
+        Assertions.assertEquals(4.2507210004136026E7, orbitGooding.getA(), 1.0e-6);
+        Assertions.assertEquals(0.0068098175825985685, orbitGooding.getE(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(0.09820481096721752), orbitGooding.getI(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(155.7137014938509), orbitGooding.getPerigeeArgument(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(88.79120017129338), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(-2.7414622551244596), orbitGooding.getTrueAnomaly(), 1.0e-10);
     }
 
     @Test

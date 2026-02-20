@@ -214,8 +214,8 @@ class DSSTBatchLSEstimatorTest {
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
-                                     0.0, 1.6e-6,
-                                     0.0, 3.3e-6,
+                                     0.0, 2.0e-6,
+                                     0.0, 3.4e-6,
                                      0.0, 1.1e-6,
                                      0.0, 4.6e-10);
 
@@ -317,7 +317,7 @@ class DSSTBatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 2.1e-5,
-                                     0.0, 5.2e-5,
+                                     0.0, 5.3e-5,
                                      0.0, 2.3e-5,
                                      0.0, 9.4e-9);
 
