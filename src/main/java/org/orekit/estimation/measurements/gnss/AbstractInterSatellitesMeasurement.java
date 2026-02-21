@@ -23,8 +23,6 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.AbstractParticipant;
-import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
-import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -124,13 +122,11 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
 
     /** Compute common estimation parameters.
      * @param states states of all spacecraft involved in the measurement
-     * @param clockOffsetAlreadyApplied if true, the specified {@code date} is as read
      * by the receiver clock (i.e. clock offset <em>not</em> compensated), if false,
      * the specified {@code date} was already compensated and is a physical absolute date
      * @return common parameters
      */
-    protected CommonParametersWithoutDerivatives computeCommonParametersWithout(final SpacecraftState[] states,
-                                                                                final boolean clockOffsetAlreadyApplied) {
+    CommonParametersWithoutDerivatives computeCommonParametersWithout(final SpacecraftState[] states) {
 
         // local and remote satellites
         final Frame                    frame            = states[0].getFrame();
@@ -141,7 +137,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         final PVCoordinatesProvider    remotePV         = getRemotePV(states[1]);
 
         // take clock offset into account
-        final AbsoluteDate arrivalDate = clockOffsetAlreadyApplied ? getDate() : getDate().shiftedBy(-localClockOffset);
+        final AbsoluteDate arrivalDate = getDate().shiftedBy(-localClockOffset);
 
         // Downlink delay
         final double deltaT = arrivalDate.durationFrom(states[0]);
@@ -163,13 +159,11 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
 
     /** Compute common estimation parameters.
      * @param states states of all spacecraft involved in the measurement
-     * @param clockOffsetAlreadyApplied if true, the specified {@code date} is as read
      * by the receiver clock (i.e. clock offset <em>not</em> compensated), if false,
      * the specified {@code date} was already compensated and is a physical absolute date
      * @return common parameters
      */
-    protected CommonParametersWithDerivatives computeCommonParametersWith(final SpacecraftState[] states,
-                                                                          final boolean clockOffsetAlreadyApplied) {
+    CommonParametersWithDerivatives computeCommonParametersWith(final SpacecraftState[] states) {
 
         final Frame frame = states[0].getFrame();
 
@@ -198,8 +192,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         final FieldPVCoordinatesProvider<Gradient>    remotePV         = getRemotePV(states[1], nbParams);
 
         // take clock offset into account
-        final FieldAbsoluteDate<Gradient> arrivalDate = clockOffsetAlreadyApplied ?
-                                                        gDate : gDate.shiftedBy(localClockOffset.getOffset().negate());
+        final FieldAbsoluteDate<Gradient> arrivalDate = gDate.shiftedBy(localClockOffset.getOffset().negate());
 
         // Downlink delay
         final Gradient deltaT = arrivalDate.durationFrom(states[0].getDate());

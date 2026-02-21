@@ -21,7 +21,7 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.signal.SignalTravelTimeAdjustableReceiver;
+import org.orekit.signal.DifferencesOfSignalArrival;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -83,25 +83,21 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("checkstyle:WhitespaceAround")
     @Override
     protected EstimatedMeasurementBase<TDOA> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
                                                                                      final SpacecraftState[] states) {
-        // Compute emission date
         final SpacecraftState state = states[0];
         final Frame frame = state.getFrame();
+
+        // Compute emission and reception dates
         final AbsoluteDate firstReceptionDate = getPrimeObserver().getCorrectedReceptionDate(getDate());
         final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
-        final AbsoluteDate emissionDate = computeEmissionDate(frame, getPrimeObserver().getPVCoordinatesProvider(), firstReceptionDate, emitter);
-
-        // Secondary PV in inertial frame at receive at second sensor
-        final PVCoordinatesProvider secondReceiver = getSecondObserver().getPVCoordinatesProvider();
-        final SignalTravelTimeAdjustableReceiver signalTravelTimeAdjustableReceiver = getSignalTravelTimeModel()
-                .getAdjustableReceiverComputer(secondReceiver);
-        final TimeStampedPVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, frame);
-        final double secondReceptionDelay = signalTravelTimeAdjustableReceiver.computeDelay(emitterPV.getPosition(),
-                emissionDate, frame);
-        final AbsoluteDate secondReceptionDate = emissionDate.shiftedBy(secondReceptionDelay);
+        final DifferencesOfSignalArrival differencesOfSignalArrival = new DifferencesOfSignalArrival(getSignalTravelTimeModel());
+        final TimeStampedPVCoordinates primePV = getPrimeObserver().getPVCoordinatesProvider().getPVCoordinates(firstReceptionDate, frame);
+        final double[] delays = differencesOfSignalArrival.computeDelays(frame, primePV.getPosition(),
+                firstReceptionDate, getSecondObserver().getPVCoordinatesProvider(), emitter);
+        final AbsoluteDate emissionDate = firstReceptionDate.shiftedBy(-delays[0]);
+        final AbsoluteDate secondReceptionDate = emissionDate.shiftedBy(delays[1]);
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
         final double offset1 = getPrimeObserver().getClockOffsetDriver().getValue(firstReceptionDate);
@@ -109,8 +105,8 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
         final double tdoa = (firstReceptionDate.durationFrom(emissionDate) + offset1) - (secondReceptionDate.durationFrom(emissionDate) + offset2);
 
         // Prepare the evaluation
-        final TimeStampedPVCoordinates primePV = getPrimeObserver().getPVCoordinatesProvider().getPVCoordinates(firstReceptionDate, frame);
-        final TimeStampedPVCoordinates secondPV = secondReceiver.getPVCoordinates(secondReceptionDate, frame);
+        final TimeStampedPVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, frame);
+        final TimeStampedPVCoordinates secondPV = getSecondObserver().getPVCoordinatesProvider().getPVCoordinates(secondReceptionDate, frame);
         final EstimatedMeasurement<TDOA> estimated =
                 new EstimatedMeasurement<>(this, iteration, evaluation,
                         new SpacecraftState[] { state.shiftedBy(emissionDate.durationFrom(state.getDate())) },
@@ -120,21 +116,6 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
         estimated.setEstimatedValue(tdoa);
 
         return estimated;
-    }
-
-    /**
-     * Compute the signal emission date.
-     * @param frame frame where to perform signal propagation
-     * @param receiver signal receiver
-     * @param receptionDate reception date
-     * @param emitter signal emitter
-     * @return emission date
-     */
-    protected AbsoluteDate computeEmissionDate(final Frame frame, final PVCoordinatesProvider receiver,
-                                               final AbsoluteDate receptionDate, final PVCoordinatesProvider emitter) {
-        final double signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
-                .computeDelay(receptionDate, receiver.getPosition(receptionDate, frame), receptionDate, frame);
-        return receptionDate.shiftedBy(-signalTravelTime);
     }
 
     /** {@inheritDoc} */

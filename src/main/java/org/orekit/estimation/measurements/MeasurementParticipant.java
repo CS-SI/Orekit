@@ -39,14 +39,11 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
     /** Suffix for ground clock drift parameters name. */
     String DRIFT_SUFFIX = "-drift";
 
-    /** Suffix for ground clock drift parameters name.
-     * @since 12.1
-     */
+    /** Suffix for ground clock drift parameters name. */
     String ACCELERATION_SUFFIX = "-acceleration";
 
     /** Get the MeasurementObject name.
      * @return name for the object
-     * @since 12.1
      */
     String getName();
 

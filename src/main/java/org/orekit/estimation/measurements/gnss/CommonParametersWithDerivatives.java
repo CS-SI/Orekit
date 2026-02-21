@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.gnss;
+
+import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-import java.util.Map;
-
 /** Common intermediate parameters used to estimate measurements where receiver is a ground station.
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class CommonParametersWithDerivatives {
+class CommonParametersWithDerivatives {
 
     /** Spacecraft state. */
     private final SpacecraftState state;
@@ -63,14 +63,14 @@ public class CommonParametersWithDerivatives {
     * @param transitPV transit position/velocity as a gradient
     * @param remotePV position/velocity of remote observer as a gradient
     */
-    public CommonParametersWithDerivatives(final SpacecraftState state,
-                                           final Map<String, Integer> indices,
-                                           final Gradient tauD,
-                                           final FieldClockOffset<Gradient> localOffset,
-                                           final FieldClockOffset<Gradient> remoteOffset,
-                                           final SpacecraftState transitState,
-                                           final TimeStampedFieldPVCoordinates<Gradient> transitPV,
-                                           final TimeStampedFieldPVCoordinates<Gradient> remotePV) {
+    CommonParametersWithDerivatives(final SpacecraftState state,
+                                    final Map<String, Integer> indices,
+                                    final Gradient tauD,
+                                    final FieldClockOffset<Gradient> localOffset,
+                                    final FieldClockOffset<Gradient> remoteOffset,
+                                    final SpacecraftState transitState,
+                                    final TimeStampedFieldPVCoordinates<Gradient> transitPV,
+                                    final TimeStampedFieldPVCoordinates<Gradient> remotePV) {
         this.state        = state;
         this.indices      = indices;
         this.tauD         = tauD;
