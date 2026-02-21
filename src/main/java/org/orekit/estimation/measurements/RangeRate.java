@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.model.OneLegRangeRateModel;
+import org.orekit.estimation.measurements.model.OneLeggedRangeRateModel;
 import org.orekit.estimation.measurements.model.TwoLeggedRangeRateModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -148,7 +148,7 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
                 receptionDate, state);
 
         // physical range rate value
-        final OneLegRangeRateModel rangeRateModel = new OneLegRangeRateModel(getSignalTravelTimeModel().getWarmedUpModel());
+        final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(getSignalTravelTimeModel().getWarmedUpModel());
         final AbsoluteDate emissionDate = estimated.getParticipants()[0].getDate();
         double rangeRate = rangeRateModel.value(state.getFrame(), estimated.getParticipants()[1], receptionDate,
                 AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates()), emissionDate);
@@ -225,7 +225,7 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
                         emissionState.getPVCoordinates(), observerPVAtReception.toTimeStampedPVCoordinates() });
 
         // physical range rate value
-        final OneLegRangeRateModel rangeRateModel = new OneLegRangeRateModel(getSignalTravelTimeModel());
+        final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(getSignalTravelTimeModel());
         Gradient rangeRate = rangeRateModel.value(frame, observerPVAtReception, receptionDate, satellitePVProvider,
                 emissionDate);
 

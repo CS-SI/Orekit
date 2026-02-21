@@ -31,10 +31,9 @@ import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-class MinimumElevationEventFunctionTest {
+class ElevationValueCrossingFunctionTest {
 
     @BeforeEach
     void setUp() {
@@ -47,7 +46,7 @@ class MinimumElevationEventFunctionTest {
         final AtmosphericRefractionModel model = new ITURP834AtmosphericRefraction(100e3);
         final TopocentricFrame frame = new TopocentricFrame(ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true)),
                 new GeodeticPoint(1., 2., 0.), "42");
-        final MinimumElevationEventFunction eventFunction = new MinimumElevationEventFunction(model, frame, 0.1);
+        final ElevationValueCrossingFunction eventFunction = new ElevationValueCrossingFunction(model, frame, 0.1);
         final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
         final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(Binary64Field.getInstance(), state);
         // WHEN
@@ -61,7 +60,7 @@ class MinimumElevationEventFunctionTest {
         // GIVEN
         final TopocentricFrame frame = new TopocentricFrame(ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true)),
                 new GeodeticPoint(1., 2., 0.), "42");
-        final MinimumElevationEventFunction eventFunction = new MinimumElevationEventFunction(null, frame, 0.1);
+        final ElevationValueCrossingFunction eventFunction = new ElevationValueCrossingFunction(null, frame, 0.1);
         final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
         final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(Binary64Field.getInstance(), state);
         // WHEN

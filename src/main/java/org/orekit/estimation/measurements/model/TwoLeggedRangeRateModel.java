@@ -29,7 +29,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * Class for two-legs range rate (a.k.a. Doppler measurement).
+ * Class for two-legged range rate (a.k.a. Doppler measurement).
  * A signal is emitted, received a first time (relay/reflection) and received again a final time. There is no further assumption.
  * @since 14.0
  * @author Romain Serra

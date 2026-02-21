@@ -54,11 +54,11 @@ class TwoLeggedRangeRateModelTest {
         // WHEN
         final double rangeRate = rangeRateModel.value(frame, pvObserver, receptionDate, relay, emitter);
         // THEN
-        final OneLegRangeRateModel oneLegRangeRateModel = new OneLegRangeRateModel(signalTravelTimeModel);
-        final double firstLeg = oneLegRangeRateModel.value(frame, pvObserver, receptionDate, relay);
+        final OneLeggedRangeRateModel oneLeggedRangeRateModel = new OneLeggedRangeRateModel(signalTravelTimeModel);
+        final double firstLeg = oneLeggedRangeRateModel.value(frame, pvObserver, receptionDate, relay);
         final double delay = signalTravelTimeModel.getAdjustableEmitterComputer(relay).computeDelay(pvObserver.getPosition(),
                 receptionDate, frame);
-        final double secondLeg = oneLegRangeRateModel.value(frame, relay.shiftedBy(-delay).getPVCoordinates(),
+        final double secondLeg = oneLeggedRangeRateModel.value(frame, relay.shiftedBy(-delay).getPVCoordinates(),
                 receptionDate.shiftedBy(-delay), emitter);
         assertEquals(firstLeg + secondLeg, rangeRate);
     }
@@ -82,11 +82,11 @@ class TwoLeggedRangeRateModelTest {
         // WHEN
         final Gradient rangeRate = rangeRateModel.value(frame, emitter.getPVCoordinates(), receptionDate, relay, emitter);
         // THEN
-        final OneLegRangeRateModel oneLegRangeRateModel = new OneLegRangeRateModel(signalTravelTimeModel);
-        final Gradient firstLeg = oneLegRangeRateModel.value(frame, emitter.getPVCoordinates(), receptionDate, relay);
+        final OneLeggedRangeRateModel oneLeggedRangeRateModel = new OneLeggedRangeRateModel(signalTravelTimeModel);
+        final Gradient firstLeg = oneLeggedRangeRateModel.value(frame, emitter.getPVCoordinates(), receptionDate, relay);
         final Gradient delay = signalTravelTimeModel.getFieldAdjustableEmitterComputer(field, relay)
                 .computeDelay(emitter.getPosition(), receptionDate, frame);
-        final Gradient secondLeg = oneLegRangeRateModel.value(frame, relay.shiftedBy(delay.negate()).getPVCoordinates(),
+        final Gradient secondLeg = oneLeggedRangeRateModel.value(frame, relay.shiftedBy(delay.negate()).getPVCoordinates(),
                 receptionDate.shiftedBy(delay.negate()), emitter);
         assertEquals(firstLeg.add(secondLeg), rangeRate);
         assertNotEquals(0., rangeRate.getGradient()[0]);

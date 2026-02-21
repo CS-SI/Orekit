@@ -24,45 +24,45 @@ import org.orekit.propagation.SpacecraftState;
 
 
 /**
- * Class for minimum elevation event function.
+ * Class for single-value crossing elevation event.
  * @author Romain Serra
  * @since 14.0
  */
-public class MinimumElevationEventFunction extends AbstractElevationCrossingFunction {
+public class ElevationValueCrossingFunction extends AbstractElevationCrossingFunction {
 
-    /** Minimum elevation. */
-    private final double minimumElevation;
+    /** Critical elevation. */
+    private final double criticalElevation;
 
     /** Constructor.
      * @param refractionModel reference to refraction model (can be null in which case no correction is applied)
      * @param topo reference to a topocentric model
-     * @param minimumElevation min. elevation defining function's root
+     * @param criticalElevation elevation defining function's root
      */
-    public MinimumElevationEventFunction(final AtmosphericRefractionModel refractionModel,
-                                         final TopocentricFrame topo, final double minimumElevation) {
+    public ElevationValueCrossingFunction(final AtmosphericRefractionModel refractionModel,
+                                          final TopocentricFrame topo, final double criticalElevation) {
         super(refractionModel, topo);
-        this.minimumElevation = minimumElevation;
+        this.criticalElevation = criticalElevation;
     }
 
     /**
      * Getter for the minimum elevation.
      * @return min. elevation
      */
-    public double getMinimumElevation() {
-        return minimumElevation;
+    public double getCriticalElevation() {
+        return criticalElevation;
     }
 
     @Override
     public double value(final SpacecraftState state) {
-        final double elevation = getTopocentricFrame().getElevation(state.getPosition(), state.getFrame(), state.getDate());
+        final double elevation = getElevation(state.getPosition(getTopocentricFrame()), state.getDate());
         final double correctedElevation = applyRefraction(elevation);
-        return correctedElevation - minimumElevation;
+        return correctedElevation - criticalElevation;
     }
 
     @Override
     public <T extends CalculusFieldElement<T>> T value(final FieldSpacecraftState<T> fieldState) {
-        final T elevation = getTopocentricFrame().getElevation(fieldState.getPosition(), fieldState.getFrame(), fieldState.getDate());
+        final T elevation = getElevation(fieldState.getPosition(getTopocentricFrame()), fieldState.getDate());
         final T correctedElevation = applyRefraction(elevation);
-        return correctedElevation.subtract(minimumElevation);
+        return correctedElevation.subtract(criticalElevation);
     }
 }

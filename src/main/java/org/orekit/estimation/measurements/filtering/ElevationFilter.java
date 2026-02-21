@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.filtering;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.functions.MinimumElevationEventFunction;
+import org.orekit.propagation.events.functions.ElevationValueCrossingFunction;
 
 /**
  * Elevation pre-processing filter.
@@ -31,7 +31,7 @@ import org.orekit.propagation.events.functions.MinimumElevationEventFunction;
 public class ElevationFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter<T> {
 
     /** Event function used to filter out. */
-    private final MinimumElevationEventFunction elevationFunction;
+    private final ElevationValueCrossingFunction elevationFunction;
 
     /**
      * Constructor.
@@ -39,7 +39,7 @@ public class ElevationFilter<T extends ObservedMeasurement<T>> implements Measur
      * @param threshold minimum elevation for a measurements to be accepted, in radians
      */
     public ElevationFilter(final GroundStation station, final double threshold) {
-        this.elevationFunction = new MinimumElevationEventFunction(null, station.getBaseFrame(), threshold);
+        this.elevationFunction = new ElevationValueCrossingFunction(null, station.getBaseFrame(), threshold);
     }
 
     /** {@inheritDoc} */
