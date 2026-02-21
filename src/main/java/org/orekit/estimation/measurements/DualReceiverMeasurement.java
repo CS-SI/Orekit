@@ -22,10 +22,10 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableReceiver;
+import org.orekit.signal.DifferencesOfSignalArrival;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -150,23 +150,12 @@ abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends
         final FieldPVCoordinatesProvider<Gradient> emitter = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
         final FieldAbsoluteDate<Gradient> firstReceptionDate = getPrimeObserver().getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
 
-        // Compute emission date
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> signalTravelTimeAdjustableEmitter =
-                new FieldSignalTravelTimeAdjustableEmitter<>(emitter);
-        final FieldPVCoordinatesProvider<Gradient> primePVProvider = getPrimeObserver().getFieldPVCoordinatesProvider(nbParams, paramIndices);
-        final Gradient firstDelay = signalTravelTimeAdjustableEmitter.computeDelay(firstReceptionDate,
-                primePVProvider.getPosition(firstReceptionDate, frame), firstReceptionDate, frame);
-        final FieldAbsoluteDate<Gradient> emissionDate = firstReceptionDate.shiftedBy(firstDelay.negate());
-
-        // Secondary PV in inertial frame at receive at second sensor
-        final FieldPVCoordinatesProvider<Gradient> secondReceiver = getSecondObserver().getFieldPVCoordinatesProvider(nbParams,
-                paramIndices);
-        final FieldSignalTravelTimeAdjustableReceiver<Gradient> signalTravelTimeAdjustableReceiver = getSignalTravelTimeModel()
-                .getFieldAdjustableReceiverComputer(pva.getDate().getField(), secondReceiver);
-        final TimeStampedFieldPVCoordinates<Gradient> emitterPV = emitter.getPVCoordinates(emissionDate, frame);
-        final Gradient secondDelay = signalTravelTimeAdjustableReceiver.computeDelay(emitterPV.getPosition(),
-                emissionDate, frame);
-        return new Gradient[] {firstDelay, secondDelay};
+        // Compute delays
+        final DifferencesOfSignalArrival differencesOfSignalArrival = new DifferencesOfSignalArrival(getSignalTravelTimeModel());
+        final FieldVector3D<Gradient> primePosition = getPrimeObserver().getFieldPVCoordinatesProvider(nbParams, paramIndices)
+                .getPosition(firstReceptionDate, frame);
+        return differencesOfSignalArrival.computeDelays(frame, primePosition, firstReceptionDate,
+                getSecondObserver().getFieldPVCoordinatesProvider(nbParams, paramIndices), emitter);
     }
 
     /**
