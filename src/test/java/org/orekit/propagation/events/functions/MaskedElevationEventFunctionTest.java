@@ -32,7 +32,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ElevationMask;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MaskedElevationEventFunctionTest {
@@ -54,7 +53,7 @@ class MaskedElevationEventFunctionTest {
         // WHEN
         final double actual = eventFunction.value(state);
         // THEN
-        final double expected = new MinimumElevationEventFunction(null, frame, 0.).value(state);
+        final double expected = new ElevationValueCrossingFunction(null, frame, 0.).value(state);
         assertEquals(expected, actual);
     }
 

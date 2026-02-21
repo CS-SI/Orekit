@@ -33,12 +33,12 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
- * Class for one-leg range rate (a.k.a. Doppler measurement).
+ * Class for one-legged range rate (a.k.a. Doppler measurement).
  * A signal is transmitted and received. There is no further assumption.
  * @since 14.0
  * @author Romain Serra
  */
-public class OneLegRangeRateModel {
+public class OneLeggedRangeRateModel {
 
     /** Signal travel time model. */
     private final SignalTravelTimeModel signalTravelTimeModel;
@@ -47,7 +47,7 @@ public class OneLegRangeRateModel {
      * Constructor.
      * @param signalTravelTimeModel signal travel time model
      */
-    public OneLegRangeRateModel(final SignalTravelTimeModel signalTravelTimeModel) {
+    public OneLeggedRangeRateModel(final SignalTravelTimeModel signalTravelTimeModel) {
         this.signalTravelTimeModel = signalTravelTimeModel;
     }
 

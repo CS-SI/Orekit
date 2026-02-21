@@ -17,8 +17,12 @@
 package org.orekit.propagation.events.functions;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 
 /**
@@ -50,9 +54,31 @@ public abstract class AbstractElevationCrossingFunction extends AbstractTopocent
         return this.refractionModel;
     }
 
+    /**
+     * Compute elevation.
+     * @param topocentricPosition position in topocentric frame
+     * @param date date
+     * @return elevation
+     */
+    protected double getElevation(final Vector3D topocentricPosition, final AbsoluteDate date) {
+        return getTopocentricFrame().getElevation(topocentricPosition, getTopocentricFrame(), date);
+    }
+
+    /**
+     * Compute elevation.
+     * @param topocentricPosition position in topocentric frame
+     * @param date date
+     * @param <T> field type
+     * @return elevation
+     */
+    protected <T extends CalculusFieldElement<T>> T getElevation(final FieldVector3D<T> topocentricPosition,
+                                                                 final FieldAbsoluteDate<T> date) {
+        return getTopocentricFrame().getElevation(topocentricPosition, getTopocentricFrame(), date);
+    }
+
     /** Apply refraction correction if applicable.
      * @param elevation value before correction
-     * @return apparent elevation
+     * @return apparent elevation due to refraction
      */
     protected double applyRefraction(final double elevation) {
         if (refractionModel != null) {
@@ -65,7 +91,7 @@ public abstract class AbstractElevationCrossingFunction extends AbstractTopocent
     /** Apply refraction correction if applicable (Field version).
      * @param elevation value before correction
      * @param <T> field type
-     * @return apparent elevation
+     * @return apparent elevation due to refraction
      */
     protected <T extends CalculusFieldElement<T>> T applyRefraction(final T elevation) {
         if (refractionModel != null) {

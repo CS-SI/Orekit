@@ -35,14 +35,14 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class OneLegRangeRateModelTest {
+class OneLeggedRangeRateModelTest {
 
     @Test
     void testValue() {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final OneLegRangeRateModel rangeRateModel = new OneLegRangeRateModel(new SignalTravelTimeModel());
+        final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(new SignalTravelTimeModel());
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(1e4, -1e3, 0.), new Vector3D(1, 2, 3));
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final PVCoordinates receiverPV = new PVCoordinates();
@@ -60,7 +60,7 @@ class OneLegRangeRateModelTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final OneLegRangeRateModel rangeRateModel = new OneLegRangeRateModel(new SignalTravelTimeModel());
+        final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(new SignalTravelTimeModel());
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(1e5, 0., 0.), Vector3D.PLUS_I);
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final PVCoordinates receiverPV = new PVCoordinates();
@@ -75,7 +75,7 @@ class OneLegRangeRateModelTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final OneLegRangeRateModel rangeRateModel = new OneLegRangeRateModel(new SignalTravelTimeModel());
+        final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(new SignalTravelTimeModel());
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(1e5, 0., 0.));
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final PVCoordinates receiverPV = new PVCoordinates();
@@ -90,7 +90,7 @@ class OneLegRangeRateModelTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final OneLegRangeRateModel rangeRateModel = new OneLegRangeRateModel(new SignalTravelTimeModel());
+        final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(new SignalTravelTimeModel());
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(1e5, 1e4,-1e6), Vector3D.PLUS_I);
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final PVCoordinates receiverPV = new PVCoordinates();
@@ -114,7 +114,7 @@ class OneLegRangeRateModelTest {
         final FieldPVCoordinates<Gradient> receiverPV = new FieldPVCoordinates<>(field, new PVCoordinates(receiverPosition));
         final FieldAbsolutePVCoordinates<Gradient> fieldEmitter = new FieldAbsolutePVCoordinates<>(field, emitter);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
-        final OneLegRangeRateModel rangeRateModel = new OneLegRangeRateModel(new SignalTravelTimeModel());
+        final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(new SignalTravelTimeModel());
         // WHEN
         final Gradient rateGradient = rangeRateModel.value(frame, receiverPV, fieldDate, fieldEmitter);
         // THEN

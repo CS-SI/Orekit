@@ -22,8 +22,9 @@ import org.hipparchus.ode.events.Action;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.AbstractElevationCrossingFunction;
+import org.orekit.propagation.events.functions.ElevationValueCrossingFunction;
 import org.orekit.propagation.events.functions.MaskedElevationEventFunction;
-import org.orekit.propagation.events.functions.MinimumElevationEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnDecreasing;
@@ -45,15 +46,6 @@ import org.orekit.utils.ElevationMask;
 public class FieldElevationDetector<T extends CalculusFieldElement<T>>
         extends FieldAbstractTopocentricDetector<FieldElevationDetector<T>, T> {
 
-    /** Elevation mask used for calculations, if defined. */
-    private final ElevationMask elevationMask;
-
-    /** Minimum elevation value used if mask is not defined. */
-    private final double minElevation;
-
-    /** Atmospheric Model used for calculations, if defined. */
-    private final AtmosphericRefractionModel refractionModel;
-
     /**
      * Creates an instance of Elevation detector based on passed in topocentric frame
      * and the minimum elevation angle.
@@ -68,8 +60,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      */
     public FieldElevationDetector(final Field<T> field, final TopocentricFrame topo) {
         this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
-             new FieldStopOnDecreasing<>(),
-             0.0, null, null, topo);
+             new FieldStopOnDecreasing<>(), new ElevationValueCrossingFunction(null, topo, 0.));
     }
 
     /**
@@ -84,7 +75,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      */
     public FieldElevationDetector(final T maxCheck, final T threshold, final TopocentricFrame topo) {
         this(new FieldEventDetectionSettings<>(maxCheck.getReal(), threshold, DEFAULT_MAX_ITER),
-             new FieldStopOnDecreasing<>(), 0.0, null, null, topo);
+             new FieldStopOnDecreasing<>(), new ElevationValueCrossingFunction(null, topo, 0.));
     }
 
     /** Protected constructor with full parameters.
@@ -95,29 +86,19 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      * </p>
      * @param detectionSettings detection settings
      * @param handler event handler to call at event occurrences
-     * @param minElevation minimum elevation in radians (rad)
-     * @param mask reference to elevation mask
-     * @param refractionModel reference to refraction model
-     * @param topo reference to a topocentric model
-     * @since 12.2
+     * @param elevationCrossingFunction elevation crossing function
+     * @since 14.0
      */
-    protected FieldElevationDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
-                                     final double minElevation, final ElevationMask mask,
-                                     final AtmosphericRefractionModel refractionModel,
-                                     final TopocentricFrame topo) {
-        super(mask == null ? new MinimumElevationEventFunction(refractionModel, topo, minElevation) :
-                new MaskedElevationEventFunction(refractionModel, topo, mask), detectionSettings, handler, topo);
-        this.minElevation    = minElevation;
-        this.elevationMask   = mask;
-        this.refractionModel = refractionModel;
+    public FieldElevationDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
+                                  final AbstractElevationCrossingFunction elevationCrossingFunction) {
+        super(elevationCrossingFunction, detectionSettings, handler, elevationCrossingFunction.getTopocentricFrame());
     }
 
     /** {@inheritDoc} */
     @Override
     protected FieldElevationDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                final FieldEventHandler<T> newHandler) {
-        return new FieldElevationDetector<>(detectionSettings, newHandler,
-                                            minElevation, elevationMask, refractionModel, getTopocentricFrame());
+        return new FieldElevationDetector<>(detectionSettings, newHandler, (AbstractElevationCrossingFunction) getEventFunction());
     }
 
     /**
@@ -127,7 +108,11 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      * @see #withElevationMask(ElevationMask)
      */
     public ElevationMask getElevationMask() {
-        return this.elevationMask;
+        if (getEventFunction() instanceof MaskedElevationEventFunction) {
+            return ((MaskedElevationEventFunction) getEventFunction()).getElevationMask();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -137,7 +122,11 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      * @see #withConstantElevation(double)
      */
     public double getMinElevation() {
-        return this.minElevation;
+        if (getEventFunction() instanceof ElevationValueCrossingFunction) {
+            return ((ElevationValueCrossingFunction) getEventFunction()).getCriticalElevation();
+        } else {
+            return Double.NaN;
+        }
     }
 
     /**
@@ -146,7 +135,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public AtmosphericRefractionModel getRefractionModel() {
-        return this.refractionModel;
+        return ((AbstractElevationCrossingFunction) getEventFunction()).getRefractionModel();
     }
 
     /** Compute the value of the switching function.
@@ -172,7 +161,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      */
     public FieldElevationDetector<T> withConstantElevation(final double newMinElevation) {
         return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
-                                            newMinElevation, null, refractionModel, getTopocentricFrame());
+                new ElevationValueCrossingFunction(getRefractionModel(), getTopocentricFrame(), newMinElevation));
     }
 
     /**
@@ -184,7 +173,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      */
     public FieldElevationDetector<T> withElevationMask(final ElevationMask newElevationMask) {
         return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
-                                            Double.NaN, newElevationMask, refractionModel, getTopocentricFrame());
+                new MaskedElevationEventFunction(getRefractionModel(), getTopocentricFrame(), newElevationMask));
     }
 
     /**
@@ -200,13 +189,18 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      * @see #getRefractionModel()
      */
     public FieldElevationDetector<T> withRefraction(final AtmosphericRefractionModel newRefractionModel) {
-        return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
-                                            minElevation, elevationMask, newRefractionModel, getTopocentricFrame());
+        if (getEventFunction() instanceof ElevationValueCrossingFunction) {
+            return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
+                    new ElevationValueCrossingFunction(newRefractionModel, getTopocentricFrame(), getMinElevation()));
+        } else {
+            return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
+                    new MaskedElevationEventFunction(newRefractionModel, getTopocentricFrame(), getElevationMask()));
+        }
     }
 
     @Override
     public ElevationDetector toEventDetector(final EventHandler eventHandler) {
-        return new ElevationDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler, minElevation,
-                elevationMask, refractionModel, getTopocentricFrame());
+        return new ElevationDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,
+                (AbstractElevationCrossingFunction) getEventFunction());
     }
 }

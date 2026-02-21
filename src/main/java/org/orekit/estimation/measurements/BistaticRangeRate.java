@@ -93,7 +93,7 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
                 signalTravelTimeModel, satellite);
 
         // Add class member values
-        this.twoLeggedRangeRateModel = new TwoLeggedRangeRateModel(getTwoLegsSignalTimer());
+        this.twoLeggedRangeRateModel = new TwoLeggedRangeRateModel(getTwoLeggedSignalTimer());
     }
 
     /** {@inheritDoc} */
