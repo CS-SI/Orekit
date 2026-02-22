@@ -20,14 +20,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.functions.BooleanEventFunction;
 import org.orekit.propagation.events.functions.EventFunction;
-import org.orekit.propagation.events.functions.EventFunctionModifier;
+import org.orekit.propagation.events.functions.ShiftedEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.utils.ExtendedStateScalarFunction;
 
 /** Wrapper shifting events occurrences times.
  * <p>This class wraps an {@link FieldEventDetector event detector} to slightly
@@ -111,8 +113,10 @@ public class FieldEventShifter<T extends CalculusFieldElement<T>> implements Fie
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = increasingTimeShift.negate();
         this.decreasingOffset = decreasingTimeShift.negate();
-        final EventFunction increasingShifted = new LocalEventFunction(detector.getEventFunction(), increasingOffset);
-        final EventFunction decreasingShifted = new LocalEventFunction(detector.getEventFunction(), decreasingOffset);
+        final EventFunction increasingShifted = new ShiftedEventFunction(detector.getEventFunction(),
+                new LocalStateScalarFunction(increasingOffset));
+        final EventFunction decreasingShifted = new ShiftedEventFunction(detector.getEventFunction(),
+                new LocalStateScalarFunction(decreasingOffset));
         final List<EventFunction> eventFunctionList = new ArrayList<>();
         eventFunctionList.add(increasingShifted);
         eventFunctionList.add(decreasingShifted);
@@ -176,36 +180,28 @@ public class FieldEventShifter<T extends CalculusFieldElement<T>> implements Fie
     }
 
     /** Local class for function event. */
-    private class LocalEventFunction implements EventFunctionModifier {
+    private class LocalStateScalarFunction implements ExtendedStateScalarFunction {
 
-        /** Shifted event function. */
-        private final EventFunction function;
-
-        /** Time shift. */
+        /** Field shift. */
         private final T shift;
 
-        LocalEventFunction(final EventFunction function, final T shift) {
-            this.function = function;
+        LocalStateScalarFunction(final T shift) {
             this.shift = shift;
         }
 
         @Override
-        public EventFunction getBaseFunction() {
-            return function;
-        }
-
-        @Override
         public double value(final SpacecraftState state) {
-            return getBaseFunction().value(state.shiftedBy(shift.getReal()));
+            return shift.getReal();
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public <S extends CalculusFieldElement<S>> S value(final FieldSpacecraftState<S> fieldState) {
-            if (fieldState.getDate().getField().equals(shift.getField())) {
-                return getBaseFunction().value(fieldState.shiftedBy((S) shift));
+            final Field<S> field = fieldState.getDate().getField();
+            if (field.equals(shift.getField())) {
+                return (S) shift;
             } else {
-                return getBaseFunction().value(fieldState.shiftedBy(shift.getReal()));
+                return field.getZero().newInstance(shift.getReal());
             }
         }
     }

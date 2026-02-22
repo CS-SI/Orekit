@@ -16,17 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.ExtremumAngularSeparationFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPositionProvider;
 
 /** Detector of local extrema with angular separation.
  * @author Romain Serra
  * @see AngularSeparationDetector
+ * @see ExtremumAngularSeparationFunction
  * @since 13.1
  */
 public class ExtremumAngularSeparationDetector extends AbstractDetector<ExtremumAngularSeparationDetector> {
@@ -37,7 +35,7 @@ public class ExtremumAngularSeparationDetector extends AbstractDetector<Extremum
     /** Observer for the spacecraft, that may also see the beacon at the same time if they are too close. */
     private final ExtendedPositionProvider observer;
 
-    /** Protected constructor with full parameters.
+    /** Constructor with full parameters.
      * @param detectionSettings detection settings
      * @param handler event handler to call at event occurrences
      * @param beacon beacon at the center of the proximity zone
@@ -48,7 +46,7 @@ public class ExtremumAngularSeparationDetector extends AbstractDetector<Extremum
                                              final EventHandler handler,
                                              final ExtendedPositionProvider beacon,
                                              final ExtendedPositionProvider observer) {
-        super(detectionSettings, handler);
+        super(new ExtremumAngularSeparationFunction(beacon, observer), detectionSettings, handler);
         this.beacon         = beacon;
         this.observer       = observer;
     }
@@ -67,21 +65,17 @@ public class ExtremumAngularSeparationDetector extends AbstractDetector<Extremum
         return observer;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public double g(final SpacecraftState s) {
+        return getEventFunction().value(s);
+    }
+
+    /** {@inheritDoc} */
     @Override
     protected ExtremumAngularSeparationDetector create(final EventDetectionSettings detectionSettings,
                                                        final EventHandler newHandler) {
         return new ExtremumAngularSeparationDetector(detectionSettings, newHandler, beacon, observer);
     }
 
-    @Override
-    public double g(final SpacecraftState s) {
-        final FieldVector3D<UnivariateDerivative1> position = s.getPVCoordinates().toUnivariateDerivative1Vector();
-        final UnivariateDerivative1 dt = new UnivariateDerivative1(0., 1.);
-        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(),
-                s.getDate()).shiftedBy(dt);
-        final FieldVector3D<UnivariateDerivative1> bP = beacon.getPosition(fieldDate, s.getFrame());
-        final FieldVector3D<UnivariateDerivative1> oP = observer.getPosition(fieldDate, s.getFrame());
-        final UnivariateDerivative1 separation = FieldVector3D.angle(position.subtract(oP), bP.subtract(oP));
-        return separation.getFirstDerivative();
-    }
 }

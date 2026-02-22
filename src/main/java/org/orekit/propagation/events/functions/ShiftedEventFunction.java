@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.events.functions;
 
-import java.util.function.ToDoubleFunction;
-
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -41,16 +39,7 @@ public class ShiftedEventFunction implements EventFunctionModifier {
      * @param timeShift shift value
      */
     public ShiftedEventFunction(final EventFunction baseFunction, final double timeShift) {
-        this(baseFunction, (ToDoubleFunction<SpacecraftState>) value -> timeShift);
-    }
-
-    /**
-     * Constructor with non-Field function.
-     * @param baseFunction event function to shift in time
-     * @param timeShiftFunction shift value function
-     */
-    public ShiftedEventFunction(final EventFunction baseFunction, final ToDoubleFunction<SpacecraftState> timeShiftFunction) {
-        this(baseFunction, ExtendedStateScalarFunction.of(timeShiftFunction));
+        this(baseFunction, ExtendedStateScalarFunction.of(state -> timeShift));
     }
 
     /**
