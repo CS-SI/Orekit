@@ -470,8 +470,8 @@ class InterSatellitesRangeTest {
         final InterSatellitesRangeMeasurementCreator creator = new InterSatellitesRangeMeasurementCreator(ephemeris,
                                                                                                           localClockOffset,
                                                                                                           remoteClockOffset);
-        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -505,14 +505,14 @@ class InterSatellitesRangeTest {
                         ephemeris.propagate(date)
                     };
                     ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockOffsetDriver(),
-                        measurement.getSatellites().get(1).getClockOffsetDriver()
+                        measurement.getSatellites().get(0).getClockBiasDriver(),
+                        measurement.getSatellites().get(1).getClockBiasDriver()
                     };
 
                     // Only local satellite clock offset is considered for two ways measurements
                     if (((InterSatellitesRange) measurement).isTwoWay()) {
                         drivers = new ParameterDriver[] {
-                            measurement.getSatellites().get(0).getClockOffsetDriver()
+                            measurement.getSatellites().get(0).getClockBiasDriver()
                         };
                     }
 
@@ -607,9 +607,9 @@ class InterSatellitesRangeTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit),
                 new SpacecraftState(TestUtils.getDefaultOrbit(epoch))};
         final ObservableSatellite sat0 = new ObservableSatellite(0);
-        sat0.getClockOffsetDriver().setValue(0.1);
+        sat0.getClockBiasDriver().setValue(0.1);
         final ObservableSatellite sat1 = new ObservableSatellite(1);
-        sat1.getClockOffsetDriver().setValue(0.2);
+        sat1.getClockBiasDriver().setValue(0.2);
         sat1.getClockDriftDriver().setValue(0.01);
         // WHEN
         final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, twoWay, epoch, 0., 1., 1.);

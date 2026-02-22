@@ -160,7 +160,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -291,7 +291,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -436,7 +436,7 @@ public class PhaseTest {
         // Create perfect range measurements
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -444,9 +444,9 @@ public class PhaseTest {
                                                                             PredefinedGnssSignal.E01,
                                                                             ambiguity,
                                                                             satClockOffset);
-        creator.getSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getSatellite().getClockBiasDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -482,11 +482,11 @@ public class PhaseTest {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        stationParameter.getClockOffsetDriver(),
+                        stationParameter.getClockBiasDriver(),
                         stationParameter.getEastOffsetDriver(),
                         stationParameter.getNorthOffsetDriver(),
                         stationParameter.getZenithOffsetDriver(),
-                        measurement.getSatellites().get(0).getClockOffsetDriver()
+                        measurement.getSatellites().get(0).getClockBiasDriver()
                     };
 
                     if (printResults) {
@@ -593,7 +593,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -758,7 +758,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;

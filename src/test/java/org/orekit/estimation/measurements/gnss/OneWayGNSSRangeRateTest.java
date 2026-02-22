@@ -446,7 +446,7 @@ public class OneWayGNSSRangeRateTest {
         final OneWayGNSSRangeRateCreator creator = new OneWayGNSSRangeRateCreator(ephemeris,
                                                                                   localClockOffset, localClockRate, localClockAcceleration,
                                                                                   remoteClockOffset, remoteClockRate, remoteClockAcceleration);
-        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -479,7 +479,7 @@ public class OneWayGNSSRangeRateTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockOffsetDriver(),
+                        measurement.getSatellites().get(0).getClockBiasDriver(),
                     };
 
                     for (int i = 0; i < drivers.length; ++i) {

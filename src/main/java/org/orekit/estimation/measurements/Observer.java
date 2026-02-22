@@ -100,7 +100,7 @@ public interface Observer extends MeasurementParticipant {
                                                          final int freeParameters,
                                                          final Map<String, Integer> indices) {
         // take clock offset into account
-        final Gradient offset = getClockOffsetDriver().getValue(freeParameters, indices, clockDate);
+        final Gradient offset = getClockBiasDriver().getValue(freeParameters, indices, clockDate);
         final FieldAbsoluteDate<Gradient> offsetCompensatedDate = new FieldAbsoluteDate<>(clockDate, offset.negate());
 
         return getOffsetToInertial(inertial, offsetCompensatedDate, freeParameters, indices);

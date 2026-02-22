@@ -197,7 +197,7 @@ public class RangeAnalytic extends Range {
                                                     dRdPx * dt, dRdPy * dt, dRdPz * dt
         });
 
-        if (groundStation.getClockOffsetDriver().isSelected() ||
+        if (groundStation.getClockBiasDriver().isSelected() ||
             groundStation.getEastOffsetDriver().isSelected()  ||
             groundStation.getNorthOffsetDriver().isSelected() ||
             groundStation.getZenithOffsetDriver().isSelected()) {

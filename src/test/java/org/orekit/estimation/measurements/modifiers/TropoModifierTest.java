@@ -75,7 +75,7 @@ public class TropoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -223,7 +223,7 @@ public class TropoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -233,7 +233,7 @@ public class TropoModifierTest {
         final int    ambiguity         = 1234;
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
@@ -283,7 +283,7 @@ public class TropoModifierTest {
         final int    ambiguity         = 1234;
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
@@ -336,11 +336,11 @@ public class TropoModifierTest {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    primaryStation = entry.getKey();
             final GroundStation    secondaryStation  = entry.getValue();
-            primaryStation.getClockOffsetDriver().setSelected(true);
+            primaryStation.getClockBiasDriver().setSelected(true);
             primaryStation.getEastOffsetDriver().setSelected(true);
             primaryStation.getNorthOffsetDriver().setSelected(true);
             primaryStation.getZenithOffsetDriver().setSelected(true);
-            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getClockBiasDriver().setSelected(false);
             secondaryStation.getEastOffsetDriver().setSelected(true);
             secondaryStation.getNorthOffsetDriver().setSelected(true);
             secondaryStation.getZenithOffsetDriver().setSelected(true);
@@ -389,12 +389,12 @@ public class TropoModifierTest {
                                                                            propagatorBuilder);
         // create perfect range measurements
         final GroundStation emitter = context.BRRstations.getKey();
-        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getClockBiasDriver().setSelected(true);
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -443,7 +443,7 @@ public class TropoModifierTest {
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -493,7 +493,7 @@ public class TropoModifierTest {
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -545,12 +545,12 @@ public class TropoModifierTest {
                                                                            propagatorBuilder);
         // create perfect range measurements
         final GroundStation emitter = context.TDOAstations.getKey();
-        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getClockBiasDriver().setSelected(true);
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.TDOAstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -596,12 +596,12 @@ public class TropoModifierTest {
                                                                            propagatorBuilder);
         // create perfect range measurements
         final GroundStation emitter = context.TDOAstations.getKey();
-        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getClockBiasDriver().setSelected(true);
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.TDOAstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -651,7 +651,7 @@ public class TropoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -749,7 +749,7 @@ public class TropoModifierTest {
 
         // create perfect angular measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);

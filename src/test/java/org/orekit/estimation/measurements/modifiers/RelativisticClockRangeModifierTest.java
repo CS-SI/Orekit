@@ -61,7 +61,7 @@ public class RelativisticClockRangeModifierTest {
         final SpacecraftState state = new SpacecraftState(new CartesianOrbit(satPV, FramesFactory.getEME2000(), Constants.WGS84_EARTH_MU));
 
         // Set reference date to station drivers
-        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+        for (ParameterDriver driver : Arrays.asList(station.getClockBiasDriver(),
                                                     station.getEastOffsetDriver(),
                                                     station.getNorthOffsetDriver(),
                                                     station.getZenithOffsetDriver(),

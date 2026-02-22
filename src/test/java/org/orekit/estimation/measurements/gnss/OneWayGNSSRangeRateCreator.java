@@ -70,7 +70,7 @@ public class OneWayGNSSRangeRateCreator
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockBiasDriver().setValue(localClockOffset);
         this.local.getClockDriftDriver().setValue(localClockRate);
         this.local.getClockAccelerationDriver().setValue(localClockAcceleration);
         this.remoteClk          = new QuadraticClockModel(ephemeris.getMinDate(),
@@ -86,7 +86,7 @@ public class OneWayGNSSRangeRateCreator
 
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
-        for (final ParameterDriver driver : Arrays.asList(local.getClockOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(local.getClockBiasDriver(),
                                                           local.getClockDriftDriver(),
                                                           local.getClockAccelerationDriver())) {
             if (driver.getReferenceDate() == null) {

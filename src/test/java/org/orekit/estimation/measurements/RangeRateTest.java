@@ -302,7 +302,7 @@ class RangeRateTest {
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
         creator.getSatellite().getClockDriftDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getClockDriftDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -387,7 +387,7 @@ class RangeRateTest {
         final double satClkDrift = 3.2e-10;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, true, satClkDrift);
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -604,7 +604,7 @@ class RangeRateTest {
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
         creator.getSatellite().getClockDriftDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getClockDriftDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -827,8 +827,8 @@ class RangeRateTest {
         }
         station.getClockDriftDriver().setValue(-1e-4);
         final ObservableSatellite satellite = new ObservableSatellite(0);
-        satellite.getClockOffsetDriver().setReferenceDate(epoch);
-        satellite.getClockOffsetDriver().setValue(0.);
+        satellite.getClockBiasDriver().setReferenceDate(epoch);
+        satellite.getClockBiasDriver().setValue(0.);
         satellite.getClockDriftDriver().setReferenceDate(epoch);
         satellite.getClockDriftDriver().setValue(1e-3);
         satellite.getClockDriftDriver().setSelected(true);
@@ -840,8 +840,8 @@ class RangeRateTest {
         final ObservableSatellite satellite2 = new ObservableSatellite(1);
         satellite2.getClockDriftDriver().setReferenceDate(epoch);
         satellite2.getClockDriftDriver().setValue(station.getClockDriftDriver().getValue());
-        satellite2.getClockOffsetDriver().setReferenceDate(epoch);
-        satellite2.getClockOffsetDriver().setValue(station.getClockOffsetDriver().getValue());
+        satellite2.getClockBiasDriver().setReferenceDate(epoch);
+        satellite2.getClockBiasDriver().setValue(station.getClockBiasDriver().getValue());
         satellite2.getClockDriftDriver().setSelected(true);
         final SpacecraftState state2 = new SpacecraftState(new AbsolutePVCoordinates(orbit.getFrame(), epoch,
                 station.getPVCoordinatesProvider().getPVCoordinates(epoch, orbit.getFrame())));

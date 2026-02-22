@@ -84,7 +84,7 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
         this.quadraticClockModel = quadraticClock;
 
         // Add clock parameters
-        parameterDrivers.add(quadraticClockModel.getClockOffsetDriver());
+        parameterDrivers.add(quadraticClockModel.getClockBiasDriver());
         parameterDrivers.add(quadraticClockModel.getClockDriftDriver());
         parameterDrivers.add(quadraticClockModel.getClockAccelerationDriver());
     }
@@ -96,12 +96,12 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
         return name;
     }
 
-    /** Creates an quadratic clock with zero displacement.
+    /** Creates a quadratic clock with zero displacement.
      * @param name name of object that is holding the clock
      * @return new quadratic clock model
      */
     protected static QuadraticClockModel createEmptyQuadraticClock(final String name) {
-        return new QuadraticClockModel(new ParameterDriver(name + CLOCK_STRING + OFFSET_SUFFIX,
+        return new QuadraticClockModel(new ParameterDriver(name + CLOCK_STRING + BIAS_SUFFIX,
                                                     0.0, CLOCK_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
                                            new ParameterDriver(name + CLOCK_STRING + DRIFT_SUFFIX,

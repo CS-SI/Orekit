@@ -108,7 +108,7 @@ class GroundStationTest {
         for (final ParameterDriver driver: selectAllDrivers(station)) {
             driver.setReferenceDate(date);
         }
-        station.getClockOffsetDriver().setValue(0.1);
+        station.getClockBiasDriver().setValue(0.1);
         station.getPolarOffsetYDriver().setValue(2);
         station.getEastOffsetDriver().setValue(1);
         station.getNorthOffsetDriver().setValue(-1);
@@ -135,7 +135,7 @@ class GroundStationTest {
         for (final ParameterDriver driver: selectAllDrivers(station)) {
             driver.setReferenceDate(date);
         }
-        station.getClockOffsetDriver().setValue(-0.1);
+        station.getClockBiasDriver().setValue(-0.1);
         station.getPolarOffsetXDriver().setValue(3);
         station.getEastOffsetDriver().setValue(1);
         station.getNorthOffsetDriver().setValue(-1);
@@ -202,7 +202,7 @@ class GroundStationTest {
         estimator.setMaxEvaluations(200);
 
         // we want to estimate station clock offset
-        changed.getClockOffsetDriver().setSelected(true);
+        changed.getClockBiasDriver().setSelected(true);
         changed.getEastOffsetDriver().setSelected(false);
         changed.getNorthOffsetDriver().setSelected(false);
         changed.getZenithOffsetDriver().setSelected(false);
@@ -212,7 +212,7 @@ class GroundStationTest {
                                      0.0, 2.0e-6,
                                      0.0, 1.8e-7,
                                      0.0, 8e-11);
-        Assertions.assertEquals(deltaClock, changed.getClockOffsetDriver().getValue(), 9.6e-11);
+        Assertions.assertEquals(deltaClock, changed.getClockBiasDriver().getValue(), 9.6e-11);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -281,7 +281,7 @@ class GroundStationTest {
         estimator.setMaxEvaluations(200);
 
         // we want to estimate station offsets
-        moved.getClockOffsetDriver().setSelected(false);
+        moved.getClockBiasDriver().setSelected(false);
         moved.getEastOffsetDriver().setSelected(true);
         moved.getNorthOffsetDriver().setSelected(true);
         moved.getZenithOffsetDriver().setSelected(true);
@@ -1348,7 +1348,7 @@ class GroundStationTest {
                                                               station.getPolarDriftXDriver(),
                                                               station.getPolarOffsetYDriver(),
                                                               station.getPolarDriftYDriver(),
-                                                              station.getClockOffsetDriver(),
+                                                              station.getClockBiasDriver(),
                                                               station.getEastOffsetDriver(),
                                                               station.getNorthOffsetDriver(),
                                                               station.getZenithOffsetDriver())) {
@@ -1678,7 +1678,7 @@ class GroundStationTest {
             station.getPolarDriftXDriver(),
             station.getPolarOffsetYDriver(),
             station.getPolarDriftYDriver(),
-            station.getClockOffsetDriver(),
+            station.getClockBiasDriver(),
             station.getEastOffsetDriver(),
             station.getNorthOffsetDriver(),
             station.getZenithOffsetDriver()

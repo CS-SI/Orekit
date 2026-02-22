@@ -175,7 +175,7 @@ class TDOATest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.TDOAstations.getKey(),
                                                          context.TDOAstations.getValue())) {
-            station.getClockOffsetDriver().setValue(clockOffset);
+            station.getClockBiasDriver().setValue(clockOffset);
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -243,8 +243,8 @@ class TDOATest {
         primary.getZenithOffsetDriver().setSelected(true);
         final double clockOffset = 4.8e-9;
         final GroundStation secondary = context.TDOAstations.getValue();
-        secondary.getClockOffsetDriver().setValue(clockOffset);
-        secondary.getClockOffsetDriver().setSelected(true);
+        secondary.getClockBiasDriver().setValue(clockOffset);
+        secondary.getClockBiasDriver().setSelected(true);
         secondary.getEastOffsetDriver().setSelected(true);
         secondary.getNorthOffsetDriver().setSelected(true);
         secondary.getZenithOffsetDriver().setSelected(true);
@@ -277,7 +277,7 @@ class TDOATest {
                 primeParameter.getEastOffsetDriver(),
                 primeParameter.getNorthOffsetDriver(),
                 primeParameter.getZenithOffsetDriver(),
-                secondParameter.getClockOffsetDriver(),
+                secondParameter.getClockBiasDriver(),
                 secondParameter.getEastOffsetDriver(),
                 secondParameter.getNorthOffsetDriver(),
                 secondParameter.getZenithOffsetDriver(),
@@ -327,8 +327,8 @@ class TDOATest {
         primary.getZenithOffsetDriver().setSelected(true);
         final double clockOffset = 4.8e-9;
         final GroundStation secondary = context.TDOAstations.getValue();
-        secondary.getClockOffsetDriver().setValue(clockOffset);
-        secondary.getClockOffsetDriver().setSelected(true);
+        secondary.getClockBiasDriver().setValue(clockOffset);
+        secondary.getClockBiasDriver().setSelected(true);
         secondary.getEastOffsetDriver().setSelected(true);
         secondary.getNorthOffsetDriver().setSelected(true);
         secondary.getZenithOffsetDriver().setSelected(true);
@@ -366,7 +366,7 @@ class TDOATest {
                 primeParameter.getEastOffsetDriver(),
                 primeParameter.getNorthOffsetDriver(),
                 primeParameter.getZenithOffsetDriver(),
-                secondParameter.getClockOffsetDriver(),
+                secondParameter.getClockBiasDriver(),
                 secondParameter.getEastOffsetDriver(),
                 secondParameter.getNorthOffsetDriver(),
                 secondParameter.getZenithOffsetDriver(),
