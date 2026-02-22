@@ -26,11 +26,12 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PseudoMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -74,14 +75,10 @@ public class KalmanEstimatorUtil {
         // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
         // Normalizing it leaves us with the matrix of the correlation coefficients
         final RealMatrix covariance;
-        if (observedMeasurement.getMeasurementType().equals(PV.MEASUREMENT_TYPE)) {
-            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final PV pv = (PV) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
-        } else if (observedMeasurement.getMeasurementType().equals(Position.MEASUREMENT_TYPE)) {
-            // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final Position position = (Position) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(position.getCorrelationCoefficientsMatrix());
+        if (observedMeasurement instanceof PseudoMeasurement<?>) {
+            // For pseudo measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final PseudoMeasurement<?> pseudoMeasurement = (PseudoMeasurement<?>) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(pseudoMeasurement.getCorrelationCoefficientsMatrix());
         } else {
             // For other measurements we do not have a covariance matrix.
             // Thus the correlation coefficients matrix is an identity matrix.
@@ -110,13 +107,9 @@ public class KalmanEstimatorUtil {
 
         final RealMatrix covariance;
         if (observedMeasurement.getMeasurementType().equals(PV.MEASUREMENT_TYPE)) {
-            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final PV pv = (PV) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(pv.getCovarianceMatrix());
-        } else if (observedMeasurement.getMeasurementType().equals(Position.MEASUREMENT_TYPE)) {
-            // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final Position position = (Position) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(position.getCovarianceMatrix());
+            // For pseudo measurements we do have a covariance matrix and thus a covariance coefficients matrix
+            final PseudoMeasurement<?> pseudoMeasurement = (PseudoMeasurement<?>) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(pseudoMeasurement.getCovarianceMatrix());
         } else {
             // For other measurements we do not have a covariance matrix.
             // Thus the correlation coefficients matrix is an identity matrix.
@@ -144,22 +137,9 @@ public class KalmanEstimatorUtil {
                                       final ParameterDriversList measurementParameters) {
 
         // count parameters
-        int requiredDimension = 0;
-        for (final ParameterDriver driver : orbitalParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                ++requiredDimension;
-            }
-        }
-        for (final ParameterDriver driver : propagationParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                ++requiredDimension;
-            }
-        }
-        for (final ParameterDriver driver : measurementParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                ++requiredDimension;
-            }
-        }
+        int requiredDimension = (int) orbitalParameters.getDrivers().stream().filter(ParameterDriver::isSelected).count();
+        requiredDimension += (int) propagationParameters.getDrivers().stream().filter(ParameterDriver::isSelected).count();
+        requiredDimension += (int) measurementParameters.getDrivers().stream().filter(ParameterDriver::isSelected).count();
 
         if (dimension != requiredDimension) {
             // there is a problem, set up an explicit error message
@@ -275,7 +255,7 @@ public class KalmanEstimatorUtil {
      */
     public static RealVector computeInnovationVector(final EstimatedMeasurement<?> predicted, final double[] sigma) {
 
-        if (predicted.getStatus() == EstimatedMeasurement.Status.REJECTED)  {
+        if (predicted.getStatus() == EstimatedMeasurementBase.Status.REJECTED)  {
             // set innovation to null to notify filter measurement is rejected
             return null;
         } else {

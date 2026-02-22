@@ -23,6 +23,9 @@
         <action dev="serrof" type="update" issue="1919">
             Use generic observer in AngularRaDec.
         </action>
+        <action dev="serrof" type="add" issue="1916">
+            Introduce data container for measurement data.
+        </action>
         <action dev="serrof" type="update" issue="1915">
             Propose proper way of accessing propagator in indirect shooting.
         </action>
