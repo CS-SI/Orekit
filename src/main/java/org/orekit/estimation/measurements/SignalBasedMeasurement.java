@@ -61,8 +61,7 @@ public abstract class SignalBasedMeasurement<T extends ObservedMeasurement<T>> e
                                      final double[] observedValue, final MeasurementQuality measurementQuality,
                                      final SignalTravelTimeModel signalTravelTimeModel,
                                      final List<ObservableSatellite> satellites) {
-        super(date, observedValue, measurementQuality.getStandardDeviations(),
-              measurementQuality.getWeights(), satellites);
+        super(date, observedValue, measurementQuality, satellites);
         this.isTwoWay = isTwoWay;
         this.signalTravelTimeModel = signalTravelTimeModel;
     }

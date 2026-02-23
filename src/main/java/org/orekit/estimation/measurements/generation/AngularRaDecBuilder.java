@@ -21,6 +21,7 @@ import java.util.Map;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.frames.Frame;
@@ -51,23 +52,23 @@ public class AngularRaDecBuilder extends AbstractSignalBasedBuilder<AngularRaDec
     public AngularRaDecBuilder(final CorrelatedRandomVectorGenerator noiseSource, final GroundStation station,
                                final Frame referenceFrame, final double[] sigma, final double[] baseWeight,
                                final ObservableSatellite satellite) {
-        this(noiseSource, station, referenceFrame, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(noiseSource, station, referenceFrame, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
     }
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param observer sensor from which measurement is performed
      * @param referenceFrame Reference frame in which the right ascension - declination angles are given
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
+     *                           of the covariance matrix are only used by Kalman filters, not least squares)
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      * @since 14.0
      */
     public AngularRaDecBuilder(final CorrelatedRandomVectorGenerator noiseSource, final Observer observer,
-                               final Frame referenceFrame, final double[] sigma, final double[] baseWeight,
+                               final Frame referenceFrame, final MeasurementQuality measurementQuality,
                                final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(noiseSource, measurementQuality, signalTravelTimeModel, satellite);
         this.observer = observer;
         this.referenceFrame = referenceFrame;
     }
@@ -85,8 +86,8 @@ public class AngularRaDecBuilder extends AbstractSignalBasedBuilder<AngularRaDec
     @Override
     protected AngularRaDec buildObserved(final AbsoluteDate date,
                                          final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new AngularRaDec(observer, referenceFrame, date, new double[2], getTheoreticalStandardDeviation(),
-                                getBaseWeight(), getSignalTravelTimeModel(), getSatellites()[0]);
+        return new AngularRaDec(observer, referenceFrame, date, new double[2], getMeasurementQuality(),
+                                getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

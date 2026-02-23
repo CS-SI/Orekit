@@ -18,6 +18,8 @@ package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
 
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -131,12 +133,12 @@ public class MeasurementQuality {
      * Getter for the measurement covariance matrix.
      * @return covariance
      */
-    public double[][] getCovarianceMatrix() {
-        final double[][] output = new double[measurementDimension][measurementDimension];
+    public RealMatrix getCovarianceMatrix() {
+        final double[][] coefficients = new double[measurementDimension][measurementDimension];
         for (int i = 0; i < measurementDimension; i++) {
-            output[i] = covarianceMatrix[i].clone();
+            coefficients[i] = covarianceMatrix[i].clone();
         }
-        return output;
+        return MatrixUtils.createRealMatrix(coefficients);
     }
 
     /**
@@ -157,7 +159,7 @@ public class MeasurementQuality {
      * </ul>
      * @return the correlation coefficient matrix
      */
-    public double[][] getCorrelationCoefficientsMatrix() {
+    public RealMatrix getCorrelationMatrix() {
         // Initialize the correlation coefficients matric to the covariance matrix
         final double[][] corrCoefMatrix = new double[measurementDimension][measurementDimension];
 
@@ -167,7 +169,7 @@ public class MeasurementQuality {
                 corrCoefMatrix[i][j] = covarianceMatrix[i][j] / (sigmas[i] * sigmas[j]);
             }
         }
-        return corrCoefMatrix;
+        return MatrixUtils.createRealMatrix(corrCoefMatrix);
     }
 
     /**

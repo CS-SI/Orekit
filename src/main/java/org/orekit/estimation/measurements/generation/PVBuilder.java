@@ -16,14 +16,15 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link PV} measurements.
  * @author Luc Maisonobe
@@ -41,24 +42,30 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
     public PVBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                      final double sigmaPosition, final double sigmaVelocity,
                      final double baseWeight, final ObservableSatellite satellite) {
-        super(noiseSource,
-              new double[] {
+        this(noiseSource,
+              new MeasurementQuality(new double[] {
                   sigmaPosition, sigmaPosition, sigmaPosition,
                   sigmaVelocity, sigmaVelocity, sigmaVelocity
-              }, new double[] {
-                  baseWeight, baseWeight, baseWeight,
-                  baseWeight, baseWeight, baseWeight
-              }, satellite);
+              }, baseWeight), satellite);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
+     *                           of the covariance matrix are only used by Kalman filters, not least squares)
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public PVBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                     final MeasurementQuality measurementQuality, final ObservableSatellite satellite) {
+        super(noiseSource, measurementQuality, satellite);
     }
 
     /** {@inheritDoc} */
     @Override
     protected PV buildObserved(final AbsoluteDate date,
                                final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new PV(date, Vector3D.NaN, Vector3D.NaN,
-                      getTheoreticalStandardDeviation()[0],
-                      getTheoreticalStandardDeviation()[3],
-                      getBaseWeight()[0], getSatellites()[0]);
+        return new PV(date, Vector3D.NaN, Vector3D.NaN, getMeasurementQuality(), getSatellites()[0]);
     }
 
 }

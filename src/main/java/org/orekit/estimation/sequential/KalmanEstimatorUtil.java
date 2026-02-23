@@ -30,7 +30,6 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PseudoMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -73,16 +72,7 @@ public class KalmanEstimatorUtil {
         // of the measurement on its non-diagonal elements.
         // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
         // Normalizing it leaves us with the matrix of the correlation coefficients
-        final RealMatrix covariance;
-        if (observedMeasurement instanceof PseudoMeasurement<?>) {
-            // For pseudo measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final PseudoMeasurement<?> pseudoMeasurement = (PseudoMeasurement<?>) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(pseudoMeasurement.getCorrelationCoefficientsMatrix());
-        } else {
-            // For other measurements we do not have a covariance matrix.
-            // Thus the correlation coefficients matrix is an identity matrix.
-            covariance = MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
-        }
+        final RealMatrix covariance = observedMeasurement.getMeasurementQuality().getCorrelationMatrix();
 
         return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
 
@@ -103,23 +93,7 @@ public class KalmanEstimatorUtil {
         // Normalized measurement noise matrix contains 1 on its diagonal and correlation coefficients
         // of the measurement on its non-diagonal elements.
         // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
-
-        final RealMatrix covariance;
-        if (observedMeasurement instanceof PseudoMeasurement<?>) {
-            // For pseudo measurements we do have a covariance matrix and thus a covariance coefficients matrix
-            final PseudoMeasurement<?> pseudoMeasurement = (PseudoMeasurement<?>) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(pseudoMeasurement.getCovarianceMatrix());
-        } else {
-            // For other measurements we do not have a covariance matrix.
-            // Thus the correlation coefficients matrix is an identity matrix.
-            covariance = MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
-            final double[] sigma = observedMeasurement.getTheoreticalStandardDeviation();
-            for (int i = 0; i < sigma.length; i++) {
-                covariance.setEntry(i, i, sigma[i] * sigma[i]);
-            }
-
-        }
-
+        final RealMatrix covariance = observedMeasurement.getMeasurementQuality().getCovarianceMatrix();
         return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
 
     }

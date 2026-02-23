@@ -43,16 +43,15 @@ public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> ex
      * @param signalTravelTimeModel signal travel time model
      * @param date date of the measurement
      * @param angular observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
+     *                           of the covariance matrix are only used by Kalman filters, not least squares)
      * @param satellite satellite related to this measurement
      */
     protected AngularMeasurement(final AbsoluteDate date,
-                                 final double[] angular, final double[] sigma, final double[] baseWeight,
+                                 final double[] angular, final MeasurementQuality measurementQuality,
                                  final SignalTravelTimeModel signalTravelTimeModel,
                                  final ObservableSatellite satellite) {
-        super(date, false, angular, new MeasurementQuality(sigma, baseWeight),
-              signalTravelTimeModel, Collections.singletonList(satellite));
+        super(date, false, angular, measurementQuality, signalTravelTimeModel, Collections.singletonList(satellite));
     }
 
     /**
