@@ -30,7 +30,6 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PseudoMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.propagation.SpacecraftState;
@@ -106,7 +105,7 @@ public class KalmanEstimatorUtil {
         // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
 
         final RealMatrix covariance;
-        if (observedMeasurement.getMeasurementType().equals(PV.MEASUREMENT_TYPE)) {
+        if (observedMeasurement instanceof PseudoMeasurement<?>) {
             // For pseudo measurements we do have a covariance matrix and thus a covariance coefficients matrix
             final PseudoMeasurement<?> pseudoMeasurement = (PseudoMeasurement<?>) observedMeasurement;
             covariance = MatrixUtils.createRealMatrix(pseudoMeasurement.getCovarianceMatrix());
