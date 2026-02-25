@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.orekit.propagation.relative.maneuver.rpo;
+package org.orekit.propagation.relative.maneuver.rpoOLD;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;

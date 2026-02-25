@@ -1,0 +1,63 @@
+/* Copyright 2002-2026 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.propagation.relative.maneuver.rpoOLD;
+
+import org.orekit.forces.maneuvers.ImpulseManeuver;
+import org.orekit.frames.Frame;
+import org.orekit.propagation.relative.RelativeProvider;
+import org.orekit.propagation.relative.TwoImpulseTransfer;
+import org.orekit.propagation.relative.maneuver.RelativeManeuver;
+
+import java.util.List;
+
+/**
+ * Interface for MultiRelativeTransfers.
+ *
+ * @author Romain Cuvillon
+ * @since 14.0
+ */
+public interface MultiRelativeTransfer {
+
+    /**
+     * Compute the list of TwoImpulseTransfer to realize the path defined by the waypoints
+     * in the associated LocalOrbitalFrame.
+     * @return List of TwoImpulseTransfer.
+     */
+    List<TwoImpulseTransfer> computeMultiRelativeTransfers();
+
+    /**
+     * Compute the list of TwoImpulseTransfer to realize the path defined by the waypoints in the waypoints Frame.
+     * @param waypointsFrame Frame of the waypoints.
+     * @return List of TwoImpulseTransfer.
+     */
+    List<TwoImpulseTransfer> computeMultiRelativeTransfers(Frame waypointsFrame);
+
+    /**
+     * Compute the list of relative maneuvers to realize the trajectory defined by the waypoints.
+     * @param relativeProvider RelativeProvider propagated with the target's propagator.
+     * @return List of RelativeManeuvers.
+     */
+    List<? extends RelativeManeuver> computeRelativeManeuvers(RelativeProvider relativeProvider);
+
+    /**
+     * Compute the list of ImpulseManeuvers in the desired frame to realize the trajectory defined by the waypoints.
+     * @param frame Desired frame to apply the ImpulseManeuvers.
+     * @param Isp specific impulse of the chaser.
+     * @return List of ImpulseManeuver.
+     */
+    List<ImpulseManeuver> computeImpulseManeuvers(Frame frame, double Isp);
+}

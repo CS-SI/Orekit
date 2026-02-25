@@ -2,5 +2,5 @@ package org.orekit.propagation.relative.maneuver.rpo;
 
 import org.orekit.propagation.relative.maneuver.rponew.AbstractMultiRelativeTransfers;
 
-public class MultiRelativeTransfersCW extends AbstractMultiRelativeTransfers {
+public class MultiRelativeTransferLambert extends AbstractMultiRelativeTransfers {
 }
