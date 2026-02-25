@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.relative.maneuver.rpo;
+package org.orekit.propagation.relative.maneuver.rpoOLD;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.forces.maneuvers.FieldImpulseManeuver;

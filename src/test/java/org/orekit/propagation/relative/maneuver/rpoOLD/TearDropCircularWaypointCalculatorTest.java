@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.relative.maneuver.rpo;
+package org.orekit.propagation.relative.maneuver.rpoOLD;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -29,8 +29,6 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.relative.maneuver.ClohessyWiltshireManeuver;
 import org.orekit.propagation.relative.clohessywiltshire.ClohessyWiltshireProvider;
 import org.orekit.time.AbsoluteDate;

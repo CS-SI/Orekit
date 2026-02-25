@@ -17,14 +17,18 @@
 package org.orekit.propagation.relative.maneuver.rpo;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
+import org.orekit.frames.Frame;
+import org.orekit.propagation.relative.clohessywiltshire.ClohessyWiltshireProvider;
+import org.orekit.propagation.relative.maneuver.ClohessyWiltshireManeuver;
+import org.orekit.propagation.relative.maneuver.YamanakaAnkersenManeuver;
+import org.orekit.propagation.relative.maneuver.rpo.TeardropCircularWaypointCalculator;
+import org.orekit.propagation.relative.yamanakaankersen.YamanakaAnkersenProvider;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.List;
 
-/**
- * Enumeration used to compute the relative maneuvers based on Clohessy-Wiltshire equations (only Circular cases) or Yamanaka-Ankersen equations.
- *
- * @author Romain Cuvillon
- * @since 14.0
- */
 public enum RPOModel implements RPO {
     /**
      * CW: Clohessy-Wiltshire.
@@ -45,6 +49,31 @@ public enum RPOModel implements RPO {
         public Vector3D getOutOfPlaneDirection() {
             return Vector3D.PLUS_K;
         }
+
+        /**
+         *
+         * @param injectionDate
+         * @param targetMeanMotion
+         * @param turnAroundDistance
+         * @param maneuverDistance
+         * @param numberOfOrbits
+         * @return
+         */
+        public List<TimeStampedPVCoordinates> computeTeardropWaypoints(final AbsoluteDate injectionDate, final double targetMeanMotion, final double turnAroundDistance, final double maneuverDistance, final int numberOfOrbits) {
+            return new TeardropCircularWaypointCalculator(targetMeanMotion, turnAroundDistance, maneuverDistance, numberOfOrbits).computeTearDropWaypoints(injectionDate);
+        }
+
+        public List<ClohessyWiltshireManeuver> computeManeuvers(final List<TimeStampedPVCoordinates> waypoints, final ClohessyWiltshireProvider cwProvider) {
+
+        }
+
+        public List<ImpulseManeuver> convertToImpulseManeuver(final List<ClohessyWiltshireManeuver> cwManeuvers, final Frame outputFrame, final double isp) {
+
+        }
+
+        public List<ClohessyWiltshireManeuver> computeTeardropManeuvers(final List<TimeStampedPVCoordinates> waypoints, final ClohessyWiltshireProvider cwProvider) {
+
+        }
     },
     /**
      * YA : Yamanaka-Ankersen.
@@ -63,6 +92,14 @@ public enum RPOModel implements RPO {
         /** {@inheritDoc} */
         public Vector3D getOutOfPlaneDirection() {
             return Vector3D.MINUS_J;
+        }
+
+        public List<YamanakaAnkersenManeuver> computeManeuvers(final List<TimeStampedPVCoordinates> waypoints, final YamanakaAnkersenProvider yaProvider) {
+
+        }
+
+        public List<ImpulseManeuver> convertToImpulseManeuver(final List<YamanakaAnkersenManeuver> yaManeuvers, final Frame outputFrame, final double isp) {
+
         }
     }
 }
