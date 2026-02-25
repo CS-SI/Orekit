@@ -20,6 +20,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.SpacecraftState;
@@ -66,7 +67,7 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
                            final double range, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(observer, date, range, sigma, baseWeight, new SignalTravelTimeModel(), local);
+        super(observer, date, range, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), local);
     }
 
     /** {@inheritDoc} */

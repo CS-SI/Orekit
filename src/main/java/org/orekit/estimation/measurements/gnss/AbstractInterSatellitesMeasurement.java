@@ -63,20 +63,37 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
     /** Constructor.
      * @param date date of the measurement
      * @param observed observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality
      * @param signalTravelTimeModel signal travel time model
      * @param local satellite which receives the signal and performs the measurement
      * @param remote remote satellite which simply emits the signal
      * @since 14.0
      */
     protected AbstractInterSatellitesMeasurement(final AbsoluteDate date, final double observed,
-                                                 final double sigma, final double baseWeight,
+                                                 final MeasurementQuality measurementQuality,
                                                  final SignalTravelTimeModel signalTravelTimeModel,
                                                  final ObservableSatellite local,
                                                  final ObservableSatellite remote) {
         // Call to super constructor
-        super(date, false, new double[] {observed}, new MeasurementQuality(sigma, baseWeight),
+        this(date, new double[] { observed }, measurementQuality, signalTravelTimeModel, local, remote);
+    }
+
+    /** Constructor.
+     * @param date date of the measurement
+     * @param observed observed value
+     * @param measurementQuality measurement quality
+     * @param signalTravelTimeModel signal travel time model
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote remote satellite which simply emits the signal
+     * @since 14.0
+     */
+    protected AbstractInterSatellitesMeasurement(final AbsoluteDate date, final double[] observed,
+                                                 final MeasurementQuality measurementQuality,
+                                                 final SignalTravelTimeModel signalTravelTimeModel,
+                                                 final ObservableSatellite local,
+                                                 final ObservableSatellite remote) {
+        // Call to super constructor
+        super(date, false, observed, measurementQuality,
                 signalTravelTimeModel, Arrays.asList(local, remote));
     }
 

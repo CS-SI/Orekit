@@ -21,6 +21,7 @@ import java.util.Arrays;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.signal.SignalTravelTimeModel;
@@ -88,7 +89,7 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
                                 final double wavelength, final double sigma, final double baseWeight,
                                 final AmbiguityCache cache, final SignalTravelTimeModel signalTravelTimeModel) {
         // Call to super constructor
-        super(date, phase, sigma, baseWeight, signalTravelTimeModel, local, remote);
+        super(date, phase, new MeasurementQuality(sigma, baseWeight), signalTravelTimeModel, local, remote);
 
         // Initialize phase ambiguity driver
         ambiguityDriver = cache.getAmbiguity(remote.getName(), local.getName(), wavelength);

@@ -24,6 +24,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Observer;
@@ -45,7 +46,7 @@ import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Abstract class for one-way GNSS, scalar measurement.
+/** Abstract class for one-way GNSS measurement.
  * @author Romain Serra
  * @since 14.0
  */
@@ -58,17 +59,32 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
      * @param observer sender of GNSS signal
      * @param date date of the measurement
      * @param observedValue observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality
      * @param signalTravelTimeModel time delay computer
      * @param local satellite which receives the signal and perform the measurement
      */
     protected AbstractOneWayGNSS(final Observer observer, final AbsoluteDate date,
-                                 final double observedValue, final double sigma, final double baseWeight,
+                                 final double observedValue, final MeasurementQuality measurementQuality,
                                  final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite local) {
         // Call super constructor
-        super(date, false, new double[] {observedValue}, new double[] {sigma}, new double[] {baseWeight},
-                signalTravelTimeModel, Collections.singletonList(local));
+        this(observer, date, new double[] { observedValue }, measurementQuality,
+             signalTravelTimeModel, local);
+    }
+
+    /** Simple constructor.
+     * @param observer sender of GNSS signal
+     * @param date date of the measurement
+     * @param observedValue observed value
+     * @param measurementQuality measurement quality
+     * @param signalTravelTimeModel time delay computer
+     * @param local satellite which receives the signal and perform the measurement
+     */
+    protected AbstractOneWayGNSS(final Observer observer, final AbsoluteDate date,
+                                 final double[] observedValue, final MeasurementQuality measurementQuality,
+                                 final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite local) {
+        // Call super constructor
+        super(date, false, observedValue, measurementQuality,
+              signalTravelTimeModel, Collections.singletonList(local));
         this.observer = observer;
     }
 

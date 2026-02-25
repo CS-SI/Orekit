@@ -85,7 +85,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
                            final double sigma, final double baseWeight,
                            final ObservableSatellite satellite) {
         this(primaryObserver, secondaryObserver, date, turnAroundRange, sigma, baseWeight, new SignalTravelTimeModel(),
-                satellite);
+             satellite);
     }
 
     /** Constructor.
@@ -104,7 +104,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
                            final double sigma, final double baseWeight,
                            final SignalTravelTimeModel signalTravelTimeModel,
                            final ObservableSatellite satellite) {
-        super(date, true, new double[] {turnAroundRange}, new MeasurementQuality(sigma, baseWeight),
+        super(date, true, new double[] { turnAroundRange }, new MeasurementQuality(sigma, baseWeight),
                 signalTravelTimeModel, Collections.singletonList(satellite));
 
         // Add parameter drivers
