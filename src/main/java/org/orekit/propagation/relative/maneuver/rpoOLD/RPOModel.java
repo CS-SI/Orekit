@@ -52,7 +52,7 @@ public enum RPOModel implements RPO {
     YA {
         /** {@inheritDoc} */
         public Vector3D getRBarDirection() {
-            return Vector3D.PLUS_K;
+            return Vector3D.MINUS_K;
         }
 
         /** {@inheritDoc} */
