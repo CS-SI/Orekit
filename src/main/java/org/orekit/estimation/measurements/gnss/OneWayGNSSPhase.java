@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.gnss;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.SpacecraftState;
@@ -74,7 +75,7 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
                            final double baseWeight, final ObservableSatellite local,
                            final AmbiguityCache cache) {
         // Call super constructor
-        super(observer, date, phase, sigma, baseWeight, new SignalTravelTimeModel(), local);
+        super(observer, date, phase, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), local);
 
         // Initialize phase ambiguity driver
         ambiguityDriver = cache.getAmbiguity(observer.getName(), local.getName(), wavelength);

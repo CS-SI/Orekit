@@ -46,23 +46,7 @@ public abstract class SignalBasedMeasurement<T extends ObservedMeasurement<T>> e
                                      final double observedValue, final MeasurementQuality measurementQuality,
                                      final SignalTravelTimeModel signalTravelTimeModel,
                                      final List<ObservableSatellite> satellites) {
-        this(date, isTwoWay, new double[] {observedValue}, measurementQuality, signalTravelTimeModel, satellites);
-    }
-
-    /** Simple constructor for measurements.
-     * @param isTwoWay flag indicating whether it is a two-way measurement
-     * @param signalTravelTimeModel signal travel time model
-     * @param date date of the measurement
-     * @param observedValue observed value
-     * @param sigmas theoretical standard deviation
-     * @param weights base weight
-     * @param satellites satellites related to this measurement
-     */
-    protected SignalBasedMeasurement(final AbsoluteDate date, final boolean isTwoWay,
-                                     final double[] observedValue, final double[] sigmas, final double[] weights,
-                                     final SignalTravelTimeModel signalTravelTimeModel,
-                                     final List<ObservableSatellite> satellites) {
-        this(date, isTwoWay, observedValue, new MeasurementQuality(sigmas, weights), signalTravelTimeModel, satellites);
+        this(date, isTwoWay, new double[] { observedValue }, measurementQuality, signalTravelTimeModel, satellites);
     }
 
     /** Simple constructor for measurements.
@@ -78,7 +62,7 @@ public abstract class SignalBasedMeasurement<T extends ObservedMeasurement<T>> e
                                      final SignalTravelTimeModel signalTravelTimeModel,
                                      final List<ObservableSatellite> satellites) {
         super(date, observedValue, measurementQuality.getStandardDeviations(),
-                measurementQuality.getWeights(), satellites);
+              measurementQuality.getWeights(), satellites);
         this.isTwoWay = isTwoWay;
         this.signalTravelTimeModel = signalTravelTimeModel;
     }

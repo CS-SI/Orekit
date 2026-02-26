@@ -63,7 +63,7 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
                                               final double value, final double sigma, final double baseWeight,
                                               final boolean twoWay, final SignalTravelTimeModel signalTravelTimeModel,
                                               final ObservableSatellite satellite) {
-        super(date, twoWay, new double[] {value}, new MeasurementQuality(sigma, baseWeight),
+        super(date, twoWay, new double[] { value }, new MeasurementQuality(sigma, baseWeight),
                 signalTravelTimeModel, Collections.singletonList(satellite));
         addParametersDrivers(observer.getParametersDrivers());
         this.observer = observer;

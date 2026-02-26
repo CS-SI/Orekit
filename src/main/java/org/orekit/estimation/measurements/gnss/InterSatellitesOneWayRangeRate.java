@@ -23,6 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.signal.SignalTravelTimeModel;
@@ -60,7 +61,7 @@ public class InterSatellitesOneWayRangeRate
                                           final double sigma, final double baseWeight,
                                           final SignalTravelTimeModel signalTravelTimeModel) {
         // Call to super constructor
-        super(date, rangeRate, sigma, baseWeight, signalTravelTimeModel, local, remote);
+        super(date, rangeRate, new MeasurementQuality(sigma, baseWeight), signalTravelTimeModel, local, remote);
     }
 
     /** Constructor with default signal travel time model.

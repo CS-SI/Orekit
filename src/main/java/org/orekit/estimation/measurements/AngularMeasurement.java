@@ -51,7 +51,8 @@ public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> ex
                                  final double[] angular, final double[] sigma, final double[] baseWeight,
                                  final SignalTravelTimeModel signalTravelTimeModel,
                                  final ObservableSatellite satellite) {
-        super(date, false, angular, sigma, baseWeight, signalTravelTimeModel, Collections.singletonList(satellite));
+        super(date, false, angular, new MeasurementQuality(sigma, baseWeight),
+              signalTravelTimeModel, Collections.singletonList(satellite));
     }
 
     /**
