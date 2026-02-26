@@ -16,10 +16,11 @@
  */
 package org.orekit.propagation.relative.maneuver.rpo;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
-import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.frames.Transform;
@@ -29,6 +30,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.relative.clohessywiltshire.ClohessyWiltshireEquations;
@@ -119,14 +121,25 @@ public enum RPOModel implements RPO {
             return maneuvers;
         }
 
-        // TODO: Adapter cette fonction qui en l'état ne peut pas fonctionner. --> La Transform est mauvaise.
-        public List<ImpulseManeuver> convertToImpulseManeuver(final List<ClohessyWiltshireManeuver> cwManeuvers, final List<TimeStampedPVCoordinates> waypoints, final Frame outputFrame, final double isp) {
+        // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
+        /**
+         * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
+         * Warning: EventDetector of the maneuvers must be DateDetector.
+         * @param cwManeuvers Clohessy-Wiltshire maneuvers.
+         * @param targetOrbit orbit of the target.
+         * @param isp specific impulse of the chaser.
+         * @return list of impulse maneuvers in target's orbit frame.
+         */
+        public List<ImpulseManeuver> convertToImpulseManeuver(final List<ClohessyWiltshireManeuver> cwManeuvers, final Orbit targetOrbit, final double isp) {
             final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
-            for (int i = 0; i < cwManeuvers.size(); i++) {
-                final Transform lofToInertial = LOFType.QSW.transformFromInertial(waypoints.get(i).getDate(), waypoints.get(i))
+            final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
+            for (ClohessyWiltshireManeuver maneuver : cwManeuvers) {
+                final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
+                final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
+                final Transform lofToInertial = LOFType.QSW.transformFromInertial(maneuverDate, pvTarget)
                         .getInverse();
-                final Vector3D deltaVInertial = lofToInertial.transformPVCoordinates(new PVCoordinates(waypoints.get(i).getPosition(), cwManeuvers.get(i).getDeltaV())).getVelocity();
-                impulseManeuvers.add(new ImpulseManeuver(cwManeuvers.get(i).getTrigger(), deltaVInertial, isp));
+                final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
+                impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
             }
             return impulseManeuvers;
         }
@@ -162,7 +175,7 @@ public enum RPOModel implements RPO {
     YA {
         /** {@inheritDoc} */
         public Vector3D getRBarDirection() {
-            return Vector3D.PLUS_K;
+            return Vector3D.MINUS_K;
         }
 
         /** {@inheritDoc} */
@@ -188,7 +201,6 @@ public enum RPOModel implements RPO {
         public List<YamanakaAnkersenManeuver> computeForcedManeuvers(final List<TimeStampedPVCoordinates> waypoints, final Vector3D initialVelocity, final Orbit targetOrbit,
                                                                      final Propagator targetPropagator, final YamanakaAnkersenProvider yaProvider) {
             final List<YamanakaAnkersenManeuver> maneuvers = new ArrayList<>();
-            final LocalOrbitalFrame lvlhFrame = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, targetOrbit, LOFType.LVLH_CCSDS.getName());
             Vector3D velocityBeforeManeuver = initialVelocity;
             KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(targetOrbit);
             yaProvider.setTargetOrbit(orbit);
@@ -220,14 +232,25 @@ public enum RPOModel implements RPO {
             return maneuvers;
         }
 
-        // TODO: Adapter cette fonction qui en l'état ne peut pas fonctionner. --> La transform est mauvaise.
-        public List<ImpulseManeuver> convertToImpulseManeuver(final List<YamanakaAnkersenManeuver> yaManeuvers, final List<TimeStampedPVCoordinates> waypoints, final Frame outputFrame, final double isp) {
+        // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
+        /**
+         * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
+         * Warning: EventDetector of the maneuvers must be DateDetector.
+         * @param yaManeuvers Yamanaka-Ankersen maneuvers.
+         * @param targetOrbit orbit of the target.
+         * @param isp specific impulse of the chaser.
+         * @return list of impulse maneuvers in target's orbit frame.
+         */
+        public List<ImpulseManeuver> convertToImpulseManeuver(final List<YamanakaAnkersenManeuver> yaManeuvers, final Orbit targetOrbit, final double isp) {
             final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
-            for (int i = 0; i < yaManeuvers.size(); i++) {
-                final Transform lofToInertial = LOFType.QSW.transformFromInertial(waypoints.get(i).getDate(), waypoints.get(i))
+            final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
+            for (YamanakaAnkersenManeuver maneuver : yaManeuvers) {
+                final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
+                final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
+                final Transform lofToInertial = LOFType.LVLH_CCSDS.transformFromInertial(maneuverDate, pvTarget)
                         .getInverse();
-                final Vector3D deltaVInertial = lofToInertial.transformPVCoordinates(new PVCoordinates(waypoints.get(i).getPosition(), yaManeuvers.get(i).getDeltaV())).getVelocity();
-                impulseManeuvers.add(new ImpulseManeuver(yaManeuvers.get(i).getTrigger(), deltaVInertial, isp));
+                final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
+                impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
             }
             return impulseManeuvers;
         }

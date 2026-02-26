@@ -59,6 +59,7 @@ public interface RPO {
      */
     Vector3D getOutOfPlaneDirection();
 
+
     /**
      * Get the rotation for the waypoint in the local orbital frame to be used in the computeForcedCircularMotionWaypoints method.
      *
@@ -70,7 +71,7 @@ public interface RPO {
         final Vector3D vBar = getVBarDirection();
         final Vector3D localVerticalDirection = getOutOfPlaneDirection();
         // Create rotation for the waypoints.
-        final Rotation inclinationRotation = new Rotation(vBar, inclination, RotationConvention.VECTOR_OPERATOR);
+        final Rotation inclinationRotation = new Rotation(vBar.scalarMultiply(-1), inclination, RotationConvention.VECTOR_OPERATOR);
         final Rotation raanRotation = new Rotation(localVerticalDirection, raan, RotationConvention.VECTOR_OPERATOR);
         return raanRotation.compose(inclinationRotation, RotationConvention.VECTOR_OPERATOR);
     }
@@ -102,7 +103,7 @@ public interface RPO {
     default Vector3D circularPosition(final double radius, final double angle) {
         final Vector3D rBar = getRBarDirection();
         final Vector3D vBar = getVBarDirection();
-        return vBar.scalarMultiply(radius * FastMath.cos(angle)).add(rBar.scalarMultiply(radius * FastMath.sin(angle)));
+        return vBar.scalarMultiply(-radius * FastMath.cos(angle)).add(rBar.scalarMultiply(radius * FastMath.sin(angle)));
     }
 
     /**
@@ -183,17 +184,17 @@ public interface RPO {
             final Vector3D finalPosition = rotation.applyTo(position).add(centerOffset);
             points.add(new PVCoordinates(finalPosition, Vector3D.ZERO));
         }
+        // Add the first waypoint of the circle to the end in order to close the path.
+        points.add(points.get(0));
+        if (retrograde) {
+            Collections.reverse(points);
+        }
         final List<TimeStampedPVCoordinates> waypoints = new ArrayList<>();
         // Reorder the waypoints on the circular path. The first waypoint is the previous closest waypoint.
         for (int i = 0; i < points.size(); i++) {
             final TimeStampedPVCoordinates pvt = new TimeStampedPVCoordinates(startDate.shiftedBy(timeStep * i), points.get(i));
             waypoints.add(pvt);
         }
-        if (retrograde) {
-            Collections.reverse(waypoints);
-        }
-        // Add the first waypoint of the circle to the end in order to close the path.
-        waypoints.add(new TimeStampedPVCoordinates(startDate.shiftedBy(orbitDuration), points.get(0)));
         // Add the waypoints with modified date for the successive orbits.
         if (numberOfRevolutions > 1) {
             // Extract the waypoints circle excluding the first to avoid having twice this point at the beginning of each revolution.
