@@ -88,7 +88,7 @@ public interface RPO {
         final FieldVector3D<T> vBar = new FieldVector3D<>(inclination.getField(), getVBarDirection());
         final FieldVector3D<T> localVerticalDirection = new FieldVector3D<>(inclination.getField(), getOutOfPlaneDirection());
         // Create rotation  for the waypoints.
-        final FieldRotation<T> inclinationRotation = new FieldRotation<>(vBar, inclination, RotationConvention.VECTOR_OPERATOR);
+        final FieldRotation<T> inclinationRotation = new FieldRotation<>(vBar.scalarMultiply(-1), inclination, RotationConvention.VECTOR_OPERATOR);
         final FieldRotation<T> raanRotation = new FieldRotation<>(localVerticalDirection, raan, RotationConvention.VECTOR_OPERATOR);
         return raanRotation.compose(inclinationRotation, RotationConvention.VECTOR_OPERATOR);
     }
@@ -117,7 +117,7 @@ public interface RPO {
     default <T extends CalculusFieldElement<T>> FieldVector3D<T> circularPosition(final T radius, final T angle) {
         final FieldVector3D<T> rBar = new FieldVector3D<>(radius.getField(), getRBarDirection());
         final FieldVector3D<T> vBar = new FieldVector3D<>(radius.getField(), getVBarDirection());
-        return vBar.scalarMultiply(radius.multiply(angle.cos())).add(rBar.scalarMultiply(radius.multiply(angle.sin())));
+        return vBar.scalarMultiply(radius.negate().multiply(angle.cos())).add(rBar.scalarMultiply(radius.multiply(angle.sin())));
     }
 
     /**
@@ -311,17 +311,17 @@ public interface RPO {
             final FieldVector3D<T> finalPosition = rotation.applyTo(position).add(centerOffset);
             points.add(new FieldPVCoordinates<>(finalPosition, FieldVector3D.getZero(startDate.getDate().getField())));
         }
+        // Add the first waypoint of the circle to the end in order to close the path.
+        points.add(points.get(0));
+        if (retrograde) {
+            Collections.reverse(points);
+        }
         final List<TimeStampedFieldPVCoordinates<T>> waypoints = new ArrayList<>();
         // Reorder the waypoints on the circular path. The first waypoint is the previous closest waypoint.
         for (int i = 0; i < points.size(); i++) {
             final TimeStampedFieldPVCoordinates<T> pvt = new TimeStampedFieldPVCoordinates<>(startDate.shiftedBy(timeStep.multiply(i)), points.get(i));
             waypoints.add(pvt);
         }
-        if (retrograde) {
-            Collections.reverse(waypoints);
-        }
-        // Add the first waypoint of the circle to the end in order to close the path.
-        waypoints.add(new TimeStampedFieldPVCoordinates<>(startDate.shiftedBy(orbitDuration), points.get(0)));
         // Add the waypoints with modified date for the successive orbits.
         if (numberOfRevolutions > 1) {
             // Extract the waypoints circle excluding the first to avoid having twice this point at the beginning of each revolution.

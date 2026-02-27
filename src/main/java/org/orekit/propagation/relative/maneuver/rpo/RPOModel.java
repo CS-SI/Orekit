@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.relative.maneuver.rpo;
 
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
