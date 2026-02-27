@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
+import org.orekit.propagation.relative.maneuver.rpoOLD.RPOModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -37,6 +38,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Interface used for the computation of the waypoints of the following relative maneuver sequences:
+ * - Linear transfer,
+ * - Forced Circular Motion,
+ * - Natural Circumnavigation.
+ * The computeWaypoints  are default methods shared by the different models.
+ * The only differences between two models in the computation of these waypoints come from the local orbital frame used.
+ * This is handled by the getters defined in enum:{@link RPOModel RPOModel }.
+ *
+ * @author Romain Cuvillon
+ * @since 14.0
+ */
 public interface RPO {
     /**
      * Get the radial unit vector direction of the target local orbital frame.

@@ -47,6 +47,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Enumeration used to compute the relative maneuvers based on Clohessy-Wiltshire equations (only Circular cases) or Yamanaka-Ankersen equations.
+ *
+ * @author Romain Cuvillon
+ * @since 14.0
+ */
 public enum RPOModel implements RPO {
     /**
      * CW: Clohessy-Wiltshire.

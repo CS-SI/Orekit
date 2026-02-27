@@ -43,6 +43,7 @@ import java.util.List;
  * Note: The analytical solution of the Teardrop maneuver sequence is valid only using the Clohessy-Wiltshire equations (circular orbit).
  *
  * @author Romain Cuvillon
+ * @author Jérôme Tabeaud
  * @since 14.0
  */
 
