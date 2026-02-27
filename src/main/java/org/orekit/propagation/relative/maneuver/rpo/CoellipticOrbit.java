@@ -25,6 +25,9 @@ import org.orekit.orbits.PositionAngleType;
 
 /**
  * Helper class to calculate a natural circumnavigation orbit around a target in an elliptic orbit.
+ *
+ * @author Romain Cuvillon
+ * @since 14.0
  */
 public class CoellipticOrbit {
     private CoellipticOrbit() {

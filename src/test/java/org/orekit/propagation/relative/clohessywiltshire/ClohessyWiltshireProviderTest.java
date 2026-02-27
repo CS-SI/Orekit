@@ -87,7 +87,7 @@ public class ClohessyWiltshireProviderTest {
         final PVCoordinates inertialPVCW = targetLofCW.getTransformTo(eme2000,date.shiftedBy(100.0)).transformPVCoordinates(new PVCoordinates(new Vector3D(localPosCW), new Vector3D(localVelCW)));
 
         final TimeStampedPVCoordinates chaserInertialWithExtract = cwProvider.extractChaserPVT(finalTargetState,eme2000);
-
+        // Assess PV coordinates of the chaser are equals in inertial after propagation and lof transformation.
         Assertions.assertEquals(finalChaserState.getPosition().getX(),inertialPVCW.getPosition().getX(),NUMERICAL_TOLERANCE);
         Assertions.assertEquals(finalChaserState.getPosition().getY(),inertialPVCW.getPosition().getY(),NUMERICAL_TOLERANCE);
         Assertions.assertEquals(finalChaserState.getPosition().getZ(),inertialPVCW.getPosition().getZ(),NUMERICAL_TOLERANCE);
@@ -95,7 +95,7 @@ public class ClohessyWiltshireProviderTest {
         Assertions.assertEquals(finalChaserState.getPVCoordinates().getVelocity().getY(),inertialPVCW.getVelocity().getY(),NUMERICAL_TOLERANCE);
         Assertions.assertEquals(finalChaserState.getPVCoordinates().getVelocity().getZ(),inertialPVCW.getVelocity().getZ(),NUMERICAL_TOLERANCE);
 
-
+        // Assess PV coordinates of the chase are equals in inertial after propagation and using extractChaserPVT method from the provider.
         Assertions.assertEquals(finalChaserState.getPosition().getX(),chaserInertialWithExtract.getPosition().getX(),NUMERICAL_TOLERANCE);
         Assertions.assertEquals(finalChaserState.getPosition().getY(),chaserInertialWithExtract.getPosition().getY(),NUMERICAL_TOLERANCE);
         Assertions.assertEquals(finalChaserState.getPosition().getZ(),chaserInertialWithExtract.getPosition().getZ(),NUMERICAL_TOLERANCE);
@@ -105,7 +105,6 @@ public class ClohessyWiltshireProviderTest {
     }
 
     @Test
-
     public void testGetInitialChaserPVTLof(){
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         final Frame frame = FramesFactory.getEME2000();

@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.relative.maneuver.rpo;
 
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
@@ -49,6 +47,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Enumeration used to compute the relative maneuvers based on Clohessy-Wiltshire equations (only Circular cases) or Yamanaka-Ankersen equations.
+ *
+ * @author Romain Cuvillon
+ * @since 14.0
+ */
 public enum RPOModel implements RPO {
     /**
      * CW: Clohessy-Wiltshire.
