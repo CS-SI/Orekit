@@ -84,7 +84,7 @@ public class CombinedObservationDataSet implements TimeStamped {
     }
 
     /** Get list of observation data.
-     * @return unmodifiable view of of observation data for the observed satellite
+     * @return unmodifiable view of observation data for the observed satellite
      */
     public List<CombinedObservationData> getObservationData() {
         return Collections.unmodifiableList(observationData);

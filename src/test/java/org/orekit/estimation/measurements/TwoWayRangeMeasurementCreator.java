@@ -65,7 +65,7 @@ public class TwoWayRangeMeasurementCreator extends MeasurementCreator {
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : provider.getStations()) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockBiasDriver(),
                                                         station.getClockDriftDriver(),
                                                         station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
@@ -146,7 +146,7 @@ public class TwoWayRangeMeasurementCreator extends MeasurementCreator {
 
                 final double correctedUpLinkDistance = upLinkDistance + satPCVUp + staPCVUp;
 
-                final double clockOffset = station.getClockOffsetDriver().getValue(date);
+                final double clockOffset = station.getClockBiasDriver().getValue(date);
                 addMeasurement(new Range(station, true, receptionDate.shiftedBy(clockOffset),
                                          0.5 * (correctedDownLinkDistance + correctedUpLinkDistance) + bias,
                                          1.0, 10, satellite));

@@ -53,7 +53,7 @@ public class BistaticRangeMeasurementCreator extends MeasurementCreator {
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                 context.BRRstations.getValue())) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockBiasDriver(),
                     station.getEastOffsetDriver(),
                     station.getNorthOffsetDriver(),
                     station.getZenithOffsetDriver(),
@@ -78,7 +78,7 @@ public class BistaticRangeMeasurementCreator extends MeasurementCreator {
         // Create a BRR measurement only if elevation for both stations is higher than 30°
         if ((emitter.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation()  > FastMath.toRadians(30.0)) &&
             (receiver.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0))) {
-            final double clockOffset = receiver.getClockOffsetDriver().getValue();
+            final double clockOffset = receiver.getClockBiasDriver().getValue();
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
             final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {

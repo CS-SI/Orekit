@@ -113,10 +113,10 @@ public class QuadraticClockModel implements ClockModel {
                                2 * c2);
     }
 
-    /** Get clock offset driver.
-     * @return offset parameter driver (constant)
+    /** Get clock bias driver.
+     * @return bias parameter driver (constant)
      */
-    public ParameterDriver getClockOffsetDriver() {
+    public ParameterDriver getClockBiasDriver() {
         return a0;
     }
 

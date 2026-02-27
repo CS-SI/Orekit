@@ -506,7 +506,7 @@ public class RangeAnalyticTest {
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(false);
+            station.getClockBiasDriver().setSelected(false);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);

@@ -114,7 +114,7 @@ public class OneWayGNSSRangeModifierUtil {
 
         }
 
-        for (final ParameterDriver driver : Arrays.asList(gnssSatellite.getClockOffsetDriver())) {
+        for (final ParameterDriver driver : Arrays.asList(gnssSatellite.getClockBiasDriver())) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt station parameters
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {

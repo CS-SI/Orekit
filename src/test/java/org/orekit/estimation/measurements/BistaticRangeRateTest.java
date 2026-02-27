@@ -173,7 +173,7 @@ class BistaticRangeRateTest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                                                          context.BRRstations.getValue())) {
-            station.getClockOffsetDriver().setValue(clockOffset);
+            station.getClockBiasDriver().setValue(clockOffset);
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -235,8 +235,8 @@ class BistaticRangeRateTest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                                                          context.BRRstations.getValue())) {
-            station.getClockOffsetDriver().setValue(clockOffset);
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setValue(clockOffset);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -321,8 +321,8 @@ class BistaticRangeRateTest {
 
         final double clockOffset = 4.8e-9;
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setValue(clockOffset);
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setValue(clockOffset);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -359,7 +359,7 @@ class BistaticRangeRateTest {
                 emitterParameter.getEastOffsetDriver(),
                 emitterParameter.getNorthOffsetDriver(),
                 emitterParameter.getZenithOffsetDriver(),
-                receiverParameter.getClockOffsetDriver(),
+                receiverParameter.getClockBiasDriver(),
                 receiverParameter.getEastOffsetDriver(),
                 receiverParameter.getNorthOffsetDriver(),
                 receiverParameter.getZenithOffsetDriver(),

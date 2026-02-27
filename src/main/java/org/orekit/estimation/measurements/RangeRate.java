@@ -93,7 +93,7 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
                                                                                           final int evaluation,
                                                                                           final SpacecraftState[] states) {
         // compute reception date
-        final double clockOffset = getObserver().getClockOffsetDriver().getValue(getDate());  // FIXME see Field
+        final double clockOffset = getObserver().getClockBiasDriver().getValue(getDate());  // FIXME see Field
         final AbsoluteDate receptionDate = getDate().shiftedBy(-clockOffset);
 
         if (isTwoWay()) {

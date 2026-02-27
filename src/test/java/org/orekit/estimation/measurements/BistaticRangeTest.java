@@ -177,7 +177,7 @@ class BistaticRangeTest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                                                          context.BRRstations.getValue())) {
-            station.getClockOffsetDriver().setValue(clockOffset);
+            station.getClockBiasDriver().setValue(clockOffset);
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -239,8 +239,8 @@ class BistaticRangeTest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                                                          context.BRRstations.getValue())) {
-            station.getClockOffsetDriver().setValue(clockOffset);
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setValue(clockOffset);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -325,8 +325,8 @@ class BistaticRangeTest {
 
         final double clockOffset = 4.8e-9;
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setValue(clockOffset);
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setValue(clockOffset);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -363,7 +363,7 @@ class BistaticRangeTest {
                 emitterParameter.getEastOffsetDriver(),
                 emitterParameter.getNorthOffsetDriver(),
                 emitterParameter.getZenithOffsetDriver(),
-                receiverParameter.getClockOffsetDriver(),
+                receiverParameter.getClockBiasDriver(),
                 receiverParameter.getEastOffsetDriver(),
                 receiverParameter.getNorthOffsetDriver(),
                 receiverParameter.getZenithOffsetDriver(),
@@ -391,7 +391,7 @@ class BistaticRangeTest {
     }
 
     /**
-     * Test the values of the measurement being correctly modified by ClockOffsetDriver
+     * Test the values of the measurement being correctly modified by ClockBiasDriver
      * (see issue 1418)
      */
     @Test
@@ -403,8 +403,8 @@ class BistaticRangeTest {
     	final double receiverClockOffset = 10e-9;
     	final GroundStation emitter = context.BRRstations.getKey();
     	final GroundStation receiver = context.BRRstations.getValue();
-        emitter.getClockOffsetDriver().setValue(emitterClockOffset);
-        receiver.getClockOffsetDriver().setValue(receiverClockOffset);
+        emitter.getClockBiasDriver().setValue(emitterClockOffset);
+        receiver.getClockBiasDriver().setValue(receiverClockOffset);
 
         // Create measurements
         final NumericalPropagatorBuilder propagatorBuilder =

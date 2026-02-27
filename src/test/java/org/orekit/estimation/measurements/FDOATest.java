@@ -179,8 +179,8 @@ class FDOATest {
         primary.getZenithOffsetDriver().setSelected(true);
         final double clockOffset = 4.8e-9;
         final GroundStation secondary = context.TDOAstations.getValue();
-        secondary.getClockOffsetDriver().setValue(clockOffset);
-        secondary.getClockOffsetDriver().setSelected(true);
+        secondary.getClockBiasDriver().setValue(clockOffset);
+        secondary.getClockBiasDriver().setSelected(true);
         secondary.getEastOffsetDriver().setSelected(true);
         secondary.getNorthOffsetDriver().setSelected(true);
         secondary.getZenithOffsetDriver().setSelected(true);
@@ -213,7 +213,7 @@ class FDOATest {
                 primeParameter.getEastOffsetDriver(),
                 primeParameter.getNorthOffsetDriver(),
                 primeParameter.getZenithOffsetDriver(),
-                secondParameter.getClockOffsetDriver(),
+                secondParameter.getClockBiasDriver(),
                 secondParameter.getEastOffsetDriver(),
                 secondParameter.getNorthOffsetDriver(),
                 secondParameter.getZenithOffsetDriver(),

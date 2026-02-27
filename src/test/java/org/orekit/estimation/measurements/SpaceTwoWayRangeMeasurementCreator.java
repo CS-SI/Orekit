@@ -136,7 +136,7 @@ public class SpaceTwoWayRangeMeasurementCreator extends MeasurementCreator {
 
                 final double correctedUpLinkDistance = upLinkDistance + satPCVUp + staPCVUp;
 
-                final double clockOffset = satellite.getClockOffsetDriver().getValue(date);
+                final double clockOffset = satellite.getClockBiasDriver().getValue(date);
                 addMeasurement(new Range(satellite, true, receptionDate.shiftedBy(clockOffset),
                         0.5 * (correctedDownLinkDistance + correctedUpLinkDistance) + bias,
                         1.0, 10, observedSatellite));

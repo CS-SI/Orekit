@@ -66,7 +66,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
         this.satelliteMeanPosition         = satelliteMeanPosition;
         this.satellitePhaseCenterVariation = satellitePhaseCenterVariation;
         this.satellite                     = new ObservableSatellite(0);
-        this.satellite.getClockOffsetDriver().setValue(satClockOffset);
+        this.satellite.getClockBiasDriver().setValue(satClockOffset);
         this.cache                         = new AmbiguityCache();
     }
 
@@ -76,7 +76,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockBiasDriver(),
                                                         station.getClockDriftDriver(),
                                                         station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
@@ -93,8 +93,8 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
             }
 
         }
-        if (satellite.getClockOffsetDriver().getReferenceDate() == null) {
-            satellite.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        if (satellite.getClockBiasDriver().getReferenceDate() == null) {
+            satellite.getClockBiasDriver().setReferenceDate(s0.getDate());
         }
     }
 
@@ -131,8 +131,8 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                                                 stationPhaseCenterVariation.value(0.5 * FastMath.PI - staLosDown.getDelta(),
                                                                                   staLosDown.getAlpha());
 
-                    final double groundClk = station.getClockOffsetDriver().getValue(date);
-                    final double satClk    = satellite.getClockOffsetDriver().getValue(date);
+                    final double groundClk = station.getClockBiasDriver().getValue(date);
+                    final double satClk    = satellite.getClockBiasDriver().getValue(date);
                     final double correctedDownLinkDistance = downLinkDistance + satPCVDown + staPCVDown +
                                                              (groundClk - satClk) * Constants.SPEED_OF_LIGHT;
                     final Phase  phase = new Phase(station, receptionDate.shiftedBy(groundClk),

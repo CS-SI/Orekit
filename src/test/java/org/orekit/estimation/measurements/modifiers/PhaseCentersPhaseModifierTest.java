@@ -62,7 +62,7 @@ public class PhaseCentersPhaseModifierTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 0;
         final double satClockOffset    = 345.0e-6;
@@ -105,7 +105,7 @@ public class PhaseCentersPhaseModifierTest {
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 0;
         final double satClockOffset    = 345.0e-6;
