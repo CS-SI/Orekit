@@ -84,6 +84,19 @@ public class RPOTest {
         }
     }
 
+    // Assess the computation of the forced circular in center offset case with CW rpo model.
+    @Test
+    public void computeForcedCircularWaypointsCalculatorTestCenterOffsetCW() {
+        final AbsoluteDate epoch = AbsoluteDate.J2000_EPOCH;
+        final List<TimeStampedPVCoordinates> waypoints = RPOModel.CW.computeForcedCircularMotionWaypoints(epoch, new Vector3D(0, 10, 0), 100, 0,0,1000,10,1,0,false);
+        // Assert that the waypoints on the circular path are correct.
+        for (int i = 0; i < waypoints.size(); i++) {
+            Assertions.assertEquals(waypoints.get(i).getDate().toDouble(),epoch.shiftedBy(1000. / 10 * i).toDouble(),NUMERICAL_TOLERANCE);
+            TestUtils.validateVector3D(waypoints.get(i).getPosition(),new Vector3D(100 * FastMath.sin(i * 2 * FastMath.PI / 10),-100 * FastMath.cos(i * 2 * FastMath.PI / 10) +10,0),NUMERICAL_TOLERANCE);
+            TestUtils.validateVector3D(waypoints.get(i).getVelocity(), Vector3D.ZERO, NUMERICAL_TOLERANCE);
+        }
+    }
+
     // Assess the computation of the forced circular waypoints with Inclination with CW rpo model.
     @Test
     public void computeForcedCircularWaypointsCalculatorTestInclinationCW() {
@@ -171,6 +184,19 @@ public class RPOTest {
             Assertions.assertEquals(waypoints.get(i).getDate().toDouble() + 1000, waypoints.get(10 + i).getDate().toDouble(), NUMERICAL_TOLERANCE);
             // Assert the waypoints of the second revolution orbit have the same position as the ones of the first relative orbit.
             TestUtils.validateVector3D(waypoints.get(i).getPosition(), waypoints.get(10 + i).getPosition(), NUMERICAL_TOLERANCE);
+        }
+    }
+
+    // Assess the computation of the forced circular waypoints in center offset case with YA rpo model.
+    @Test
+    public void computeForcedCircularWaypointsCalculatorTestCenterOffsetYA() {
+        final AbsoluteDate epoch = AbsoluteDate.J2000_EPOCH;
+        final List<TimeStampedPVCoordinates> waypoints = RPOModel.YA.computeForcedCircularMotionWaypoints(epoch, new Vector3D(10, 0, 0), 100, 0,0,1000,10,1,0,false);
+        // Assert that the waypoints on the circular path are correct.
+        for (int i = 0; i < waypoints.size(); i++) {
+            Assertions.assertEquals(waypoints.get(i).getDate().toDouble(),epoch.shiftedBy(1000. / 10 * i).toDouble(),NUMERICAL_TOLERANCE);
+            TestUtils.validateVector3D(waypoints.get(i).getPosition(), new Vector3D(-100 * FastMath.cos(i * 2 * FastMath.PI / 10) + 10,0,-100 * FastMath.sin(i * 2 * FastMath.PI / 10) ),NUMERICAL_TOLERANCE);
+            TestUtils.validateVector3D(waypoints.get(i).getVelocity(), Vector3D.ZERO, NUMERICAL_TOLERANCE);
         }
     }
 
@@ -303,6 +329,20 @@ public class RPOTest {
         }
     }
 
+    // Assess the computation of the forced circular waypoints in center offset case with CW rpo model.
+    @Test
+    public void computeFieldForcedCircularWaypointsCalculatorTestCenterOffsetCW() {
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> epoch = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
+        final List<TimeStampedFieldPVCoordinates<Binary64>> waypoints = RPOModel.CW.computeForcedCircularMotionWaypoints(epoch, new FieldVector3D<>(field, new Vector3D(0,10,0)), new Binary64(100), new Binary64(0),new Binary64(0),new Binary64(1000),10,1,Binary64.ZERO,false);
+        // Assert that the waypoints on the circular path are correct.
+        for (int i = 0; i < waypoints.size(); i++) {
+            Assertions.assertEquals(waypoints.get(i).getDate().toAbsoluteDate().toDouble(),epoch.shiftedBy(1000. / 10 * i).toAbsoluteDate().toDouble(),NUMERICAL_TOLERANCE);
+            TestUtils.validateVector3D(waypoints.get(i).getPosition().toVector3D(),new Vector3D(100 * FastMath.sin(i * 2 * FastMath.PI / 10),-100 * FastMath.cos(i * 2 * FastMath.PI / 10)+10,0),NUMERICAL_TOLERANCE);
+            TestUtils.validateVector3D(waypoints.get(i).getVelocity().toVector3D(), Vector3D.ZERO, NUMERICAL_TOLERANCE);
+        }
+    }
+
     // Assess the computation of the forced circular waypoints with Inclination with CW rpo model.
     @Test
     public void computeFieldForcedCircularWaypointsCalculatorTestInclinationCW() {
@@ -396,6 +436,20 @@ public class RPOTest {
             Assertions.assertEquals(waypoints.get(i).getDate().toAbsoluteDate().toDouble() + 1000, waypoints.get(10 + i).getDate().toAbsoluteDate().toDouble(), NUMERICAL_TOLERANCE);
             // Assert the waypoints of the second revolution orbit have the same position as the ones of the first relative orbit.
             TestUtils.validateVector3D(waypoints.get(i).getPosition().toVector3D(), waypoints.get(10 + i).getPosition().toVector3D(), NUMERICAL_TOLERANCE);
+        }
+    }
+
+    // Assess the computation of the forced circular waypoints simplest case with YA rpo model.
+    @Test
+    public void computeFieldForcedCircularWaypointsCalculatorTestCenterOffsetYA() {
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> epoch = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
+        final List<TimeStampedFieldPVCoordinates<Binary64>> waypoints = RPOModel.YA.computeForcedCircularMotionWaypoints(epoch, new FieldVector3D<>(field, new Vector3D(10,0,0)), new Binary64(100), new Binary64(0),new Binary64(0),new Binary64(1000),10,1,Binary64.ZERO,false);
+        // Assert that the waypoints on the circular path are correct.
+        for (int i = 0; i < waypoints.size(); i++) {
+            Assertions.assertEquals(waypoints.get(i).getDate().toAbsoluteDate().toDouble(),epoch.shiftedBy(1000. / 10 * i).toAbsoluteDate().toDouble(),NUMERICAL_TOLERANCE);
+            TestUtils.validateVector3D(waypoints.get(i).getPosition().toVector3D(),new Vector3D(-100 * FastMath.cos(i * 2 * FastMath.PI / 10)+10,0,-100 * FastMath.sin(i * 2 * FastMath.PI / 10) ),NUMERICAL_TOLERANCE);
+            TestUtils.validateVector3D(waypoints.get(i).getVelocity().toVector3D(), Vector3D.ZERO, NUMERICAL_TOLERANCE);
         }
     }
 
