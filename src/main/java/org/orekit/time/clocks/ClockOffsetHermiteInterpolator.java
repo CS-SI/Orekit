@@ -78,20 +78,20 @@ public class ClockOffsetHermiteInterpolator extends AbstractTimeInterpolator<Clo
         final List<ClockOffset> neighborList      = interpolationData.getNeighborList();
         for (ClockOffset value : neighborList) {
             final double deltaT = value.getDate().durationFrom(interpolationDate);
-            final double[] offset = new double[] { value.getOffset() };
+            final double[] bias = new double[] { value.getBias() };
             if (Double.isNaN(value.getRate())) {
                 // no clock rate for this entry
-                interpolator.addSamplePoint(deltaT, offset);
+                interpolator.addSamplePoint(deltaT, bias);
             } else {
                 // clock rate is available
                 final double[] rate = new double[] { value.getRate() };
                 if (Double.isNaN(value.getAcceleration())) {
                     // no clock acceleration for this entry
-                    interpolator.addSamplePoint(deltaT, offset, rate);
+                    interpolator.addSamplePoint(deltaT, bias, rate);
                 } else {
                     // clock acceleration is available
                     final double[] acceleration = new double[] { value.getAcceleration() };
-                    interpolator.addSamplePoint(deltaT, offset, rate, acceleration);
+                    interpolator.addSamplePoint(deltaT, bias, rate, acceleration);
                 }
             }
         }

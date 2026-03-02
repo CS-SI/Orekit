@@ -51,7 +51,7 @@ public class SampledClockModelTest {
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final ClockOffset co = clockModel.getOffset(t0.shiftedBy(dt));
             Assertions.assertEquals(dt,                co.getDate().durationFrom(t0), 1.0e-15);
-            Assertions.assertEquals(c.value(dt),       co.getOffset(),                1.0e-15);
+            Assertions.assertEquals(c.value(dt),       co.getBias(),                  1.0e-15);
             Assertions.assertEquals(cDot.value(dt),    co.getRate(),                  1.0e-15);
             Assertions.assertEquals(cDotDot.value(dt), co.getAcceleration(),          1.0e-15);
         }
@@ -80,7 +80,7 @@ public class SampledClockModelTest {
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final ClockOffset co = clockModel.getOffset(t0.shiftedBy(dt));
             Assertions.assertEquals(dt,                co.getDate().durationFrom(t0), 1.0e-15);
-            Assertions.assertEquals(c.value(dt),       co.getOffset(),                1.0e-15);
+            Assertions.assertEquals(c.value(dt),       co.getBias(),                1.0e-15);
             Assertions.assertEquals(cDot.value(dt),    co.getRate(),                  1.0e-15);
             Assertions.assertEquals(cDotDot.value(dt), co.getAcceleration(),          1.0e-15);
         }
@@ -109,7 +109,7 @@ public class SampledClockModelTest {
             final T dtF = field.getZero().newInstance(dt);
             final FieldClockOffset<T> co = clockModel.getOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
-            Assertions.assertEquals(c.value(dtF).getReal(),       co.getOffset().getReal(),       1.0e-15);
+            Assertions.assertEquals(c.value(dtF).getReal(),       co.getBias().getReal(),       1.0e-15);
             Assertions.assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
             Assertions.assertEquals(cDotDot.value(dtF).getReal(), co.getAcceleration().getReal(), 1.0e-15);
         }
@@ -138,7 +138,7 @@ public class SampledClockModelTest {
             final T dtF = field.getZero().newInstance(dt);
             final FieldClockOffset<T> co = clockModel.getOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
-            Assertions.assertEquals(c.value(dtF).getReal(),       co.getOffset().getReal(),       1.0e-15);
+            Assertions.assertEquals(c.value(dtF).getReal(),       co.getBias().getReal(),       1.0e-15);
             Assertions.assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
             Assertions.assertEquals(cDotDot.value(dtF).getReal(), co.getAcceleration().getReal(), 1.0e-15);
         }

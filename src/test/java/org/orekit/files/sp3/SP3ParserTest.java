@@ -134,15 +134,15 @@ public class SP3ParserTest {
 
         // points exactly on files entries
         Assertions.assertEquals(-9.16573060e-4,
-                                clockModel.getOffset(new AbsoluteDate(2015, 5, 5, 0, 10, 0.0, ts)).getOffset(),
+                                clockModel.getOffset(new AbsoluteDate(2015, 5, 5, 0, 10, 0.0, ts)).getBias(),
                                 1.0e-16);
         Assertions.assertEquals(-9.16566535e-4,
-                                clockModel.getOffset(new AbsoluteDate(2015, 5, 5, 0, 15, 0.0, ts)).getOffset(),
+                                clockModel.getOffset(new AbsoluteDate(2015, 5, 5, 0, 15, 0.0, ts)).getBias(),
                                 1.0e-16);
 
         // intermediate point
         final ClockOffset co = clockModel.getOffset(new AbsoluteDate(2015, 5, 5, 0, 12, 5.25, ts));
-        Assertions.assertEquals(-9.16570332e-04, co.getOffset(),       1.0e-12);
+        Assertions.assertEquals(-9.16570332e-04, co.getBias(),         1.0e-12);
         Assertions.assertEquals( 2.17288913e-11, co.getRate(),         1.0e-19);
         Assertions.assertEquals(-4.31319472e-16, co.getAcceleration(), 1.0e-24);
 
@@ -1237,8 +1237,8 @@ public class SP3ParserTest {
         span = span.next();
         Assertions.assertNull(span.getData());
 
-        Assertions.assertEquals(2.4314257e-5, clockModel.getOffset(new AbsoluteDate(2017, 5, 21, 0,  4, 59.5, ts)).getOffset(), 1.0e-12);
-        Assertions.assertEquals(2.4301550e-5, clockModel.getOffset(new AbsoluteDate(2017, 5, 21, 0, 20,  0.5, ts)).getOffset(), 1.0e-12);
+        Assertions.assertEquals(2.4314257e-5, clockModel.getOffset(new AbsoluteDate(2017, 5, 21, 0,  4, 59.5, ts)).getBias(), 1.0e-12);
+        Assertions.assertEquals(2.4301550e-5, clockModel.getOffset(new AbsoluteDate(2017, 5, 21, 0, 20,  0.5, ts)).getBias(), 1.0e-12);
         try {
             clockModel.getOffset(new AbsoluteDate(2017, 5, 21, 0, 10, 0.0, ts));
             Assertions.fail("an exceptions should have been thrown");
@@ -1378,9 +1378,9 @@ public class SP3ParserTest {
         Assertions.assertEquals(end,   clockModel.getValidityEnd());
 
         for (double dt = 0; dt < end.durationFrom(start); dt += 1) {
-            final AbsoluteDate date   = start.shiftedBy(dt);
-            final double       offset = clockModel.getOffset(date).getOffset();
-            Assertions.assertEquals(polynomialFunction.value(dt), offset, tolerance);
+            final AbsoluteDate date = start.shiftedBy(dt);
+            final double       bias = clockModel.getOffset(date).getBias();
+            Assertions.assertEquals(polynomialFunction.value(dt), bias, tolerance);
         }
 
     }

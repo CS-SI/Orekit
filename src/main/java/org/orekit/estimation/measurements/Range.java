@@ -100,7 +100,7 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
                                                                                       final int evaluation,
                                                                                       final SpacecraftState[] states) {
         // compute reception date
-        final double clockOffset = getObserver().getQuadraticClockModel().getOffset(getDate()).getOffset();
+        final double clockOffset = getObserver().getQuadraticClockModel().getOffset(getDate()).getBias();
         final AbsoluteDate receptionDate = getDate().shiftedBy(-clockOffset);
 
         if (isTwoWay()) {

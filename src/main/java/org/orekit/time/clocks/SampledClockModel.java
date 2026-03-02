@@ -79,8 +79,8 @@ public class SampledClockModel implements ClockModel {
             sample.
                 getNeighbors(date.toAbsoluteDate()).
                 map(c -> {
-                    final FieldAbsoluteDate<T> dateF   = new FieldAbsoluteDate<>(field, c.getDate());
-                    final T                    offsetF = zero.newInstance(c.getOffset());
+                    final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, c.getDate());
+                    final T                    biasF = zero.newInstance(c.getBias());
                     final T rateF;
                     final T accelerationF;
                     if (Double.isNaN(c.getRate())) {
@@ -94,7 +94,7 @@ public class SampledClockModel implements ClockModel {
                                         null :
                                         zero.newInstance(c.getAcceleration());
                     }
-                    return new FieldClockOffset<>(dateF, offsetF, rateF, accelerationF);
+                    return new FieldClockOffset<>(dateF, biasF, rateF, accelerationF);
                 });
 
         // perform interpolation

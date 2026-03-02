@@ -83,23 +83,23 @@ public class FieldClockOffsetHermiteInterpolator<T extends CalculusFieldElement<
         final List<FieldClockOffset<T>> neighborList      = interpolationData.getNeighborList();
         for (FieldClockOffset<T> value : neighborList) {
             final T   deltaT = value.getDate().durationFrom(interpolationDate);
-            final T[] offset = MathArrays.buildArray(interpolationDate.getField(), 1);
-            offset[0] = value.getOffset();
+            final T[] bias   = MathArrays.buildArray(interpolationDate.getField(), 1);
+            bias[0] = value.getBias();
             if (value.getRate() == null || value.getRate().isNaN()) {
                 // no clock rate for this entry
-                interpolator.addSamplePoint(deltaT, offset);
+                interpolator.addSamplePoint(deltaT, bias);
             } else {
                 // clock rate is available
                 final T[] rate = MathArrays.buildArray(interpolationDate.getField(), 1);
                 rate[0] = value.getRate();
                 if (value.getAcceleration() == null || value.getAcceleration().isNaN()) {
                     // no clock acceleration for this entry
-                    interpolator.addSamplePoint(deltaT, offset, rate);
+                    interpolator.addSamplePoint(deltaT, bias, rate);
                 } else {
                     // clock acceleration is available
                     final T[] acceleration = MathArrays.buildArray(interpolationDate.getField(), 1);
                     acceleration[0] = value.getAcceleration();
-                    interpolator.addSamplePoint(deltaT, offset, rate, acceleration);
+                    interpolator.addSamplePoint(deltaT, bias, rate, acceleration);
                 }
             }
         }

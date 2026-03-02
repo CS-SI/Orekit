@@ -146,15 +146,15 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
     CommonParametersWithoutDerivatives computeCommonParametersWithout(final SpacecraftState[] states) {
 
         // local and remote satellites
-        final Frame                    frame            = states[0].getFrame();
-        final TimeStampedPVCoordinates pvaLocal         = states[0].getPVCoordinates(frame);
-        final ClockOffset              localClock       = getSatellites().get(0).
-                                                          getQuadraticClockModel().getOffset(getDate());
-        final double                   localClockOffset = localClock.getOffset();
-        final PVCoordinatesProvider    remotePV         = getRemotePV(states[1]);
+        final Frame                    frame          = states[0].getFrame();
+        final TimeStampedPVCoordinates pvaLocal       = states[0].getPVCoordinates(frame);
+        final ClockOffset              localClock     = getSatellites().get(0).
+                                                        getQuadraticClockModel().getOffset(getDate());
+        final double                   localClockBias = localClock.getBias();
+        final PVCoordinatesProvider    remotePV       = getRemotePV(states[1]);
 
-        // take clock offset into account
-        final AbsoluteDate arrivalDate = getDate().shiftedBy(-localClockOffset);
+        // take clock bias into account
+        final AbsoluteDate arrivalDate = getDate().shiftedBy(-localClockBias);
 
         // Downlink delay
         final double deltaT = arrivalDate.durationFrom(states[0]);
@@ -209,7 +209,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         final FieldPVCoordinatesProvider<Gradient>    remotePV         = getRemotePV(states[1], nbParams);
 
         // take clock offset into account
-        final FieldAbsoluteDate<Gradient> arrivalDate = gDate.shiftedBy(localClockOffset.getOffset().negate());
+        final FieldAbsoluteDate<Gradient> arrivalDate = gDate.shiftedBy(localClockOffset.getBias().negate());
 
         // Downlink delay
         final Gradient deltaT = arrivalDate.durationFrom(states[0].getDate());

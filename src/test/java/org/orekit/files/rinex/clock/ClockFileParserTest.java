@@ -397,12 +397,12 @@ public class ClockFileParserTest {
         // points exactly on files entries
         final ClockOffset c1 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0,  0.0, file.getHeader().getTimeScale()));
         final ClockOffset c2 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 30.0, file.getHeader().getTimeScale()));
-        Assertions.assertEquals(0.192309152524E-08, c1.getOffset(), 1.0e-21);
-        Assertions.assertEquals(0.192333320310E-08, c2.getOffset(), 1.0e-21);
+        Assertions.assertEquals(0.192309152524E-08, c1.getBias(), 1.0e-21);
+        Assertions.assertEquals(0.192333320310E-08, c2.getBias(), 1.0e-21);
 
         // intermediate point
         final ClockOffset c = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 12.0, file.getHeader().getTimeScale()));
-        Assertions.assertEquals(0.1923188196384e-08, c.getOffset(),       1.0e-21);
+        Assertions.assertEquals(0.1923188196384e-08, c.getBias(),       1.0e-21);
         Assertions.assertEquals(8.05592866666e-15,   c.getRate(),         1.0e-26);
         Assertions.assertEquals( 0.0,                c.getAcceleration(), 1.0e-40);
 
@@ -852,7 +852,7 @@ public class ClockFileParserTest {
 
         final AbsoluteDate between1And2 = new AbsoluteDate(2020, 9, 1, 0, 4, 45.0, spliced.getHeader().getTimeScale());
         Assertions.assertEquals(-1.83536264242e-4,
-                                spliced.extractClockModel("J01", 4).getOffset(between1And2).getOffset(),
+                                spliced.extractClockModel("J01", 4).getOffset(between1And2).getBias(),
                                 1.0e-12);
 
         final AbsoluteDate between2And3 = new AbsoluteDate(2020, 9, 1, 0,  9, 45.0, spliced.getHeader().getTimeScale());
@@ -869,7 +869,7 @@ public class ClockFileParserTest {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, oe.getSpecifier());
         }
         Assertions.assertEquals(-1.83535202897e-4,
-                                spliced.extractClockModel("J01", 2).getOffset(between2And3).getOffset(),
+                                spliced.extractClockModel("J01", 2).getOffset(between2And3).getBias(),
                                 1.0e-12);
 
 

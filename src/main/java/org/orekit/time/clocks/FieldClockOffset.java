@@ -30,8 +30,8 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
     /** Date. */
     private final FieldAbsoluteDate<T> date;
 
-    /** Clock offset. */
-    private final T offset;
+    /** Clock bias. */
+    private final T bias;
 
     /** Clock rate. */
     private final T rate;
@@ -40,15 +40,15 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
     private final T acceleration;
 
     /** Simple constructor.
-     * @param date   date
-     * @param offset clock offset
-     * @param rate   clock rate (can be set to {@code null} if unknown)
+     * @param date         date
+     * @param bias         clock bias
+     * @param rate         clock rate (can be set to {@code null} if unknown)
      * @param acceleration clock acceleration (can be set to {@code null} if unknown)
      */
-    public FieldClockOffset(final FieldAbsoluteDate<T> date, final T offset,
+    public FieldClockOffset(final FieldAbsoluteDate<T> date, final T bias,
                             final T rate, final T acceleration) {
         this.date         = date;
-        this.offset       = offset;
+        this.bias         = bias;
         this.rate         = rate;
         this.acceleration = acceleration;
     }
@@ -63,7 +63,7 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
      */
     public FieldClockOffset<T> add(final FieldClockOffset<T> other) {
         return new FieldClockOffset<>(date,
-                                      offset.add(other.offset),
+                                      bias.add(other.bias),
                                       rate.add(other.rate),
                                       acceleration.add(other.acceleration));
     }
@@ -78,7 +78,7 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
      */
     public FieldClockOffset<T> subtract(final FieldClockOffset<T> other) {
         return new FieldClockOffset<>(date,
-                                      offset.subtract(other.offset),
+                                      bias.subtract(other.bias),
                                       rate.subtract(other.rate),
                                       acceleration.subtract(other.acceleration));
     }
@@ -89,11 +89,11 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
         return date;
     }
 
-    /** Get offset.
-     * @return offset
+    /** Get bias.
+     * @return bias
      */
-    public T getOffset() {
-        return offset;
+    public T getBias() {
+        return bias;
     }
 
     /** Get rate.
