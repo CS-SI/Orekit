@@ -238,7 +238,7 @@ public class TeardropCircularWaypointCalculator {
     }
 
     /**
-     * Computes ImpulseMeneuvers of the teardrop relative orbit in the desired frame.
+     * Computes ImpulseManeuvers of the teardrop relative orbit in the desired frame.
      *
      * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
      * <p>All maneuvers happen at the pointy end of the teardrop.</p>

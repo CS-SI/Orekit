@@ -80,14 +80,14 @@ public enum RPOModel implements RPO {
          * <p>All maneuvers are performed at the pointy end of the teardrop.</p>
          *
          * @param injectionDate Date of injection in the teardrop.
-         * @param targetMeanMotion Mean motion of the target's orbit.
+         * @param targetOrbit target's orbit.
          * @param turnAroundDistance Turn-around distance. This is the "round" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
          * @param maneuverDistance Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
          * @param numberOfTeardrops Number of teardrop orbits to perform. Must be ≥ 1.
          * @return List of waypoints in time. Date, position, and velocity are non-zero.
          */
-        public List<TimeStampedPVCoordinates> computeTeardropWaypoints(final AbsoluteDate injectionDate, final double targetMeanMotion, final double turnAroundDistance, final double maneuverDistance, final int numberOfTeardrops) {
-            return new TeardropCircularWaypointCalculator(targetMeanMotion, turnAroundDistance, maneuverDistance, numberOfTeardrops).computeTearDropWaypoints(injectionDate);
+        public List<TimeStampedPVCoordinates> computeTeardropWaypoints(final AbsoluteDate injectionDate, final Orbit targetOrbit, final double turnAroundDistance, final double maneuverDistance, final int numberOfTeardrops) {
+            return new TeardropCircularWaypointCalculator(targetOrbit.getKeplerianMeanMotion(), turnAroundDistance, maneuverDistance, numberOfTeardrops).computeTearDropWaypoints(injectionDate);
         }
 
         /**
@@ -190,6 +190,35 @@ public enum RPOModel implements RPO {
         /** {@inheritDoc} */
         public Vector3D getOutOfPlaneDirection() {
             return Vector3D.MINUS_J;
+        }
+
+        /**
+         ** Computes the waypoints of the teardrop relative orbit in LVLH Local Orbital Frame to use them with Yamanaka-Ankersen maneuvers.
+         * A teardrop is analytically feasible only if the target's orbit is circular.
+         * If the orbit of the target is eccentric, an error is thrown to prevent it.
+         *
+         * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
+         * <p>All maneuvers are performed at the pointy end of the teardrop.</p>
+         *
+         * @param injectionDate Date of injection in the teardrop.
+         * @param targetOrbit target's orbit.
+         * @param turnAroundDistance Turn-around distance. This is the "round" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
+         * @param maneuverDistance Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
+         * @param numberOfTeardrops Number of teardrop orbits to perform. Must be ≥ 1.
+         * @return List of waypoints in time. Date, position, and velocity are non-zero.
+         */
+        public List<TimeStampedPVCoordinates> computeTeardropWaypoints(final AbsoluteDate injectionDate, final Orbit targetOrbit, final double turnAroundDistance, final double maneuverDistance, final int numberOfTeardrops) {
+            if (targetOrbit.getE() != 0) {
+                throw new UnsupportedOperationException("A teardrop is not analytically feasible around an eccentric orbit.");
+            } else {
+                final List<TimeStampedPVCoordinates> waypointsQSW = new TeardropCircularWaypointCalculator(targetOrbit.getKeplerianMeanMotion(), turnAroundDistance, maneuverDistance, numberOfTeardrops).computeTearDropWaypoints(injectionDate);
+                final List<TimeStampedPVCoordinates> waypointsLVLH = new ArrayList<>();
+                for (TimeStampedPVCoordinates waypoint : waypointsQSW) {
+                    final TimeStampedPVCoordinates waypointLVLH = LOFType.LVLH_CCSDS.transformFromLOF(LOFType.QSW, waypoint.getDate(), waypoint).transformPVCoordinates(waypoint);
+                    waypointsLVLH.add(waypointLVLH);
+                }
+                return waypointsLVLH;
+            }
         }
 
         /**
