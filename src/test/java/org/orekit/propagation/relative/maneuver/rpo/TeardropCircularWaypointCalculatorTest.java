@@ -18,7 +18,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class TearDropWaypointCalculatorTest {
+public class TeardropCircularWaypointCalculatorTest {
 
     // Tolerance for floating point numbers comparison
     public static final double NUMERICAL_TOLERANCE = 1e-7;
