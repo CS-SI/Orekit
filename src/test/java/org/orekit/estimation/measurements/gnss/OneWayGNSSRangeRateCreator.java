@@ -125,7 +125,7 @@ public class OneWayGNSSRangeRateCreator
                                             remoteClk.getOffset(transitDate).getRate());
 
             // Generate measurement
-            addMeasurement(new OneWayGNSSRangeRate(remoteSat, date.shiftedBy(localClk.getOffset()), rangeRate, 1.0, 10, local));
+            addMeasurement(new OneWayGNSSRangeRate(remoteSat, date.shiftedBy(localClk.getBias()), rangeRate, 1.0, 10, local));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);

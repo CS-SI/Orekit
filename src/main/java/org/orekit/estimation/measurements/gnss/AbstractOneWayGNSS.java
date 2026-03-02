@@ -113,11 +113,11 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
         final TimeStampedPVCoordinates pvaLocal         = states[0].getPVCoordinates(frame);
 
         // Clock values of the observed spacecraft and signal receiver
-        final ClockOffset localClock       = localSat.getQuadraticClockModel().getOffset(measurementDate);
-        final double                   localClockOffset = localClock.getOffset();
+        final ClockOffset localClock     = localSat.getQuadraticClockModel().getOffset(measurementDate);
+        final double      localClockBias = localClock.getBias();
 
-        // take clock offset of receiver (in this case, ObservableSatellite) into account
-        final AbsoluteDate arrivalDate = measurementDate.shiftedBy(-localClockOffset);
+        // take clock bias of receiver (in this case, ObservableSatellite) into account
+        final AbsoluteDate arrivalDate = measurementDate.shiftedBy(-localClockBias);
 
         // Coordinates provider of the Observer object providing the signal information
         final PVCoordinatesProvider remotePV = getObserver().getPVCoordinatesProvider();
@@ -166,7 +166,7 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
         final FieldClockOffset<Gradient> localClockOffset = localClock.getOffset(gDate);
 
         // take clock offset into account for arrival date
-        final FieldAbsoluteDate<Gradient> arrivalDate = gDate.shiftedBy(localClockOffset.getOffset().negate());
+        final FieldAbsoluteDate<Gradient> arrivalDate = gDate.shiftedBy(localClockOffset.getBias().negate());
 
         // Coords provider for observer object that is sending signal
         final FieldPVCoordinatesProvider<Gradient> remotePV = getObserver().getFieldPVCoordinatesProvider(nbParams, paramIndices);

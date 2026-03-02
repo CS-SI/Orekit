@@ -90,8 +90,8 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
                                                        });
 
         // Range value
-        final double range = (common.getTauD() + common.getLocalOffset().getOffset() -
-                              common.getRemoteOffset().getOffset()) *
+        final double range = (common.getTauD() + common.getLocalOffset().getBias() -
+                              common.getRemoteOffset().getBias()) *
                              Constants.SPEED_OF_LIGHT;
 
         // Set value of the estimated measurement
@@ -122,8 +122,8 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
                                                    });
 
         // Range value
-        final Gradient range            = common.getTauD().add(common.getLocalOffset().getOffset()).
-                                          subtract(common.getRemoteOffset().getOffset()).
+        final Gradient range            = common.getTauD().add(common.getLocalOffset().getBias()).
+                                          subtract(common.getRemoteOffset().getBias()).
                                           multiply(Constants.SPEED_OF_LIGHT);
         fillDerivatives(range, common.getIndices(), estimatedRange);
 

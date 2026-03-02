@@ -137,8 +137,8 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
         // Phase value
         final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
         final double ambiguity   = ambiguityDriver.getValue(common.getState().getDate());
-        final double phase       = (common.getTauD() + common.getLocalOffset().getOffset() -
-                                    common.getRemoteOffset().getOffset()) * cOverLambda +
+        final double phase       = (common.getTauD() + common.getLocalOffset().getBias() -
+                                    common.getRemoteOffset().getBias()) * cOverLambda +
                                    ambiguity;
 
         estimatedPhase.setEstimatedValue(phase);
@@ -171,7 +171,7 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
         final Gradient ambiguity   = ambiguityDriver.getValue(common.getTauD().getFreeParameters(), common.getIndices(),
                                                               common.getState().getDate());
-        final Gradient phase       = common.getTauD().add(common.getLocalOffset().getOffset()).subtract(common.getRemoteOffset().getOffset()).
+        final Gradient phase       = common.getTauD().add(common.getLocalOffset().getBias()).subtract(common.getRemoteOffset().getBias()).
                                      multiply(cOverLambda).
                                      add(ambiguity);
 

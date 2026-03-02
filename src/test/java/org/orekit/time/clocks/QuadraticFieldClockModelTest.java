@@ -44,9 +44,9 @@ public class QuadraticFieldClockModelTest {
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -8)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -9)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0, -10)));
-        Assertions.assertEquals(1.00 / 256.0, clock.getOffset(t0).getOffset().getReal(),                1.0e-15);
-        Assertions.assertEquals(1.75 / 256.0, clock.getOffset(t0.shiftedBy(1.0)).getOffset().getReal(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 256.0, clock.getOffset(t0.shiftedBy(2.0)).getOffset().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.00 / 256.0, clock.getOffset(t0).getBias().getReal(),                1.0e-15);
+        Assertions.assertEquals(1.75 / 256.0, clock.getOffset(t0.shiftedBy(1.0)).getBias().getReal(), 1.0e-15);
+        Assertions.assertEquals(3.00 / 256.0, clock.getOffset(t0.shiftedBy(2.0)).getBias().getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestRateField(final Field<T> field) {

@@ -128,7 +128,7 @@ public class InterSatellitesOneWayRangeRateMeasurementCreator
 
             // generate measurement
             final InterSatellitesOneWayRangeRate phase = new InterSatellitesOneWayRangeRate(local, remote,
-                                                                                            date.shiftedBy(localClk.getOffset()),
+                                                                                            date.shiftedBy(localClk.getBias()),
                                                                                             rangeRate,
                                                                                             1.0, 10);
             addMeasurement(phase);

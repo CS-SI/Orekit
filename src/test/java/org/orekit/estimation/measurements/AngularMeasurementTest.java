@@ -80,7 +80,7 @@ class AngularMeasurementTest {
         // WHEN
         final AbsoluteDate actualReceptionDate = groundStation.getCorrectedReceptionDate(measurement.getDate());
         // THEN
-        final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getOffset());
+        final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getBias());
         assertEquals(expectedDate, actualReceptionDate);
     }
 
@@ -97,7 +97,7 @@ class AngularMeasurementTest {
         // WHEN
         final FieldAbsoluteDate<Gradient> actualReceptionDate = groundStation.getCorrectedReceptionDateField(measurement.getDate(), 0, new HashMap<>());
         // THEN
-        final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getOffset());
+        final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getBias());
         assertEquals(expectedDate, actualReceptionDate.toAbsoluteDate());
     }
 

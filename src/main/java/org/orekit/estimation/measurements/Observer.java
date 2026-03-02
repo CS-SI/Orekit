@@ -155,7 +155,7 @@ public interface Observer extends MeasurementParticipant {
      */
     default AbsoluteDate getCorrectedReceptionDate(final AbsoluteDate date) {
         final ClockOffset localClock = getQuadraticClockModel().getOffset(date);
-        return date.shiftedBy(-localClock.getOffset());
+        return date.shiftedBy(-localClock.getBias());
     }
 
     /**
@@ -172,7 +172,7 @@ public interface Observer extends MeasurementParticipant {
         final GradientField field = GradientField.getField(nbParams);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
         final FieldClockOffset<Gradient> localClock = quadraticClockModel.getOffset(fieldDate);
-        return fieldDate.shiftedBy(localClock.getOffset().negate());
+        return fieldDate.shiftedBy(localClock.getBias().negate());
     }
 
 }
