@@ -19,31 +19,29 @@ package org.orekit.propagation.relative.maneuver.rpo;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
-import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.relative.RelativeProvider;
 import org.orekit.propagation.relative.clohessywiltshire.ClohessyWiltshireEquations;
 import org.orekit.propagation.relative.clohessywiltshire.ClohessyWiltshireMatrices;
 import org.orekit.propagation.relative.clohessywiltshire.ClohessyWiltshireProvider;
 import org.orekit.propagation.relative.clohessywiltshire.ClohessyWiltshireRendezVous;
 import org.orekit.propagation.relative.maneuver.ClohessyWiltshireManeuver;
+import org.orekit.propagation.relative.maneuver.RelativeManeuver;
 import org.orekit.propagation.relative.maneuver.YamanakaAnkersenManeuver;
 import org.orekit.propagation.relative.yamanakaankersen.YamanakaAnkersenProvider;
 import org.orekit.propagation.relative.yamanakaankersen.YamanakaAnkersenRendezVous;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -76,6 +74,8 @@ public enum RPOModel implements RPO {
         public Vector3D getOutOfPlaneDirection() {
             return Vector3D.PLUS_K;
         }
+
+        public LOFType getLOFType() { return LOFType.QSW; }
 
         /**
          ** Computes the waypoints of the teardrop relative orbit in QSW Local Orbital Frame to use them with Clohessy-Wiltshire maneuvers.
@@ -121,7 +121,7 @@ public enum RPOModel implements RPO {
          * @param cwProvider Clohessy-Wiltshire provider.
          * @return list of relative maneuvers in Clohessy-Wiltshire frame (QSW).
          */
-        public List<ClohessyWiltshireManeuver> computeForcedManeuvers(final List<TimeStampedPVCoordinates> waypoints, final Vector3D initialVelocity, final Orbit targetOrbit, final ClohessyWiltshireProvider cwProvider) {
+        public List<RelativeManeuver> computeForcedManeuvers(final List<TimeStampedPVCoordinates> waypoints, final Vector3D initialVelocity, final Orbit targetOrbit, final RelativeProvider cwProvider) {
             final List<ClohessyWiltshireManeuver> maneuvers = new ArrayList<>();
             Vector3D velocityBeforeManeuver = initialVelocity;
             final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW, targetOrbit, LOFType.QSW.getName());
@@ -136,7 +136,7 @@ public enum RPOModel implements RPO {
                 // Compute the impulsion at the current waypoint to reach the next waypoint.
                 final Vector3D deltaV = velocityAfterManeuver.subtract(velocityBeforeManeuver);
                 // Create the Clohessy-Wiltshire maneuver and add it to the list.
-                final ClohessyWiltshireManeuver maneuver = new ClohessyWiltshireManeuver(firstImpulseTrigger, deltaV, cwProvider);
+                final ClohessyWiltshireManeuver maneuver = new ClohessyWiltshireManeuver(firstImpulseTrigger, deltaV, (ClohessyWiltshireProvider) cwProvider);
                 maneuvers.add(maneuver);
                 // Compute the velocity before the maneuver at the next waypoint.
                 final double transferDuration = nextWaypoint.getDate().durationFrom(currentWaypoint.getDate());
@@ -144,31 +144,31 @@ public enum RPOModel implements RPO {
                 velocityBeforeManeuver = new Vector3D(matrices.getPhiVR().operate(MatrixUtils.createRealVector(currentWaypoint.getPosition().toArray()))
                         .add(matrices.getPhiVV().operate(MatrixUtils.createRealVector(velocityAfterManeuver.toArray()))).toArray());
             }
-            return maneuvers;
+            return new ArrayList<>(maneuvers);
         }
 
-        // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
-        /**
-         * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
-         * Warning: EventDetector of the maneuvers must be DateDetector.
-         * @param cwManeuvers Clohessy-Wiltshire maneuvers.
-         * @param targetOrbit orbit of the target.
-         * @param isp specific impulse of the chaser.
-         * @return list of impulse maneuvers in target's orbit frame.
-         */
-        public List<ImpulseManeuver> convertToImpulseManeuver(final List<ClohessyWiltshireManeuver> cwManeuvers, final Orbit targetOrbit, final double isp) {
-            final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
-            final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
-            for (ClohessyWiltshireManeuver maneuver : cwManeuvers) {
-                final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
-                final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
-                final Transform lofToInertial = LOFType.QSW.transformFromInertial(maneuverDate, pvTarget)
-                        .getInverse();
-                final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
-                impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
-            }
-            return impulseManeuvers;
-        }
+//        // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
+//        /**
+//         * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
+//         * Warning: EventDetector of the maneuvers must be DateDetector.
+//         * @param cwManeuvers Clohessy-Wiltshire maneuvers.
+//         * @param targetOrbit orbit of the target.
+//         * @param isp specific impulse of the chaser.
+//         * @return list of impulse maneuvers in target's orbit frame.
+//         */
+//        public List<ImpulseManeuver> convertToImpulseManeuver(final List<ClohessyWiltshireManeuver> cwManeuvers, final Orbit targetOrbit, final double isp) {
+//            final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
+//            final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
+//            for (ClohessyWiltshireManeuver maneuver : cwManeuvers) {
+//                final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
+//                final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
+//                final Transform lofToInertial = LOFType.QSW.transformFromInertial(maneuverDate, pvTarget)
+//                        .getInverse();
+//                final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
+//                impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
+//            }
+//            return impulseManeuvers;
+//        }
 
         /**
          * Computes the Clohessy-Wilstshire based maneuvers of the teardrop relative orbit in QSW Local Orbital Frame.
@@ -178,7 +178,7 @@ public enum RPOModel implements RPO {
          * @param cwProvider Clohessy-Wiltshire provider.
          * @return list of Clohessy-Wiltshire maneuvers.
          */
-        public List<ClohessyWiltshireManeuver> computeTeardropManeuvers(final List<TimeStampedPVCoordinates> waypoints, final ClohessyWiltshireProvider cwProvider) {
+        public List<RelativeManeuver> computeTeardropManeuvers(final List<TimeStampedPVCoordinates> waypoints, final RelativeProvider cwProvider) {
             final List<ClohessyWiltshireManeuver> maneuvers = new ArrayList<>();
             // Creation of the maneuvers at the maneuver point of the teardrop.
             for (int i = 1; i < waypoints.size(); i++) {
@@ -189,10 +189,10 @@ public enum RPOModel implements RPO {
                         maneuverWaypoint.getPosition(),
                         new Vector3D(-maneuverVelocity.getX(), maneuverVelocity.getY(), maneuverVelocity.getZ()));
                 final Vector3D deltaV =  maneuverVelocity.subtract(pvtBeforeMan.getVelocity());
-                final ClohessyWiltshireManeuver maneuver = new ClohessyWiltshireManeuver(maneuverDate, deltaV, cwProvider);
+                final ClohessyWiltshireManeuver maneuver = new ClohessyWiltshireManeuver(maneuverDate, deltaV, (ClohessyWiltshireProvider) cwProvider);
                 maneuvers.add(maneuver);
             }
-            return maneuvers;
+            return new ArrayList<>(maneuvers);
         }
     },
     /**
@@ -213,6 +213,9 @@ public enum RPOModel implements RPO {
         public Vector3D getOutOfPlaneDirection() {
             return Vector3D.MINUS_J;
         }
+
+        public LOFType getLOFType() {return LOFType.LVLH_CCSDS; }
+
 
         /**
          ** Computes the waypoints of the teardrop relative orbit in LVLH Local Orbital Frame to use them with Yamanaka-Ankersen maneuvers.
@@ -279,16 +282,16 @@ public enum RPOModel implements RPO {
          * @param waypoints Waypoints of the trajectory in LVLH_CCSDS frame.
          * @param initialVelocity Initial velocity in the Yamanaka-Ankersen (LVLH_CCSDS) frame.
          * @param targetOrbit Orbit of the target.
-         * @param targetPropagator Propagator used to propagate the target orbit.
          * @param yaProvider Yamanaka-Ankersen provider.
          * @return list of relative maneuvers in Yamanaka-Ankersen model's frame (LVLH_CCSDS).
          */
-        public List<YamanakaAnkersenManeuver> computeForcedManeuvers(final List<TimeStampedPVCoordinates> waypoints, final Vector3D initialVelocity, final Orbit targetOrbit,
-                                                                     final Propagator targetPropagator, final YamanakaAnkersenProvider yaProvider) {
+        public List<RelativeManeuver> computeForcedManeuvers(final List<TimeStampedPVCoordinates> waypoints, final Vector3D initialVelocity, final Orbit targetOrbit,
+                                                                     final RelativeProvider yaProvider) {
             final List<YamanakaAnkersenManeuver> maneuvers = new ArrayList<>();
             Vector3D velocityBeforeManeuver = initialVelocity;
             KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(targetOrbit);
             yaProvider.setTargetOrbit(orbit);
+            final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
             for (int i = 0; i < waypoints.size() - 1; i++) {
                 final LocalOrbitalFrame lofUpdated = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, orbit, LOFType.LVLH_CCSDS.getName());
                 // Define Current waypoint and next waypoint in QSW
@@ -302,7 +305,7 @@ public enum RPOModel implements RPO {
                 // Compute the impulsion at the current waypoint to reach the next waypoint.
                 final Vector3D deltaV = velocityAfterManeuver.subtract(velocityBeforeManeuver);
                 // Create the Yamanaka-Ankersen maneuver and add it to the list.
-                final YamanakaAnkersenManeuver maneuver = new YamanakaAnkersenManeuver(firstImpulseTrigger, deltaV, yaProvider);
+                final YamanakaAnkersenManeuver maneuver = new YamanakaAnkersenManeuver(firstImpulseTrigger, deltaV, (YamanakaAnkersenProvider) yaProvider);
                 maneuvers.add(maneuver);
                 // Create a Yamanaka-Ankersen provider to propagate to the next waypoint.
                 final YamanakaAnkersenProvider yaProviderManeuver = new YamanakaAnkersenProvider(orbit, new TimeStampedPVCoordinates(currentWaypoint.getDate(), currentWaypoint.getPosition(), velocityAfterManeuver), "Provider_" + i);
@@ -314,31 +317,31 @@ public enum RPOModel implements RPO {
                 orbit = new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(), orbit.getPerigeeArgument(), orbit.getRightAscensionOfAscendingNode(), trueAnomaly, PositionAngleType.TRUE, orbit.getFrame(), nextWaypoint.getDate(), orbit.getMu());
                 velocityBeforeManeuver = new Vector3D(Arrays.copyOfRange(yaProviderManeuver.getAdditionalData(propagated), 3, 6));
             }
-            return maneuvers;
+            return new ArrayList<>(maneuvers);
         }
 
-        // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
-        /**
-         * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
-         * Warning: EventDetector of the maneuvers must be DateDetector.
-         * @param yaManeuvers Yamanaka-Ankersen maneuvers.
-         * @param targetOrbit orbit of the target.
-         * @param isp specific impulse of the chaser.
-         * @return list of impulse maneuvers in target's orbit frame.
-         */
-        public List<ImpulseManeuver> convertToImpulseManeuver(final List<YamanakaAnkersenManeuver> yaManeuvers, final Orbit targetOrbit, final double isp) {
-            final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
-            final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
-            for (YamanakaAnkersenManeuver maneuver : yaManeuvers) {
-                final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
-                final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
-                final Transform lofToInertial = LOFType.LVLH_CCSDS.transformFromInertial(maneuverDate, pvTarget)
-                        .getInverse();
-                final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
-                impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
-            }
-            return impulseManeuvers;
-        }
+//        // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
+//        /**
+//         * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
+//         * Warning: EventDetector of the maneuvers must be DateDetector.
+//         * @param yaManeuvers Yamanaka-Ankersen maneuvers.
+//         * @param targetOrbit orbit of the target.
+//         * @param isp specific impulse of the chaser.
+//         * @return list of impulse maneuvers in target's orbit frame.
+//         */
+//        public List<ImpulseManeuver> convertToImpulseManeuver(final List<YamanakaAnkersenManeuver> yaManeuvers, final Orbit targetOrbit, final double isp) {
+//            final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
+//            final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
+//            for (YamanakaAnkersenManeuver maneuver : yaManeuvers) {
+//                final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
+//                final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
+//                final Transform lofToInertial = LOFType.LVLH_CCSDS.transformFromInertial(maneuverDate, pvTarget)
+//                        .getInverse();
+//                final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
+//                impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
+//            }
+//            return impulseManeuvers;
+//        }
 
         /**
          * Computes the Yamanaka-Ankersen based maneuvers of the teardrop relative orbit in LVLH_CCSDS Local Orbital Frame.
@@ -348,7 +351,7 @@ public enum RPOModel implements RPO {
          * @param yaProvider Clohessy-Wiltshire provider.
          * @return list of Clohessy-Wiltshire maneuvers.
          */
-        public List<YamanakaAnkersenManeuver> computeTeardropManeuvers(final List<TimeStampedPVCoordinates> waypoints, final YamanakaAnkersenProvider yaProvider) {
+        public List<RelativeManeuver> computeTeardropManeuvers(final List<TimeStampedPVCoordinates> waypoints, final RelativeProvider yaProvider) {
             final List<YamanakaAnkersenManeuver> maneuvers = new ArrayList<>();
             // Creation of the maneuvers at the maneuver point of the teardrop.
             for (int i = 1; i < waypoints.size(); i++) {
@@ -359,10 +362,10 @@ public enum RPOModel implements RPO {
                         maneuverWaypoint.getPosition(),
                         new Vector3D(maneuverVelocity.getX(), -maneuverVelocity.getY(), -maneuverVelocity.getZ()));
                 final Vector3D deltaV =  maneuverVelocity.subtract(pvtBeforeMan.getVelocity());
-                final YamanakaAnkersenManeuver maneuver = new YamanakaAnkersenManeuver(maneuverDate, deltaV, yaProvider);
+                final YamanakaAnkersenManeuver maneuver = new YamanakaAnkersenManeuver(maneuverDate, deltaV, (YamanakaAnkersenProvider) yaProvider);
                 maneuvers.add(maneuver);
             }
-            return maneuvers;
+            return new ArrayList<>(maneuvers);
         }
     }
 }

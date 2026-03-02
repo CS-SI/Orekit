@@ -26,8 +26,16 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
+import org.orekit.frames.LOFType;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.relative.RelativeProvider;
+import org.orekit.propagation.relative.maneuver.AbstractRelativeManeuver;
+import org.orekit.propagation.relative.maneuver.RelativeManeuver;
 import org.orekit.propagation.relative.maneuver.rpoOLD.RPOModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -73,6 +81,8 @@ public interface RPO {
      * @return OutOfPlane direction
      */
     Vector3D getOutOfPlaneDirection();
+
+    LOFType getLOFType();
 
 
     /**
@@ -399,11 +409,11 @@ public interface RPO {
      * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
      * <p>All maneuvers are performed at the pointy end of the teardrop.</p>
      *
-     * @param injectionDate date of injection in the teardrop.
-     * @param targetOrbit orbit of the target.
+     * @param injectionDate      date of injection in the teardrop.
+     * @param targetOrbit        orbit of the target.
      * @param turnAroundDistance Turn-around distance. This is the "round" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
-     * @param maneuverDistance Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
-     * @param numberOfTeardrops Number of teardrop orbits to perform. Must be ≥ 1.
+     * @param maneuverDistance   Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
+     * @param numberOfTeardrops  Number of teardrop orbits to perform. Must be ≥ 1.
      * @return List of waypoints in time. Date, position, and velocity are non-zero.
      */
     List<TimeStampedPVCoordinates> computeTeardropWaypoints(AbsoluteDate injectionDate, Orbit targetOrbit, double turnAroundDistance, double maneuverDistance, int numberOfTeardrops);
@@ -414,13 +424,58 @@ public interface RPO {
      * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
      * <p>All maneuvers are performed at the pointy end of the teardrop.</p>
      *
-     * @param injectionDate date of injection in the teardrop.
-     * @param targetOrbit orbit of the target.
+     * @param injectionDate      date of injection in the teardrop.
+     * @param targetOrbit        orbit of the target.
      * @param turnAroundDistance Turn-around distance. This is the "round" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
-     * @param maneuverDistance Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
-     * @param numberOfTeardrops Number of teardrop orbits to perform. Must be ≥ 1.
-     * @param <T> field.
+     * @param maneuverDistance   Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
+     * @param numberOfTeardrops  Number of teardrop orbits to perform. Must be ≥ 1.
+     * @param <T>                field.
      * @return List of waypoints in time. Date, position, and velocity are non-zero.
      */
     <T extends CalculusFieldElement<T>> List<TimeStampedFieldPVCoordinates<T>> computeTeardropWaypoints(FieldAbsoluteDate<T> injectionDate, FieldOrbit<T> targetOrbit, T turnAroundDistance, T maneuverDistance, int numberOfTeardrops);
+
+    /**
+     *
+     * @param waypoints
+     * @param initialVelocity
+     * @param targetOrbit
+     * @param provider
+     * @return
+     */
+    List<RelativeManeuver> computeForcedManeuvers(List<TimeStampedPVCoordinates> waypoints, Vector3D initialVelocity,
+                                                            Orbit targetOrbit, RelativeProvider provider);
+
+    // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
+
+    /**
+     * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
+     * Warning: EventDetector of the maneuvers must be DateDetector.
+     *
+     * @param maneuvers   Yamanaka-Ankersen maneuvers.
+     * @param targetOrbit orbit of the target.
+     * @param isp         specific impulse of the chaser.
+     * @return list of impulse maneuvers in target's orbit frame.
+     */
+    default List<ImpulseManeuver> convertToImpulseManeuver(final List<AbstractRelativeManeuver> maneuvers, final Orbit targetOrbit, final double isp) {
+        final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
+        final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
+        for (AbstractRelativeManeuver maneuver : maneuvers) {
+            final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
+            final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
+            final Transform lofToInertial = getLOFType().transformFromInertial(maneuverDate, pvTarget)
+                    .getInverse();
+            final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
+            impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
+        }
+        return impulseManeuvers;
+    }
+
+    /**
+     *
+     * @param waypoints
+     * @param yaProvider
+     * @return
+     */
+    List<RelativeManeuver> computeTeardropManeuvers(final List<TimeStampedPVCoordinates> waypoints, final RelativeProvider yaProvider);
+
 }
