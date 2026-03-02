@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.relative.maneuver.rpoOLD.RPOModel;
 import org.orekit.time.AbsoluteDate;
@@ -406,4 +407,20 @@ public interface RPO {
      * @return List of waypoints in time. Date, position, and velocity are non-zero.
      */
     List<TimeStampedPVCoordinates> computeTeardropWaypoints(AbsoluteDate injectionDate, Orbit targetOrbit, double turnAroundDistance, double maneuverDistance, int numberOfTeardrops);
+
+    /**
+     * Computes teardrop waypoints.
+     *
+     * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
+     * <p>All maneuvers are performed at the pointy end of the teardrop.</p>
+     *
+     * @param injectionDate date of injection in the teardrop.
+     * @param targetOrbit orbit of the target.
+     * @param turnAroundDistance Turn-around distance. This is the "round" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
+     * @param maneuverDistance Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
+     * @param numberOfTeardrops Number of teardrop orbits to perform. Must be ≥ 1.
+     * @param <T> field.
+     * @return List of waypoints in time. Date, position, and velocity are non-zero.
+     */
+    <T extends CalculusFieldElement<T>> List<TimeStampedFieldPVCoordinates<T>> computeTeardropWaypoints(FieldAbsoluteDate<T> injectionDate, FieldOrbit<T> targetOrbit, T turnAroundDistance, T maneuverDistance, int numberOfTeardrops);
 }
