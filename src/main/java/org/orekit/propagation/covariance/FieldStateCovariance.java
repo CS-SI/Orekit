@@ -621,7 +621,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Builds the matrix to perform covariance transformation
             final FieldMatrix<T> jacobianFromLofInToFrameOut =
-                    getJacobian(lofIn.transformFromInertial(date, orbit.getPVCoordinates(frameOut)).getInverse());
+                    getJacobian(lofIn.transformToInertial(date, orbit.getPVCoordinates(frameOut)));
 
             // Transform covariance
             final FieldMatrix<T> transformedCovariance =
@@ -639,7 +639,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Builds the matrix to perform covariance transformation
             final FieldMatrix<T> jacobianFromLofInToOrbitFrame =
-                    getJacobian(lofIn.transformFromInertial(date, orbit.getPVCoordinates()).getInverse());
+                    getJacobian(lofIn.transformToInertial(date, orbit.getPVCoordinates()));
 
             // Get the Cartesian covariance matrix converted to orbit inertial frame
             final FieldMatrix<T> cartesianCovarianceInOrbitFrame = jacobianFromLofInToOrbitFrame.multiply(

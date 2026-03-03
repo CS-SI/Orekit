@@ -154,7 +154,7 @@ public class LocalOrbitalFrameTest {
     public void testENU() {
         AbsoluteDate      date = initDate.shiftedBy(400);
         PVCoordinates     pv   = provider.getPVCoordinates(date, inertialFrame);
-        Transform         t    = LOFType.ENU.transformFromInertial(date, pv).getInverse();
+        Transform         t    = LOFType.ENU.transformToInertial(date, pv);
         Assertions.assertEquals("ENU", LOFType.ENU.getName());
         Assertions.assertNull(LOFType.ENU.toOrbitRelativeFrame());
 
@@ -177,7 +177,7 @@ public class LocalOrbitalFrameTest {
         FieldPVCoordinates<Binary64> pv    = new FieldPVCoordinates<>(field,
                                                                       provider.getPVCoordinates(date.toAbsoluteDate(),
                                                                                                 inertialFrame));
-        FieldTransform<Binary64>     t     = LOFType.ENU.transformFromInertial(date, pv).getInverse();
+        FieldTransform<Binary64>     t     = LOFType.ENU.transformToInertial(date, pv);
         FieldVector3D<Binary64>      pK    = FieldVector3D.getPlusK(field);
 
         // Z aligned with position
@@ -197,7 +197,7 @@ public class LocalOrbitalFrameTest {
         AbsoluteDate  date    = initDate.shiftedBy(400);
         PVCoordinates atNorth = new PVCoordinates(new Vector3D(0.0, 0.0, 8.0e6),
                                                   new Vector3D(8.0e3, 0.0, 0.0));
-        Transform     t       = LOFType.ENU.transformFromInertial(date, atNorth).getInverse();
+        Transform     t       = LOFType.ENU.transformToInertial(date, atNorth);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_J,  t.transformVector(Vector3D.PLUS_I)), 3.0e-16);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.MINUS_I, t.transformVector(Vector3D.PLUS_J)), 3.0e-16);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_K,  t.transformVector(Vector3D.PLUS_K)), 3.0e-16);
@@ -213,7 +213,7 @@ public class LocalOrbitalFrameTest {
                                                                         new FieldVector3D<>(new Binary64(8.0e3),
                                                                                             new Binary64(0.0),
                                                                                             new Binary64(0.0)));
-        FieldTransform<Binary64>    t        = LOFType.ENU.transformFromInertial(date, atNorth).getInverse();
+        FieldTransform<Binary64>    t        = LOFType.ENU.transformToInertial(date, atNorth);
         FieldVector3D<Binary64>     pI       = FieldVector3D.getPlusI(field);
         FieldVector3D<Binary64>     mI       = FieldVector3D.getMinusI(field);
         FieldVector3D<Binary64>     pJ       = FieldVector3D.getPlusJ(field);
@@ -228,7 +228,7 @@ public class LocalOrbitalFrameTest {
         AbsoluteDate date     = initDate.shiftedBy(400);
         PVCoordinates atSouth = new PVCoordinates(new Vector3D(0.0, 0.0, -8.0e6),
                                                   new Vector3D(-8.0e3, 0.0, 0.0));
-        Transform     t       = LOFType.ENU.transformFromInertial(date, atSouth).getInverse();
+        Transform     t       = LOFType.ENU.transformToInertial(date, atSouth);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_J,  t.transformVector(Vector3D.PLUS_I)), 3.0e-16);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_I,  t.transformVector(Vector3D.PLUS_J)), 3.0e-16);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.MINUS_K, t.transformVector(Vector3D.PLUS_K)), 3.0e-16);
@@ -244,7 +244,7 @@ public class LocalOrbitalFrameTest {
                                                                         new FieldVector3D<>(new Binary64(-8.0e3),
                                                                                             new Binary64(0.0),
                                                                                             new Binary64(0.0)));
-        FieldTransform<Binary64>    t        = LOFType.ENU.transformFromInertial(date, atSouth).getInverse();
+        FieldTransform<Binary64>    t        = LOFType.ENU.transformToInertial(date, atSouth);
         FieldVector3D<Binary64>     pI       = FieldVector3D.getPlusI(field);
         FieldVector3D<Binary64>     pJ       = FieldVector3D.getPlusJ(field);
         FieldVector3D<Binary64>     pK       = FieldVector3D.getPlusK(field);
@@ -258,7 +258,7 @@ public class LocalOrbitalFrameTest {
     public void testNED() {
         AbsoluteDate      date = initDate.shiftedBy(400);
         PVCoordinates     pv   = provider.getPVCoordinates(date, inertialFrame);
-        Transform         t    = LOFType.NED.transformFromInertial(date, pv).getInverse();
+        Transform         t    = LOFType.NED.transformToInertial(date, pv);
         Assertions.assertNull(LOFType.NED.toOrbitRelativeFrame());
 
         // Z aligned with opposite of position
@@ -280,7 +280,7 @@ public class LocalOrbitalFrameTest {
         FieldPVCoordinates<Binary64> pv    = new FieldPVCoordinates<>(field,
                                                                       provider.getPVCoordinates(date.toAbsoluteDate(),
                                                                                                 inertialFrame));
-        FieldTransform<Binary64>     t     = LOFType.NED.transformFromInertial(date, pv).getInverse();
+        FieldTransform<Binary64>     t     = LOFType.NED.transformToInertial(date, pv);
         FieldVector3D<Binary64>      pK    = FieldVector3D.getPlusK(field);
 
         // Z aligned with opposite of position
@@ -300,7 +300,7 @@ public class LocalOrbitalFrameTest {
         AbsoluteDate  date    = initDate.shiftedBy(400);
         PVCoordinates atNorth = new PVCoordinates(new Vector3D(0.0, 0.0, 8.0e6),
                                                   new Vector3D(8.0e3, 0.0, 0.0));
-        Transform     t       = LOFType.NED.transformFromInertial(date, atNorth).getInverse();
+        Transform     t       = LOFType.NED.transformToInertial(date, atNorth);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.MINUS_I, t.transformVector(Vector3D.PLUS_I)), 3.0e-16);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_J,  t.transformVector(Vector3D.PLUS_J)), 3.0e-16);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.MINUS_K, t.transformVector(Vector3D.PLUS_K)), 3.0e-16);
@@ -316,7 +316,7 @@ public class LocalOrbitalFrameTest {
                                                                         new FieldVector3D<>(new Binary64(8.0e3),
                                                                                             new Binary64(0.0),
                                                                                             new Binary64(0.0)));
-        FieldTransform<Binary64>    t        = LOFType.NED.transformFromInertial(date, atNorth).getInverse();
+        FieldTransform<Binary64>    t        = LOFType.NED.transformToInertial(date, atNorth);
         FieldVector3D<Binary64>     pI       = FieldVector3D.getPlusI(field);
         FieldVector3D<Binary64>     mI       = FieldVector3D.getMinusI(field);
         FieldVector3D<Binary64>     pJ       = FieldVector3D.getPlusJ(field);
@@ -332,7 +332,7 @@ public class LocalOrbitalFrameTest {
         AbsoluteDate  date    = initDate.shiftedBy(400);
         PVCoordinates atSouth = new PVCoordinates(new Vector3D(0.0, 0.0, -8.0e6),
                                                   new Vector3D(-8.0e3, 0.0, 0.0));
-        Transform     t       = LOFType.NED.transformFromInertial(date, atSouth).getInverse();
+        Transform     t       = LOFType.NED.transformToInertial(date, atSouth);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_I, t.transformVector(Vector3D.PLUS_I)), 3.0e-16);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_J, t.transformVector(Vector3D.PLUS_J)), 3.0e-16);
         Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_K, t.transformVector(Vector3D.PLUS_K)), 3.0e-16);
@@ -348,7 +348,7 @@ public class LocalOrbitalFrameTest {
                                                                         new FieldVector3D<>(new Binary64(-8.0e3),
                                                                                             new Binary64(0.0),
                                                                                             new Binary64(0.0)));
-        FieldTransform<Binary64>    t        = LOFType.NED.transformFromInertial(date, atSouth).getInverse();
+        FieldTransform<Binary64>    t        = LOFType.NED.transformToInertial(date, atSouth);
         FieldVector3D<Binary64>     pI       = FieldVector3D.getPlusI(field);
         FieldVector3D<Binary64>     pJ       = FieldVector3D.getPlusJ(field);
         FieldVector3D<Binary64>     pK       = FieldVector3D.getPlusK(field);
@@ -876,6 +876,85 @@ public class LocalOrbitalFrameTest {
         Assertions.assertFalse(LOFType.ENU.isQuasiInertial());
         Assertions.assertFalse(LOFType.NED.isQuasiInertial());
 
+    }
+
+    @Test
+    public void testTransformToInertial() {
+        final AbsoluteDate      date    = initDate.shiftedBy(400);
+        final PVCoordinates     pv      = provider.getPVCoordinates(date, inertialFrame);
+        final Transform         tInv    = LOFType.QSW.transformToInertial(date, pv);
+        final Transform         tInvRef = LOFType.QSW.transformFromInertial(date, pv).getInverse();
+        final double absTol = 2e-16;
+
+        // Check that transformFromInertial() and transformToInertial() are perfect inverses within some tight tolerance
+        Assertions.assertTrue(tInv.getDate().isCloseTo(tInvRef.getDate(), absTol));
+
+        Assertions.assertEquals(0, tInv.getCartesian().getPosition().distance(tInvRef.getCartesian().getPosition()), absTol);
+        Assertions.assertEquals(0, tInv.getCartesian().getVelocity().distance(tInvRef.getCartesian().getVelocity()), absTol);
+        Assertions.assertEquals(0, tInv.getCartesian().getAcceleration().distance(tInvRef.getCartesian().getAcceleration()), absTol);
+
+        Assertions.assertEquals(0, Rotation.distance(tInv.getRotation(), tInvRef.getRotation()), absTol);
+        Assertions.assertEquals(0, tInv.getRotationRate().distance(tInvRef.getRotationRate()), absTol);
+    }
+
+    @Test
+    public void testTransformToInertialField() {
+        // Given
+        final Field<Binary64>        field = Binary64Field.getInstance();
+        FieldAbsoluteDate<Binary64>  date  = new FieldAbsoluteDate<>(field, initDate.shiftedBy(400));
+        FieldPVCoordinates<Binary64> pv    = new FieldPVCoordinates<>(field,
+                provider.getPVCoordinates(date.toAbsoluteDate(),
+                        inertialFrame));
+
+        // When
+        final FieldTransform<Binary64> tInv = LOFType.QSW.transformToInertial(date, pv);
+
+        // Then
+        // Check that transformFromInertial() and transformToInertial() are perfect inverses within some tight tolerance
+        final double absTol = 2e-16;
+        final FieldTransform<Binary64> tInvRef = LOFType.QSW.transformFromInertial(date, pv).getInverse();
+        Assertions.assertTrue(tInv.getDate().isCloseTo(tInvRef.getDate(), absTol));
+
+        Assertions.assertEquals(Binary64.ZERO, tInv.getCartesian().getPosition().distance(tInvRef.getCartesian().getPosition()));
+        Assertions.assertEquals(Binary64.ZERO, tInv.getCartesian().getVelocity().distance(tInvRef.getCartesian().getVelocity()));
+        Assertions.assertEquals(Binary64.ZERO, tInv.getCartesian().getAcceleration().distance(tInvRef.getCartesian().getAcceleration()));
+
+        Assertions.assertEquals(Binary64.ZERO, FieldRotation.distance(tInv.getRotation(), tInvRef.getRotation()));
+        Assertions.assertEquals(Binary64.ZERO, tInv.getRotationRate().distance(tInvRef.getRotationRate()));
+    }
+
+    @Test
+    public void testRotationToInertial() {
+        // Given
+        final AbsoluteDate      date    = initDate.shiftedBy(400);
+        final PVCoordinates     pv      = provider.getPVCoordinates(date, inertialFrame);
+
+        // When
+        final Rotation          rInv    = LOFType.QSW.rotationToInertial(date, pv);
+
+        // Then
+        // Check that rotationFromInertial() and rotationToInertial() are perfect inverses within some tight tolerance
+        final double absTol = 2e-16;
+        final Rotation          rInvRef = LOFType.QSW.rotationFromInertial(date, pv).revert();
+        Assertions.assertEquals(0, Rotation.distance(rInv, rInvRef), absTol);
+    }
+
+    @Test
+    public void testRotationToInertialField() {
+        // Given
+        final Field<Binary64>        field = Binary64Field.getInstance();
+        FieldAbsoluteDate<Binary64>  date  = new FieldAbsoluteDate<>(field, initDate.shiftedBy(400));
+        FieldPVCoordinates<Binary64> pv    = new FieldPVCoordinates<>(field,
+                provider.getPVCoordinates(date.toAbsoluteDate(),
+                        inertialFrame));
+
+        // When
+        final FieldRotation<Binary64> rInv = LOFType.QSW.rotationToInertial(field, date, pv);
+
+        // Then
+        // Check that rotationFromInertial() and rotationToInertial() are perfect inverses within some tight tolerance
+        final FieldRotation<Binary64> rInvRef = LOFType.QSW.rotationFromInertial(field, date, pv).revert();
+        Assertions.assertEquals(Binary64.ZERO, FieldRotation.distance(rInv, rInvRef));
     }
 
     private Rotation composeRotations(final Rotation... rotations) {
