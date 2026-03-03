@@ -75,6 +75,7 @@ public enum RPOModel implements RPO {
             return Vector3D.PLUS_K;
         }
 
+        /** {@inheritDoc} */
         public LOFType getLOFType() { return LOFType.QSW; }
 
         /**
@@ -214,8 +215,8 @@ public enum RPOModel implements RPO {
             return Vector3D.MINUS_J;
         }
 
-        public LOFType getLOFType() {return LOFType.LVLH_CCSDS; }
-
+        /** {@inheritDoc} */
+        public LOFType getLOFType() {  return LOFType.LVLH_CCSDS; }
 
         /**
          ** Computes the waypoints of the teardrop relative orbit in LVLH Local Orbital Frame to use them with Yamanaka-Ankersen maneuvers.

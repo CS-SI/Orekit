@@ -82,6 +82,10 @@ public interface RPO {
      */
     Vector3D getOutOfPlaneDirection();
 
+    /**
+     * Get the LOFType used by the RPOModel.
+     * @return LOFType used by the RPOModel.
+     */
     LOFType getLOFType();
 
 
@@ -435,12 +439,12 @@ public interface RPO {
     <T extends CalculusFieldElement<T>> List<TimeStampedFieldPVCoordinates<T>> computeTeardropWaypoints(FieldAbsoluteDate<T> injectionDate, FieldOrbit<T> targetOrbit, T turnAroundDistance, T maneuverDistance, int numberOfTeardrops);
 
     /**
-     *
-     * @param waypoints
-     * @param initialVelocity
-     * @param targetOrbit
-     * @param provider
-     * @return
+     * Compute relative maneuvers to realize a forced trajectory defined by the waypoints (ForcedLinear/ForcedCircular).
+     * @param waypoints Waypoints of the trajectory in the correct LocalOrbitalFrame.
+     * @param initialVelocity Initial velocity in the local orbital frame.
+     * @param targetOrbit Orbit of the target.
+     * @param provider Relative motion provider.
+     * @return list of relative maneuvers in the chosen RPOModel local orbital frame.
      */
     List<RelativeManeuver> computeForcedManeuvers(List<TimeStampedPVCoordinates> waypoints, Vector3D initialVelocity,
                                                             Orbit targetOrbit, RelativeProvider provider);
@@ -451,7 +455,7 @@ public interface RPO {
      * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
      * Warning: EventDetector of the maneuvers must be DateDetector.
      *
-     * @param maneuvers   Yamanaka-Ankersen maneuvers.
+     * @param maneuvers   Relative maneuvers.
      * @param targetOrbit orbit of the target.
      * @param isp         specific impulse of the chaser.
      * @return list of impulse maneuvers in target's orbit frame.
@@ -471,11 +475,14 @@ public interface RPO {
     }
 
     /**
-     *
-     * @param waypoints
-     * @param yaProvider
-     * @return
+     * Computes the relative maneuvers of the teardrop relative orbit in the RPOModel Local Orbital Frame.
+     * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
+     * <p>All maneuvers happen at the pointy end of the teardrop.</p>
+     * @param waypoints List of the successive waypoints of the target.
+     * @param relativeProvider relative motion provider of the RPOModel.
+     * @return list of relative maneuvers.
      */
-    List<RelativeManeuver> computeTeardropManeuvers(final List<TimeStampedPVCoordinates> waypoints, final RelativeProvider yaProvider);
+    List<RelativeManeuver> computeTeardropManeuvers(List<TimeStampedPVCoordinates> waypoints,
+                                                    RelativeProvider relativeProvider);
 
 }
