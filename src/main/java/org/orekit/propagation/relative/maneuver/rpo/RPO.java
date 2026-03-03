@@ -26,15 +26,22 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
+import org.orekit.forces.maneuvers.FieldImpulseManeuver;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.relative.FieldRelativeProvider;
 import org.orekit.propagation.relative.RelativeProvider;
 import org.orekit.propagation.relative.maneuver.AbstractRelativeManeuver;
+import org.orekit.propagation.relative.maneuver.FieldAbstractRelativeManeuver;
+import org.orekit.propagation.relative.maneuver.FieldRelativeManeuver;
 import org.orekit.propagation.relative.maneuver.RelativeManeuver;
 import org.orekit.propagation.relative.maneuver.rpoOLD.RPOModel;
 import org.orekit.time.AbsoluteDate;
@@ -449,8 +456,20 @@ public interface RPO {
     List<RelativeManeuver> computeForcedManeuvers(List<TimeStampedPVCoordinates> waypoints, Vector3D initialVelocity,
                                                             Orbit targetOrbit, RelativeProvider provider);
 
-    // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
+    /**
+     * Compute relative maneuvers to realize a forced trajectory defined by the waypoints (ForcedLinear/ForcedCircular).
+     * @param waypoints Waypoints of the trajectory in the correct LocalOrbitalFrame.
+     * @param initialVelocity Initial velocity in the local orbital frame.
+     * @param targetOrbit Orbit of the target.
+     * @param provider Relative motion provider.
+     * @param <T> field.
+     * @return list of relative maneuvers in the chosen RPOModel local orbital frame.
+     */
+    <T extends CalculusFieldElement<T>> List<FieldRelativeManeuver<T>> computeForcedManeuvers(
+            List<TimeStampedFieldPVCoordinates<T>> waypoints, FieldVector3D<T> initialVelocity,
+            FieldOrbit<T> targetOrbit, FieldRelativeProvider<T> provider);
 
+    // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
     /**
      * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
      * Warning: EventDetector of the maneuvers must be DateDetector.
@@ -474,6 +493,32 @@ public interface RPO {
         return impulseManeuvers;
     }
 
+    // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
+    /**
+     * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
+     * Warning: EventDetector of the maneuvers must be DateDetector.
+     *
+     * @param maneuvers   Relative maneuvers.
+     * @param targetOrbit orbit of the target.
+     * @param isp         specific impulse of the chaser.
+     * @param <T> field.
+     * @return list of impulse maneuvers in target's orbit frame.
+     */
+    default <T extends CalculusFieldElement<T>> List<FieldImpulseManeuver<T>> convertToImpulseManeuver(
+            final List<FieldAbstractRelativeManeuver<T>> maneuvers, final FieldOrbit<T> targetOrbit, final T isp) {
+        final List<FieldImpulseManeuver<T>> impulseManeuvers = new ArrayList<>();
+        final FieldKeplerianPropagator<T> targetPropagator = new FieldKeplerianPropagator<>(targetOrbit);
+        for (FieldAbstractRelativeManeuver<T> maneuver : maneuvers) {
+            final FieldAbsoluteDate<T> maneuverDate = ((FieldDateDetector<T>) maneuver.getTrigger()).getDate();
+            final FieldPVCoordinates<T> pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
+            final FieldTransform<T> lofToInertial = getLOFType().transformFromInertial(maneuverDate, pvTarget)
+                    .getInverse();
+            final FieldVector3D<T> deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
+            impulseManeuvers.add(new FieldImpulseManeuver<>(maneuver.getTrigger(), deltaVInertial, isp));
+        }
+        return impulseManeuvers;
+    }
+
     /**
      * Computes the relative maneuvers of the teardrop relative orbit in the RPOModel Local Orbital Frame.
      * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
@@ -484,5 +529,17 @@ public interface RPO {
      */
     List<RelativeManeuver> computeTeardropManeuvers(List<TimeStampedPVCoordinates> waypoints,
                                                     RelativeProvider relativeProvider);
+
+    /**
+     * Computes the relative maneuvers of the teardrop relative orbit in the RPOModel Local Orbital Frame.
+     * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
+     * <p>All maneuvers happen at the pointy end of the teardrop.</p>
+     * @param waypoints List of the successive waypoints of the target.
+     * @param relativeProvider relative motion provider of the RPOModel.
+     * @param <T> field.
+     * @return list of relative maneuvers.
+     */
+    <T extends CalculusFieldElement<T>> List<FieldRelativeManeuver<T>> computeTeardropManeuvers(
+            List<TimeStampedFieldPVCoordinates<T>> waypoints, FieldRelativeProvider<T> relativeProvider);
 
 }
