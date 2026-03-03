@@ -251,7 +251,7 @@ public class FrameFacade {
 
             if (lofIn != null) {
                 frameInToPivot =
-                        lofIn.transformFromInertial(date, pv.getPVCoordinates(date, inertialPivotFrame)).getInverse();
+                        lofIn.transformToInertial(date, pv.getPVCoordinates(date, inertialPivotFrame));
             }
             else {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_TRANSFORM, frameIn.getName(),
