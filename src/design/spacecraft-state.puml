@@ -56,6 +56,13 @@
 
       class SpacecraftState {
         +{static} double DEFAULT_MASS
+        - Orbit orbit
+        - AbsolutePVCoordinates absPva
+        - Attitude attitude
+        - double mass
+        - double massRate
+        - DataDictionary additional
+        - DoubleArrayDictionary additionalDot
         +boolean isOrbitDefined()
         +AbsoluteDate getDate()
         +Frame getFrame()
