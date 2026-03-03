@@ -44,6 +44,11 @@ public interface RelativeManeuver extends EventDetector {
     RelativeProvider getRelativeProvider();
 
     /**
+     * @return triggering event.
+     */
+    EventDetector getTrigger();
+
+    /**
      * Reset True Anomaly of the target orbit in the provider to the true anomaly of the last target state.
      * It keeps the same orbit but modifies the true anomaly.
      * Useful only for Yamanaka-Ankersen model. Do nothing if CW.

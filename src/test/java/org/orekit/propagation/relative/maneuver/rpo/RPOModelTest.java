@@ -26,8 +26,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
@@ -909,5 +911,62 @@ public class RPOModelTest {
         Assertions.assertEquals(tearDropWaypoints.get(tearDropWaypoints.size()-1).getVelocity().getX().getReal(),finalChaser[3].getReal(),NUMERICAL_TOLERANCE);
         Assertions.assertEquals(tearDropWaypoints.get(tearDropWaypoints.size()-1).getVelocity().getY().getReal(),finalChaser[4].getReal(),NUMERICAL_TOLERANCE);
         Assertions.assertEquals(tearDropWaypoints.get(tearDropWaypoints.size()-1).getVelocity().getZ().getReal(),finalChaser[5].getReal(),NUMERICAL_TOLERANCE);
+    }
+
+    // Test the conversion from RelativeManeuvers to ImpulseManeuvers in inertial frame.
+    // Propagate a linear trajectory of the chaser with the provider and compare with the propagation of chaser propagator
+    // with the impulse maneuvers.
+    @Test
+    public void convertToImpulseManeuverTest() {
+        final double n = 0.0011569; //Mean motion of target's orbit.
+        final double rTarget = FastMath.pow(Constants.EIGEN5C_EARTH_MU/(n*n),1./3.);
+        final AbsoluteDate epoch = AbsoluteDate.J2000_EPOCH;
+        final AbsoluteDate finalDate = epoch.shiftedBy(2000.);
+
+        // Target's orbit
+        final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
+                0.0, 0.0, 0.0,
+                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
+
+        final RPOModel rpo = RPOModel.CW;
+        // Start and end conditions of the transfer, expressed in the target's LOF
+        TimeStampedPVCoordinates pvtChaserInitial = new TimeStampedPVCoordinates(new AbsoluteDate(2000,1,1,11,58,55.816, TimeScalesFactory.getUTC()), new Vector3D(0, -1.0e3, 0), new Vector3D(-0.02e3, 0.02e3, -0.005e3));
+        TimeStampedPVCoordinates pvtChaserFinal = new TimeStampedPVCoordinates(finalDate, new Vector3D(200, 0, 0), Vector3D.ZERO);
+        // Initial condition of the chaser expressed in the inertial frame.
+        final Transform lofToInertial = rpo.getLOFType().transformFromInertial(pvtChaserInitial.getDate(), targetOrbit.getPVCoordinates()).getInverse();
+        final PVCoordinates pvChaserInertial = lofToInertial.transformPVCoordinates(pvtChaserInitial);
+        final TimeStampedPVCoordinates pvtChaserInertial = new TimeStampedPVCoordinates(epoch, pvChaserInertial);
+        final KeplerianOrbit chaserOrbit = new KeplerianOrbit(pvtChaserInertial, targetOrbit.getFrame(), Constants.EIGEN5C_EARTH_MU);
+
+        final ClohessyWiltshireProvider cwProvider = new ClohessyWiltshireProvider(targetOrbit, pvtChaserInitial);
+        // Definition of the linear path.
+        final List<TimeStampedPVCoordinates> waypoints = rpo.computeForcedLinearWaypoints(pvtChaserInitial, pvtChaserFinal, 6);
+        // Definition of the propagator.
+        final KeplerianPropagator propagator = new KeplerianPropagator(targetOrbit);
+        propagator.addAdditionalDataProvider(cwProvider);
+        // Definition of the chaser propagator.
+        final KeplerianPropagator chaserPropagator = new KeplerianPropagator(chaserOrbit);
+        // Compute the Relative maneuvers and add to it to the target propagator.
+        final List<RelativeManeuver> maneuvers = rpo.computeForcedManeuvers(waypoints,pvtChaserInitial.getVelocity(),targetOrbit,cwProvider);
+        for (RelativeManeuver maneuver: maneuvers) {
+            propagator.addEventDetector(maneuver);
+        }
+        // Convert the relative maneuvers to impulse maneuvers and add them to the chaser propagator.
+        final List<ImpulseManeuver> impulseManeuvers = rpo.convertToImpulseManeuver(maneuvers, targetOrbit, 0);
+        for (ImpulseManeuver impulseManeuver: impulseManeuvers) {
+            chaserPropagator.addEventDetector(impulseManeuver);
+        }
+        // Propagate the target state to the end of the linear scenario.
+        final SpacecraftState finalState = propagator.propagate(finalDate);
+        // Get the final chaser state from the propagation of the target and the relative provider.
+        final double[] finalChaser = cwProvider.getAdditionalData(finalState);
+        final Vector3D chaserPositionLof = new Vector3D(finalChaser[0], finalChaser[1], finalChaser[2]);
+        final Transform inertialToLOFFinal = rpo.getLOFType().transformFromInertial(finalDate, finalState.getPVCoordinates());
+        // Propagate the chaser orbit.
+        final Vector3D chaserPositionInertial = chaserPropagator.propagate(finalDate).getPosition();
+        final Vector3D chaserPositionInertialToLof = inertialToLOFFinal.transformPosition(chaserPositionInertial);
+        // Assert the positions are the same.
+        TestUtils.validateVector3D(chaserPositionLof, chaserPositionInertialToLof, NUMERICAL_TOLERANCE);
     }
 }
