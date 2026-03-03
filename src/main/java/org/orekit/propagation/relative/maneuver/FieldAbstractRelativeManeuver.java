@@ -124,6 +124,7 @@ public abstract class FieldAbstractRelativeManeuver <T extends CalculusFieldElem
     /**
      * @return The triggering event.
      */
+    @Override
     public FieldEventDetector<T> getTrigger() {
         return trigger;
     }

@@ -139,6 +139,7 @@ public abstract class AbstractRelativeManeuver implements RelativeManeuver {
     /**
      * @return The triggering event.
      */
+    @Override
     public EventDetector getTrigger() {
         return trigger;
     }

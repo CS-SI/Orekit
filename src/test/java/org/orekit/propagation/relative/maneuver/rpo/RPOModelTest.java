@@ -26,8 +26,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.forces.maneuvers.FieldImpulseManeuver;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
@@ -48,6 +52,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RPOModelTest {
@@ -86,8 +91,10 @@ public class RPOModelTest {
 
     }
 
-    //Keplerian propagation of a linear transfer using Clohessy-Wiltshire maneuver.
-    //Test if the chaser position at the end of the propagation is the same as the final position on linear path.
+    /**
+     * Keplerian propagation of a linear transfer using Clohessy-Wiltshire maneuver.
+     * Test if the chaser position at the end of the propagation is the same as the final position on linear path.
+     */
     @Test
     public void LinearTransferPropagationCWTest() {
         final double n = 0.0011569; //Mean motion of target's orbit.
@@ -124,8 +131,10 @@ public class RPOModelTest {
         Assertions.assertEquals(finalChaser[2],pvtChaserFinal.getPosition().getZ(),NUMERICAL_TOLERANCE);
     }
 
-    //Keplerian propagation of a linear transfer using Yamanaka-Ankersen maneuvers.
-    //Test if the chaser position at the end of the propagation is the same as the final position on linear path.
+    /**
+     * Keplerian propagation of a linear transfer using Yamanaka-Ankersen maneuvers.
+     * Test if the chaser position at the end of the propagation is the same as the final position on linear path.
+     */
     @Test
     public void LinearTransferPropagationYATest() {
         final double n = 0.0011569; //Mean motion of target's orbit.
@@ -163,8 +172,10 @@ public class RPOModelTest {
         Assertions.assertEquals(finalChaser[2],pvtChaserFinal.getPosition().getZ(), NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a Forced Circular transfer using Clohessy-Wiltshire maneuver.
-    // Test if the chaser position at the end of the propagation (3 relative orbit's periods) is the same as the first waypoint on the circle.
+    /**
+     * Keplerian propagation of a Forced Circular transfer using Clohessy-Wiltshire maneuver.
+     * Test if the chaser position at the end of the propagation (3 relative orbit's periods) is the same as the first waypoint on the circle.
+     */
     @Test
     public void ForcedCircularPropagationCWTest() {
         final double n = 0.0011569; //Mean motion of target's orbit.
@@ -202,8 +213,10 @@ public class RPOModelTest {
         Assertions.assertEquals(finalChaser[2],waypoints.get(0).getPosition().getZ(),NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a Forced Circular transfer using Yamanaka-Ankersen maneuver.
-    // Test if the chaser position at the end of the propagation (3 relative orbit's periods) is the same as the first waypoint on the circle.
+    /**
+     * Keplerian propagation of a Forced Circular transfer using Yamanaka-Ankersen maneuver.
+     * Test if the chaser position at the end of the propagation (3 relative orbit's periods) is the same as the first waypoint on the circle.
+     */
     @Test
     public void ForcedCircularPropagationYATest() {
         final double n = 0.0011569; //Mean motion of target's orbit.
@@ -241,8 +254,10 @@ public class RPOModelTest {
         Assertions.assertEquals(finalChaser[2],waypoints.get(0).getPosition().getZ(), NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a Natural Circumnavigation transfer using Clohessy-Wiltshire maneuver.
-    // Test if the chaser position at the end of the propagation (one target orbit's period) is the same as the injection point.
+    /**
+     * Keplerian propagation of a Natural Circumnavigation transfer using Clohessy-Wiltshire maneuver.
+     * Test if the chaser position at the end of the propagation (one target orbit's period) is the same as the injection point.
+     */
     @Test
     public void NaturalCircumnavigationCWTest() {
         final double n = 0.0011569; //Mean motion of target's orbit.
@@ -297,8 +312,10 @@ public class RPOModelTest {
         Assertions.assertEquals(0, chaserFinal[2], NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a Natural Circumnavigation transfer using Yamanaka-Ankersen maneuver.
-    // Test if the chaser position at the end of the propagation (one target orbit's period) is the same as the injection point.
+    /**
+     * Keplerian propagation of a Natural Circumnavigation transfer using Yamanaka-Ankersen maneuver.
+     * Test if the chaser position at the end of the propagation (one target orbit's period) is the same as the injection point.
+     */
     @Test
     public void NaturalCircumnavigationYATest() {
         final double n = 0.0011569; //Mean motion of target's orbit.
@@ -354,8 +371,10 @@ public class RPOModelTest {
         Assertions.assertEquals(0, chaserFinal[2], NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a TearDrop maneuver scenario. Chaser goes from an initial position to the turnAroundPoint using Linear Maneuvers.
-    // Test if the chaser position at the end of the propagation (5 teardrop periods) is at the maneuverPoint.
+    /**
+     * Keplerian propagation of a TearDrop maneuver scenario. Chaser goes from an initial position to the turnAroundPoint using Linear Maneuvers.
+     * Test if the chaser position at the end of the propagation (5 teardrop periods) is at the maneuverPoint.
+     */
     @Test
     public void TearDropPropagationCWTest() {
         final double n = 0.0011569; //Mean motion of target's orbit.
@@ -417,8 +436,10 @@ public class RPOModelTest {
         Assertions.assertEquals(tearDropWaypoints.get(tearDropWaypoints.size()-1).getVelocity().getZ(),finalChaser[5],NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a TearDrop maneuver scenario. Chaser goes from an initial position to the turnAroundPoint using Linear Maneuvers.
-    // Test if the chaser position at the end of the propagation (5 teardrop periods) is at the maneuverPoint.
+    /**
+     * Keplerian propagation of a TearDrop maneuver scenario. Chaser goes from an initial position to the turnAroundPoint using Linear Maneuvers.
+     * Test if the chaser position at the end of the propagation (5 teardrop periods) is at the maneuverPoint.
+     */
     @Test
     public void TearDropPropagationYATest() {
         final double n = 0.0011569; //Mean motion of target's orbit.
@@ -481,8 +502,10 @@ public class RPOModelTest {
         Assertions.assertEquals(tearDropWaypoints.get(tearDropWaypoints.size()-1).getVelocity().getZ(),finalChaser[5],NUMERICAL_TOLERANCE);
     }
 
-    //Keplerian propagation of a linear transfer using Clohessy-Wiltshire maneuver.
-    //Test if the chaser position at the end of the propagation is the same as the final position on linear path.
+    /**
+     * Keplerian propagation of a linear transfer using Clohessy-Wiltshire maneuver.
+     * Test if the chaser position at the end of the propagation is the same as the final position on linear path.
+     */
     @Test
     public void FieldLinearTransferPropagationCWTest() {
         final Binary64Field field = Binary64Field.getInstance();
@@ -524,8 +547,10 @@ public class RPOModelTest {
         Assertions.assertEquals(finalChaser[2].getReal(),pvtChaserFinal.getPosition().getZ().getReal(),NUMERICAL_TOLERANCE);
     }
 
-    //Keplerian propagation of a linear transfer using Clohessy-Wiltshire maneuver.
-    //Test if the chaser position at the end of the propagation is the same as the final position on linear path.
+    /**
+     * Keplerian propagation of a linear transfer using Clohessy-Wiltshire maneuver.
+     * Test if the chaser position at the end of the propagation is the same as the final position on linear path.
+     */
     @Test
     public void FieldLinearTransferPropagationYATest() {
         final Binary64Field field = Binary64Field.getInstance();
@@ -567,8 +592,10 @@ public class RPOModelTest {
         Assertions.assertEquals(finalChaser[2].getReal(),pvtChaserFinal.getPosition().getZ().getReal(),NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a Forced Circular transfer using Clohessy-Wiltshire maneuver.
-    // Test if the chaser position at the end of the propagation (3 relative orbit's periods) is the same as the first waypoint on the circle.
+    /**
+     * Keplerian propagation of a Forced Circular transfer using Clohessy-Wiltshire maneuver.
+     * Test if the chaser position at the end of the propagation (3 relative orbit's periods) is the same as the first waypoint on the circle.
+     */
     @Test
     public void FieldForcedCircularPropagationCWTest() {
         final Binary64Field field = Binary64Field.getInstance();
@@ -613,8 +640,10 @@ public class RPOModelTest {
         Assertions.assertEquals(finalChaser[2].getReal(),waypoints.get(0).getPosition().getZ().getReal(),NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a Forced Circular transfer using Clohessy-Wiltshire maneuver.
-    // Test if the chaser position at the end of the propagation (3 relative orbit's periods) is the same as the first waypoint on the circle.
+    /**
+     * Keplerian propagation of a Forced Circular transfer using Clohessy-Wiltshire maneuver.
+     * Test if the chaser position at the end of the propagation (3 relative orbit's periods) is the same as the first waypoint on the circle.
+     */
     @Test
     public void FieldForcedCircularPropagationYATest() {
         final Binary64Field field = Binary64Field.getInstance();
@@ -659,8 +688,10 @@ public class RPOModelTest {
         Assertions.assertEquals(finalChaser[2].getReal(),waypoints.get(0).getPosition().getZ().getReal(),NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a Natural Circumnavigation transfer using Clohessy-Wiltshire maneuver.
-    // Test if the chaser position at the end of the propagation (one target orbit's period) is the same as the injection point.
+    /**
+     * Keplerian propagation of a Natural Circumnavigation transfer using Clohessy-Wiltshire maneuver.
+     * Test if the chaser position at the end of the propagation (one target orbit's period) is the same as the injection point.
+     */
     @Test
     public void FieldNaturalCircumnavigationCWTest() {
         final Binary64Field field = Binary64Field.getInstance();
@@ -718,8 +749,10 @@ public class RPOModelTest {
         Assertions.assertEquals(0, chaserFinal[2].getReal(), NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a Natural Circumnavigation transfer using Yamanaka-Ankersen maneuver.
-    // Test if the chaser position at the end of the propagation (one target orbit's period) is the same as the injection point.
+    /**
+     * Keplerian propagation of a Natural Circumnavigation transfer using Yamanaka-Ankersen maneuver.
+     * Test if the chaser position at the end of the propagation (one target orbit's period) is the same as the injection point.
+     */
     @Test
     public void FieldNaturalCircumnavigationYATest() {
         final Binary64Field field = Binary64Field.getInstance();
@@ -778,8 +811,10 @@ public class RPOModelTest {
         Assertions.assertEquals(0, chaserFinal[2].getReal(), NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a TearDrop maneuver scenario. Chaser goes from an initial position to the turnAroundPoint using Linear Maneuvers.
-    // Test if the chaser position at the end of the propagation (5 teardrop periods) is at the maneuverPoint.
+    /**
+     * Keplerian propagation of a TearDrop maneuver scenario. Chaser goes from an initial position to the turnAroundPoint using Linear Maneuvers.
+     * Test if the chaser position at the end of the propagation (5 teardrop periods) is at the maneuverPoint.
+     */
     @Test
     public void FieldTearDropPropagationCWTest() {
         final Binary64Field field = Binary64Field.getInstance();
@@ -844,8 +879,10 @@ public class RPOModelTest {
         Assertions.assertEquals(tearDropWaypoints.get(tearDropWaypoints.size()-1).getVelocity().getZ().getReal(),finalChaser[5].getReal(),NUMERICAL_TOLERANCE);
     }
 
-    // Keplerian propagation of a TearDrop maneuver scenario. Chaser goes from an initial position to the turnAroundPoint using Linear Maneuvers.
-    // Test if the chaser position at the end of the propagation (5 teardrop periods) is at the maneuverPoint.
+    /**
+     * Keplerian propagation of a TearDrop maneuver scenario. Chaser goes from an initial position to the turnAroundPoint using Linear Maneuvers.
+     * Test if the chaser position at the end of the propagation (5 teardrop periods) is at the maneuverPoint.
+     */
     @Test
     public void FieldTearDropPropagationYATest() {
         final Binary64Field field = Binary64Field.getInstance();
@@ -864,7 +901,7 @@ public class RPOModelTest {
         final RPOModel rpo = RPOModel.YA;
         // Start and end conditions of the transfer, expressed in the target's LOF
         final TimeStampedPVCoordinates pvtChaserInitialReal = new TimeStampedPVCoordinates(new AbsoluteDate(2000,1,1,11,58,55.816, TimeScalesFactory.getUTC()), new Vector3D(0, -1.0e3, 0), new Vector3D(-0.02e3, 0.02e3, -0.005e3));
-        final TimeStampedFieldPVCoordinates<Binary64> pvtChaserInitial = new TimeStampedFieldPVCoordinates<Binary64>(field, pvtChaserInitialReal);
+        final TimeStampedFieldPVCoordinates<Binary64> pvtChaserInitial = new TimeStampedFieldPVCoordinates<>(field, pvtChaserInitialReal);
         // Injection Date in the teardrop Orbit.
         final FieldAbsoluteDate<Binary64> injectionDate = epoch.shiftedBy(1000.);
         final FieldYamanakaAnkersenProvider<Binary64> yaProvider = new FieldYamanakaAnkersenProvider<>(targetOrbit, pvtChaserInitial);
@@ -909,5 +946,470 @@ public class RPOModelTest {
         Assertions.assertEquals(tearDropWaypoints.get(tearDropWaypoints.size()-1).getVelocity().getX().getReal(),finalChaser[3].getReal(),NUMERICAL_TOLERANCE);
         Assertions.assertEquals(tearDropWaypoints.get(tearDropWaypoints.size()-1).getVelocity().getY().getReal(),finalChaser[4].getReal(),NUMERICAL_TOLERANCE);
         Assertions.assertEquals(tearDropWaypoints.get(tearDropWaypoints.size()-1).getVelocity().getZ().getReal(),finalChaser[5].getReal(),NUMERICAL_TOLERANCE);
+    }
+
+    /**
+     * Compare transformation of relative maneuvers to impulse maneuvers. Assess the transform of the deltaV in the
+     * method convertToImpulseManeuver gives the same result as the frame transform of the deltaV vector itself.
+     */
+    @Test
+    public void convertToImpulseManeuverTest() {
+        // Define dates of the maneuvers.
+        final List<AbsoluteDate> maneuverDates = new ArrayList<>();
+        final AbsoluteDate firstManeuverDate = AbsoluteDate.J2000_EPOCH;
+        final AbsoluteDate secondManeuverDate = firstManeuverDate.shiftedBy(1000);
+        final AbsoluteDate thirdManeuverDate = firstManeuverDate.shiftedBy(2000);
+        maneuverDates.add(firstManeuverDate);
+        maneuverDates.add(secondManeuverDate);
+        maneuverDates.add(thirdManeuverDate);
+        // Define date detectors of the maneuvers.
+        final DateDetector firstManeuverDetector = new DateDetector(firstManeuverDate);
+        final DateDetector secondManeuverDetector = new DateDetector(secondManeuverDate);
+        final DateDetector thirdManeuverDetector = new DateDetector(thirdManeuverDate);
+        // Define randomly the deltaV vectors.
+        final Vector3D firstDeltaV = new Vector3D(10, 13, 18);
+        final Vector3D secondDeltaV = new Vector3D(-5, 65, -8.6);
+        final Vector3D thirdDeltaV = new Vector3D(0, 15, 2);
+        // Define target orbit and relative provider.
+        final KeplerianOrbit targetOrbit = new KeplerianOrbit(7000e3, 0.0, 0.0,
+                0.0, 0.0, 0.0,
+                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                FramesFactory.getGCRF(), firstManeuverDate, Constants.EIGEN5C_EARTH_MU);
+        final RPOModel rpoCW = RPOModel.CW;
+        final RPOModel rpoYA = RPOModel.YA;
+        final ClohessyWiltshireProvider cwProvider = new ClohessyWiltshireProvider(targetOrbit);
+        final YamanakaAnkersenProvider yaProvider = new YamanakaAnkersenProvider(targetOrbit);
+        // Define the maneuvers.
+        final ClohessyWiltshireManeuver firstManeuver = new ClohessyWiltshireManeuver(firstManeuverDetector, firstDeltaV, cwProvider);
+        final ClohessyWiltshireManeuver secondManeuver = new ClohessyWiltshireManeuver(secondManeuverDetector, secondDeltaV, cwProvider);
+        final ClohessyWiltshireManeuver thirdManeuver = new ClohessyWiltshireManeuver(thirdManeuverDetector, thirdDeltaV, cwProvider);
+        final YamanakaAnkersenManeuver firstManeuverYA = new YamanakaAnkersenManeuver(firstManeuverDetector, firstDeltaV, yaProvider);
+        final YamanakaAnkersenManeuver secondManeuverYA = new YamanakaAnkersenManeuver(secondManeuverDetector, secondDeltaV, yaProvider);
+        final YamanakaAnkersenManeuver thirdManeuverYA = new YamanakaAnkersenManeuver(thirdManeuverDetector, thirdDeltaV, yaProvider);
+        // Add the maneuvers to a list and convert the maneuvers to inertial frame.
+        final List<RelativeManeuver> relativeManeuvers = new ArrayList<>();
+        relativeManeuvers.add(firstManeuver);
+        relativeManeuvers.add(secondManeuver);
+        relativeManeuvers.add(thirdManeuver);
+        final List<RelativeManeuver> relativeManeuversYA = new ArrayList<>();
+        relativeManeuversYA.add(firstManeuverYA);
+        relativeManeuversYA.add(secondManeuverYA);
+        relativeManeuversYA.add(thirdManeuverYA);
+        final List<ImpulseManeuver> impulseManeuvers = rpoCW.convertToImpulseManeuver(relativeManeuvers, targetOrbit, 0);
+        final List<ImpulseManeuver> impulseManeuversYA = rpoYA.convertToImpulseManeuver(relativeManeuvers, targetOrbit, 0);
+        // Transform the deltaV from LOF to InertialFrame.
+        final List<Vector3D> deltaVInertial = new ArrayList<>();
+        final List<Vector3D> deltaVInertialYA = new ArrayList<>();
+        for (int i = 0; i < relativeManeuvers.size(); i++) {
+            final KeplerianPropagator propagator = new KeplerianPropagator(targetOrbit);
+            final SpacecraftState targetAtManeuver = propagator.propagate(maneuverDates.get(i));
+            final Transform lofToInertial = rpoCW.getLOFType().transformFromInertial(maneuverDates.get(i), targetAtManeuver.getPVCoordinates()).getInverse();
+            final Transform lofToInertialYA = rpoYA.getLOFType().transformFromInertial(maneuverDates.get(i), targetAtManeuver.getPVCoordinates()).getInverse();
+            final Vector3D deltaV = lofToInertial.transformVector(relativeManeuvers.get(i).getDeltaV());
+            final Vector3D deltaVYA = lofToInertialYA.transformVector(relativeManeuversYA.get(i).getDeltaV());
+            deltaVInertial.add(deltaV);
+            deltaVInertialYA.add(deltaVYA);
+        }
+        // Assert the dates of the impulse maneuvers match the dates of the relativeManeuvers.
+        Assertions.assertEquals(firstManeuverDate.getDate().toDouble(), ((DateDetector) impulseManeuvers.get(0).getDetector()).getDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(secondManeuverDate.getDate().toDouble(), ((DateDetector) impulseManeuvers.get(1).getDetector()).getDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(thirdManeuverDate.getDate().toDouble(), ((DateDetector) impulseManeuvers.get(2).getDetector()).getDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(firstManeuverDate.getDate().toDouble(), ((DateDetector) impulseManeuversYA.get(0).getDetector()).getDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(secondManeuverDate.getDate().toDouble(), ((DateDetector) impulseManeuversYA.get(1).getDetector()).getDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(thirdManeuverDate.getDate().toDouble(), ((DateDetector) impulseManeuversYA.get(2).getDetector()).getDate().toDouble(), NUMERICAL_TOLERANCE);
+        // Assert the transformation of the impulse vector by the convertToImpulseManeuver() method.
+        TestUtils.validateVector3D(deltaVInertial.get(0), impulseManeuvers.get(0).getImpulseProvider().getImpulse(new SpacecraftState(targetOrbit), true), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertial.get(1), impulseManeuvers.get(1).getImpulseProvider().getImpulse(new SpacecraftState(targetOrbit), true), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertial.get(2), impulseManeuvers.get(2).getImpulseProvider().getImpulse(new SpacecraftState(targetOrbit), true), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertialYA.get(0), impulseManeuversYA.get(0).getImpulseProvider().getImpulse(new SpacecraftState(targetOrbit), true), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertialYA.get(1), impulseManeuversYA.get(1).getImpulseProvider().getImpulse(new SpacecraftState(targetOrbit), true), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertialYA.get(2), impulseManeuversYA.get(2).getImpulseProvider().getImpulse(new SpacecraftState(targetOrbit), true), NUMERICAL_TOLERANCE );
+    }
+
+    /**
+     * Compare transformation of relative maneuvers to impulse maneuvers. Assess the transform of the deltaV in the
+     * method convertToImpulseManeuver gives the same result as the frame transform of the deltaV vector itself.
+     */
+    @Test
+    public void convertToImpulseManeuverFieldTest() {
+        final Binary64Field field = Binary64Field.getInstance();
+        // Define dates of the maneuvers.
+        final List<FieldAbsoluteDate<Binary64>> maneuverDates = new ArrayList<>();
+        final FieldAbsoluteDate<Binary64> firstManeuverDate = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
+        final FieldAbsoluteDate<Binary64> secondManeuverDate = firstManeuverDate.shiftedBy(1000);
+        final FieldAbsoluteDate<Binary64> thirdManeuverDate = firstManeuverDate.shiftedBy(2000);
+        maneuverDates.add(firstManeuverDate);
+        maneuverDates.add(secondManeuverDate);
+        maneuverDates.add(thirdManeuverDate);
+        // Define date detectors of the maneuvers.
+        final FieldDateDetector<Binary64> firstManeuverDetector = new FieldDateDetector<>(firstManeuverDate);
+        final FieldDateDetector<Binary64> secondManeuverDetector = new FieldDateDetector<>(secondManeuverDate);
+        final FieldDateDetector<Binary64> thirdManeuverDetector = new FieldDateDetector<>(thirdManeuverDate);
+        // Define randomly the deltaV vectors.
+        final FieldVector3D<Binary64> firstDeltaV = new FieldVector3D<>(field, new Vector3D(10, 13, 18));
+        final FieldVector3D<Binary64> secondDeltaV = new FieldVector3D<>(field, new Vector3D(-5, 65, -8.6));
+        final FieldVector3D<Binary64> thirdDeltaV = new FieldVector3D<>(field, new Vector3D(0, 15, 2));
+        // Define target orbit and relative provider.
+        final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(new Binary64(7000e3), field.getZero(), field.getZero(),
+                field.getZero(), field.getZero(), field.getZero(),
+                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                FramesFactory.getGCRF(), firstManeuverDate, new Binary64(Constants.EIGEN5C_EARTH_MU));
+        final RPOModel rpoCW = RPOModel.CW;
+        final RPOModel rpoYA = RPOModel.YA;
+        final FieldClohessyWiltshireProvider<Binary64> cwProvider = new FieldClohessyWiltshireProvider<>(targetOrbit);
+        final FieldYamanakaAnkersenProvider<Binary64> yaProvider = new FieldYamanakaAnkersenProvider<>(targetOrbit);
+        // Define the maneuvers.
+        final FieldClohessyWiltshireManeuver<Binary64> firstManeuver = new FieldClohessyWiltshireManeuver<>(firstManeuverDetector, firstDeltaV, cwProvider);
+        final FieldClohessyWiltshireManeuver<Binary64> secondManeuver = new FieldClohessyWiltshireManeuver<>(secondManeuverDetector, secondDeltaV, cwProvider);
+        final FieldClohessyWiltshireManeuver<Binary64> thirdManeuver = new FieldClohessyWiltshireManeuver<>(thirdManeuverDetector, thirdDeltaV, cwProvider);
+        final FieldYamanakaAnkersenManeuver<Binary64> firstManeuverYA = new FieldYamanakaAnkersenManeuver<>(firstManeuverDetector, firstDeltaV, yaProvider);
+        final FieldYamanakaAnkersenManeuver<Binary64> secondManeuverYA = new FieldYamanakaAnkersenManeuver<>(secondManeuverDetector, secondDeltaV, yaProvider);
+        final FieldYamanakaAnkersenManeuver<Binary64> thirdManeuverYA = new FieldYamanakaAnkersenManeuver<>(thirdManeuverDetector, thirdDeltaV, yaProvider);
+        // Add the maneuvers to a list and convert the maneuvers to inertial frame.
+        final List<FieldRelativeManeuver<Binary64>> relativeManeuvers = new ArrayList<>();
+        relativeManeuvers.add(firstManeuver);
+        relativeManeuvers.add(secondManeuver);
+        relativeManeuvers.add(thirdManeuver);
+        final List<FieldRelativeManeuver<Binary64>> relativeManeuversYA = new ArrayList<>();
+        relativeManeuversYA.add(firstManeuverYA);
+        relativeManeuversYA.add(secondManeuverYA);
+        relativeManeuversYA.add(thirdManeuverYA);
+        final List<FieldImpulseManeuver<Binary64>> impulseManeuvers = rpoCW.convertToImpulseManeuver(relativeManeuvers, targetOrbit, field.getZero());
+        final List<FieldImpulseManeuver<Binary64>> impulseManeuversYA = rpoYA.convertToImpulseManeuver(relativeManeuvers, targetOrbit, field.getZero());
+        // Transform the deltaV from LOF to InertialFrame.
+        final List<FieldVector3D<Binary64>> deltaVInertial = new ArrayList<>();
+        final List<FieldVector3D<Binary64>> deltaVInertialYA = new ArrayList<>();
+        for (int i = 0; i < relativeManeuvers.size(); i++) {
+            final FieldKeplerianPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(targetOrbit);
+            final FieldSpacecraftState<Binary64> targetAtManeuver = propagator.propagate(maneuverDates.get(i));
+            final FieldTransform<Binary64> lofToInertial = rpoCW.getLOFType().transformFromInertial(maneuverDates.get(i), targetAtManeuver.getPVCoordinates()).getInverse();
+            final FieldTransform<Binary64> lofToInertialYA = rpoYA.getLOFType().transformFromInertial(maneuverDates.get(i), targetAtManeuver.getPVCoordinates()).getInverse();
+            final FieldVector3D<Binary64> deltaV = lofToInertial.transformVector(relativeManeuvers.get(i).getDeltaV());
+            final FieldVector3D<Binary64> deltaVYA = lofToInertialYA.transformVector(relativeManeuversYA.get(i).getDeltaV());
+            deltaVInertial.add(deltaV);
+            deltaVInertialYA.add(deltaVYA);
+        }
+        // Assert the dates of the impulse maneuvers match the dates of the relativeManeuvers.
+        Assertions.assertEquals(firstManeuverDate.getDate().toAbsoluteDate().toDouble(), ((FieldDateDetector<Binary64>) impulseManeuvers.get(0).getDetector()).getDate().toAbsoluteDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(secondManeuverDate.getDate().toAbsoluteDate().toDouble(), ((FieldDateDetector<Binary64>) impulseManeuvers.get(1).getDetector()).getDate().toAbsoluteDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(thirdManeuverDate.getDate().toAbsoluteDate().toDouble(), ((FieldDateDetector<Binary64>) impulseManeuvers.get(2).getDetector()).getDate().toAbsoluteDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(firstManeuverDate.getDate().toAbsoluteDate().toDouble(), ((FieldDateDetector<Binary64>) impulseManeuversYA.get(0).getDetector()).getDate().toAbsoluteDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(secondManeuverDate.getDate().toAbsoluteDate().toDouble(), ((FieldDateDetector<Binary64>) impulseManeuversYA.get(1).getDetector()).getDate().toAbsoluteDate().toDouble(), NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(thirdManeuverDate.getDate().toAbsoluteDate().toDouble(), ((FieldDateDetector<Binary64>) impulseManeuversYA.get(2).getDetector()).getDate().toAbsoluteDate().toDouble(), NUMERICAL_TOLERANCE);
+        // Assert the transformation of the impulse vector by the convertToImpulseManeuver() method.
+        TestUtils.validateVector3D(deltaVInertial.get(0).toVector3D(), impulseManeuvers.get(0).getFieldImpulseProvider().getImpulse(new FieldSpacecraftState<>(targetOrbit), true).toVector3D(), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertial.get(1).toVector3D(), impulseManeuvers.get(1).getFieldImpulseProvider().getImpulse(new FieldSpacecraftState<>(targetOrbit), true).toVector3D(), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertial.get(2).toVector3D(), impulseManeuvers.get(2).getFieldImpulseProvider().getImpulse(new FieldSpacecraftState<>(targetOrbit), true).toVector3D(), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertialYA.get(0).toVector3D(), impulseManeuversYA.get(0).getFieldImpulseProvider().getImpulse(new FieldSpacecraftState<>(targetOrbit), true).toVector3D(), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertialYA.get(1).toVector3D(), impulseManeuversYA.get(1).getFieldImpulseProvider().getImpulse(new FieldSpacecraftState<>(targetOrbit), true).toVector3D(), NUMERICAL_TOLERANCE );
+        TestUtils.validateVector3D(deltaVInertialYA.get(2).toVector3D(), impulseManeuversYA.get(2).getFieldImpulseProvider().getImpulse(new FieldSpacecraftState<>(targetOrbit), true).toVector3D(), NUMERICAL_TOLERANCE );
+    }
+
+    /**
+     * Test the conversion from RelativeManeuvers to ImpulseManeuvers in inertial frame.
+     * Propagate a linear trajectory of the chaser with the provider and compare with the propagation of chaser propagator
+     * with the impulse maneuvers.
+     * <br>
+     * Note: Impulses are computed by the method computeForcesManeuvers. This method uses the velocity of the chaser
+     * obtained by propagating the target orbit with the associated relative provider to compute the deltaV impulse at
+     * each waypoint. The velocity of the chaser computed by the provider and by a proper propagator can slightly differ.
+     * As a consequence the impulse maneuvers computed by transforming the relative ones don't fit exactly to what's
+     * expected. Then the final position of the chaser propagated with ImpulseManeuvers slightly diverges from the one
+     * propagated with the relative maneuvers, which explains a larger numerical tolerance to validate the test.
+     */
+    @Test
+    public void convertToImpulseManeuverCWTest() {
+        final double n = 0.0011569; //Mean motion of target's orbit.
+        final double rTarget = FastMath.pow(Constants.EIGEN5C_EARTH_MU/(n*n),1./3.);
+        final AbsoluteDate epoch = AbsoluteDate.J2000_EPOCH;
+        final AbsoluteDate finalDate = epoch.shiftedBy(100);
+
+        // Target's orbit
+        final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
+                0.0, 0.0, 0.0,
+                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
+
+        final RPOModel rpo = RPOModel.CW;
+        // Start and end conditions of the transfer, expressed in the target's LOF
+        TimeStampedPVCoordinates pvtChaserInitial = new TimeStampedPVCoordinates(epoch, new Vector3D(0, -1.0e3, 0), new Vector3D(-0.02e3, 0.02e3, -0.005e3));
+        TimeStampedPVCoordinates pvtChaserFinal = new TimeStampedPVCoordinates(finalDate, new Vector3D(200, 0, 0), Vector3D.ZERO);
+        // Initial condition of the chaser expressed in the inertial frame.
+        final Transform lofToInertial = rpo.getLOFType().transformFromInertial(pvtChaserInitial.getDate(), targetOrbit.getPVCoordinates()).getInverse();
+        final PVCoordinates pvChaserInertial = lofToInertial.transformPVCoordinates(pvtChaserInitial);
+        final TimeStampedPVCoordinates pvtChaserInertial = new TimeStampedPVCoordinates(epoch, pvChaserInertial);
+        final KeplerianOrbit chaserOrbit = new KeplerianOrbit(pvtChaserInertial, targetOrbit.getFrame(), Constants.EIGEN5C_EARTH_MU);
+
+        final ClohessyWiltshireProvider cwProvider = new ClohessyWiltshireProvider(targetOrbit, pvtChaserInitial);
+        // Definition of the propagator.
+        final KeplerianPropagator propagator = new KeplerianPropagator(targetOrbit);
+        propagator.addAdditionalDataProvider(cwProvider);
+        // Propagate the target and the chaser provider to handle first maneuver.
+        final SpacecraftState targetStart = propagator.propagate(epoch.shiftedBy(1));
+        final double[] chaserStart = cwProvider.getAdditionalData(targetStart);
+        final TimeStampedPVCoordinates chaserStartManeuver = new TimeStampedPVCoordinates(epoch.shiftedBy(1),
+                new Vector3D(chaserStart[0], chaserStart[1], chaserStart[2]),
+                new Vector3D(chaserStart[3], chaserStart[4], chaserStart[5]));
+        // Reset target propagator and initial state of the provider
+        propagator.resetInitialState(new SpacecraftState(targetOrbit));
+        cwProvider.setInitialChaserPVTLof(pvtChaserInitial);
+        // Definition of the linear path.
+        final List<TimeStampedPVCoordinates> waypoints = rpo.computeForcedLinearWaypoints(chaserStartManeuver, pvtChaserFinal, 6);
+
+        // Definition of the chaser propagator.
+        final KeplerianPropagator chaserPropagator = new KeplerianPropagator(chaserOrbit);
+        // Compute the Relative maneuvers and add to it to the target propagator.
+        final List<RelativeManeuver> maneuvers = rpo.computeForcedManeuvers(waypoints,chaserStartManeuver.getVelocity(),targetOrbit,cwProvider);
+        for (RelativeManeuver maneuver: maneuvers) {
+            propagator.addEventDetector(maneuver);
+        }
+        // Convert the relative maneuvers to impulse maneuvers and add them to the chaser propagator.
+        final List<ImpulseManeuver> impulseManeuvers = rpo.convertToImpulseManeuver(maneuvers, targetOrbit, 0);
+        for (ImpulseManeuver impulseManeuver: impulseManeuvers) {
+            chaserPropagator.addEventDetector(impulseManeuver);
+        }
+        // Propagate the target state to the end of the linear scenario.
+        final SpacecraftState finalState = propagator.propagate(finalDate);
+        // Get the final chaser state from the propagation of the target and the relative provider.
+        final double[] finalChaser = cwProvider.getAdditionalData(finalState);
+        final Vector3D chaserPositionLof = new Vector3D(finalChaser[0], finalChaser[1], finalChaser[2]);
+        final Transform inertialToLOFFinal = rpo.getLOFType().transformFromInertial(finalDate, finalState.getPVCoordinates());
+        // Propagate the chaser orbit.
+        final Vector3D chaserPositionInertial = chaserPropagator.propagate(finalDate).getPosition();
+        final Vector3D chaserPositionInertialToLof = inertialToLOFFinal.transformPosition(chaserPositionInertial);
+        // Assert the positions are the same.
+        TestUtils.validateVector3D(chaserPositionLof, chaserPositionInertialToLof, 1e-3);
+    }
+
+    /**
+     * Test the conversion from RelativeManeuvers to ImpulseManeuvers in inertial frame.
+     * Propagate a linear trajectory of the chaser with the provider and compare with the propagation of chaser propagator
+     * with the impulse maneuvers.
+     * <br>
+     * Note: Impulses are computed by the method computeForcesManeuvers. This method uses the velocity of the chaser
+     * obtained by propagating the target orbit with the associated relative provider to compute the deltaV impulse at
+     * each waypoint. The velocity of the chaser computed by the provider and by a proper propagator can slightly differ.
+     * As a consequence the impulse maneuvers computed by transforming the relative ones don't fit exactly to what's
+     * expected. Then the final position of the chaser propagated with ImpulseManeuvers slightly diverges from the one
+     * propagated with the relative maneuvers, which explains a larger numerical tolerance to validate the test.
+     */
+    @Test
+    public void convertToImpulseManeuverYATest() {
+        final double n = 0.0011569; //Mean motion of target's orbit.
+        final double rTarget = FastMath.pow(Constants.EIGEN5C_EARTH_MU/(n*n),1./3.);
+        final AbsoluteDate epoch = AbsoluteDate.J2000_EPOCH;
+        final AbsoluteDate finalDate = epoch.shiftedBy(100);
+
+        // Target's orbit
+        final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
+                0.0, 0.0, 0.0,
+                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
+
+        final RPOModel rpo = RPOModel.YA;
+        // Start and end conditions of the transfer, expressed in the target's LOF
+        TimeStampedPVCoordinates pvtChaserInitial = new TimeStampedPVCoordinates(epoch, new Vector3D(0, -1.0e3, 0), new Vector3D(-0.02e3, 0.02e3, -0.005e3));
+        TimeStampedPVCoordinates pvtChaserFinal = new TimeStampedPVCoordinates(finalDate, new Vector3D(200, 0, 0), Vector3D.ZERO);
+        // Initial condition of the chaser expressed in the inertial frame.
+        final Transform lofToInertial = rpo.getLOFType().transformFromInertial(pvtChaserInitial.getDate(), targetOrbit.getPVCoordinates()).getInverse();
+        final PVCoordinates pvChaserInertial = lofToInertial.transformPVCoordinates(pvtChaserInitial);
+        final TimeStampedPVCoordinates pvtChaserInertial = new TimeStampedPVCoordinates(epoch, pvChaserInertial);
+        final KeplerianOrbit chaserOrbit = new KeplerianOrbit(pvtChaserInertial, targetOrbit.getFrame(), Constants.EIGEN5C_EARTH_MU);
+
+        final YamanakaAnkersenProvider yaProvider = new YamanakaAnkersenProvider(targetOrbit, pvtChaserInitial);
+        // Definition of the propagator.
+        final KeplerianPropagator propagator = new KeplerianPropagator(targetOrbit);
+        propagator.addAdditionalDataProvider(yaProvider);
+        // Propagate the target and the chaser provider to handle first maneuver.
+        final SpacecraftState targetStart = propagator.propagate(epoch.shiftedBy(1));
+        final double[] chaserStart = yaProvider.getAdditionalData(targetStart);
+        final TimeStampedPVCoordinates chaserStartManeuver = new TimeStampedPVCoordinates(epoch.shiftedBy(1),
+                new Vector3D(chaserStart[0], chaserStart[1], chaserStart[2]),
+                new Vector3D(chaserStart[3], chaserStart[4], chaserStart[5]));
+        // Reset target propagator and initial state of the provider
+        propagator.resetInitialState(new SpacecraftState(targetOrbit));
+        yaProvider.setInitialChaserPVTLof(pvtChaserInitial);
+        // Definition of the linear path.
+        final List<TimeStampedPVCoordinates> waypoints = rpo.computeForcedLinearWaypoints(chaserStartManeuver, pvtChaserFinal, 6);
+
+        // Definition of the chaser propagator.
+        final KeplerianPropagator chaserPropagator = new KeplerianPropagator(chaserOrbit);
+        // Compute the Relative maneuvers and add to it to the target propagator.
+        final List<RelativeManeuver> maneuvers = rpo.computeForcedManeuvers(waypoints,chaserStartManeuver.getVelocity(),targetOrbit,yaProvider);
+        for (RelativeManeuver maneuver: maneuvers) {
+            propagator.addEventDetector(maneuver);
+        }
+        // Convert the relative maneuvers to impulse maneuvers and add them to the chaser propagator.
+        final List<ImpulseManeuver> impulseManeuvers = rpo.convertToImpulseManeuver(maneuvers, targetOrbit, 0);
+        for (ImpulseManeuver impulseManeuver: impulseManeuvers) {
+            chaserPropagator.addEventDetector(impulseManeuver);
+        }
+        // Propagate the target state to the end of the linear scenario.
+        final SpacecraftState finalState = propagator.propagate(finalDate);
+        // Get the final chaser state from the propagation of the target and the relative provider.
+        final double[] finalChaser = yaProvider.getAdditionalData(finalState);
+        final Vector3D chaserPositionLof = new Vector3D(finalChaser[0], finalChaser[1], finalChaser[2]);
+        final Transform inertialToLOFFinal = rpo.getLOFType().transformFromInertial(finalDate, finalState.getPVCoordinates());
+        // Propagate the chaser orbit.
+        final Vector3D chaserPositionInertial = chaserPropagator.propagate(finalDate).getPosition();
+        final Vector3D chaserPositionInertialToLof = inertialToLOFFinal.transformPosition(chaserPositionInertial);
+        // Assert the positions are the same.
+        TestUtils.validateVector3D(chaserPositionLof, chaserPositionInertialToLof, 1e-3);
+    }
+
+    /**
+     * Test the conversion from RelativeManeuvers to ImpulseManeuvers in inertial frame.
+     * Propagate a linear trajectory of the chaser with the provider and compare with the propagation of chaser propagator
+     * with the impulse maneuvers.
+     * <br>
+     * Note: Impulses are computed by the method computeForcesManeuvers. This method uses the velocity of the chaser
+     * obtained by propagating the target orbit with the associated relative provider to compute the deltaV impulse at
+     * each waypoint. The velocity of the chaser computed by the provider and by a proper propagator can slightly differ.
+     * As a consequence the impulse maneuvers computed by transforming the relative ones don't fit exactly to what's
+     * expected. Then the final position of the chaser propagated with ImpulseManeuvers slightly diverges from the one
+     * propagated with the relative maneuvers, which explains a larger numerical tolerance to validate the test.
+     */
+    @Test
+    public void convertToImpulseManeuverCWFieldTest() {
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64 n = new Binary64(0.0011569); //Mean motion of target's orbit.
+        final Binary64 mu = new Binary64(Constants.EIGEN5C_EARTH_MU);
+        final Binary64 rTarget = mu.divide(n.multiply(n)).pow(1./3.);
+        final FieldAbsoluteDate<Binary64> epoch = new FieldAbsoluteDate<>(field,AbsoluteDate.J2000_EPOCH);
+        final FieldAbsoluteDate<Binary64> finalDate = epoch.shiftedBy(100);
+
+        // Target's orbit
+        final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
+                field.getZero(), field.getZero(), field.getZero(),
+                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                FramesFactory.getGCRF(), epoch, mu);
+
+        final RPOModel rpo = RPOModel.CW;
+        // Start and end conditions of the transfer, expressed in the target's LOF
+        TimeStampedFieldPVCoordinates<Binary64> pvtChaserInitial = new TimeStampedFieldPVCoordinates<>(epoch, new FieldPVCoordinates<>(field, new PVCoordinates(new Vector3D(0, -1.0e3, 0), new Vector3D(-0.02e3, 0.02e3, -0.005e3))));
+        TimeStampedFieldPVCoordinates<Binary64> pvtChaserFinal = new TimeStampedFieldPVCoordinates<>(finalDate, new FieldPVCoordinates<>(field, new PVCoordinates(new Vector3D(200, 0, 0), Vector3D.ZERO)));
+        // Initial condition of the chaser expressed in the inertial frame.
+        final FieldTransform<Binary64> lofToInertial = rpo.getLOFType().transformFromInertial(pvtChaserInitial.getDate(), targetOrbit.getPVCoordinates()).getInverse();
+        final FieldPVCoordinates<Binary64> pvChaserInertial = lofToInertial.transformPVCoordinates(pvtChaserInitial);
+        final TimeStampedFieldPVCoordinates<Binary64> pvtChaserInertial = new TimeStampedFieldPVCoordinates<>(epoch, pvChaserInertial);
+        final FieldKeplerianOrbit<Binary64> chaserOrbit = new FieldKeplerianOrbit<>(pvtChaserInertial, targetOrbit.getFrame(), mu);
+
+        final FieldClohessyWiltshireProvider<Binary64> cwProvider = new FieldClohessyWiltshireProvider<>(targetOrbit, pvtChaserInitial);
+        // Definition of the propagator.
+        final FieldKeplerianPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(targetOrbit);
+        propagator.addAdditionalDataProvider(cwProvider);
+        // Propagate the target and the chaser provider to handle first maneuver.
+        final FieldSpacecraftState<Binary64> targetStart = propagator.propagate(epoch.shiftedBy(1));
+        final Binary64[] chaserStart = cwProvider.getAdditionalData(targetStart);
+        final TimeStampedFieldPVCoordinates<Binary64> chaserStartManeuver = new TimeStampedFieldPVCoordinates<>(epoch.shiftedBy(1),
+                new FieldPVCoordinates<>(new FieldVector3D<>(chaserStart[0], chaserStart[1], chaserStart[2]),
+                new FieldVector3D<>(chaserStart[3], chaserStart[4], chaserStart[5])));
+        // Reset target propagator and initial state of the provider
+        propagator.resetInitialState(new FieldSpacecraftState<>(targetOrbit));
+        cwProvider.setInitialChaserPVTLof(pvtChaserInitial);
+        // Definition of the linear path.
+        final List<TimeStampedFieldPVCoordinates<Binary64>> waypoints = rpo.computeForcedLinearWaypoints(chaserStartManeuver, pvtChaserFinal, 6);
+
+        // Definition of the chaser propagator.
+        final FieldKeplerianPropagator<Binary64> chaserPropagator = new FieldKeplerianPropagator<>(chaserOrbit);
+        // Compute the Relative maneuvers and add to it to the target propagator.
+        final List<FieldRelativeManeuver<Binary64>> maneuvers = rpo.computeForcedManeuvers(waypoints,chaserStartManeuver.getVelocity(),targetOrbit,cwProvider);
+        for (FieldRelativeManeuver<Binary64> maneuver: maneuvers) {
+            propagator.addEventDetector(maneuver);
+        }
+        // Convert the relative maneuvers to impulse maneuvers and add them to the chaser propagator.
+        final List<FieldImpulseManeuver<Binary64>> impulseManeuvers = rpo.convertToImpulseManeuver(maneuvers, targetOrbit, field.getZero());
+        for (FieldImpulseManeuver<Binary64> impulseManeuver: impulseManeuvers) {
+            chaserPropagator.addEventDetector(impulseManeuver);
+        }
+        // Propagate the target state to the end of the linear scenario.
+        final FieldSpacecraftState<Binary64> finalState = propagator.propagate(finalDate);
+        // Get the final chaser state from the propagation of the target and the relative provider.
+        final Binary64[] finalChaser = cwProvider.getAdditionalData(finalState);
+        final FieldVector3D<Binary64> chaserPositionLof = new FieldVector3D<>(finalChaser[0], finalChaser[1], finalChaser[2]);
+        final FieldTransform<Binary64> inertialToLOFFinal = rpo.getLOFType().transformFromInertial(finalDate, finalState.getPVCoordinates());
+        // Propagate the chaser orbit.
+        final FieldVector3D<Binary64> chaserPositionInertial = chaserPropagator.propagate(finalDate).getPosition();
+        final FieldVector3D<Binary64> chaserPositionInertialToLof = inertialToLOFFinal.transformPosition(chaserPositionInertial);
+        // Assert the positions are the same.
+        TestUtils.validateVector3D(chaserPositionLof.toVector3D(), chaserPositionInertialToLof.toVector3D(), 1e-3);
+    }
+
+    /**
+     * Test the conversion from RelativeManeuvers to ImpulseManeuvers in inertial frame.
+     * Propagate a linear trajectory of the chaser with the provider and compare with the propagation of chaser propagator
+     * with the impulse maneuvers.
+     * <br>
+     * Note: Impulses are computed by the method computeForcesManeuvers. This method uses the velocity of the chaser
+     * obtained by propagating the target orbit with the associated relative provider to compute the deltaV impulse at
+     * each waypoint. The velocity of the chaser computed by the provider and by a proper propagator can slightly differ.
+     * As a consequence the impulse maneuvers computed by transforming the relative ones don't fit exactly to what's
+     * expected. Then the final position of the chaser propagated with ImpulseManeuvers slightly diverges from the one
+     * propagated with the relative maneuvers, which explains a larger numerical tolerance to validate the test.
+     */
+    @Test
+    public void convertToImpulseManeuverYAFieldTest() {
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64 n = new Binary64(0.0011569); //Mean motion of target's orbit.
+        final Binary64 mu = new Binary64(Constants.EIGEN5C_EARTH_MU);
+        final Binary64 rTarget = mu.divide(n.multiply(n)).pow(1./3.);
+        final FieldAbsoluteDate<Binary64> epoch = new FieldAbsoluteDate<>(field,AbsoluteDate.J2000_EPOCH);
+        final FieldAbsoluteDate<Binary64> finalDate = epoch.shiftedBy(100);
+
+        // Target's orbit
+        final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
+                field.getZero(), field.getZero(), field.getZero(),
+                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                FramesFactory.getGCRF(), epoch, mu);
+
+        final RPOModel rpo = RPOModel.YA;
+        // Start and end conditions of the transfer, expressed in the target's LOF
+        TimeStampedFieldPVCoordinates<Binary64> pvtChaserInitial = new TimeStampedFieldPVCoordinates<>(epoch, new FieldPVCoordinates<>(field, new PVCoordinates(new Vector3D(0, -1.0e3, 0), new Vector3D(-0.02e3, 0.02e3, -0.005e3))));
+        TimeStampedFieldPVCoordinates<Binary64> pvtChaserFinal = new TimeStampedFieldPVCoordinates<>(finalDate, new FieldPVCoordinates<>(field, new PVCoordinates(new Vector3D(200, 0, 0), Vector3D.ZERO)));
+        // Initial condition of the chaser expressed in the inertial frame.
+        final FieldTransform<Binary64> lofToInertial = rpo.getLOFType().transformFromInertial(pvtChaserInitial.getDate(), targetOrbit.getPVCoordinates()).getInverse();
+        final FieldPVCoordinates<Binary64> pvChaserInertial = lofToInertial.transformPVCoordinates(pvtChaserInitial);
+        final TimeStampedFieldPVCoordinates<Binary64> pvtChaserInertial = new TimeStampedFieldPVCoordinates<>(epoch, pvChaserInertial);
+        final FieldKeplerianOrbit<Binary64> chaserOrbit = new FieldKeplerianOrbit<>(pvtChaserInertial, targetOrbit.getFrame(), mu);
+
+        final FieldYamanakaAnkersenProvider<Binary64> yaProvider = new FieldYamanakaAnkersenProvider<>(targetOrbit, pvtChaserInitial);
+        // Definition of the propagator.
+        final FieldKeplerianPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(targetOrbit);
+        propagator.addAdditionalDataProvider(yaProvider);
+        // Propagate the target and the chaser provider to handle first maneuver.
+        final FieldSpacecraftState<Binary64> targetStart = propagator.propagate(epoch.shiftedBy(1));
+        final Binary64[] chaserStart = yaProvider.getAdditionalData(targetStart);
+        final TimeStampedFieldPVCoordinates<Binary64> chaserStartManeuver = new TimeStampedFieldPVCoordinates<>(epoch.shiftedBy(1),
+                new FieldPVCoordinates<>(new FieldVector3D<>(chaserStart[0], chaserStart[1], chaserStart[2]),
+                        new FieldVector3D<>(chaserStart[3], chaserStart[4], chaserStart[5])));
+        // Reset target propagator and initial state of the provider
+        propagator.resetInitialState(new FieldSpacecraftState<>(targetOrbit));
+        yaProvider.setInitialChaserPVTLof(pvtChaserInitial);
+        // Definition of the linear path.
+        final List<TimeStampedFieldPVCoordinates<Binary64>> waypoints = rpo.computeForcedLinearWaypoints(chaserStartManeuver, pvtChaserFinal, 6);
+
+        // Definition of the chaser propagator.
+        final FieldKeplerianPropagator<Binary64> chaserPropagator = new FieldKeplerianPropagator<>(chaserOrbit);
+        // Compute the Relative maneuvers and add to it to the target propagator.
+        final List<FieldRelativeManeuver<Binary64>> maneuvers = rpo.computeForcedManeuvers(waypoints,chaserStartManeuver.getVelocity(),targetOrbit,yaProvider);
+        for (FieldRelativeManeuver<Binary64> maneuver: maneuvers) {
+            propagator.addEventDetector(maneuver);
+        }
+        // Convert the relative maneuvers to impulse maneuvers and add them to the chaser propagator.
+        final List<FieldImpulseManeuver<Binary64>> impulseManeuvers = rpo.convertToImpulseManeuver(maneuvers, targetOrbit, field.getZero());
+        for (FieldImpulseManeuver<Binary64> impulseManeuver: impulseManeuvers) {
+            chaserPropagator.addEventDetector(impulseManeuver);
+        }
+        // Propagate the target state to the end of the linear scenario.
+        final FieldSpacecraftState<Binary64> finalState = propagator.propagate(finalDate);
+        // Get the final chaser state from the propagation of the target and the relative provider.
+        final Binary64[] finalChaser = yaProvider.getAdditionalData(finalState);
+        final FieldVector3D<Binary64> chaserPositionLof = new FieldVector3D<>(finalChaser[0], finalChaser[1], finalChaser[2]);
+        final FieldTransform<Binary64> inertialToLOFFinal = rpo.getLOFType().transformFromInertial(finalDate, finalState.getPVCoordinates());
+        // Propagate the chaser orbit.
+        final FieldVector3D<Binary64> chaserPositionInertial = chaserPropagator.propagate(finalDate).getPosition();
+        final FieldVector3D<Binary64> chaserPositionInertialToLof = inertialToLOFFinal.transformPosition(chaserPositionInertial);
+        // Assert the positions are the same.
+        TestUtils.validateVector3D(chaserPositionLof.toVector3D(), chaserPositionInertialToLof.toVector3D(), 1e-3);
     }
 }

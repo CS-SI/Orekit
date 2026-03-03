@@ -33,14 +33,13 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.relative.FieldRelativeProvider;
 import org.orekit.propagation.relative.RelativeProvider;
-import org.orekit.propagation.relative.maneuver.AbstractRelativeManeuver;
-import org.orekit.propagation.relative.maneuver.FieldAbstractRelativeManeuver;
 import org.orekit.propagation.relative.maneuver.FieldRelativeManeuver;
 import org.orekit.propagation.relative.maneuver.RelativeManeuver;
 import org.orekit.propagation.relative.maneuver.rpoOLD.RPOModel;
@@ -469,7 +468,6 @@ public interface RPO {
             List<TimeStampedFieldPVCoordinates<T>> waypoints, FieldVector3D<T> initialVelocity,
             FieldOrbit<T> targetOrbit, FieldRelativeProvider<T> provider);
 
-    // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
     /**
      * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
      * Warning: EventDetector of the maneuvers must be DateDetector.
@@ -479,21 +477,21 @@ public interface RPO {
      * @param isp         specific impulse of the chaser.
      * @return list of impulse maneuvers in target's orbit frame.
      */
-    default List<ImpulseManeuver> convertToImpulseManeuver(final List<AbstractRelativeManeuver> maneuvers, final Orbit targetOrbit, final double isp) {
+    default List<ImpulseManeuver> convertToImpulseManeuver(final List<RelativeManeuver> maneuvers, final Orbit targetOrbit, final double isp) {
         final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
         final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
-        for (AbstractRelativeManeuver maneuver : maneuvers) {
+        for (RelativeManeuver maneuver : maneuvers) {
             final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
             final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
             final Transform lofToInertial = getLOFType().transformFromInertial(maneuverDate, pvTarget)
                     .getInverse();
             final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
             impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
+            targetPropagator.resetInitialState(new SpacecraftState(targetOrbit));
         }
         return impulseManeuvers;
     }
 
-    // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
     /**
      * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
      * Warning: EventDetector of the maneuvers must be DateDetector.
@@ -505,10 +503,10 @@ public interface RPO {
      * @return list of impulse maneuvers in target's orbit frame.
      */
     default <T extends CalculusFieldElement<T>> List<FieldImpulseManeuver<T>> convertToImpulseManeuver(
-            final List<FieldAbstractRelativeManeuver<T>> maneuvers, final FieldOrbit<T> targetOrbit, final T isp) {
+            final List<FieldRelativeManeuver<T>> maneuvers, final FieldOrbit<T> targetOrbit, final T isp) {
         final List<FieldImpulseManeuver<T>> impulseManeuvers = new ArrayList<>();
         final FieldKeplerianPropagator<T> targetPropagator = new FieldKeplerianPropagator<>(targetOrbit);
-        for (FieldAbstractRelativeManeuver<T> maneuver : maneuvers) {
+        for (FieldRelativeManeuver<T> maneuver : maneuvers) {
             final FieldAbsoluteDate<T> maneuverDate = ((FieldDateDetector<T>) maneuver.getTrigger()).getDate();
             final FieldPVCoordinates<T> pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
             final FieldTransform<T> lofToInertial = getLOFType().transformFromInertial(maneuverDate, pvTarget)
