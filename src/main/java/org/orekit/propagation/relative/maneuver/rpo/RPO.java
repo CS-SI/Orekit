@@ -468,7 +468,6 @@ public interface RPO {
             List<TimeStampedFieldPVCoordinates<T>> waypoints, FieldVector3D<T> initialVelocity,
             FieldOrbit<T> targetOrbit, FieldRelativeProvider<T> provider);
 
-    // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
     /**
      * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
      * Warning: EventDetector of the maneuvers must be DateDetector.
@@ -493,7 +492,6 @@ public interface RPO {
         return impulseManeuvers;
     }
 
-    // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
     /**
      * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
      * Warning: EventDetector of the maneuvers must be DateDetector.

@@ -203,29 +203,6 @@ public enum RPOModel implements RPO {
             return new ArrayList<>(maneuvers);
         }
 
-//        // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
-//        /**
-//         * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
-//         * Warning: EventDetector of the maneuvers must be DateDetector.
-//         * @param cwManeuvers Clohessy-Wiltshire maneuvers.
-//         * @param targetOrbit orbit of the target.
-//         * @param isp specific impulse of the chaser.
-//         * @return list of impulse maneuvers in target's orbit frame.
-//         */
-//        public List<ImpulseManeuver> convertToImpulseManeuver(final List<ClohessyWiltshireManeuver> cwManeuvers, final Orbit targetOrbit, final double isp) {
-//            final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
-//            final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
-//            for (ClohessyWiltshireManeuver maneuver : cwManeuvers) {
-//                final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
-//                final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
-//                final Transform lofToInertial = LOFType.QSW.transformFromInertial(maneuverDate, pvTarget)
-//                        .getInverse();
-//                final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
-//                impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
-//            }
-//            return impulseManeuvers;
-//        }
-
         /**
          * Computes the Clohessy-Wilstshire based maneuvers of the teardrop relative orbit in QSW Local Orbital Frame.
          * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
@@ -448,29 +425,6 @@ public enum RPOModel implements RPO {
             }
             return new ArrayList<>(maneuvers);
         }
-
-//        // TODO: Tester la fonction --> Pas sûr de la transformation du vecteur deltaV.
-//        /**
-//         * Convert the relative maneuvers into Impulse maneuvers in the targetOrbit frame.
-//         * Warning: EventDetector of the maneuvers must be DateDetector.
-//         * @param yaManeuvers Yamanaka-Ankersen maneuvers.
-//         * @param targetOrbit orbit of the target.
-//         * @param isp specific impulse of the chaser.
-//         * @return list of impulse maneuvers in target's orbit frame.
-//         */
-//        public List<ImpulseManeuver> convertToImpulseManeuver(final List<YamanakaAnkersenManeuver> yaManeuvers, final Orbit targetOrbit, final double isp) {
-//            final List<ImpulseManeuver> impulseManeuvers = new ArrayList<>();
-//            final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
-//            for (YamanakaAnkersenManeuver maneuver : yaManeuvers) {
-//                final AbsoluteDate maneuverDate = ((DateDetector) maneuver.getTrigger()).getDate();
-//                final PVCoordinates pvTarget = targetPropagator.propagate(maneuverDate).getPVCoordinates();
-//                final Transform lofToInertial = LOFType.LVLH_CCSDS.transformFromInertial(maneuverDate, pvTarget)
-//                        .getInverse();
-//                final Vector3D deltaVInertial = lofToInertial.transformVector(maneuver.getDeltaV());
-//                impulseManeuvers.add(new ImpulseManeuver(maneuver.getTrigger(), deltaVInertial, isp));
-//            }
-//            return impulseManeuvers;
-//        }
 
         /**
          * Computes the Yamanaka-Ankersen based maneuvers of the teardrop relative orbit in LVLH_CCSDS Local Orbital Frame.
