@@ -42,7 +42,6 @@ import org.orekit.propagation.relative.FieldRelativeProvider;
 import org.orekit.propagation.relative.RelativeProvider;
 import org.orekit.propagation.relative.maneuver.FieldRelativeManeuver;
 import org.orekit.propagation.relative.maneuver.RelativeManeuver;
-import org.orekit.propagation.relative.maneuver.rpoOLD.RPOModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
