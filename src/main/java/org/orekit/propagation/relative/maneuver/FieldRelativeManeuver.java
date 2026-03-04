@@ -36,6 +36,10 @@ public interface FieldRelativeManeuver<T extends CalculusFieldElement<T>> extend
      */
     FieldVector3D<T> getDeltaV();
 
+    /**
+     * Get the detection settings.
+     * @return detection settings.
+     */
     FieldEventDetectionSettings<T> getDetectionSettings();
 
     /**
