@@ -104,7 +104,7 @@ public class OneWayRangeMeasurementCreator extends MeasurementCreator {
                                                 stationPhaseCenterVariation.value(0.5 * FastMath.PI - staLosDown.getDelta(),
                                                                                   staLosDown.getAlpha());
 
-                    final double clockOffset = station.getClockOffsetDriver().getValue(date);
+                    final double clockOffset = station.getClockBiasDriver().getValue(date);
 
                     final double correctedDownLinkDistance = downLinkDistance + satPCVDown + staPCVDown +
                                                              clockOffset * Constants.SPEED_OF_LIGHT;

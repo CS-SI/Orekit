@@ -184,6 +184,9 @@ class LambertSolverTest {
                 solution.getBoundaryConditions(),
                 solution.getBoundaryVelocities());
         checkLambertSolution(solutionCopy, expectedVelocity1, expectedVelocity2, 0.1, 1e-3);
+
+        // Print solution for coverage
+        System.out.println(solution);
     }
 
     // Der examples are extracted from section Lambert Numerical Examples of https://amostech.com/TechnicalPapers/2011/Poster/DER.pdf

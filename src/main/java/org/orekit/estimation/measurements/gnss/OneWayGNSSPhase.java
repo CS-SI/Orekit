@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.gnss;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.SpacecraftState;
@@ -74,7 +75,7 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
                            final double baseWeight, final ObservableSatellite local,
                            final AmbiguityCache cache) {
         // Call super constructor
-        super(observer, date, phase, sigma, baseWeight, new SignalTravelTimeModel(), local);
+        super(observer, date, phase, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), local);
 
         // Initialize phase ambiguity driver
         ambiguityDriver = cache.getAmbiguity(observer.getName(), local.getName(), wavelength);
@@ -122,8 +123,8 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
         final double   ambiguity   = ambiguityDriver.getValue(common.getState().getDate());
-        final double   phase       = (common.getTauD() + common.getLocalOffset().getOffset() -
-                                      common.getRemoteOffset().getOffset()) * cOverLambda + ambiguity;
+        final double   phase       = (common.getTauD() + common.getLocalOffset().getBias() -
+                                      common.getRemoteOffset().getBias()) * cOverLambda + ambiguity;
 
         // Set value of the estimated measurement
         estimatedPhase.setEstimatedValue(phase);
@@ -156,8 +157,8 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
         final double   cOverLambda      = Constants.SPEED_OF_LIGHT / wavelength;
         final Gradient ambiguity        = ambiguityDriver.getValue(common.getTauD().getFreeParameters(), common.getIndices(),
                                                                    common.getState().getDate());
-        final Gradient phase            = common.getTauD().add(common.getLocalOffset().getOffset()).
-                                          subtract(common.getRemoteOffset().getOffset()).
+        final Gradient phase            = common.getTauD().add(common.getLocalOffset().getBias()).
+                                          subtract(common.getRemoteOffset().getBias()).
                                           multiply(cOverLambda).add(ambiguity);
 
         // Return the estimated measurement

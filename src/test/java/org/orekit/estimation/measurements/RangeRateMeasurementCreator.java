@@ -51,7 +51,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.getStations()) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockBiasDriver(),
                                                         station.getClockDriftDriver(),
                                                         station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),

@@ -587,9 +587,9 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final ParameterDriversList estimatedDrivers = new ParameterDriversList();
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockDrift);
-            station.getClockOffsetDriver().setSelected(true);
-            estimatedDrivers.add(station.getClockOffsetDriver());
+            station.getClockBiasDriver().setValue(groundClockDrift);
+            station.getClockBiasDriver().setSelected(true);
+            estimatedDrivers.add(station.getClockBiasDriver());
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,

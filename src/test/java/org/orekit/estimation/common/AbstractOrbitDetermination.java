@@ -1479,11 +1479,11 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final PressureTemperatureHumidityProvider pth0Provider =
                             TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER;
             final GroundStation station = new GroundStation(topo, eopHistory, displacements);
-            station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
-            station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
-            station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
-            station.getClockOffsetDriver().setMaxValue(stationClockOffsetsMax[i]);
-            station.getClockOffsetDriver().setSelected(stationClockOffsetEstimated[i]);
+            station.getClockBiasDriver().setReferenceValue(stationClockOffsets[i]);
+            station.getClockBiasDriver().setValue(stationClockOffsets[i]);
+            station.getClockBiasDriver().setMinValue(stationClockOffsetsMin[i]);
+            station.getClockBiasDriver().setMaxValue(stationClockOffsetsMax[i]);
+            station.getClockBiasDriver().setSelected(stationClockOffsetEstimated[i]);
             station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
@@ -1792,20 +1792,20 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
     private ObservableSatellite createObservableSatellite(final KeyValueFileParser<ParameterKey> parser)
         throws NoSuchElementException {
         final ObservableSatellite obsSat = new ObservableSatellite(0);
-        final ParameterDriver clockOffsetDriver = obsSat.getClockOffsetDriver();
+        final ParameterDriver clockBiasDriver = obsSat.getClockBiasDriver();
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET)) {
         	// date = null okay if validity period is infinite = only 1 estimation over the all period
-            clockOffsetDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
-            clockOffsetDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+            clockBiasDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+            clockBiasDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
         }
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN)) {
-            clockOffsetDriver.setMinValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN));
+            clockBiasDriver.setMinValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN));
         }
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX)) {
-            clockOffsetDriver.setMaxValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX));
+            clockBiasDriver.setMaxValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX));
         }
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED)) {
-            clockOffsetDriver.setSelected(parser.getBoolean(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED));
+            clockBiasDriver.setSelected(parser.getBoolean(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED));
         }
         return obsSat;
     }

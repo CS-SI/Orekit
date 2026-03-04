@@ -67,11 +67,11 @@ public class InterSatellitesOneWayRangeRateMeasurementCreator
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockBiasDriver().setValue(localClockOffset);
         this.local.getClockDriftDriver().setValue(localClockRate);
         this.local.getClockAccelerationDriver().setValue(localClockAcceleration);
         this.remote              = new ObservableSatellite(1);
-        this.remote.getClockOffsetDriver().setValue(remoteClockOffset);
+        this.remote.getClockBiasDriver().setValue(remoteClockOffset);
         this.remote.getClockDriftDriver().setValue(remoteClockRate);
         this.remote.getClockAccelerationDriver().setValue(remoteClockAcceleration);
     }
@@ -85,10 +85,10 @@ public class InterSatellitesOneWayRangeRateMeasurementCreator
     }
 
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
-        for (final ParameterDriver driver : Arrays.asList(local.getClockOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(local.getClockBiasDriver(),
                                                           local.getClockDriftDriver(),
                                                           local.getClockAccelerationDriver(),
-                                                          remote.getClockOffsetDriver(),
+                                                          remote.getClockBiasDriver(),
                                                           remote.getClockDriftDriver(),
                                                           remote.getClockAccelerationDriver())) {
             if (driver.getReferenceDate() == null) {
@@ -128,7 +128,7 @@ public class InterSatellitesOneWayRangeRateMeasurementCreator
 
             // generate measurement
             final InterSatellitesOneWayRangeRate phase = new InterSatellitesOneWayRangeRate(local, remote,
-                                                                                            date.shiftedBy(localClk.getOffset()),
+                                                                                            date.shiftedBy(localClk.getBias()),
                                                                                             rangeRate,
                                                                                             1.0, 10);
             addMeasurement(phase);

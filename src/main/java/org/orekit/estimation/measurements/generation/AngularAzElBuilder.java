@@ -30,7 +30,10 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class AngularAzElBuilder extends AbstractAngularBuilder<AngularAzEl> {
+public class AngularAzElBuilder extends AbstractSignalBasedBuilder<AngularAzEl> {
+
+    /** Station performing measurement. */
+    private final GroundStation station;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
@@ -56,14 +59,23 @@ public class AngularAzElBuilder extends AbstractAngularBuilder<AngularAzEl> {
     public AngularAzElBuilder(final CorrelatedRandomVectorGenerator noiseSource, final GroundStation station,
                               final double[] sigma, final double[] baseWeight,
                               final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, station, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(noiseSource, sigma, baseWeight, signalTravelTimeModel, satellite);
+        this.station = station;
+    }
+
+    /**
+     * Getter for station.
+     * @return station
+     */
+    public GroundStation getStation() {
+        return station;
     }
 
     /** {@inheritDoc} */
     @Override
     protected AngularAzEl buildObserved(final AbsoluteDate date,
                                         final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new AngularAzEl(getStation(), date, ZERO, getTheoreticalStandardDeviation(),
+        return new AngularAzEl(station, date, new double[2], getTheoreticalStandardDeviation(),
                                getBaseWeight(), getSignalTravelTimeModel(), getSatellites()[0]);
     }
 

@@ -67,7 +67,7 @@ public class RinexObservationParserTest {
         final ClockOffset offset =
             clockModel.getOffset(new AbsoluteDate(2001, 3, 24, 13, 11, 57.0,
                                                   TimeScalesFactory.getGPS()));
-        Assertions.assertEquals(-0.123456888, offset.getOffset(),       1.0e-15);
+        Assertions.assertEquals(-0.123456888, offset.getBias(),         1.0e-15);
         Assertions.assertEquals(-1.1e-8,      offset.getRate(),         1.0e-18);
         Assertions.assertEquals( 0.0,         offset.getAcceleration(), 1.0e-20);
     }

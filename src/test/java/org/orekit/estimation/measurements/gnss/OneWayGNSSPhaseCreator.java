@@ -68,7 +68,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.wavelength          = radioWave.getWavelength();
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockBiasDriver().setValue(localClockOffset);
         this.cache               = new AmbiguityCache();
         this.ambiguityDriver     = cache.
                                    getAmbiguity(remoteName,
@@ -83,8 +83,8 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
-        if (local.getClockOffsetDriver().getReferenceDate() == null) {
-            local.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        if (local.getClockBiasDriver().getReferenceDate() == null) {
+            local.getClockBiasDriver().setReferenceDate(s0.getDate());
         }
     }
 
@@ -92,9 +92,9 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
     public void handleStep(final SpacecraftState currentState) {
         try {
             final double           n         = ambiguityDriver.getValue(currentState.getDate());
-            final double           localClk  = local.getClockOffsetDriver().getValue(currentState.getDate());
+            final double           localClk  = local.getClockBiasDriver().getValue(currentState.getDate());
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk -
-                                                                           remoteClk.getOffset(currentState.getDate()).getOffset());
+                                                                           remoteClk.getOffset(currentState.getDate()).getBias());
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
 

@@ -31,8 +31,8 @@ public class ClockOffset implements TimeStamped {
     /** Date. */
     private final AbsoluteDate date;
 
-    /** Clock offset. */
-    private final double offset;
+    /** Clock bias. */
+    private final double bias;
 
     /** Clock rate. */
     private final double rate;
@@ -42,14 +42,14 @@ public class ClockOffset implements TimeStamped {
 
     /** Simple constructor.
      * @param date   date
-     * @param offset clock offset
+     * @param bias clock bias
      * @param rate   clock rate (can be set to {@code Double.NaN} if unknown)
      * @param acceleration clock acceleration (can be set to {@code Double.NaN} if unknown)
      */
-    public ClockOffset(final AbsoluteDate date, final double offset,
+    public ClockOffset(final AbsoluteDate date, final double bias,
                        final double rate, final double acceleration) {
         this.date         = date;
-        this.offset       = offset;
+        this.bias         = bias;
         this.rate         = rate;
         this.acceleration = acceleration;
     }
@@ -64,7 +64,7 @@ public class ClockOffset implements TimeStamped {
      */
     public ClockOffset add(final ClockOffset other) {
         return new ClockOffset(date,
-                               offset       + other.offset,
+                               bias         + other.bias,
                                rate         + other.rate,
                                acceleration + other.acceleration);
     }
@@ -79,7 +79,7 @@ public class ClockOffset implements TimeStamped {
      */
     public ClockOffset subtract(final ClockOffset other) {
         return new ClockOffset(date,
-                               offset       - other.offset,
+                               bias         - other.bias,
                                rate         - other.rate,
                                acceleration - other.acceleration);
     }
@@ -90,11 +90,12 @@ public class ClockOffset implements TimeStamped {
         return date;
     }
 
-    /** Get offset.
-     * @return offset
+    /** Get bias.
+     * @return bias
+     * @since 14.0
      */
-    public double getOffset() {
-        return offset;
+    public double getBias() {
+        return bias;
     }
 
     /** Get rate.

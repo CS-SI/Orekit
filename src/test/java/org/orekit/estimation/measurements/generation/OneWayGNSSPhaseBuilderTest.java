@@ -105,7 +105,7 @@ public class OneWayGNSSPhaseBuilderTest {
                                                               o1.getVelocity().negate()),
                                             o1.getFrame(), o1.getDate(), o1.getMu());
         ObserverSatellite remote = new ObserverSatellite("GNSS-remote", new KeplerianPropagator(o2));
-        remote.getClockOffsetDriver().setValue(1.0e-16);
+        remote.getClockBiasDriver().setValue(1.0e-16);
         remote.getClockDriftDriver().setValue(0);
         remote.getClockAccelerationDriver().setValue(0);
 

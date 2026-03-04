@@ -121,7 +121,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
                                                                                                      final int evaluation,
                                                                                                      final SpacecraftState[] states) {
         // compute actual reception date
-        final double dtl = getSatellites().get(0).getClockOffsetDriver().getValue(getDate());
+        final double dtl = getSatellites().get(0).getClockBiasDriver().getValue(getDate());
         final AbsoluteDate receptionDate = getDate().shiftedBy(-dtl);
 
         if (isTwoWay()) {
@@ -203,8 +203,8 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
                 remoteAtEmission.getPVCoordinates(frame), localAtReception.getPVCoordinates()});
 
         // range value
-        final double dtl = getSatellites().get(0).getClockOffsetDriver().getValue(getDate());
-        final double dtr = getSatellites().get(1).getClockOffsetDriver().getValue(remoteAtEmission.getDate());
+        final double dtl = getSatellites().get(0).getClockBiasDriver().getValue(getDate());
+        final double dtr = getSatellites().get(1).getClockBiasDriver().getValue(remoteAtEmission.getDate());
         final double range  = (delay + dtl - dtr) * Constants.SPEED_OF_LIGHT;
 
         estimated.setEstimatedValue(range);
@@ -274,7 +274,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
 
         // compute actual reception date
         final int nbParams = pvaL.getDate().getField().getZero().getFreeParameters();
-        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices, getDate());
+        final Gradient dtl = getSatellites().get(0).getClockBiasDriver().getValue(nbParams, indices, getDate());
         final FieldAbsoluteDate<Gradient> receptionDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         // compute transit and emission dates
@@ -323,7 +323,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
 
         // compute actual reception date
         final int nbParams = pvaL.getDate().getField().getZero().getFreeParameters();
-        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices, getDate());
+        final Gradient dtl = getSatellites().get(0).getClockBiasDriver().getValue(nbParams, indices, getDate());
         final FieldAbsoluteDate<Gradient> receptionDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         // compute emission date
@@ -343,7 +343,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
                 new TimeStampedPVCoordinates[] { remoteAtEmission.getPVCoordinates(frame), localAtReception.getPVCoordinates() });
 
         // Range value
-        final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices, remoteAtEmission.getDate());
+        final Gradient dtr = getSatellites().get(1).getClockBiasDriver().getValue(nbParams, indices, remoteAtEmission.getDate());
         final Gradient range = delay.add(dtl).subtract(dtr).multiply(Constants.SPEED_OF_LIGHT);
         fillDerivatives(range, indices, estimated);
         return estimated;

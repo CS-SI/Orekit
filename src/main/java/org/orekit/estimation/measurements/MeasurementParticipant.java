@@ -33,8 +33,11 @@ import org.orekit.utils.ParameterDriversProvider;
  */
 public interface MeasurementParticipant extends ParameterDriversProvider {
 
-    /** Suffix for ground station position and clock offset parameters names. */
+    /** Suffix for ground station position parameters names. */
     String OFFSET_SUFFIX = "-offset";
+
+    /** Suffix for clock bias (a.k.a. systematic offset) parameters name. */
+    String BIAS_SUFFIX = "-bias";
 
     /** Suffix for ground clock drift parameters name. */
     String DRIFT_SUFFIX = "-drift";
@@ -47,11 +50,11 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
      */
     String getName();
 
-    /** Get the clock offset driver.
-     * @return clock offset driver
+    /** Get the clock bias (a.k.a. systematic offset) driver.
+     * @return clock bias driver
      */
-    default ParameterDriver getClockOffsetDriver() {
-        return getQuadraticClockModel().getClockOffsetDriver();
+    default ParameterDriver getClockBiasDriver() {
+        return getQuadraticClockModel().getClockBiasDriver();
     }
 
     /** Get the clock drift driver.
@@ -73,12 +76,12 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
      */
     QuadraticClockModel getQuadraticClockModel();
 
-    /** Get emitting satellite clock provider.
+    /** Get Gradient clock model.
      * @param freeParameters total number of free parameters in the gradient
      * @param date time of computations
      * @param indices indices of the differentiation parameters in derivatives computations,
      * must be span name and not driver name
-     * @return emitting satellite clock provider
+     * @return clock provider
      */
     default QuadraticFieldClockModel<Gradient> getQuadraticFieldClock(final int freeParameters,
                                                                       final AbsoluteDate date,

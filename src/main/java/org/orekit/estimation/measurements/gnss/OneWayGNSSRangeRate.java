@@ -21,6 +21,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.SpacecraftState;
@@ -69,7 +70,7 @@ public class OneWayGNSSRangeRate extends AbstractOneWayGNSS<OneWayGNSSRangeRate>
                                final double rangeRate, final double sigma,
                                final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(observer, date, rangeRate, sigma, baseWeight, new SignalTravelTimeModel(), local);
+        super(observer, date, rangeRate, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), local);
     }
 
     /** {@inheritDoc} */

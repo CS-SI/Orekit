@@ -600,7 +600,7 @@ public class StateCovariance implements TimeStamped {
 
             // Builds the matrix to perform covariance transformation
             final RealMatrix jacobianFromLofInToFrameOut =
-                    getJacobian(lofIn.transformFromInertial(date, orbit.getPVCoordinates(frameOut)).getInverse());
+                    getJacobian(lofIn.transformToInertial(date, orbit.getPVCoordinates(frameOut)));
 
             // Transform covariance
             final RealMatrix transformedCovariance =
@@ -617,7 +617,7 @@ public class StateCovariance implements TimeStamped {
 
             // Builds the matrix to perform covariance transformation
             final RealMatrix jacobianFromLofInToOrbitFrame =
-                    getJacobian(lofIn.transformFromInertial(date, orbit.getPVCoordinates()).getInverse());
+                    getJacobian(lofIn.transformToInertial(date, orbit.getPVCoordinates()));
 
             // Get the Cartesian covariance matrix converted to orbit inertial frame
             final RealMatrix cartesianCovarianceInOrbitFrame = jacobianFromLofInToOrbitFrame.multiply(

@@ -84,7 +84,8 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
                                               final double[] value, final double[] sigma, final double[] baseWeight,
                                               final SignalTravelTimeModel signalTravelTimeModel,
                                               final ObservableSatellite satellite) {
-        super(date, true, value, sigma, baseWeight, signalTravelTimeModel, Collections.singletonList(satellite));
+        super(date, true, value, new MeasurementQuality(sigma, baseWeight),
+              signalTravelTimeModel, Collections.singletonList(satellite));
 
         // Add the parameters for the receiver
         addParametersDrivers(emitter.getParametersDrivers());

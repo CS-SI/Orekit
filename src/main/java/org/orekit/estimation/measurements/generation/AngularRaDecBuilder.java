@@ -22,6 +22,7 @@ import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.signal.SignalTravelTimeModel;
@@ -31,7 +32,10 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class AngularRaDecBuilder extends AbstractAngularBuilder<AngularRaDec> {
+public class AngularRaDecBuilder extends AbstractSignalBasedBuilder<AngularRaDec> {
+
+    /** Sensor. */
+    private final Observer observer;
 
     /** Reference frame in which the right ascension - declination angles are given. */
     private final Frame referenceFrame;
@@ -52,7 +56,7 @@ public class AngularRaDecBuilder extends AbstractAngularBuilder<AngularRaDec> {
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param station ground station from which measurement is performed
+     * @param observer sensor from which measurement is performed
      * @param referenceFrame Reference frame in which the right ascension - declination angles are given
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
@@ -60,18 +64,28 @@ public class AngularRaDecBuilder extends AbstractAngularBuilder<AngularRaDec> {
      * @param satellite satellite related to this builder
      * @since 14.0
      */
-    public AngularRaDecBuilder(final CorrelatedRandomVectorGenerator noiseSource, final GroundStation station,
+    public AngularRaDecBuilder(final CorrelatedRandomVectorGenerator noiseSource, final Observer observer,
                                final Frame referenceFrame, final double[] sigma, final double[] baseWeight,
                                final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, station, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(noiseSource, sigma, baseWeight, signalTravelTimeModel, satellite);
+        this.observer = observer;
         this.referenceFrame = referenceFrame;
+    }
+
+    /**
+     * Getter for the observer.
+     * @return observer
+     * @since 14.0
+     */
+    public Observer getObserver() {
+        return observer;
     }
 
     /** {@inheritDoc} */
     @Override
     protected AngularRaDec buildObserved(final AbsoluteDate date,
                                          final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new AngularRaDec(getStation(), referenceFrame, date, ZERO, getTheoreticalStandardDeviation(),
+        return new AngularRaDec(observer, referenceFrame, date, new double[2], getTheoreticalStandardDeviation(),
                                 getBaseWeight(), getSignalTravelTimeModel(), getSatellites()[0]);
     }
 

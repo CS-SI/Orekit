@@ -16,14 +16,20 @@
  */
 package org.orekit.estimation.sequential;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase.Status;
+import org.orekit.estimation.measurements.MeasurementQuality;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -59,6 +65,21 @@ class KalmanEstimatorUtilTest {
             Assertions.assertEquals(OrekitMessages.DIMENSION_INCONSISTENT_WITH_PARAMETERS, oe.getSpecifier());
         }
 		
+	}
+
+	@Test
+	void testDecorateUnscented() {
+		// GIVEN
+		final double[][] covarianceCoefficients = MatrixUtils.createRealIdentityMatrix(3).getData();
+		covarianceCoefficients[0][1] = 0.1;
+		covarianceCoefficients[1][0] = covarianceCoefficients[0][1];
+		final MeasurementQuality measurementQuality = new MeasurementQuality(covarianceCoefficients, 1.);
+		final Position positionMeasurement = new Position(AbsoluteDate.ARBITRARY_EPOCH, Vector3D.ZERO, measurementQuality,
+				new ObservableSatellite(0));
+		// WHEN
+		final MeasurementDecorator decorator = KalmanEstimatorUtil.decorateUnscented(positionMeasurement, AbsoluteDate.JULIAN_EPOCH);
+		// THEN
+		Assertions.assertArrayEquals(covarianceCoefficients, decorator.getCovariance().getData());
 	}
 
 	@Test

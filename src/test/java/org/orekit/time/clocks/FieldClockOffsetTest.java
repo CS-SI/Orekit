@@ -47,8 +47,8 @@ public class FieldClockOffsetTest {
                                                                         field.getZero().newInstance(-2.0),
                                                                         field.getZero().newInstance(3.0));
         Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, clockOffset.getDate().toAbsoluteDate());
-        Assertions.assertEquals( 1.0, clockOffset.getOffset().getReal(), 1.0e-15);
-        Assertions.assertEquals(-2.0, clockOffset.getRate().getReal(), 1.0e-15);
+        Assertions.assertEquals( 1.0, clockOffset.getBias().getReal(),         1.0e-15);
+        Assertions.assertEquals(-2.0, clockOffset.getRate().getReal(),         1.0e-15);
         Assertions.assertEquals( 3.0, clockOffset.getAcceleration().getReal(), 1.0e-15);
     }
 
@@ -63,8 +63,8 @@ public class FieldClockOffsetTest {
                                                                          field.getZero().newInstance(12.0));
         final FieldClockOffset<T> sum          = clockOffset1.add(clockOffset2);
         Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, sum.getDate().toAbsoluteDate());
-        Assertions.assertEquals( 4.0, sum.getOffset().getReal(), 1.0e-15);
-        Assertions.assertEquals(15.0, sum.getRate().getReal(), 1.0e-15);
+        Assertions.assertEquals( 4.0, sum.getBias().getReal(),         1.0e-15);
+        Assertions.assertEquals(15.0, sum.getRate().getReal(),         1.0e-15);
         Assertions.assertEquals(15.0, sum.getAcceleration().getReal(), 1.0e-15);
     }
 
@@ -79,8 +79,8 @@ public class FieldClockOffsetTest {
                                                                          field.getZero().newInstance(12.0));
         final FieldClockOffset<T> difference   = clockOffset1.subtract(clockOffset2);
         Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, difference.getDate().toAbsoluteDate());
-        Assertions.assertEquals( -2.0, difference.getOffset().getReal(), 1.0e-15);
-        Assertions.assertEquals(-19.0, difference.getRate().getReal(), 1.0e-15);
+        Assertions.assertEquals( -2.0, difference.getBias().getReal(),         1.0e-15);
+        Assertions.assertEquals(-19.0, difference.getRate().getReal(),         1.0e-15);
         Assertions.assertEquals( -9.0, difference.getAcceleration().getReal(), 1.0e-15);
     }
 

@@ -63,7 +63,7 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
                                               final double value, final double sigma, final double baseWeight,
                                               final boolean twoWay, final SignalTravelTimeModel signalTravelTimeModel,
                                               final ObservableSatellite satellite) {
-        super(date, twoWay, new double[] {value}, new MeasurementQuality(sigma, baseWeight),
+        super(date, twoWay, new double[] { value }, new MeasurementQuality(sigma, baseWeight),
                 signalTravelTimeModel, Collections.singletonList(satellite));
         addParametersDrivers(observer.getParametersDrivers());
         this.observer = observer;
@@ -214,7 +214,7 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
      */
     protected FieldAbsoluteDate<Gradient> getCorrectedReceptionDateField(final int nbParams,
                                                                        final Map<String, Integer> paramIndices) {
-        final Gradient offset = getObserver().getClockOffsetDriver().getValue(nbParams, paramIndices, getDate());  // FIXME missing drift and quadratic term
+        final Gradient offset = getObserver().getClockBiasDriver().getValue(nbParams, paramIndices, getDate());  // FIXME missing drift and quadratic term
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams), getDate());
         return fieldDate.shiftedBy(offset.negate());
     }

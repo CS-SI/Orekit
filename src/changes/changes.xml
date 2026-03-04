@@ -20,8 +20,14 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="vcucchie" type="add" issue="1926">
+            Add .puml diagram specific to SpacecraftState.
+        </action>
         <action dev="serrof" type="update" issue="1919">
             Use generic observer in AngularRaDec.
+        </action>
+        <action dev="jtabeaud" type="add" issue="1918">
+            Add LOF.transformToInertial and LOF.rotationToInertial.
         </action>
         <action dev="serrof" type="add" issue="1916">
             Introduce data container for measurement data.

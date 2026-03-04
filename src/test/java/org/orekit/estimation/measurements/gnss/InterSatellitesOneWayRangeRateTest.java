@@ -208,7 +208,7 @@ public class InterSatellitesOneWayRangeRateTest {
                     Assertions.assertEquals(2, participants.length);
                     final PVCoordinates delta = new PVCoordinates(participants[0], participants[1]);
                     final double radialVelocity = Vector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize());
-                    final AbsoluteDate t0 = measurement.getSatellites().get(0).getClockOffsetDriver().getReferenceDate();
+                    final AbsoluteDate t0 = measurement.getSatellites().get(0).getClockBiasDriver().getReferenceDate();
                     final double dtLocal    = measurement.getDate().durationFrom(t0);
                     final double localRate  = 2 * localClockAcceleration * dtLocal + localClockRate;
                     final double dtRemote   = participants[0].getDate().durationFrom(t0);
@@ -480,10 +480,10 @@ public class InterSatellitesOneWayRangeRateTest {
             new InterSatellitesOneWayRangeRateMeasurementCreator(ephemeris,
                                                                  localClockOffset, localClockRate, localClockAcceleration,
                                                                  remoteClockOffset, remoteClockRate, remoteClockAcceleration);
-        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
         creator.getLocalSatellite().getClockDriftDriver().setSelected(true);
         creator.getLocalSatellite().getClockAccelerationDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockBiasDriver().setSelected(true);
         creator.getRemoteSatellite().getClockDriftDriver().setSelected(true);
         creator.getRemoteSatellite().getClockAccelerationDriver().setSelected(true);
 
@@ -518,10 +518,10 @@ public class InterSatellitesOneWayRangeRateTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockOffsetDriver(),
+                        measurement.getSatellites().get(0).getClockBiasDriver(),
                         measurement.getSatellites().get(0).getClockDriftDriver(),
                         measurement.getSatellites().get(0).getClockAccelerationDriver(),
-                        measurement.getSatellites().get(1).getClockOffsetDriver(),
+                        measurement.getSatellites().get(1).getClockBiasDriver(),
                         measurement.getSatellites().get(1).getClockDriftDriver(),
                         measurement.getSatellites().get(1).getClockAccelerationDriver()
                     };
