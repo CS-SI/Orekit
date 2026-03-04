@@ -44,7 +44,6 @@ import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.relative.clohessywiltshire.ClohessyWiltshireProvider;
 import org.orekit.propagation.relative.clohessywiltshire.FieldClohessyWiltshireProvider;
 import org.orekit.propagation.relative.maneuver.*;
-import org.orekit.propagation.relative.maneuver.rpoOLD.TeardropCircularWaypointCalculator;
 import org.orekit.propagation.relative.yamanakaankersen.FieldYamanakaAnkersenProvider;
 import org.orekit.propagation.relative.yamanakaankersen.YamanakaAnkersenProvider;
 import org.orekit.time.AbsoluteDate;
