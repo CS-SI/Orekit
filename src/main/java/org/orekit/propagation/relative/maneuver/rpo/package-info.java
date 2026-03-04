@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /**
  * Package rpo provides classes to compute typical maneuvers of relative proximity operations.
  * <p>
@@ -23,34 +24,22 @@
  * In this package:
  * </p>
  * <ul>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpoOLD.RPO RPO}
+ *  <li>{@link org.orekit.propagation.relative.maneuver.rpo.RPO RPO}
  *  Interface for rpo maneuvers shared by the models. Define the methods to compute the waypoints for Linear trajectory,
- *  Forced Circular trajectory, Natural elliptic circumnavigation and natural circular
- *  circumnavigation for circular orbits.
+ *  Forced Circular trajectory, around any elliptic orbits, and Natural Circumnavigation, and teardrop maneuvers around
+ *  circular orbits.
  *  </li>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpoOLD.RPOModel RPOModel}
+ *  <li>{@link org.orekit.propagation.relative.maneuver.rpo.RPOModel RPOModel}
  *  Enum that implements RPO interface. Define the vectors of the local orbital frame relative to the desired model.
- *  </li>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpoOLD.MultiRelativeTransfer MultiRelativeTransfer}
- *  Interface for MultiRelativeTransfers.
- *  </li>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpoOLD.AbstractMultiRelativeTransfers AbstractMultiRelativeTransfers}
- *  Abstraction of MultiRelativeTransfers.
- *  </li>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpoOLD.MultiRelativeTransfersCW MultiRelativeTransfersCW}
- *  Compute the relative transfers to realize the trajectory defined by the waypoints using Clohessy-Wiltshire model.
- *  </li>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpoOLD.MultiRelativeTransfersYA MultiRelativeTransfersYA}
- *  Compute the relative transfers to realize the trajectory defined by the waypoints using Yamanaka-Ankersen model.
- *  </li>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpoOLD.EllipticNCO EllipticNCO}
+ *  Provides methods to computes maneuvers to perform the trajectories defined by the waypoints of RPO.
+ *  <li>{@link org.orekit.propagation.relative.maneuver.rpo.CoellipticOrbit CoellipticOrbit}
  *  This class computes and stores a co-elliptic Keplerian orbit to realize a natural circumnavigation around a target in
  *  any eccentric orbits.
  *  </li>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpoOLD.TeardropCircularWaypointCalculator TeardropCircularWaypointCalculator}
+ *  <li>{@link org.orekit.propagation.relative.maneuver.rpo.TeardropCircularWaypointCalculator TeardropCircularWaypointCalculator}
  *  Computes the waypoints to realize a teardrop maneuver when the target is in a circular orbit.
  *  </li>
  * </ul>
  * <p>
  */
-package org.orekit.propagation.relative.maneuver.rpoOLD;
+package org.orekit.propagation.relative.maneuver.rpo;
