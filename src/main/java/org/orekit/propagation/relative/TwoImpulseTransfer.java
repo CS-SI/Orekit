@@ -41,7 +41,7 @@ public class TwoImpulseTransfer {
      * Useful to avoid null objects while computing Lambert sweeps that produce impossible transfers
      * (arrival date &lt; departure date).*/
     @DefaultDataContext
-    public static final TwoImpulseTransfer NaN = new TwoImpulseTransfer(
+    public static final TwoImpulseTransfer NAN = new TwoImpulseTransfer(
             new TimeStampedPVCoordinates(AbsoluteDate.FUTURE_INFINITY, Vector3D.ZERO, Vector3D.ZERO),
             new TimeStampedPVCoordinates(AbsoluteDate.FUTURE_INFINITY, Vector3D.ZERO, Vector3D.ZERO),
             Vector3D.NaN,
