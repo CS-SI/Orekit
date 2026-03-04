@@ -281,6 +281,21 @@ public interface RPO {
     }
 
     /**
+     * Computes teardrop waypoints.
+     *
+     * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
+     * <p>All maneuvers are performed at the pointy end of the teardrop.</p>
+     *
+     * @param injectionDate      date of injection in the teardrop.
+     * @param targetOrbit        orbit of the target.
+     * @param turnAroundDistance Turn-around distance. This is the "round" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
+     * @param maneuverDistance   Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
+     * @param numberOfTeardrops  Number of teardrop orbits to perform. Must be ≥ 1.
+     * @return List of waypoints in time. Date, position, and velocity are non-zero.
+     */
+    List<TimeStampedPVCoordinates> computeTeardropWaypoints(AbsoluteDate injectionDate, Orbit targetOrbit, double turnAroundDistance, double maneuverDistance, int numberOfTeardrops);
+
+    /**
      * Computes the waypoints along the linear path.
      *
      * @param initialPVT     initial TimeStampedPVCoordinates of the chaser.
@@ -411,21 +426,6 @@ public interface RPO {
         }
         return new TimeStampedFieldPVCoordinates<>(startDate, new FieldPVCoordinates<>(injectionPoint.getPosition(), velocityAfterMan));
     }
-
-    /**
-     * Computes teardrop waypoints.
-     *
-     * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
-     * <p>All maneuvers are performed at the pointy end of the teardrop.</p>
-     *
-     * @param injectionDate      date of injection in the teardrop.
-     * @param targetOrbit        orbit of the target.
-     * @param turnAroundDistance Turn-around distance. This is the "round" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
-     * @param maneuverDistance   Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
-     * @param numberOfTeardrops  Number of teardrop orbits to perform. Must be ≥ 1.
-     * @return List of waypoints in time. Date, position, and velocity are non-zero.
-     */
-    List<TimeStampedPVCoordinates> computeTeardropWaypoints(AbsoluteDate injectionDate, Orbit targetOrbit, double turnAroundDistance, double maneuverDistance, int numberOfTeardrops);
 
     /**
      * Computes teardrop waypoints.
