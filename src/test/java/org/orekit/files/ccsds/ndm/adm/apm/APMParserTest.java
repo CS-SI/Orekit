@@ -23,6 +23,10 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -36,6 +40,8 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
@@ -44,12 +50,16 @@ import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame.BaseEquipment;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -1371,4 +1381,114 @@ public class APMParserTest {
         }
     }
 
+    /** Unit tests for parsing an APM with a custom frame mapper. */
+    @Test
+    public void testFrameMapper() {
+        // setup
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate expectedEpoch = new AbsoluteDate("2023-01-01T00:00:00.0000", tai);
+        Frame parent = FramesFactory.getEME2000();
+        Frame myJ2000 = new Frame(parent, Transform.IDENTITY, "MyJ2000");
+        Frame scBodyFrame = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 4, Math.PI / 2, Math.PI /3)), "SC_BODY_1");
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("SC_BODY_1".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                    return scBodyFrame;
+                } else if ("EME2000".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                    return myJ2000;
+                } else {
+                    throw new IllegalArgumentException(orientation + " " + epoch);
+                }
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate epoch) {
+                if ("ZZ".equals(center.getName()) &&
+                        "SC_BODY_1".equals(orientation.getName()) &&
+                        expectedEpoch.equals(epoch)) {
+                    return scBodyFrame;
+                } else if ("ZZ".equals(center.getName()) && "EME2000".equals(orientation.getName()) &&
+                            expectedEpoch.equals(epoch)) {
+                    return myJ2000;
+                } else {
+                throw new IllegalArgumentException(
+                        center + " " + orientation + " " + epoch);
+                }
+            }
+
+        };
+        final String name = "/ccsds/adm/apm/APM-frame-mapper.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+
+        // action
+        final ApmParser parser = new ParserBuilder().withFrameMapper(mapper).buildApmParser();
+        final Apm apm = parser.parseMessage(source);
+        final BodyFacade center = apm.getMetadata().getCenter();
+
+        // verify
+        // Check data, metadata does not include frame
+        final ApmData data = apm.getData();
+        // check each block (they all use FrameFacades, either directly or in the endpoints)
+        // quaternion block
+        final AttitudeEndpoints qEndpoints = data.getQuaternionBlock().getEndpoints();
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(center, qEndpoints.getFrameA(), expectedEpoch),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(center, qEndpoints.getFrameB(), expectedEpoch),
+                Matchers.sameInstance(scBodyFrame));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(center, qEndpoints.getExternalFrame(), expectedEpoch),
+                Matchers.sameInstance(myJ2000));
+
+        // Euler block
+        final AttitudeEndpoints eEndpoints = data.getEulerBlock().getEndpoints();
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(eEndpoints.getFrameA(), expectedEpoch),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(eEndpoints.getFrameB(), expectedEpoch),
+                Matchers.sameInstance(scBodyFrame));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(eEndpoints.getExternalFrame(), expectedEpoch),
+                Matchers.sameInstance(myJ2000));
+
+        // spin stabilized block
+        final AttitudeEndpoints sEndpoints = data.getSpinStabilizedBlock().getEndpoints();
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(sEndpoints.getFrameA(), expectedEpoch),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(sEndpoints.getFrameB(), expectedEpoch),
+                Matchers.sameInstance(scBodyFrame));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(sEndpoints.getExternalFrame(), expectedEpoch),
+                Matchers.sameInstance(myJ2000));
+
+        // angular velocity block
+        final AttitudeEndpoints aEndpoints = data.getAngularVelocityBlock().getEndpoints();
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(aEndpoints.getFrameA(), expectedEpoch),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(aEndpoints.getFrameB(), expectedEpoch),
+                Matchers.sameInstance(scBodyFrame));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(aEndpoints.getExternalFrame(), expectedEpoch),
+                Matchers.sameInstance(myJ2000));
+
+        // inertia block
+        final FrameFacade inertiaFrame = data.getInertiaBlock().getFrame();
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(inertiaFrame, expectedEpoch), Matchers.sameInstance(scBodyFrame));
+
+        // maneuver block
+        final FrameFacade maneuverFrame = data.getManeuver(0).getFrame();
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(maneuverFrame, expectedEpoch), Matchers.sameInstance(scBodyFrame));
+    }
 }

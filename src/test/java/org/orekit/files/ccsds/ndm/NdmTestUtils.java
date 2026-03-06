@@ -33,6 +33,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.definitions.PocMethodFacade;
@@ -166,6 +167,9 @@ public class NdmTestUtils {
         } else if (original instanceof Rotation) {
             checkRotation((Rotation) original, (Rotation) rebuilt);
             return true;
+        } else if (original instanceof CcsdsFrameMapper) {
+            Assertions.assertEquals(original, rebuilt);
+            return true;
         } else {
             return false;
         }
@@ -186,7 +190,9 @@ public class NdmTestUtils {
                     m.getParameterCount() == 0).
         forEach(getter -> {
             try {
-                Assertions.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)));
+                Assertions.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)),
+                        "failed to compare " + getter.getReturnType() + " from "
+                                + getter.getName());
             } catch (InvocationTargetException e) {
                 if (!((getter.getName().equals("getFrame") ||
                        getter.getName().equals("getReferenceFrame") ||

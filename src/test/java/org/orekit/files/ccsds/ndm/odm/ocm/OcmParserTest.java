@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -26,9 +28,12 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.DutyCycleType;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodType;
 import org.orekit.files.ccsds.definitions.OnOff;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
@@ -43,6 +48,9 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.ccsds.utils.lexical.KvnLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.XmlLexicalAnalyzer;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
@@ -1392,5 +1400,93 @@ public class OcmParserTest {
         Assertions.assertEquals(3400.0, ephemeris.getStop().durationFrom(epoch), 10e-10);
 
     }
+
+
+    /** Unit tests for parsing an OEM with a custom frame mapper. */
+    @Test
+    public void testFrameMapper() {
+        // setup
+        Frame parent = FramesFactory.getEME2000();
+        Frame zzrf = new Frame(parent, Transform.IDENTITY, "ZZRF");
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate expectedEpoch = new AbsoluteDate("2021-01-02", tai);
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("ZZRF".equals(orientation.getName()) &&
+                        expectedEpoch.equals(epoch)) {
+                    return zzrf;
+                }
+                throw new IllegalArgumentException(orientation + " " + epoch);
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate epoch) {
+                if ("ZZ".equals(center.getName()) &&
+                        "ZZRF".equals(orientation.getName()) &&
+                        expectedEpoch.equals(epoch)) {
+                    return zzrf;
+                }
+                throw new IllegalArgumentException(
+                        center + " " + orientation + " " + epoch);
+            }
+
+        };
+        OcmParser parser = new ParserBuilder()
+                .withFrameMapper(mapper)
+                // mu has to be set, but not used in this test. TODO body mapper to load mu?
+                .withMu(12435)
+                .buildOcmParser();
+        String name = "/ccsds/odm/ocm/OCM-unknown-frame-center.txt";
+        DataSource source =
+                new DataSource(name, () -> getClass().getResourceAsStream(name));
+
+        // action
+        Ocm ocm = parser.parse(source);
+
+        // verify
+        MatcherAssert.assertThat(ocm.getMetadata().getFrameMapper(),
+                Matchers.sameInstance(mapper));
+        // check each section that uses a reference frame
+        final OcmData data = ocm.getData();
+        List<TrajectoryStateHistory> trajectoryBlocks = data.getTrajectoryBlocks();
+        for (TrajectoryStateHistory trajectoryBlock : trajectoryBlocks) {
+            MatcherAssert.assertThat(trajectoryBlock.getFrame(),
+                    Matchers.sameInstance(zzrf));
+            // zzrf is not "pseudo-inertial", so use closest ancestor
+            MatcherAssert.assertThat(trajectoryBlock.getInertialFrame(),
+                    Matchers.sameInstance(parent));
+        }
+        MatcherAssert.assertThat(trajectoryBlocks.size(), Matchers.is(1));
+        final List<OrbitCovarianceHistory> covarianceBlocks = data.getCovarianceBlocks();
+        for (OrbitCovarianceHistory covarianceBlock : covarianceBlocks) {
+            OrbitCovarianceHistoryMetadata metadata = covarianceBlock.getMetadata();
+            FrameFacade frame = metadata.getCovReferenceFrame();
+            final AbsoluteDate epoch = metadata.getCovFrameEpoch();
+            // Ocm doesn't provide a helper method to build the frame
+            MatcherAssert.assertThat(mapper.buildCcsdsFrame(frame, epoch),
+                    Matchers.sameInstance(zzrf));
+        }
+        MatcherAssert.assertThat(covarianceBlocks.size(), Matchers.is(1));
+        final List<OrbitManeuverHistory> maneuverBlocks = data.getManeuverBlocks();
+        for (OrbitManeuverHistory maneuverBlock : maneuverBlocks) {
+            final OrbitManeuverHistoryMetadata metadata = maneuverBlock.getMetadata();
+            final FrameFacade frame = metadata.getManReferenceFrame();
+            final AbsoluteDate epoch = metadata.getManFrameEpoch();
+            // Ocm doesn't provide a helper method to build the frame
+            MatcherAssert.assertThat(mapper.buildCcsdsFrame(frame, epoch),
+                    Matchers.sameInstance(zzrf));
+        }
+        MatcherAssert.assertThat(maneuverBlocks.size(), Matchers.is(1));
+        final OrbitPhysicalProperties physicBlock = data.getPhysicBlock();
+        final FrameFacade oebParentFrame = physicBlock.getOebParentFrame();
+        final AbsoluteDate oebEpoch = physicBlock.getOebParentFrameEpoch();
+        // Ocm doesn't provide a helper method to build the frame
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(oebParentFrame, oebEpoch),
+                Matchers.sameInstance(zzrf));
+    }
+
 
 }
