@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.hipparchus.linear.RealMatrix;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -101,16 +102,17 @@ class MeasurementQualityTest {
         final double[] weights = new double[] {1, 1};
         // WHEN
         final MeasurementQuality measurementQuality = new MeasurementQuality(sigmas, weights);
-        final double[][] covariance = measurementQuality.getCovarianceMatrix();
+        final RealMatrix covariance = measurementQuality.getCovarianceMatrix();
         // THEN
+        final double[][] coefficients = covariance.getData();
         assertNotEquals(weights, measurementQuality.getWeights());  // deep copy
         assertArrayEquals(sigmas, measurementQuality.getStandardDeviations());
-        assertEquals(2, covariance.length);
-        assertEquals(covariance.length, covariance[0].length);
-        assertEquals(0., covariance[0][1]);
-        assertEquals(covariance[1][0], covariance[0][1]);
+        assertEquals(2, coefficients.length);
+        assertEquals(coefficients.length, coefficients[0].length);
+        assertEquals(0., coefficients[0][1]);
+        assertEquals(coefficients[1][0], coefficients[0][1]);
         for (int i = 0; i < sigmas.length; i++) {
-            assertEquals(sigmas[i] * sigmas[i], covariance[i][i]);
+            assertEquals(sigmas[i] * sigmas[i], coefficients[i][i]);
         }
     }
 
@@ -120,7 +122,7 @@ class MeasurementQualityTest {
         final double[][] expectedCovariance = new double[][] {{3, 1}, {1, 2}};
         // WHEN
         final MeasurementQuality measurementQuality = new MeasurementQuality(expectedCovariance, 1);
-        final double[][] covariance = measurementQuality.getCovarianceMatrix();
+        final double[][] covariance = measurementQuality.getCovarianceMatrix().getData();
         // THEN
         for (int i = 0; i < expectedCovariance.length; i++) {
             assertArrayEquals(expectedCovariance[i], covariance[i]);

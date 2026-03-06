@@ -21,6 +21,7 @@ import java.util.Map;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.signal.SignalTravelTimeModel;
@@ -44,22 +45,22 @@ public class AngularAzElBuilder extends AbstractSignalBasedBuilder<AngularAzEl> 
      */
     public AngularAzElBuilder(final CorrelatedRandomVectorGenerator noiseSource, final GroundStation station,
                               final double[] sigma, final double[] baseWeight, final ObservableSatellite satellite) {
-        this(noiseSource, station, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(noiseSource, station, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
     }
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param station ground station from which measurement is performed
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
+     *                           of the covariance matrix are only used by Kalman filters, not least squares)
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      * @since 14.0
      */
     public AngularAzElBuilder(final CorrelatedRandomVectorGenerator noiseSource, final GroundStation station,
-                              final double[] sigma, final double[] baseWeight,
+                              final MeasurementQuality measurementQuality,
                               final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(noiseSource, measurementQuality, signalTravelTimeModel, satellite);
         this.station = station;
     }
 
@@ -75,8 +76,7 @@ public class AngularAzElBuilder extends AbstractSignalBasedBuilder<AngularAzEl> 
     @Override
     protected AngularAzEl buildObserved(final AbsoluteDate date,
                                         final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new AngularAzEl(station, date, new double[2], getTheoreticalStandardDeviation(),
-                               getBaseWeight(), getSignalTravelTimeModel(), getSatellites()[0]);
+        return new AngularAzEl(station, date, new double[2], getMeasurementQuality(), getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

@@ -45,7 +45,7 @@ public abstract class PseudoMeasurement<T extends PseudoMeasurement<T>> extends 
      * @return the covariance matrix
      */
     public double[][] getCovarianceMatrix() {
-        return getMeasurementQuality().getCovarianceMatrix();
+        return getMeasurementQuality().getCovarianceMatrix().getData();
     }
 
     /** Get the correlation coefficients matrix.
@@ -56,10 +56,10 @@ public abstract class PseudoMeasurement<T extends PseudoMeasurement<T>> extends 
      * <li>P is the covariance matrix
      * <li>σi is the i-th standard deviation (σi² = Pii)
      * </ul>
-     * @return the correlation coefficient matrix (3x3)
+     * @return the correlation coefficient matrix
      */
     public double[][] getCorrelationCoefficientsMatrix() {
-        return getMeasurementQuality().getCorrelationCoefficientsMatrix();
+        return getMeasurementQuality().getCorrelationMatrix().getData();
     }
 
 }

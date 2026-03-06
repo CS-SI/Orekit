@@ -57,16 +57,16 @@ public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param angular observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
+     *                           of the covariance matrix are only used by Kalman filters, not least squares)
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
-                       final double[] angular, final double[] sigma, final double[] baseWeight,
+                       final double[] angular, final MeasurementQuality measurementQuality,
                        final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(date, angular, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(date, angular, measurementQuality, signalTravelTimeModel, satellite);
         this.station = station;
         station.getParametersDrivers().forEach(this::addParameterDriver);
     }
@@ -83,7 +83,7 @@ public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
                        final ObservableSatellite satellite) {
-        this(station, date, angular, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(station, date, angular, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
     }
 
     /**

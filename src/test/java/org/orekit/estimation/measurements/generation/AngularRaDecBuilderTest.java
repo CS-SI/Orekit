@@ -23,11 +23,21 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.measurements.AngularRaDec;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.ReferenceEllipsoid;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalTravelTimeModel;
+import org.orekit.time.AbsoluteDate;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularRaDec> {
 
@@ -63,4 +73,22 @@ public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTes
         doTest(0x24f750901da8cd2cl, -0.2, -0.6, 100, 2.7 * SIGMA);
     }
 
+    @Test
+    void testBuildCovariance() {
+        // GIVEN
+        final GroundStation station = new GroundStation(new TopocentricFrame(ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true)),
+                new GeodeticPoint(0., 0., 0), ""));
+        final double[][] covarianceCoefficients = MatrixUtils.createRealIdentityMatrix(2).getData();
+        covarianceCoefficients[0][1] = 0.1;
+        covarianceCoefficients[1][0] = covarianceCoefficients[0][1];
+        final AngularRaDecBuilder builder = new AngularRaDecBuilder(null, station, FramesFactory.getEME2000(),
+                new MeasurementQuality(covarianceCoefficients, 1.), new SignalTravelTimeModel(), new ObservableSatellite(0));
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(date));
+        builder.init(date, date);
+        // WHEN
+        final EstimatedMeasurementBase<AngularRaDec> angularRaDec = builder.build(date, new SpacecraftState[] {state});
+        // THEN
+        assertArrayEquals(covarianceCoefficients, angularRaDec.getObservedMeasurement().getMeasurementQuality().getCovarianceMatrix().getData());
+    }
 }

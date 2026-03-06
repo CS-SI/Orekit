@@ -66,7 +66,7 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
     public AngularRaDec(final Observer observer, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final ObservableSatellite satellite) {
-        this(observer, referenceFrame, date, angular, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(observer, referenceFrame, date, angular, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
     }
 
     /** Constructor.
@@ -74,16 +74,16 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
      * @param referenceFrame Reference frame in which the right ascension - declination angles are given
      * @param date date of the measurement
      * @param angular observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
+     *                           of the covariance matrix are only used by Kalman filters, not least squares)
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
     public AngularRaDec(final Observer observer, final Frame referenceFrame, final AbsoluteDate date,
-                        final double[] angular, final double[] sigma, final double[] baseWeight,
+                        final double[] angular, final MeasurementQuality measurementQuality,
                         final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(date, angular, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(date, angular, measurementQuality, signalTravelTimeModel, satellite);
         this.referenceFrame = referenceFrame;
         this.measurementModel = new RaDecModel(referenceFrame, getSignalTravelTimeModel().getWarmedUpModel());
         this.observer = observer;

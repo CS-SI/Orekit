@@ -104,7 +104,7 @@ class AngularMeasurementTest {
     static class TestMeasurement extends AngularMeasurement<AngularAzEl> {
 
         protected TestMeasurement(AbsoluteDate date, SignalTravelTimeModel signalTravelTimeModel) {
-            super(date, new double[2], new double[2], new double[2], signalTravelTimeModel, new ObservableSatellite(0));
+            super(date, new double[2], new MeasurementQuality(new double[2], 1.), signalTravelTimeModel, new ObservableSatellite(0));
         }
 
         @Override

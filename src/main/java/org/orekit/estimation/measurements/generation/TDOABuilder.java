@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.TDOA;
@@ -44,24 +45,24 @@ public class TDOABuilder extends AbstractBireceiverBuilder<TDOA> {
                        final Observer primeObserver, final Observer secondObserver,
                        final double sigma, final double baseWeight,
                        final ObservableSatellite satellite) {
-        this(noiseSource, primeObserver, secondObserver, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(noiseSource, primeObserver, secondObserver, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), satellite);
     }
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param primeObserver observer that gives the date of the measurement
      * @param secondObserver observer that gives the measurement value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      * @since 14.0
      */
     public TDOABuilder(final CorrelatedRandomVectorGenerator noiseSource,
                        final Observer primeObserver, final Observer secondObserver,
-                       final double sigma, final double baseWeight,
+                       final MeasurementQuality measurementQuality,
                        final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, primeObserver, secondObserver, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(noiseSource, primeObserver, secondObserver, measurementQuality, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
