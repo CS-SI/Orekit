@@ -20,8 +20,14 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.util.FastMath;
@@ -33,7 +39,10 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.AdMethodType;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CenterName;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame.BaseEquipment;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
@@ -41,8 +50,12 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.KvnLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.XmlLexicalAnalyzer;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
@@ -938,4 +951,123 @@ public class AcmParserTest {
 
     }
 
+    @Test
+    public void testFrameMapper() {
+        // setup
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate expectedEpoch = new AbsoluteDate("2016-03-15T00:00:00.0", tai);
+
+        Frame parent = FramesFactory.getEME2000();
+        Frame myJ2000 = new Frame(parent, Transform.IDENTITY, "MyJ2000");
+        Frame scBodyFrame = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 4, Math.PI / 2, Math.PI / 3)), "SC_BODY_1");
+        Frame scBodyFrame2 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 4, Math.PI / 2, Math.PI / 3)), "SC_BODY_1");
+        Frame gyro3 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 3, Math.PI / 4, Math.PI / 2)), "GYRO_3");
+        Frame acc0 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 2, Math.PI / 3, Math.PI / 4)), "ACC_0");
+        Frame ast1 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 2, Math.PI / 3, Math.PI / 4)), "AST_1");
+        Frame css7 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 4, Math.PI / 3, Math.PI / 2)), "CSS_7");
+        Frame esa9 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 3, Math.PI / 2, Math.PI / 4)), "ESA_9_0");
+
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            // Dummy override here, not calling this signature with the below test case
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("SC_BODY_1".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                    return scBodyFrame;
+                } else if ("EME2000".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                    return myJ2000;
+                } else {
+                    throw new IllegalArgumentException(orientation + " " + epoch);
+                }
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate epoch) {
+                if ("ZZ".equals(center.getName()) && expectedEpoch.equals(epoch)) {
+                    if ("SC_BODY_1".equals(orientation.getName())) {
+                        return scBodyFrame;
+                    } else if ("SC_BODY_2".equals(orientation.getName())) {
+                        return scBodyFrame2;
+                    } else if ("EME2000".equals(orientation.getName()) || "J2000".equals(orientation.getName())) {
+                        return myJ2000;
+                    } else if ("GYRO_3".equals(orientation.getName())) {
+                        return gyro3;
+                    } else if ("ACC_0".equals(orientation.getName())) {
+                        return acc0;
+                    } else if ("AST_1".equals(orientation.getName())) {
+                        return ast1;
+                    } else if ("CSS_7".equals(orientation.getName())) {
+                        return css7;
+                    } else if ("ESA_9".equals(orientation.getName())) {
+                        return esa9;
+                    } else {
+                        throw new IllegalArgumentException(center + " " + orientation + " " + epoch);
+                    }
+                } else {
+                    throw new IllegalArgumentException(
+                            center + " " + orientation + " " + epoch);
+                }
+            }
+
+        };
+        final String name = "/ccsds/adm/acm/ACM-frame-mapper.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+
+        // action
+        final AcmParser parser = new ParserBuilder().withFrameMapper(mapper).buildAcmParser();
+        final Acm acm = parser.parseMessage(source);
+
+        // verify
+        // blocks: attitude, physical properties, covariance, maneuvers, attitude determination
+        final AcmData data = acm.getData();
+        final BodyFacade center = acm.getMetadata().getCenter();
+        final List<AttitudeStateHistory> attitudes = data.getAttitudeBlocks();
+        final AttitudePhysicalProperties properties = data.getPhysicBlock();
+        final List<AttitudeCovarianceHistory> covariances = data.getCovarianceBlocks();
+        final List<AttitudeManeuver> maneuvers = data.getManeuverBlocks();
+        final AttitudeDetermination attitudeDetermination = data.getAttitudeDeterminationBlock();
+
+        // Attitude
+        final List<Frame> expectedAttitudeSecondaryFrames = new ArrayList<>(Arrays.asList(gyro3, acc0, ast1, css7, esa9));
+        for (int i = 0; i < attitudes.size(); i++) {
+            // FrameFacade.asFrame() subverts mapping
+            MatcherAssert.assertThat(attitudes.get(i).getReferenceFrame(), Matchers.sameInstance(parent));
+
+            // REF_FRAME_B mapping for each attitude state history
+            MatcherAssert.assertThat(
+                    mapper.buildCcsdsFrame(center, attitudes.get(i).getMetadata().getEndpoints().getFrameB(), expectedEpoch),
+                    Matchers.sameInstance(expectedAttitudeSecondaryFrames.get(i)));
+        }
+
+        // Physical properties
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, properties.getCenterOfPressureReferenceFrame(), expectedEpoch),
+                Matchers.sameInstance(scBodyFrame)); // center of pressure frame
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, properties.getInertiaReferenceFrame(), expectedEpoch),
+                            Matchers.sameInstance(scBodyFrame2)); // inertia reference frame
+
+        // Covariance
+        covariances.forEach(covariance -> MatcherAssert.assertThat(
+                            mapper.buildCcsdsFrame(center, covariance.getMetadata().getCovReferenceFrame(), expectedEpoch),
+                            Matchers.sameInstance(scBodyFrame)));
+
+        // Maneuvers
+        maneuvers.stream().filter(maneuver -> maneuver.getTargetMomFrame() != null).
+                    forEach(maneuver -> MatcherAssert.assertThat(
+                            mapper.buildCcsdsFrame(center, maneuver.getTargetMomFrame(), expectedEpoch),
+                            Matchers.sameInstance(myJ2000))); // target momentum frame
+
+        // Attitude Determination
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, attitudeDetermination.getEndpoints().getFrameA(), expectedEpoch),
+                            Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, attitudeDetermination.getEndpoints().getFrameB(), expectedEpoch),
+                            Matchers.sameInstance(scBodyFrame));
+    }
 }

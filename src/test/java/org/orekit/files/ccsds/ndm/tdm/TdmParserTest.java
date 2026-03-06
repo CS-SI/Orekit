@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,13 +27,14 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.*;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -1155,4 +1157,44 @@ public class TdmParserTest {
         Assertions.assertEquals(dataComment, file.getSegments().get(0).getData().getComments());
     }
 
+    /** Unit tests for parsing a TDM with a custom frame mapper. */
+    @Test
+    public void testFrameMapper() {
+        // setup
+        Frame tod = FramesFactory.getTOD(false);
+        Frame myTod = new Frame(tod, Transform.IDENTITY, "MyTOD");
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("TOD_EARTH".equals(orientation.getName()) && null == epoch) {
+                    return myTod;
+                }
+                throw new IllegalArgumentException("" + orientation + " " + epoch);
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate frameEpoch) {
+                if ("TOD_EARTH".equals(orientation.getName()) && frameEpoch == null) {
+                    return myTod;
+                }
+                throw new IllegalArgumentException(
+                        center + " " + orientation + " " + frameEpoch);
+            }
+        };
+        final String name = "/ccsds/tdm/kvn/TDM-Custom-Frame.txt";
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
+
+        // action
+        TdmParser parser = new ParserBuilder().withFrameMapper(mapper).buildTdmParser();
+        Tdm tdm = parser.parseMessage(source);
+
+        // verify
+        // Tdm doesn't covert the covariance reference frame to a Frame,
+        // so just check the mapper can map it.
+        // TODO to add a getFrame() method.
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(tdm.getSegments().get(0).getMetadata().getReferenceFrame(), null),
+                Matchers.sameInstance(myTod));
+    }
 }

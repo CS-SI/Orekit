@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
@@ -32,6 +34,7 @@ import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
+import org.orekit.frames.Frame;
 import org.orekit.utils.IERSConventions;
 
 
@@ -93,11 +96,39 @@ public class TdmParser extends AbstractConstituentParser<TdmHeader, Tdm, TdmPars
      * are no range observations in {@link RangeUnits#RU Range Units})
      * @param filters filters to apply to parse tokens
      * @since 12.0
+     * @deprecated in favor of {@link #TdmParser(IERSConventions, boolean, DataContext,
+     * ParsedUnitsBehavior, RangeUnitsConverter, Function[], CcsdsFrameMapper)}.
      */
+    @Deprecated
     public TdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final ParsedUnitsBehavior parsedUnitsBehavior, final RangeUnitsConverter converter,
                      final Function<ParseToken, List<ParseToken>>[] filters) {
-        super(Tdm.ROOT, Tdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
+        this(conventions, simpleEOP, dataContext, parsedUnitsBehavior, converter, filters,
+                new OrekitCcsdsFrameMapper());
+    }
+
+    /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildTdmParser()
+     * parserBuilder.buildTdmParser()}.
+     * </p>
+     * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param dataContext used to retrieve frames, time scales, etc.
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
+     * are no range observations in {@link RangeUnits#RU Range Units})
+     * @param filters filters to apply to parse tokens
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
+     */
+    public TdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                     final ParsedUnitsBehavior parsedUnitsBehavior, final RangeUnitsConverter converter,
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
+        super(Tdm.ROOT, Tdm.FORMAT_VERSION_KEY, conventions, simpleEOP,
+                dataContext, parsedUnitsBehavior, filters, frameMapper);
         this.converter = converter;
     }
 
@@ -157,7 +188,7 @@ public class TdmParser extends AbstractConstituentParser<TdmHeader, Tdm, TdmPars
         if (metadata != null) {
             return false;
         }
-        metadata  = new TdmMetadata();
+        metadata  = new TdmMetadata(getFrameMapper());
         context   = new ContextBinding(
             this::getConventions, this::isSimpleEOP,
             this::getDataContext, this::getParsedUnitsBehavior,

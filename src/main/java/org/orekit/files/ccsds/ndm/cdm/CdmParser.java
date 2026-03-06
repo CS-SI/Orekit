@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
@@ -34,6 +36,7 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
+import org.orekit.frames.Frame;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -125,11 +128,37 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
      * @since 12.0
+     * @deprecated in favor of {@link #CdmParser(IERSConventions, boolean, DataContext,
+     * ParsedUnitsBehavior, Function[], CcsdsFrameMapper)}.
      */
+    @Deprecated
     public CdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final ParsedUnitsBehavior parsedUnitsBehavior,
                      final Function<ParseToken, List<ParseToken>>[] filters) {
-        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
+        this(conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters,
+                new OrekitCcsdsFrameMapper());
+    }
+
+    /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildCdmParser()
+     * parserBuilder.buildCdmParser()}.
+     * </p>
+     * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param dataContext used to retrieve frames, time scales, etc.
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
+     */
+    public CdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                     final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
+        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP,
+                dataContext, parsedUnitsBehavior, filters, frameMapper);
         this.doRelativeMetadata = true;
         this.isDatafinished = false;
     }
@@ -200,7 +229,7 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
             relativeMetadata = new CdmRelativeMetadata();
             relativeMetadata.setTimeSystem(TimeSystem.UTC);
         }
-        metadata  = new CdmMetadata(getDataContext());
+        metadata  = new CdmMetadata(getDataContext(), getFrameMapper());
         metadata.setRelativeMetadata(relativeMetadata);
 
         // As no time system is defined in CDM because all dates are given in UTC,

@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
@@ -38,6 +40,7 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ErrorState;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -119,12 +122,39 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
      * @since 12.0
+     * @deprecated in favor of {@link #ApmParser(IERSConventions, boolean, DataContext,
+     * AbsoluteDate, ParsedUnitsBehavior, Function[], CcsdsFrameMapper)}.
      */
+    @Deprecated
     public ApmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior,
                      final Function<ParseToken, List<ParseToken>>[] filters) {
+        this(conventions, simpleEOP, dataContext, missionReferenceDate,
+                parsedUnitsBehavior, filters, new OrekitCcsdsFrameMapper());
+    }
+
+    /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildApmParser()
+     * parserBuilder.buildApmParser()}.
+     * </p>
+     * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param dataContext used to retrieve frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * (may be null if time system is absolute)
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
+     */
+    public ApmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                     final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
         super(Apm.ROOT, Apm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, parsedUnitsBehavior, filters);
+              missionReferenceDate, parsedUnitsBehavior, filters, frameMapper);
     }
 
     /** {@inheritDoc} */
@@ -182,7 +212,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
         if (metadata != null) {
             return false;
         }
-        metadata  = new AdmMetadata();
+        metadata  = new AdmMetadata(getFrameMapper());
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,

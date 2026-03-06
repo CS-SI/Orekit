@@ -17,7 +17,10 @@
 
 package org.orekit.files.ccsds.ndm.odm.oem;
 
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Metadata for Orbit Ephemeris Messages.
@@ -48,8 +51,23 @@ public class OemMetadata extends OdmCommonMetadata {
 
     /** Simple constructor.
      * @param defaultInterpolationDegree default interpolation degree
+     * @deprecated in favor of {@link #OemMetadata(int, CcsdsFrameMapper)}.
      */
+    @Deprecated
     public OemMetadata(final int defaultInterpolationDegree) {
+        this(defaultInterpolationDegree, new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param defaultInterpolationDegree default interpolation degree
+     * @param frameMapper                for creating a {@link Frame}.
+     * @since 14.0
+     */
+    public OemMetadata(final int defaultInterpolationDegree,
+                       final CcsdsFrameMapper frameMapper) {
+        super(frameMapper);
         this.interpolationDegree = defaultInterpolationDegree;
     }
 
@@ -178,7 +196,9 @@ public class OemMetadata extends OdmCommonMetadata {
         checkMandatoryEntriesExceptDates(version);
 
         // allocate new instance
-        final OemMetadata copy = new OemMetadata(getInterpolationDegree());
+        final OemMetadata copy = new OemMetadata(
+                getInterpolationDegree(),
+                getFrameMapper());
 
         // copy comments
         for (String comment : getComments()) {

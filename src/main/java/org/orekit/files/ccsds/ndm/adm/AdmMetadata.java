@@ -19,7 +19,10 @@ package org.orekit.files.ccsds.ndm.adm;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.section.Metadata;
+import org.orekit.frames.Frame;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
@@ -37,9 +40,21 @@ public class AdmMetadata extends Metadata {
     private BodyFacade center;
 
     /** Simple constructor.
+     * @deprecated in favor of {@link #AdmMetadata(CcsdsFrameMapper)}.
      */
+    @Deprecated
     public AdmMetadata() {
-        super(null);
+        this(new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
+     */
+    public AdmMetadata(final CcsdsFrameMapper frameMapper) {
+        super(null, frameMapper);
     }
 
     /** {@inheritDoc} */

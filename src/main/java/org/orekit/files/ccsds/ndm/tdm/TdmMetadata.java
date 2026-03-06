@@ -24,7 +24,9 @@ import java.util.TreeMap;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -218,9 +220,21 @@ public class TdmMetadata extends Metadata {
     private CorrectionApplied correctionsApplied;
 
     /** Create a new TDM meta-data.
+     * @deprecated in favor of {@link #TdmMetadata(CcsdsFrameMapper)}.
      */
+    @Deprecated
     public TdmMetadata() {
-        super(null);
+        this(new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Create a new TDM meta-data.
+     *
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
+     */
+    public TdmMetadata(final CcsdsFrameMapper frameMapper) {
+        super(null, frameMapper);
         participants          = new TreeMap<>();
         ephemerisNames        = new TreeMap<>();
         doppplerCountBias     = Double.NaN;
