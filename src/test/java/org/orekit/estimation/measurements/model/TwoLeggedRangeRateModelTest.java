@@ -25,6 +25,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.signal.FieldSignalReceptionCondition;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
@@ -55,11 +57,13 @@ class TwoLeggedRangeRateModelTest {
         final double rangeRate = rangeRateModel.value(frame, pvObserver, receptionDate, relay, emitter);
         // THEN
         final OneLeggedRangeRateModel oneLeggedRangeRateModel = new OneLeggedRangeRateModel(signalTravelTimeModel);
-        final double firstLeg = oneLeggedRangeRateModel.value(frame, pvObserver, receptionDate, relay);
-        final double delay = signalTravelTimeModel.getAdjustableEmitterComputer(relay).computeDelay(pvObserver.getPosition(),
-                receptionDate, frame);
-        final double secondLeg = oneLeggedRangeRateModel.value(frame, relay.shiftedBy(-delay).getPVCoordinates(),
-                receptionDate.shiftedBy(-delay), emitter);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, pvObserver.getPosition(), frame);
+        final double firstLeg = oneLeggedRangeRateModel.value(receptionCondition, pvObserver.getVelocity(), relay);
+        final double delay = signalTravelTimeModel.getAdjustableEmitterComputer(relay).computeDelay(receptionCondition);
+        final PVCoordinates shiftedRelayPV = relay.shiftedBy(-delay).getPVCoordinates();
+        final SignalReceptionCondition secondCondition = new SignalReceptionCondition(receptionDate.shiftedBy(-delay),
+                shiftedRelayPV.getPosition(), frame);
+        final double secondLeg = oneLeggedRangeRateModel.value(secondCondition, shiftedRelayPV.getVelocity(), emitter);
         assertEquals(firstLeg + secondLeg, rangeRate);
     }
 
@@ -79,15 +83,21 @@ class TwoLeggedRangeRateModelTest {
         final FieldAbsolutePVCoordinates<Gradient> relay = new FieldAbsolutePVCoordinates<>(frame, receptionDate, pvRelay);
         final FieldAbsolutePVCoordinates<Gradient> emitter = new FieldAbsolutePVCoordinates<>(frame, receptionDate,
                 new FieldPVCoordinates<>(field, pvObserver));
+        final FieldSignalReceptionCondition<Gradient> fieldCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                emitter.getPosition(), frame);
         // WHEN
-        final Gradient rangeRate = rangeRateModel.value(frame, emitter.getPVCoordinates(), receptionDate, relay, emitter);
+        final Gradient rangeRate = rangeRateModel.value(fieldCondition, emitter.getVelocity(), relay, emitter);
         // THEN
         final OneLeggedRangeRateModel oneLeggedRangeRateModel = new OneLeggedRangeRateModel(signalTravelTimeModel);
-        final Gradient firstLeg = oneLeggedRangeRateModel.value(frame, emitter.getPVCoordinates(), receptionDate, relay);
+        final Gradient firstLeg = oneLeggedRangeRateModel.value(fieldCondition, emitter.getVelocity(), relay);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                emitter.getPosition(), frame);
         final Gradient delay = signalTravelTimeModel.getFieldAdjustableEmitterComputer(field, relay)
-                .computeDelay(emitter.getPosition(), receptionDate, frame);
-        final Gradient secondLeg = oneLeggedRangeRateModel.value(frame, relay.shiftedBy(delay.negate()).getPVCoordinates(),
-                receptionDate.shiftedBy(delay.negate()), emitter);
+                .computeDelay(receptionCondition);
+        final FieldPVCoordinates<Gradient> shiftedRelayPV = relay.shiftedBy(delay.negate()).getPVCoordinates();
+        final FieldSignalReceptionCondition<Gradient> secondCondition = new FieldSignalReceptionCondition<>(receptionDate.shiftedBy(delay.negate()),
+                shiftedRelayPV.getPosition(), frame);
+        final Gradient secondLeg = oneLeggedRangeRateModel.value(secondCondition, shiftedRelayPV.getVelocity(), emitter);
         assertEquals(firstLeg.add(secondLeg), rangeRate);
         assertNotEquals(0., rangeRate.getGradient()[0]);
     }
@@ -159,9 +169,11 @@ class TwoLeggedRangeRateModelTest {
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final GradientField field = GradientField.getField(0);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(fieldDate,
+                new FieldVector3D<>(field, receiverPV.getPosition()), frame);
         // WHEN
-        final Gradient fieldRangeRate = rangeRateModel.value(frame, new FieldPVCoordinates<>(field, receiverPV),
-                fieldDate, new FieldAbsolutePVCoordinates<>(field, relay), new FieldAbsolutePVCoordinates<>(field, emitter));
+        final Gradient fieldRangeRate = rangeRateModel.value(receptionCondition, new FieldVector3D<>(field, receiverPV.getVelocity()),
+                new FieldAbsolutePVCoordinates<>(field, relay), new FieldAbsolutePVCoordinates<>(field, emitter));
         // THEN
         final double rangeRate = rangeRateModel.value(frame, receiverPV, date, relay, date, emitter, date);
         assertEquals(rangeRate, fieldRangeRate.getValue(), 1e-12);

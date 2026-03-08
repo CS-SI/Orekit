@@ -34,7 +34,9 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
@@ -168,7 +170,9 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         // Downlink delay / determine time of emission of signal by ObservableSatellite
         final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel()
                 .getAdjustableEmitterComputer(pvCoordinatesProvider);
-        final double tauD = signalTimeOfFlight.computeDelay(pva.getDate(), satelliteDownlink.getPosition(), downlinkDate, frame);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(downlinkDate,
+                satelliteDownlink.getPosition(), frame);
+        final double tauD = signalTimeOfFlight.computeDelay(receptionCondition, pva.getDate());
 
         // Transit state & Transit state (re)computed with gradients
         final double          delta             = downlinkDate.durationFrom(state.getDate());
@@ -232,7 +236,9 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         // Downlink delay
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, fieldPVCoordinatesProvider);
-        final Gradient tauD = fieldComputer.computeDelay(pva.getDate(), satelliteDownlink.getPosition(), downlinkDate, frame);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(downlinkDate,
+                satelliteDownlink.getPosition(), frame);
+        final Gradient tauD = fieldComputer.computeDelay(receptionCondition, pva.getDate());
 
         // Transit state & Transit state (re)computed with gradients
         final Gradient        delta        = downlinkDate.durationFrom(states[0].getDate());

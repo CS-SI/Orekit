@@ -41,8 +41,9 @@ class SignalTravelTimeAdjustableReceiverTest {
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, emissionDate, new PVCoordinates());
         final Vector3D emitterPosition = new Vector3D(1e2, 1e3, 1e4);
         final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = new SignalTravelTimeAdjustableReceiver(absolutePVCoordinates);
+        final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emitterPosition, frame);
         // WHEN
-        final double actual = signalTimeOfFlight.computeDelay(emitterPosition, emissionDate, frame);
+        final double actual = signalTimeOfFlight.computeDelay(emissionCondition);
         // THEN
         final double expected = emitterPosition.getNorm() / Constants.SPEED_OF_LIGHT;
         assertEquals(expected, actual);
@@ -58,8 +59,9 @@ class SignalTravelTimeAdjustableReceiverTest {
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, emissionDate,
                 new PVCoordinates(emitterPosition, Vector3D.MINUS_J.scalarMultiply(speed), Vector3D.PLUS_J));
         final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = new SignalTravelTimeAdjustableReceiver(absolutePVCoordinates);
+        final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emitterPosition, frame);
         // WHEN
-        final double actual = signalTimeOfFlight.computeDelay(emitterPosition, emissionDate, frame);
+        final double actual = signalTimeOfFlight.computeDelay(emissionCondition);
         // THEN
         final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
         final double expected = solver.solve(1000, x -> {
@@ -79,11 +81,12 @@ class SignalTravelTimeAdjustableReceiverTest {
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, emissionDate, pvCoordinates);
         final Vector3D emitterPosition = new Vector3D(1e2, 1e3, 1e4);
         final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = new SignalTravelTimeAdjustableReceiver(absolutePVCoordinates);
+        final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emitterPosition, frame);
         // WHEN
-        final double actual = signalTimeOfFlight.computeDelay(emitterPosition, emissionDate, frame);
+        final double actual = signalTimeOfFlight.computeDelay(emissionCondition);
         // THEN
         final AbsoluteDate receptionDate = emissionDate.shiftedBy(actual);
-        final double expected = signalTimeOfFlight.computeDelay(emitterPosition, emissionDate, receptionDate, frame);
+        final double expected = signalTimeOfFlight.computeDelay(emissionCondition, receptionDate);
         assertEquals(expected, actual);
     }
 
@@ -98,8 +101,9 @@ class SignalTravelTimeAdjustableReceiverTest {
         final Vector3D emitterPosition = Vector3D.ZERO;
         final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = new SignalTravelTimeAdjustableReceiver(absolutePVCoordinates,
                 ((iteration, previous, current) -> iteration >= 1));
+        final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emitterPosition, frame);
         // WHEN
-        final double actual = signalTimeOfFlight.computeDelay(emitterPosition, emissionDate, frame);
+        final double actual = signalTimeOfFlight.computeDelay(emissionCondition);
         // THEN
         final double guess = pvCoordinates.getPosition().getNorm2() / Constants.SPEED_OF_LIGHT;
         final double expected = iterateOnce(emitterPosition, emissionDate, frame, absolutePVCoordinates, guess);

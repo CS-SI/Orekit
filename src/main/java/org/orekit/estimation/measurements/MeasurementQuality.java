@@ -44,12 +44,11 @@ public class MeasurementQuality {
     private final int measurementDimension;
 
     /**
-     * Constructor with sigmas as input for unidimensional measurement.
+     * Constructor with sigmas as input for unidimensional measurement and unit weight.
      * @param standardDeviation measurement standard deviation
-     * @param weight measurement weight
      */
-    public MeasurementQuality(final double standardDeviation, final double weight) {
-        this(new double[] {standardDeviation}, weight);
+    public MeasurementQuality(final double standardDeviation) {
+        this(standardDeviation, 1.);
     }
 
     /**
@@ -76,6 +75,18 @@ public class MeasurementQuality {
      */
     public MeasurementQuality(final double[][] covarianceMatrix, final double weight) {
         this(covarianceMatrix, buildWeights(weight, covarianceMatrix.length));
+    }
+
+    /**
+     * Constructor for unidimensional measurement.
+     * @param standardDeviation measurement standard deviation
+     * @param weight measurement weight
+     */
+    public MeasurementQuality(final double standardDeviation, final double weight) {
+        this.measurementDimension = 1;
+        this.weights = new double[] {weight};
+        this.sigmas = new double[] {standardDeviation};
+        this.covarianceMatrix = new double[][] {new double[] {standardDeviation * standardDeviation}};
     }
 
     /**
@@ -106,7 +117,8 @@ public class MeasurementQuality {
      */
     public MeasurementQuality(final double[] standardDeviations, final double[] weights) {
         if (standardDeviations.length != weights.length) {
-            throw new OrekitException(OrekitMessages.WRONG_MEASUREMENT_COVARIANCE_DIMENSION, standardDeviations.length, weights.length);
+            throw new OrekitException(OrekitMessages.WRONG_MEASUREMENT_COVARIANCE_DIMENSION, standardDeviations.length,
+                    weights.length);
         }
         this.measurementDimension = standardDeviations.length;
         this.weights = weights.clone();

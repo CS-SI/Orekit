@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.signal.DifferencesOfSignalArrival;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -154,7 +155,9 @@ abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends
         final DifferencesOfSignalArrival differencesOfSignalArrival = new DifferencesOfSignalArrival(getSignalTravelTimeModel());
         final FieldVector3D<Gradient> primePosition = getPrimeObserver().getFieldPVCoordinatesProvider(nbParams, paramIndices)
                 .getPosition(firstReceptionDate, frame);
-        return differencesOfSignalArrival.computeDelays(frame, primePosition, firstReceptionDate,
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(firstReceptionDate, primePosition,
+                frame);
+        return differencesOfSignalArrival.computeDelays(receptionCondition,
                 getSecondObserver().getFieldPVCoordinatesProvider(nbParams, paramIndices), emitter);
     }
 

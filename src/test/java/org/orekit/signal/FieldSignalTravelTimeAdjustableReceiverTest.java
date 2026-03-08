@@ -70,11 +70,14 @@ class FieldSignalTravelTimeAdjustableReceiverTest {
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         final Vector3D receiver = new Vector3D(-1e3, 2e2, 1e4);
         final FieldVector3D<Binary64> fieldReceiver = new FieldVector3D<>(field, receiver);
+        final FieldSignalEmissionCondition<Binary64> fieldEmissionCondition = new FieldSignalEmissionCondition<>(fieldDate,
+                fieldReceiver, orbit.getFrame());
         // WHEN
-        final Binary64 actual = fieldComputer.computeDelay(fieldReceiver, fieldDate, orbit.getFrame());
+        final Binary64 actual = fieldComputer.computeDelay(fieldEmissionCondition);
         // THEN
-        final double expected = new SignalTravelTimeAdjustableReceiver(positionProvider).computeDelay(receiver,
-                fieldDate.toAbsoluteDate(), orbit.getFrame());
+        final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(fieldDate.toAbsoluteDate(),
+                receiver, orbit.getFrame());
+        final double expected = new SignalTravelTimeAdjustableReceiver(positionProvider).computeDelay(emissionCondition);
         assertEquals(expected, actual.getReal());
     }
 
@@ -92,8 +95,10 @@ class FieldSignalTravelTimeAdjustableReceiverTest {
                 FieldVector3D.getPlusK(field).scalarMultiply(speed), FieldVector3D.getPlusJ(field));
         final FieldAbsolutePVCoordinates<Gradient> absolutePVCoordinates = new FieldAbsolutePVCoordinates<>(frame, emissionDate, receiverPV);
         final FieldSignalTravelTimeAdjustableReceiver<Gradient> signalTimeOfFlight = new FieldSignalTravelTimeAdjustableReceiver<>(absolutePVCoordinates);
+        final FieldSignalEmissionCondition<Gradient> fieldEmissionCondition = new FieldSignalEmissionCondition<>(emissionDate,
+                emitterPosition, frame);
         // WHEN
-        final Gradient actual = signalTimeOfFlight.computeDelay(emitterPosition, emissionDate, frame);
+        final Gradient actual = signalTimeOfFlight.computeDelay(fieldEmissionCondition);
         // THEN
         final BracketedRealFieldUnivariateSolver<Gradient> solver = new FieldBracketingNthOrderBrentSolver<>(new Gradient(1.0e-15, 0.),
                 new Gradient(1e-12, 0.), new Gradient(1e-20, 0.), 5);
@@ -116,11 +121,15 @@ class FieldSignalTravelTimeAdjustableReceiverTest {
         final FieldAbsoluteDate<Binary64> guessDate = fieldDate.shiftedBy(1);
         final Vector3D receiver = new Vector3D(1e3, 2e4, 0);
         final FieldVector3D<Binary64> fieldReceiver = new FieldVector3D<>(field, receiver);
+        final FieldSignalEmissionCondition<Binary64> fieldEmissionCondition = new FieldSignalEmissionCondition<>(fieldDate,
+                fieldReceiver, orbit.getFrame());
         // WHEN
-        final Binary64 actual = fieldComputer.computeDelay(fieldReceiver, fieldDate, guessDate, orbit.getFrame());
+        final Binary64 actual = fieldComputer.computeDelay(fieldEmissionCondition, guessDate);
         // THEN
-        final double expected = new SignalTravelTimeAdjustableReceiver(positionProvider).computeDelay(receiver,
-                fieldDate.toAbsoluteDate(), guessDate.toAbsoluteDate(), orbit.getFrame());
+        final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(fieldDate.toAbsoluteDate(),
+                receiver, orbit.getFrame());
+        final double expected = new SignalTravelTimeAdjustableReceiver(positionProvider).computeDelay(emissionCondition,
+                guessDate.toAbsoluteDate());
         assertEquals(expected, actual.getReal());
     }
 
@@ -136,14 +145,17 @@ class FieldSignalTravelTimeAdjustableReceiverTest {
                 FieldVector3D.getPlusK(field));
         final FieldAbsolutePVCoordinates<UnivariateDerivative2> receiver = new FieldAbsolutePVCoordinates<>(frame, emissionDate, receiverPV);
         final FieldSignalTravelTimeAdjustableReceiver<UnivariateDerivative2> signalTimeOfFlight = new FieldSignalTravelTimeAdjustableReceiver<>(receiver);
+        final FieldSignalEmissionCondition<UnivariateDerivative2> fieldEmissionCondition = new FieldSignalEmissionCondition<>(emissionDate,
+                emitterPosition, frame);
         // WHEN
-        final UnivariateDerivative2 delay = signalTimeOfFlight.computeDelay(emitterPosition, emissionDate, frame);
+        final UnivariateDerivative2 delay = signalTimeOfFlight.computeDelay(fieldEmissionCondition);
         final FieldAbsoluteDate<UnivariateDerivative2> receptionDate = emissionDate.shiftedBy(delay);
         // THEN
         final FieldSignalTravelTimeAdjustableEmitter<UnivariateDerivative2> inverseTravel = new FieldSignalTravelTimeAdjustableEmitter<>(
                 new FieldAbsolutePVCoordinates<>(frame, emissionDate, emitterPosition, FieldVector3D.getZero(field)));
-        final UnivariateDerivative2 inverseDelay = inverseTravel.computeDelay(receiver.getPosition(receptionDate, frame),
-                receptionDate, frame);
+        final FieldSignalReceptionCondition<UnivariateDerivative2> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                receiver.getPosition(receptionDate, frame), frame);
+        final UnivariateDerivative2 inverseDelay = inverseTravel.computeDelay(receptionCondition);
         final FieldAbsoluteDate<UnivariateDerivative2> date = receptionDate.shiftedBy(inverseDelay.negate());
         assertEquals(emissionDate, date);
     }

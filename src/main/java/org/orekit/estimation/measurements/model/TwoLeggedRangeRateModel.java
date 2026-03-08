@@ -20,6 +20,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
+import org.orekit.signal.FieldSignalReceptionCondition;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -55,7 +57,7 @@ public class TwoLeggedRangeRateModel {
      * @param receptionDate    signal end reception date
      * @param relay            signal relay (initial reception) coordinates provider
      * @param emitter          signal initial emitter coordinates provider
-     * @return ranges on both legs in chronological order (m)
+     * @return range rate (m/s)
      */
     public double value(final Frame frame, final PVCoordinates receiverPV, final AbsoluteDate receptionDate,
                         final PVCoordinatesProvider relay, final PVCoordinatesProvider emitter) {
@@ -72,13 +74,15 @@ public class TwoLeggedRangeRateModel {
      * @param approxRelayDate  guess for the relay date
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate guess for the emission date
-     * @return ranges on both legs in chronological order (m)
+     * @return range rate (m/s)
      */
     public double value(final Frame frame, final PVCoordinates receiverPV, final AbsoluteDate receptionDate,
                         final PVCoordinatesProvider relay,  final AbsoluteDate approxRelayDate,
                         final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
         // Compute relay and emission dates
-        final double[] delays = twoWayTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate, relay,
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate,
+                receiverPV.getPosition(), frame);
+        final double[] delays = twoWayTimer.computeDelays(receptionCondition, relay,
                 approxRelayDate, emitter, approxEmissionDate);
         final AbsoluteDate relayDate = receptionDate.shiftedBy(-delays[1]);
         final AbsoluteDate emissionDate = relayDate.shiftedBy(-delays[0]);
@@ -101,51 +105,52 @@ public class TwoLeggedRangeRateModel {
     /**
      * Compute measurement without guess.
      * @param <T> field type
-     * @param frame            frame where position is given
-     * @param receiverPV       end receiver position and velocity (at reception)
-     * @param receptionDate    signal end reception date
+     * @param receptionCondition signal reception condition
+     * @param receiverVelocity receiver's velocity vector at reception
      * @param relay            signal relay (initial reception) coordinates provider
      * @param emitter          signal initial emitter coordinates provider
      * @return range rate (m/s)
      */
-    public <T extends CalculusFieldElement<T>> T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
-                                                       final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T value(final FieldSignalReceptionCondition<T> receptionCondition,
+                                                       final FieldVector3D<T> receiverVelocity,
                                                        final FieldPVCoordinatesProvider<T> relay,
                                                        final FieldPVCoordinatesProvider<T> emitter) {
-        return value(frame, receiverPV, receptionDate, relay, receptionDate, emitter, receptionDate);
+        final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
+        return value(receptionCondition, receiverVelocity, relay, receptionDate, emitter, receptionDate);
     }
     /**
      * Compute measurement.
      * @param <T> field type
-     * @param frame            frame where position is given
-     * @param receiverPV       end receiver position and velocity (at reception)
-     * @param receptionDate    signal end reception date
+     * @param receptionCondition signal end reception condition
+     * @param receiverVelocity receiver's velocity vector at end reception
      * @param relay            signal relay (initial reception) coordinates provider
      * @param approxRelayDate  guess for the relay date
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate guess for the emission date
      * @return range rate (m/s)
      */
-    public <T extends CalculusFieldElement<T>> T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
-                                                       final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T value(final FieldSignalReceptionCondition<T> receptionCondition,
+                                                       final FieldVector3D<T> receiverVelocity,
                                                        final FieldPVCoordinatesProvider<T> relay,
                                                        final FieldAbsoluteDate<T> approxRelayDate,
                                                        final FieldPVCoordinatesProvider<T> emitter,
                                                        final FieldAbsoluteDate<T> approxEmissionDate) {
         // Compute relay and emission dates
-        final T[] delays = twoWayTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate, relay,
+        final T[] delays = twoWayTimer.computeDelays(receptionCondition, relay,
                 approxRelayDate, emitter, approxEmissionDate);
-        final FieldAbsoluteDate<T> relayDate = receptionDate.shiftedBy(delays[1].negate());
+        final FieldAbsoluteDate<T> relayDate = receptionCondition.getReceptionDate().shiftedBy(delays[1].negate());
         final FieldAbsoluteDate<T> emissionDate = relayDate.shiftedBy(delays[0].negate());
 
         // Compute position and velocity of interest
+        final Frame frame = receptionCondition.getReferenceFrame();
         final FieldPVCoordinates<T> relayPV = relay.getPVCoordinates(relayDate, frame);
         final FieldPVCoordinates<T> emitterPV = emitter.getPVCoordinates(emissionDate, frame);
 
         // Range-rate components
-        final FieldVector3D<T> receiverRelativePosition = receiverPV.getPosition().subtract(relayPV.getPosition());
+        final FieldVector3D<T> receiverPosition = receptionCondition.getReceiverPosition();
+        final FieldVector3D<T> receiverRelativePosition = receiverPosition.subtract(relayPV.getPosition());
         final FieldVector3D<T> emitterRelativePosition = emitterPV.getPosition().subtract(relayPV.getPosition());
-        final FieldVector3D<T> receiverRelativeVelocity = receiverPV.getVelocity().subtract(relayPV.getVelocity());
+        final FieldVector3D<T> receiverRelativeVelocity = receiverVelocity.subtract(relayPV.getVelocity());
         final FieldVector3D<T> emitterRelativeVelocity = emitterPV.getVelocity().subtract(relayPV.getVelocity());
 
         // range rate

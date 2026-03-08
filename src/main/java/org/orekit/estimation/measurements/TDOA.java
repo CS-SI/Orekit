@@ -22,6 +22,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.signal.DifferencesOfSignalArrival;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -94,8 +95,10 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
         final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final DifferencesOfSignalArrival differencesOfSignalArrival = new DifferencesOfSignalArrival(getSignalTravelTimeModel());
         final TimeStampedPVCoordinates primePV = getPrimeObserver().getPVCoordinatesProvider().getPVCoordinates(firstReceptionDate, frame);
-        final double[] delays = differencesOfSignalArrival.computeDelays(frame, primePV.getPosition(),
-                firstReceptionDate, getSecondObserver().getPVCoordinatesProvider(), emitter);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(firstReceptionDate,
+                primePV.getPosition(), frame);
+        final double[] delays = differencesOfSignalArrival.computeDelays(receptionCondition,
+                getSecondObserver().getPVCoordinatesProvider(), emitter);
         final AbsoluteDate emissionDate = firstReceptionDate.shiftedBy(-delays[0]);
         final AbsoluteDate secondReceptionDate = emissionDate.shiftedBy(delays[1]);
 

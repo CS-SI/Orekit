@@ -19,7 +19,6 @@ package org.orekit.signal;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.optim.ConvergenceChecker;
-import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
@@ -57,34 +56,30 @@ public class FieldSignalTravelTimeAdjustableReceiver<T extends CalculusFieldElem
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
-     * @param emitterPosition fixed position of emitter
-     * @param emissionDate emission date
-     * @param frame inertial frame in which emitter is defined
+     * @param emissionCondition signal emission condition
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    public T computeDelay(final FieldVector3D<T> emitterPosition, final FieldAbsoluteDate<T> emissionDate,
-                          final Frame frame) {
-        final FieldVector3D<T> receiverPosition = adjustableReceiverPVProvider.getPosition(emissionDate, frame);
-        final T distance = receiverPosition.subtract(emitterPosition).getNorm();
+    public T computeDelay(final FieldSignalEmissionCondition<T> emissionCondition) {
+        final FieldAbsoluteDate<T> emissionDate = emissionCondition.getEmissionDate();
+        final FieldVector3D<T> receiverPosition = adjustableReceiverPVProvider.getPosition(emissionDate,
+                emissionCondition.getReferenceFrame());
+        final T distance = receiverPosition.subtract(emissionCondition.getEmitterPosition()).getNorm();
         final FieldAbsoluteDate<T> approxReceptionDate = emissionDate.shiftedBy(distance.multiply(C_RECIPROCAL));
-        return computeDelay(emitterPosition, emissionDate, approxReceptionDate, frame);
+        return computeDelay(emissionCondition, approxReceptionDate);
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink).
-     * @param emitterPosition fixed position of emitter
-     * @param emissionDate emission date
+     * @param emissionCondition signal emission condition
      * @param approxReceptionDate approximate reception date
-     * @param frame inertial frame in which emitter is defined
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    public T computeDelay(final FieldVector3D<T> emitterPosition,
-                          final FieldAbsoluteDate<T> emissionDate,
-                          final FieldAbsoluteDate<T> approxReceptionDate,
-                          final Frame frame) {
+    public T computeDelay(final FieldSignalEmissionCondition<T> emissionCondition,
+                          final FieldAbsoluteDate<T> approxReceptionDate) {
         // initialize reception date search loop assuming the state is already correct
-        final T offset = approxReceptionDate.durationFrom(emissionDate);
+        final T offset = approxReceptionDate.durationFrom(emissionCondition.getEmissionDate());
 
-        return compute(adjustableReceiverPVProvider, offset, emitterPosition, approxReceptionDate, frame);
+        return compute(adjustableReceiverPVProvider, offset, emissionCondition.getEmitterPosition(), approxReceptionDate,
+                emissionCondition.getReferenceFrame());
     }
 
     @Override

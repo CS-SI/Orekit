@@ -57,33 +57,32 @@ public class FieldSignalTravelTimeAdjustableEmitter<T extends CalculusFieldEleme
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
-     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate}
-     * @param signalArrivalDate date at which the signal arrives to receiver
-     * @param frame Inertial frame in which receiver is defined.
+     * @param receptionCondition signal reception condition
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    public T computeDelay(final FieldVector3D<T> receiverPosition, final FieldAbsoluteDate<T> signalArrivalDate,
-                          final Frame frame) {
+    public T computeDelay(final FieldSignalReceptionCondition<T> receptionCondition) {
+        final FieldAbsoluteDate<T> signalArrivalDate = receptionCondition.getReceptionDate();
+        final Frame frame = receptionCondition.getReferenceFrame();
+        final FieldVector3D<T> receiverPosition = receptionCondition.getReceiverPosition();
         final FieldVector3D<T> emitterPosition = adjustableEmitterPVProvider.getPosition(signalArrivalDate, frame);
         final T distance = receiverPosition.subtract(emitterPosition).getNorm();
         final FieldAbsoluteDate<T> approxEmissionDate = signalArrivalDate.shiftedBy(distance.multiply(-C_RECIPROCAL));
-        return computeDelay(approxEmissionDate, receiverPosition, signalArrivalDate, frame);
+        return computeDelay(receptionCondition, approxEmissionDate);
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink).
      * @param approxEmissionDate approximate emission date
-     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate}
-     * @param signalArrivalDate date at which the signal arrives to receiver
-     * @param frame Inertial frame in which receiver is defined.
+     * @param receptionCondition signal reception condition
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    public T computeDelay(final FieldAbsoluteDate<T> approxEmissionDate, final FieldVector3D<T> receiverPosition,
-                          final FieldAbsoluteDate<T> signalArrivalDate, final Frame frame) {
+    public T computeDelay(final FieldSignalReceptionCondition<T> receptionCondition,
+                          final FieldAbsoluteDate<T> approxEmissionDate) {
 
         // Initialize emission date search loop assuming the emitter PV is almost correct
-        final T offset = signalArrivalDate.durationFrom(approxEmissionDate);
+        final T offset = receptionCondition.getReceptionDate().durationFrom(approxEmissionDate);
 
-        return compute(adjustableEmitterPVProvider, offset, receiverPosition, approxEmissionDate, frame);
+        return compute(adjustableEmitterPVProvider, offset, receptionCondition.getReceiverPosition(), approxEmissionDate,
+                receptionCondition.getReferenceFrame());
     }
 
     @Override
