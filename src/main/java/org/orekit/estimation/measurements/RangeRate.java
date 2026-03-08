@@ -84,7 +84,8 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
                      final double rangeRate, final double sigma, final double baseWeight,
                      final boolean twoWay, final SignalTravelTimeModel signalTravelTimeModel,
                      final ObservableSatellite satellite) {
-        super(observer, date, rangeRate, sigma, baseWeight, twoWay, signalTravelTimeModel, satellite);
+        super(observer, date, rangeRate, new MeasurementQuality(sigma, baseWeight), twoWay, signalTravelTimeModel,
+                satellite);
     }
 
     /** {@inheritDoc} */

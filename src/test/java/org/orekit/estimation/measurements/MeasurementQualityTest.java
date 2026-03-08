@@ -72,6 +72,18 @@ class MeasurementQualityTest {
     }
 
     @Test
+    void testConstructorSigmasOnly() {
+        // GIVEN
+        final double sigma = 1.;
+        // WHEN
+        final MeasurementQuality measurementQuality =  new MeasurementQuality(new double[] {sigma});
+        // THEN
+        assertEquals(1, measurementQuality.getStandardDeviations().length);
+        assertEquals(sigma, measurementQuality.getStandardDeviations()[0]);
+        assertEquals(1., measurementQuality.getWeights()[0]);
+    }
+
+    @Test
     void testConstructorMissedSizeCovarianceException() {
         // GIVEN
         final double[][] covariance = new double[2][1];

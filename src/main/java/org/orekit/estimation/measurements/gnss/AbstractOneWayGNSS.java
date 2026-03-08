@@ -125,7 +125,8 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
         // Downlink delay / determine time-of-emission of signal information from remote object
         final double deltaT = arrivalDate.durationFrom(states[0]);
         final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(remotePV);
+        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel()
+                .getAdjustableEmitterComputer(remotePV);
         final double tauD = signalTimeOfFlight.computeDelay(arrivalDate, pvaDownlink.getPosition(), arrivalDate, frame);
 
         // Remote object pos/vel at time of signal emission
@@ -174,8 +175,8 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
         // Downlink delay
         final Gradient deltaT = arrivalDate.durationFrom(states[0].getDate());
         final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer =
-                new FieldSignalTravelTimeAdjustableEmitter<>(remotePV);
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel().
+                getFieldAdjustableEmitterComputer(arrivalDate.getField(), remotePV);
         final Gradient tauD = fieldComputer.computeDelay(arrivalDate, pvaDownlink.getPosition(), arrivalDate, frame);
 
         // Remote observer at signal emission time

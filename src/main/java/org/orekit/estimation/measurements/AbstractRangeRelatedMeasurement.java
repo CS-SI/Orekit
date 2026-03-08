@@ -53,18 +53,17 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
      * @param observer observer that performs the measurement
      * @param date date of the measurement
      * @param value observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
      * @param twoWay if true, this is a two-way measurement
-     * @param signalTravelTimeModel signal travel model
      * @param satellite satellite related to this measurement
      */
     protected AbstractRangeRelatedMeasurement(final Observer observer, final AbsoluteDate date,
-                                              final double value, final double sigma, final double baseWeight,
+                                              final double value, final MeasurementQuality measurementQuality,
                                               final boolean twoWay, final SignalTravelTimeModel signalTravelTimeModel,
                                               final ObservableSatellite satellite) {
-        super(date, twoWay, new double[] { value }, new MeasurementQuality(sigma, baseWeight),
-                signalTravelTimeModel, Collections.singletonList(satellite));
+        super(date, twoWay, new double[] { value }, measurementQuality, signalTravelTimeModel,
+                Collections.singletonList(satellite));
         addParametersDrivers(observer.getParametersDrivers());
         this.observer = observer;
     }

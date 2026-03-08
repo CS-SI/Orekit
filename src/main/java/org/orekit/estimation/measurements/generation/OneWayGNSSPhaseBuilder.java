@@ -19,18 +19,20 @@ package org.orekit.estimation.measurements.generation;
 import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 
 /** Builder for {@link OneWayGNSSPhase} measurements.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNSSPhase> {
+public class OneWayGNSSPhaseBuilder extends AbstractSignalBasedBuilder<OneWayGNSSPhase> {
 
     /** Cache for ambiguities.
      * @since 12.1
@@ -57,7 +59,27 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
                                   final ObservableSatellite local, final Observer remote,
                                   final double wavelength, final double sigma, final double baseWeight,
                                   final AmbiguityCache cache) {
-        super(noiseSource, sigma, baseWeight, local);
+        this(noiseSource, local, remote, wavelength, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), cache);
+    }
+
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote observer which simply emits the signal
+     * @param wavelength phase observed value wavelength (m)
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @param cache from which ambiguity drive should come
+     * @since 14.0
+     */
+    public OneWayGNSSPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                  final ObservableSatellite local, final Observer remote,
+                                  final double wavelength, final MeasurementQuality measurementQuality,
+                                  final SignalTravelTimeModel signalTravelTimeModel,
+                                  final AmbiguityCache cache) {
+        super(noiseSource, measurementQuality, signalTravelTimeModel, local);
         this.satellite  = remote;
         this.wavelength = wavelength;
         this.cache      = cache;
@@ -67,11 +89,8 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
     @Override
     protected OneWayGNSSPhase buildObserved(final AbsoluteDate date,
                                             final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new OneWayGNSSPhase(satellite,
-                                   date, Double.NaN, wavelength,
-                                   getTheoreticalStandardDeviation()[0],
-                                   getBaseWeight()[0], getSatellites()[0],
-                                   cache);
+        return new OneWayGNSSPhase(satellite, date, Double.NaN, wavelength, getMeasurementQuality(),
+                getSignalTravelTimeModel(), getSatellites()[0], cache);
     }
 
 }

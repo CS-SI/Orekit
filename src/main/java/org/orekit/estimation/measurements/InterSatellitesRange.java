@@ -92,7 +92,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
     public InterSatellitesRange(final ObservableSatellite local, final ObservableSatellite remote,
                                 final boolean twoWay, final AbsoluteDate date, final double range,
                                 final double sigma, final double baseWeight) {
-        this(local, remote, twoWay, date, range, sigma, baseWeight, new SignalTravelTimeModel());
+        this(local, remote, twoWay, date, range, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel());
     }
 
     /** Simple constructor.
@@ -102,16 +102,15 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param date date of the measurement
      * @param range observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param signalTravelTimeModel signal travel model
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
      * @since 14.0
      */
     public InterSatellitesRange(final ObservableSatellite local, final ObservableSatellite remote,
                                 final boolean twoWay, final AbsoluteDate date, final double range,
-                                final double sigma, final double baseWeight,
+                                final MeasurementQuality measurementQuality,
                                 final SignalTravelTimeModel signalTravelTimeModel) {
-        super(date, twoWay, new double[] {range}, new MeasurementQuality(sigma, baseWeight), signalTravelTimeModel,
+        super(date, twoWay, new double[] {range}, measurementQuality, signalTravelTimeModel,
                 Arrays.asList(local, remote));
     }
 

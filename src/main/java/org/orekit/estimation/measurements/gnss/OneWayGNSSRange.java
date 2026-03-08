@@ -66,8 +66,23 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
                            final AbsoluteDate date,
                            final double range, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
+        this(observer, date, range, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), local);
+    }
+
+    /** Simple constructor.
+     * @param observer object that sends GNSS signal
+     * @param date date of the measurement
+     * @param range observed value
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @param local satellite which receives the signal and perform the measurement
+     * @since 14.0
+     */
+    public OneWayGNSSRange(final Observer observer, final AbsoluteDate date, final double range,
+                           final MeasurementQuality measurementQuality,
+                           final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite local) {
         // Call super constructor
-        super(observer, date, range, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), local);
+        super(observer, date, range, measurementQuality, signalTravelTimeModel, local);
     }
 
     /** {@inheritDoc} */

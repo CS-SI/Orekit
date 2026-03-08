@@ -66,6 +66,9 @@
             Allow to build simply a Starlette or Lageos type shape without wings
             for BoxAndSolarArray (aka disco ball).
         </action>
+        <action dev="serrof" type="update" issue="issue-1889">
+            Add signal model in relevant measurement builders.
+        </action>
         <action dev="serrof" type="add" issue="issue-1888">
             Add plane crossing event function and detector.
         </action>
