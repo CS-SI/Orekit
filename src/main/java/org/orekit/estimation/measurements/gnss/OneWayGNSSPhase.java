@@ -74,8 +74,27 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
                            final double phase, final double wavelength, final double sigma,
                            final double baseWeight, final ObservableSatellite local,
                            final AmbiguityCache cache) {
+        this(observer, date, phase, wavelength, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
+                local, cache);
+    }
+
+    /** Simple constructor.
+     * @param observer object that sends signal
+     * @param date date of the measurement
+     * @param phase observed value, in cycles
+     * @param wavelength phase observed value wavelength, in meters
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @param local satellite which receives the signal and perform the measurement
+     * @param cache from which ambiguity drive should come
+     * @since 14.0
+     */
+    public OneWayGNSSPhase(final Observer observer, final AbsoluteDate date,
+                           final double phase, final double wavelength, final MeasurementQuality measurementQuality,
+                           final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite local,
+                           final AmbiguityCache cache) {
         // Call super constructor
-        super(observer, date, phase, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), local);
+        super(observer, date, phase, measurementQuality, signalTravelTimeModel, local);
 
         // Initialize phase ambiguity driver
         ambiguityDriver = cache.getAmbiguity(observer.getName(), local.getName(), wavelength);

@@ -19,17 +19,19 @@ package org.orekit.estimation.measurements.generation;
 import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.Observer;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 
 /** Builder for {@link RangeRate} measurements.
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
+public class RangeRateBuilder extends AbstractSignalBasedBuilder<RangeRate> {
 
     /** Observer from which measurement is performed. */
     private final Observer observer;
@@ -49,7 +51,24 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
                             final Observer observer, final boolean twoWay,
                             final double sigma, final double baseWeight,
                             final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, satellite);
+        this(noiseSource, observer, twoWay, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
+                satellite);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param observer observer from which measurement is performed
+     * @param twoWay flag indicating whether it is a two-way measurement
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public RangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                        final Observer observer, final boolean twoWay,
+                        final MeasurementQuality measurementQuality, final SignalTravelTimeModel signalTravelTimeModel,
+                        final ObservableSatellite satellite) {
+        super(noiseSource, measurementQuality, signalTravelTimeModel, satellite);
         this.observer = observer;
         this.twoway  = twoWay;
     }
@@ -58,9 +77,8 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
     @Override
     protected RangeRate buildObserved(final AbsoluteDate date,
                                       final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new RangeRate(observer, date, Double.NaN,
-                             getTheoreticalStandardDeviation()[0],
-                             getBaseWeight()[0], twoway, getSatellites()[0]);
+        return new RangeRate(observer, date, Double.NaN, getTheoreticalStandardDeviation()[0], getBaseWeight()[0],
+                twoway, getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

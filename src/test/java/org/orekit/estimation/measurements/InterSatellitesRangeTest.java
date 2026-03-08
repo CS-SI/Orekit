@@ -584,7 +584,7 @@ class InterSatellitesRangeTest {
         final ObservableSatellite sat1 = new ObservableSatellite(1);
         final SignalTravelTimeModel instantaneousSignal = new SignalTravelTimeModel(((iteration, previous, current) -> true));
         // WHEN
-        final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, false, epoch, 0., 1., 1.,
+        final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, false, epoch, 0., new MeasurementQuality(new double[] {1.}),
                 instantaneousSignal);
         final EstimatedMeasurementBase<InterSatellitesRange> estimated = range.estimateWithoutDerivatives(state);
         // THEN

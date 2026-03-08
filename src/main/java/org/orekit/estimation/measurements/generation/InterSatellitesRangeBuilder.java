@@ -73,7 +73,7 @@ public class InterSatellitesRangeBuilder extends AbstractSignalBasedBuilder<Inte
     protected InterSatellitesRange buildObserved(final AbsoluteDate date,
                                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
         return new InterSatellitesRange(getSatellites()[0], getSatellites()[1], twoway, date, Double.NaN,
-                                        getTheoreticalStandardDeviation()[0], getBaseWeight()[0], getSignalTravelTimeModel());
+                                        getMeasurementQuality(), getSignalTravelTimeModel());
     }
 
 }

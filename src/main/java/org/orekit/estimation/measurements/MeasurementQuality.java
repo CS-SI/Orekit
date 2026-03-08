@@ -46,10 +46,18 @@ public class MeasurementQuality {
     /**
      * Constructor with sigmas as input for unidimensional measurement.
      * @param standardDeviation measurement standard deviation
-     * @param weight measurement component's weight (same for all)
+     * @param weight measurement weight
      */
     public MeasurementQuality(final double standardDeviation, final double weight) {
         this(new double[] {standardDeviation}, weight);
+    }
+
+    /**
+     * Constructor with sigmas as input and unit value for weights (assuming no correlation).
+     * @param standardDeviations measurement standard deviations matrix
+     */
+    public MeasurementQuality(final double[] standardDeviations) {
+        this(standardDeviations, 1.);
     }
 
     /**

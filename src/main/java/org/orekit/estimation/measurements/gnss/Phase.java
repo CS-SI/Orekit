@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.AbstractParticipant;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -41,6 +40,7 @@ import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -93,7 +93,26 @@ public class Phase extends SignalBasedMeasurement<Phase> {
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final ObservableSatellite satellite,
                  final AmbiguityCache cache) {
-        super(date, false, phase, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
+        this(observer, date, phase, wavelength, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
+                satellite, cache);
+    }
+
+    /** Simple constructor.
+     * @param observer observer that performs the measurement
+     * @param date date of the measurement
+     * @param phase observed value (cycles)
+     * @param wavelength phase observed value wavelength (m)
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @param satellite satellite related to this measurement
+     * @param cache from which ambiguity drive should come
+     * @since 14.0
+     */
+    public Phase(final Observer observer, final AbsoluteDate date,
+                 final double phase, final double wavelength, final MeasurementQuality measurementQuality,
+                 final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite,
+                 final AmbiguityCache cache) {
+        super(date, false, phase, measurementQuality, signalTravelTimeModel,
                 Collections.singletonList(satellite));
         ambiguityDriver = cache.getAmbiguity(satellite.getName(), observer.getName(), wavelength);
         addParametersDrivers(observer.getParametersDrivers());
@@ -147,7 +166,8 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         final PVCoordinatesProvider pvCoordinatesProvider = AbstractParticipant.extractPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay / determine time of emission of signal by ObservableSatellite
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(pvCoordinatesProvider);
+        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel()
+                .getAdjustableEmitterComputer(pvCoordinatesProvider);
         final double tauD = signalTimeOfFlight.computeDelay(pva.getDate(), satelliteDownlink.getPosition(), downlinkDate, frame);
 
         // Transit state & Transit state (re)computed with gradients
@@ -202,16 +222,16 @@ public class Phase extends SignalBasedMeasurement<Phase> {
 
         // Observer position in inertial frame at end of the downlink leg
         final GradientField field = GradientField.getField(nbParams);
-        final FieldVector3D<Gradient> zero  = FieldVector3D.getZero(field);
         final TimeStampedFieldPVCoordinates<Gradient> satelliteDownlink =
                 offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDate,
-                        zero, zero, zero));
+                        FieldPVCoordinates.getZero(field)));
 
         // Form coordinates provider
         final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(fieldPVCoordinatesProvider);
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
+                .getFieldAdjustableEmitterComputer(field, fieldPVCoordinatesProvider);
         final Gradient tauD = fieldComputer.computeDelay(pva.getDate(), satelliteDownlink.getPosition(), downlinkDate, frame);
 
         // Transit state & Transit state (re)computed with gradients
