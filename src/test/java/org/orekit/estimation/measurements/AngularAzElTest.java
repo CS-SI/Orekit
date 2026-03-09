@@ -39,6 +39,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -160,7 +161,8 @@ class AngularAzElTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
             final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
             final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(state.getOrbit());
-            final double       meanDelay = signalTimeOfFlight.computeDelay(state.getDate(), stationP, datemeas, state.getFrame());
+            final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(datemeas, stationP, state.getFrame());
+            final double       meanDelay = signalTimeOfFlight.computeDelay(receptionCondition, state.getDate());
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -263,7 +265,8 @@ class AngularAzElTest {
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
             final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(stateini.getOrbit());
-            final double          meanDelay = signalTimeOfFlight.computeDelay(stateini.getDate(), stationP, datemeas, stateini.getFrame());
+            final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(datemeas, stationP, stateini.getFrame());
+            final double          meanDelay = signalTimeOfFlight.computeDelay(receptionCondition, stateini.getDate());
 
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);

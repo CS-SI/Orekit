@@ -24,13 +24,16 @@ import org.orekit.estimation.measurements.model.OneLeggedRangeRateModel;
 import org.orekit.estimation.measurements.model.TwoLeggedRangeRateModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -66,26 +69,25 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
     public RangeRate(final Observer observer, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
                      final boolean twoWay, final ObservableSatellite satellite) {
-        this(observer, date, rangeRate, sigma, baseWeight, twoWay, new SignalTravelTimeModel(), satellite);
+        this(observer, date, rangeRate, new MeasurementQuality(sigma, baseWeight), twoWay, new SignalTravelTimeModel(),
+                satellite);
     }
 
     /** Simple constructor.
      * @param observer observer that performs the measurement
      * @param date date of the measurement
      * @param rangeRate observed value, m/s
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality data as used in orbit determination
      * @param twoWay if true, this is a two-way measurement
      * @param signalTravelTimeModel signal travel model
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
     public RangeRate(final Observer observer, final AbsoluteDate date,
-                     final double rangeRate, final double sigma, final double baseWeight,
+                     final double rangeRate, final MeasurementQuality measurementQuality,
                      final boolean twoWay, final SignalTravelTimeModel signalTravelTimeModel,
                      final ObservableSatellite satellite) {
-        super(observer, date, rangeRate, new MeasurementQuality(sigma, baseWeight), twoWay, signalTravelTimeModel,
-                satellite);
+        super(observer, date, rangeRate, measurementQuality, twoWay, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
@@ -151,7 +153,10 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
         // physical range rate value
         final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(getSignalTravelTimeModel().getWarmedUpModel());
         final AbsoluteDate emissionDate = estimated.getParticipants()[0].getDate();
-        double rangeRate = rangeRateModel.value(state.getFrame(), estimated.getParticipants()[1], receptionDate,
+        final PVCoordinates receiverPV = estimated.getParticipants()[1];
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate,
+                receiverPV.getPosition(), state.getFrame());
+        double rangeRate = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(),
                 AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates()), emissionDate);
 
         // clock drifts, taken in account only in case of one way
@@ -178,7 +183,9 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
         final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
-        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                receiverPV.getPosition(), frame);
+        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition,
                 satellitePVProvider, observerPVProvider);
 
         // Prepare the evaluation
@@ -194,8 +201,8 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
 
         // Compute range rate
         final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer);
-        final Gradient rangeRate = rangeRateModel.value(frame, receiverPV,
-                receptionDate, satellitePVProvider, transitDate, observerPVProvider, emissionDate).half();
+        final Gradient rangeRate = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(),
+                satellitePVProvider, transitDate, observerPVProvider, emissionDate).half();
         fillEstimation(rangeRate, indices, estimated);
         return estimated;
     }
@@ -213,9 +220,11 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
         final Field<Gradient> field = receptionDate.getField();
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
                 field, satellitePVProvider);
-        final TimeStampedFieldPVCoordinates<Gradient> observerPVAtReception = getObserver().getFieldPVCoordinatesProvider(nbParams, indices)
-                .getPVCoordinates(receptionDate, frame);
-        final Gradient delay = adjustableEmitter.computeDelay(observerPVAtReception.getPosition(), receptionDate, frame);
+        final FieldPVCoordinatesProvider<Gradient> observer = getObserver().getFieldPVCoordinatesProvider(nbParams, indices);
+        final TimeStampedFieldPVCoordinates<Gradient> observerPVAtReception = observer.getPVCoordinates(receptionDate, frame);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                observerPVAtReception.getPosition(), frame);
+        final Gradient delay = adjustableEmitter.computeDelay(receptionCondition);
 
         // prepare the evaluation
         final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(delay.negate());
@@ -226,9 +235,10 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
                         emissionState.getPVCoordinates(), observerPVAtReception.toTimeStampedPVCoordinates() });
 
         // physical range rate value
-        final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(getSignalTravelTimeModel());
-        Gradient rangeRate = rangeRateModel.value(frame, observerPVAtReception, receptionDate, satellitePVProvider,
-                emissionDate);
+        final SignalTravelTimeModel warmedUpModel = getSignalTravelTimeModel().getWarmedUpModel();
+        final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(warmedUpModel);
+        Gradient rangeRate = rangeRateModel.value(receptionCondition, observerPVAtReception.getVelocity(),
+                satellitePVProvider, emissionDate);
 
         // clock drifts, taken in account only in case of one way
         final ObservableSatellite satellite    = getSatellites().get(0);

@@ -1,0 +1,86 @@
+/* Copyright 2022-2026 Romain Serra
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.signal;
+
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.frames.Frame;
+import org.orekit.time.FieldAbsoluteDate;
+
+/**
+ * Data container describing signal reception conditions.
+ * @since 14.0
+ * @author Romain Serra
+ * @see SignalReceptionCondition
+ */
+public class FieldSignalReceptionCondition<T extends CalculusFieldElement<T>> {
+
+    /** Signal reception date. */
+    private final FieldAbsoluteDate<T> receptionDate;
+
+    /** Receiver position's vector at signal reception. */
+    private final FieldVector3D<T> receiverPosition;
+
+    /** Frame where position is given. */
+    private final Frame referenceFrame;
+
+    /**
+     * Constructor.
+     * @param receptionDate reception date
+     * @param receiverPosition receiver position
+     * @param referenceFrame frame where position is given
+     */
+    public FieldSignalReceptionCondition(final FieldAbsoluteDate<T> receptionDate, final FieldVector3D<T> receiverPosition,
+                                         final Frame referenceFrame) {
+        this.receptionDate = receptionDate;
+        this.receiverPosition = receiverPosition;
+        this.referenceFrame = referenceFrame;
+    }
+
+    /**
+     * Constructor from non-Field values.
+     * @param field field
+     * @param signalReceptionCondition non-field reception condition
+     */
+    public FieldSignalReceptionCondition(final Field<T> field, final SignalReceptionCondition signalReceptionCondition) {
+        this(new FieldAbsoluteDate<>(field, signalReceptionCondition.getReceptionDate()),
+                new FieldVector3D<>(field, signalReceptionCondition.getReceiverPosition()),
+                        signalReceptionCondition.getReferenceFrame());
+    }
+
+    /**
+     * Method returning a non-field reception condition.
+     * @return non-field version
+     */
+    public SignalReceptionCondition toReceptionCondition() {
+        return new SignalReceptionCondition(getReceptionDate().toAbsoluteDate(), getReceiverPosition().toVector3D(),
+                getReferenceFrame());
+    }
+
+    public FieldVector3D<T> getReceiverPosition() {
+        return receiverPosition;
+    }
+
+    public FieldAbsoluteDate<T> getReceptionDate() {
+        return receptionDate;
+    }
+
+    public Frame getReferenceFrame() {
+        return referenceFrame;
+    }
+}

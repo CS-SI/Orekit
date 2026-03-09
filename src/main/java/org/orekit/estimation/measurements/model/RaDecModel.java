@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -80,8 +81,10 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
     public double[] value(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
                           final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
         // Compute line-of-sight
-        final Vector3D apparentLineOfSightInInputFrame = getEmitterToReceiverVector(frame, receiverPosition, receptionDate,
-                emitter, approxEmissionDate).normalize();
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPosition,
+                frame);
+        final Vector3D apparentLineOfSightInInputFrame = getEmitterToReceiverVector(receptionCondition, emitter,
+                approxEmissionDate).normalize();
         final StaticTransform toInertialFrameAtReception = frame.getStaticTransformTo(referenceFrame, receptionDate);
         final Vector3D apparentLineOfSight = toInertialFrameAtReception.transformVector(apparentLineOfSightInInputFrame);
 

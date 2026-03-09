@@ -69,8 +69,8 @@ public class BistaticRangeRateBuilder extends AbstractBistaticBuilder<BistaticRa
     @Override
     protected BistaticRangeRate buildObserved(final AbsoluteDate date,
                                               final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new BistaticRangeRate(getEmitter(), getReceiver(), date, 0.0, getTheoreticalStandardDeviation()[0],
-                                     getBaseWeight()[0], getSignalTravelTimeModel(), getSatellites()[0]);
+        return new BistaticRangeRate(getEmitter(), getReceiver(), date, 0.0, getMeasurementQuality(),
+                getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

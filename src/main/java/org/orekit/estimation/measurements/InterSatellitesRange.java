@@ -23,7 +23,9 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.signal.TwoLeggedSignalTravelTimer;
@@ -151,7 +153,9 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         final Frame           frame = local.getFrame();
         final TwoLeggedSignalTravelTimer travelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
         final SpacecraftState localAtReception = local.shiftedBy(receptionDate.durationFrom(local));
-        final double[] delays = travelTimer.computeDelays(frame, localAtReception.getPosition(), receptionDate,
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, localAtReception.getPosition(),
+                frame);
+        final double[] delays = travelTimer.computeDelays(receptionCondition,
                 AbstractParticipant.extractPVCoordinatesProvider(remote, remote.getPVCoordinates()),
                 AbstractParticipant.extractPVCoordinatesProvider(local, local.getPVCoordinates()));
         final AbsoluteDate transitDate = receptionDate.shiftedBy(-delays[1]);
@@ -192,7 +196,8 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         final SpacecraftState localAtReception = local.shiftedBy(receptionDate.durationFrom(local));
         final SignalTravelTimeAdjustableEmitter adjustableEmitterComputer = getSignalTravelTimeModel()
                 .getAdjustableEmitterComputer(AbstractParticipant.extractPVCoordinatesProvider(remote, remote.getPVCoordinates()));
-        final double delay = adjustableEmitterComputer.computeDelay(localAtReception.getPosition(), receptionDate, frame);
+        final double delay = adjustableEmitterComputer.computeDelay(new SignalReceptionCondition(receptionDate,
+                localAtReception.getPosition(), frame));
         final AbsoluteDate emissionDate = receptionDate.shiftedBy(-delay);
 
         // form participants
@@ -281,8 +286,9 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         final FieldPVCoordinatesProvider<Gradient> localPVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(local, pvaL);
         final FieldPVCoordinatesProvider<Gradient> remotePVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(remote, pvaR);
         final TimeStampedFieldPVCoordinates<Gradient> localPVAtReception = localPVProvider.getPVCoordinates(receptionDate, frame);
-        final Gradient[] delays = travelTimer.computeDelays(frame, localPVAtReception.getPosition(), receptionDate,
-                remotePVProvider, localPVProvider);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                localPVAtReception.getPosition(), frame);
+        final Gradient[] delays = travelTimer.computeDelays(receptionCondition, remotePVProvider, localPVProvider);
         final FieldAbsoluteDate<Gradient> transitDate = receptionDate.shiftedBy(delays[1].negate());
         final FieldAbsoluteDate<Gradient> emissionDate = transitDate.shiftedBy(delays[0].negate());
 
@@ -331,7 +337,9 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
                 .getPVCoordinates(receptionDate, frame);
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitterComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(dtl.getField(), remotePVProvider);
-        final Gradient delay = adjustableEmitterComputer.computeDelay(localPVAtReception.getPosition(), receptionDate, frame);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                localPVAtReception.getPosition(), frame);
+        final Gradient delay = adjustableEmitterComputer.computeDelay(receptionCondition);
         final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(delay.negate());
 
         // form participants

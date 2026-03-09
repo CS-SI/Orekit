@@ -24,6 +24,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.signal.TwoLeggedSignalTravelTimer;
@@ -107,8 +108,10 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
         final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
         final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
-        final double[] delays = twoLeggedSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
-                satellitePVProvider, observerPVProvider);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPV.getPosition(),
+                frame);
+        final double[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition, satellitePVProvider,
+                observerPVProvider);
 
         // Prepare estimation
         final AbsoluteDate transitDate = receptionDate.shiftedBy(-delays[1]);
@@ -140,7 +143,8 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
                 .getAdjustableEmitterComputer(observablePVProvider);
         final TimeStampedPVCoordinates observerPVAtReception = getObserver().getPVCoordinatesProvider()
                 .getPVCoordinates(receptionDate, frame);
-        final double delay = adjustableEmitter.computeDelay(observerPVAtReception.getPosition(), receptionDate, frame);
+        final double delay = adjustableEmitter.computeDelay(new SignalReceptionCondition(receptionDate,
+                observerPVAtReception.getPosition(), frame));
 
         // prepare the evaluation
         final AbsoluteDate emissionDate = receptionDate.shiftedBy(-delay);

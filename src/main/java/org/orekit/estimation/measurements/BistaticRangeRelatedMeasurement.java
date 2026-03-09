@@ -23,6 +23,8 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalReceptionCondition;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
@@ -73,19 +75,16 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
      * @param receiver    observer from which measurement is performed
      * @param date        date of the measurement
      * @param value       observed value
-     * @param sigma       theoretical standard deviation
-     * @param baseWeight  base weight
+     * @param measurementQuality measurement quality data as used in orbit determination
      * @param signalTravelTimeModel signal travel time model
      * @param satellite   satellite related to this measurement
-     * @since 14.0
      */
     protected BistaticRangeRelatedMeasurement(final Observer emitter, final Observer receiver,
                                               final AbsoluteDate date,
-                                              final double[] value, final double[] sigma, final double[] baseWeight,
+                                              final double[] value, final MeasurementQuality measurementQuality,
                                               final SignalTravelTimeModel signalTravelTimeModel,
                                               final ObservableSatellite satellite) {
-        super(date, true, value, new MeasurementQuality(sigma, baseWeight),
-              signalTravelTimeModel, Collections.singletonList(satellite));
+        super(date, true, value, measurementQuality, signalTravelTimeModel, Collections.singletonList(satellite));
 
         // Add the parameters for the receiver
         addParametersDrivers(emitter.getParametersDrivers());
@@ -160,7 +159,9 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
         final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
         final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
-        final double[] delays = getTwoLeggedSignalTimer().computeDelays(frame, receiverPV.getPosition(), receptionDate,
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPV.getPosition(),
+                frame);
+        final double[] delays = getTwoLeggedSignalTimer().computeDelays(receptionCondition,
                 satellitePVProvider, getEmitter().getPVCoordinatesProvider());
 
         // Form dates
@@ -200,7 +201,9 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
         final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
         final FieldPVCoordinatesProvider<Gradient> emitterPVProvider = getEmitter().getFieldPVCoordinatesProvider(nbParams, paramIndices);
-        final Gradient[] delays = getTwoLeggedSignalTimer().computeDelays(frame, receiverPV.getPosition(), receptionDate,
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                receiverPV.getPosition(), frame);
+        final Gradient[] delays = getTwoLeggedSignalTimer().computeDelays(receptionCondition,
                 satellitePVProvider, emitterPVProvider);
 
         return new Gradient[] { receptionDate.durationFrom(getDate()), delays[1].negate(), delays[0].negate() };

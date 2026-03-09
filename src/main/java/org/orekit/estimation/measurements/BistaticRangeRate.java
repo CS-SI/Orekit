@@ -23,6 +23,7 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.model.TwoLeggedRangeRateModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -73,7 +74,8 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
     public BistaticRangeRate(final Observer emitter, final Observer receiver, final AbsoluteDate date,
                              final double rangeRate, final double sigma, final double baseWeight,
                              final ObservableSatellite satellite) {
-        this(emitter, receiver, date, rangeRate, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(emitter, receiver, date, rangeRate, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
+                satellite);
     }
 
     /** Simple constructor.
@@ -81,16 +83,15 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
      * @param receiver              receiver object
      * @param date                  date of the measurement
      * @param rangeRate             observed value, m/s
-     * @param sigma                 theoretical standard deviation
-     * @param baseWeight            base weight
+     * @param measurementQuality measurement quality data as used in orbit determination
      * @param signalTravelTimeModel signal travel time model
      * @param satellite             satellite related to this measurement
+     * @since 14.0
      */
     public BistaticRangeRate(final Observer emitter, final Observer receiver, final AbsoluteDate date,
-                             final double rangeRate, final double sigma, final double baseWeight,
+                             final double rangeRate, final MeasurementQuality measurementQuality,
                              final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(emitter, receiver, date, new double[] {rangeRate}, new double[] {sigma}, new double[] {baseWeight},
-                signalTravelTimeModel, satellite);
+        super(emitter, receiver, date, new double[] {rangeRate}, measurementQuality, signalTravelTimeModel, satellite);
 
         // Add class member values
         this.twoLeggedRangeRateModel = new TwoLeggedRangeRateModel(getTwoLeggedSignalTimer());
@@ -169,7 +170,9 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
                 paramIndices);
         final FieldPVCoordinatesProvider<Gradient> observable = AbstractParticipant.extractFieldPVCoordinatesProvider(state,
                 AbstractMeasurement.getCoordinates(state, 0, nbParams));
-        final Gradient rangeRate = twoLeggedRangeRateModel.value(frame, receiverPV, receptionDate, observable,
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                receiverPV.getPosition(), frame);
+        final Gradient rangeRate = twoLeggedRangeRateModel.value(receptionCondition, receiverPV.getVelocity(), observable,
                 transitDate, emitter, emissionDate);
 
         fillEstimation(rangeRate, getParameterIndices(states), estimated);

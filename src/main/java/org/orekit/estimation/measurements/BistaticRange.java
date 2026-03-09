@@ -66,7 +66,7 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
     public BistaticRange(final Observer emitter, final Observer receiver, final AbsoluteDate date,
                          final double range, final double sigma, final double baseWeight,
                          final ObservableSatellite satellite) {
-        this(emitter, receiver, date, range, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(emitter, receiver, date, range, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
     }
 
     /**
@@ -76,18 +76,16 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
      * @param receiver    receiver object
      * @param date        date of the measurement
      * @param range       observed value
-     * @param sigma       theoretical standard deviation
-     * @param baseWeight  base weight
+     * @param measurementQuality measurement quality data as used in orbit determination
      * @param signalTravelTimeModel signal travel time model
      * @param satellite   satellite related to this measurement
      * @since 14.0
      */
     public BistaticRange(final Observer emitter, final Observer receiver, final AbsoluteDate date,
-                         final double range, final double sigma, final double baseWeight,
+                         final double range, final MeasurementQuality measurementQuality,
                          final SignalTravelTimeModel signalTravelTimeModel,
                          final ObservableSatellite satellite) {
-        super(emitter, receiver, date, new double[] { range }, new double[] { sigma }, new double[] { baseWeight },
-                signalTravelTimeModel, satellite);
+        super(emitter, receiver, date, new double[] { range }, measurementQuality, signalTravelTimeModel, satellite);
     }
 
     /**

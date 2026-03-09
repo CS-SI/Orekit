@@ -46,9 +46,9 @@ class DifferencesOfSignalArrivalTest {
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(2e5, -3e4, 1e5));
         final AbsolutePVCoordinates secondary = new AbsolutePVCoordinates(frame, date, pvSecondary);
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPosition, frame);
         // WHEN
-        final double[] delays = differencesOfSignalArrival.computeDelays(frame, receiverPosition, date, secondary,
-                emitter);
+        final double[] delays = differencesOfSignalArrival.computeDelays(receptionCondition, secondary, emitter);
         // THEN
         assertEquals(pvSecondary.getPosition().subtract(pvEmitter.getPosition()).getNorm2(), Constants.SPEED_OF_LIGHT * delays[1], 1e-9);
         assertEquals(receiverPosition.subtract(pvEmitter.getPosition()).getNorm2(), Constants.SPEED_OF_LIGHT * delays[0], 1e-9);
@@ -65,10 +65,11 @@ class DifferencesOfSignalArrivalTest {
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(2e5, -3e4, 1e5));
         final AbsolutePVCoordinates secondary = new AbsolutePVCoordinates(frame, date, pvSecondary);
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPosition, frame);
         // WHEN
-        final double[] delays = differencesOfSignalArrival.computeDelays(frame, receiverPosition, date, secondary, emitter);
+        final double[] delays = differencesOfSignalArrival.computeDelays(receptionCondition, secondary, emitter);
         // THEN
-        final double[] expectedDelays = differencesOfSignalArrival.computeDelays(frame, receiverPosition, date, secondary, date,
+        final double[] expectedDelays = differencesOfSignalArrival.computeDelays(receptionCondition, secondary, date,
                 emitter, date);
         assertEquals(expectedDelays[0], delays[0]);
         assertEquals(expectedDelays[1], delays[1]);
@@ -88,11 +89,14 @@ class DifferencesOfSignalArrivalTest {
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final GradientField field = GradientField.getField(0);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
+        final FieldSignalReceptionCondition<Gradient> fieldCondition = new FieldSignalReceptionCondition<>(fieldDate,
+                new FieldVector3D<>(field, receiverPosition), frame);
         // WHEN
-        final Gradient[] fieldDelays = differencesOfSignalArrival.computeDelays(frame, new FieldVector3D<>(field, receiverPosition),
-                fieldDate, new FieldAbsolutePVCoordinates<>(field, secondary), new FieldAbsolutePVCoordinates<>(field, emitter));
+        final Gradient[] fieldDelays = differencesOfSignalArrival.computeDelays(fieldCondition,
+                new FieldAbsolutePVCoordinates<>(field, secondary), new FieldAbsolutePVCoordinates<>(field, emitter));
         // THEN
-        final double[] delays = differencesOfSignalArrival.computeDelays(frame, receiverPosition, date, secondary, emitter);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPosition, frame);
+        final double[] delays = differencesOfSignalArrival.computeDelays(receptionCondition, secondary, emitter);
         assertEquals(delays[0], fieldDelays[0].getValue());
         assertEquals(delays[1], fieldDelays[1].getValue());
     }

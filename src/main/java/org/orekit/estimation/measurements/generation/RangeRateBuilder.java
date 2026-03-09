@@ -77,8 +77,8 @@ public class RangeRateBuilder extends AbstractSignalBasedBuilder<RangeRate> {
     @Override
     protected RangeRate buildObserved(final AbsoluteDate date,
                                       final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new RangeRate(observer, date, Double.NaN, getTheoreticalStandardDeviation()[0], getBaseWeight()[0],
-                twoway, getSignalTravelTimeModel(), getSatellites()[0]);
+        return new RangeRate(observer, date, Double.NaN, getMeasurementQuality(), twoway, getSignalTravelTimeModel(),
+                getSatellites()[0]);
     }
 
 }

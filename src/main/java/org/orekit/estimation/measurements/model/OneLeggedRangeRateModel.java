@@ -19,15 +19,14 @@ package org.orekit.estimation.measurements.model;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.Frame;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -54,73 +53,71 @@ public class OneLeggedRangeRateModel {
     /**
      * Compute measurement without guess.
      *
-     * @param frame            frame where position is given
-     * @param receiverPV       receiver position-velocity (at reception)
-     * @param receptionDate    signal reception date
+     * @param receptionCondition signal reception condition
+     * @param receiverVelocity receiver's velocity vector at reception
      * @param emitter          signal initial emitter coordinates provider
-     * @return ranges on both legs in chronological order (m)
+     * @return range rate (m/s)
      */
-    public double value(final Frame frame, final PVCoordinates receiverPV, final AbsoluteDate receptionDate,
+    public double value(final SignalReceptionCondition receptionCondition, final Vector3D receiverVelocity,
                         final PVCoordinatesProvider emitter) {
-        return value(frame, receiverPV, receptionDate, emitter, receptionDate);
+        return value(receptionCondition, receiverVelocity, emitter, receptionCondition.getReceptionDate());
     }
 
     /**
      * Compute measurement.
      *
-     * @param frame            frame where position is given
-     * @param receiverPV       receiver position-velocity (at reception)
-     * @param receptionDate    signal reception date
+     * @param receptionCondition signal reception condition
+     * @param receiverVelocity receiver's velocity vector at reception
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate guess for the emission date
-     * @return ranges on both legs in chronological order (m)
+     * @return range rate (m/s)
      */
-    public double value(final Frame frame, final PVCoordinates receiverPV, final AbsoluteDate receptionDate,
+    public double value(final SignalReceptionCondition receptionCondition, final Vector3D receiverVelocity,
                         final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
         final SignalTravelTimeAdjustableEmitter adjustableEmitter = signalTravelTimeModel.getAdjustableEmitterComputer(emitter);
-        final double delay = adjustableEmitter.computeDelay(approxEmissionDate, receiverPV.getPosition(), receptionDate, frame);
+        final AbsoluteDate receptionDate = receptionCondition.getReceptionDate();
+        final double delay = adjustableEmitter.computeDelay(receptionCondition, approxEmissionDate);
         final AbsoluteDate emissionDate = receptionDate.shiftedBy(-delay);
-        final TimeStampedPVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, frame);
-        final Vector3D relativePosition = receiverPV.getPosition().subtract(emitterPV.getPosition());
-        final Vector3D relativeVelocity = receiverPV.getVelocity().subtract(emitterPV.getVelocity());
+        final TimeStampedPVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, receptionCondition.getReferenceFrame());
+        final Vector3D relativePosition = receptionCondition.getReceiverPosition().subtract(emitterPV.getPosition());
+        final Vector3D relativeVelocity = receiverVelocity.subtract(emitterPV.getVelocity());
         return Vector3D.dotProduct(relativeVelocity, relativePosition.normalize());
     }
 
     /**
      * Compute measurement without guess.
      * @param <T> field type
-     * @param frame            frame where position is given
-     * @param receiverPV       receiver position and velocity (at reception)
-     * @param receptionDate    signal reception date
+     * @param receptionCondition signal reception condition
+     * @param receiverVelocity receiver's velocity vector at reception
      * @param emitter          signal initial emitter coordinates provider
      * @return range rate (m/s)
      */
-    public <T extends CalculusFieldElement<T>> T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
-                                                       final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T value(final FieldSignalReceptionCondition<T> receptionCondition,
+                                                       final FieldVector3D<T> receiverVelocity,
                                                        final FieldPVCoordinatesProvider<T> emitter) {
-        return value(frame, receiverPV, receptionDate, emitter, receptionDate);
+        return value(receptionCondition, receiverVelocity, emitter, receptionCondition.getReceptionDate());
     }
     /**
      * Compute measurement.
      * @param <T> field type
-     * @param frame            frame where position is given
-     * @param receiverPV       receiver position and velocity (at reception)
-     * @param receptionDate    signal reception date
+     * @param receptionCondition signal reception condition
+     * @param receiverVelocity receiver's velocity vector at reception
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate guess for the emission date
      * @return range rate (m/s)
      */
-    public <T extends CalculusFieldElement<T>> T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
-                                                       final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T value(final FieldSignalReceptionCondition<T> receptionCondition,
+                                                       final FieldVector3D<T> receiverVelocity,
                                                        final FieldPVCoordinatesProvider<T> emitter,
                                                        final FieldAbsoluteDate<T> approxEmissionDate) {
+        final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
         final FieldSignalTravelTimeAdjustableEmitter<T> adjustableEmitter = signalTravelTimeModel.getFieldAdjustableEmitterComputer(
                 receptionDate.getField(), emitter);
-        final T delay = adjustableEmitter.computeDelay(approxEmissionDate, receiverPV.getPosition(), receptionDate, frame);
+        final T delay = adjustableEmitter.computeDelay(receptionCondition, approxEmissionDate);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(delay.negate());
-        final TimeStampedFieldPVCoordinates<T> emitterPV = emitter.getPVCoordinates(emissionDate, frame);
-        final FieldVector3D<T> relativePosition = receiverPV.getPosition().subtract(emitterPV.getPosition());
-        final FieldVector3D<T> relativeVelocity = receiverPV.getVelocity().subtract(emitterPV.getVelocity());
+        final TimeStampedFieldPVCoordinates<T> emitterPV = emitter.getPVCoordinates(emissionDate, receptionCondition.getReferenceFrame());
+        final FieldVector3D<T> relativePosition = receptionCondition.getReceiverPosition().subtract(emitterPV.getPosition());
+        final FieldVector3D<T> relativeVelocity = receiverVelocity.subtract(emitterPV.getVelocity());
         return FieldVector3D.dotProduct(relativeVelocity, relativePosition.normalize());
     }
 }

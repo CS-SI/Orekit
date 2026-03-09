@@ -25,6 +25,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.signal.FieldSignalReceptionCondition;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
@@ -46,12 +48,12 @@ class OneLeggedRangeRateModelTest {
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(1e4, -1e3, 0.), new Vector3D(1, 2, 3));
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final PVCoordinates receiverPV = new PVCoordinates();
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPV.getPosition(), frame);
         // WHEN
-        final double rangeRate = rangeRateModel.value(frame, receiverPV, date, emitter);
+        final double rangeRate = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(), emitter);
         // THEN
         final FieldPVCoordinates<UnivariateDerivative2> fieldPV = pvEmitter.toUnivariateDerivative2PV();
-        final double delay = new SignalTravelTimeAdjustableEmitter(emitter).computeDelay(receiverPV.getPosition(), date,
-                frame);
+        final double delay = new SignalTravelTimeAdjustableEmitter(emitter).computeDelay(receptionCondition);
         assertEquals(fieldPV.shiftedBy(-delay).getPosition().getNorm2().getFirstDerivative(), rangeRate, 1e-12);
     }
 
@@ -64,8 +66,10 @@ class OneLeggedRangeRateModelTest {
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(1e5, 0., 0.), Vector3D.PLUS_I);
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final PVCoordinates receiverPV = new PVCoordinates();
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPV.getPosition(),
+                frame);
         // WHEN
-        final double rangeRate = rangeRateModel.value(frame, receiverPV, date, emitter);
+        final double rangeRate = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(), emitter);
         // THEN
         assertEquals(1., rangeRate);
     }
@@ -79,8 +83,10 @@ class OneLeggedRangeRateModelTest {
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(1e5, 0., 0.));
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final PVCoordinates receiverPV = new PVCoordinates();
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPV.getPosition(),
+                frame);
         // WHEN
-        final double rangeRate = rangeRateModel.value(frame, receiverPV, date, emitter);
+        final double rangeRate = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(), emitter);
         // THEN
         assertEquals(0., rangeRate);
     }
@@ -94,10 +100,12 @@ class OneLeggedRangeRateModelTest {
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(1e5, 1e4,-1e6), Vector3D.PLUS_I);
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final PVCoordinates receiverPV = new PVCoordinates();
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPV.getPosition(),
+                frame);
         // WHEN
-        final double rangeRate = rangeRateModel.value(frame, receiverPV, date, emitter, date);
+        final double rangeRate = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(), emitter, date);
         // THEN
-        final double expected = rangeRateModel.value(frame, receiverPV, date, emitter);
+        final double expected = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(), emitter);
         assertEquals(expected, rangeRate);
     }
 
@@ -115,10 +123,13 @@ class OneLeggedRangeRateModelTest {
         final FieldAbsolutePVCoordinates<Gradient> fieldEmitter = new FieldAbsolutePVCoordinates<>(field, emitter);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
         final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(new SignalTravelTimeModel());
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(fieldDate,
+                receiverPV.getPosition(), frame);
         // WHEN
-        final Gradient rateGradient = rangeRateModel.value(frame, receiverPV, fieldDate, fieldEmitter);
+        final Gradient rateGradient = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(), fieldEmitter);
         // THEN
-        final double rate = rangeRateModel.value(frame, receiverPV.toPVCoordinates(), date, emitter);
+        final double rate = rangeRateModel.value(new SignalReceptionCondition(date, receiverPosition, frame),
+                receiverPV.getVelocity().toVector3D(), emitter);
         assertEquals(rate, rateGradient.getValue());
     }
 }
