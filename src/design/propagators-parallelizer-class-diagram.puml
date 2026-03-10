@@ -1,0 +1,90 @@
+' Copyright 2002-2025 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit.propagation #ECEBD8 {
+
+    interface Propagator {
+      +StepHandlerMultiplexer getMultiplexer()
+      +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
+    }
+
+    class SpacecraftState
+
+    class PropagatorsParallelizer {
+      +PropagatorsParallelizer(List<Propagator> propagators, MultiSatStepHandler globalHandler)
+      +PropagatorsParallelizer(List<Propagator> propagators, double h, MultiSatFixedStepHandler globalHandler)
+      +List<Propagator> getPropagators()
+      +List<SpacecraftState> propagate(AbsoluteDate start, AbsoluteDate target)
+    }
+    note bottom
+      runs each propagator in its own thread;
+      synchronizes them at step boundaries
+      to build common global steps
+    end note
+
+    package sampling #DDEBD8 {
+
+      interface MultiSatStepHandler {
+        +void init(List<SpacecraftState> states0, AbsoluteDate t)
+        +void handleStep(List<OrekitStepInterpolator> interpolators)
+        +void finish(List<SpacecraftState> finalStates)
+      }
+
+      interface MultiSatFixedStepHandler {
+        +void init(List<SpacecraftState> states0, AbsoluteDate t, double step)
+        +void handleStep(List<SpacecraftState> states)
+        +void finish(List<SpacecraftState> finalStates)
+      }
+
+      class MultisatStepNormalizer {
+        +MultisatStepNormalizer(double h, MultiSatFixedStepHandler handler)
+        +double getFixedTimeStep()
+        +MultiSatFixedStepHandler getFixedStepHandler()
+      }
+
+      interface OrekitStepInterpolator {
+        +SpacecraftState getCurrentState()
+        +SpacecraftState getPreviousState()
+        +SpacecraftState getInterpolatedState(AbsoluteDate date)
+        +boolean isForward()
+      }
+
+      MultisatStepNormalizer ..|> MultiSatStepHandler
+      MultisatStepNormalizer o--> MultiSatFixedStepHandler : handler
+
+    }
+
+    PropagatorsParallelizer o--> "*" Propagator : propagators
+    PropagatorsParallelizer o--> MultiSatStepHandler : globalHandler
+    MultiSatStepHandler --> OrekitStepInterpolator : interpolators
+    Propagator --> SpacecraftState : create
+
+  }
+
+@enduml
