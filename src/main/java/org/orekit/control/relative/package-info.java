@@ -16,7 +16,7 @@
  */
 
 /**
- * Package rpo provides classes to compute typical maneuvers of relative proximity operations.
+ * Package relative provides classes to compute typical maneuvers of relative proximity operations.
  * <p>
  *
  * </p>
