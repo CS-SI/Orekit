@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Observer;
@@ -38,17 +39,16 @@ public abstract class AbstractBistaticBuilder<T extends ObservedMeasurement<T>> 
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param emitter observer that emits the signal
      * @param receiver observer that receiver the signal at the very end of the transmissions
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      */
     protected AbstractBistaticBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                       final Observer emitter, final Observer receiver,
-                                      final double sigma, final double baseWeight,
+                                      final MeasurementQuality measurementQuality,
                                       final SignalTravelTimeModel signalTravelTimeModel,
                                       final ObservableSatellite satellite) {
-        super(noiseSource, new double[] {sigma}, new double[] {baseWeight}, signalTravelTimeModel, satellite);
+        super(noiseSource, measurementQuality, signalTravelTimeModel, satellite);
         this.emitter  = emitter;
         this.receiver = receiver;
     }

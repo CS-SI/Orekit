@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.BistaticRange;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -45,32 +46,31 @@ public class BistaticRangeBuilder extends AbstractBistaticBuilder<BistaticRange>
                                 final Observer emitter, final Observer receiver,
                                 final double sigma, final double baseWeight,
                                 final ObservableSatellite satellite) {
-        this(noiseSource, emitter, receiver, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(noiseSource, emitter, receiver, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
     }
 
     /** Constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param emitter emitter observer
      * @param receiver receiver observer, from which measurement is performed
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      * @since 14.0
      */
     public BistaticRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                 final Observer emitter, final Observer receiver,
-                                final double sigma, final double baseWeight,
+                                final MeasurementQuality measurementQuality,
                                 final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, emitter, receiver, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(noiseSource, emitter, receiver, measurementQuality, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
     @Override
     protected BistaticRange buildObserved(final AbsoluteDate date,
                                           final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new BistaticRange(getEmitter(), getReceiver(), date, 0.0, getTheoreticalStandardDeviation()[0],
-                getBaseWeight()[0], getSignalTravelTimeModel(), getSatellites()[0]);
+        return new BistaticRange(getEmitter(), getReceiver(), date, 0.0, getMeasurementQuality(),
+                getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

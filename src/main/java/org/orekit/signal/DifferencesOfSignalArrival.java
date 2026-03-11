@@ -49,80 +49,81 @@ public class DifferencesOfSignalArrival {
     /**
      * Compute (positive) delays from emission.
      *
-     * @param frame            frame where position is given
-     * @param primaryReceiverPosition primary receiver position (at primary reception)
-     * @param receptionDate    signal primary reception date
+     * @param primaryReceptionCondition signal reception conditions at primary observer
      * @param secondaryReceiver signal secondary receiver coordinates provider
      * @param approxSecondaryReception guess for the secondary reception date
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate guess for the emission date
      * @return delays to primary and secondary respectively (s)
      */
-    public double[] computeDelays(final Frame frame, final Vector3D primaryReceiverPosition, final AbsoluteDate receptionDate,
+    public double[] computeDelays(final SignalReceptionCondition primaryReceptionCondition,
                                   final PVCoordinatesProvider secondaryReceiver, final AbsoluteDate approxSecondaryReception,
                                   final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
         final double primaryDelay = signalTravelTimeModel.getAdjustableEmitterComputer(emitter)
-                .computeDelay(receptionDate, primaryReceiverPosition, approxEmissionDate, frame);
-        final AbsoluteDate emissionDate = receptionDate.shiftedBy(-primaryDelay);
+                .computeDelay(primaryReceptionCondition, approxEmissionDate);
+        final AbsoluteDate emissionDate = primaryReceptionCondition.getReceptionDate().shiftedBy(-primaryDelay);
         final SignalTravelTimeAdjustableReceiver signalTravelTimeAdjustableReceiver = signalTravelTimeModel
                 .getAdjustableReceiverComputer(secondaryReceiver);
+        final Frame frame = primaryReceptionCondition.getReferenceFrame();
         final Vector3D emissionPosition = emitter.getPosition(emissionDate, frame);
-        final double secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionPosition,
-                emissionDate, approxSecondaryReception, frame);
+        final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emissionPosition,
+                frame);
+        final double secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionCondition,
+                approxSecondaryReception);
         return new double[] { primaryDelay, secondaryDelay };
     }
 
     /**
      * Compute (positive) delays from emission without guesses.
      *
-     * @param frame            frame where position is given
-     * @param primaryReceiverPosition primary receiver position (at primary reception)
-     * @param receptionDate    signal primary reception date
+     * @param primaryReceptionCondition signal reception conditions at primary observer
      * @param secondaryReceiver signal secondary receiver coordinates provider
      * @param emitter          signal initial emitter coordinates provider
      * @return delays to primary and secondary respectively (s)
      */
-    public double[] computeDelays(final Frame frame, final Vector3D primaryReceiverPosition, final AbsoluteDate receptionDate,
+    public double[] computeDelays(final SignalReceptionCondition primaryReceptionCondition,
                                   final PVCoordinatesProvider secondaryReceiver,
                                   final PVCoordinatesProvider emitter) {
         final double primaryDelay = signalTravelTimeModel.getAdjustableEmitterComputer(emitter)
-                .computeDelay(primaryReceiverPosition, receptionDate, frame);
-        final AbsoluteDate emissionDate = receptionDate.shiftedBy(-primaryDelay);
+                .computeDelay(primaryReceptionCondition);
+        final AbsoluteDate emissionDate = primaryReceptionCondition.getReceptionDate().shiftedBy(-primaryDelay);
         final SignalTravelTimeAdjustableReceiver signalTravelTimeAdjustableReceiver = signalTravelTimeModel
                 .getAdjustableReceiverComputer(secondaryReceiver);
+        final Frame frame = primaryReceptionCondition.getReferenceFrame();
         final Vector3D emissionPosition = emitter.getPosition(emissionDate, frame);
-        final double secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionPosition,
-                emissionDate, frame);
+        final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emissionPosition,
+                frame);
+        final double secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionCondition);
         return new double[] { primaryDelay, secondaryDelay };
     }
 
     /**
      * Compute (positive) delays from emission.
      * @param <T> field type
-     * @param frame            frame where position is given
-     * @param primaryReceiverPosition primary receiver position (at primary reception)
-     * @param receptionDate    signal primary reception date
+     * @param primaryReceptionCondition signal reception conditions at primary observer
      * @param secondaryReceiver signal secondary receiver coordinates provider
      * @param approxSecondaryReception guess for the secondary reception date
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate guess for the emission date
      * @return delays to primary and secondary respectively (s)
      */
-    public <T extends CalculusFieldElement<T>> T[] computeDelays(final Frame frame, final FieldVector3D<T> primaryReceiverPosition,
-                                                                 final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T[] computeDelays(final FieldSignalReceptionCondition<T> primaryReceptionCondition,
                                                                  final FieldPVCoordinatesProvider<T> secondaryReceiver,
                                                                  final FieldAbsoluteDate<T> approxSecondaryReception,
                                                                  final FieldPVCoordinatesProvider<T> emitter,
                                                                  final FieldAbsoluteDate<T> approxEmissionDate) {
+        final FieldAbsoluteDate<T> receptionDate = primaryReceptionCondition.getReceptionDate();
         final Field<T> field = receptionDate.getField();
+        final Frame frame = primaryReceptionCondition.getReferenceFrame();
         final T primaryDelay = signalTravelTimeModel.getFieldAdjustableEmitterComputer(field, emitter)
-            .computeDelay(receptionDate, primaryReceiverPosition, approxEmissionDate, frame);
+            .computeDelay(primaryReceptionCondition, approxEmissionDate);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(primaryDelay.negate());
         final FieldSignalTravelTimeAdjustableReceiver<T> signalTravelTimeAdjustableReceiver = signalTravelTimeModel
                 .getFieldAdjustableReceiverComputer(field, secondaryReceiver);
         final FieldVector3D<T> emissionPosition = emitter.getPosition(emissionDate, frame);
-        final T secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionPosition,
-                emissionDate, approxSecondaryReception, frame);
+        final FieldSignalEmissionCondition<T> emissionCondition = new FieldSignalEmissionCondition<>(emissionDate,
+                emissionPosition, frame);
+        final T secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionCondition, approxSecondaryReception);
         final T[] output = MathArrays.buildArray(field, 2);
         output[0] = primaryDelay;
         output[1] = secondaryDelay;
@@ -132,26 +133,26 @@ public class DifferencesOfSignalArrival {
     /**
      * Compute (positive) delays from emission without guesses.
      * @param <T> field type
-     * @param frame            frame where position is given
-     * @param primaryReceiverPosition primary receiver position (at primary reception)
-     * @param receptionDate    signal primary reception date
+     * @param primaryReceptionCondition signal reception conditions at primary observer
      * @param secondaryReceiver signal secondary receiver coordinates provider
      * @param emitter          signal initial emitter coordinates provider
      * @return delays to primary and secondary respectively (s)
      */
-    public <T extends CalculusFieldElement<T>> T[] computeDelays(final Frame frame, final FieldVector3D<T> primaryReceiverPosition,
-                                                                 final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T[] computeDelays(final FieldSignalReceptionCondition<T> primaryReceptionCondition,
                                                                  final FieldPVCoordinatesProvider<T> secondaryReceiver,
                                                                  final FieldPVCoordinatesProvider<T> emitter) {
+        final FieldAbsoluteDate<T> receptionDate = primaryReceptionCondition.getReceptionDate();
+        final Frame frame = primaryReceptionCondition.getReferenceFrame();
         final Field<T> field = receptionDate.getField();
         final T primaryDelay = signalTravelTimeModel.getFieldAdjustableEmitterComputer(field, emitter)
-                .computeDelay(primaryReceiverPosition, receptionDate, frame);
+                .computeDelay(primaryReceptionCondition);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(primaryDelay.negate());
         final FieldSignalTravelTimeAdjustableReceiver<T> signalTravelTimeAdjustableReceiver = signalTravelTimeModel
                 .getFieldAdjustableReceiverComputer(field, secondaryReceiver);
         final FieldVector3D<T> emissionPosition = emitter.getPosition(emissionDate, frame);
-        final T secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionPosition,
-                emissionDate, frame);
+        final FieldSignalEmissionCondition<T> emissionCondition = new FieldSignalEmissionCondition<>(emissionDate,
+                emissionPosition, frame);
+        final T secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionCondition);
         final T[] output = MathArrays.buildArray(field, 2);
         output[0] = primaryDelay;
         output[1] = secondaryDelay;

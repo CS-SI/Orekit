@@ -16,20 +16,22 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link InterSatellitesPhase} measurements.
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<InterSatellitesPhase> {
+public class InterSatellitesPhaseBuilder extends AbstractSignalBasedBuilder<InterSatellitesPhase> {
 
     /** Cache for ambiguities.
      * @since 12.1
@@ -53,7 +55,26 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
                                        final ObservableSatellite local, final ObservableSatellite remote,
                                        final double wavelength, final double sigma, final double baseWeight,
                                        final AmbiguityCache cache) {
-        super(noiseSource, sigma, baseWeight, local, remote);
+        this(noiseSource, local, remote, wavelength, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), cache);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote satellite which simply emits the signal
+     * @param wavelength phase observed value wavelength (m)
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @param cache from which ambiguity drive should come
+     * @since 14.0
+     */
+    public InterSatellitesPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                       final ObservableSatellite local, final ObservableSatellite remote,
+                                       final double wavelength, final MeasurementQuality measurementQuality,
+                                       final SignalTravelTimeModel signalTravelTimeModel,
+                                       final AmbiguityCache cache) {
+        super(noiseSource, measurementQuality, signalTravelTimeModel, new ObservableSatellite[] {local, remote});
         this.cache      = cache;
         this.wavelength = wavelength;
     }
@@ -63,9 +84,8 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
     protected InterSatellitesPhase buildObserved(final AbsoluteDate date,
                                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
         return new InterSatellitesPhase(getSatellites()[0], getSatellites()[1],
-                                        date, Double.NaN, wavelength,
-                                        getTheoreticalStandardDeviation()[0],
-                                        getBaseWeight()[0], cache);
+                                        date, Double.NaN, wavelength, getMeasurementQuality(),
+                                        getSignalTravelTimeModel(), cache);
     }
 
 }

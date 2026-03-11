@@ -29,7 +29,9 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.SignalBasedMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
@@ -160,7 +162,8 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         final double deltaT = arrivalDate.durationFrom(states[0]);
         final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(deltaT);
         final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel().getAdjustableEmitterComputer(remotePV);
-        final double tauD = signalTimeOfFlight.computeDelay(arrivalDate, pvaDownlink.getPosition(), arrivalDate, frame);
+        final double tauD = signalTimeOfFlight.computeDelay(new SignalReceptionCondition(arrivalDate,
+                pvaDownlink.getPosition(), frame), arrivalDate);
 
         // Remote satellite at signal emission
         final AbsoluteDate emissionDate = arrivalDate.shiftedBy(-tauD);
@@ -216,7 +219,9 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(deltaT);
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(deltaT.getField(), remotePV);
-        final Gradient tauD = fieldComputer.computeDelay(arrivalDate, pvaDownlink.getPosition(), arrivalDate, frame);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(arrivalDate,
+                pvaDownlink.getPosition(), frame);
+        final Gradient tauD = fieldComputer.computeDelay(receptionCondition, arrivalDate);
 
         // Remote satellite at signal emission
         final FieldAbsoluteDate<Gradient>        emissionDate      = arrivalDate.shiftedBy(tauD.negate());

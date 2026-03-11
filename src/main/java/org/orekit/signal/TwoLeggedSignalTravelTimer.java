@@ -48,67 +48,67 @@ public class TwoLeggedSignalTravelTimer {
     /**
      * Compute first and second leg delays.
      *
-     * @param frame            frame where position is given
-     * @param receiverPosition end receiver position (at reception)
-     * @param receptionDate    signal end reception date
+     * @param endReceptionCondition end signal reception condition
      * @param relay            signal relay (initial reception) coordinates provider
      * @param approxRelayDate guess for the relay date
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate guess for the emission date
      * @return delays on both legs in chronological order (s)
      */
-    public double[] computeDelays(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
+    public double[] computeDelays(final SignalReceptionCondition endReceptionCondition,
                                   final PVCoordinatesProvider relay, final AbsoluteDate approxRelayDate,
                                   final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
-        final double secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, approxRelayDate);
-        final AbsoluteDate relayDate = receptionDate.shiftedBy(-secondLegTravelTime);
+        final double secondLegTravelTime = computeTravelTime(endReceptionCondition, relay, approxRelayDate);
+        final AbsoluteDate relayDate = endReceptionCondition.getReceptionDate().shiftedBy(-secondLegTravelTime);
+        final Frame frame = endReceptionCondition.getReferenceFrame();
         final Vector3D relayPosition = relay.getPosition(relayDate, frame);
-        final double firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, approxEmissionDate);
+        final SignalReceptionCondition relayCondition = new SignalReceptionCondition(relayDate, relayPosition, frame);
+        final double firstLegTravelTime = computeTravelTime(relayCondition, emitter, approxEmissionDate);
         return new double[] { firstLegTravelTime, secondLegTravelTime };
     }
 
     /**
      * Compute first and second leg delays without guess.
      *
-     * @param frame            frame where position is given
-     * @param receiverPosition end receiver position (at reception)
-     * @param receptionDate    signal end reception date
+     * @param endReceptionCondition end signal reception condition
      * @param relay            signal relay (initial reception) coordinates provider
      * @param emitter          signal initial emitter coordinates provider
      * @return delays on both legs in chronological order (s)
      */
-    public double[] computeDelays(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
+    public double[] computeDelays(final SignalReceptionCondition endReceptionCondition,
                                   final PVCoordinatesProvider relay, final PVCoordinatesProvider emitter) {
-        final double secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, receptionDate);
+        final AbsoluteDate receptionDate = endReceptionCondition.getReceptionDate();
+        final double secondLegTravelTime = computeTravelTime(endReceptionCondition, relay, receptionDate);
         final AbsoluteDate relayDate = receptionDate.shiftedBy(-secondLegTravelTime);
+        final Frame frame = endReceptionCondition.getReferenceFrame();
         final Vector3D relayPosition = relay.getPosition(relayDate, frame);
-        final double firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, relayDate);
+        final SignalReceptionCondition relayCondition = new SignalReceptionCondition(relayDate, relayPosition, frame);
+        final double firstLegTravelTime = computeTravelTime(relayCondition, emitter, relayDate);
         return new double[] { firstLegTravelTime, secondLegTravelTime };
     }
 
     /**
      * Compute first and second leg delays.
      * @param <T> field type
-     * @param frame            frame where position is given
-     * @param receiverPosition end receiver position (at reception)
-     * @param receptionDate    signal end reception date
+     * @param endReceptionCondition signal end reception condition
      * @param relay            signal relay (initial reception, second emission) coordinates provider
      * @param approxRelayDate  guess for the relay date
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate  guess for the emission date
      * @return delays on both legs in chronological order (s)
      */
-    public <T extends CalculusFieldElement<T>> T[] computeDelays(final Frame frame, final FieldVector3D<T> receiverPosition,
-                                                                 final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T[] computeDelays(final FieldSignalReceptionCondition<T> endReceptionCondition,
                                                                  final FieldPVCoordinatesProvider<T> relay,
                                                                  final FieldAbsoluteDate<T> approxRelayDate,
                                                                  final FieldPVCoordinatesProvider<T> emitter,
                                                                  final FieldAbsoluteDate<T> approxEmissionDate) {
-        final T secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, approxRelayDate);
-        final FieldAbsoluteDate<T> relayDate = receptionDate.shiftedBy(secondLegTravelTime.negate());
+        final T secondLegTravelTime = computeTravelTime(endReceptionCondition, relay, approxRelayDate);
+        final FieldAbsoluteDate<T> relayDate = endReceptionCondition.getReceptionDate().shiftedBy(secondLegTravelTime.negate());
+        final Frame frame = endReceptionCondition.getReferenceFrame();
         final FieldVector3D<T> relayPosition = relay.getPosition(relayDate, frame);
-        final T firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, approxEmissionDate);
-        final T[] output = MathArrays.buildArray(receiverPosition.getX().getField(), 2);
+        final T firstLegTravelTime = computeTravelTime(new FieldSignalReceptionCondition<T>(relayDate,
+                relayPosition, frame), emitter, approxEmissionDate);
+        final T[] output = MathArrays.buildArray(relayDate.getField(), 2);
         output[0] = firstLegTravelTime;
         output[1] = secondLegTravelTime;
         return output;
@@ -117,22 +117,22 @@ public class TwoLeggedSignalTravelTimer {
     /**
      * Compute first and second leg delays without guess.
      * @param <T> field type
-     * @param frame            frame where position is given
-     * @param receiverPosition end receiver position (at reception)
-     * @param receptionDate    signal end reception date
+     * @param endReceptionCondition signal end reception condition
      * @param relay            signal relay (initial reception, second emission) coordinates provider
      * @param emitter          signal initial emitter coordinates provider
      * @return delays on both legs in chronological order (s)
      */
-    public <T extends CalculusFieldElement<T>> T[] computeDelays(final Frame frame, final FieldVector3D<T> receiverPosition,
-                                                                 final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T[] computeDelays(final FieldSignalReceptionCondition<T> endReceptionCondition,
                                                                  final FieldPVCoordinatesProvider<T> relay,
                                                                  final FieldPVCoordinatesProvider<T> emitter) {
-        final T secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, receptionDate);
+        final FieldAbsoluteDate<T> receptionDate = endReceptionCondition.getReceptionDate();
+        final T secondLegTravelTime = computeTravelTime(endReceptionCondition, relay, receptionDate);
         final FieldAbsoluteDate<T> relayDate = receptionDate.shiftedBy(secondLegTravelTime.negate());
+        final Frame frame = endReceptionCondition.getReferenceFrame();
         final FieldVector3D<T> relayPosition = relay.getPosition(relayDate, frame);
-        final T firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, relayDate);
-        final T[] output = MathArrays.buildArray(receiverPosition.getX().getField(), 2);
+        final T firstLegTravelTime = computeTravelTime(new FieldSignalReceptionCondition<>(relayDate, relayPosition, frame),
+                emitter, relayDate);
+        final T[] output = MathArrays.buildArray(receptionDate.getField(), 2);
         output[0] = firstLegTravelTime;
         output[1] = secondLegTravelTime;
         return output;
@@ -140,34 +140,30 @@ public class TwoLeggedSignalTravelTimer {
 
     /**
      * Method for one leg travel time.
-     * @param frame frame where position is given
-     * @param receiverPosition receiver position at reception
-     * @param receptionDate reception date
+     * @param receptionCondition signal reception condition
      * @param emitter emitter
      * @param guessEmissionDate guess for the emission date
      * @return signal travel time
      */
-    private double computeTravelTime(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
+    private double computeTravelTime(final SignalReceptionCondition receptionCondition,
                                      final PVCoordinatesProvider emitter, final AbsoluteDate guessEmissionDate) {
-        return signalTravelTimeModel.getAdjustableEmitterComputer(emitter).computeDelay(guessEmissionDate,
-                receiverPosition, receptionDate, frame);
+        return signalTravelTimeModel.getAdjustableEmitterComputer(emitter).computeDelay(receptionCondition,
+                guessEmissionDate);
     }
 
     /**
      * Method for one leg travel time.
      * @param <T> field type
-     * @param frame frame where position is given
-     * @param receiverPosition receiver position at reception
-     * @param receptionDate reception date
+     * @param receptionCondition signal reception condition
      * @param emitter emitter
      * @param guessEmissionDate guess for the emission date
      * @return signal travel time
      */
-    private <T extends CalculusFieldElement<T>> T computeTravelTime(final Frame frame, final FieldVector3D<T> receiverPosition,
-                                                                    final FieldAbsoluteDate<T> receptionDate,
+    private <T extends CalculusFieldElement<T>> T computeTravelTime(final FieldSignalReceptionCondition<T> receptionCondition,
                                                                     final FieldPVCoordinatesProvider<T> emitter,
                                                                     final FieldAbsoluteDate<T> guessEmissionDate) {
+        final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
         return signalTravelTimeModel.getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter)
-                .computeDelay(guessEmissionDate, receiverPosition, receptionDate, frame);
+                .computeDelay(receptionCondition, guessEmissionDate);
     }
 }

@@ -31,7 +31,9 @@ import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.SignalBasedMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
@@ -125,8 +127,10 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
         // Downlink delay / determine time-of-emission of signal information from remote object
         final double deltaT = arrivalDate.durationFrom(states[0]);
         final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(remotePV);
-        final double tauD = signalTimeOfFlight.computeDelay(arrivalDate, pvaDownlink.getPosition(), arrivalDate, frame);
+        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel()
+                .getAdjustableEmitterComputer(remotePV);
+        final double tauD = signalTimeOfFlight.computeDelay(new SignalReceptionCondition(arrivalDate,
+                pvaDownlink.getPosition(), frame), arrivalDate);
 
         // Remote object pos/vel at time of signal emission
         final AbsoluteDate emissionDate = arrivalDate.shiftedBy(-tauD);
@@ -174,9 +178,11 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
         // Downlink delay
         final Gradient deltaT = arrivalDate.durationFrom(states[0].getDate());
         final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer =
-                new FieldSignalTravelTimeAdjustableEmitter<>(remotePV);
-        final Gradient tauD = fieldComputer.computeDelay(arrivalDate, pvaDownlink.getPosition(), arrivalDate, frame);
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel().
+                getFieldAdjustableEmitterComputer(arrivalDate.getField(), remotePV);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(arrivalDate,
+                pvaDownlink.getPosition(), frame);
+        final Gradient tauD = fieldComputer.computeDelay(receptionCondition, arrivalDate);
 
         // Remote observer at signal emission time
         final FieldAbsoluteDate<Gradient> emissionDate = arrivalDate.shiftedBy(tauD.negate());

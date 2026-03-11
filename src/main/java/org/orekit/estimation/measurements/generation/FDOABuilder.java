@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.FDOA;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -48,8 +49,8 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
                        final Observer primeObserver, final Observer secondObserver,
                        final double centreFrequency, final double sigma, final double baseWeight,
                        final ObservableSatellite satellite) {
-        this(noiseSource, primeObserver, secondObserver, centreFrequency, sigma, baseWeight, new SignalTravelTimeModel(),
-                satellite);
+        this(noiseSource, primeObserver, secondObserver, centreFrequency, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), satellite);
     }
 
     /** Simple constructor.
@@ -57,17 +58,16 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
      * @param primeObserver observer that gives the date of the measurement
      * @param secondObserver observer that gives the measurement value
      * @param centreFrequency satellite emitter frequency
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      * @since 14.0
      */
     public FDOABuilder(final CorrelatedRandomVectorGenerator noiseSource,
                        final Observer primeObserver, final Observer secondObserver,
-                       final double centreFrequency, final double sigma, final double baseWeight,
+                       final double centreFrequency, final MeasurementQuality measurementQuality,
                        final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, primeObserver, secondObserver, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(noiseSource, primeObserver, secondObserver, measurementQuality, signalTravelTimeModel, satellite);
         this.centreFrequency = centreFrequency;
     }
 

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -76,9 +78,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
     public MultiplexedMeasurement(final List<ObservedMeasurement<?>> measurements) {
         super(measurements.get(0).getDate(),
               multiplex(measurements, ComparableMeasurement::getObservedValue),
-              multiplex(measurements, ObservedMeasurement::getTheoreticalStandardDeviation),
-              multiplex(measurements, ObservedMeasurement::getBaseWeight),
-              multiplex(measurements));
+              multiplexMeasurementQuality(measurements), multiplex(measurements));
 
         this.observedMeasurements                    = measurements;
         this.estimatedMeasurementsWithoutDerivatives = new ArrayList<>();
@@ -331,6 +331,26 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
     }
 
     /** Multiplex measurements data.
+     * @param measurements measurements to multiplex
+     * @return multiplexed data
+     */
+    private static MeasurementQuality multiplexMeasurementQuality(final List<ObservedMeasurement<?>> measurements) {
+
+        final int totalSize = measurements.stream().mapToInt(ObservedMeasurement::getDimension).sum();
+        final double[] weights = new double[totalSize];
+        final RealMatrix covarianceMatrix = MatrixUtils.createRealMatrix(totalSize, totalSize);
+        int n = 0;
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            System.arraycopy(measurement.getBaseWeight(), 0, weights, n, measurement.getDimension());
+            covarianceMatrix.setSubMatrix(measurement.getMeasurementQuality().getCovarianceMatrix().getData(), n, n);
+            n += measurement.getDimension();
+        }
+
+        return new MeasurementQuality(covarianceMatrix.getData(), weights);
+
+    }
+
+    /** Multiplex measurements value.
      * @param measurements measurements to multiplex
      * @param extractor data extraction function
      * @return multiplexed data

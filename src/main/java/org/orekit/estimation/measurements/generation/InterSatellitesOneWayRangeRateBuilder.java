@@ -16,22 +16,24 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.InterSatellitesOneWayRangeRate;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link org.orekit.estimation.measurements.gnss.InterSatellitesOneWayRangeRate} measurements.
  * @author Luc Maisonobe
  * @since 12.1
  */
 public class InterSatellitesOneWayRangeRateBuilder
-    extends AbstractMeasurementBuilder<InterSatellitesOneWayRangeRate> {
+    extends AbstractSignalBasedBuilder<InterSatellitesOneWayRangeRate> {
 
-    /** Simple constructor.
+    /** Simple constructor with default signal model.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
      * @param remote satellite which simply emits the signal
@@ -41,7 +43,22 @@ public class InterSatellitesOneWayRangeRateBuilder
     public InterSatellitesOneWayRangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                                  final ObservableSatellite local, final ObservableSatellite remote,
                                                  final double sigma, final double baseWeight) {
-        super(noiseSource, sigma, baseWeight, local, remote);
+        this(noiseSource, local, remote, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel());
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote satellite which simply emits the signal
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @since 14.0
+     */
+    public InterSatellitesOneWayRangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                                 final ObservableSatellite local, final ObservableSatellite remote,
+                                                 final MeasurementQuality measurementQuality,
+                                                 final SignalTravelTimeModel signalTravelTimeModel) {
+        super(noiseSource, measurementQuality, signalTravelTimeModel, new ObservableSatellite[] {local, remote});
     }
 
     /** {@inheritDoc} */

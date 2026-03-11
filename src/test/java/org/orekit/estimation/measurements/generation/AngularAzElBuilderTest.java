@@ -22,11 +22,19 @@ import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.ReferenceEllipsoid;
+import org.orekit.signal.SignalTravelTimeModel;
+import static org.mockito.Mockito.mock;
 
 public class AngularAzElBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularAzEl> {
 
@@ -49,6 +57,20 @@ public class AngularAzElBuilderTest extends AbstractGroundMeasurementBuilderTest
                         new double[] { -FastMath.PI, -0.5 * FastMath.PI },
                         new double[] { +FastMath.PI, +0.5 * FastMath.PI }));
         return ab;
+    }
+
+    @Test
+    void testGetSignalTravelTimeModel() {
+        // GIVEN
+        final GroundStation station = new GroundStation(new TopocentricFrame(ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true)),
+                new GeodeticPoint(0., 0., 0), ""));
+        final SignalTravelTimeModel signalTravelTimeModel = mock();
+        final AngularAzElBuilder builder = new AngularAzElBuilder(null, station,
+                new MeasurementQuality(1., 1.), signalTravelTimeModel, new ObservableSatellite(0));
+        // WHEN
+        final SignalTravelTimeModel actualModel = builder.getSignalTravelTimeModel();
+        // THEN
+        Assertions.assertEquals(signalTravelTimeModel, actualModel);
     }
 
     @Test

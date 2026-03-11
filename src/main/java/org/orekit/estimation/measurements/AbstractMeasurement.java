@@ -169,29 +169,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
     /** {@inheritDoc} */
     @Override
-    public int getDimension() {
-        return observed.length;
-    }
-
-    /**
-     * Getter for the measurement quality data.
-     * @return measurement quality
-     * @since 14.0
-     */
     public MeasurementQuality getMeasurementQuality() {
         return measurementQuality;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] getTheoreticalStandardDeviation() {
-        return measurementQuality.getStandardDeviations();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] getBaseWeight() {
-        return measurementQuality.getWeights();
     }
 
     /** {@inheritDoc} */

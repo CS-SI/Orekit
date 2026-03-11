@@ -20,8 +20,17 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="vcucchie" type="add" issue="1927">
+            Add class and sequence diagrams specific to PropagatorsParallelizer.
+        </action>
         <action dev="vcucchie" type="add" issue="1926">
             Add .puml diagram specific to SpacecraftState.
+        </action>
+        <action dev="serrof" type="update" issue="1923">
+            Use crossed terms from covariance matrix in any non-scalar measurements with Kalman filters.
+        </action>
+        <action dev="serrof" type="update" issue="1922">
+            Renamed (systematic) offset as bias to avoid confusion with total offset.
         </action>
         <action dev="serrof" type="update" issue="1919">
             Use generic observer in AngularRaDec.
@@ -59,6 +68,9 @@
         <action dev="luc" type="add" issue="issue-1896">
             Allow to build simply a Starlette or Lageos type shape without wings
             for BoxAndSolarArray (aka disco ball).
+        </action>
+        <action dev="serrof" type="update" issue="issue-1889">
+            Add signal model in relevant measurement builders.
         </action>
         <action dev="serrof" type="add" issue="issue-1888">
             Add plane crossing event function and detector.

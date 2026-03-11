@@ -69,7 +69,8 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
                                 final AbsoluteDate date, final double phase,
                                 final double wavelength, final double sigma, final double baseWeight,
                                 final AmbiguityCache cache) {
-        this(local, remote, date, phase, wavelength, sigma, baseWeight, cache, new SignalTravelTimeModel());
+        this(local, remote, date, phase, wavelength, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), cache);
     }
 
     /** Constructor.
@@ -78,21 +79,20 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
      * @param date date of the measurement
      * @param phase observed value (cycles)
      * @param wavelength phase observed value wavelength (m)
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
      * @param cache from which ambiguity drive should come
-     * @param signalTravelTimeModel signal travel time model
-     * @since 12.1
+     * @since 14.0
      */
     public InterSatellitesPhase(final ObservableSatellite local, final ObservableSatellite remote,
-                                final AbsoluteDate date, final double phase,
-                                final double wavelength, final double sigma, final double baseWeight,
-                                final AmbiguityCache cache, final SignalTravelTimeModel signalTravelTimeModel) {
+                                final AbsoluteDate date, final double phase, final double wavelength,
+                                final MeasurementQuality measurementQuality,
+                                final SignalTravelTimeModel signalTravelTimeModel, final AmbiguityCache cache) {
         // Call to super constructor
-        super(date, phase, new MeasurementQuality(sigma, baseWeight), signalTravelTimeModel, local, remote);
+        super(date, phase, measurementQuality, signalTravelTimeModel, local, remote);
 
         // Initialize phase ambiguity driver
-        ambiguityDriver = cache.getAmbiguity(remote.getName(), local.getName(), wavelength);
+        this.ambiguityDriver = cache.getAmbiguity(remote.getName(), local.getName(), wavelength);
 
         // Add parameter drivers
         addParameterDriver(ambiguityDriver);

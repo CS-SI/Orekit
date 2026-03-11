@@ -24,6 +24,7 @@ import java.util.Map;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
@@ -44,11 +45,8 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
     /** Modifiers that apply to the measurement.*/
     private final List<EstimationModifier<T>> modifiers;
 
-    /** Theoretical standard deviation. */
-    private final double[] sigma;
-
-    /** Base weight. */
-    private final double[] baseWeight;
+    /** Measurement quality. */
+    private final MeasurementQuality measurementQuality;
 
     /** Satellites related to this measurement. */
     private final ObservableSatellite[] satellites;
@@ -85,10 +83,22 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
     protected AbstractMeasurementBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                          final double[] sigma, final double[] baseWeight,
                                          final ObservableSatellite... satellites) {
+        this(noiseSource, new MeasurementQuality(sigma, baseWeight), satellites);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
+     *                           of the covariance matrix are only used by Kalman filters, not least squares)
+     * @param satellites satellites related to this builder
+     * @since 14.0
+     */
+    protected AbstractMeasurementBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                         final MeasurementQuality measurementQuality,
+                                         final ObservableSatellite... satellites) {
         this.noiseSource = noiseSource;
         this.modifiers   = new ArrayList<>();
-        this.sigma       = sigma.clone();
-        this.baseWeight  = baseWeight.clone();
+        this.measurementQuality = measurementQuality;
         this.satellites  = satellites.clone();
     }
 
@@ -136,6 +146,15 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         return noiseSource == null ? null : noiseSource.nextVector();
     }
 
+    /**
+     * Getter for the measurement quality.
+     * @return measurement quality
+     * @since 14.0
+     */
+    protected MeasurementQuality getMeasurementQuality() {
+        return measurementQuality;
+    }
+
     /** Get the theoretical standard deviation.
      * <p>
      * The theoretical standard deviation is a theoretical value
@@ -149,7 +168,7 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
      * @see #getBaseWeight()
      */
     protected double[] getTheoreticalStandardDeviation() {
-        return sigma.clone();
+        return measurementQuality.getStandardDeviations();
     }
 
     /** Get the base weight associated with the measurement
@@ -164,7 +183,7 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
      * @see #getTheoreticalStandardDeviation()
      */
     protected double[] getBaseWeight() {
-        return baseWeight.clone();
+        return measurementQuality.getWeights();
     }
 
     /** {@inheritDoc} */

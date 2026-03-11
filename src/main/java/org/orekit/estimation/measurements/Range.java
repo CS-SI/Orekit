@@ -22,6 +22,7 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.signal.TwoLeggedSignalTravelTimer;
@@ -91,7 +92,23 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
     public Range(final Observer observer, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final ObservableSatellite satellite) {
-        super(observer, date, range, sigma, baseWeight, twoWay, new SignalTravelTimeModel(), satellite);
+        super(observer, date, range, new MeasurementQuality(sigma, baseWeight), twoWay, new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Simple constructor.
+     * @param observer observer that performs the measurement
+     * @param twoWay flag indicating whether it is a two-way measurement
+     * @param date date of the measurement
+     * @param range observed value
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @param satellite satellite related to this measurement
+     * @since 14.0
+     */
+    public Range(final Observer observer, final boolean twoWay, final AbsoluteDate date,
+                 final double range, final MeasurementQuality measurementQuality,
+                 final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(observer, date, range, measurementQuality, twoWay, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
@@ -173,7 +190,9 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
         final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
-        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                receiverPV.getPosition(), frame);
+        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition,
                 satellitePVProvider, observerPVProvider);
 
         // Prepare the evaluation
@@ -208,7 +227,9 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
                 field, satellitePVProvider);
         final TimeStampedFieldPVCoordinates<Gradient> observerPVAtReception = getObserver().getFieldPVCoordinatesProvider(nbParams, indices)
                 .getPVCoordinates(receptionDate, frame);
-        final Gradient delay = adjustableEmitter.computeDelay(observerPVAtReception.getPosition(), receptionDate, frame);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                observerPVAtReception.getPosition(), frame);
+        final Gradient delay = adjustableEmitter.computeDelay(receptionCondition);
 
         // prepare the evaluation
         final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(delay.negate());

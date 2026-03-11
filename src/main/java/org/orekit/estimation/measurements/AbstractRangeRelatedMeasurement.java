@@ -24,6 +24,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.signal.TwoLeggedSignalTravelTimer;
@@ -53,18 +54,17 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
      * @param observer observer that performs the measurement
      * @param date date of the measurement
      * @param value observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
      * @param twoWay if true, this is a two-way measurement
-     * @param signalTravelTimeModel signal travel model
      * @param satellite satellite related to this measurement
      */
     protected AbstractRangeRelatedMeasurement(final Observer observer, final AbsoluteDate date,
-                                              final double value, final double sigma, final double baseWeight,
+                                              final double value, final MeasurementQuality measurementQuality,
                                               final boolean twoWay, final SignalTravelTimeModel signalTravelTimeModel,
                                               final ObservableSatellite satellite) {
-        super(date, twoWay, new double[] { value }, new MeasurementQuality(sigma, baseWeight),
-                signalTravelTimeModel, Collections.singletonList(satellite));
+        super(date, twoWay, new double[] { value }, measurementQuality, signalTravelTimeModel,
+                Collections.singletonList(satellite));
         addParametersDrivers(observer.getParametersDrivers());
         this.observer = observer;
     }
@@ -108,8 +108,10 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
         final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
         final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
-        final double[] delays = twoLeggedSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
-                satellitePVProvider, observerPVProvider);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPV.getPosition(),
+                frame);
+        final double[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition, satellitePVProvider,
+                observerPVProvider);
 
         // Prepare estimation
         final AbsoluteDate transitDate = receptionDate.shiftedBy(-delays[1]);
@@ -141,7 +143,8 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
                 .getAdjustableEmitterComputer(observablePVProvider);
         final TimeStampedPVCoordinates observerPVAtReception = getObserver().getPVCoordinatesProvider()
                 .getPVCoordinates(receptionDate, frame);
-        final double delay = adjustableEmitter.computeDelay(observerPVAtReception.getPosition(), receptionDate, frame);
+        final double delay = adjustableEmitter.computeDelay(new SignalReceptionCondition(receptionDate,
+                observerPVAtReception.getPosition(), frame));
 
         // prepare the evaluation
         final AbsoluteDate emissionDate = receptionDate.shiftedBy(-delay);

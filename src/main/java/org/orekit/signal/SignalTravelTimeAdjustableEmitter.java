@@ -54,32 +54,32 @@ public class SignalTravelTimeAdjustableEmitter extends AbstractSignalTravelTime 
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
-     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate}
-     * @param signalArrivalDate date at which the signal arrives to receiver
-     * @param frame Inertial frame in which receiver is defined.
+     * @param receptionCondition signal reception condition
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    public double computeDelay(final Vector3D receiverPosition, final AbsoluteDate signalArrivalDate, final Frame frame) {
-        final Vector3D emitterPosition = adjustableEmitterPVProvider.getPosition(signalArrivalDate, frame);
+    public double computeDelay(final SignalReceptionCondition receptionCondition) {
+        final Frame frame = receptionCondition.getReferenceFrame();
+        final AbsoluteDate signalArrivalDate = receptionCondition.getReceptionDate();
+        final Vector3D emitterPosition = adjustableEmitterPVProvider.getPosition(receptionCondition.getReceptionDate(),
+                receptionCondition.getReferenceFrame());
+        final Vector3D receiverPosition = receptionCondition.getReceiverPosition();
         final double distance = receiverPosition.subtract(emitterPosition).getNorm();
         final AbsoluteDate approxEmissionDate = signalArrivalDate.shiftedBy(-distance * C_RECIPROCAL);
-        return computeDelay(approxEmissionDate, receiverPosition, signalArrivalDate, frame);
+        return computeDelay(new SignalReceptionCondition(signalArrivalDate, receiverPosition, frame), approxEmissionDate);
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink).
      * @param approxEmissionDate approximate emission date
-     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate}
-     * @param signalArrivalDate date at which the signal arrives to receiver
-     * @param frame Inertial frame in which receiver is defined.
+     * @param receptionCondition signal reception condition
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    public double computeDelay(final AbsoluteDate approxEmissionDate, final Vector3D receiverPosition,
-                               final AbsoluteDate signalArrivalDate, final Frame frame) {
+    public double computeDelay(final SignalReceptionCondition receptionCondition, final AbsoluteDate approxEmissionDate) {
 
         // initialize emission date search loop assuming the state is already correct
-        final double offset = signalArrivalDate.durationFrom(approxEmissionDate);
+        final double offset = receptionCondition.getReceptionDate().durationFrom(approxEmissionDate);
 
-        return compute(adjustableEmitterPVProvider, offset, receiverPosition, approxEmissionDate, frame);
+        return compute(adjustableEmitterPVProvider, offset, receptionCondition.getReceiverPosition(), approxEmissionDate,
+                receptionCondition.getReferenceFrame());
     }
 
     @Override

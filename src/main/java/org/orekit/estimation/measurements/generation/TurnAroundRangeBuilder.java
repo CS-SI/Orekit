@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.TurnAroundRange;
@@ -50,25 +51,24 @@ public class TurnAroundRangeBuilder extends AbstractSignalBasedBuilder<TurnAroun
                                   final Observer primaryObserver, final Observer secondaryObserver,
                                   final double sigma, final double baseWeight,
                                   final ObservableSatellite satellite) {
-        this(noiseSource, primaryObserver, secondaryObserver, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(noiseSource, primaryObserver, secondaryObserver, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), satellite);
     }
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param primaryObserver observer from which measurement is performed
      * @param secondaryObserver observer reflecting the signal
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      * @since 14.0
      */
     public TurnAroundRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                   final Observer primaryObserver, final Observer secondaryObserver,
-                                  final double sigma, final double baseWeight,
+                                  final MeasurementQuality measurementQuality,
                                   final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, new double[] {sigma}, new double[] {baseWeight}, signalTravelTimeModel,
-                new ObservableSatellite[] {satellite});
+        super(noiseSource, measurementQuality, signalTravelTimeModel, new ObservableSatellite[] {satellite});
         this.primaryObserver   = primaryObserver;
         this.secondaryObserver = secondaryObserver;
     }
