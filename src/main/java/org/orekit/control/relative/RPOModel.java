@@ -97,6 +97,7 @@ public enum RPOModel implements RPO {
 
         /**
          ** Computes the waypoints of the teardrop relative orbit in QSW Local Orbital Frame to use them with Clohessy-Wiltshire maneuvers.
+         * A teardrop is analytically feasible only if the target's orbit is circular.
          *
          * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
          * <p>All maneuvers are performed at the pointy end of the teardrop.</p>
@@ -114,6 +115,7 @@ public enum RPOModel implements RPO {
 
         /**
          ** Computes the waypoints of the teardrop relative orbit in QSW Local Orbital Frame to use them with Clohessy-Wiltshire maneuvers.
+         * A teardrop is analytically feasible only if the target's orbit is circular.
          *
          * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
          * <p>All maneuvers are performed at the pointy end of the teardrop.</p>
@@ -431,8 +433,8 @@ public enum RPOModel implements RPO {
          * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
          * <p>All maneuvers happen at the pointy end of the teardrop.</p>
          * @param waypoints List of the successive waypoints of the target.
-         * @param yaProvider Clohessy-Wiltshire provider.
-         * @return list of Clohessy-Wiltshire maneuvers.
+         * @param yaProvider Yamanaka-Ankersen provider.
+         * @return list of Yamanaka-Ankersen maneuvers.
          */
         public List<RelativeManeuver> computeTeardropManeuvers(final List<TimeStampedPVCoordinates> waypoints, final RelativeProvider yaProvider) {
             final List<YamanakaAnkersenManeuver> maneuvers = new ArrayList<>();
@@ -456,9 +458,9 @@ public enum RPOModel implements RPO {
          * <p>The injection point is the turn-around point of the teardrop (the round end).</p>
          * <p>All maneuvers happen at the pointy end of the teardrop.</p>
          * @param waypoints List of the successive waypoints of the target.
-         * @param yaProvider Clohessy-Wiltshire provider.
+         * @param yaProvider Yamanaka-Ankersen provider.
          * @param <T> field.
-         * @return list of Clohessy-Wiltshire maneuvers.
+         * @return list of Yamanaka-Ankersen maneuvers.
          */
         public <T extends CalculusFieldElement<T>> List<FieldRelativeManeuver<T>> computeTeardropManeuvers(
                 final List<TimeStampedFieldPVCoordinates<T>> waypoints, final FieldRelativeProvider<T> yaProvider) {
