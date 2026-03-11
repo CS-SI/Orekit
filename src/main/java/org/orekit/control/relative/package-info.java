@@ -24,22 +24,22 @@
  * In this package:
  * </p>
  * <ul>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpo.RPO RPO}
+ *  <li>{@link org.orekit.control.relative.RPO RPO}
  *  Interface for rpo maneuvers shared by the models. Define the methods to compute the waypoints for Linear trajectory,
  *  Forced Circular trajectory, around any elliptic orbits, and Natural Circumnavigation, and teardrop maneuvers around
  *  circular orbits.
  *  </li>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpo.RPOModel RPOModel}
+ *  <li>{@link org.orekit.control.relative.RPOModel RPOModel}
  *  Enum that implements RPO interface. Define the vectors of the local orbital frame relative to the desired model.
  *  Provides methods to computes maneuvers to perform the trajectories defined by the waypoints of RPO.
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpo.CoellipticOrbit CoellipticOrbit}
+ *  <li>{@link org.orekit.control.relative.CoellipticOrbit CoellipticOrbit}
  *  This class computes and stores a co-elliptic Keplerian orbit to realize a natural circumnavigation around a target in
  *  any eccentric orbits.
  *  </li>
- *  <li>{@link org.orekit.propagation.relative.maneuver.rpo.TeardropCircularWaypointCalculator TeardropCircularWaypointCalculator}
+ *  <li>{@link org.orekit.control.relative.TeardropCircularWaypointCalculator TeardropCircularWaypointCalculator}
  *  Computes the waypoints to realize a teardrop maneuver when the target is in a circular orbit.
  *  </li>
  * </ul>
  * <p>
  */
-package org.orekit.propagation.relative.maneuver.rpo;
+package org.orekit.control.relative;
