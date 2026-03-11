@@ -134,7 +134,7 @@ public class FieldTeardropCircularWaypointCalculator<T extends CalculusFieldElem
         // The function looks like a tangent function with f(0) -> -∞ and f(orbital period) -> +∞.
         // It happens that it has exactly one root in t ∈ ]0 ; orbital period[, and a mirrored root in t ∈ ]-orbital period ; 0[.
         // If the solver jumps to the negative side, the root can still be used.
-        return targetMeanMotion.getField().getOne().multiply(2.0 * FastMath.abs((new NewtonRaphsonSolver()).solve(1000, new FieldTeardropCircularWaypointCalculator<T>.yEquation(targetMeanMotion, maneuverDistance, turnAroundDistance), 1e-12, getTargetKeplerianPeriod().getReal(), 1)));
+        return targetMeanMotion.getField().getOne().multiply(2.0 * FastMath.abs((new NewtonRaphsonSolver()).solve(1000, new FieldTeardropCircularWaypointCalculator.yEquation(targetMeanMotion, maneuverDistance, turnAroundDistance), 1e-12, getTargetKeplerianPeriod().getReal(), 1)));
     }
 
     /**
