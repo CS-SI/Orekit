@@ -159,6 +159,7 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             LineParser.INTERPOLATION_SAMPLESM1,
             LineParser.CENTRAL_BODY,
             LineParser.COORDINATE_SYSTEM,
+            LineParser.DISTANCE_UNIT,
             LineParser.BEGIN_SEGMENT_BOUNDARY_TIMES,
             LineParser.EPHEMERIS_TIME_POS,
             LineParser.EPHEMERIS_TIME_POS_VEL,
@@ -280,10 +281,10 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
         private int numberOfEphemerisPointsRead;
 
         /** Segment boundary times. */
-        private SortedSet<Double> segmentBoundaryTimes;
+        private final SortedSet<Double> segmentBoundaryTimes;
 
         /** Ephemeris segments. */
-        private List<STKEphemerisSegment> ephemerisSegments;
+        private final List<STKEphemerisSegment> ephemerisSegments;
 
         /** Last-saved ephemeris. */
         private TimeStampedPVCoordinates lastSavedEphemeris;
