@@ -183,6 +183,9 @@
         <action dev="serrof" type="add" issue="1825">
             Add getVelocity in ExtendedPositionProvider.
         </action>
+        <action dev="rcuvillon" type="add" issue="1823">
+            Add analytical relative motion classes and RendezVous and Proximity operations maneuvers.
+        </action>
         <action dev="afossa" type="fix" issue="1822">
             Change algorithm in KeplerianMotionCartesianUtility.predictPVElliptic(), fixing high order terms with Field.
         </action>
