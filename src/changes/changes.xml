@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="vcucchie" type="add" issue="1931">
+            Add class diagram for osc2mean package.
+        </action>
         <action dev="vcucchie" type="add" issue="1927">
             Add class and sequence diagrams specific to PropagatorsParallelizer.
         </action>
