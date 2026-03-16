@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam Padding               2
   skinparam linetype              ortho
   hide empty members
 
@@ -48,12 +49,10 @@
         +void setMeanTheory(MeanTheory)
         +MeanTheory getMeanTheory()
         +Orbit convertToMean(Orbit)
-        +FieldOrbit<T> convertToMean(FieldOrbit<T>)
       }
 
       interface MeanTheory {
         +String getTheoryName()
-        +double getReferenceRadius()
         +Orbit preprocessing(Orbit)
         +Orbit initialize(Orbit)
         +Orbit meanToOsculating(Orbit)
@@ -61,21 +60,10 @@
       }
 
       together {
-        class BrouwerLyddaneTheory {
-          +{static} String THEORY = "Brouwer-Lyddane"
-        }
-
-        class EcksteinHechlerTheory {
-          +{static} String THEORY = "Eckstein-Hechler"
-        }
-
-        class DSSTTheory {
-          +{static} String THEORY = "DSST"
-        }
-
-        class TLETheory {
-          +{static} String THEORY = "TLE"
-        }
+        class BrouwerLyddaneTheory
+        class EcksteinHechlerTheory
+        class DSSTTheory
+        class TLETheory
       }
 
     }
@@ -106,7 +94,7 @@
 
   }
 
-  package org.hipparchus.optim.nonlinear.vector.leastsquares #ECEBD8 {
+  package org.hipparchus #ECEBD8 {
     interface LeastSquaresOptimizer
   }
 
@@ -119,7 +107,6 @@
   TLETheory             ..|> MeanTheory
 
   OsculatingToMeanConverter "1" o--> "1" MeanTheory : theory
-  OsculatingToMeanConverter -[hidden]right-> MeanTheory
   OsculatingToMeanConverter -right-> Orbit
 
   BrouwerLyddaneTheory  --> BrouwerLyddanePropagator
@@ -128,6 +115,9 @@
   DSSTTheory "1" *--> "*" DSSTForceModel
 
   LeastSquaresConverter o--> "1" LeastSquaresOptimizer
+
+  ' Force propagation package below osc2mean
+  MeanTheory -[hidden]down-> BrouwerLyddanePropagator
 
 
 @enduml
