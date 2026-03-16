@@ -252,6 +252,9 @@
         <action dev="serrof" type="fix" issue="1774">
             Use correct shiftedBy in theoretical measurement with derivatives.
         </action>
+        <action dev="briannaaubin" type="update" issue="1745">
+            Abstract away space/ground receiver requirements in estimation/measurements.
+        </action>
         <action dev="afossa" type="fix" issue="1642">
             Change algorithm in KeplerianMotionCartesianUtility.predictPVHyperbolic() to fix numerical issues.
         </action>
