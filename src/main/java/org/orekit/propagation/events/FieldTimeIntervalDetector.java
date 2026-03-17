@@ -106,6 +106,7 @@ public class FieldTimeIntervalDetector<T extends CalculusFieldElement<T>>
         return timeInterval;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected FieldTimeIntervalDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                  final FieldEventHandler<T> newHandler) {
@@ -113,11 +114,13 @@ public class FieldTimeIntervalDetector<T extends CalculusFieldElement<T>>
                 newHandler);
     }
 
+    /** {@inheritDoc} */
     @Override
     public T g(final FieldSpacecraftState<T> s) {
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public TimeIntervalDetector toEventDetector(final EventHandler eventHandler) {
         return new TimeIntervalDetector((TimeIntervalEventFunction) getEventFunction(),

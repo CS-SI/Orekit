@@ -117,6 +117,7 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ElevationExtremumDetector toEventDetector(final EventHandler eventHandler) {
         return new ElevationExtremumDetector((ElevationExtremumEventFunction) getEventFunction(),

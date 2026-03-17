@@ -47,11 +47,13 @@ public class FieldPlaneCrossingDetector<T extends CalculusFieldElement<T>> exten
         return new FieldPlaneCrossingDetector<>(detectionSettings, newHandler, (PlaneCrossingFunction) getEventFunction());
     }
 
+    /** {@inheritDoc} */
     @Override
     public T g(final FieldSpacecraftState<T> s) {
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public PlaneCrossingDetector toEventDetector(final EventHandler eventHandler) {
         return new PlaneCrossingDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,

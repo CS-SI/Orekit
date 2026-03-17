@@ -173,6 +173,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
         return filtering;
     }
 
+    /** {@inheritDoc} */
     @Override
     public LongitudeCrossingDetector toEventDetector(final EventHandler eventHandler) {
         return new LongitudeCrossingDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,

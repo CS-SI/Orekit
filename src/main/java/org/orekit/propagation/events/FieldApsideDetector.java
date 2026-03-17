@@ -117,6 +117,7 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ApsideDetector toEventDetector(final EventHandler eventHandler) {
         return new ApsideDetector((ApsideEventFunction) getEventFunction(),

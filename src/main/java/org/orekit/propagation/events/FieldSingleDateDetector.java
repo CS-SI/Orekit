@@ -97,6 +97,7 @@ public class FieldSingleDateDetector<T extends CalculusFieldElement<T>>
         return new FieldSingleDateDetector<>(new SingleDateEventFunction(newDate), getDetectionSettings(), getHandler());
     }
 
+    /** {@inheritDoc} */
     @Override
     public SingleDateDetector toEventDetector(final EventHandler eventHandler) {
         return new SingleDateDetector((SingleDateEventFunction) getEventFunction(),

@@ -112,6 +112,7 @@ public class FieldGroundAtNightDetector<T extends CalculusFieldElement<T>>
         return getEventFunction().value(state);
     }
 
+    /** {@inheritDoc} */
     @Override
     public GroundAtNightDetector toEventDetector(final EventHandler eventHandler) {
         return new GroundAtNightDetector(new GroundAtNightEventFunction(getTopocentricFrame(), sun, dawnDuskElevation.getReal(),
