@@ -133,6 +133,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public LatitudeCrossingDetector toEventDetector(final EventHandler eventHandler) {
         return new LatitudeCrossingDetector((LatitudeValueCrossingFunction) getEventFunction(),

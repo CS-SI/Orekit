@@ -192,6 +192,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public LongitudeRangeCrossingDetector toEventDetector(final EventHandler eventHandler) {
         return new LongitudeRangeCrossingDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler, getBodyShape(),
