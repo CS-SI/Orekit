@@ -29,6 +29,9 @@
        <action dev="luc" type="fix" issue="1972">
           Allow Ephemeris with null attitude providers to be used in AggregateBounedPropagator.
       </action>
+       <action dev="rafa" type="add" issue="1925">
+          Add constructors with custom Love numbers in SolidTides.
+      </action>
     </release>
     <release version="13.1.6" date="2026-06-03" description="Orekit 13.1.6 is a patch release.
                                                              It solves various bugs related to CCSDS parsing and writing, DSST
@@ -826,6 +829,8 @@
         </action>
         <action dev="serrof" type="add" issue="1440">
             Add some getters in PropagatorBuilder.
+        </action>
+        <action dev="maxime" type="update" issue="1430">
             Changed methods visibility in (Field)Abstract(Analytical)Propagator.
         </action>
         <action dev="serrof" type="update" issue="1241">
