@@ -204,6 +204,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
         return currentIndex < 0 ? null : eventDateList.get(currentIndex).getDate();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DateDetector toEventDetector(final EventHandler eventHandler) {
         return new DateDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler, minGap,

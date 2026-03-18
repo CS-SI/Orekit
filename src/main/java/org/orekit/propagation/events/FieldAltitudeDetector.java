@@ -135,6 +135,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public AltitudeDetector toEventDetector(final EventHandler eventHandler) {
         return new AltitudeDetector(altitude.getReal(), getBodyShape()).withHandler(eventHandler);

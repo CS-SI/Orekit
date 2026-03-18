@@ -145,6 +145,7 @@ public class FieldAngularSeparationDetector<T extends CalculusFieldElement<T>>
         return separation.subtract(proximityAngle);
     }
 
+    /** {@inheritDoc} */
     @Override
     public AngularSeparationDetector toEventDetector(final EventHandler eventHandler) {
         return new AngularSeparationDetector(beacon, observer, proximityAngle.getReal()).withHandler(eventHandler);

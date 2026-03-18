@@ -154,6 +154,7 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public LatitudeRangeCrossingDetector toEventDetector(final EventHandler eventHandler) {
         return new LatitudeRangeCrossingDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,

@@ -198,6 +198,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public ElevationDetector toEventDetector(final EventHandler eventHandler) {
         return new ElevationDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,

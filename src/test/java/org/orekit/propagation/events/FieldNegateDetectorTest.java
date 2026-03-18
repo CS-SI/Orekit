@@ -26,8 +26,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +50,20 @@ class FieldNegateDetectorTest {
         // THEN
         Assertions.assertEquals(expectedDetector, negateDetector.getDetector());
         Assertions.assertEquals(expectedDetector, negateDetector.getOriginal());
+    }
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldSingleDateDetector<Binary64> expectedDetector = new FieldSingleDateDetector<>(Binary64Field.getInstance(), AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldNegateDetector<Binary64> negateDetector = new FieldNegateDetector<>(expectedDetector);
+        final EventHandler handler = mock();
+
+        // WHEN
+        final NegateDetector detector = negateDetector.toEventDetector(handler);
+
+        // THEN
+        Assertions.assertEquals(handler, detector.getHandler());
     }
 
     @Test
