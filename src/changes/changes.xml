@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="luc" type="fix" due-to="q_wertz">
+            Fixed documentation of Saastamoinen tropospheric model.
+        </action>
         <action dev="vcucchie" type="add" issue="1927">
             Add class and sequence diagrams specific to PropagatorsParallelizer.
         </action>
