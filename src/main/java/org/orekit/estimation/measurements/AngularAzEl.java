@@ -27,7 +27,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.measurements.model.TopocentricAzElModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -106,11 +105,11 @@ public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
         final SpacecraftState state = states[0];
         final Frame frame = state.getFrame();
         final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
-        final AbsoluteDate emissionDate = computeEmissionDate(frame, receiverPVProvider, receptionDate, emitter);
+        final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
+        final AbsoluteDate emissionDate = computeEmissionDate(frame, receiverPV.getPosition(), receptionDate, emitter);
 
         // Compute azimuth and elevation
         final BodyShape bodyShape = station.getBaseFrame().getParentShape();
-        final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
         final GeodeticPoint geodeticPoint = bodyShape.transform(receiverPV.getPosition(), frame, receptionDate);
         final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape,
                 getSignalTravelTimeModel().getWarmedUpModel());
@@ -152,11 +151,7 @@ public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
         final FieldAbsoluteDate<Gradient> receptionDate = station.getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
         final FieldPVCoordinatesProvider<Gradient> emitter = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
-        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
-                receiverPV.getPosition(), frame);
-        final Gradient signalTravelTime = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(receptionDate.getField(),
-                        emitter).computeDelay(receptionCondition, receptionDate);
-        final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(signalTravelTime.negate());
+        final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(frame, receiverPV.getPosition(), receptionDate, emitter);
 
         // Compute azimuth and elevation
         final BodyShape bodyShape = station.getBaseFrame().getParentShape();
