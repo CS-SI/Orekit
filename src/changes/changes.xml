@@ -267,6 +267,9 @@
         <action dev="serrof" type="add" issue="1517">
             Add analytical ephemerides for the Moon.
         </action>
+        <action dev="rodrigomarcelino" type="add" issue="1103">
+            Exposed Alpha-5 satellite number parsing in TLE class.
+        </action>
         <action dev="serrof" type="update" issue="1462">
             Add option to use other atmospheric model for derivatives computation.
         </action>
