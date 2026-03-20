@@ -839,6 +839,19 @@ public class TLE implements TimeStamped, ParameterDriversProvider {
         return sum % 10;
     }
 
+    /** Parse a satellite number from a String.
+     * <p>
+     * This method supports both traditional 5-digits satellite numbers
+     * and Alpha-5 TLE satellites IDs.
+     * </p>
+     * @param satNumberString the string to parse (e.g., "25544" or "A0001")
+     * @return the satellite number as an integer
+     * @since 14.0
+     */
+    public static int parseSatelliteNumber(final String satNumberString) {
+        return ParseUtils.parseSatelliteNumber(satNumberString, 0, satNumberString.length());
+    }
+
     /** Check if this tle equals the provided tle.
      * <p>Due to the difference in precision between object and string
      * representations of TLE, it is possible for this method to return false
