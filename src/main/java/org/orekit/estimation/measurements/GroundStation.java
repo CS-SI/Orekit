@@ -476,7 +476,7 @@ public class GroundStation extends AbstractParticipant implements Observer {
 
     /** {@inheritDoc} */
     @Override
-    public final PVCoordinatesProvider getPVCoordinatesProvider() {
+    public PVCoordinatesProvider getPVCoordinatesProvider() {
         return new PVCoordinatesProvider() {
             @Override
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {

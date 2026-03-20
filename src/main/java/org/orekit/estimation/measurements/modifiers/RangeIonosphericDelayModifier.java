@@ -35,7 +35,7 @@ import org.orekit.propagation.SpacecraftState;
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  * </p>
  * <p>
- * Since 10.0, state derivatives and ionospheric parameters derivates are computed
+ * Since 10.0, state derivatives and ionospheric parameters derivatives are computed
  * using automatic differentiation.
  * </p>
  * @author Maxime Journot

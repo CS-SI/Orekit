@@ -30,11 +30,10 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modifying theoretical TurnAroundRange measurement with ionospheric delay.
@@ -47,7 +46,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  * </p>
  * <p>
- * Since 10.0, state derivatives and ionospheric parameters derivates are computed
+ * Since 10.0, state derivatives and ionospheric parameters derivatives are computed
  * using automatic differentiation.
  * </p>
  * @author Maxime Journot
@@ -132,13 +131,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state) {
 
-        final ParameterFunction rangeError = new ParameterFunction() {
-            /** {@inheritDoc} */
-            @Override
-            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                return rangeErrorIonosphericModel(observer, state);
-            }
-        };
+        final ParameterFunction rangeError = (parameterDriver, date) -> rangeErrorIonosphericModel(observer, state);
 
         final ParameterFunction rangeErrorDerivative =
                         Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());

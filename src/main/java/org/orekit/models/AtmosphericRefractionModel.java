@@ -19,7 +19,7 @@ package org.orekit.models;
 import java.io.Serializable;
 
 /**
- * Defines an refraction model that can be used to correct
+ * Defines a refraction model that can be used to correct
  * for the apparent position of an object due to atmospheric effects.
  * @author Hank Grabowski
  * @since 6.1

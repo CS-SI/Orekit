@@ -33,7 +33,7 @@ import org.orekit.propagation.SpacecraftState;
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  * <p>
- * Since 10.0, state derivatives and ionospheric parameters derivates are computed
+ * Since 10.0, state derivatives and ionospheric parameters derivatives are computed
  * using automatic differentiation.
  * </p>
  *

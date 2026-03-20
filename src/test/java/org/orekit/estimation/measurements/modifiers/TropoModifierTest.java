@@ -16,7 +16,9 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import org.hipparchus.util.MathUtils;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,6 +48,7 @@ import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.gnss.PredefinedGnssSignal;
+import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
@@ -59,13 +62,10 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
-import java.util.List;
-import java.util.Map;
-
-public class TropoModifierTest {
+class TropoModifierTest {
 
     @Test
-    public void testRangeTropoModifier() {
+    void testRangeTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -122,7 +122,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testRangeEstimatedTropoModifier() {
+    void testRangeEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -167,7 +167,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testSpaceRangeEstimatedTropoModifier() {
+    void testSpaceRangeEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -213,7 +213,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testPhaseTropoModifier() {
+    void testPhaseTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -270,7 +270,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testPhaseEstimatedTropoModifier() {
+    void testPhaseEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -324,7 +324,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testTurnAroundRangeTropoModifier() {
+    void testTurnAroundRangeTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -378,7 +378,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testBistaticRangeTropoModifier() {
+    void testBistaticRangeTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -428,7 +428,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testBistaticRangeRateTropoModifier() {
+    void testBistaticRangeRateTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -478,7 +478,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testBistaticRangeRateEstimatedTropoModifier() {
+    void testBistaticRangeRateEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -534,7 +534,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testTDOATropoModifier() {
+    void testTDOATropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -585,7 +585,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testTDOAEstimatedTropoModifier() {
+    void testTDOAEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -641,7 +641,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testRangeRateTropoModifier() {
+    void testRangeRateTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -691,7 +691,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testRangeRateEstimatedTropoModifier() {
+    void testRangeRateEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -739,7 +739,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testAngularRadioRefractionModifier() {
+    void testAngularRadioRefractionModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -775,15 +775,14 @@ public class TropoModifierTest {
             // get the altitude of the station (in kilometers)
             final double altitude = angular.getStation().getBaseFrame().getPoint().getAltitude() / 1000.;
 
-            final AngularRadioRefractionModifier modifier = new AngularRadioRefractionModifier(new ITURP834AtmosphericRefraction(altitude));
-            // add modifier
+            final AtmosphericRefractionModel refractionModel = new ITURP834AtmosphericRefraction(altitude);
+            final AngularRadioRefractionModifier modifier = new AngularRadioRefractionModifier(refractionModel);
             angular.addModifier(modifier);
-            //
-            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(new SpacecraftState[] { refState });
+            final EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
-            final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
-            // TODO: check threshold
-            Assertions.assertEquals(0.0, diffEl, 1.0e-3);
+            final double elevation = evalNoMod.getEstimatedValue()[1];
+            final double refraction = refractionModel.getRefraction(elevation);
+            Assertions.assertEquals(refraction, eval.getEstimatedValue()[1] - evalNoMod.getEstimatedValue()[1], 1e-15);
         }
     }
 

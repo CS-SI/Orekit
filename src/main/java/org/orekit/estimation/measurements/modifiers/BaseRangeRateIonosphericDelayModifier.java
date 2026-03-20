@@ -23,8 +23,8 @@ import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 /** Base class modifying theoretical range-rate measurement with ionospheric delay.
  * The effect of ionospheric correction on the range-rate is directly computed
@@ -34,7 +34,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  * <p>
- * Since 10.0, state derivatives and ionospheric parameters derivates are computed
+ * Since 10.0, state derivatives and ionospheric parameters derivatives are computed
  * using automatic differentiation.
  * </p>
  * @author Joris Olympio

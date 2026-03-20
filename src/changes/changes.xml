@@ -62,6 +62,9 @@
         <action dev="serrof" type="add" issue="1905">
             Add ephemeris-based ExtendedPositionProvider.
         </action>
+        <action dev="serrof" type="fix" issue="1903">
+            Use actual station position in ionospheric angular correction.
+        </action>
         <action dev="rafa" type="add" issue="1899">
             Add support for NAIF SPICE generic DAF binary files.
         </action>
