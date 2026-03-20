@@ -130,11 +130,11 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
         final PVCoordinatesProvider receiver = observer.getPVCoordinatesProvider();
         final SpacecraftState state = states[0];
         final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
-        final AbsoluteDate emissionDate = computeEmissionDate(referenceFrame, receiver, receptionDate, emitter);
-
-        // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)
         final Frame frame = state.getFrame();
         final TimeStampedPVCoordinates receiverPV = receiver.getPVCoordinates(receptionDate, frame);
+        final AbsoluteDate emissionDate = computeEmissionDate(referenceFrame, receiverPV.getPosition(), receptionDate, emitter);
+
+        // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)
         final double[] raDec = measurementModel.value(frame, receiverPV.getPosition(), receptionDate, emitter, emissionDate);
 
         // Prepare the estimation
@@ -170,11 +170,11 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
         final FieldAbsoluteDate<Gradient> receptionDate = observer.getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
         final FieldPVCoordinatesProvider<Gradient> receiver = observer.getFieldPVCoordinatesProvider(nbParams, paramIndices);
         final FieldPVCoordinatesProvider<Gradient> emitter = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
-        final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(referenceFrame, receiver, receptionDate, emitter);
-
-        // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)
         final Frame                frame        = states[0].getFrame();
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiver.getPVCoordinates(receptionDate, frame);
+        final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(referenceFrame, receiverPV.getPosition(), receptionDate, emitter);
+
+        // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)
         final Gradient[] raDec = measurementModel.value(frame, receiverPV.getPosition(), receptionDate, emitter, emissionDate);
 
         // Prepare the estimation

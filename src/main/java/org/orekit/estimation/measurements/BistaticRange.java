@@ -97,7 +97,8 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
                                                                                               final SpacecraftState[] states) {
         // Compute participants (position-velocities at signal transmissions)
         final SpacecraftState state = states[0];
-        final TimeStampedPVCoordinates[] participants = getParticipants(state);
+        final TimeStampedPVCoordinates[] participants = getParticipants(state, getEmitter().getPVCoordinatesProvider(),
+                getReceiver().getPVCoordinatesProvider());
 
         // Extract dates
         final AbsoluteDate emissionDate = participants[0].getDate();
