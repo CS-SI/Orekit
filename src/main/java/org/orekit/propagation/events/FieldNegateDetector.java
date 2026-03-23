@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.functions.NegateEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
@@ -95,10 +96,17 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
         getDetector().init(s0, t);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected FieldNegateDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                             final FieldEventHandler<T> newHandler) {
         return new FieldNegateDetector<>(detectionSettings, newHandler, original);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public NegateDetector toEventDetector(final EventHandler eventHandler) {
+        final EventDetector negatedDetector = EventDetector.of(getDetector().getEventFunction());
+        return new NegateDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler, negatedDetector);
+    }
 }

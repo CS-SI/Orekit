@@ -192,6 +192,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public NodeDetector toEventDetector(final EventHandler eventHandler) {
         return new NodeDetector((NodeEventFunction) getEventFunction(),

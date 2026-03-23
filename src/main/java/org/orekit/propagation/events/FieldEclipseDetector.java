@@ -189,6 +189,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public EclipseDetector toEventDetector(final EventHandler eventHandler) {
         final EclipseDetector baseDetector = new EclipseDetector(occultationEngine).withMargin(margin.getReal())

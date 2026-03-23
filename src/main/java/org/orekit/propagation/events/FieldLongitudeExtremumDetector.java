@@ -83,6 +83,7 @@ public class FieldLongitudeExtremumDetector<T extends CalculusFieldElement<T>>
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public LongitudeExtremumDetector toEventDetector(final EventHandler eventHandler) {
         return new LongitudeExtremumDetector((LongitudeExtremumEventFunction) getEventFunction(),

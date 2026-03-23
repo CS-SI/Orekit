@@ -18,8 +18,8 @@ package org.orekit.propagation.events;
 
 import java.util.function.Function;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -112,6 +112,7 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
         return function;
     }
 
+    /** {@inheritDoc} */
     @Override
     public FunctionalDetector toEventDetector(final EventHandler eventHandler) {
         return new FunctionalDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,

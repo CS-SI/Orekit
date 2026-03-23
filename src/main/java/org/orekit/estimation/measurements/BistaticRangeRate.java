@@ -105,7 +105,9 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
         // Compute participants (position-velocities at signal transmissions)
         final SpacecraftState state = states[0];
         final Frame frame = state.getFrame();
-        final TimeStampedPVCoordinates[] participants = getParticipants(state);
+        final PVCoordinatesProvider emitterPVProvider = getEmitter().getPVCoordinatesProvider();
+        final TimeStampedPVCoordinates[] participants = getParticipants(state, emitterPVProvider,
+                getReceiver().getPVCoordinatesProvider());
 
         // Extract dates
         final AbsoluteDate emissionDate = participants[0].getDate();
@@ -122,7 +124,7 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
         final PVCoordinatesProvider observablePVCoordinates = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
         final double rangeRate = twoLeggedRangeRateModel.value(frame, participants[2], receptionDate,
-                observablePVCoordinates, transitDate, getEmitter().getPVCoordinatesProvider(), emissionDate);
+                observablePVCoordinates, transitDate, emitterPVProvider, emissionDate);
 
         estimated.setEstimatedValue(rangeRate);
         return estimated;
