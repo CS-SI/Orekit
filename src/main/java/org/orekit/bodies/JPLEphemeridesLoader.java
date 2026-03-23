@@ -82,7 +82,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         implements CelestialBodyLoader {
 
     /** Default supported files name pattern for JPL DE files. */
-    public static final String DEFAULT_DE_SUPPORTED_NAMES = "^[lu]nx([mp](\\d\\d\\d\\d))+\\.(?:4\\d\\d)$";
+    public static final String DEFAULT_DE_SUPPORTED_NAMES = "^[lu]nx([mp](\\d{4,5}))+\\.(?:4\\d\\d)$";
 
     /** Default supported files name pattern for JPL DE files. */
     public static final String DEFAULT_DE_2021_SUPPORTED_NAMES = "^linux_([mp](\\d{4,5}))+\\.(?:4\\d\\d)$";
