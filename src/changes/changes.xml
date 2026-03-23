@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1.5" date="TBD" description="Orekit 13.1.5 is a patch release. TBD">
+      <action dev="vcucchie" type="fix" issue="1938">
+          Updated supported names for JPL DE files to support new file naming convention.
+      </action>
       <action dev="serrof" type="fix" issue="1933">
           Fixed confusion between covariance reference time and initial propagation time in StateCovarianceProvider.
       </action>
