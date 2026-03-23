@@ -24,7 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -32,7 +32,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -304,6 +303,31 @@ public class JPLEphemeridesLoaderTest {
         Utils.setDataRoot("2007");
         final int nChecked = testPo("/2007/testpo.440");
         MatcherAssert.assertThat(nChecked, Matchers.is(11));
+    }
+
+    /**
+     * Test parsing of 2021 format agains a truncated version of
+     * https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/work_items/1938">Issue 1938</a>
+     */
+    @Test
+    public void test2021FormatParsing() {
+        // GIVEN
+        Utils.setDataRoot("regular-data/de440-ephemerides");
+
+        // WHEN
+        JPLEphemeridesLoader loaderWithout2021Format =
+                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                                                 JPLEphemeridesLoader.EphemerisType.SUN);
+
+        JPLEphemeridesLoader loaderWith2021Format =
+                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_2021_SUPPORTED_NAMES,
+                                                 JPLEphemeridesLoader.EphemerisType.SUN);
+
+        // THEN
+        Assertions.assertThrows(OrekitException.class, loaderWithout2021Format::getLoadedAstronomicalUnit);
+        Assertions.assertDoesNotThrow(loaderWith2021Format::getLoadedAstronomicalUnit);
     }
 
     private int testPo(String name) throws IOException {
