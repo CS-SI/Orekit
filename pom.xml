@@ -433,12 +433,12 @@
   <scm>
     <connection>scm:git:https://gitlab.orekit.org/orekit/orekit.git</connection>
     <developerConnection>scm:git:ssh://git@gitlab.orekit.org/orekit/orekit.git</developerConnection>
-    <url>https://gitlab.orekit.org/orekit/orekit/tree/master</url>
+    <url>https://gitlab.orekit.org/orekit/orekit/-/tree/main</url>
   </scm>
 
   <issueManagement>
       <system>Gitlab</system>
-      <url>https://gitlab.orekit.org/orekit/orekit/issues</url>
+      <url>https://gitlab.orekit.org/orekit/orekit/-/issues</url>
   </issueManagement>
 
   <dependencies>
