@@ -19,14 +19,29 @@ package org.orekit.gnss.metric.parser;
 import java.util.Locale;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.units.Unit;
 
 /** Enum containing all intermediate level data fields that can be parsed
  * to build a RTCM message.
  * @author Bryan Cazabonne
+ * @author Nathan Schiffmacher
  * @since 11.0
  */
 public enum RtcmDataField implements DataField {
+
+    /** Reserved. */
+    DF001 {
+        /** {@inheritDoc} */
+        @Override
+        public long longValue(final EncodedMessage message, final int n) {
+            if(n > 64) {
+                throw new OrekitException(OrekitMessages.TOO_LARGE_DATA_TYPE, n);
+            }
+            return message.extractBits(n);
+        }
+    },
 
     /** RTCM Message number. */
     DF002 {
@@ -37,12 +52,39 @@ public enum RtcmDataField implements DataField {
         }
     },
 
+    /** RTCM Reference Station ID. */
+    DF003 {
+        /** {@inheritDoc} */
+        @Override
+        public String stringValue(final EncodedMessage message, final int n) {
+            return String.format(Locale.US, "%4s", DataType.U_INT_12.decode(message).intValue()).trim();
+        }
+    },
+
+    /** GPS Epoch time (TOW) */
+    DF004 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MS.toSI(DataType.U_INT_30.decode(message).intValue());
+        }
+    },
+
     /** GPS Satellite ID. */
     DF009 {
         /** {@inheritDoc} */
         @Override
         public int intValue(final EncodedMessage message) {
             return DataType.U_INT_6.decode(message).intValue();
+        }
+    },
+
+    /** GLONASS Epoch Time. */
+    DF034 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MS.toSI(DataType.U_INT_27.decode(message).doubleValue());
         }
     },
 
@@ -655,6 +697,33 @@ public enum RtcmDataField implements DataField {
         }
     },
 
+    /** Galileo SISA Index (E1,E5b). */
+    DF286 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_8.decode(message).intValue();
+        }
+    },
+
+    /** E1-B Signal Health Status. */
+    DF287 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_2.decode(message).intValue();
+        }
+    },
+
+    /** E1-B Data Validity Status. */
+    DF288 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message).intValue();
+        }
+    },
+
     /** Galileo Week Number (WN). */
     DF289 {
         /** {@inheritDoc} */
@@ -1069,6 +1138,172 @@ public enum RtcmDataField implements DataField {
         }
     },
 
+    /** MSM Multiple message bit */
+    DF393 {
+        /** {@inheritDoc} */
+        @Override
+        public boolean booleanValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message) == 1;
+        }
+    },
+
+    /**
+     * GNSS Satellite mask.
+     */
+    DF394 {
+        /** {@inheritDoc} */
+        @Override
+        public long longValue(final EncodedMessage message) {
+            return DataType.BIT_64.decode(message);
+        }
+    },
+
+    /**
+     * GNSS Signal mask.
+     */
+    DF395 {
+        /** {@inheritDoc} */
+        @Override
+        public long longValue(final EncodedMessage message) {
+            return DataType.BIT_32.decode(message).longValue();
+        }
+    },
+
+    /**
+     * GNSS Satellite rough range (converted to seconds)
+     */
+    DF397 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MS.toSI(DataType.U_INT_8.decode(message).doubleValue());
+        }
+    },
+
+    /**
+     * GNSS Satellite rough range modulo 1 millisecond (converted to seconds)
+     */
+    DF398 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MS.toSI(FastMath.scalb(DataType.U_INT_10.decode(message).doubleValue(), -10));
+        }
+    },
+
+    /**
+     * GNSS Satellite rough Phaserange Rate (meters/second)
+     */
+    DF399 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return DataType.INT_14.decode(message).doubleValue();
+        }
+    },
+
+    /**
+     * GNSS Cell mask.
+     */
+    DF396 {
+        /** {@inheritDoc} */
+        @Override
+        public long longValue(final EncodedMessage message, final int n) {
+            if(n > 64) {
+                throw new OrekitException(OrekitMessages.TOO_LARGE_DATA_TYPE, n);
+            }
+            return message.extractBits(n);
+        }
+    },
+
+    /**
+     * GNSS signal fine Phaserange Rate (meters/second)
+     */
+    DF404 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return DataType.INT_15.decode(message).doubleValue() * 0.0001;
+        }
+    },
+
+    /**
+     * GNSS signal fine Pseudorange with extended resolution (converted to seconds)
+     */
+    DF405 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MS.toSI(FastMath.scalb(DataType.INT_20.decode(message).doubleValue(), -29));
+        }
+    },
+
+    /**
+     * GNSS signal fine Phaserange data with extended resolution (converted to seconds)
+     */
+    DF406 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MS.toSI(FastMath.scalb(DataType.INT_24.decode(message).doubleValue(), -31));
+        }
+    },
+
+    /**
+     * GNSS Phaserange Lock Time Indicator with extended range and resolution
+     */
+    DF407 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_10.decode(message).intValue();
+        }
+    },
+
+    /**
+     * GNSS signal CNR with extended resolution (dB-Hz)
+     */
+    DF408 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return FastMath.scalb(DataType.U_INT_10.decode(message).doubleValue(), -4);
+        }
+    },
+
+    /**
+     * IODS – Issue Of Data Station.
+     */
+    DF409 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_3.decode(message).intValue();
+        }
+    },
+
+    /**
+     * Clock Steering Indicator.
+     */
+    DF411 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_2.decode(message).intValue();
+        }
+    },
+
+    /**
+     * External Clock Indicator.
+     */
+    DF412 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_2.decode(message).intValue();
+        }
+    },
+
     /** IOD SSR. */
     DF413 {
         /** {@inheritDoc} */
@@ -1095,6 +1330,85 @@ public enum RtcmDataField implements DataField {
             return DataType.U_INT_4.decode(message).byteValue();
         }
     },
+
+    /** GLONASS Day Of Week. <br>
+     * 0 = Sunday, ..., 6 = Saturday, 7 = Unknown
+    */
+    DF416 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_3.decode(message).byteValue();
+        }
+    },
+
+    /**
+     * Divergence-free Smoothing Indicator.
+     * 1 == true – Divergence-free smoothing is used <br>
+     * 0 == false – Other type of smoothing is used
+     */
+    DF417 {
+        /** {@inheritDoc} */
+        @Override
+        public boolean booleanValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message) == 1;
+        }
+    },
+
+    /**
+     * GNSS Smoothing Interval.
+     */
+    DF418 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_3.decode(message).intValue();
+        }
+    },
+
+    /** GLONASS Satellite Frequency Channel Number. */
+    DF419 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            // 0 refers to channel no -7, 1 refers to channel no -6, etc.
+            return DataType.U_INT_4.decode(message).intValue() - 7;
+        }
+    },
+    
+    /**
+     * Half-cycle ambiguity indicator
+     * <ul>
+     * <li> 0 - No half-cycle ambiguity.
+     * <li> 1 - Half-cycle ambiguity.
+     * </li>
+     */
+    DF420 {
+        /** {@inheritDoc} */
+        @Override
+        public boolean booleanValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message) == 1;
+        }
+    },
+
+    /** BeiDou Epoch Time (TOW) */
+    DF427 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MS.toSI(DataType.U_INT_30.decode(message).intValue());
+        }
+    },
+
+    /** QZSS Epoch Time (TOW) */
+    DF428 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MS.toSI(DataType.U_INT_30.decode(message).intValue());
+        }
+    },
+
 
     /** QZSS Satellite ID. */
     DF429 {
