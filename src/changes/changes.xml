@@ -183,7 +183,7 @@
         <action dev="serrof" type="add" issue="1825">
             Add getVelocity in ExtendedPositionProvider.
         </action>
-        <action dev="rcuvillon" type="add" issue="1823">
+        <action dev="rcuvillon, Tabeaud" type="add" issue="1823">
             Add analytical relative motion classes and RendezVous and Proximity operations maneuvers.
         </action>
         <action dev="afossa" type="fix" issue="1822">
