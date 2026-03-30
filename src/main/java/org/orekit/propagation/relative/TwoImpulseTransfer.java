@@ -23,6 +23,7 @@ import org.orekit.control.heuristics.lambert.LambertSolution;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -277,8 +278,8 @@ public class TwoImpulseTransfer {
      * @return String with corresponding days, hours, minutes, and seconds.
      */
     public static String secondsToDHMS(final double totalSeconds) {
-        final int days = (int) (totalSeconds / 86400);
-        double remainingSeconds = totalSeconds % 86400;
+        final int days = (int) (totalSeconds / Constants.JULIAN_DAY);
+        double remainingSeconds = totalSeconds % Constants.JULIAN_DAY;
         final int hours = (int) (remainingSeconds / 3600);
         remainingSeconds = remainingSeconds % 3600;
         final int minutes = (int) (remainingSeconds / 60);
