@@ -25,7 +25,18 @@ import org.orekit.orbits.PositionAngleType;
 
 /**
  * Helper class to calculate a natural circumnavigation orbit around a target in an elliptic orbit.
- *
+ * <br>
+ * <p> This class implements the orbit of a chaser which naturally circumnavigates around a target satellite in an elliptic orbit.
+ * Source : Generating Orbital Elements for Natural Motion Circumnavigation Guidance, Donald Tong, April 2024.
+ * <a href="https://www.researchgate.net/publication/379606783_GENERATIING_ORBITAL_ELEMENTS_FOR_NATURAL_MOTION_CIRCUMNAVIGATION_GUIDANCE">...</a>
+ * </p>
+ * <p>
+ * In the following class, variables B,C, alpha and gamma come from the reference source and stand respectively for:
+ *  - B: target inclination
+ *  - C: chaser orbit inclination complementary angle,
+ *  - alpha: delta RAAN between the target and the chaser,
+ *  - gamma: angle from the RAAN to the target and chaser orbit planes line-of-intersection depending on the corresponding quadrant.
+ * </p>
  * @author Romain Cuvillon
  * @since 14.0
  */
@@ -57,6 +68,8 @@ public class CoellipticOrbit {
         double chaserRaan = 0.;
         double chaserI = 0.;
 
+        // Parameters B, C, gamma and alpha as in Generating Orbital Elements for Natural Motion Circumnavigation Guidance,
+        // Donald Tong, April 2024., §4.
         if (FastMath.toDegrees(theta) < 90) {
             final double B = targetOrbit.getI();
             final double C = FastMath.acos(FastMath.sin(deltaI) * FastMath.sin(B) * FastMath.cos(theta) - FastMath.cos(deltaI) * FastMath.cos(B));
@@ -126,6 +139,8 @@ public class CoellipticOrbit {
         T chaserI = field.getZero();
         final T pi = field.getOne().multiply(FastMath.PI);
 
+        // Parameters B, C, gamma and alpha as in Generating Orbital Elements for Natural Motion Circumnavigation Guidance,
+        // Donald Tong, April 2024., §4.
         if (FastMath.toDegrees(theta.getReal()) < 90) {
             final T B = targetOrbit.getI();
             final T C = (deltaI.sin().multiply(B.sin().multiply(theta.cos())).subtract(deltaI.cos().multiply(B.cos()))).acos();
