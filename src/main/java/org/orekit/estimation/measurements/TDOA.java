@@ -62,7 +62,7 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
     public TDOA(final Observer primeObserver, final Observer secondObserver,
                 final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
                 final ObservableSatellite satellite) {
-        this(primeObserver, secondObserver, date, tdoa, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(primeObserver, secondObserver, date, tdoa, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
     }
 
     /** Constructor.
@@ -70,16 +70,15 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
      * @param secondObserver observer that gives the measurement value
      * @param date date of the measurement
      * @param tdoa observed value (s)
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality data as used in orbit determination
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
     public TDOA(final Observer primeObserver, final Observer secondObserver,
-                final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
+                final AbsoluteDate date, final double tdoa, final MeasurementQuality measurementQuality,
                 final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(primeObserver, secondObserver, date, new double[] {tdoa}, new double[] {sigma}, new double[] {baseWeight},
+        super(primeObserver, secondObserver, date, new double[] {tdoa}, measurementQuality,
                 signalTravelTimeModel, satellite);
     }
 

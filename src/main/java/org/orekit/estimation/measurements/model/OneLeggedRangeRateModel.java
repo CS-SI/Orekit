@@ -37,17 +37,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 14.0
  * @author Romain Serra
  */
-public class OneLeggedRangeRateModel {
-
-    /** Signal travel time model. */
-    private final SignalTravelTimeModel signalTravelTimeModel;
+public class OneLeggedRangeRateModel extends AbstractSignalBasedModel {
 
     /**
      * Constructor.
      * @param signalTravelTimeModel signal travel time model
      */
     public OneLeggedRangeRateModel(final SignalTravelTimeModel signalTravelTimeModel) {
-        this.signalTravelTimeModel = signalTravelTimeModel;
+        super(signalTravelTimeModel);
     }
 
     /**
@@ -74,7 +71,7 @@ public class OneLeggedRangeRateModel {
      */
     public double value(final SignalReceptionCondition receptionCondition, final Vector3D receiverVelocity,
                         final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
-        final SignalTravelTimeAdjustableEmitter adjustableEmitter = signalTravelTimeModel.getAdjustableEmitterComputer(emitter);
+        final SignalTravelTimeAdjustableEmitter adjustableEmitter = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter);
         final AbsoluteDate receptionDate = receptionCondition.getReceptionDate();
         final double delay = adjustableEmitter.computeDelay(receptionCondition, approxEmissionDate);
         final AbsoluteDate emissionDate = receptionDate.shiftedBy(-delay);
@@ -111,7 +108,7 @@ public class OneLeggedRangeRateModel {
                                                        final FieldPVCoordinatesProvider<T> emitter,
                                                        final FieldAbsoluteDate<T> approxEmissionDate) {
         final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
-        final FieldSignalTravelTimeAdjustableEmitter<T> adjustableEmitter = signalTravelTimeModel.getFieldAdjustableEmitterComputer(
+        final FieldSignalTravelTimeAdjustableEmitter<T> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
                 receptionDate.getField(), emitter);
         final T delay = adjustableEmitter.computeDelay(receptionCondition, approxEmissionDate);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(delay.negate());

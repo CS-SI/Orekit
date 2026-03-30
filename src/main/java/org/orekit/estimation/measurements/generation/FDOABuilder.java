@@ -76,7 +76,7 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
     protected FDOA buildObserved(final AbsoluteDate date,
                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
         return new FDOA(getPrimeObserver(), getSecondObserver(), centreFrequency, date, Double.NaN,
-                        getTheoreticalStandardDeviation()[0], getBaseWeight()[0], getSignalTravelTimeModel(), getSatellites()[0]);
+                        getMeasurementQuality(), getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

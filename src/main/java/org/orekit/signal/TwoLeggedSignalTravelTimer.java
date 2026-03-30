@@ -106,7 +106,7 @@ public class TwoLeggedSignalTravelTimer {
         final FieldAbsoluteDate<T> relayDate = endReceptionCondition.getReceptionDate().shiftedBy(secondLegTravelTime.negate());
         final Frame frame = endReceptionCondition.getReferenceFrame();
         final FieldVector3D<T> relayPosition = relay.getPosition(relayDate, frame);
-        final T firstLegTravelTime = computeTravelTime(new FieldSignalReceptionCondition<T>(relayDate,
+        final T firstLegTravelTime = computeTravelTime(new FieldSignalReceptionCondition<>(relayDate,
                 relayPosition, frame), emitter, approxEmissionDate);
         final T[] output = MathArrays.buildArray(relayDate.getField(), 2);
         output[0] = firstLegTravelTime;
