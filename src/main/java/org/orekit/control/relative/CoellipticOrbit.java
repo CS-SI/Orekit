@@ -37,12 +37,12 @@ public class CoellipticOrbit {
      * Computes the chaser orbit to naturally circumnavigate around a target satellite in an elliptic orbit.
      *
      * @param targetOrbit        orbit of the target.
-     * @param semiMinorAxis      semi minor axis of the relative circumnavigation orbit.
+     * @param semiMinorAxis      semi-minor axis of the relative circumnavigation orbit.
      * @param xPlaneOffset       cross plane extent due to tilting the relative orbit. (expressed in meters)
      * @param vBarOffset         desired chaser ellipse offset from the target v-bar location. (expressed in meters)
      * @param driftPerOrbit      corkscrew v-bar motion, drift in meters per orbit.
      * @param xPlaneIVectorPhase clockwise angle measured from the velocity vector in the radial-velocity plane, defines the tilt-axis of the cross plane.
-     * @return KeplerianOrbit fo the chaser to naturally circumnavigate around the target.
+     * @return KeplerianOrbit for the chaser to naturally circumnavigate around the target.
      */
     public static KeplerianOrbit computeChaserOrbit(final KeplerianOrbit targetOrbit, final double semiMinorAxis, final double xPlaneOffset, final double vBarOffset, final double driftPerOrbit, final double xPlaneIVectorPhase) {
 
