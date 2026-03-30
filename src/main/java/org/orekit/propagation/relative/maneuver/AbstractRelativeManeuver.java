@@ -19,7 +19,6 @@ package org.orekit.propagation.relative.maneuver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -28,6 +27,7 @@ import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.relative.RelativeProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.DataDictionary;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -121,7 +121,7 @@ public abstract class AbstractRelativeManeuver implements RelativeManeuver {
     @Override
     @DefaultDataContext
     public String toString() {
-        return toString(DataContext.getDefault().getTimeScales().getUTC());
+        return toString(TimeScalesFactory.getUTC());
     }
 
     /**
