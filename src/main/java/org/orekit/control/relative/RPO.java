@@ -58,7 +58,7 @@ import java.util.List;
  * - Linear transfer,
  * - Forced Circular Motion,
  * - Natural Circumnavigation.
- * The computeWaypoints  are default methods shared by the different models.
+ * The computeWaypoints are default methods shared by the different models.
  * The only differences between two models in the computation of these waypoints come from the local orbital frame used.
  * This is handled by the getters defined in enum:{@link RPOModel RPOModel }.
  *
@@ -121,7 +121,7 @@ public interface RPO {
     default <T extends CalculusFieldElement<T>> FieldRotation<T> rotationInLof(final T inclination, final T raan) {
         final FieldVector3D<T> vBar = new FieldVector3D<>(inclination.getField(), getVBarDirection());
         final FieldVector3D<T> localVerticalDirection = new FieldVector3D<>(inclination.getField(), getOutOfPlaneDirection());
-        // Create rotation  for the waypoints.
+        // Create rotation for the waypoints.
         final FieldRotation<T> inclinationRotation = new FieldRotation<>(vBar.scalarMultiply(-1), inclination, RotationConvention.VECTOR_OPERATOR);
         final FieldRotation<T> raanRotation = new FieldRotation<>(localVerticalDirection, raan, RotationConvention.VECTOR_OPERATOR);
         return raanRotation.compose(inclinationRotation, RotationConvention.VECTOR_OPERATOR);
@@ -169,7 +169,7 @@ public interface RPO {
         final List<TimeStampedPVCoordinates> waypointsList = new ArrayList<>();
         // Add the initial TimeStampedPVCoordinates of the chaser to the list.
         waypointsList.add(initialPVT);
-        //Compute the waypoints along the linear path.
+        // Compute the waypoints along the linear path.
         for (int i = 1; i < numberOfPoints - 1; i++) {
             final double timeStep = (finalPVT.getDate().toDouble() - initialPVT.getDate().toDouble()) / (numberOfPoints - 1);
             final Vector3D hopLength = finalPVT.getPosition().subtract(initialPVT.getPosition()).scalarMultiply(1. / (numberOfPoints - 1));
@@ -435,8 +435,16 @@ public interface RPO {
      *
      * @param injectionDate      date of injection in the teardrop.
      * @param targetOrbit        orbit of the target.
-     * @param turnAroundDistance Turn-around distance. This is the "round" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
-     * @param maneuverDistance   Maneuver distance of the teardrop orbit. This is the "pointy" end of the orbit. Note that this distance is signed : negative means below the target spacecraft (in between the planet and the target), while positive means above the target (target is in between the chaser and the planet).
+     * @param turnAroundDistance Turn-around distance.
+     *                          <br> This is the "round" end of the orbit.
+     *                          <br> Note that this distance is signed : negative means below the target spacecraft
+     *                          (in between the planet and the target), while positive means above the target
+     *                          (target is in between the chaser and the planet).
+     * @param maneuverDistance   Maneuver distance of the teardrop orbit.
+     *                          <br> This is the "pointy" end of the orbit.
+     *                          <br> Note that this distance is signed : negative means below the target spacecraft
+     *                          (in between the planet and the target), while positive means above the target
+     *                          (target is in between the chaser and the planet).
      * @param numberOfTeardrops  Number of teardrop orbits to perform. Must be ≥ 1.
      * @param <T>                field.
      * @return List of waypoints in time. Date, position, and velocity are non-zero.
