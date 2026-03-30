@@ -171,7 +171,7 @@ public interface RPO {
         waypointsList.add(initialPVT);
         // Compute the waypoints along the linear path.
         for (int i = 1; i < numberOfPoints - 1; i++) {
-            final double timeStep = (finalPVT.getDate().toDouble() - initialPVT.getDate().toDouble()) / (numberOfPoints - 1);
+            final double timeStep = finalPVT.getDate().durationFrom(initialPVT.getDate()) / (numberOfPoints - 1);
             final Vector3D hopLength = finalPVT.getPosition().subtract(initialPVT.getPosition()).scalarMultiply(1. / (numberOfPoints - 1));
             final TimeStampedPVCoordinates waypoint = new TimeStampedPVCoordinates(initialPVT.getDate().shiftedBy(i * timeStep), initialPVT.getPosition().add(hopLength.scalarMultiply(i)), Vector3D.ZERO);
             waypointsList.add(waypoint);
