@@ -77,6 +77,7 @@ class RaDecModelTest {
                 });
         final Frame frame = FramesFactory.getGCRF();
         final RaDecModel measurementModel = new RaDecModel(frame, instantaneousSignalModel);
+        assertEquals(instantaneousSignalModel, measurementModel.getSignalTravelTimeModel());
         final Vector3D receiverPosition = Vector3D.MINUS_J;
         final Vector3D emitterPosition = new Vector3D(1, 2, 3);
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, AbsoluteDate.ARBITRARY_EPOCH,

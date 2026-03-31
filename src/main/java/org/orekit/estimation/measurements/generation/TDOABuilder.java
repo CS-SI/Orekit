@@ -69,8 +69,8 @@ public class TDOABuilder extends AbstractBireceiverBuilder<TDOA> {
     @Override
     protected TDOA buildObserved(final AbsoluteDate date,
                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new TDOA(getPrimeObserver(), getSecondObserver(), date, Double.NaN, getTheoreticalStandardDeviation()[0],
-                        getBaseWeight()[0], getSignalTravelTimeModel(), getSatellites()[0]);
+        return new TDOA(getPrimeObserver(), getSecondObserver(), date, Double.NaN, getMeasurementQuality(),
+                getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

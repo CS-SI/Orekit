@@ -33,25 +33,14 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public abstract class AbstractAngularMeasurementModel {
-
-    /** Signal travel time model. */
-    private final SignalTravelTimeModel signalTravelTimeModel;
+public abstract class AbstractAngularMeasurementModel extends AbstractSignalBasedModel {
 
     /**
      * Constructor.
      * @param signalTravelTimeModel time delay computer
      */
     protected AbstractAngularMeasurementModel(final SignalTravelTimeModel signalTravelTimeModel) {
-        this.signalTravelTimeModel = signalTravelTimeModel;
-    }
-
-    /**
-     * Getter for signal travel time model.
-     * @return model
-     */
-    public SignalTravelTimeModel getSignalTravelTimeModel() {
-        return signalTravelTimeModel;
+        super(signalTravelTimeModel);
     }
 
     /**
@@ -65,7 +54,7 @@ public abstract class AbstractAngularMeasurementModel {
                                                   final PVCoordinatesProvider emitter,
                                                   final AbsoluteDate approxEmissionDate) {
         // Refine time delay
-        final double signalTravelTime = signalTravelTimeModel.getAdjustableEmitterComputer(emitter)
+        final double signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
                 .computeDelay(receptionCondition, approxEmissionDate);
         final AbsoluteDate emissionDate = receptionCondition.getReceptionDate().shiftedBy(-signalTravelTime);
 
@@ -90,7 +79,7 @@ public abstract class AbstractAngularMeasurementModel {
         // Refine time delay
         final FieldSignalReceptionCondition<T> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
                 receiverPosition, frame);
-        final T signalTravelTime = signalTravelTimeModel.getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter)
+        final T signalTravelTime = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter)
                 .computeDelay(receptionCondition, approxEmissionDate);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(signalTravelTime.negate());
 
