@@ -20,6 +20,10 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="evan" type="update" issue="1914">
+            Ensure CelestialBody frames are not duplicated within a DataContext.
+            Previously many equivalent instances of ICRF were created.
+        </action>
         <action dev="serrof" type="update" issue="1947">
             Use (Field)StaticTransform in GroundStation.
         </action>

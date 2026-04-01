@@ -99,4 +99,13 @@ public interface IAUPole extends Serializable {
      */
     <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(FieldAbsoluteDate<T> date);
 
+    /**
+     * Returns {@code true} if this pole and prime meridian is the same as the
+     * GCRF (and therefore ICRF) pole and prime meridian.
+     *
+     * @return {@code true} iff aligned with GCRF.
+     * @since 14.0
+     */
+    boolean isGcrfAligned();
+
 }

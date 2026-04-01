@@ -16,14 +16,9 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
-import org.orekit.frames.TransformProvider;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.frames.OriginTransformProvider;
 
 /**
  * A reference frame created from the {@code REF_FRAME} and {@code CENTER_NAME} is a CCSDS
@@ -75,41 +70,6 @@ public class ModifiedFrame extends Frame {
      */
     public String getCenterName() {
         return centerName;
-    }
-
-    /** Transform provider for {@link ModifiedFrame}. */
-    private static class OriginTransformProvider implements TransformProvider {
-
-        /** The new origin. */
-        private final CelestialBody body;
-
-        /** The original frame, specifying the orientation. */
-        private final Frame frame;
-
-        /**
-         * Create a transform provider to change the origin of an existing frame.
-         *
-         * @param frame the existing frame that specifies the orientation.
-         * @param body  the new origin.
-         */
-        OriginTransformProvider(final CelestialBody body, final Frame frame) {
-            this.body = body;
-            this.frame = frame;
-        }
-
-        @Override
-        public Transform getTransform(final AbsoluteDate date) {
-            return new Transform(date, body.getPVCoordinates(date, frame).negate());
-        }
-
-        @Override
-        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(
-                final FieldAbsoluteDate<T> date) {
-            return new FieldTransform<>(
-                    date,
-                    body.getPVCoordinates(date, frame).negate());
-        }
-
     }
 
 }

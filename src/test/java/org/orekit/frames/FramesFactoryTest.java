@@ -231,7 +231,7 @@ public class FramesFactoryTest {
         Transform t = icrf.getTransformTo(FramesFactory.getGCRF(),
                                           new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
         Assertions.assertEquals(0.0, t.getRotation().getAngle(), 1.0e-15);
-        Assertions.assertEquals(CelestialBodyFactory.EARTH_MOON + "/inertial", icrf.getParent().getName());
+        Assertions.assertEquals(CelestialBodyFactory.EARTH_MOON + "/ICRF", icrf.getParent().getName());
         Assertions.assertEquals(Predefined.GCRF.getName(), icrf.getParent().getParent().getName());
     }
 

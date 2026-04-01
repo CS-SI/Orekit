@@ -22,6 +22,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
@@ -111,6 +112,28 @@ public class Utils {
             }
             System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, buffer.toString());
             return DataContext.getDefault();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Creates a new data context, similar to {@link #setDataRoot(String)}
+     * except that this method does not modify any static variables.
+     *
+     * @param root of data context. Paths separated by {@code ":"}.
+     * @return new data context.
+     */
+    public static LazyLoadedDataContext newDataContext(String root) {
+        try {
+            LazyLoadedDataContext dataContext = new LazyLoadedDataContext();
+            DataProvidersManager manager = dataContext.getDataProvidersManager();
+            for (String component : root.split(":")) {
+                String componentPath;
+                componentPath = Utils.class.getClassLoader().getResource(component).toURI().getPath();
+                manager.addProvider(new DirectoryCrawler(new File(componentPath)));
+            }
+            return dataContext;
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

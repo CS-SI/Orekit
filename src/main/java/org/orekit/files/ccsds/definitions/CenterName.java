@@ -129,16 +129,19 @@ public enum CenterName {
      */
     public static String guessCenter(final Frame frame) {
         final String name = frame.getName();
-        if (name.endsWith(INERTIAL_FRAME_SUFFIX) || name.endsWith(ROTATING_FRAME_SUFFIX)) {
-            return name.substring(0, name.length() - 9).toUpperCase(STANDARDIZED_LOCALE);
-        } else if (frame instanceof ModifiedFrame) {
+        if (frame instanceof ModifiedFrame) {
             return ((ModifiedFrame) frame).getCenterName();
         } else if (frame.getName().equals(Predefined.ICRF.getName())) {
             return CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.toUpperCase(STANDARDIZED_LOCALE);
         } else if (frame.getDepth() == 0 || frame instanceof FactoryManagedFrame) {
             return "EARTH";
         } else {
-            return "UNKNOWN";
+            final int i = name.indexOf('/');
+            if (i > 0) {
+                return name.substring(0, i).toUpperCase(STANDARDIZED_LOCALE);
+            } else {
+                return "UNKNOWN";
+            }
         }
     }
 

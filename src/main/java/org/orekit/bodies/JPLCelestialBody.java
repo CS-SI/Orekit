@@ -25,11 +25,15 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
+import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
+import org.orekit.bodies.JPLEphemeridesLoader.ZeroRawPVProvider;
 import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.KinematicTransform;
+import org.orekit.frames.OriginTransformProvider;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
@@ -69,6 +73,12 @@ class JPLCelestialBody implements CelestialBody {
     /** IAU pole. */
     private final IAUPole iauPole;
 
+    /** Body's PV coordinates are defined in this frame. */
+    private final Frame definingFrameAlignedWithIcrf;
+
+    /** Body centered frame aligned with ICRF. */
+    private final Frame icrfAlignedFrame;
+
     /** Inertially oriented, body-centered frame. */
     private final Frame inertialFrame;
 
@@ -85,15 +95,14 @@ class JPLCelestialBody implements CelestialBody {
      * @param iauPole IAU pole implementation
      * @param definingFrameAlignedWithICRF frame in which celestial body coordinates are defined,
      * this frame <strong>must</strong> be aligned with ICRF
-     * @param inertialFrameName name to use for inertial frame (if null a default name will be built)
-     * @param bodyOrientedFrameName name to use for body-oriented frame (if null a default name will be built)
+     * @since 14.0
      */
     JPLCelestialBody(final String name, final String supportedNames,
                      final JPLEphemeridesLoader.EphemerisType generateType,
                      final JPLEphemeridesLoader.RawPVProvider rawPVProvider,
                      final double gm, final double scale,
-                     final IAUPole iauPole, final Frame definingFrameAlignedWithICRF,
-                     final String inertialFrameName, final String bodyOrientedFrameName) {
+                     final IAUPole iauPole,
+                     final Frame definingFrameAlignedWithICRF) {
         this.name           = name;
         this.gm             = gm;
         this.scale          = scale;
@@ -101,8 +110,37 @@ class JPLCelestialBody implements CelestialBody {
         this.generateType   = generateType;
         this.rawPVProvider  = rawPVProvider;
         this.iauPole        = iauPole;
-        this.inertialFrame  = new InertiallyOriented(definingFrameAlignedWithICRF, inertialFrameName);
-        this.bodyFrame      = new BodyOriented(bodyOrientedFrameName);
+        this.definingFrameAlignedWithIcrf = definingFrameAlignedWithICRF;
+        if (rawPVProvider instanceof ZeroRawPVProvider) {
+            // no translation or rotation needed, use directly
+            // might be better to have a method instead of using "instanceof"
+            // but the classes are tightly coupled and package private
+            this.icrfAlignedFrame = definingFrameAlignedWithICRF;
+        } else {
+            // translation needed
+            final String icrfName;
+            if (EphemerisType.SOLAR_SYSTEM_BARYCENTER == generateType) {
+                // in Orekit FramesFactory.getICRF() is implemented by
+                // CelestialBodyFactor.getSsb().getInertiallyOrientedFrame()
+                // so have to match Predefined.ICRF
+                icrfName = Predefined.ICRF.getName();
+            } else {
+                icrfName = name + "/ICRF";
+            }
+            this.icrfAlignedFrame = new Frame(
+                    definingFrameAlignedWithICRF,
+                    new OriginTransformProvider(this, definingFrameAlignedWithICRF),
+                    icrfName,
+                    true);
+        }
+        if (iauPole == null || iauPole.isGcrfAligned()) {
+            // Body "fixed" and inertial frames are GCRF aligned.
+            this.inertialFrame = icrfAlignedFrame;
+            this.bodyFrame = icrfAlignedFrame;
+        } else {
+            this.inertialFrame = new InertiallyOriented(icrfAlignedFrame);
+            this.bodyFrame      = new BodyOriented();
+        }
     }
 
     /** {@inheritDoc} */
@@ -114,7 +152,7 @@ class JPLCelestialBody implements CelestialBody {
         final TimeStampedPVCoordinates scaledPV = new TimeStampedPVCoordinates(date, scale, rawPV);
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
-        final Transform transform = getInertiallyOrientedFrame().getParent().getTransformTo(frame, date);
+        final Transform transform = definingFrameAlignedWithIcrf.getTransformTo(frame, date);
 
         // convert to requested frame
         return transform.transformPVCoordinates(scaledPV);
@@ -136,7 +174,7 @@ class JPLCelestialBody implements CelestialBody {
         final TimeStampedFieldPVCoordinates<T> scaledPV = new TimeStampedFieldPVCoordinates<>(date, scale, rawPV);
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
-        final FieldTransform<T> transform = getInertiallyOrientedFrame().getParent().getTransformTo(frame, date);
+        final FieldTransform<T> transform = definingFrameAlignedWithIcrf.getTransformTo(frame, date);
 
         // convert to requested frame
         return transform.transformPVCoordinates(scaledPV);
@@ -152,7 +190,7 @@ class JPLCelestialBody implements CelestialBody {
         final TimeStampedPVCoordinates scaledPV = new TimeStampedPVCoordinates(date, scale, rawPV);
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
-        final KinematicTransform transform = getInertiallyOrientedFrame().getParent().getKinematicTransformTo(frame, date);
+        final KinematicTransform transform = definingFrameAlignedWithIcrf.getKinematicTransformTo(frame, date);
 
         // convert to requested frame
         return transform.transformOnlyPV(scaledPV).getVelocity();
@@ -168,7 +206,7 @@ class JPLCelestialBody implements CelestialBody {
         final Vector3D scaledPosition = rawPosition.scalarMultiply(scale);
 
         // the raw position is relative to the parent of the body centered inertially oriented frame
-        final StaticTransform transform = getInertiallyOrientedFrame().getParent().getStaticTransformTo(frame, date);
+        final StaticTransform transform = definingFrameAlignedWithIcrf.getStaticTransformTo(frame, date);
 
         // convert to requested frame
         return transform.transformPosition(scaledPosition);
@@ -183,7 +221,7 @@ class JPLCelestialBody implements CelestialBody {
         final FieldVector3D<T> scaledPosition  = rawPosition.scalarMultiply(scale);
 
         // the raw position is relative to the parent of the body centered inertially oriented frame
-        final FieldStaticTransform<T> transform = getInertiallyOrientedFrame().getParent().getStaticTransformTo(frame, date);
+        final FieldStaticTransform<T> transform = definingFrameAlignedWithIcrf.getStaticTransformTo(frame, date);
 
         // convert to requested frame
         return transform.transformPosition(scaledPosition);
@@ -197,7 +235,7 @@ class JPLCelestialBody implements CelestialBody {
         final TimeStampedFieldPVCoordinates<T> scaledPV = new TimeStampedFieldPVCoordinates<>(date, scale, rawPV);
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
-        final FieldKinematicTransform<T> transform = getInertiallyOrientedFrame().getParent().getKinematicTransformTo(frame, date);
+        final FieldKinematicTransform<T> transform = definingFrameAlignedWithIcrf.getKinematicTransformTo(frame, date);
 
         // convert to requested frame
         return transform.transformOnlyPV(scaledPV).getVelocity();
@@ -211,6 +249,11 @@ class JPLCelestialBody implements CelestialBody {
     /** {@inheritDoc} */
     public double getGM() {
         return gm;
+    }
+
+    @Override
+    public Frame getIcrfAlignedFrame() {
+        return icrfAlignedFrame;
     }
 
     /** {@inheritDoc} */
@@ -229,19 +272,17 @@ class JPLCelestialBody implements CelestialBody {
         /** Suffix for inertial frame name. */
         private static final String INERTIAL_FRAME_SUFFIX = "/inertial";
 
-        /** Simple constructor.
-         * @param definingFrame frame in which celestial body coordinates are defined
-         * @param frameName name to use (if null a default name will be built)
+        /**
+         * Simple constructor.
+         *
+         * @param bodyIcrf body centered ICRF aligned frame.
+         * @since 14.0
          */
-        InertiallyOriented(final Frame definingFrame, final String frameName) {
-            super(definingFrame, new TransformProvider() {
+        InertiallyOriented(final Frame bodyIcrf) {
+            super(bodyIcrf, new TransformProvider() {
 
                 /** {@inheritDoc} */
                 public Transform getTransform(final AbsoluteDate date) {
-
-                    // compute translation from parent frame to self
-                    final PVCoordinates pv = getPVCoordinates(date, definingFrame);
-                    final Transform translation = new Transform(date, pv.negate());
 
                     // compute rotation from ICRF frame to self,
                     // as per the "Report of the IAU/IAG Working Group on Cartographic
@@ -258,15 +299,12 @@ class JPLCelestialBody implements CelestialBody {
                                     new Transform(date, new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
 
                     // update transform from parent to self
-                    return new Transform(date, translation, rotation);
+                    return rotation;
 
                 }
 
                 @Override
                 public StaticTransform getStaticTransform(final AbsoluteDate date) {
-                    // compute translation from parent frame to self
-                    final Vector3D position = getPosition(date, definingFrame);
-
                     // compute rotation from ICRF frame to self,
                     // as per the "Report of the IAU/IAG Working Group on Cartographic
                     // Coordinates and Rotational Elements of the Planets and Satellites"
@@ -282,15 +320,11 @@ class JPLCelestialBody implements CelestialBody {
                                     new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
 
                     // update transform from parent to self
-                    return StaticTransform.of(date, position.negate(), rotation);
+                    return StaticTransform.of(date, rotation);
                 }
 
                 /** {@inheritDoc} */
                 public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-
-                    // compute translation from parent frame to self
-                    final FieldPVCoordinates<T> pv = getPVCoordinates(date, definingFrame);
-                    final FieldTransform<T> translation = new FieldTransform<>(date, pv.negate());
 
                     // compute rotation from ICRF frame to self,
                     // as per the "Report of the IAU/IAG Working Group on Cartographic
@@ -314,7 +348,7 @@ class JPLCelestialBody implements CelestialBody {
                                                                     FieldVector3D.getPlusI(date.getField())));
 
                     // update transform from parent to self
-                    return new FieldTransform<>(date, translation, rotation);
+                    return rotation;
 
                 }
 
@@ -322,8 +356,6 @@ class JPLCelestialBody implements CelestialBody {
                 public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
                     // field
                     final Field<T> field = date.getField();
-                    // compute translation from parent frame to self
-                    final FieldVector3D<T> position = getPosition(date, definingFrame);
 
                     // compute rotation from ICRF frame to self,
                     // as per the "Report of the IAU/IAG Working Group on Cartographic
@@ -340,10 +372,10 @@ class JPLCelestialBody implements CelestialBody {
                                     new FieldRotation<>(pole, qNode, FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field));
 
                     // update transform from parent to self
-                    return FieldStaticTransform.of(date, position.negate(), rotation);
+                    return FieldStaticTransform.of(date, rotation);
                 }
 
-            }, frameName == null ? name + INERTIAL_FRAME_SUFFIX : frameName, true);
+            }, name + INERTIAL_FRAME_SUFFIX, true);
         }
 
     }
@@ -359,9 +391,9 @@ class JPLCelestialBody implements CelestialBody {
         /**
          * Simple constructor.
          *
-         * @param frameName name to use (if null a default name will be built)
+         * @since 14.0
          */
-        BodyOriented(final String frameName) {
+        BodyOriented() {
             super(inertialFrame, new TransformProvider() {
 
                 /** {@inheritDoc} */
@@ -387,7 +419,7 @@ class JPLCelestialBody implements CelestialBody {
                                     Vector3D.PLUS_K));
                 }
 
-            }, frameName == null ? name + BODY_FRAME_SUFFIX : frameName, false);
+            }, name + BODY_FRAME_SUFFIX, false);
         }
     }
 }

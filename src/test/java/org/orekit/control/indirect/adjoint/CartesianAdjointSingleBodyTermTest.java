@@ -176,6 +176,11 @@ class CartesianAdjointSingleBodyTermTest {
     private static CelestialBody getCelestialBody(final Vector3D position) {
         return new CelestialBody() {
             @Override
+            public Frame getIcrfAlignedFrame() {
+                return getInertiallyOrientedFrame();
+            }
+
+            @Override
             public Frame getInertiallyOrientedFrame() {
                 return FramesFactory.getGCRF();
             }

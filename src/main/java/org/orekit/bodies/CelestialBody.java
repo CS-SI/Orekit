@@ -25,6 +25,15 @@ import org.orekit.utils.ExtendedPositionProvider;
  */
 public interface CelestialBody extends ExtendedPositionProvider {
 
+    /**
+     * Get the body centered ICRF aligned frame. For example, for Earth this
+     * would return GCRF.
+     *
+     * @return body centered, ICRF aligned frame.
+     * @since 14.0
+     */
+    Frame getIcrfAlignedFrame();
+
     /** Get an inertially oriented, body centered frame.
      * <p>The frame is always bound to the body center, and its axes have a
      * fixed orientation with respect to other inertial frames.</p>
