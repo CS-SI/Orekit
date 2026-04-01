@@ -17,8 +17,8 @@
 package org.orekit.files.ccsds.definitions;
 
 import org.orekit.bodies.CelestialBody;
+import org.orekit.frames.AngularTransformProvider;
 import org.orekit.frames.Frame;
-import org.orekit.frames.OriginTransformProvider;
 
 /**
  * A reference frame created from the {@code REF_FRAME} and {@code CENTER_NAME} is a CCSDS
@@ -35,21 +35,62 @@ public class ModifiedFrame extends Frame {
     private final String centerName;
 
     /**
-     * Create a CCSDS reference frame by changing the origin of an existing frame.
+     * Create a CCSDS reference frame that is centered on {@code body} and
+     * aligned with {@code frame}.
+     *
+     * <p>Callers should check that the requested frame is not already stored
+     * somewhere else. For example, Earth-centered ICRF is
+     * {@code Frames.getGCRF()}. {@link OrekitCcsdsFrameMapper} performs the
+     * checking for CCSDS frames that Orekit implements.
      *
      * @param frame      the existing frame that specifies the orientation.
-     * @param refFrame   the reference frame used to create this frame.
-     * @param body       the new origin.
-     * @param centerName the value of the {@code CENTER_NAME} key word used to create
-     *                   {@code body}.
+     * @param refFrame   the reference frame used to create {@code frame}.
+     * @param body       the origin.
+     * @param centerName the value of the {@code CENTER_NAME} key word used to
+     *                   create {@code body}.
+     * @see #ModifiedFrame(Frame, CelestialBodyFrame, CelestialBody, String,
+     * String)
      */
     public ModifiedFrame(final Frame frame,
                          final CelestialBodyFrame refFrame,
                          final CelestialBody body,
                          final String centerName) {
-        super(frame, new OriginTransformProvider(body, frame),
-              body.getName() + "/" + frame.getName(), frame.isPseudoInertial());
-        this.refFrame   = refFrame;
+        this(frame, refFrame, body, centerName,
+                body.getName() + "/" + frame.getName());
+    }
+
+    /**
+     * Create a CCSDS reference frame that is centered on {@code body} and
+     * aligned with {@code frame}.
+     *
+     * <p>Callers should check that the requested frame is not already stored
+     * somewhere else. For example, Earth-centered ICRF is
+     * {@code Frames.getGCRF()}. {@link OrekitCcsdsFrameMapper} performs the
+     * checking for CCSDS frames that Orekit implements.
+     *
+     * @param frame      the existing frame that specifies the orientation.
+     * @param refFrame   the reference frame used to create {@code frame}.
+     * @param body       the origin.
+     * @param centerName the value of the {@code CENTER_NAME} key word used to
+     *                   create {@code body}.
+     * @param frameName  the name of this frame, returned by
+     *                   {@link #getName()}.
+     * @see #ModifiedFrame(Frame, CelestialBodyFrame, CelestialBody, String)
+     * @since 14.0
+     */
+    public ModifiedFrame(final Frame frame,
+                         final CelestialBodyFrame refFrame,
+                         final CelestialBody body,
+                         final String centerName,
+                         final String frameName) {
+        // unit tests reveal there is a tradeoff in translation vs. rotation
+        // error, but that the error is often lower when translation is
+        // performed first, then rotation.
+        super(body.getIcrfAlignedFrame(),
+                new AngularTransformProvider(body.getIcrfAlignedFrame(), frame),
+                frameName,
+                frame.isPseudoInertial());
+        this.refFrame = refFrame;
         this.centerName = centerName;
     }
 

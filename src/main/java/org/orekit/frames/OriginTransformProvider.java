@@ -28,6 +28,7 @@ import org.orekit.utils.ExtendedPositionProvider;
  *
  * @author Evan M. Ward
  * @see ModifiedFrame
+ * @see AngularTransformProvider
  * @since 14.0
  */
 public class OriginTransformProvider implements TransformProvider {

@@ -505,9 +505,12 @@ public class OemParserTest {
         TimeStampedPVCoordinates marsPV_in_marscentered_frame = mars.getPVCoordinates(actualStart, actualFrame);
         MatcherAssert.assertThat(marsPV_in_marscentered_frame,
                                  OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));
-        Assertions.assertEquals(actualTransform.getTranslation(), marsPV.getPosition().negate());
-        Assertions.assertEquals(actualTransform.getVelocity(), marsPV.getVelocity().negate());
-        Assertions.assertEquals(actualTransform.getAcceleration(), marsPV.getAcceleration().negate());
+        MatcherAssert.assertThat(actualTransform.getTranslation(),
+                OrekitMatchers.vectorCloseTo(marsPV.getPosition().negate(), 1));
+        MatcherAssert.assertThat(actualTransform.getVelocity(),
+                OrekitMatchers.vectorCloseTo(marsPV.getVelocity().negate(), 1));
+        MatcherAssert.assertThat(actualTransform.getAcceleration(),
+                OrekitMatchers.vectorCloseTo(marsPV.getAcceleration().negate(), 1));
         Assertions.assertEquals(
                 Rotation.distance(actualTransform.getRotation(), Rotation.IDENTITY),
                 0.0, 0.0);
