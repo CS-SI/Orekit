@@ -1,4 +1,4 @@
-/* Copyright 2002-2026 CS GROUP
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,30 +16,20 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import org.orekit.estimation.measurements.Range;
+import org.junit.jupiter.api.Test;
+import org.orekit.utils.Constants;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** Class modifying theoretical range measurement with Shapiro time delay.
- * <p>
- * Shapiro time delay is a relativistic effect due to gravity.
- * </p>
- *
- * @author Luc Maisonobe
- * @since 10.0
- */
-public class ShapiroRangeModifier extends AbstractShapiroRangeModifier<Range> {
+class ShapiroBistaticRangeModifierTest {
 
-    /** Simple constructor from gravitational constant.
-     * @param gm gravitational constant for main body in signal path vicinity.
-     */
-    public ShapiroRangeModifier(final double gm) {
-        this(new ShapiroModel(gm));
-    }
-
-    /**
-     * Constructor.
-     * @param shapiroModel Shapiro delay computer
-     */
-    public ShapiroRangeModifier(final ShapiroModel shapiroModel) {
-        super(shapiroModel);
+    @Test
+    void testGetEffectName() {
+        // GIVEN
+        final double mu = Constants.EGM96_EARTH_MU;
+        final ShapiroBistaticRangeModifier modifier = new ShapiroBistaticRangeModifier(mu);
+        // WHEN
+        final String name = modifier.getEffectName();
+        // THEN
+        assertEquals("Shapiro", name);
     }
 }
