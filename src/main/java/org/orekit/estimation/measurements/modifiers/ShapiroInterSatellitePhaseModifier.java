@@ -16,14 +16,8 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modifying theoretical inter-satellites phase measurement with Shapiro time delay.
  * <p>
@@ -32,32 +26,28 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class ShapiroInterSatellitePhaseModifier extends AbstractShapiroBaseModifier implements EstimationModifier<InterSatellitesPhase> {
+public class ShapiroInterSatellitePhaseModifier extends AbstractShapiroPhaseModifier<InterSatellitesPhase> {
 
-    /** Simple constructor.
+    /** Simple constructor from gravitational constant.
      * @param gm gravitational constant for main body in signal path vicinity.
      */
     public ShapiroInterSatellitePhaseModifier(final double gm) {
-        super(gm);
+        this(new ShapiroModel(gm));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
+    /** Constructor.
+     * @param shapiroModel Shapiro delay computer
+     * @since 14.0
+     */
+    public ShapiroInterSatellitePhaseModifier(final ShapiroModel shapiroModel) {
+        super(shapiroModel);
     }
 
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesPhase> estimated) {
-        // Compute correction
-        final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
-        final double correction = shapiroCorrection(pv[0], pv[1]);
-        // Update estimated value taking into account the Shapiro time delay.
         final double wavelength = estimated.getObservedMeasurement().getWavelength();
-        final double[] newValue = estimated.getEstimatedValue().clone();
-        newValue[0] = newValue[0] + (correction / wavelength);
-        estimated.modifyEstimatedValue(this, newValue);
+        modifyWithoutDerivatives(estimated, wavelength);
     }
 
 }

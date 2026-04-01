@@ -1,4 +1,4 @@
-/* Copyright 2002-2026 CS GROUP
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,22 +16,22 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import org.orekit.estimation.measurements.InterSatellitesRange;
+import org.orekit.estimation.measurements.BistaticRange;
 
 /** Class modifying theoretical range measurement with Shapiro time delay.
  * <p>
  * Shapiro time delay is a relativistic effect due to gravity.
  * </p>
  *
- * @author Luc Maisonobe
- * @since 10.0
+ * @author Romain Serra
+ * @since 14.0
  */
-public class ShapiroInterSatelliteRangeModifier extends AbstractShapiroRangeModifier<InterSatellitesRange> {
+public class ShapiroBistaticRangeModifier extends AbstractShapiroRangeModifier<BistaticRange> {
 
     /** Simple constructor from gravitational constant.
      * @param gm gravitational constant for main body in signal path vicinity.
      */
-    public ShapiroInterSatelliteRangeModifier(final double gm) {
+    public ShapiroBistaticRangeModifier(final double gm) {
         this(new ShapiroModel(gm));
     }
 
@@ -39,7 +39,7 @@ public class ShapiroInterSatelliteRangeModifier extends AbstractShapiroRangeModi
      * @param shapiroModel Shapiro delay computer
      * @since 14.0
      */
-    public ShapiroInterSatelliteRangeModifier(final ShapiroModel shapiroModel) {
+    public ShapiroBistaticRangeModifier(final ShapiroModel shapiroModel) {
         super(shapiroModel);
     }
 }

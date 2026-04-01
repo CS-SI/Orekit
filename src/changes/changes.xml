@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1940">
+            Add Shapiro modifier for bistatic range.
+        </action>
         <action dev="vcucchie" type="add" issue="1931">
             Add class diagram for osc2mean package.
         </action>
