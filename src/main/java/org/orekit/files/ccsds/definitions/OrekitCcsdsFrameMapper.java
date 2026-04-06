@@ -31,10 +31,20 @@ import org.orekit.time.AbsoluteDate;
  */
 public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
 
+    /** Message indicating no reference frame. */
+    private static final String NO_REFERENCE_FRAME = "No reference frame";
+
     @Override
     public Frame buildCcsdsFrame(final FrameFacade orientation,
                                  final AbsoluteDate frameEpoch) {
-        throw new UnsupportedOperationException();
+        if (orientation == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, NO_REFERENCE_FRAME);
+        }
+        final Frame frame = orientation.asFrame();
+        if (frame == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, orientation.getName());
+        }
+        return frame;
     }
 
     @Override
@@ -49,9 +59,10 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
             throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, center.getName());
         }
         if (orientation == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, "No reference frame");
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, NO_REFERENCE_FRAME);
         }
-        if (orientation.asFrame() == null) {
+        final Frame frame = orientation.asFrame();
+        if (frame == null) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, orientation.getName());
         }
         // Just return frame if we don't need to shift the center based on CENTER_NAME
@@ -72,10 +83,10 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
             // that are not Earth-centered. If that changes then this code would
             // also need to be updated, perhaps by adding a getCenter() method
             // to CelestialBodyFrame or Frame.
-            return orientation.asFrame();
+            return frame;
         }
         // else, translate frame to specified center.
-        return new ModifiedFrame(orientation.asFrame(), celestialBodyFrame,
+        return new ModifiedFrame(frame, celestialBodyFrame,
                 body, center.getName());
     }
 

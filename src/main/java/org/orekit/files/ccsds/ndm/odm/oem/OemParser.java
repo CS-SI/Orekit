@@ -327,7 +327,9 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
         if (starting) {
             // save the current metadata for later retrieval of reference frame
             final OdmCommonMetadata savedMetadata = metadata;
-            currentCovariance = new CartesianCovariance(savedMetadata::getReferenceFrame);
+            currentCovariance = new CartesianCovariance(
+                    savedMetadata::getReferenceFrame,
+                    savedMetadata.getFrameMapper());
             anticipateNext(getFileFormat() == FileFormat.XML ?
                         this::processXmlCovarianceToken :
                         this::processKvnCovarianceToken);
@@ -470,7 +472,9 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
                 if (currentCovariance == null) {
                     // save the current metadata for later retrieval of reference frame
                     final OdmCommonMetadata savedMetadata = metadata;
-                    currentCovariance = new CartesianCovariance(savedMetadata::getReferenceFrame);
+                    currentCovariance = new CartesianCovariance(
+                            savedMetadata::getReferenceFrame,
+                            savedMetadata.getFrameMapper());
                     currentRow        = 0;
                 }
 

@@ -16,9 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 
 /**
  * Container for Attitude Parameter Message data lines.
@@ -57,9 +60,21 @@ public class AngularVelocity extends CommentsContainer {
     private double angVelZ;
 
     /** Simple constructor.
+     * @deprecated in favor of {@link #AngularVelocity(CcsdsFrameMapper)}.
      */
+    @Deprecated
     public AngularVelocity() {
-        endpoints = new AttitudeEndpoints();
+        this(new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 14.0
+     */
+    public AngularVelocity(final CcsdsFrameMapper frameMapper) {
+        endpoints = new AttitudeEndpoints(frameMapper);
         frame     = null;
         angVelX   = Double.NaN;
         angVelY   = Double.NaN;

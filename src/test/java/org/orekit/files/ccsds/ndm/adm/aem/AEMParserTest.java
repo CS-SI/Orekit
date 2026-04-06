@@ -921,12 +921,15 @@ public class AEMParserTest {
         CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
             @Override
             public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
-                if ("SC_BODY_1".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                if ("SC_BODY_1".equals(orientation.getName()) && null == epoch) {
                     return scBodyFrame;
-                } else if ("EME2000".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                } else if (("J2000".equals(orientation.getName()) || "EME2000".equals(orientation.getName()))
+                        && null == epoch) {
                     return myJ2000;
+                } else if ("ITRF1993".equals(orientation.getName()) && null == epoch) {
+                    return itrf93;
                 } else {
-                    throw new IllegalArgumentException(orientation + " " + epoch);
+                    throw new IllegalArgumentException(orientation.getName() + " " + epoch);
                 }
             }
 
@@ -936,13 +939,13 @@ public class AEMParserTest {
                                          AbsoluteDate epoch) {
                 if ("EARTH".equals(center.getName()) &&
                         "SC_BODY_1".equals(orientation.getName()) &&
-                        expectedEpoch.equals(epoch)) {
+                        null == epoch) {
                     return scBodyFrame;
-                } else if ("EARTH".equals(center.getName()) && expectedEpoch.equals(epoch) &&
+                } else if ("EARTH".equals(center.getName()) && null == epoch &&
                         ("EME2000".equals(orientation.getName()) || "J2000".equals(orientation.getName()))) {
                         return myJ2000;
                 } else if ("EARTH".equals(center.getName()) && "ITRF1993".equals(orientation.getName()) &&
-                        expectedEpoch.equals(epoch)) {
+                        null == epoch) {
                     return itrf93;
                 } else {
                     throw new IllegalArgumentException(
@@ -982,30 +985,41 @@ public class AEMParserTest {
         final BodyFacade sCenter = sAemMetadata.getCenter();
 
         // getReferenceFrame() returns a Frame, not FrameFacade from the endpoints object
-        // TODO: this should work with myJ2000?
-        MatcherAssert.assertThat(qAemSegment.getReferenceFrame(), Matchers.sameInstance(parent));
-        // The frameA and frameB and therefore ExternalFrame and SpacecraftBodyFrame are all stored as FrameFacades
+        MatcherAssert.assertThat(qAemSegment.getReferenceFrame(), Matchers.sameInstance(myJ2000));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(qCenter, qEndpoints.getFrameA(), expectedEpoch),
+                qAemSegment.getMetadata().getEndpoints().getExternal(),
                 Matchers.sameInstance(myJ2000));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(qCenter, qEndpoints.getFrameB(), expectedEpoch),
+                qAemSegment.getMetadata().getFrameMapper(),
+                Matchers.sameInstance(mapper));
+        // The frameA and frameB and therefore ExternalFrame and SpacecraftBodyFrame are all stored as FrameFacades
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(qCenter, qEndpoints.getFrameA(), null),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(qCenter, qEndpoints.getFrameB(), null),
                 Matchers.sameInstance(scBodyFrame));
 
         MatcherAssert.assertThat(eAemSegment.getReferenceFrame(), Matchers.sameInstance(itrf93));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(eCenter, eEndpoints.getFrameA(), expectedEpoch),
+                eAemSegment.getMetadata().getEndpoints().getExternal(),
                 Matchers.sameInstance(itrf93));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(eCenter, eEndpoints.getFrameB(), expectedEpoch),
+                mapper.buildCcsdsFrame(eCenter, eEndpoints.getFrameA(), null),
+                Matchers.sameInstance(itrf93));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(eCenter, eEndpoints.getFrameB(), null),
                 Matchers.sameInstance(scBodyFrame));
 
-        MatcherAssert.assertThat(sAemSegment.getReferenceFrame(), Matchers.sameInstance(parent));
+        MatcherAssert.assertThat(sAemSegment.getReferenceFrame(), Matchers.sameInstance(myJ2000));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(sCenter, sEndpoints.getFrameA(), expectedEpoch),
+                sAemSegment.getMetadata().getEndpoints().getExternal(),
                 Matchers.sameInstance(myJ2000));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(sCenter, sEndpoints.getFrameB(), expectedEpoch),
+                mapper.buildCcsdsFrame(sCenter, sEndpoints.getFrameA(), null),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(sCenter, sEndpoints.getFrameB(), null),
                 Matchers.sameInstance(scBodyFrame));
     }
 }

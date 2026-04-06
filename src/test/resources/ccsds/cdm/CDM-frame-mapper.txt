@@ -67,6 +67,7 @@ COMMENT Apogee Altitude=779 km
 COMMENT Perigee Altitude=765 km
 COMMENT Inclination=86.4 deg
 AREA_PC                                        = 5.2                                                    [m**2]
+OEB_PARENT_FRAME                               = ITRF
 MASS                                           = 251.6                                                  [kg]
 CD_AREA_OVER_MASS                              = 0.045663                                               [m**2/kg]
 CR_AREA_OVER_MASS                              = 0.000000                                               [m**2/kg]

@@ -1389,14 +1389,20 @@ public class APMParserTest {
         AbsoluteDate expectedEpoch = new AbsoluteDate("2023-01-01T00:00:00.0000", tai);
         Frame parent = FramesFactory.getEME2000();
         Frame myJ2000 = new Frame(parent, Transform.IDENTITY, "MyJ2000");
-        Frame scBodyFrame = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
-                Math.PI / 4, Math.PI / 2, Math.PI /3)), "SC_BODY_1");
+        final Rotation rotation = new Rotation(RotationOrder.XYZ,
+                RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 4, Math.PI / 2, Math.PI / 3);
+        final Transform transform = new Transform(expectedEpoch, rotation);
+        Frame scBodyFrame = new Frame(parent, transform, "SC_BODY_1");
         CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
             @Override
             public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
-                if ("SC_BODY_1".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                if (epoch != null) {
+                    throw new IllegalArgumentException("" + epoch);
+                }
+                if ("SC_BODY_1".equals(orientation.getName())) {
                     return scBodyFrame;
-                } else if ("EME2000".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                } else if ("EME2000".equals(orientation.getName())) {
                     return myJ2000;
                 } else {
                     throw new IllegalArgumentException(orientation + " " + epoch);
@@ -1407,12 +1413,14 @@ public class APMParserTest {
             public Frame buildCcsdsFrame(BodyFacade center,
                                          FrameFacade orientation,
                                          AbsoluteDate epoch) {
+                if (epoch != null) {
+                    throw new IllegalArgumentException("" + epoch);
+                }
                 if ("ZZ".equals(center.getName()) &&
-                        "SC_BODY_1".equals(orientation.getName()) &&
-                        expectedEpoch.equals(epoch)) {
+                        "SC_BODY_1".equals(orientation.getName())) {
                     return scBodyFrame;
-                } else if ("ZZ".equals(center.getName()) && "EME2000".equals(orientation.getName()) &&
-                            expectedEpoch.equals(epoch)) {
+                } else if ("ZZ".equals(center.getName())
+                        && "EME2000".equals(orientation.getName())) {
                     return myJ2000;
                 } else {
                 throw new IllegalArgumentException(
@@ -1432,63 +1440,74 @@ public class APMParserTest {
         // verify
         // Check data, metadata does not include frame
         final ApmData data = apm.getData();
-        // check each block (they all use FrameFacades, either directly or in the endpoints)
         // quaternion block
         final AttitudeEndpoints qEndpoints = data.getQuaternionBlock().getEndpoints();
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(center, qEndpoints.getFrameA(), expectedEpoch),
+                mapper.buildCcsdsFrame(center, qEndpoints.getFrameA(), null),
                 Matchers.sameInstance(myJ2000));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(center, qEndpoints.getFrameB(), expectedEpoch),
+                mapper.buildCcsdsFrame(center, qEndpoints.getFrameB(), null),
                 Matchers.sameInstance(scBodyFrame));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(center, qEndpoints.getExternalFrame(), expectedEpoch),
+                mapper.buildCcsdsFrame(center, qEndpoints.getExternalFrame(), null),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                qEndpoints.getExternal(),
                 Matchers.sameInstance(myJ2000));
 
         // Euler block
         final AttitudeEndpoints eEndpoints = data.getEulerBlock().getEndpoints();
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(eEndpoints.getFrameA(), expectedEpoch),
+                mapper.buildCcsdsFrame(eEndpoints.getFrameA(), null),
                 Matchers.sameInstance(myJ2000));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(eEndpoints.getFrameB(), expectedEpoch),
+                mapper.buildCcsdsFrame(eEndpoints.getFrameB(), null),
                 Matchers.sameInstance(scBodyFrame));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(eEndpoints.getExternalFrame(), expectedEpoch),
+                mapper.buildCcsdsFrame(eEndpoints.getExternalFrame(), null),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                eEndpoints.getExternal(),
                 Matchers.sameInstance(myJ2000));
 
         // spin stabilized block
         final AttitudeEndpoints sEndpoints = data.getSpinStabilizedBlock().getEndpoints();
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(sEndpoints.getFrameA(), expectedEpoch),
+                mapper.buildCcsdsFrame(sEndpoints.getFrameA(), null),
                 Matchers.sameInstance(myJ2000));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(sEndpoints.getFrameB(), expectedEpoch),
+                mapper.buildCcsdsFrame(sEndpoints.getFrameB(), null),
                 Matchers.sameInstance(scBodyFrame));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(sEndpoints.getExternalFrame(), expectedEpoch),
+                mapper.buildCcsdsFrame(sEndpoints.getExternalFrame(), null),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                sEndpoints.getExternal(),
                 Matchers.sameInstance(myJ2000));
 
         // angular velocity block
         final AttitudeEndpoints aEndpoints = data.getAngularVelocityBlock().getEndpoints();
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(aEndpoints.getFrameA(), expectedEpoch),
+                mapper.buildCcsdsFrame(aEndpoints.getFrameA(), null),
                 Matchers.sameInstance(myJ2000));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(aEndpoints.getFrameB(), expectedEpoch),
+                mapper.buildCcsdsFrame(aEndpoints.getFrameB(), null),
                 Matchers.sameInstance(scBodyFrame));
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(aEndpoints.getExternalFrame(), expectedEpoch),
+                mapper.buildCcsdsFrame(aEndpoints.getExternalFrame(), null),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                aEndpoints.getExternal(),
                 Matchers.sameInstance(myJ2000));
 
         // inertia block
         final FrameFacade inertiaFrame = data.getInertiaBlock().getFrame();
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(inertiaFrame, expectedEpoch), Matchers.sameInstance(scBodyFrame));
+                mapper.buildCcsdsFrame(inertiaFrame, null), Matchers.sameInstance(scBodyFrame));
 
         // maneuver block
         final FrameFacade maneuverFrame = data.getManeuver(0).getFrame();
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(maneuverFrame, expectedEpoch), Matchers.sameInstance(scBodyFrame));
+                mapper.buildCcsdsFrame(maneuverFrame, null), Matchers.sameInstance(scBodyFrame));
     }
 }

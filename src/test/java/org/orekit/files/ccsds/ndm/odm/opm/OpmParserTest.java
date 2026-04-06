@@ -926,7 +926,7 @@ public class OpmParserTest {
         // Check only block with reference frame explicitly specified (covariance)
         final OpmData data = opm.getData();
         MatcherAssert.assertThat(
-                mapper.buildCcsdsFrame(data.getCovarianceBlock().getReferenceFrame(), null),
+                data.getCovarianceBlock().getFrame(),
                 Matchers.sameInstance(zzrf));
     }
 

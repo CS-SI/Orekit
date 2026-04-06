@@ -2015,8 +2015,10 @@ public class CdmParserTest {
         MatcherAssert.assertThat(cdm.getMetadataObject1().getFrame(), Matchers.sameInstance(myItrf));
         MatcherAssert.assertThat(cdm.getMetadataObject2().getFrame(), Matchers.sameInstance(myItrf));
         // verify altcovariance reference frames
-        final BodyFacade center = cdm.getMetadataObject1().getOrbitCenter();
-        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, cdm.getMetadataObject1().getAltCovRefFrame(), null),
+        MatcherAssert.assertThat(cdm.getMetadataObject1().getAltCovFrame(),
+                Matchers.sameInstance(myItrf));
+        MatcherAssert.assertThat(
+                cdm.getDataObject1().getAdditionalParametersBlock().getOebParent(),
                 Matchers.sameInstance(myItrf));
     }
 }

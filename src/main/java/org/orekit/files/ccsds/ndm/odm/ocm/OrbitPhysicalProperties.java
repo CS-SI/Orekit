@@ -23,7 +23,10 @@ import java.util.List;
 import org.hipparchus.linear.DefaultRealMatrixChangingVisitor;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -110,11 +113,26 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
 
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
+     * @deprecated in favor of {@link #OrbitPhysicalProperties(AbsoluteDate,
+     * CcsdsFrameMapper)}.
      */
+    @Deprecated
     public OrbitPhysicalProperties(final AbsoluteDate epochT0) {
+        this(epochT0, new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param epochT0     T0 epoch from file metadata
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 14.0
+     */
+    public OrbitPhysicalProperties(final AbsoluteDate epochT0,
+                                   final CcsdsFrameMapper frameMapper) {
 
         // Call to CommonPhysicalProperties constructor
-        super();
+        super(frameMapper);
 
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
