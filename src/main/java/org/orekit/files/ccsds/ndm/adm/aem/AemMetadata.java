@@ -91,7 +91,7 @@ public class AemMetadata extends AdmMetadata {
     public AemMetadata(final int defaultInterpolationDegree,
                        final CcsdsFrameMapper frameMapper) {
         super(frameMapper);
-        endpoints           = new AttitudeEndpoints();
+        endpoints           = new AttitudeEndpoints(frameMapper);
         interpolationDegree = defaultInterpolationDegree;
     }
 

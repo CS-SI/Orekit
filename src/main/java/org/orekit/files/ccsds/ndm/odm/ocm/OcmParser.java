@@ -310,7 +310,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
             final OneAxisEllipsoid body =
                             currentTrajectoryStateHistoryMetadata.getTrajType() == OrbitElementsType.GEODETIC ?
                             new OneAxisEllipsoid(equatorialRadius, flattening,
-                                                 currentTrajectoryStateHistoryMetadata.getTrajReferenceFrame().asFrame()) :
+                                                 currentTrajectoryStateHistoryMetadata.getFrame()) :
                             null;
             trajectoryBlocks = new ArrayList<>(old.size());
             for (final TrajectoryStateHistory osh : old) {
@@ -342,7 +342,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
             final OneAxisEllipsoid body =
                             currentTrajectoryStateHistoryMetadata.getTrajType() == OrbitElementsType.GEODETIC ?
                             new OneAxisEllipsoid(equatorialRadius, flattening,
-                                                 currentTrajectoryStateHistoryMetadata.getTrajReferenceFrame().asFrame()) :
+                                                 currentTrajectoryStateHistoryMetadata.getFrame()) :
                             null;
             anticipateNext(structureProcessor);
             if (currentTrajectoryStateHistoryMetadata.getCenter().getBody() != null) {
@@ -366,7 +366,9 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         if (starting) {
             if (physicBlock == null) {
                 // this is the first (and unique) physical properties block, we need to allocate the container
-                physicBlock = new OrbitPhysicalProperties(metadata.getEpochT0());
+                physicBlock = new OrbitPhysicalProperties(
+                        metadata.getEpochT0(),
+                        metadata.getFrameMapper());
             }
             anticipateNext(this::processPhysicalPropertyToken);
         } else {
@@ -386,7 +388,9 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                 // this is the first covariance block, we need to allocate the container
                 covarianceBlocks = new ArrayList<>();
             }
-            currentCovarianceHistoryMetadata = new OrbitCovarianceHistoryMetadata(metadata.getEpochT0());
+            currentCovarianceHistoryMetadata = new OrbitCovarianceHistoryMetadata(
+                    metadata.getEpochT0(),
+                    metadata.getFrameMapper());
             currentCovarianceHistory         = new ArrayList<>();
             anticipateNext(this::processCovarianceToken);
         } else {
@@ -410,7 +414,9 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                 // this is the first maneuver block, we need to allocate the container
                 maneuverBlocks = new ArrayList<>();
             }
-            currentManeuverHistoryMetadata = new OrbitManeuverHistoryMetadata(metadata.getEpochT0());
+            currentManeuverHistoryMetadata = new OrbitManeuverHistoryMetadata(
+                    metadata.getEpochT0(),
+                    metadata.getFrameMapper());
             currentManeuverHistory         = new ArrayList<>();
             anticipateNext(this::processManeuverToken);
         } else {
@@ -595,7 +601,9 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
      */
     private boolean processPhysicalPropertyToken(final ParseToken token) {
         if (physicBlock == null) {
-            physicBlock = new OrbitPhysicalProperties(metadata.getEpochT0());
+            physicBlock = new OrbitPhysicalProperties(
+                    metadata.getEpochT0(),
+                    metadata.getFrameMapper());
         }
         anticipateNext(this::processDataSubStructureToken);
         try {

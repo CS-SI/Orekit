@@ -29,6 +29,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
+import org.opentest4j.AssertionFailedError;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -197,12 +198,13 @@ public class NdmTestUtils {
                 if (!((getter.getName().equals("getFrame") ||
                        getter.getName().equals("getReferenceFrame") ||
                        getter.getName().equals("getInertialFrame") ||
+                       getter.getReturnType().equals(Frame.class) ||
                        getter.getName().equals("getAngularCoordinates")) &&
                       e.getCause() instanceof OrekitException &&
                       (((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY ||
                        ((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.CCSDS_INVALID_FRAME ||
                        ((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE))) {
-                    Assertions.fail(e.getCause().getLocalizedMessage());
+                    throw new Error("failed to invoke getter: " + e.getLocalizedMessage(), e);
                 }
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 Assertions.fail(e.getLocalizedMessage());

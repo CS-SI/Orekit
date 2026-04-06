@@ -925,11 +925,8 @@ public class OemParserTest {
                     Matchers.sameInstance(tod));
             List<CartesianCovariance> covariances = segment.getCovarianceMatrices();
             for (CartesianCovariance covariance : covariances) {
-                // Oem doesn't covert the covariance reference frame to a Frame,
-                // so just check the mapper can map it.
-                // TODO to add a getFrame() method.
                 MatcherAssert.assertThat(
-                        mapper.buildCcsdsFrame(covariance.getReferenceFrame(), null),
+                        covariance.getFrame(),
                         Matchers.sameInstance(myTod));
             }
             MatcherAssert.assertThat(covariances.size(), Matchers.is(1));

@@ -594,6 +594,7 @@ public class OmmParserTest {
         Frame tod = context.getFrames().getTOD(false);
         Frame myTod = new Frame(tod, Transform.IDENTITY, "myTod", true);
         AbsoluteDate expectedEpoch = new AbsoluteDate("2000-003T10:34:00", utc);
+        Frame myTnw = new Frame(tod, Transform.IDENTITY, "myTnw", false);
 
         // action
         final OmmParser ommParser = new ParserBuilder(context)
@@ -601,6 +602,9 @@ public class OmmParserTest {
                     @Override
                     public Frame buildCcsdsFrame(FrameFacade orientation,
                                                  AbsoluteDate frameEpoch) {
+                        if ("TNW".equals(orientation.getName())) {
+                            return myTnw;
+                        }
                         throw new UnsupportedOperationException();
                     }
 
@@ -626,6 +630,8 @@ public class OmmParserTest {
                 Matchers.sameInstance(myTod));
         MatcherAssert.assertThat(omm.generateSpacecraftState().getFrame(),
                 Matchers.sameInstance(myTod));
+        MatcherAssert.assertThat(omm.getData().getCovarianceBlock().getFrame(),
+                Matchers.sameInstance(myTnw));
     }
 
 }

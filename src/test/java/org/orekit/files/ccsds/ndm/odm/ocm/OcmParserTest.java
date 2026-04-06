@@ -1458,33 +1458,26 @@ public class OcmParserTest {
             // zzrf is not "pseudo-inertial", so use closest ancestor
             MatcherAssert.assertThat(trajectoryBlock.getInertialFrame(),
                     Matchers.sameInstance(parent));
+            MatcherAssert.assertThat(trajectoryBlock.getBody().getFrame(),
+                    Matchers.sameInstance(zzrf));
         }
         MatcherAssert.assertThat(trajectoryBlocks.size(), Matchers.is(1));
         final List<OrbitCovarianceHistory> covarianceBlocks = data.getCovarianceBlocks();
         for (OrbitCovarianceHistory covarianceBlock : covarianceBlocks) {
             OrbitCovarianceHistoryMetadata metadata = covarianceBlock.getMetadata();
-            FrameFacade frame = metadata.getCovReferenceFrame();
-            final AbsoluteDate epoch = metadata.getCovFrameEpoch();
-            // Ocm doesn't provide a helper method to build the frame
-            MatcherAssert.assertThat(mapper.buildCcsdsFrame(frame, epoch),
+            MatcherAssert.assertThat(metadata.getCovFrame(),
                     Matchers.sameInstance(zzrf));
         }
         MatcherAssert.assertThat(covarianceBlocks.size(), Matchers.is(1));
         final List<OrbitManeuverHistory> maneuverBlocks = data.getManeuverBlocks();
         for (OrbitManeuverHistory maneuverBlock : maneuverBlocks) {
             final OrbitManeuverHistoryMetadata metadata = maneuverBlock.getMetadata();
-            final FrameFacade frame = metadata.getManReferenceFrame();
-            final AbsoluteDate epoch = metadata.getManFrameEpoch();
-            // Ocm doesn't provide a helper method to build the frame
-            MatcherAssert.assertThat(mapper.buildCcsdsFrame(frame, epoch),
+            MatcherAssert.assertThat(metadata.getManFrame(),
                     Matchers.sameInstance(zzrf));
         }
         MatcherAssert.assertThat(maneuverBlocks.size(), Matchers.is(1));
         final OrbitPhysicalProperties physicBlock = data.getPhysicBlock();
-        final FrameFacade oebParentFrame = physicBlock.getOebParentFrame();
-        final AbsoluteDate oebEpoch = physicBlock.getOebParentFrameEpoch();
-        // Ocm doesn't provide a helper method to build the frame
-        MatcherAssert.assertThat(mapper.buildCcsdsFrame(oebParentFrame, oebEpoch),
+        MatcherAssert.assertThat(physicBlock.getOebParent(),
                 Matchers.sameInstance(zzrf));
     }
 

@@ -27,7 +27,11 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.*;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -1191,10 +1195,8 @@ public class TdmParserTest {
         Tdm tdm = parser.parseMessage(source);
 
         // verify
-        // Tdm doesn't covert the covariance reference frame to a Frame,
-        // so just check the mapper can map it.
-        // TODO to add a getFrame() method.
-        MatcherAssert.assertThat(mapper.buildCcsdsFrame(tdm.getSegments().get(0).getMetadata().getReferenceFrame(), null),
+        MatcherAssert.assertThat(
+                tdm.getSegments().get(0).getMetadata().getRadecFrame(),
                 Matchers.sameInstance(myTod));
     }
 }

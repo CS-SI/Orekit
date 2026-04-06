@@ -632,7 +632,7 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
      */
     private boolean processAdditionalParametersToken(final ParseToken token) {
         if (addParameters == null) {
-            addParameters = new AdditionalParameters();
+            addParameters = new AdditionalParameters(getFrameMapper());
         }
         if (moveCommentsIfEmpty(odParameters, addParameters)) {
             // get rid of the empty logical block

@@ -642,6 +642,20 @@ public class CdmMetadata extends Metadata {
         }
     }
 
+    /**
+     * Get the reference frame in which the alternative covariance data is
+     * given.
+     *
+     * @return alternative covariance reference frame.
+     * @see #getAltCovType()
+     * @see #getAltCovRefFrame()
+     * @since 13.1.5
+     */
+    public Frame getAltCovFrame() {
+        // Epoch of AltCovRefFrame can't be specified.
+        return getFrameMapper().buildCcsdsFrame(getAltCovRefFrame(), null);
+    }
+
     /** Get the unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message.
      * @return the odmMsgLink
      */

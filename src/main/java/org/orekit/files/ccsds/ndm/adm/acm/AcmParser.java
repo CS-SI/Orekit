@@ -283,7 +283,8 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
                 // this is the first attitude block, we need to allocate the container
                 attitudeBlocks = new ArrayList<>();
             }
-            currentAttitudeStateHistoryMetadata = new AttitudeStateHistoryMetadata();
+            currentAttitudeStateHistoryMetadata =
+                    new AttitudeStateHistoryMetadata(getFrameMapper());
             currentAttitudeStateHistory         = new ArrayList<>();
             anticipateNext(this::processAttitudeStateToken);
         } else {
@@ -361,7 +362,8 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      */
     boolean manageAttitudeDeterminationSection(final boolean starting) {
         if (starting) {
-            attitudeDeterminationBlock = new AttitudeDetermination();
+            attitudeDeterminationBlock =
+                    new AttitudeDetermination(getFrameMapper());
             anticipateNext(this::processAttitudeDeterminationToken);
         } else {
             anticipateNext(structureProcessor);

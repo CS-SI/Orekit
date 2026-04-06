@@ -978,9 +978,12 @@ public class AcmParserTest {
             // Dummy override here, not calling this signature with the below test case
             @Override
             public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
-                if ("SC_BODY_1".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                if (epoch != null) {
+                    throw new IllegalArgumentException("" + epoch);
+                }
+                if ("SC_BODY_1".equals(orientation.getName())) {
                     return scBodyFrame;
-                } else if ("EME2000".equals(orientation.getName()) && expectedEpoch.equals(epoch)) {
+                } else if ("EME2000".equals(orientation.getName())) {
                     return myJ2000;
                 } else {
                     throw new IllegalArgumentException(orientation + " " + epoch);
@@ -991,7 +994,10 @@ public class AcmParserTest {
             public Frame buildCcsdsFrame(BodyFacade center,
                                          FrameFacade orientation,
                                          AbsoluteDate epoch) {
-                if ("ZZ".equals(center.getName()) && expectedEpoch.equals(epoch)) {
+                if (epoch != null) {
+                    throw new IllegalArgumentException("" + epoch);
+                }
+                if ("ZZ".equals(center.getName())) {
                     if ("SC_BODY_1".equals(orientation.getName())) {
                         return scBodyFrame;
                     } else if ("SC_BODY_2".equals(orientation.getName())) {
@@ -1036,38 +1042,37 @@ public class AcmParserTest {
         final AttitudeDetermination attitudeDetermination = data.getAttitudeDeterminationBlock();
 
         // Attitude
-        final List<Frame> expectedAttitudeSecondaryFrames = new ArrayList<>(Arrays.asList(gyro3, acc0, ast1, css7, esa9));
-        for (int i = 0; i < attitudes.size(); i++) {
+        for (final AttitudeStateHistory attitudeStateHistory : attitudes) {
             // FrameFacade.asFrame() subverts mapping
-            MatcherAssert.assertThat(attitudes.get(i).getReferenceFrame(), Matchers.sameInstance(parent));
+            MatcherAssert.assertThat(attitudeStateHistory.getReferenceFrame(),
+                    Matchers.sameInstance(myJ2000));
 
             // REF_FRAME_B mapping for each attitude state history
             MatcherAssert.assertThat(
-                    mapper.buildCcsdsFrame(center, attitudes.get(i).getMetadata().getEndpoints().getFrameB(), expectedEpoch),
-                    Matchers.sameInstance(expectedAttitudeSecondaryFrames.get(i)));
+                    attitudeStateHistory.getMetadata().getEndpoints().getExternal(),
+                    Matchers.sameInstance(myJ2000));
         }
 
         // Physical properties
-        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, properties.getCenterOfPressureReferenceFrame(), expectedEpoch),
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, properties.getCenterOfPressureReferenceFrame(), null),
                 Matchers.sameInstance(scBodyFrame)); // center of pressure frame
-        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, properties.getInertiaReferenceFrame(), expectedEpoch),
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, properties.getInertiaReferenceFrame(), null),
                             Matchers.sameInstance(scBodyFrame2)); // inertia reference frame
 
         // Covariance
         covariances.forEach(covariance -> MatcherAssert.assertThat(
-                            mapper.buildCcsdsFrame(center, covariance.getMetadata().getCovReferenceFrame(), expectedEpoch),
+                            mapper.buildCcsdsFrame(center, covariance.getMetadata().getCovReferenceFrame(), null),
                             Matchers.sameInstance(scBodyFrame)));
 
         // Maneuvers
         maneuvers.stream().filter(maneuver -> maneuver.getTargetMomFrame() != null).
                     forEach(maneuver -> MatcherAssert.assertThat(
-                            mapper.buildCcsdsFrame(center, maneuver.getTargetMomFrame(), expectedEpoch),
+                            mapper.buildCcsdsFrame(center, maneuver.getTargetMomFrame(), null),
                             Matchers.sameInstance(myJ2000))); // target momentum frame
 
         // Attitude Determination
-        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, attitudeDetermination.getEndpoints().getFrameA(), expectedEpoch),
-                            Matchers.sameInstance(myJ2000));
-        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, attitudeDetermination.getEndpoints().getFrameB(), expectedEpoch),
-                            Matchers.sameInstance(scBodyFrame));
+        MatcherAssert.assertThat(
+                attitudeDetermination.getEndpoints().getExternal(),
+                Matchers.sameInstance(myJ2000));
     }
 }

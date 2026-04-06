@@ -445,7 +445,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processQuaternionToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (quaternionBlock == null) {
-            quaternionBlock = new ApmQuaternion();
+            quaternionBlock = new ApmQuaternion(getFrameMapper());
         }
         anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
                        this::processEulerToken : this::processDataSubStructureToken);
@@ -465,7 +465,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processEulerToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (eulerBlock == null) {
-            eulerBlock = new Euler();
+            eulerBlock = new Euler(getFrameMapper());
             if (moveCommentsIfEmpty(quaternionBlock, eulerBlock)) {
                 // get rid of the empty logical block
                 quaternionBlock = null;
@@ -490,7 +490,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processAngularVelocityToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (angularVelocityBlock == null) {
-            angularVelocityBlock = new AngularVelocity();
+            angularVelocityBlock = new AngularVelocity(getFrameMapper());
             if (moveCommentsIfEmpty(eulerBlock, angularVelocityBlock)) {
                 // get rid of the empty logical block
                 eulerBlock = null;
@@ -514,7 +514,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processSpinStabilizedToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (spinStabilizedBlock == null) {
-            spinStabilizedBlock = new SpinStabilized();
+            spinStabilizedBlock = new SpinStabilized(getFrameMapper());
             if (moveCommentsIfEmpty(angularVelocityBlock, spinStabilizedBlock)) {
                 // get rid of the empty logical block
                 angularVelocityBlock = null;
@@ -538,7 +538,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processInertiaToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (inertiaBlock == null) {
-            inertiaBlock = new Inertia();
+            inertiaBlock = new Inertia(getFrameMapper());
             if (moveCommentsIfEmpty(spinStabilizedBlock, inertiaBlock)) {
                 // get rid of the empty logical block
                 spinStabilizedBlock = null;
