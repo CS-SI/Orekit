@@ -192,7 +192,7 @@ tutorials:
   # Don't fail the build if this doesn't work
   allow_failure: true
   needs:
-    - job: deploy:artifacts
+    - job: deploy:site
       artifacts: false
   trigger: orekit/orekit-tutorials
   rules:
