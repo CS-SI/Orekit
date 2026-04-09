@@ -22,6 +22,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -306,24 +308,24 @@ public class JPLEphemeridesLoaderTest {
     }
 
     /**
-     * Test parsing of 2021 format against a truncated version of
-     * https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440
+     * Test parsing of 2021 format against a truncated version of de440-ephemerides.
      *
+     * @param ephemerisType type of ephemeris to load.
      * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/work_items/1938">Issue 1938</a>
      */
-    @Test
-    public void test2021FormatParsing() {
+    @ParameterizedTest
+    @EnumSource(JPLEphemeridesLoader.EphemerisType.class)
+    public void Test2021FormatParsing(final JPLEphemeridesLoader.EphemerisType ephemerisType) {
+
         // GIVEN
         Utils.setDataRoot("regular-data/de440-ephemerides");
 
         // WHEN
         JPLEphemeridesLoader loaderWithout2021Format =
-                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
-                                                 JPLEphemeridesLoader.EphemerisType.SUN);
+                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES, ephemerisType);
 
         JPLEphemeridesLoader loaderWith2021Format =
-                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_2021_SUPPORTED_NAMES,
-                                                 JPLEphemeridesLoader.EphemerisType.SUN);
+                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_2021_SUPPORTED_NAMES, ephemerisType);
 
         // THEN
         Assertions.assertThrows(OrekitException.class, loaderWithout2021Format::getLoadedAstronomicalUnit);
