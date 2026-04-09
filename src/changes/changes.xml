@@ -23,6 +23,9 @@
       <action dev="serrof" type="fix" issue="1933">
           Fixed confusion between covariance reference time and initial propagation time in StateCovarianceProvider.
       </action>
+      <action dev="maxime" type="fix" issue="1930">
+          Fixed parsing DitanceUnit keyword in STK ephemeris file parser.
+      </action>
     </release>
     <release version="13.1.4" date="2026-02-08" description="Orekit 13.1.4 is a patch release. It fixes bugs related to DSST, parsing, time and interpolation">
       <action dev="lebihanbastien" type="fix" issue="1907">
