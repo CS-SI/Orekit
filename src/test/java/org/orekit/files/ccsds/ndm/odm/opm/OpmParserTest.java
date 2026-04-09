@@ -934,10 +934,7 @@ public class OpmParserTest {
     @Test
     public void testFrameMapperGCRF() {
         // setup
-        Frame icrf = FramesFactory.getICRF();
         Frame gcrf = FramesFactory.getGCRF();
-        final TimeScale utc = TimeScalesFactory.getUTC();
-        final AbsoluteDate testEpoch = new AbsoluteDate(2000, 3, 20, 12, 0, 0, utc);
 
         OpmParser originalParser = new ParserBuilder().
                 withMu(Constants.EIGEN5C_EARTH_MU).
@@ -954,18 +951,7 @@ public class OpmParserTest {
         // check metadata reference frame correctly assigned
         final OdmCommonMetadata metadata = opm.getMetadata();
         final Frame opmFrame = metadata.getFrame();
-        // MatcherAssert.assertThat(
-        //        opmFrame.getTransformTo(gcrf, testEpoch).getCartesian(),
-        //        OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1));
-
-        // Check gcrf returned if Earth is central body and icrf is reference frame
-        final CelestialBody earth = metadata.getCenter().getBody();
-        // Get state of Earth in barycentric ICRF at test epoch
-        final TimeStampedPVCoordinates earthInBarycentricICRF = earth.getPVCoordinates(testEpoch, icrf);
-        // Get transform from GCRF to origin of barycentric ICRF
-        final PVCoordinates earthToBarycentricICRF = gcrf.getTransformTo(icrf, testEpoch).getCartesian();
-        // Both quantities should match, demonstrating the frame mapper modified the underlying frame to be Earth-centered
-        MatcherAssert.assertThat(earthInBarycentricICRF, OrekitMatchers.pvCloseTo(earthToBarycentricICRF, 1));
+        MatcherAssert.assertThat(opmFrame, Matchers.sameInstance(gcrf));
     }
 
     @Test

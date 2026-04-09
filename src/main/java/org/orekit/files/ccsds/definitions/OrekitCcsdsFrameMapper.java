@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -43,7 +44,8 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
         if (center == null) {
             throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, "No Orbit center name");
         }
-        if (center.getBody() == null) {
+        final CelestialBody body = center.getBody();
+        if (body == null) {
             throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, center.getName());
         }
         if (orientation == null) {
@@ -54,18 +56,39 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
         }
         // Just return frame if we don't need to shift the center based on CENTER_NAME
         // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
-        final boolean isMci = orientation.asCelestialBodyFrame() == CelestialBodyFrame.MCI;
-        final boolean isIcrf = orientation.asCelestialBodyFrame() == CelestialBodyFrame.ICRF;
-        final boolean isSolarSystemBarycenter =
-                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(center.getBody().getName());
-        if (!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(center.getBody().getName()) ||
-                isMci && CelestialBodyFactory.MARS.equals(center.getBody().getName()) ||
-                isIcrf && isSolarSystemBarycenter) {
+        final CelestialBodyFrame celestialBodyFrame =
+                orientation.asCelestialBodyFrame();
+        final boolean isMci = celestialBodyFrame == CelestialBodyFrame.MCI;
+        final boolean isIcrf = celestialBodyFrame == CelestialBodyFrame.ICRF;
+        final String centerName = body.getName();
+        final boolean isCenterEarth = CelestialBodyFactory.EARTH.equals(centerName);
+        final boolean isCenterMars = CelestialBodyFactory.MARS.equals(centerName);
+        final boolean isCenterSsb = CelestialBodyFactory
+                .SOLAR_SYSTEM_BARYCENTER.equals(centerName);
+        if (isIcrf && isCenterSsb) {
+            // Orekit ICRF is centered on the SSB
+            return orientation.asFrame();
+        }
+        if (isIcrf && isCenterEarth) {
+            // special case so Earth-centered ICRF is GCRF, #1914
+            // hack that uses assumption that GCRF is root frame
+            // full fix in Orekit 14.0
+            Frame frame = orientation.asFrame();
+            while (frame.getDepth() != 0) {
+                frame = frame.getParent();
+            }
+            return frame;
+        }
+        if (!isMci && isCenterEarth || isMci && isCenterMars) {
+            // ICRF and MCI are the only two frames in CelestialBodyFrame
+            // that are not Earth-centered. If that changes then this code would
+            // also need to be updated, perhaps by adding a getCenter() method
+            // to CelestialBodyFrame or Frame.
             return orientation.asFrame();
         }
         // else, translate frame to specified center.
-        return new ModifiedFrame(orientation.asFrame(), orientation.asCelestialBodyFrame(),
-                center.getBody(), center.getName());
+        return new ModifiedFrame(orientation.asFrame(), celestialBodyFrame,
+                body, center.getName());
     }
 
     @Override
