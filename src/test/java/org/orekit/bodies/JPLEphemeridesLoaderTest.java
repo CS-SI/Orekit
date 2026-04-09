@@ -306,7 +306,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     /**
-     * Test parsing of 2021 format agains a truncated version of
+     * Test parsing of 2021 format against a truncated version of
      * https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440
      *
      * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/work_items/1938">Issue 1938</a>
