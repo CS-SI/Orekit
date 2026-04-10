@@ -18,7 +18,6 @@
 package org.orekit.files.ccsds.ndm.odm;
 
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
@@ -31,15 +30,6 @@ public class OdmMetadata extends Metadata {
 
     /** Spacecraft name for which the orbit state is provided. */
     private String objectName;
-
-    /** Simple constructor.
-     * @param defaultTimeSystem default time system (may be null)
-     * @deprecated in favor of {@link #OdmMetadata(TimeSystem, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    protected OdmMetadata(final TimeSystem defaultTimeSystem) {
-        this(defaultTimeSystem, new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

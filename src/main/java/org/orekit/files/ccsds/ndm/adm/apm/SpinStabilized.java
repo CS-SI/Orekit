@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
@@ -83,14 +82,6 @@ public class SpinStabilized extends CommentsContainer {
      * @since 12.0
      */
     private double nutationVel;
-
-    /** Simple constructor.
-     * @deprecated in favor of {@link #SpinStabilized(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public SpinStabilized() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

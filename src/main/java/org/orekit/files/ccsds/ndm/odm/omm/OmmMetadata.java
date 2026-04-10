@@ -20,10 +20,7 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 import java.util.regex.Pattern;
 
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.OdmMetadata;
 import org.orekit.frames.Frame;
 
 /** Metadata for Orbit Mean Messages.
@@ -49,17 +46,6 @@ public class OmmMetadata extends OdmCommonMetadata {
     /** Description of the Mean Element Theory. Indicates the proper method to employ
      * to propagate the state. */
     private String meanElementTheory;
-
-    /**
-     * Empty constructor.
-     *
-     * @since 12.0
-     * @deprecated in favor of {@link OdmMetadata(TimeSystem, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OmmMetadata() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Constructor.

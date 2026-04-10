@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.frames.Frame;
 
@@ -55,15 +54,6 @@ public class Metadata extends CommentsContainer {
 
     /** For creating a {@link Frame}. */
     private final CcsdsFrameMapper frameMapper;
-
-    /** Simple constructor.
-     * @param defaultTimeSystem default time system (may be null)
-     * @deprecated in favor of {@link #Metadata(TimeSystem, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    protected Metadata(final TimeSystem defaultTimeSystem) {
-        this(defaultTimeSystem, new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

@@ -27,7 +27,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.frames.Frame;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
@@ -71,19 +70,6 @@ public class AttitudeEndpoints implements AttitudeBuilder {
 
     /** Flag for frames direction. */
     private Boolean a2b;
-
-    /** Empty constructor.
-     * <p>
-     * This constructor is not strictly necessary, but it prevents spurious
-     * javadoc warnings with JDK 18 and later.
-     * </p>
-     * @since 12.0
-     * @deprecated in favor of {@link #AttitudeEndpoints(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AttitudeEndpoints() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

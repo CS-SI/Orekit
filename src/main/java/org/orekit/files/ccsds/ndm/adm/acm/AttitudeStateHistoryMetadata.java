@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
@@ -72,15 +71,6 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
 
     /** Attitude rate element set type. */
     private RateElementsType rateType;
-
-    /** Simple constructor.
-     * @deprecated in favor of {@link
-     * #AttitudeStateHistoryMetadata(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AttitudeStateHistoryMetadata() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

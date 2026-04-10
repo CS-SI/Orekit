@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm;
 import org.hipparchus.complex.Quaternion;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.cdm.AdditionalParameters;
 import org.orekit.files.ccsds.ndm.odm.ocm.OrbitPhysicalProperties;
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -99,17 +98,6 @@ public class CommonPhysicalProperties extends CommentsContainer {
 
     /** Typical (50th percentile) coefficient of reflectivity. */
     private double reflectance;
-
-    /**
-     * Simple constructor.
-     *
-     * @deprecated in favor of
-     * {@link #CommonPhysicalProperties(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public CommonPhysicalProperties() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

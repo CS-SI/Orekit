@@ -22,7 +22,6 @@ import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -62,30 +61,6 @@ public abstract class AdmParser<T extends NdmConstituent<AdmHeader, ?>, P extend
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
-
-    /** Complete constructor.
-     * @param root root element for XML files
-     * @param formatVersionKey key for format version
-     * @param conventions IERS Conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * (may be null if time system is absolute)
-     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
-     * @param filters filters to apply to parse tokens
-     * @since 12.0
-     * @deprecated in favor of {@link #AdmParser(String, String, IERSConventions, boolean,
-     * DataContext, AbsoluteDate, ParsedUnitsBehavior, Function[], CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    protected AdmParser(final String root, final String formatVersionKey, final IERSConventions conventions,
-                        final boolean simpleEOP, final DataContext dataContext,
-                        final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior,
-                        final Function<ParseToken, List<ParseToken>>[] filters) {
-        this(root, formatVersionKey, conventions, simpleEOP, dataContext,
-                missionReferenceDate, parsedUnitsBehavior, filters,
-                new OrekitCcsdsFrameMapper());
-    }
 
     /** Complete constructor.
      * @param root root element for XML files

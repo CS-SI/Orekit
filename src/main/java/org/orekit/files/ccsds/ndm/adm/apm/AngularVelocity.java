@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
@@ -58,14 +57,6 @@ public class AngularVelocity extends CommentsContainer {
 
     /** Angular velocity around Z axis (rad/s). */
     private double angVelZ;
-
-    /** Simple constructor.
-     * @deprecated in favor of {@link #AngularVelocity(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AngularVelocity() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

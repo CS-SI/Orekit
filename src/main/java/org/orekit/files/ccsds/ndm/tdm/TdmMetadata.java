@@ -26,7 +26,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -218,14 +217,6 @@ public class TdmMetadata extends Metadata {
      *  applied to the tracking data.
      */
     private CorrectionApplied correctionsApplied;
-
-    /** Create a new TDM meta-data.
-     * @deprecated in favor of {@link #TdmMetadata(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public TdmMetadata() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Create a new TDM meta-data.

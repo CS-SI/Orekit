@@ -22,7 +22,6 @@ import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
@@ -114,30 +113,6 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
 
     /** CDM user defined logical block being read. */
     private UserDefined userDefinedBlock;
-
-
-    /** Complete constructor.
-     * <p>
-     * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildCdmParser()
-     * parserBuilder.buildCdmParser()}.
-     * </p>
-     * @param conventions IERS Conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
-     * @param filters filters to apply to parse tokens
-     * @since 12.0
-     * @deprecated in favor of {@link #CdmParser(IERSConventions, boolean, DataContext,
-     * ParsedUnitsBehavior, Function[], CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public CdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
-        this(conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters,
-                new OrekitCcsdsFrameMapper());
-    }
 
     /** Complete constructor.
      * <p>

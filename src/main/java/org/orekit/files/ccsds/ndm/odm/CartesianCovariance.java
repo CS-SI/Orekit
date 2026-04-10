@@ -25,7 +25,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.frames.Frame;
@@ -70,17 +69,6 @@ public class CartesianCovariance extends CommentsContainer implements Data {
 
     /** Position/Velocity covariance matrix. */
     private final RealMatrix covarianceMatrix;
-
-    /** Create an empty data set.
-     * @param defaultFrameSupplier supplier for default reference frame
-     * if no frame is specified in the CCSDS message
-     * @deprecated in favor of {@link #CartesianCovariance(Supplier,
-     * CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public CartesianCovariance(final Supplier<FrameFacade> defaultFrameSupplier) {
-        this(defaultFrameSupplier, new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Create an empty data set.

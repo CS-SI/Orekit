@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.cdm;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
 import org.orekit.frames.Frame;
 
@@ -77,14 +76,6 @@ public class AdditionalParameters extends CommonPhysicalProperties {
 
     /** The method used for the calculation of COV_CONFIDENCE. */
     private String covConfidenceMethod;
-
-    /** Simple constructor.
-     * @deprecated in favor of {@link #AdditionalParameters(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AdditionalParameters() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

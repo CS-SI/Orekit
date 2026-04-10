@@ -20,7 +20,6 @@ package org.orekit.files.ccsds.ndm.odm;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -48,14 +47,6 @@ public class OdmCommonMetadata extends OdmMetadata {
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
     private AbsoluteDate frameEpoch;
-
-    /** Simple constructor.
-     * @deprecated in favor of {@link #OdmCommonMetadata(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OdmCommonMetadata() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Complete constructor.
