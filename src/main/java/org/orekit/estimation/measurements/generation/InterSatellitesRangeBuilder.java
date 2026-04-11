@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.generation;
 
 import java.util.Map;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -36,7 +35,6 @@ public class InterSatellitesRangeBuilder extends AbstractSignalBasedBuilder<Inte
     private final boolean twoway;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
      * @param remote satellite which simply emits the signal in the one-way case,
      * or reflects the signal in the two-way case
@@ -44,14 +42,12 @@ public class InterSatellitesRangeBuilder extends AbstractSignalBasedBuilder<Inte
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      */
-    public InterSatellitesRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                       final ObservableSatellite local, final ObservableSatellite remote,
+    public InterSatellitesRangeBuilder(final ObservableSatellite local, final ObservableSatellite remote,
                                        final boolean twoWay, final double sigma, final double baseWeight) {
-        this(noiseSource, local, remote, twoWay, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel());
+        this(local, remote, twoWay, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel());
     }
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
      * @param remote satellite which simply emits the signal in the one-way case,
      * or reflects the signal in the two-way case
@@ -60,11 +56,10 @@ public class InterSatellitesRangeBuilder extends AbstractSignalBasedBuilder<Inte
      * @param signalTravelTimeModel signal travel time model
      * @since 14.0
      */
-    public InterSatellitesRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                       final ObservableSatellite local, final ObservableSatellite remote,
+    public InterSatellitesRangeBuilder(final ObservableSatellite local, final ObservableSatellite remote,
                                        final boolean twoWay, final MeasurementQuality measurementQuality,
                                        final SignalTravelTimeModel signalTravelTimeModel) {
-        super(noiseSource, measurementQuality, signalTravelTimeModel, new ObservableSatellite[] { local, remote });
+        super(measurementQuality, signalTravelTimeModel, new ObservableSatellite[] { local, remote });
         this.twoway = twoWay;
     }
 

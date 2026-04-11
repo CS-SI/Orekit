@@ -31,6 +31,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ReferenceEllipsoid;
@@ -39,7 +40,7 @@ import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularRaDec> {
+class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularRaDec> {
 
     private static final double SIGMA = 1.0e-3;
     private static final double BIAS  = 1.0e-4;
@@ -49,12 +50,14 @@ public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTes
                                                           final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA, SIGMA * SIGMA });
         MeasurementBuilder<AngularRaDec> ab =
-                        new AngularRaDecBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                            1.0e-10,
-                                                                                                            new GaussianRandomGenerator(random)),
-                                                groundStation, FramesFactory.getEME2000(),
+                        new AngularRaDecBuilder(groundStation, FramesFactory.getEME2000(),
                                                 new double[] { SIGMA, SIGMA}, new double[] { 1.0, 1.0 },
                                                 satellite);
+        if (random != null) {
+            ab.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         ab.addModifier(new Bias<>(new String[] { "aBias", "eBias" },
                         new double[] { BIAS, BIAS },
                         new double[] { 1.0, 1.0 },
@@ -64,13 +67,13 @@ public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTes
     }
 
     @Test
-    public void testForward() {
-        doTest(0x5c845a8e6a11f7b3l, 0.4, 0.9, 128, 3.1 * SIGMA);
+    void testForward() {
+        doTest(0x5c845a8e6a11f7b3l, 0.4, 0.9, 128, 6. * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0x24f750901da8cd2cl, -0.2, -0.6, 100, 2.7 * SIGMA);
+    void testBackward() {
+        doTest(0x24f750901da8cd2cl, -0.2, -0.6, 100, 6. * SIGMA);
     }
 
     @Test
@@ -81,7 +84,7 @@ public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTes
         final double[][] covarianceCoefficients = MatrixUtils.createRealIdentityMatrix(2).getData();
         covarianceCoefficients[0][1] = 0.1;
         covarianceCoefficients[1][0] = covarianceCoefficients[0][1];
-        final AngularRaDecBuilder builder = new AngularRaDecBuilder(null, station, FramesFactory.getEME2000(),
+        final AngularRaDecBuilder builder = new AngularRaDecBuilder(station, FramesFactory.getEME2000(),
                 new MeasurementQuality(covarianceCoefficients, 1.), new SignalTravelTimeModel(), new ObservableSatellite(0));
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(date));

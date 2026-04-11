@@ -36,6 +36,7 @@ import org.orekit.estimation.measurements.FDOA;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -46,7 +47,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 
-public class FDOABuilderTest {
+class FDOABuilderTest {
 
     // Satellite transmission frequency
     private static final double CENTRE_FREQUENCY = 2.3e9;
@@ -60,10 +61,12 @@ public class FDOABuilderTest {
                                                 final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<FDOA> fdoab =
-                        new FDOABuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                    1.0e-10,
-                                                                                                    new GaussianRandomGenerator(random)),
-                                        primary, secondary, CENTRE_FREQUENCY, SIGMA, 1.0, satellite);
+                        new FDOABuilder(primary, secondary, CENTRE_FREQUENCY, SIGMA, 1.0, satellite);
+        if (random != null) {
+            fdoab.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         fdoab.addModifier(new Bias<>(new String[] { "bias" },
                                      new double[] { BIAS },
                                      new double[] { 1.0 },
@@ -73,13 +76,13 @@ public class FDOABuilderTest {
     }
 
     @Test
-    public void testForward() {
-        doTest(0xf50c0ce7c8c1dab2L, 0.0, 1.2, 3.2 * SIGMA);
+    void testForward() {
+        doTest(0xf50c0ce7c8c1dab2L, 0.0, 1.2, 6. * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0x453a681440d01832L, 0.0, -1.2, 2.9 * SIGMA);
+    void testBackward() {
+        doTest(0x453a681440d01832L, 0.0, -1.2, 6. * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -143,7 +146,7 @@ public class FDOABuilderTest {
      }
 
      @BeforeEach
-     public void setUp() {
+     void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

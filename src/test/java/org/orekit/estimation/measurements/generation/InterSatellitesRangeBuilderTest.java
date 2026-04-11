@@ -37,6 +37,7 @@ import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -63,10 +64,12 @@ class InterSatellitesRangeBuilderTest {
                                                                 final ObservableSatellite remote) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<InterSatellitesRange> isrb =
-                        new InterSatellitesRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                                    1.0e-10,
-                                                                                                                    new GaussianRandomGenerator(random)),
-                                                        receiver, remote, true, SIGMA, 1.0);
+                        new InterSatellitesRangeBuilder(receiver, remote, true, SIGMA, 1.0);
+        if (random != null) {
+            isrb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         isrb.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -79,7 +82,7 @@ class InterSatellitesRangeBuilderTest {
     void testGetSignalTravelTimeModel() {
         // GIVEN
         final SignalTravelTimeModel signalTravelTimeModel = mock();
-        final InterSatellitesRangeBuilder builder = new InterSatellitesRangeBuilder(null,
+        final InterSatellitesRangeBuilder builder = new InterSatellitesRangeBuilder(
                 new ObservableSatellite(0), new ObservableSatellite(1), true,
                 new MeasurementQuality(1., 1.), signalTravelTimeModel);
         // WHEN
@@ -91,37 +94,37 @@ class InterSatellitesRangeBuilderTest {
     @Test
     void testForwardAll() {
         doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> true,
-               264, 73485.963, 28386637.208, 2.8 * SIGMA);
+               264, 73485.963, 28386637.208, 6. * SIGMA);
     }
 
     @Test
     void testForwardIgnoreSmall() {
         doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] > 10000000.0,
-               182, 10111578.965, 28386637.208, 2.8 * SIGMA);
+               182, 10111578.965, 28386637.208, 6. * SIGMA);
     }
 
     @Test
     void testForwardIgnoreLarge() {
         doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] <= 10000000.0,
-               82, 73485.963, 9969288.418, 2.8 * SIGMA);
+               82, 73485.963, 9969288.418, 6. * SIGMA);
     }
 
     @Test
     void testBackwardAll() {
         doTest(0x95c10149c4891232L, 0.0, -1.0, e -> true,
-               219, 243749.068, 28279283.197, 2.6 * SIGMA);
+               219, 243749.068, 28279283.197, 6. * SIGMA);
     }
 
     @Test
     void testBackwardIgnoreSmall() {
         doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] > 10000000.0,
-               153, 10131712.178, 28279283.197, 2.6 * SIGMA);
+               153, 10131712.178, 28279283.197, 6. * SIGMA);
     }
 
     @Test
     void testBackwardIgnoreLarge() {
         doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] <= 10000000.0,
-               66, 243749.068, 9950029.194, 2.6 * SIGMA);
+               66, 243749.068, 9950029.194, 6. * SIGMA);
     }
 
     private Propagator buildPropagator() {

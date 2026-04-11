@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -36,19 +35,17 @@ public abstract class AbstractBireceiverBuilder<T extends ObservedMeasurement<T>
     private final Observer secondObserver;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param primeObserver observer that gives the date of the measurement
      * @param secondObserver observer that gives the measurement
      * @param measurementQuality measurement quality as used in estimation
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      */
-    protected AbstractBireceiverBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                        final Observer primeObserver, final Observer secondObserver,
+    protected AbstractBireceiverBuilder(final Observer primeObserver, final Observer secondObserver,
                                         final MeasurementQuality measurementQuality,
                                         final SignalTravelTimeModel signalTravelTimeModel,
                                         final ObservableSatellite satellite) {
-        super(noiseSource, measurementQuality, signalTravelTimeModel, satellite);
+        super(measurementQuality, signalTravelTimeModel, satellite);
         this.primeObserver  = primeObserver;
         this.secondObserver = secondObserver;
     }

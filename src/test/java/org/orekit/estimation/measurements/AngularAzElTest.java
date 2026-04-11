@@ -29,6 +29,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.generation.AngularRaDecBuilder;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -57,6 +58,36 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class AngularAzElTest {
+
+    @Test
+    void testPartic() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = new AbsoluteDate(new DateComponents(2000, 1, 1), TimeScalesFactory.getUTC());
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2010_EARTH_FLATTENING,
+                FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
+        final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
+        final GroundStation station = new GroundStation(baseFrame);
+        station.getParametersDrivers().forEach(driver -> driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH));
+        final AngularRaDecBuilder builder = new AngularRaDecBuilder(station, gcrf, new double[]{1., 1.}, new double[]{1., 1.},
+                new ObservableSatellite(0));
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN
+        builder.init(state[0].getDate(), state[0].getDate());
+        for (int i = 0; i < 1000000; i++) {
+            builder.build(state[0].getDate(), state);
+
+        }
+        // THEN
+    }
 
     /** Compare observed values and estimated values.
      *  Both are calculated with a different algorithm
