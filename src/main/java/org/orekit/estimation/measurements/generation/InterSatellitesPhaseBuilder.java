@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.generation;
 
 import java.util.Map;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
@@ -42,7 +41,6 @@ public class InterSatellitesPhaseBuilder extends AbstractSignalBasedBuilder<Inte
     private final double wavelength;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
      * @param remote satellite which simply emits the signal
      * @param wavelength phase observed value wavelength (m)
@@ -51,16 +49,14 @@ public class InterSatellitesPhaseBuilder extends AbstractSignalBasedBuilder<Inte
      * @param cache from which ambiguity drive should come
      * @since 12.1
      */
-    public InterSatellitesPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                       final ObservableSatellite local, final ObservableSatellite remote,
+    public InterSatellitesPhaseBuilder(final ObservableSatellite local, final ObservableSatellite remote,
                                        final double wavelength, final double sigma, final double baseWeight,
                                        final AmbiguityCache cache) {
-        this(noiseSource, local, remote, wavelength, new MeasurementQuality(sigma, baseWeight),
+        this(local, remote, wavelength, new MeasurementQuality(sigma, baseWeight),
                 new SignalTravelTimeModel(), cache);
     }
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
      * @param remote satellite which simply emits the signal
      * @param wavelength phase observed value wavelength (m)
@@ -69,12 +65,11 @@ public class InterSatellitesPhaseBuilder extends AbstractSignalBasedBuilder<Inte
      * @param cache from which ambiguity drive should come
      * @since 14.0
      */
-    public InterSatellitesPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                       final ObservableSatellite local, final ObservableSatellite remote,
+    public InterSatellitesPhaseBuilder(final ObservableSatellite local, final ObservableSatellite remote,
                                        final double wavelength, final MeasurementQuality measurementQuality,
                                        final SignalTravelTimeModel signalTravelTimeModel,
                                        final AmbiguityCache cache) {
-        super(noiseSource, measurementQuality, signalTravelTimeModel, new ObservableSatellite[] {local, remote});
+        super(measurementQuality, signalTravelTimeModel, new ObservableSatellite[] {local, remote});
         this.cache      = cache;
         this.wavelength = wavelength;
     }

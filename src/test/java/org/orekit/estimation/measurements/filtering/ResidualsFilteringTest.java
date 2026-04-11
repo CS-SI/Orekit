@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.measurements.filtering;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -31,8 +35,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -43,6 +47,7 @@ import org.orekit.estimation.measurements.generation.Generator;
 import org.orekit.estimation.measurements.generation.MeasurementBuilder;
 import org.orekit.estimation.measurements.generation.RangeBuilder;
 import org.orekit.estimation.measurements.generation.SignSemantic;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.Frame;
@@ -53,7 +58,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -63,15 +67,11 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedSet;
-
-public class ResidualsFilteringTest {
+class ResidualsFilteringTest {
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
     }
@@ -87,15 +87,9 @@ public class ResidualsFilteringTest {
                                                    final GroundStation groundStation,
                                                    final ObservableSatellite satellite, final double noise) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { noise });
-        return new RangeBuilder(new CorrelatedRandomVectorGenerator(covariance, 1.0e-10, new GaussianRandomGenerator(random)),
-                                groundStation, false, 1.0, 1.0, satellite);
-    }
-
-    private ElevationDetector getElvetaionDetector(final TopocentricFrame topo, final double minElevation) {
-        ElevationDetector detector =
-                        new ElevationDetector(topo).
-                        withConstantElevation(FastMath.toRadians(5.0));
-        return detector;
+        final RangeBuilder builder = new RangeBuilder(groundStation, false, 1.0, 1.0, satellite);
+        builder.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance, 1.0e-10, new GaussianRandomGenerator(random))));
+        return builder;
     }
 
     private Generator getGenerator(final Orbit orbit, final GroundStation station, final ObservableSatellite satellite, final TopocentricFrame topo, final double noise) {
@@ -113,7 +107,7 @@ public class ResidualsFilteringTest {
 
 
     @Test
-    public void testFilterWithoutRejection() {
+    void testFilterWithoutRejection() {
 
         //Create the initial orbit
         final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
@@ -134,7 +128,7 @@ public class ResidualsFilteringTest {
         final GroundStation station = new GroundStation(topo);
 
         final double noise      = 1;
-        final double threshold  = 2.7;
+        final double threshold  = 4.;
         Generator generator = getGenerator(orbit, station, satellite, topo, noise);
         final GatheringSubscriber gatherer = new GatheringSubscriber();
         generator.addSubscriber(gatherer);
@@ -156,7 +150,7 @@ public class ResidualsFilteringTest {
     }
 
     @Test
-    public void testFilterWithRejection() {
+    void testFilterWithRejection() {
 
         //Create the initial orbit
         final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
@@ -194,6 +188,6 @@ public class ResidualsFilteringTest {
                 processMeasurements.add(meas.getObservedMeasurement());
             }
         }
-        Assertions.assertEquals(2, measurements.size()-processMeasurements.size());
+        Assertions.assertEquals(6, measurements.size()-processMeasurements.size());
     }
 }

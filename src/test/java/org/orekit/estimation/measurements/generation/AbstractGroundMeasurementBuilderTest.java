@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.SortedSet;
+
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
@@ -37,8 +39,6 @@ import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
-
-import java.util.SortedSet;
 
 public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMeasurement<T>> {
 
@@ -105,7 +105,7 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

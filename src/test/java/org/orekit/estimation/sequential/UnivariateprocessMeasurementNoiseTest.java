@@ -48,7 +48,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
 
 /** Tests for the class UnivariateprocessNoise. */
-public class UnivariateprocessNoiseTest {
+public class UnivariateprocessMeasurementNoiseTest {
 
     /** Basic test for getters. */
     @Test
