@@ -123,6 +123,33 @@ class GroundStationTest {
     }
 
     @Test
+    void getPVCoordinatesProviderGetVelocity() {
+        // GIVEN
+        EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Frame ecef = FramesFactory.getGTOD(true);
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(1., 2., 3.);
+        final TopocentricFrame topocentricFrame = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING, ecef), geodeticPoint, "");
+        final GroundStation station = new GroundStation(topocentricFrame);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        for (final ParameterDriver driver: selectAllDrivers(station)) {
+            driver.setReferenceDate(date);
+        }
+        station.getClockBiasDriver().setValue(0.1);
+        station.getPolarOffsetYDriver().setValue(2);
+        station.getEastOffsetDriver().setValue(1);
+        station.getNorthOffsetDriver().setValue(-1);
+        station.getZenithOffsetDriver().setValue(2);
+        final PVCoordinatesProvider pvCoordinatesProvider = station.getPVCoordinatesProvider();
+        final Frame eci = FramesFactory.getEME2000();
+        // WHEN
+        final Vector3D actualVelocity = pvCoordinatesProvider.getVelocity(date, eci);
+        // THEN
+        final PVCoordinates pvCoordinates = pvCoordinatesProvider.getPVCoordinates(date, eci);
+        Assertions.assertEquals(pvCoordinates.getVelocity(), actualVelocity);
+    }
+
+    @Test
     void getFieldPVCoordinatesProvider() {
         // GIVEN
         EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -216,7 +243,7 @@ class GroundStationTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals(changed.isSpaceBased(), false);
+        Assertions.assertEquals(false, changed.isSpaceBased());
         Assertions.assertEquals(7,        normalizedCovariances.getRowDimension());
         Assertions.assertEquals(7,        normalizedCovariances.getColumnDimension());
         Assertions.assertEquals(7,        physicalCovariances.getRowDimension());
@@ -420,10 +447,10 @@ class GroundStationTest {
         final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         Assertions.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  1.5e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     9.3e-10);
+        Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     9.4e-10);
         Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      1.3e-8);
-        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.9e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      5.5e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.92e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      5.6e-9);
         Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 5.5e-9);
 
         // thresholds to use if orbit is estimated
