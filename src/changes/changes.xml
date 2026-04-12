@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1947">
+            Use (Field)StaticTransform in GroundStation.
+        </action>
         <action dev="serrof" type="update" issue="1945">
             Remove noise generator from measurement builder and create dedicated modifier.
         </action>
