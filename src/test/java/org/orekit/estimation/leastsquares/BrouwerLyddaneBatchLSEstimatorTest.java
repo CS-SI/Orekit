@@ -251,7 +251,7 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 5.0e-5,
                                      0.0, 8.0e-5,
-                                     0.0, 1.5e-2,
+                                     0.0, 1.6e-2,
                                      0.0, 1.9e-5);
     }
 

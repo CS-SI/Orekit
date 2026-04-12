@@ -116,7 +116,7 @@ public class ObserverSatellite extends AbstractParticipant implements Observer {
         // take clock offset into account
         final AbsoluteDate offsetCompensatedDate = clockOffsetAlreadyApplied ?
                                                    date :
-                                                   new AbsoluteDate(date, -getClockBiasDriver().getValue());
+                                                   new AbsoluteDate(date, -getOffsetValue(date));
 
         // Return transform that will give PV coords of emitter when pos = 0, vel = 0 is entered
         final PVCoordinates coords = getPVCoordinatesProvider().getPVCoordinates(offsetCompensatedDate, inertial);

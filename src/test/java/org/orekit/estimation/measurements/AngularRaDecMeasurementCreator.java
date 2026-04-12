@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -27,10 +24,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.Arrays;
 
 public class AngularRaDecMeasurementCreator extends MeasurementCreator {
 
@@ -44,16 +38,7 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockBiasDriver(),
-                                                        station.getEastOffsetDriver(),
-                                                        station.getNorthOffsetDriver(),
-                                                        station.getZenithOffsetDriver(),
-                                                        station.getPrimeMeridianOffsetDriver(),
-                                                        station.getPrimeMeridianDriftDriver(),
-                                                        station.getPolarOffsetXDriver(),
-                                                        station.getPolarDriftXDriver(),
-                                                        station.getPolarOffsetYDriver(),
-                                                        station.getPolarDriftYDriver())) {
+            for (ParameterDriver driver : station.getParametersDrivers()) {
                 if (driver.getReferenceDate() == null) {
                     driver.setReferenceDate(s0.getDate());
                 }
@@ -70,17 +55,9 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
             final Vector3D         position  = currentState.getPosition();
 
             if (station.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0)) {
-                final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
-
-                final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                    public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
-                        final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                        return d - x * Constants.SPEED_OF_LIGHT;
-                    }
-                }, -1.0, 1.0);
 
                 // Satellite position at signal departure
+                final double downLinkDelay = solveDownlinkDelay(station, currentState, Vector3D.ZERO);
                 final Vector3D satelliteAtDeparture = currentState.shiftedBy(-downLinkDelay).getPosition();
 
                 // Initialize measurement

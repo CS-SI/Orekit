@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -249,6 +248,29 @@ class GroundStationTest {
         Assertions.assertEquals(7,        physicalCovariances.getRowDimension());
         Assertions.assertEquals(7,        physicalCovariances.getColumnDimension());
         Assertions.assertEquals(4.185e-9, physicalCovariances.getEntry(6, 6), 3.0e-13);
+
+    }
+
+    @Test
+    void testClockOffsetValues() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // change one station clock
+        final TopocentricFrame base  = context.stations.get(0).getBaseFrame();
+        final BodyShape parent       = base.getParentShape();
+        final String changedSuffix   = "-changed";
+        final QuadraticClockModel quadraticClock = new QuadraticClockModel(context.initialOrbit.getDate(), 3.0e-9, 2.0e-9, 1.0e-9);
+        final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
+                                                                              base.getName() + changedSuffix), context.ut1.getEOPHistory(),
+                                                         quadraticClock, context.stations.get(0).getDisplacements());
+
+        final AbsoluteDate shiftedDate = context.initialOrbit.getDate().shiftedBy(60.0); // one minute
+        final double bias  = changed.getOffsetValue(shiftedDate);
+        final double drift = changed.getOffsetRate(shiftedDate);
+
+        Assertions.assertEquals(3.723e-6, bias, 1e-10);
+        Assertions.assertEquals(1.22e-7, drift, 1e-10);
 
     }
 
@@ -1369,16 +1391,7 @@ class GroundStationTest {
         try {
             int freeParameters = 9;
             Map<String, Integer> indices = new HashMap<>();
-            for (final ParameterDriver driver : Arrays.asList(station.getPrimeMeridianOffsetDriver(),
-                                                              station.getPrimeMeridianDriftDriver(),
-                                                              station.getPolarOffsetXDriver(),
-                                                              station.getPolarDriftXDriver(),
-                                                              station.getPolarOffsetYDriver(),
-                                                              station.getPolarDriftYDriver(),
-                                                              station.getClockBiasDriver(),
-                                                              station.getEastOffsetDriver(),
-                                                              station.getNorthOffsetDriver(),
-                                                              station.getZenithOffsetDriver())) {
+            for (final ParameterDriver driver : station.getParametersDrivers()) {
                 indices.put(driver.getNameSpan(date), indices.size());
             }
             station.getOffsetToInertial(eme2000, date, freeParameters, indices);

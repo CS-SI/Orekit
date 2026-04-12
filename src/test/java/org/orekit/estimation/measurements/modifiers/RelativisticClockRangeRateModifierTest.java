@@ -39,8 +39,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.Arrays;
-
 public class RelativisticClockRangeRateModifierTest {
 
     @Test
@@ -61,16 +59,7 @@ public class RelativisticClockRangeRateModifierTest {
         final SpacecraftState state = new SpacecraftState(new CartesianOrbit(satPV, FramesFactory.getEME2000(), Constants.WGS84_EARTH_MU));
 
         // Set reference date to station drivers
-        for (ParameterDriver driver : Arrays.asList(station.getClockBiasDriver(),
-                                                    station.getEastOffsetDriver(),
-                                                    station.getNorthOffsetDriver(),
-                                                    station.getZenithOffsetDriver(),
-                                                    station.getPrimeMeridianOffsetDriver(),
-                                                    station.getPrimeMeridianDriftDriver(),
-                                                    station.getPolarOffsetXDriver(),
-                                                    station.getPolarDriftXDriver(),
-                                                    station.getPolarOffsetYDriver(),
-                                                    station.getPolarDriftYDriver())) {
+        for (ParameterDriver driver : station.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
                 driver.setReferenceDate(state.getDate());
             }

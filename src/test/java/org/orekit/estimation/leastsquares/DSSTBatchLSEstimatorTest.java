@@ -429,7 +429,7 @@ class DSSTBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(false, context, estimator, 1, 3,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 4,
                                      0.0, 1.2e-10,
                                      0.0, 3.0e-10,
                                      0.0, 9.4e-9,
@@ -450,16 +450,17 @@ class DSSTBatchLSEstimatorTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                                propagatorBuilder);
-
-        final List<ObservedMeasurement<?>> measurementsRange =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new TwoWayRangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
             station.getClockDriftDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
+
+        final List<ObservedMeasurement<?>> measurementsRange =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new TwoWayRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
@@ -481,11 +482,11 @@ class DSSTBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        EstimationTestUtils.checkFit(false, context, estimator, 1, 3,
-                                     0.0, 5.4e-7,
-                                     0.0, 2.9e-6,
-                                     0.0, 7.2e-8,
-                                     0.0, 5.2e-11);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
+                                     0.0, 2.6e-7,
+                                     0.0, 8.2e-7,
+                                     0.0, 6.3e-8,
+                                     0.0, 3.4e-11);
     }
 
     @Test

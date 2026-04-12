@@ -538,7 +538,7 @@ public class GroundStation extends AbstractParticipant implements Observer {
         // take clock offset into account
         final AbsoluteDate offsetCompensatedDate = clockOffsetAlreadyApplied ?
                                                    date :
-                                                   new AbsoluteDate(date, -getClockBiasDriver().getValue());
+                                                   new AbsoluteDate(date, -getOffsetValue(date));
 
         final TransformProvider transformProvider = getTransformProvider(inertial);
         return transformProvider.getTransform(offsetCompensatedDate);

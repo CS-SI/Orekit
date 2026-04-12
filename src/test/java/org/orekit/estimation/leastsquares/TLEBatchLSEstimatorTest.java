@@ -303,16 +303,16 @@ public class TLEBatchLSEstimatorTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
         final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                            propagatorBuilder);
+        final double groundClockDrift = 4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
 
         final List<ObservedMeasurement<?>> measurementsRange =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        final double groundClockDrift =  4.8e-9;
-        for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
-        }
-        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
@@ -334,11 +334,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        EstimationTestUtils.checkFit(false, context, estimator, 4, 7,
-                                     0.0, 6.0e-6,
-                                     0.0, 4.6e-5,
-                                     0.0, 3.9e-6,
-                                     0.0, 4.1e-9);
+        EstimationTestUtils.checkFit(false, context, estimator, 4, 5,
+                                     0.0, 2.1e-6,
+                                     0.0, 8.5e-6,
+                                     0.0, 3.8e-6,
+                                     0.0, 3.1e-9);
     }
 
 }

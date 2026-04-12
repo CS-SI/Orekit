@@ -216,8 +216,8 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
      * @return reception date
      */
     protected FieldAbsoluteDate<Gradient> getCorrectedReceptionDateField(final int nbParams,
-                                                                       final Map<String, Integer> paramIndices) {
-        final Gradient offset = getObserver().getClockBiasDriver().getValue(nbParams, paramIndices, getDate());  // FIXME missing drift and quadratic term
+                                                                         final Map<String, Integer> paramIndices) {
+        final Gradient offset = getObserver().getFieldOffsetValue(nbParams, getDate(), paramIndices);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams), getDate());
         return fieldDate.shiftedBy(offset.negate());
     }

@@ -96,7 +96,7 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
                                                                                           final int evaluation,
                                                                                           final SpacecraftState[] states) {
         // compute reception date
-        final double clockOffset = getObserver().getClockBiasDriver().getValue(getDate());  // FIXME see Field
+        final double clockOffset = getObserver().getOffsetValue(getDate());
         final AbsoluteDate receptionDate = getDate().shiftedBy(-clockOffset);
 
         if (isTwoWay()) {
@@ -161,8 +161,8 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
 
         // clock drifts, taken in account only in case of one way
         final ObservableSatellite satellite    = getSatellites().get(0);
-        final double              dtsDot       = satellite.getClockDriftDriver().getValue(emissionDate);
-        final double              dtgDot       = getObserver().getClockDriftDriver().getValue(receptionDate);
+        final double dtsDot = satellite.getOffsetRate(emissionDate);
+        final double dtgDot = getObserver().getOffsetRate(receptionDate);
         final double clockDriftBias = (dtgDot - dtsDot) * Constants.SPEED_OF_LIGHT;
         rangeRate += clockDriftBias;
 
@@ -242,8 +242,8 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
 
         // clock drifts, taken in account only in case of one way
         final ObservableSatellite satellite    = getSatellites().get(0);
-        final Gradient            dtsDot       = satellite.getClockDriftDriver().getValue(nbParams, indices, emissionState.getDate());
-        final Gradient            dtgDot       = getObserver().getClockDriftDriver().getValue(nbParams, indices, receptionDate.toAbsoluteDate());
+        final Gradient dtsDot = satellite.getFieldOffsetRate(nbParams, emissionState.getDate(), indices);
+        final Gradient dtgDot = getObserver().getFieldOffsetRate(nbParams, receptionDate.toAbsoluteDate(), indices);
         final Gradient clockDriftBias = dtgDot.subtract(dtsDot).multiply(Constants.SPEED_OF_LIGHT);
         rangeRate = rangeRate.add(clockDriftBias);
 
