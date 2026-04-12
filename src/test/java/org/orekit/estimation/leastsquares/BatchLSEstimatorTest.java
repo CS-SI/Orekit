@@ -355,11 +355,17 @@ class BatchLSEstimatorTest {
                 PositionAngleType.TRUE, true,
                 1.0e-6, 60.0, 1.0);
 
-        // create perfect range measurements
+        // Test for variable clock offset values
+        final double primaryBias = 4e-9;
+        final double primaryDrift = -1e-10;
+        final double secondaryBias = -2e-9;
+        final double secondaryDrift = 3.5e-11;
+
+        // create perfect TDOA measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                 propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements = EstimationTestUtils.createMeasurements(propagator,
-                new SpaceTDOAMeasurementCreator(context),
+                new SpaceTDOAMeasurementCreator(context, primaryBias, primaryDrift, secondaryBias, secondaryDrift),
                 1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -510,10 +516,10 @@ class BatchLSEstimatorTest {
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
-                0.0, 2.0e-4,
-                0.0, 5.0e-4,
-                0.0, 2.0e-4,
-                0.0, 7.0e-9);
+                0.0, 2.4e-5,
+                0.0, 6.0e-5,
+                0.0, 1.1e-5,
+                0.0, 3.0e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference
         // date
@@ -615,10 +621,10 @@ class BatchLSEstimatorTest {
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
-                                     0.0, 2.0e-5,
-                                     0.0, 5.3e-5,
-                                     0.0, 2.7e-5,
-                                     0.0, 1.1e-8);
+                                     0.0, 5.4e-7,
+                                     0.0, 1.3e-6,
+                                     0.0, 4.5e-7,
+                                     0.0, 1.9e-10);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -754,10 +760,10 @@ class BatchLSEstimatorTest {
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
                           before.getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
-                                     0.0, 5e-06,
-                                     0.0, 1.3e-05,
-                                     0.0, 8.3e-07,
-                                     0.0, 3.7e-10);
+                                     0.0, 4e-06,
+                                     0.0, 1.1e-05,
+                                     0.0, 1.2e-07,
+                                     0.0, 6.6e-11);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -1243,11 +1249,11 @@ class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
-                                     0.0, 5.3e-7,
-                                     0.0, 1.3e-6,
-                                     0.0, 8.4e-4,
-                                     0.0, 5.1e-7);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 4,
+                                     0.0, 4.0e-10,
+                                     0.0, 6.9e-10,
+                                     0.0, 1.2e-7,
+                                     0.0, 3.6e-11);
     }
 
     /**
@@ -1265,16 +1271,17 @@ class BatchLSEstimatorTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-
-        final List<ObservedMeasurement<?>> measurementsRange =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new TwoWayRangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
-        final double groundClockDrift =  4.8e-9;
+        final double groundClockDrift = 4.8e-9;
         for (final GroundStation station : context.stations) {
             station.getClockDriftDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
+
+        //Note: had to decrease step size to 100 to keep solver from exceeding max number of evaluations.
+        final List<ObservedMeasurement<?>> measurementsRange =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new TwoWayRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 100.0);
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
@@ -1297,10 +1304,10 @@ class BatchLSEstimatorTest {
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
-                                     0.0, 4.6e7,
-                                     0.0, 1.8e-6,
-                                     0.0, 5.8e-7,
-                                     0.0, 2.7e-10);
+                                     0.0, 4.4e-7,
+                                     0.0, 1.4e-6,
+                                     0.0, 1.9e-7,
+                                     0.0, 7.7e-11);
     }
 
     /**

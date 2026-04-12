@@ -102,8 +102,8 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
         final AbsoluteDate secondReceptionDate = emissionDate.shiftedBy(delays[1]);
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final double offset1 = getPrimeObserver().getClockBiasDriver().getValue(firstReceptionDate);
-        final double offset2 = getSecondObserver().getClockBiasDriver().getValue(secondReceptionDate);
+        final double offset1 = getPrimeObserver().getOffsetValue(firstReceptionDate);
+        final double offset2 = getSecondObserver().getOffsetValue(secondReceptionDate);
         final double tdoa = (firstReceptionDate.durationFrom(emissionDate) + offset1) - (secondReceptionDate.durationFrom(emissionDate) + offset2);
 
         // Prepare the evaluation
@@ -134,10 +134,9 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
         final FieldAbsoluteDate<Gradient> secondReceptionDate = emissionDate.shiftedBy(secondDelay);
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final Gradient offset1 = getPrimeObserver().getClockBiasDriver()
-                                .getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
-        final Gradient offset2 = getSecondObserver().getClockBiasDriver()
-                                .getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
+        final Gradient offset1 = getPrimeObserver().getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), paramIndices);
+        final Gradient offset2 = getSecondObserver().getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), paramIndices);
+
         final Gradient tdoaG   = firstDelay.add(offset1).subtract(secondDelay.add(offset2));
         final double   tdoa    = tdoaG.getValue();
 

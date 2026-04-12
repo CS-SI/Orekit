@@ -608,9 +608,11 @@ class InterSatellitesRangeTest {
                 new SpacecraftState(TestUtils.getDefaultOrbit(epoch))};
         final ObservableSatellite sat0 = new ObservableSatellite(0);
         sat0.getClockBiasDriver().setValue(0.1);
+        sat0.getClockBiasDriver().setReferenceDate(epoch);
         final ObservableSatellite sat1 = new ObservableSatellite(1);
         sat1.getClockBiasDriver().setValue(0.2);
         sat1.getClockDriftDriver().setValue(0.01);
+        sat1.getClockBiasDriver().setReferenceDate(epoch);
         // WHEN
         final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, twoWay, epoch, 0., 1., 1.);
         final EstimatedMeasurementBase<InterSatellitesRange> estimatedWithoutDerivatives = range.estimateWithoutDerivatives(state);

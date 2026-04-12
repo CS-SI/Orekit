@@ -16,7 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -102,7 +101,7 @@ import org.orekit.utils.Constants;
  */
 public class AbsoluteDate
     extends TimeOffset
-    implements TimeStamped, TimeShiftable<AbsoluteDate>, Comparable<TimeOffset>, Serializable {
+    implements TimeStamped, TimeShiftable<AbsoluteDate> {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
      * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes

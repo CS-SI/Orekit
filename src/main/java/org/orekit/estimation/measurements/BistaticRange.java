@@ -112,8 +112,8 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
                 new SpacecraftState[] { transitState }, participants);
 
         // Clock offsets
-        final double dte = getEmitter().getClockBiasDriver().getValue(emissionDate);
-        final double dtr = getReceiver().getClockBiasDriver().getValue(receptionDate);
+        final double dte = getEmitter().getOffsetValue(emissionDate);
+        final double dtr = getReceiver().getOffsetValue(receptionDate);
 
         // Range value
         final double firstLegDelay = transitDate.durationFrom(emissionDate);
@@ -154,8 +154,9 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
         // Clock offsets
         final int nbParams = field.getZero().getFreeParameters();
         final Map<String, Integer> paramIndices = getParameterIndices(states);
-        final Gradient dte = getEmitter().getClockBiasDriver().getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
-        final Gradient dtr = getReceiver().getClockBiasDriver().getValue(nbParams, paramIndices, receptionDate.toAbsoluteDate());
+
+        final Gradient dte = getEmitter().getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), paramIndices);
+        final Gradient dtr = getReceiver().getFieldOffsetValue(nbParams, receptionDate.toAbsoluteDate(), paramIndices);
 
         // Range value
         final Gradient tau   = (shifts[1].add(shifts[2])).negate().add(dtr).subtract(dte);

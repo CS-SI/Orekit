@@ -212,7 +212,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 8.1e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.2e-8);
 
     }
 
@@ -276,7 +276,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 8.1e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.4e-7);
 
     }
 
@@ -362,7 +362,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 7.5e-6);
 
     }
 
@@ -444,7 +444,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.3e-6);
 
     }
 
@@ -666,7 +666,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 7.5e-6);
 
     }
 

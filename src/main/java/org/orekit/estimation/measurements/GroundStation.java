@@ -518,7 +518,7 @@ public class GroundStation extends AbstractParticipant implements Observer {
         // take clock offset into account
         final AbsoluteDate offsetCompensatedDate = clockOffsetAlreadyApplied ?
                                                    date :
-                                                   new AbsoluteDate(date, -getClockBiasDriver().getValue());
+                                                   new AbsoluteDate(date, -getOffsetValue(date));
 
         // take Earth offsets into account
         final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(offsetCompensatedDate).getInverse();

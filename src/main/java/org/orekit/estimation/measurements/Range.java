@@ -167,9 +167,9 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final AbsoluteDate emissionDate = estimated.getParticipants()[0].getDate();
 
         // clock bias, taken in account only in case of one way
-        final ObservableSatellite satellite    = getSatellites().get(0);
-        final double              dts       = satellite.getClockBiasDriver().getValue(emissionDate);
-        final double              dtg       = getObserver().getClockBiasDriver().getValue(receptionDate);
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final double              dts       = satellite.getOffsetValue(emissionDate);
+        final double              dtg       = getObserver().getOffsetValue(receptionDate);
         final double clockBias = dtg - dts;
 
         final double range = (clockBias + receptionDate.durationFrom(emissionDate)) * Constants.SPEED_OF_LIGHT;
@@ -241,8 +241,8 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
 
         // clock offset, taken in account only in case of one way
         final ObservableSatellite satellite    = getSatellites().get(0);
-        final Gradient            dts       = satellite.getClockBiasDriver().getValue(nbParams, indices, emissionDate.toAbsoluteDate());
-        final Gradient            dtg       = getObserver().getClockBiasDriver().getValue(nbParams, indices, receptionDate.toAbsoluteDate());
+        final Gradient dts = satellite.getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), indices);
+        final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, receptionDate.toAbsoluteDate(), indices);
         final Gradient clockBias = dtg.subtract(dts);
 
         final Gradient range = clockBias.add(delay).multiply(Constants.SPEED_OF_LIGHT);
