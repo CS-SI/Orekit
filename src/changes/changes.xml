@@ -50,6 +50,9 @@
         <action dev="serrof" type="update" issue="1922">
             Renamed (systematic) offset as bias to avoid confusion with total offset.
         </action>
+        <action dev="briannaaubin" type="update" issue="1921">
+            Replace incorrect calls to clock driver values with calls to clock offset function.
+        </action>
         <action dev="serrof" type="update" issue="1919">
             Use generic observer in AngularRaDec.
         </action>
