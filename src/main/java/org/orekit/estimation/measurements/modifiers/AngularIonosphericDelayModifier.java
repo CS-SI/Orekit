@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,11 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.SpacecraftState;
@@ -45,7 +45,7 @@ import org.orekit.utils.TrackingCoordinates;
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  * </p>
  * <p>
- * Since 10.0, state derivatives and ionospheric parameters derivates are computed
+ * Since 10.0, state derivatives and ionospheric parameters derivatives are computed
  * using automatic differentiation.
  * </p>
  * @author Thierry Ceolin
@@ -61,11 +61,10 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
 
     /** Constructor.
      *
-     * @param model  Ionospheric delay model appropriate for the current angular measurement method.
+     * @param model Ionospheric delay model appropriate for the current angular measurement method.
      * @param freq frequency of the signal in Hz
      */
-    public AngularIonosphericDelayModifier(final IonosphericModel model,
-                                           final double freq) {
+    public AngularIonosphericDelayModifier(final IonosphericModel model, final double freq) {
         ionoModel = model;
         frequency = freq;
     }
@@ -76,51 +75,61 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         return "ionosphere";
     }
 
-    /** Compute the measurement error due to ionosphere.
-     * @param station station
-     * @param state spacecraft state
-     * @return the measurement error due to ionosphere
-     */
-    private double angularErrorIonosphericModel(final GroundStation station,
-                                                final SpacecraftState state) {
-        // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
-        // delay in meters
-        return ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
-    }
-
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return ionoModel.getParametersDrivers();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularAzEl> estimated) {
-        final AngularAzEl     measure = estimated.getObservedMeasurement();
-        final GroundStation   station = measure.getStation();
+        final AngularAzEl     measurement = estimated.getObservedMeasurement();
+        final GroundStation   station = measurement.getStation();
         final SpacecraftState state   = estimated.getStates()[0];
+        final TopocentricFrame topocentricFrame = buildTopocentricFrame(station, state.getDate());
+        final double[] azimuthElevation = computeAzimuthElevation(state, topocentricFrame, measurement);
 
-        final double delay = angularErrorIonosphericModel(station, state);
         // Delay is taken into account to shift the spacecraft position
+        final double delay = ionoModel.pathDelay(state, topocentricFrame, frequency, ionoModel.getParameters(state.getDate()));
         final double dt = delay / Constants.SPEED_OF_LIGHT;
-
-        // Position of the spacecraft shifted of dt
         final SpacecraftState transitState = state.shiftedBy(-dt);
 
-        // Update estimated value taking into account the ionospheric delay.
-        final AbsoluteDate date     = transitState.getDate();
-        final Vector3D     position = transitState.getPosition();
-        final Frame        inertial = transitState.getFrame();
-
-        // Elevation and azimuth in radians
-        final TrackingCoordinates tc = station.getBaseFrame().getTrackingCoordinates(position, inertial, date);
-        final double twoPiWrap   = MathUtils.normalizeAngle(tc.getAzimuth(), measure.getObservedValue()[0]) - tc.getAzimuth();
-        final double azimuth     = tc.getAzimuth() + twoPiWrap;
-
-        // Update estimated value taking into account the ionospheric delay.
-        // Azimuth - elevation values
-        estimated.modifyEstimatedValue(this, azimuth, tc.getElevation());
+        // recompute angles and use difference as increment
+        final TopocentricFrame topocentricFrameWithShift = buildTopocentricFrame(station, transitState.getDate());
+        final double[] azimuthElevationWithShift = computeAzimuthElevation(transitState, topocentricFrameWithShift, measurement);
+        final double[] value = estimated.getEstimatedValue();
+        estimated.modifyEstimatedValue(this, value[0] + (azimuthElevationWithShift[0] - azimuthElevation[0]),
+                value[1] + (azimuthElevationWithShift[1] - azimuthElevation[1]));
     }
 
+    /**
+     * Compute azimuth and elevation angles in radians.
+     * @param transitState state at signal emission
+     * @param topocentricFrame ground station frame
+     * @param measurement measurement object
+     * @return azimuth and elevation array [rad]
+     * @since 14.0
+     */
+    private double[] computeAzimuthElevation(final SpacecraftState transitState, final TopocentricFrame topocentricFrame,
+                                             final AngularAzEl measurement) {
+        // Elevation and azimuth in radians
+        final Vector3D     position = transitState.getPosition();
+        final TrackingCoordinates tc = topocentricFrame.getTrackingCoordinates(position, transitState.getFrame(), measurement.getDate());
+        final double twoPiWrap   = MathUtils.normalizeAngle(tc.getAzimuth(), measurement.getObservedValue()[0]) - tc.getAzimuth();
+        final double azimuth     = tc.getAzimuth() + twoPiWrap;
+        return new double[] { azimuth, tc.getElevation() };
+    }
+
+    /**
+     * Build topocentric frame taking into account station position error.
+     * @param station ground station
+     * @param date date
+     * @return topocentric frame
+     * @since 14.0
+     */
+    private TopocentricFrame buildTopocentricFrame(final GroundStation station, final AbsoluteDate date) {
+        final GeodeticPoint geodeticPoint = station.getOffsetGeodeticPoint(date);
+        return new TopocentricFrame(station.getBaseFrame().getParentShape(), geodeticPoint, "station");
+    }
 }
