@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.BodyShape;
@@ -149,13 +150,13 @@ public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
                 paramIndices);
         final Frame frame = state.getFrame();
         final FieldAbsoluteDate<Gradient> receptionDate = station.getCorrectedReceptionDateField(getDate(), nbParams, paramIndices);
-        final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
+        final FieldVector3D<Gradient> receiverPosition = receiverPVProvider.getPosition(receptionDate, frame);
         final FieldPVCoordinatesProvider<Gradient> emitter = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
-        final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(frame, receiverPV.getPosition(), receptionDate, emitter);
+        final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(frame, receiverPosition, receptionDate, emitter);
 
         // Compute azimuth and elevation
         final BodyShape bodyShape = station.getBaseFrame().getParentShape();
-        final FieldGeodeticPoint<Gradient> geodeticPoint = bodyShape.transform(receiverPV.getPosition(), frame, receptionDate);
+        final FieldGeodeticPoint<Gradient> geodeticPoint = bodyShape.transform(receiverPosition, frame, receptionDate);
         final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape,
                 getSignalTravelTimeModel().getWarmedUpModel());
         final Gradient[] azEl = measurementModel.value(geodeticPoint, receptionDate, emitter, emissionDate);
@@ -165,7 +166,8 @@ public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
         final SpacecraftState shiftedState = state.shiftedBy(shift);
         final EstimatedMeasurement<AngularAzEl> estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                 new SpacecraftState[] { shiftedState },
-                new TimeStampedPVCoordinates[] {shiftedState.getPVCoordinates(), receiverPV.toTimeStampedPVCoordinates() });
+                new TimeStampedPVCoordinates[] {shiftedState.getPVCoordinates(),
+                        getStation().getPVCoordinatesProvider().getPVCoordinates(receptionDate.toAbsoluteDate(), frame) });
         fillEstimatedMeasurement(azEl[0], azEl[1], paramIndices, estimated);
         return estimated;
     }
