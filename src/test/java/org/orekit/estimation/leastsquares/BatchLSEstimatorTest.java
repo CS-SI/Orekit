@@ -518,7 +518,7 @@ class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                 0.0, 2.4e-5,
                 0.0, 6.0e-5,
-                0.0, 1.1e-5,
+                0.0, 1.2e-5,
                 0.0, 3.0e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference

@@ -23,6 +23,8 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
@@ -40,6 +42,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -69,10 +72,12 @@ import org.orekit.signal.SignalTravelTimeAdjustableReceiver;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.QuadraticFieldClockModel;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -80,8 +85,14 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class RangeTest {
 
@@ -217,7 +228,7 @@ class RangeTest {
     }
 
     @Test
-    public void testSignalTimeOfFlight() {
+    void testSignalTimeOfFlight() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -871,6 +882,43 @@ class RangeTest {
         Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
         Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
 
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testGetPVCoordinatesProvider(final boolean twoWay) {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final Observer mockedObserver = mockObserverWithException(epoch);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN & THEN
+        final Range range = new Range(mockedObserver, twoWay, epoch, 0., 1., 1., satellite);
+        assertDoesNotThrow(() -> range.estimate(0, 0, state));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Observer mockObserverWithException(final AbsoluteDate epoch) {
+        final Observer observer = mock();
+        final GradientField field = GradientField.getField(6);
+        final Gradient zero = field.getZero();
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, epoch);
+        when(observer.getQuadraticFieldClock(anyInt(), any(), anyMap())).thenReturn(new QuadraticFieldClockModel<>(fieldDate, zero, zero, zero));
+        when(observer.getFieldOffsetValue(anyInt(), any(), anyMap())).thenReturn(zero);
+        when(observer.getPVCoordinatesProvider()).thenReturn(new AbsolutePVCoordinates(FramesFactory.getEME2000(), epoch, PVCoordinates.ZERO));
+        final FieldPVCoordinatesProvider<Gradient> provider = mock(FieldPVCoordinatesProvider.class);
+        when(provider.getPosition(any(FieldAbsoluteDate.class), any(Frame.class))).thenReturn(FieldVector3D.getZero(field));
+        when(provider.getPVCoordinates(any(FieldAbsoluteDate.class), any(Frame.class)))
+                .thenThrow(mock(OrekitException.class));  // for performance, this should not be called
+        when(observer.getFieldPVCoordinatesProvider(anyInt(), anyMap())).thenReturn(provider);
+        return observer;
     }
 
     @ParameterizedTest

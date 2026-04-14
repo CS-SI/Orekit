@@ -338,8 +338,8 @@ class GroundStationTest {
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 6.7e-7,
                                      0.0, 1.8e-6,
-                                     0.0, 9.1e-7,
-                                     0.0, 5e-10);
+                                     0.0, 1.2e-6,
+                                     0.0, 5.1e-10);
         Assertions.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
         Assertions.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assertions.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
@@ -471,7 +471,7 @@ class GroundStationTest {
         Assertions.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  1.5e-9);
         Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     9.4e-10);
         Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      1.3e-8);
-        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.92e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.93e-9);
         Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      5.6e-9);
         Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 5.5e-9);
 

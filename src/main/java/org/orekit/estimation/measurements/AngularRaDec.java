@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.model.RaDecModel;
 import org.orekit.frames.Frame;
@@ -171,18 +172,19 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
         final FieldPVCoordinatesProvider<Gradient> receiver = observer.getFieldPVCoordinatesProvider(nbParams, paramIndices);
         final FieldPVCoordinatesProvider<Gradient> emitter = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
         final Frame                frame        = states[0].getFrame();
-        final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiver.getPVCoordinates(receptionDate, frame);
-        final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(referenceFrame, receiverPV.getPosition(), receptionDate, emitter);
+        final FieldVector3D<Gradient> receiverPosition = receiver.getPosition(receptionDate, frame);
+        final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(referenceFrame, receiverPosition, receptionDate, emitter);
 
         // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)
-        final Gradient[] raDec = measurementModel.value(frame, receiverPV.getPosition(), receptionDate, emitter, emissionDate);
+        final Gradient[] raDec = measurementModel.value(frame, receiverPosition, receptionDate, emitter, emissionDate);
 
         // Prepare the estimation
         final double shift = emissionDate.toAbsoluteDate().durationFrom(state);
         final SpacecraftState shiftedState = state.shiftedBy(shift);
         final EstimatedMeasurement<AngularRaDec> estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                 new SpacecraftState[] { shiftedState },
-                new TimeStampedPVCoordinates[] { shiftedState.getPVCoordinates(), receiverPV.toTimeStampedPVCoordinates() });
+                new TimeStampedPVCoordinates[] { shiftedState.getPVCoordinates(),
+                getObserver().getPVCoordinatesProvider().getPVCoordinates(receptionDate.toAbsoluteDate(), frame)});
         fillEstimatedMeasurement(raDec[0], raDec[1], paramIndices, estimated);
         return estimated;
     }
