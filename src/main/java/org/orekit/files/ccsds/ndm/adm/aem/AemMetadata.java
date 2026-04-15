@@ -19,10 +19,13 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
@@ -71,9 +74,24 @@ public class AemMetadata extends AdmMetadata {
 
     /** Simple constructor.
      * @param defaultInterpolationDegree default interpolation degree
+     * @deprecated in favor of {@link #AemMetadata(int, CcsdsFrameMapper)}.
      */
+    @Deprecated
     public AemMetadata(final int defaultInterpolationDegree) {
-        endpoints           = new AttitudeEndpoints();
+        this(defaultInterpolationDegree, new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param defaultInterpolationDegree default interpolation degree
+     * @param frameMapper                for creating a {@link Frame}.
+     * @since 14.0
+     */
+    public AemMetadata(final int defaultInterpolationDegree,
+                       final CcsdsFrameMapper frameMapper) {
+        super(frameMapper);
+        endpoints           = new AttitudeEndpoints(frameMapper);
         interpolationDegree = defaultInterpolationDegree;
     }
 
@@ -393,7 +411,9 @@ public class AemMetadata extends AdmMetadata {
         checkMandatoryEntriesExceptDatesAndExternalFrame(version);
 
         // allocate new instance
-        final AemMetadata copy = new AemMetadata(getInterpolationDegree());
+        final AemMetadata copy = new AemMetadata(
+                getInterpolationDegree(),
+                getFrameMapper());
 
         // copy comments
         for (String comment : getComments()) {

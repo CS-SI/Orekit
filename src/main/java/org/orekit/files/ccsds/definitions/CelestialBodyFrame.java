@@ -501,6 +501,8 @@ public enum CelestialBodyFrame {
                 }
             } else if (name.contains("CIO") && name.contains(ITRF_SUBSTRING)) {
                 return ITRF2014;
+            } else if (name.endsWith("/ICRF")) {
+                return ICRF;
             }
             throw new OrekitException(iae, OrekitMessages.CCSDS_INVALID_FRAME, name);
         }

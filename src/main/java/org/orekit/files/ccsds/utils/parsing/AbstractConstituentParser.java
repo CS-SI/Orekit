@@ -20,10 +20,13 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.frames.Frame;
 import org.orekit.utils.IERSConventions;
 
 /** Parser for CCSDS messages.
@@ -57,6 +60,9 @@ public abstract class AbstractConstituentParser<H extends Header, T extends NdmC
     /** Behavior adopted for units that have been parsed from a CCSDS message. */
     private final ParsedUnitsBehavior parsedUnitsBehavior;
 
+    /** For creating a {@link Frame}. */
+    private final CcsdsFrameMapper frameMapper;
+
     /** Complete constructor.
      * @param root root element for XML files
      * @param formatVersionKey key for format version
@@ -74,11 +80,35 @@ public abstract class AbstractConstituentParser<H extends Header, T extends NdmC
                                         final DataContext dataContext,
                                         final ParsedUnitsBehavior parsedUnitsBehavior,
                                         final Function<ParseToken, List<ParseToken>>[] filters) {
+        this(root, formatVersionKey, conventions, simpleEOP, dataContext,
+                parsedUnitsBehavior, filters, new OrekitCcsdsFrameMapper());
+    }
+
+    /** Complete constructor.
+     * @param root root element for XML files
+     * @param formatVersionKey key for format version
+     * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param dataContext used to retrieve frames and time scales
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
+     */
+    protected AbstractConstituentParser(final String root,
+                                        final String formatVersionKey,
+                                        final IERSConventions conventions,
+                                        final boolean simpleEOP,
+                                        final DataContext dataContext,
+                                        final ParsedUnitsBehavior parsedUnitsBehavior,
+                                        final Function<ParseToken, List<ParseToken>>[] filters,
+                                        final CcsdsFrameMapper frameMapper) {
         super(root, formatVersionKey, filters);
         this.conventions         = conventions;
         this.simpleEOP           = simpleEOP;
         this.dataContext         = dataContext;
         this.parsedUnitsBehavior = parsedUnitsBehavior;
+        this.frameMapper         = frameMapper;
     }
 
     /** Get the behavior to adopt for handling parsed units.
@@ -107,6 +137,16 @@ public abstract class AbstractConstituentParser<H extends Header, T extends NdmC
      */
     public DataContext getDataContext() {
         return dataContext;
+    }
+
+    /**
+     * Get the mapping between a CCSDS frame and a {@link Frame}.
+     *
+     * @return the frame mapper.
+     * @since 14.0
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
     }
 
     /** Get file header to fill.

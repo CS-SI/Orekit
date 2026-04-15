@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -41,6 +42,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 public class CelestialBodyFrameTest {
@@ -112,6 +116,10 @@ public class CelestialBodyFrameTest {
         MatcherAssert.assertThat(CelestialBodyFrame.map(CelestialBodyFactory.getSolarSystemBarycenter().
                                  getInertiallyOrientedFrame()),
                                  CoreMatchers.is(CelestialBodyFrame.ICRF));
+        MatcherAssert.assertThat(
+                CelestialBodyFrame.map(CelestialBodyFactory.getSolarSystemBarycenter().
+                        getIcrfAlignedFrame()),
+                CoreMatchers.is(CelestialBodyFrame.ICRF));
         // check some special CCSDS frames
         ModifiedFrame frame = new ModifiedFrame(FramesFactory.getEME2000(),
                                                           CelestialBodyFrame.EME2000,
@@ -139,6 +147,31 @@ public class CelestialBodyFrameTest {
         Frame fakeICRF = new Frame(FramesFactory.getGCRF(), Transform.IDENTITY,
                                    CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial");
         MatcherAssert.assertThat(CelestialBodyFrame.map(fakeICRF), CoreMatchers.is(CelestialBodyFrame.ICRF));
+
+        // check celestial body centered ICRF
+        List<CelestialBody> bodies = Arrays.asList(
+                CelestialBodyFactory.getSolarSystemBarycenter(),
+                CelestialBodyFactory.getMercury(),
+                CelestialBodyFactory.getVenus(),
+                CelestialBodyFactory.getEarthMoonBarycenter(),
+                CelestialBodyFactory.getMoon(),
+                CelestialBodyFactory.getMars(),
+                CelestialBodyFactory.getJupiter(),
+                CelestialBodyFactory.getSaturn(),
+                CelestialBodyFactory.getUranus(),
+                CelestialBodyFactory.getNeptune(),
+                CelestialBodyFactory.getPluto());
+        for (CelestialBody body : bodies) {
+            MatcherAssert.assertThat(
+                    CelestialBodyFrame.map(body.getIcrfAlignedFrame()),
+                    CoreMatchers.is(CelestialBodyFrame.ICRF));
+        }
+        // Earth ICRF is GCRF
+        final CelestialBody earth = CelestialBodyFactory.getEarth();
+        MatcherAssert.assertThat(
+                CelestialBodyFrame.map(earth.getIcrfAlignedFrame()),
+                CoreMatchers.is(CelestialBodyFrame.GCRF));
+
     }
 
     @Test

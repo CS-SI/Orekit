@@ -19,7 +19,9 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 
 import java.util.regex.Pattern;
 
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
+import org.orekit.frames.Frame;
 
 /** Metadata for Orbit Mean Messages.
  * @author Luc Maisonobe
@@ -45,15 +47,14 @@ public class OmmMetadata extends OdmCommonMetadata {
      * to propagate the state. */
     private String meanElementTheory;
 
-    /** Empty constructor.
-     * <p>
-     * This constructor is not strictly necessary, but it prevents spurious
-     * javadoc warnings with JDK 18 and later.
-     * </p>
-     * @since 12.0
+    /**
+     * Constructor.
+     *
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
      */
-    public OmmMetadata() {
-        // nothing to do
+    public OmmMetadata(final CcsdsFrameMapper frameMapper) {
+        super(frameMapper);
     }
 
     /** Check if mean element theory in SGP or SDP.

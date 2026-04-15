@@ -28,6 +28,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
@@ -47,6 +48,7 @@ import org.orekit.files.ccsds.utils.lexical.UserDefinedXmlTokenBuilder;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.AttitudeEphemerisFileParser;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -119,13 +121,15 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
-     * @since 12.0
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
      */
     public AcmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
         super(Acm.ROOT, Acm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null,
-              parsedUnitsBehavior, filters);
+              parsedUnitsBehavior, filters, frameMapper);
     }
 
     /** {@inheritDoc} */
@@ -201,7 +205,7 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
         if (metadata != null) {
             return false;
         }
-        metadata  = new AcmMetadata(getDataContext());
+        metadata  = new AcmMetadata(getFrameMapper());
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP, this::getDataContext,
                                        this::getParsedUnitsBehavior, metadata::getEpochT0, metadata::getTimeSystem,
                                        () -> 0.0, () -> 1.0);
@@ -254,7 +258,8 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
                 // this is the first attitude block, we need to allocate the container
                 attitudeBlocks = new ArrayList<>();
             }
-            currentAttitudeStateHistoryMetadata = new AttitudeStateHistoryMetadata();
+            currentAttitudeStateHistoryMetadata =
+                    new AttitudeStateHistoryMetadata(getFrameMapper());
             currentAttitudeStateHistory         = new ArrayList<>();
             anticipateNext(this::processAttitudeStateToken);
         } else {
@@ -332,7 +337,8 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      */
     boolean manageAttitudeDeterminationSection(final boolean starting) {
         if (starting) {
-            attitudeDeterminationBlock = new AttitudeDetermination();
+            attitudeDeterminationBlock =
+                    new AttitudeDetermination(getFrameMapper());
             anticipateNext(this::processAttitudeDeterminationToken);
         } else {
             anticipateNext(structureProcessor);

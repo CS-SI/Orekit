@@ -86,6 +86,8 @@ public class StreamingOemWriterTest {
         for (CenterName centerName : centerNames) {
             CelestialBody body = centerName.getCelestialBody();
             String name = centerName.name().replace('_', ' ');
+            MatcherAssert.assertThat(CenterName.guessCenter(body.getIcrfAlignedFrame()),
+                    CoreMatchers.is(name));
             MatcherAssert.assertThat(CenterName.guessCenter(body.getInertiallyOrientedFrame()),
                                      CoreMatchers.is(name));
             MatcherAssert.assertThat(CenterName.guessCenter(body.getBodyOrientedFrame()),

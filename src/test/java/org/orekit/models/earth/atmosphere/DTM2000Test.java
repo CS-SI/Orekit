@@ -339,6 +339,10 @@ public class DTM2000Test {
         @Override
         public String getName() { return "SUN"; }
         @Override
+        public Frame getIcrfAlignedFrame() {
+            return getInertiallyOrientedFrame();
+        }
+        @Override
         public Frame getInertiallyOrientedFrame() { return itrf; }
         @Override
         public double getGM() { return Constants.JPL_SSD_SUN_GM; }
