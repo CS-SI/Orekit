@@ -220,7 +220,7 @@ public enum OrekitMessages implements Localizable {
     TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL("too large eccentricity for propagation model: e = {0}"),
 
     /** TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION. */
-    TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION("too large eccentricity for teardrop motion: e > {1e-4}"),
+    TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION("too large eccentricity for teardrop motion: e > 1e-4"),
 
     /** NO_SOLAR_ACTIVITY_AT_DATE. */
     NO_SOLAR_ACTIVITY_AT_DATE("no solar activity available at {0}, data available only in range [{1}, {2}]"),

@@ -297,7 +297,7 @@ public enum RPOModel implements RPO {
          * @return List of waypoints in time. Date, position, and velocity are non-zero.
          */
         public List<TimeStampedPVCoordinates> computeTeardropWaypoints(final AbsoluteDate injectionDate, final Orbit targetOrbit, final double turnAroundDistance, final double maneuverDistance, final int numberOfTeardrops) {
-            if (targetOrbit.getE() <= 1e-4) {
+            if (targetOrbit.getE() >= 1e-4) {
                 throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION);
             } else {
                 final List<TimeStampedPVCoordinates> waypointsQSW = new TeardropCircularWaypointCalculator(targetOrbit.getKeplerianMeanMotion(), turnAroundDistance, maneuverDistance, numberOfTeardrops).computeTearDropWaypoints(injectionDate);
@@ -327,7 +327,7 @@ public enum RPOModel implements RPO {
          * @return List of waypoints in time. Date, position, and velocity are non-zero.
          */
         public <T extends CalculusFieldElement<T>> List<TimeStampedFieldPVCoordinates<T>> computeTeardropWaypoints(final FieldAbsoluteDate<T> injectionDate, final FieldOrbit<T> targetOrbit, final T turnAroundDistance, final T maneuverDistance, final int numberOfTeardrops) {
-            if (targetOrbit.getE().getReal() <= 1e-4) {
+            if (targetOrbit.getE().getReal() >= 1e-4) {
                 throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION);
             } else {
                 final List<TimeStampedFieldPVCoordinates<T>> waypointsQSW = new FieldTeardropCircularWaypointCalculator<>(targetOrbit.getKeplerianMeanMotion(), turnAroundDistance, maneuverDistance, numberOfTeardrops).computeTearDropWaypoints(injectionDate);

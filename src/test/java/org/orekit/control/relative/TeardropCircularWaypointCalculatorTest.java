@@ -141,6 +141,6 @@ public class TeardropCircularWaypointCalculatorTest {
         OrekitException ex = assertThrows(OrekitException.class, () ->
                 RPOModel.YA.computeTeardropWaypoints(epoch, targetOrbit, turnAroundDistance, maneuverDistance, numberOfOrbits));
 
-        Assertions.assertEquals("too large eccentricity for teardrop motion: e > {1e-4}", ex.getMessage());
+        Assertions.assertEquals("too large eccentricity for teardrop motion: e > 1e-4", ex.getMessage());
     }
 }
