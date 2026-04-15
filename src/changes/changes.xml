@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1.5" date="TBD" description="Orekit 13.1.5 is a patch release. TBD">
+      <action dev="serrof" type="fix" issue="1949">
+          Fixed wrong getVelocity in FieldOrbit.
+      </action>
       <action dev="ShippingEnjoyer" type="fix" issue="1943">
           Fixed peer cache performance regression on high contention.
       </action>
