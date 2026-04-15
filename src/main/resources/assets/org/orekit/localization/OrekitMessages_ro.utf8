@@ -190,6 +190,9 @@ NOT_POSITIVE_SPACECRAFT_MASS=masa vehiculului spațial nu este pozitivă: {0} kg
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=eccentricitate prea mare pentru modelul de propagare: e = {0}
 
+# too large eccentricity for teardrop motion: e > 1e-4
+TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION=excentricitate prea mare pentru mișcarea în formă de lacrimă: e > 1e-4
+
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE=nu există informații referitoare la activitatea solară la data {0}, informații disponibile doar pentru intervalul [{1}, {2}]
 
