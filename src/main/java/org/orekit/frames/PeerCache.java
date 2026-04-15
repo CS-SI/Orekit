@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,9 @@ import org.orekit.time.FieldAbsoluteDate;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.StampedLock;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /** Cache for frame transforms.
  * <p>
@@ -42,7 +43,7 @@ class PeerCache {
     private volatile CachedTransformProvider cache;
 
     /** Lock for peer frame cache. */
-    private final ReentrantReadWriteLock lock;
+    private final StampedLock lock;
 
     /** Cache for transforms with peer frame. */
     private volatile Map<Field<? extends CalculusFieldElement<?>>, FieldCachedTransformProvider<?>> fieldCaches;
@@ -54,7 +55,7 @@ class PeerCache {
         this.origin      = origin;
         this.cache       = null;
         this.fieldCaches = null;
-        this.lock        = new ReentrantReadWriteLock();
+        this.lock        = new StampedLock();
     }
 
     /** Associate a cache with a peer frame, caching transforms.
@@ -76,37 +77,36 @@ class PeerCache {
      * @param cacheSize number of transforms kept in the date-based cache
      */
     public void setPeerCaching(final Frame peer, final int cacheSize) {
-
-        lock.writeLock().lock();
+        final long lockId = lock.writeLock();
         try {
-
             if (peer == null) {
                 // clear peering
                 cache       = null;
                 fieldCaches = null;
+            } else {
+                // caching for regular dates
+                cache       = createCache(peer, cacheSize);
+                // caching for field dates
+                fieldCaches = new ConcurrentHashMap<>();
             }
-
-            // caching for regular dates
-            cache = createCache(peer, cacheSize);
-
-            // caching for field dates
-            fieldCaches = new ConcurrentHashMap<>();
         } finally {
-            lock.writeLock().unlock();
+            lock.unlockWrite(lockId);
         }
-
     }
 
     /** Get the peer associated to this frame.
      * @return peer associated with this frame, null if not peered at all
      */
     Frame getPeer() {
-        lock.readLock().lock();
-        try {
-            return cache == null ? null : cache.getDestination();
-        } finally {
-            lock.readLock().unlock();
+        if (cache == null) {
+            return null;
+        } else {
+            return optimisticRead(this::getPeerDestination);
         }
+    }
+
+    private Frame getPeerDestination() {
+        return cache == null ? null : cache.getDestination();
     }
 
     /** Get the cached transform provider associated with this destination.
@@ -114,15 +114,19 @@ class PeerCache {
      * @return cached transform provider, or null if destination is not the instance peer
      */
     CachedTransformProvider getCachedTransformProvider(final Frame destination) {
-        lock.readLock().lock();
-        try {
-            if (cache == null || cache.getDestination() != destination) {
-                return null;
-            } else {
-                return cache;
-            }
-        } finally {
-            lock.readLock().unlock();
+        if (cache == null)  {
+            return null;
+        } else {
+            return optimisticRead(() -> getProvider(destination));
+        }
+    }
+
+    private CachedTransformProvider getProvider(final Frame destination) {
+        final Frame peerDestination = getPeerDestination();
+        if (peerDestination == null || peerDestination != destination) {
+            return null;
+        } else {
+            return cache;
         }
     }
 
@@ -132,24 +136,39 @@ class PeerCache {
      * @param field field elements belong to
      * @return cached transform provider, or null if destination is not the instance peer
      */
-    @SuppressWarnings("unchecked")
     <T extends CalculusFieldElement<T>> FieldCachedTransformProvider<T> getCachedTransformProvider(final Frame destination,
                                                                                                    final Field<T> field) {
-        lock.readLock().lock();
-        try {
-            if (cache == null || cache.getDestination() != destination) {
-                return null;
-            } else {
-                @SuppressWarnings("unchedked")
-                final FieldCachedTransformProvider<T> tp =
-                        (FieldCachedTransformProvider<T>) fieldCaches.computeIfAbsent(field,
-                                                                                      f -> createCache(destination,
-                                                                                                       cache.getCacheSize(),
-                                                                                                       field));
-                return tp;
+        if (cache == null) {
+            return null;
+        } else {
+            return optimisticRead(() -> getFieldProvider(destination, field));
+        }
+    }
+
+    private <T> T optimisticRead(final Supplier<T> readFunction) {
+        final long optimisticLockId = lock.tryOptimisticRead();
+        final T optimisticResult = readFunction.get();
+        if (lock.validate(optimisticLockId)) {
+            return optimisticResult;
+        } else {
+            final long heavyLockId = lock.readLock();
+            try {
+                return readFunction.get();
+            } finally {
+                lock.unlockRead(heavyLockId);
             }
-        } finally {
-            lock.readLock().unlock();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends CalculusFieldElement<T>> FieldCachedTransformProvider<T> getFieldProvider(final Frame destination, final Field<T> field) {
+        final CachedTransformProvider provider = getProvider(destination);
+        if (provider == null) {
+            return null;
+        } else {
+            return (FieldCachedTransformProvider<T>) fieldCaches.computeIfAbsent(field, f -> createCache(destination,
+                                                                                  provider.getCacheSize(),
+                                                                                  field));
         }
     }
 
