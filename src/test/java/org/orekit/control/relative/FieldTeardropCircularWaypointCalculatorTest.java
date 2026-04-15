@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
@@ -145,9 +146,9 @@ public class FieldTeardropCircularWaypointCalculatorTest {
                 field.getZero(), field.getZero(), field.getZero(),
                 PositionAngleType.MEAN, PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, new Binary64(Constants.EIGEN5C_EARTH_MU));
-        UnsupportedOperationException ex = assertThrows(UnsupportedOperationException.class, () ->
+        OrekitException ex = assertThrows(OrekitException.class, () ->
                 RPOModel.YA.computeTeardropWaypoints(epoch, targetOrbit, turnAroundDistance, maneuverDistance, numberOfOrbits));
 
-        Assertions.assertEquals("A teardrop is not analytically feasible around an eccentric orbit", ex.getMessage());
+        Assertions.assertEquals("too large eccentricity for teardrop motion: e > 1e-4", ex.getMessage());
     }
 }
