@@ -20,6 +20,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -295,8 +297,8 @@ public enum RPOModel implements RPO {
          * @return List of waypoints in time. Date, position, and velocity are non-zero.
          */
         public List<TimeStampedPVCoordinates> computeTeardropWaypoints(final AbsoluteDate injectionDate, final Orbit targetOrbit, final double turnAroundDistance, final double maneuverDistance, final int numberOfTeardrops) {
-            if (targetOrbit.getE() != 0) {
-                throw new UnsupportedOperationException("A teardrop is not analytically feasible around an eccentric orbit.");
+            if (targetOrbit.getE() <= 1e-4) {
+                throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION);
             } else {
                 final List<TimeStampedPVCoordinates> waypointsQSW = new TeardropCircularWaypointCalculator(targetOrbit.getKeplerianMeanMotion(), turnAroundDistance, maneuverDistance, numberOfTeardrops).computeTearDropWaypoints(injectionDate);
                 final List<TimeStampedPVCoordinates> waypointsLVLH = new ArrayList<>();
@@ -325,8 +327,8 @@ public enum RPOModel implements RPO {
          * @return List of waypoints in time. Date, position, and velocity are non-zero.
          */
         public <T extends CalculusFieldElement<T>> List<TimeStampedFieldPVCoordinates<T>> computeTeardropWaypoints(final FieldAbsoluteDate<T> injectionDate, final FieldOrbit<T> targetOrbit, final T turnAroundDistance, final T maneuverDistance, final int numberOfTeardrops) {
-            if (targetOrbit.getE() != injectionDate.getField().getZero()) {
-                throw new UnsupportedOperationException("A teardrop is not analytically feasible around an eccentric orbit");
+            if (targetOrbit.getE().getReal() <= 1e-4) {
+                throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION);
             } else {
                 final List<TimeStampedFieldPVCoordinates<T>> waypointsQSW = new FieldTeardropCircularWaypointCalculator<>(targetOrbit.getKeplerianMeanMotion(), turnAroundDistance, maneuverDistance, numberOfTeardrops).computeTearDropWaypoints(injectionDate);
                 final List<TimeStampedFieldPVCoordinates<T>> waypointsLVLH = new ArrayList<>();
