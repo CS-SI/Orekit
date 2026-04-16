@@ -93,6 +93,23 @@ public class TwoImpulseTransfer {
     }
 
     /**
+     * <p>Creates a new {@link TwoImpulseTransfer} object from a {@link LambertSolution} and the PVs from the departure and destination orbits.</p>
+     * <p>The ΔV vectors are automatically computed.</p>
+     * @param solution Lambert solver's solution.
+     * @param v1BeforeMan PV before departure manoeuvre on initial orbit.
+     * @param v2AfterMan PV after arrival manoeuvre on destination orbit.
+     */
+    public TwoImpulseTransfer(final LambertSolution solution, final Vector3D v1BeforeMan, final Vector3D v2AfterMan) {
+        final TimeStampedPVCoordinates pvt1AfterMan = new TimeStampedPVCoordinates(solution.getBoundaryConditions().getInitialDate(), solution.getBoundaryConditions().getInitialPosition(), solution.getBoundaryVelocities().getInitialVelocity());
+        final TimeStampedPVCoordinates pvt2BeforeMan = new TimeStampedPVCoordinates(solution.getBoundaryConditions().getTerminalDate(), solution.getBoundaryConditions().getTerminalPosition(), solution.getBoundaryVelocities().getTerminalVelocity());
+        this.pvt1 = pvt1AfterMan;
+        this.pvt2 = pvt2BeforeMan;
+        this.deltaV1 = pvt1AfterMan.getVelocity().subtract(v1BeforeMan);
+        this.deltaV2 = pvt2BeforeMan.getVelocity().subtract(v2AfterMan);
+        this.frame = solution.getBoundaryConditions().getReferenceFrame();
+    }
+
+    /**
      * Creates a new {@link TwoImpulseTransfer} object from the given PVT before the first maneuver and after the second maneuver (on the initial and final orbits), as well as the velocity vectors after the first maneuver and before the second maneuver (on the transfer orbit).
      *
      * @param pvt1BeforeMan PVT before the departure maneuver.
@@ -102,28 +119,12 @@ public class TwoImpulseTransfer {
      * @param frame         Frame in which the PVT and velocity vectors are expressed.
      * @return TwoImpulseTransfer object that corresponds to the inputs.
      */
-    public static TwoImpulseTransfer fromPVTAndVelocities(final TimeStampedPVCoordinates pvt1BeforeMan, final Vector3D v1AfterMan, final TimeStampedPVCoordinates pvt2AfterMan, final Vector3D v2BeforeMan, final Frame frame) {
+    public static TwoImpulseTransfer  fromPVTAndVelocities(final TimeStampedPVCoordinates pvt1BeforeMan, final Vector3D v1AfterMan, final TimeStampedPVCoordinates pvt2AfterMan, final Vector3D v2BeforeMan, final Frame frame) {
         final TimeStampedPVCoordinates pvt1AfterMan = new TimeStampedPVCoordinates(pvt1BeforeMan.getDate(), pvt1BeforeMan.getPosition(), v1AfterMan);
         final TimeStampedPVCoordinates pvt2BeforeMan = new TimeStampedPVCoordinates(pvt2AfterMan.getDate(), pvt2AfterMan.getPosition(), v2BeforeMan);
         final Vector3D deltaV1 = pvt1AfterMan.getVelocity().subtract(pvt1BeforeMan.getVelocity());
         final Vector3D deltaV2 = pvt2AfterMan.getVelocity().subtract(pvt2BeforeMan.getVelocity());
         return new TwoImpulseTransfer(pvt1AfterMan, pvt2BeforeMan, deltaV1, deltaV2, frame);
-    }
-
-    /**
-     * <p>Creates a new {@link TwoImpulseTransfer} object from a {@link LambertSolution} and the PVs from the departure and destination orbits.</p>
-     * <p>The ΔV vectors are automatically computed.</p>
-     * @param solution Lambert solver's solution.
-     * @param v1BeforeMan PV before departure manoeuvre on initial orbit.
-     * @param v2AfterMan PV after arrival manoeuvre on destination orbit.
-     * @return {@link TwoImpulseTransfer} object with correct PVTs and ΔV vectors.
-     */
-    public static TwoImpulseTransfer fromLambertSolution(final LambertSolution solution, final Vector3D v1BeforeMan, final Vector3D v2AfterMan) {
-        final TimeStampedPVCoordinates pvt1AfterMan = new TimeStampedPVCoordinates(solution.getBoundaryConditions().getInitialDate(), solution.getBoundaryConditions().getInitialPosition(), solution.getBoundaryVelocities().getInitialVelocity());
-        final TimeStampedPVCoordinates pvt2BeforeMan = new TimeStampedPVCoordinates(solution.getBoundaryConditions().getTerminalDate(), solution.getBoundaryConditions().getTerminalPosition(), solution.getBoundaryVelocities().getTerminalVelocity());
-        final Vector3D deltaV1 = pvt1AfterMan.getVelocity().subtract(v1BeforeMan);
-        final Vector3D deltaV2 = pvt2BeforeMan.getVelocity().subtract(v2AfterMan);
-        return new TwoImpulseTransfer(pvt1AfterMan, pvt2BeforeMan, deltaV1, deltaV2, solution.getBoundaryConditions().getReferenceFrame());
     }
 
     /**
