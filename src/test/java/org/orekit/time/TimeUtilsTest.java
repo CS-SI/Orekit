@@ -22,7 +22,11 @@ import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.orekit.Utils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TimeUtilsTest {
 
@@ -68,6 +72,40 @@ public class TimeUtilsTest {
         final FieldAbsoluteDate<T> t2 = t1.shiftedBy(TimeOffset.ATTOSECOND);
         Assertions.assertSame(t2, TimeUtils.latest(t1, t2));
         Assertions.assertSame(t2, TimeUtils.latest(t2, t1));
+    }
+
+    @ParameterizedTest(name = "input={0}s → expected=\"{1}\"")
+    @CsvSource({
+            // Zero
+            "0.0,                                      '0.0 s'",
+
+            // Seconds only
+            "30.0,                                     '30.0 s'",
+            "59.0,                                     '59.0 s'",
+
+            // Minutes (+ seconds)
+            "60.0,                                     '1 min 0.0 s'",
+            "90.0,                                     '1 min 30.0 s'",
+            "3599.0,                                   '59 min 59.0 s'",
+
+            // Hours (+ minutes + seconds)
+            "3600.0,                                   '1 h 0.0 s'",
+            "3661.0,                                   '1 h 1 min 1.0 s'",
+            "86399.0,                                  '23 h 59 min 59.0 s'",
+
+            // Days
+            "86400.0,                                  '1 d 0.0 s'",
+            "90061.0,                                  '1 d 1 h 1 min 1.0 s'",
+            "172800.0,                                 '2 d 0.0 s'",
+            "31536000.0,                               '365 d 0.0 s'",
+
+            // Negative values
+            "-30.0,                                    '-30.0 s'",
+            "-90.0,                                    '-1 min 30.0 s'",
+            "-90061.0,                                 '-1 d 1 h 1 min 1.0 s'"
+    })
+    public void secondsToDHMSTest(double input, String expected) {
+        assertEquals(expected, TimeUtils.secondsToDHMS(input));
     }
 
     @BeforeEach

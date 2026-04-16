@@ -18,15 +18,11 @@
 package org.orekit.propagation.relative;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.control.heuristics.lambert.LambertSolution;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeComponents;
-import org.orekit.utils.Constants;
+import org.orekit.time.TimeUtils;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
 
 /**
  * This class stores the solution of a two-impulse rendez-vous. All the contained variables are expressed in the same frame,
@@ -260,21 +256,6 @@ public class TwoImpulseTransfer {
                 "\n    ΔV of first manoeuvre:       " + getDeltaV1() + " ; ‖ΔV₁‖ = " + getDeltaV1().getNorm() +
                 "\n    ΔV of second manoeuvre:      " + getDeltaV2() + " ; ‖ΔV₂‖ = " + getDeltaV2().getNorm() +
                 "\n    Total ΔV:                    " + getTotalDeltaV() +
-                "\n    Duration:                    " + secondsToDHMS(getDuration()) + "\n";
-    }
-
-    /**
-     * Converts a total number of seconds into days, hours, minutes, and seconds.
-     * @param totalSeconds Total number of seconds.
-     * @return String with corresponding days, hours, minutes, and seconds.
-     */
-    public static String secondsToDHMS(final double totalSeconds) {
-        final int days = (int) (totalSeconds / Constants.JULIAN_DAY);
-        final double remainingSeconds = totalSeconds % Constants.JULIAN_DAY;
-        final TimeComponents timeComponents = new TimeComponents(remainingSeconds);
-        final int hours = timeComponents.getHour();
-        final int minutes = timeComponents.getMinute();
-        final double seconds = timeComponents.getSecond();
-        return ((days != 0) ? days + " d " : "") + ((hours != 0) ? hours + " h " : "") + ((minutes != 0) ? minutes + " min " : "") + seconds + " s";
+                "\n    Duration:                    " + TimeUtils.secondsToDHMS(getDuration()) + "\n";
     }
 }
