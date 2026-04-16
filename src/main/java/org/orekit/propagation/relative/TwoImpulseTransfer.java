@@ -39,17 +39,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 14.0
  */
 public class TwoImpulseTransfer {
-    /** NaN {@link TwoImpulseTransfer} : infinite departure and arrival times, and NaN ΔV.
-     * Useful to avoid null objects while computing Lambert sweeps that produce impossible transfers
-     * (arrival date &lt; departure date).*/
-    @DefaultDataContext
-    public static final TwoImpulseTransfer NAN = new TwoImpulseTransfer(
-            new TimeStampedPVCoordinates(AbsoluteDate.FUTURE_INFINITY, Vector3D.ZERO, Vector3D.ZERO),
-            new TimeStampedPVCoordinates(AbsoluteDate.FUTURE_INFINITY, Vector3D.ZERO, Vector3D.ZERO),
-            Vector3D.NaN,
-            Vector3D.NaN,
-            FramesFactory.getGCRF());
-
     /**
      * PVT of the chaser just after the first maneuver.
      */
