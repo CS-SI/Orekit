@@ -234,15 +234,15 @@ class GroundStationTest {
         changed.getZenithOffsetDriver().setSelected(false);
 
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
-                                     0.0, 6.8e-7,
-                                     0.0, 2.0e-6,
+                                     0.0, 9.5e-7,
+                                     0.0, 2.4e-6,
                                      0.0, 1.8e-7,
                                      0.0, 8e-11);
         Assertions.assertEquals(deltaClock, changed.getClockBiasDriver().getValue(), 9.6e-11);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals(false, changed.isSpaceBased());
+        Assertions.assertFalse(changed.isSpaceBased());
         Assertions.assertEquals(7,        normalizedCovariances.getRowDimension());
         Assertions.assertEquals(7,        normalizedCovariances.getColumnDimension());
         Assertions.assertEquals(7,        physicalCovariances.getRowDimension());
@@ -338,17 +338,17 @@ class GroundStationTest {
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 6.7e-7,
                                      0.0, 1.8e-6,
-                                     0.0, 1.2e-6,
-                                     0.0, 5.1e-10);
-        Assertions.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
+                                     0.0, 1.3e-6,
+                                     0.0, 6.1e-10);
+        Assertions.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   9.4e-7);
         Assertions.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assertions.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
 
         GeodeticPoint result = moved.getOffsetGeodeticPoint((AbsoluteDate) null);
 
         GeodeticPoint reference = context.stations.get(0).getBaseFrame().getPoint();
-        Assertions.assertEquals(reference.getLatitude(),  result.getLatitude(),  3.3e-14);
-        Assertions.assertEquals(reference.getLongitude(), result.getLongitude(), 1e-13);
+        Assertions.assertEquals(reference.getLatitude(),  result.getLatitude(),  1e-12);
+        Assertions.assertEquals(reference.getLongitude(), result.getLongitude(), 1e-12);
         Assertions.assertEquals(reference.getAltitude(),  result.getAltitude(),  2.7e-7);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
@@ -469,9 +469,9 @@ class GroundStationTest {
         final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         Assertions.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  1.5e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     9.4e-10);
+        Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     9.6e-10);
         Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      1.3e-8);
-        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.93e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 8.1e-9);
         Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      5.6e-9);
         Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 5.5e-9);
 

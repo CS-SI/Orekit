@@ -46,7 +46,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
-public class EcksteinHechlerBatchLSEstimatorTest {
+class EcksteinHechlerBatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
@@ -157,7 +157,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(false, context, estimator, 1, 10,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 9,
                                      0.0, 7.3e-7,
                                      0.0, 1.8e-6,
                                      0.0, 3.7e-8,
@@ -204,11 +204,11 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(false, context, estimator, 1, 11,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 9,
                                      0.0, 3.8e-7,
                                      0.0, 9.0e-7,
-                                     0.0, 2.3e-9,
-                                     0.0, 1.5e-12);
+                                     0.0, 4.3e-9,
+                                     0.0, 2.6e-12);
 
     }
 

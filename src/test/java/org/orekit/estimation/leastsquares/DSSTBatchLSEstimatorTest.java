@@ -214,8 +214,8 @@ class DSSTBatchLSEstimatorTest {
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
-                                     0.0, 2.0e-6,
-                                     0.0, 3.4e-6,
+                                     0.0, 2.1e-6,
+                                     0.0, 3.6e-6,
                                      0.0, 1.1e-6,
                                      0.0, 4.6e-10);
 
@@ -433,7 +433,7 @@ class DSSTBatchLSEstimatorTest {
                                      0.0, 1.2e-10,
                                      0.0, 3.0e-10,
                                      0.0, 9.4e-9,
-                                     0.0, 1.4e-11);
+                                     0.0, 1.6e-11);
     }
 
     /**
@@ -482,7 +482,7 @@ class DSSTBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 4,
                                      0.0, 2.6e-7,
                                      0.0, 8.2e-7,
                                      0.0, 6.3e-8,

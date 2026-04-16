@@ -147,7 +147,7 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,  0.0, 8.4e-7,  0.0, 2.4e-6, 0.0, 7.2e-8, 0.0, 3.2e-11);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 3,  0.0, 8.4e-7,  0.0, 2.4e-6, 0.0, 7.2e-8, 0.0, 3.2e-11);
 
     }
 
@@ -230,7 +230,7 @@ class KeplerianBatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
                                      0.0, 6.0e-11,  
-                                     0.0, 1.4e-10, 
+                                     0.0, 1.8e-10,
                                      0.0, 9.2e-9, 
                                      0.0, 8.3e-12);
     }

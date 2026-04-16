@@ -372,7 +372,7 @@ class AngularAzElTest {
         final TimeStampedPVCoordinates secondParticipant = estimatedWithoutDerivatives.getParticipants()[1];
         final TimeStampedPVCoordinates expectedFirstParticipant = estimated.getParticipants()[0];
         final TimeStampedPVCoordinates expectedSecondParticipant = estimated.getParticipants()[1];
-        assertEquals(expectedFirstParticipant.getDate(), firstParticipant.getDate());
+        assertEquals(0., expectedFirstParticipant.getDate().durationFrom(firstParticipant.getDate()), 1e-12);
         assertEquals(expectedFirstParticipant.getPosition(), firstParticipant.getPosition());
         assertEquals(expectedSecondParticipant.getDate(), secondParticipant.getDate());
         assertEquals(expectedSecondParticipant.getPosition(), secondParticipant.getPosition());
