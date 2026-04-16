@@ -147,22 +147,24 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
     /**
      * Method returning the full kinematic coordinates of signal participants at transmission dates.
      * @param state observable state
+     * @param emitterPVProvider emitter coordinates provider
+     * @param receiverPVProvider receiver coordinates provider
      * @return signal participants
      */
-    protected TimeStampedPVCoordinates[] getParticipants(final SpacecraftState state) {
+    protected TimeStampedPVCoordinates[] getParticipants(final SpacecraftState state,
+                                                         final PVCoordinatesProvider emitterPVProvider,
+                                                         final PVCoordinatesProvider receiverPVProvider) {
         // Compute actual reception date
         final AbsoluteDate receptionDate = getReceiver().getCorrectedReceptionDate(getDate());
 
         // Compute light time delays
-        final PVCoordinatesProvider receiverPVProvider = getReceiver().getPVCoordinatesProvider();
         final Frame frame = state.getFrame();
         final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
         final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPV.getPosition(),
                 frame);
-        final double[] delays = getTwoLeggedSignalTimer().computeDelays(receptionCondition,
-                satellitePVProvider, getEmitter().getPVCoordinatesProvider());
+        final double[] delays = getTwoLeggedSignalTimer().computeDelays(receptionCondition, satellitePVProvider, emitterPVProvider);
 
         // Form dates
         final AbsoluteDate transitDate = receptionDate.shiftedBy(-delays[1]);
@@ -170,7 +172,7 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
 
         final double shift = transitDate.durationFrom(state);
         final SpacecraftState transitState = state.shiftedBy(shift);
-        return new TimeStampedPVCoordinates[] { emitter.getPVCoordinatesProvider().getPVCoordinates(emissionDate, frame),
+        return new TimeStampedPVCoordinates[] { emitterPVProvider.getPVCoordinates(emissionDate, frame),
                 transitState.getPVCoordinates(), receiverPV };
     }
 

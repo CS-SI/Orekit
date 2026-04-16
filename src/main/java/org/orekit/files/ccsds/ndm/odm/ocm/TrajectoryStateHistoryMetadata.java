@@ -23,10 +23,13 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
@@ -123,11 +126,35 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      */
     private final DataContext dataContext;
 
+    /**
+     * Used to create a {@link Frame} from the CCSDS specification.
+     *
+     * @since 14.0
+     */
+    private final CcsdsFrameMapper frameMapper;
+
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      * @param dataContext data context
+     * @deprecated in favor of {@link #TrajectoryStateHistoryMetadata(AbsoluteDate,
+     * DataContext, CcsdsFrameMapper)}.
      */
+    @Deprecated
     public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
+        this(epochT0, dataContext, new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param epochT0     T0 epoch from file metadata
+     * @param dataContext data context
+     * @param frameMapper for building an Orekit {@link Frame}.
+     * @since 14.0
+     */
+    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0,
+                                          final DataContext dataContext,
+                                          final CcsdsFrameMapper frameMapper) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         trajBasis           = null;
@@ -145,7 +172,34 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         orbRevNumBasis      = -1;
 
         this.dataContext    = dataContext;
+        this.frameMapper    = frameMapper;
+    }
 
+    /**
+     * Get the frame mapper used to create a {@link Frame} from {@link #getCenter()},
+     * {@link #getTrajReferenceFrame()}, and {@link #getTrajFrameEpoch()}.
+     *
+     * @return the frame mapper.
+     * @see #getFrame()
+     * @since 14.0
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Use the {@link #getFrameMapper()} to create a {@link Frame} from
+     * {@link #getCenter()}, {@link #getTrajReferenceFrame()}, and
+     * {@link #getTrajFrameEpoch()}.
+     *
+     * @return the frame for this trajectory state history.
+     * @since 14.0
+     */
+    public Frame getFrame() {
+        return getFrameMapper().buildCcsdsFrame(
+                getCenter(),
+                getTrajReferenceFrame(),
+                getTrajFrameEpoch());
     }
 
     /** {@inheritDoc} */
@@ -513,7 +567,10 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         checkMandatoryEntriesExceptOrbitsCounter(version);
 
         // allocate new instance
-        final TrajectoryStateHistoryMetadata copy = new TrajectoryStateHistoryMetadata(trajFrameEpoch, dataContext);
+        final TrajectoryStateHistoryMetadata copy = new TrajectoryStateHistoryMetadata(
+                trajFrameEpoch,
+                dataContext,
+                getFrameMapper());
 
         // copy comments
         for (String comment : getComments()) {

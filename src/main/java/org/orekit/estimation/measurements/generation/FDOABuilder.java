@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.generation;
 
 import java.util.Map;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.FDOA;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -37,7 +36,6 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
     private final double centreFrequency;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param primeObserver observer that gives the date of the measurement
      * @param secondObserver observer that gives the measurement value
      * @param centreFrequency satellite emitter frequency
@@ -45,16 +43,14 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
-    public FDOABuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                       final Observer primeObserver, final Observer secondObserver,
+    public FDOABuilder(final Observer primeObserver, final Observer secondObserver,
                        final double centreFrequency, final double sigma, final double baseWeight,
                        final ObservableSatellite satellite) {
-        this(noiseSource, primeObserver, secondObserver, centreFrequency, new MeasurementQuality(sigma, baseWeight),
+        this(primeObserver, secondObserver, centreFrequency, new MeasurementQuality(sigma, baseWeight),
                 new SignalTravelTimeModel(), satellite);
     }
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param primeObserver observer that gives the date of the measurement
      * @param secondObserver observer that gives the measurement value
      * @param centreFrequency satellite emitter frequency
@@ -63,11 +59,10 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
      * @param satellite satellite related to this builder
      * @since 14.0
      */
-    public FDOABuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                       final Observer primeObserver, final Observer secondObserver,
+    public FDOABuilder(final Observer primeObserver, final Observer secondObserver,
                        final double centreFrequency, final MeasurementQuality measurementQuality,
                        final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, primeObserver, secondObserver, measurementQuality, signalTravelTimeModel, satellite);
+        super(primeObserver, secondObserver, measurementQuality, signalTravelTimeModel, satellite);
         this.centreFrequency = centreFrequency;
     }
 
@@ -76,7 +71,7 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
     protected FDOA buildObserved(final AbsoluteDate date,
                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
         return new FDOA(getPrimeObserver(), getSecondObserver(), centreFrequency, date, Double.NaN,
-                        getTheoreticalStandardDeviation()[0], getBaseWeight()[0], getSignalTravelTimeModel(), getSatellites()[0]);
+                        getMeasurementQuality(), getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

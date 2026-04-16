@@ -24,6 +24,7 @@ import org.orekit.attitudes.AttitudeBuilder;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.frames.Frame;
@@ -58,6 +59,9 @@ public class AttitudeEndpoints implements AttitudeBuilder {
     /** Constant for A ← B direction. */
     public static final String B2A = "B2A";
 
+    /** For creating a {@link Frame}. */
+    private final CcsdsFrameMapper frameMapper;
+
     /** Frame A. */
     private FrameFacade frameA;
 
@@ -67,15 +71,14 @@ public class AttitudeEndpoints implements AttitudeBuilder {
     /** Flag for frames direction. */
     private Boolean a2b;
 
-    /** Empty constructor.
-     * <p>
-     * This constructor is not strictly necessary, but it prevents spurious
-     * javadoc warnings with JDK 18 and later.
-     * </p>
-     * @since 12.0
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 14.0
      */
-    public AttitudeEndpoints() {
-        // nothing to do
+    public AttitudeEndpoints(final CcsdsFrameMapper frameMapper) {
+        this.frameMapper = frameMapper;
     }
 
     /** Complain if a field is null.
@@ -186,9 +189,32 @@ public class AttitudeEndpoints implements AttitudeBuilder {
 
     /** Get the external frame.
      * @return external frame
+     * @see #getExternal()
      */
     public FrameFacade getExternalFrame() {
         return frameA.asSpacecraftBodyFrame() == null ? frameA : frameB;
+    }
+
+    /**
+     * Get the mapping between a CCSDS frame and a {@link Frame}.
+     *
+     * @return the frame mapper.
+     * @since 14.0
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Get the external reference frame. Only the orientation is significant.
+     *
+     * @return the external frame.
+     * @see #getExternalFrame()
+     * @since 14.0
+     */
+    public Frame getExternal() {
+        // no reference frame epoch
+        return getFrameMapper().buildCcsdsFrame(getExternalFrame(), null);
     }
 
     /** Get the spacecraft body frame.

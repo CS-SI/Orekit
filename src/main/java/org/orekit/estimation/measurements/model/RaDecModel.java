@@ -34,7 +34,6 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /**
  * Perfect measurement model for right ascension and declination. It is assumed that the signal reception date is known.
- * It is passive in the sense that the sensor did not generate the signal in the first place, it is only collecting it.
  * @since 14.0
  * @author Romain Serra
  */

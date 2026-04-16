@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.generation;
 
 import java.util.Map;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
@@ -40,23 +39,20 @@ public class RangeRateBuilder extends AbstractSignalBasedBuilder<RangeRate> {
     private final boolean twoway;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param observer observer from which measurement is performed
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
-    public RangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                            final Observer observer, final boolean twoWay,
+    public RangeRateBuilder(final Observer observer, final boolean twoWay,
                             final double sigma, final double baseWeight,
                             final ObservableSatellite satellite) {
-        this(noiseSource, observer, twoWay, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
+        this(observer, twoWay, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
                 satellite);
     }
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param observer observer from which measurement is performed
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param measurementQuality measurement quality data as used in orbit determination
@@ -64,11 +60,10 @@ public class RangeRateBuilder extends AbstractSignalBasedBuilder<RangeRate> {
      * @param satellite satellite related to this builder
      * @since 14.0
      */
-    public RangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                        final Observer observer, final boolean twoWay,
-                        final MeasurementQuality measurementQuality, final SignalTravelTimeModel signalTravelTimeModel,
-                        final ObservableSatellite satellite) {
-        super(noiseSource, measurementQuality, signalTravelTimeModel, satellite);
+    public RangeRateBuilder(final Observer observer, final boolean twoWay,
+                            final MeasurementQuality measurementQuality, final SignalTravelTimeModel signalTravelTimeModel,
+                            final ObservableSatellite satellite) {
+        super(measurementQuality, signalTravelTimeModel, satellite);
         this.observer = observer;
         this.twoway  = twoWay;
     }

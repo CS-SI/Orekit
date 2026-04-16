@@ -342,7 +342,7 @@ class AngularRaDecTest {
         final ObservableSatellite os = new ObservableSatellite(0);
         for (int i = 0; i < frames.length; i++) {
             // build RA-Dec with specific reference frame
-            final AngularRaDecBuilder builder = new AngularRaDecBuilder(null, station, frames[i],
+            final AngularRaDecBuilder builder = new AngularRaDecBuilder(station, frames[i],
                     new double[]{1., 1.}, new double[]{1., 1.}, os);
             builder.init(spacecraftState.getDate(), spacecraftState.getDate());
             final double[] moreRaDec = builder.build(spacecraftState.getDate(), new SpacecraftState[] { spacecraftState })

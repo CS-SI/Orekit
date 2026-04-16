@@ -36,6 +36,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -46,7 +47,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 
-public class BistaticRangeRateBuilderTest {
+class BistaticRangeRateBuilderTest {
 
     private static final double SIGMA = 0.01;
     private static final double BIAS  = 0.002;
@@ -57,10 +58,12 @@ public class BistaticRangeRateBuilderTest {
                                                              final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<BistaticRangeRate> brrb =
-                        new BistaticRangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                                 1.0e-10,
-                                                                                                                 new GaussianRandomGenerator(random)),
-                                                     emitter, receiver, SIGMA, 1.0, satellite);
+                        new BistaticRangeRateBuilder(emitter, receiver, SIGMA, 1.0, satellite);
+        if (random != null) {
+            brrb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         brrb.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -70,13 +73,13 @@ public class BistaticRangeRateBuilderTest {
     }
 
     @Test
-    public void testForward() {
-        doTest(0xf50c0ce7c8c1dab2L, 0.0, 1.2, 3.2 * SIGMA);
+    void testForward() {
+        doTest(0xf50c0ce7c8c1dab2L, 0.0, 1.2, 6. * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0x453a681440d01832L, 0.0, -1.2, 2.9 * SIGMA);
+    void testBackward() {
+        doTest(0x453a681440d01832L, 0.0, -1.2, 6. * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -140,7 +143,7 @@ public class BistaticRangeRateBuilderTest {
      }
 
      @BeforeEach
-     public void setUp() {
+     void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

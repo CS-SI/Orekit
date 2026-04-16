@@ -32,12 +32,16 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.PocMethodType;
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
@@ -1470,7 +1474,7 @@ public class CdmParserTest {
         Assertions.assertEquals("ATT_MSG_35132.txt", file.getMetadataObject1().getAdmMsgLink(),"ADM_MSG_LINK");   
 
         // Check OBS_BEFORE_NEXT_MESSAGE is correctly read
-        Assertions.assertEquals(YesNoUnknown.YES, file.getMetadataObject1().getObsBeforeNextMessage(), "OBS_BEFORE_NEXT_MESSAGE");  
+        Assertions.assertEquals(YesNoUnknown.YES, file.getMetadataObject1().getObsBeforeNextMessage(), "OBS_BEFORE_NEXT_MESSAGE");
 
         // Check COVARIANCE_SOURCE is correctly read
         Assertions.assertEquals("HAC Covariance", file.getMetadataObject1().getCovarianceSource(), "COVARIANCE_SOURCE");
@@ -1970,4 +1974,51 @@ public class CdmParserTest {
         }
     }
 
+    /** Unit tests for parsing a CDM with a custom frame mapper. */
+    @Test
+    public void testFrameMapper() {
+        // setup
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2003, false);
+        Frame myItrf = new Frame(itrf, Transform.IDENTITY, "MyItrf");
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("ITRF".equals(orientation.getName()) && null == epoch) {
+                    return myItrf;
+                }
+                throw new IllegalArgumentException(" " + orientation + " " + epoch);
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate frameEpoch) {
+                if ("EARTH".equals(center.getName()) &&
+                        "ITRF".equals(orientation.getName()) &&
+                        null == frameEpoch) {
+                    return myItrf;
+                }
+                throw new IllegalArgumentException(
+                        center + " " + orientation + " " + frameEpoch);
+            }
+        };
+        final CdmParser parser = new ParserBuilder().withFrameMapper(mapper).buildCdmParser();
+        String name = "/ccsds/cdm/CDM-frame-mapper.txt";
+        DataSource source =
+                new DataSource(name, () -> getClass().getResourceAsStream(name));
+
+        // action
+        Cdm cdm = parser.parseMessage(source);
+
+        // verify object reference frames (ignore screen volume frames, these are local orbital frames and
+        // not using FrameFacade)
+        MatcherAssert.assertThat(cdm.getMetadataObject1().getFrame(), Matchers.sameInstance(myItrf));
+        MatcherAssert.assertThat(cdm.getMetadataObject2().getFrame(), Matchers.sameInstance(myItrf));
+        // verify altcovariance reference frames
+        MatcherAssert.assertThat(cdm.getMetadataObject1().getAltCovFrame(),
+                Matchers.sameInstance(myItrf));
+        MatcherAssert.assertThat(
+                cdm.getDataObject1().getAdditionalParametersBlock().getOebParent(),
+                Matchers.sameInstance(myItrf));
+    }
 }

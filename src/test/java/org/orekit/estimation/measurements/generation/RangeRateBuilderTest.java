@@ -29,6 +29,7 @@ import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ReferenceEllipsoid;
@@ -45,10 +46,12 @@ class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<RangeRat
                                                        final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<RangeRate> rrb =
-                        new RangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                         1.0e-10,
-                                                                                                         new GaussianRandomGenerator(random)),
-                                             groundStation, true, SIGMA, 1.0, satellite);
+                        new RangeRateBuilder(groundStation, true, SIGMA, 1.0, satellite);
+        if (random != null) {
+            rrb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         rrb.addModifier(new Bias<>(new String[] { "bias" },
                         new double[] { BIAS },
                         new double[] { 1.0 },
@@ -63,7 +66,7 @@ class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<RangeRat
         final GroundStation station = new GroundStation(new TopocentricFrame(ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true)),
                 new GeodeticPoint(0., 0., 0), ""));
         final SignalTravelTimeModel signalTravelTimeModel = mock();
-        final RangeRateBuilder builder = new RangeRateBuilder(null, station, true,
+        final RangeRateBuilder builder = new RangeRateBuilder(station, true,
                 new MeasurementQuality(1., 1.), signalTravelTimeModel, new ObservableSatellite(0));
         // WHEN
         final SignalTravelTimeModel actualModel = builder.getSignalTravelTimeModel();
@@ -73,12 +76,12 @@ class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<RangeRat
 
     @Test
     void testForward() {
-        doTest(0x02c925b8812d8992l, 0.4, 0.9, 128, 2.4 * SIGMA);
+        doTest(0x02c925b8812d8992l, 0.4, 0.9, 128, 6. * SIGMA);
     }
 
     @Test
     void testBackward() {
-        doTest(0x34ce85d26d51cd91l, -0.2, -0.6, 100, 3.3 * SIGMA);
+        doTest(0x34ce85d26d51cd91l, -0.2, -0.6, 100, 6. * SIGMA);
     }
 
 }

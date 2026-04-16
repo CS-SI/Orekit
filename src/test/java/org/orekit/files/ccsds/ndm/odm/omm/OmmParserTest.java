@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -37,6 +39,9 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
@@ -47,11 +52,14 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -573,6 +581,57 @@ public class OmmParserTest {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
             Assertions.assertEquals(wrongName, oe.getParts()[0]);
         }
+    }
+
+    /** Check parsing an OMM with a custom frame mapper. */
+    @Test
+    public void testFrameMapping() {
+        // setup
+        String name = "/ccsds/odm/omm/OMMExample3_utc.txt";
+        DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        DataContext context = DataContext.getDefault();
+        TimeScale utc = context.getTimeScales().getUTC();
+        Frame tod = context.getFrames().getTOD(false);
+        Frame myTod = new Frame(tod, Transform.IDENTITY, "myTod", true);
+        AbsoluteDate expectedEpoch = new AbsoluteDate("2000-003T10:34:00", utc);
+        Frame myTnw = new Frame(tod, Transform.IDENTITY, "myTnw", false);
+
+        // action
+        final OmmParser ommParser = new ParserBuilder(context)
+                .withFrameMapper(new CcsdsFrameMapper() {
+                    @Override
+                    public Frame buildCcsdsFrame(FrameFacade orientation,
+                                                 AbsoluteDate frameEpoch) {
+                        if ("TNW".equals(orientation.getName())) {
+                            return myTnw;
+                        }
+                        throw new UnsupportedOperationException();
+                    }
+
+                    @Override
+                    public Frame buildCcsdsFrame(BodyFacade center,
+                                                 FrameFacade orientation,
+                                                 AbsoluteDate frameEpoch) {
+                        if ("EARTH".equals(center.getName()) &&
+                                "TOD".equals(orientation.getName()) &&
+                                expectedEpoch.equals(frameEpoch)) {
+                            return myTod;
+                        }
+                        throw new UnsupportedOperationException();
+                    }
+                })
+                .buildOmmParser();
+        final Omm omm = ommParser.parseMessage(source);
+
+        // verify
+        MatcherAssert.assertThat(omm.getMetadata().getFrame(),
+                Matchers.sameInstance(myTod));
+        MatcherAssert.assertThat(omm.generateKeplerianOrbit().getFrame(),
+                Matchers.sameInstance(myTod));
+        MatcherAssert.assertThat(omm.generateSpacecraftState().getFrame(),
+                Matchers.sameInstance(myTod));
+        MatcherAssert.assertThat(omm.getData().getCovarianceBlock().getFrame(),
+                Matchers.sameInstance(myTnw));
     }
 
 }

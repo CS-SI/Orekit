@@ -236,6 +236,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
         return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ParameterDrivenDateIntervalDetector toEventDetector(final EventHandler eventHandler) {
         return new ParameterDrivenDateIntervalDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,

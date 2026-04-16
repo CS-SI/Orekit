@@ -68,7 +68,7 @@ public class FDOA extends DualReceiverMeasurement<FDOA> {
     public FDOA(final Observer primeObserver, final Observer secondObserver,
                 final double centreFrequency, final AbsoluteDate date, final double fdoa, final double sigma,
                 final double baseWeight, final ObservableSatellite satellite) {
-        this(primeObserver, secondObserver, centreFrequency, date, fdoa, sigma, baseWeight, new SignalTravelTimeModel(),
+        this(primeObserver, secondObserver, centreFrequency, date, fdoa, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
                 satellite);
     }
 
@@ -78,17 +78,16 @@ public class FDOA extends DualReceiverMeasurement<FDOA> {
      * @param centreFrequency       satellite emitter frequency (Hz)
      * @param date                  date of the measurement
      * @param fdoa                  observed value (Hz)
-     * @param sigma                 theoretical standard deviation
-     * @param baseWeight            base weight
+     * @param measurementQuality    measurement quality data as used in orbit determination
      * @param signalTravelTimeModel signal travel time model
      * @param satellite             satellite related to this measurement
      * @since 14.0
      */
     public FDOA(final Observer primeObserver, final Observer secondObserver,
-                final double centreFrequency, final AbsoluteDate date, final double fdoa, final double sigma,
-                final double baseWeight, final SignalTravelTimeModel signalTravelTimeModel,
+                final double centreFrequency, final AbsoluteDate date, final double fdoa,
+                final MeasurementQuality measurementQuality, final SignalTravelTimeModel signalTravelTimeModel,
                 final ObservableSatellite satellite) {
-        super(primeObserver, secondObserver, date, new double[] {fdoa}, new double[] {sigma}, new double[] {baseWeight},
+        super(primeObserver, secondObserver, date, new double[] {fdoa}, measurementQuality,
                 signalTravelTimeModel, satellite);
 
         this.centreFrequency = centreFrequency;
@@ -106,7 +105,7 @@ public class FDOA extends DualReceiverMeasurement<FDOA> {
     protected EstimatedMeasurementBase<FDOA> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
                                                                                      final SpacecraftState[] states) {
         // Evaluate the TDOA value
-        final TDOA tdoa = new TDOA(getPrimeObserver(), getSecondObserver(), getDate(), 0., 1., 1.,
+        final TDOA tdoa = new TDOA(getPrimeObserver(), getSecondObserver(), getDate(), 0., new MeasurementQuality(1),
                 getSignalTravelTimeModel(), getSatellites().get(0));
         final EstimatedMeasurementBase<TDOA> estimatedTdoa = tdoa.theoreticalEvaluationWithoutDerivatives(iteration,
                 evaluation, states);

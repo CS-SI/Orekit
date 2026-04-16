@@ -25,6 +25,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 
 public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
 
@@ -65,11 +66,15 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
 
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
         count = 0;
-        if (local.getClockBiasDriver().getReferenceDate() == null) {
-            local.getClockBiasDriver().setReferenceDate(s0.getDate());
+        for (final ParameterDriver param : local.getParametersDrivers()) {
+            if (param.getReferenceDate() == null) {
+                param.setReferenceDate(s0.getDate());
+            }
         }
-        if (remote.getClockBiasDriver().getReferenceDate() == null) {
-            remote.getClockBiasDriver().setReferenceDate(s0.getDate());
+        for (final ParameterDriver param : remote.getParametersDrivers()) {
+            if (param.getReferenceDate() == null) {
+                param.setReferenceDate(s0.getDate());
+            }
         }
     }
 
@@ -77,8 +82,8 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
         try {
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
-            final double           remoteClk = remote.getClockBiasDriver().getValue(date);
-            final double           localClk  = local.getClockBiasDriver().getValue(date);
+            final double           remoteClk = remote.getOffsetValue(date);
+            final double           localClk  = local.getOffsetValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

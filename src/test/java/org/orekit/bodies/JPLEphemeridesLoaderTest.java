@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -207,18 +208,31 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     void testInpopvsJPL() {
-        Utils.setDataRoot("regular-data:inpop");
+        // EMW 2026-03-31 Modified to separate data contexts to prevent one
+        // file's ICRF from being used as the basis for another file's Mars
+        final LazyLoadedDataContext jpl = Utils.newDataContext("regular-data");
+        jpl.getCelestialBodies().addDefaultCelestialBodyLoader("^unxp(\\d\\d\\d\\d)\\.405$");
+        final LazyLoadedDataContext inpopTdb = Utils.newDataContext("inpop");
+        inpopTdb.getCelestialBodies().addDefaultCelestialBodyLoader("^inpop.*_TDB_.*_bigendian\\.dat$");
+        final LazyLoadedDataContext inpopTcb = Utils.newDataContext("inpop");
+        inpopTcb.getCelestialBodies().addDefaultCelestialBodyLoader("^inpop.*_TCB_.*_bigendian\\.dat$");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
-        JPLEphemeridesLoader loaderDE405 =
-                new JPLEphemeridesLoader("^unxp(\\d\\d\\d\\d)\\.405$", type);
-        CelestialBody bodysDE405 = loaderDE405.loadCelestialBody(CelestialBodyFactory.MARS);
+        CelestialBody bodysDE405 = jpl.getCelestialBodies().getMars();
         JPLEphemeridesLoader loaderInpopTDBBig =
-                new JPLEphemeridesLoader("^inpop.*_TDB_.*_bigendian\\.dat$", type);
-        CelestialBody bodysInpopTDBBig = loaderInpopTDBBig.loadCelestialBody(CelestialBodyFactory.MARS);
+                new JPLEphemeridesLoader("^inpop.*_TDB_.*_bigendian\\.dat$", type,
+                        inpopTdb.getDataProvidersManager(),
+                        inpopTdb.getTimeScales(),
+                        inpopTdb.getFrames().getGCRF(),
+                        inpopTdb.getCelestialBodies());
+        CelestialBody bodysInpopTDBBig = inpopTdb.getCelestialBodies().getMars();
         Assertions.assertEquals(0.0, loaderInpopTDBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         JPLEphemeridesLoader loaderInpopTCBBig =
-                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type);
-        CelestialBody bodysInpopTCBBig = loaderInpopTCBBig.loadCelestialBody(CelestialBodyFactory.MARS);
+                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type,
+                        inpopTcb.getDataProvidersManager(),
+                        inpopTcb.getTimeScales(),
+                        inpopTcb.getFrames().getGCRF(),
+                        inpopTcb.getCelestialBodies());
+        CelestialBody bodysInpopTCBBig = inpopTcb.getCelestialBodies().getMars();
         Assertions.assertEquals(1.0, loaderInpopTCBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         AbsoluteDate t0 = new AbsoluteDate(1969, 7, 17, 10, 43, 23.4, TimeScalesFactory.getTT());
         Frame eme2000   = FramesFactory.getEME2000();

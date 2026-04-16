@@ -19,10 +19,11 @@ package org.orekit.files.ccsds.ndm.adm.acm;
 
 import java.util.List;
 
-import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.section.MetadataKey;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Meta-data for {@link AcmMetadata Attitude Comprehensive Message}.
@@ -76,10 +77,14 @@ public class AcmMetadata extends AdmMetadata {
     /** Difference (TAI – UTC) in seconds incorporated at {@link #nextLeapEpoch}. */
     private double nextLeapTaimutc;
 
-    /** Create a new meta-data.
-     * @param dataContext data context
+    /**
+     * Create a new meta-data.
+     *
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
      */
-    public AcmMetadata(final DataContext dataContext) {
+    public AcmMetadata(final CcsdsFrameMapper frameMapper) {
+        super(frameMapper);
 
         // set up the few fields that have default values as per CCSDS standard
         taimutcT0         = Double.NaN;

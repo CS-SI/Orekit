@@ -190,8 +190,9 @@ public class Phase extends SignalBasedMeasurement<Phase> {
 
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
-        final double              dts       = satellite.getClockBiasDriver().getValue(state.getDate());
-        final double              dtg       = getObserver().getClockBiasDriver().getValue(getDate());
+
+        final double dts = satellite.getOffsetValue(state.getDate());
+        final double dtg = getObserver().getOffsetValue(getDate());
 
         // Phase value
         final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
@@ -257,8 +258,9 @@ public class Phase extends SignalBasedMeasurement<Phase> {
 
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
-        final Gradient            dts       = satellite.getClockBiasDriver().getValue(nbParams, paramIndices, state.getDate());
-        final Gradient            dtg       = getObserver().getClockBiasDriver().getValue(nbParams, paramIndices, getDate());
+
+        final Gradient dts = satellite.getFieldOffsetValue(nbParams, state.getDate(), paramIndices);
+        final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, getDate(), paramIndices);
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;

@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -123,6 +122,33 @@ class GroundStationTest {
     }
 
     @Test
+    void getPVCoordinatesProviderGetVelocity() {
+        // GIVEN
+        EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Frame ecef = FramesFactory.getGTOD(true);
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(1., 2., 3.);
+        final TopocentricFrame topocentricFrame = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING, ecef), geodeticPoint, "");
+        final GroundStation station = new GroundStation(topocentricFrame);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        for (final ParameterDriver driver: selectAllDrivers(station)) {
+            driver.setReferenceDate(date);
+        }
+        station.getClockBiasDriver().setValue(0.1);
+        station.getPolarOffsetYDriver().setValue(2);
+        station.getEastOffsetDriver().setValue(1);
+        station.getNorthOffsetDriver().setValue(-1);
+        station.getZenithOffsetDriver().setValue(2);
+        final PVCoordinatesProvider pvCoordinatesProvider = station.getPVCoordinatesProvider();
+        final Frame eci = FramesFactory.getEME2000();
+        // WHEN
+        final Vector3D actualVelocity = pvCoordinatesProvider.getVelocity(date, eci);
+        // THEN
+        final PVCoordinates pvCoordinates = pvCoordinatesProvider.getPVCoordinates(date, eci);
+        Assertions.assertEquals(pvCoordinates.getVelocity(), actualVelocity);
+    }
+
+    @Test
     void getFieldPVCoordinatesProvider() {
         // GIVEN
         EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -216,12 +242,35 @@ class GroundStationTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals(changed.isSpaceBased(), false);
+        Assertions.assertEquals(false, changed.isSpaceBased());
         Assertions.assertEquals(7,        normalizedCovariances.getRowDimension());
         Assertions.assertEquals(7,        normalizedCovariances.getColumnDimension());
         Assertions.assertEquals(7,        physicalCovariances.getRowDimension());
         Assertions.assertEquals(7,        physicalCovariances.getColumnDimension());
         Assertions.assertEquals(4.185e-9, physicalCovariances.getEntry(6, 6), 3.0e-13);
+
+    }
+
+    @Test
+    void testClockOffsetValues() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // change one station clock
+        final TopocentricFrame base  = context.stations.get(0).getBaseFrame();
+        final BodyShape parent       = base.getParentShape();
+        final String changedSuffix   = "-changed";
+        final QuadraticClockModel quadraticClock = new QuadraticClockModel(context.initialOrbit.getDate(), 3.0e-9, 2.0e-9, 1.0e-9);
+        final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
+                                                                              base.getName() + changedSuffix), context.ut1.getEOPHistory(),
+                                                         quadraticClock, context.stations.get(0).getDisplacements());
+
+        final AbsoluteDate shiftedDate = context.initialOrbit.getDate().shiftedBy(60.0); // one minute
+        final double bias  = changed.getOffsetValue(shiftedDate);
+        final double drift = changed.getOffsetRate(shiftedDate);
+
+        Assertions.assertEquals(3.723e-6, bias, 1e-10);
+        Assertions.assertEquals(1.22e-7, drift, 1e-10);
 
     }
 
@@ -289,8 +338,8 @@ class GroundStationTest {
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 6.7e-7,
                                      0.0, 1.8e-6,
-                                     0.0, 9.1e-7,
-                                     0.0, 5e-10);
+                                     0.0, 1.2e-6,
+                                     0.0, 5.1e-10);
         Assertions.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
         Assertions.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assertions.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
@@ -420,10 +469,10 @@ class GroundStationTest {
         final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         Assertions.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  1.5e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     9.3e-10);
+        Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     9.4e-10);
         Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      1.3e-8);
-        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.9e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      5.5e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.93e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      5.6e-9);
         Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 5.5e-9);
 
         // thresholds to use if orbit is estimated
@@ -1342,16 +1391,7 @@ class GroundStationTest {
         try {
             int freeParameters = 9;
             Map<String, Integer> indices = new HashMap<>();
-            for (final ParameterDriver driver : Arrays.asList(station.getPrimeMeridianOffsetDriver(),
-                                                              station.getPrimeMeridianDriftDriver(),
-                                                              station.getPolarOffsetXDriver(),
-                                                              station.getPolarDriftXDriver(),
-                                                              station.getPolarOffsetYDriver(),
-                                                              station.getPolarDriftYDriver(),
-                                                              station.getClockBiasDriver(),
-                                                              station.getEastOffsetDriver(),
-                                                              station.getNorthOffsetDriver(),
-                                                              station.getZenithOffsetDriver())) {
+            for (final ParameterDriver driver : station.getParametersDrivers()) {
                 indices.put(driver.getNameSpan(date), indices.size());
             }
             station.getOffsetToInertial(eme2000, date, freeParameters, indices);

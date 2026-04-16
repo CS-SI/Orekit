@@ -62,7 +62,7 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
     public TDOA(final Observer primeObserver, final Observer secondObserver,
                 final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
                 final ObservableSatellite satellite) {
-        this(primeObserver, secondObserver, date, tdoa, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+        this(primeObserver, secondObserver, date, tdoa, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
     }
 
     /** Constructor.
@@ -70,16 +70,15 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
      * @param secondObserver observer that gives the measurement value
      * @param date date of the measurement
      * @param tdoa observed value (s)
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality data as used in orbit determination
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
     public TDOA(final Observer primeObserver, final Observer secondObserver,
-                final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
+                final AbsoluteDate date, final double tdoa, final MeasurementQuality measurementQuality,
                 final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(primeObserver, secondObserver, date, new double[] {tdoa}, new double[] {sigma}, new double[] {baseWeight},
+        super(primeObserver, secondObserver, date, new double[] {tdoa}, measurementQuality,
                 signalTravelTimeModel, satellite);
     }
 
@@ -103,8 +102,8 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
         final AbsoluteDate secondReceptionDate = emissionDate.shiftedBy(delays[1]);
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final double offset1 = getPrimeObserver().getClockBiasDriver().getValue(firstReceptionDate);
-        final double offset2 = getSecondObserver().getClockBiasDriver().getValue(secondReceptionDate);
+        final double offset1 = getPrimeObserver().getOffsetValue(firstReceptionDate);
+        final double offset2 = getSecondObserver().getOffsetValue(secondReceptionDate);
         final double tdoa = (firstReceptionDate.durationFrom(emissionDate) + offset1) - (secondReceptionDate.durationFrom(emissionDate) + offset2);
 
         // Prepare the evaluation
@@ -135,10 +134,9 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
         final FieldAbsoluteDate<Gradient> secondReceptionDate = emissionDate.shiftedBy(secondDelay);
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final Gradient offset1 = getPrimeObserver().getClockBiasDriver()
-                                .getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
-        final Gradient offset2 = getSecondObserver().getClockBiasDriver()
-                                .getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
+        final Gradient offset1 = getPrimeObserver().getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), paramIndices);
+        final Gradient offset2 = getSecondObserver().getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), paramIndices);
+
         final Gradient tdoaG   = firstDelay.add(offset1).subtract(secondDelay.add(offset2));
         final double   tdoa    = tdoaG.getValue();
 

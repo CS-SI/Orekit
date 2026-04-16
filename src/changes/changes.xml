@@ -20,6 +20,39 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="evan" type="fix" issue="1914">
+            Account for central body in CCSDS NDM when ModifiedFrame is used.
+            When parsing a CCSDS file Earth-centered ICRF is GCRF.
+        </action>
+        <action dev="evan" type="add" issue="1914">
+            Add CcsdsFrameMapper interface to improve consistency and allow
+            users to provide their own mapping.
+        </action>
+        <action dev="evan" type="update" issue="1914">
+            Update ModifiedFrame to translate first, then rotate.
+        </action>
+        <action dev="evan" type="update" issue="1914">
+            Ensure CelestialBody frames are not duplicated within a DataContext.
+            Previously many equivalent instances of ICRF were created.
+        </action>
+        <action dev="serrof" type="update" issue="1947">
+            Use (Field)StaticTransform in GroundStation.
+        </action>
+        <action dev="serrof" type="update" issue="1945">
+            Remove noise generator from measurement builder and create dedicated modifier.
+        </action>
+        <action dev="serrof" type="add" issue="1940">
+            Add Shapiro modifier for bistatic range.
+        </action>
+        <action dev="vcucchie" type="add" issue="1931">
+            Add class diagram for osc2mean package.
+        </action>
+        <action dev="luc" type="fix" due-to="q_wertz">
+            Fixed documentation of Saastamoinen tropospheric model.
+        </action>
+        <action dev="rafa" type="add" issue="1925">
+            Add constructors with custom Love numbers in SolidTides.
+        </action>
         <action dev="vcucchie" type="add" issue="1927">
             Add class and sequence diagrams specific to PropagatorsParallelizer.
         </action>
@@ -31,6 +64,9 @@
         </action>
         <action dev="serrof" type="update" issue="1922">
             Renamed (systematic) offset as bias to avoid confusion with total offset.
+        </action>
+        <action dev="briannaaubin" type="update" issue="1921">
+            Replace incorrect calls to clock driver values with calls to clock offset function.
         </action>
         <action dev="serrof" type="update" issue="1919">
             Use generic observer in AngularRaDec.
@@ -252,6 +288,9 @@
         <action dev="serrof" type="fix" issue="1774">
             Use correct shiftedBy in theoretical measurement with derivatives.
         </action>
+        <action dev="briannaaubin" type="update" issue="1745">
+            Abstract away space/ground receiver requirements in estimation/measurements.
+        </action>
         <action dev="afossa" type="fix" issue="1642">
             Change algorithm in KeplerianMotionCartesianUtility.predictPVHyperbolic() to fix numerical issues.
         </action>
@@ -260,6 +299,9 @@
         </action>
         <action dev="serrof" type="add" issue="1517">
             Add analytical ephemerides for the Moon.
+        </action>
+        <action dev="rodrigomarcelino" type="add" issue="1103">
+            Exposed Alpha-5 satellite number parsing in TLE class.
         </action>
         <action dev="serrof" type="update" issue="1462">
             Add option to use other atmospheric model for derivatives computation.

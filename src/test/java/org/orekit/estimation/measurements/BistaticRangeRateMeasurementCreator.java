@@ -16,17 +16,12 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.Context;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
@@ -57,16 +52,7 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                                                          context.BRRstations.getValue())) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockBiasDriver(),
-                                                        station.getEastOffsetDriver(),
-                                                        station.getNorthOffsetDriver(),
-                                                        station.getZenithOffsetDriver(),
-                                                        station.getPrimeMeridianOffsetDriver(),
-                                                        station.getPrimeMeridianDriftDriver(),
-                                                        station.getPolarOffsetXDriver(),
-                                                        station.getPolarDriftXDriver(),
-                                                        station.getPolarOffsetYDriver(),
-                                                        station.getPolarDriftYDriver())) {
+            for (ParameterDriver driver : station.getParametersDrivers()) {
                 if (driver.getReferenceDate() == null) {
                     driver.setReferenceDate(s0.getDate());
                 }
@@ -85,19 +71,10 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
         if ((emitter.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation()  > FastMath.toRadians(30.0)) &&
             (receiver.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0))) {
 
-            // The solver used
-            final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
-
-            final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) {
-                    final Transform t = receiver.getOffsetToInertial(inertial, date.shiftedBy(x), false);
-                    final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }
-            }, -1.0, 1.0);
-
+            // Solve for downlink delay and time of reception at station
+            final double downLinkDelay = solveDownlinkDelay(receiver, currentState, Vector3D.ZERO);
             final AbsoluteDate receptionDate = currentState.getDate().shiftedBy(downLinkDelay);
-            final PVCoordinates receiverPV   = receiver.getOffsetToInertial(inertial, receptionDate, false)
+            final PVCoordinates receiverPV   = receiver.getOffsetToInertial(inertial, receptionDate, true)
                                                        .transformPVCoordinates(PVCoordinates.ZERO);
 
             // line of sight at reception
@@ -106,16 +83,10 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
             // relative velocity, spacecraft-station, at the date of reception
             final Vector3D deltaVr = velocity.subtract(receiverPV.getVelocity());
 
-            final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) {
-                    final Transform t = emitter.getOffsetToInertial(inertial, date.shiftedBy(-x), false);
-                    final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }
-            }, -1.0, 1.0);
+            final double upLinkDelay = solveUplinkDelay(emitter, currentState, Vector3D.ZERO);
 
             final AbsoluteDate emissionDate = currentState.getDate().shiftedBy(-upLinkDelay);
-            final PVCoordinates emitterPV   = emitter.getOffsetToInertial(inertial, emissionDate, false)
+            final PVCoordinates emitterPV   = emitter.getOffsetToInertial(inertial, emissionDate, true)
                                                      .transformPVCoordinates(PVCoordinates.ZERO);
 
             // line of sight at emission
@@ -127,7 +98,8 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
             // range rate at the date of reception
             final double rr = deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS);
 
-            addMeasurement(new BistaticRangeRate(emitter, receiver, receptionDate, rr, 1.0, 10, satellite));
+            final double clockOffset = receiver.getOffsetValue(receptionDate);
+            addMeasurement(new BistaticRangeRate(emitter, receiver, receptionDate.shiftedBy(clockOffset), rr, 1.0, 10, satellite));
 
         }
 

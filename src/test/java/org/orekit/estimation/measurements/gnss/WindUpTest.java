@@ -137,7 +137,7 @@ public class WindUpTest {
         // generate phase measurements from the ground station
         Generator           generator = new Generator();
         ObservableSatellite obsSat    = generator.addPropagator(new KeplerianPropagator(orbit, attitudeProvider));
-        PhaseBuilder        builder   = new PhaseBuilder(null, station,
+        PhaseBuilder        builder   = new PhaseBuilder(station,
                                                          PredefinedGnssSignal.G01.getWavelength(),
                                                          0.01 * PredefinedGnssSignal.G01.getWavelength(),
                                                          1.0, obsSat,

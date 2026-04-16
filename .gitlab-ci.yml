@@ -192,8 +192,10 @@ tutorials:
   # Don't fail the build if this doesn't work
   allow_failure: true
   needs:
-    - job: deploy:artifacts
+    - job: deploy:site
       artifacts: false
+  inherit:
+    variables: false
   trigger: orekit/orekit-tutorials
   rules:
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "develop"

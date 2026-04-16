@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.signal.FieldSignalReceptionCondition;
@@ -59,15 +61,15 @@ public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> ex
     /**
      * Compute the signal emission date.
      * @param frame frame where to perform signal propagation
-     * @param receiver signal receiver
+     * @param receiverPosition signal receiver position at reception
      * @param receptionDate reception date
      * @param emitter signal emitter
      * @return emission date
      */
-    protected AbsoluteDate computeEmissionDate(final Frame frame, final PVCoordinatesProvider receiver,
+    protected AbsoluteDate computeEmissionDate(final Frame frame, final Vector3D receiverPosition,
                                                final AbsoluteDate receptionDate, final PVCoordinatesProvider emitter) {
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate,
-                receiver.getPosition(receptionDate, frame), frame);
+                receiverPosition, frame);
         final double signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
                 .computeDelay(receptionCondition, receptionDate);
         return receptionDate.shiftedBy(-signalTravelTime);
@@ -76,19 +78,19 @@ public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> ex
     /**
      * Compute the signal emission date.
      * @param frame frame where to perform signal propagation
-     * @param receiver signal receiver
+     * @param receiverPosition signal receiver position at reception
      * @param receptionDate reception date
      * @param emitter signal emitter
      * @return emission date
      */
     protected FieldAbsoluteDate<Gradient> computeEmissionDateField(final Frame frame,
-                                                                   final FieldPVCoordinatesProvider<Gradient> receiver,
+                                                                   final FieldVector3D<Gradient> receiverPosition,
                                                                    final FieldAbsoluteDate<Gradient> receptionDate,
                                                                    final FieldPVCoordinatesProvider<Gradient> emitter) {
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldSignalTravelTimeAdjustableEmitter = getSignalTravelTimeModel().
                 getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
-                receiver.getPosition(receptionDate, frame), frame);
+                receiverPosition, frame);
         final Gradient signalTravelTime = fieldSignalTravelTimeAdjustableEmitter.computeDelay(receptionCondition,
                 receptionDate);
         return receptionDate.shiftedBy(signalTravelTime.negate());

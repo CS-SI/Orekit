@@ -156,8 +156,7 @@ public class InterSatellitesWindUpTest {
                                                                                                   emitterAttitudeProvider));
         ObservableSatellite         receiverSat = generator.addPropagator(new KeplerianPropagator(receiverOrbit,
                                                                                                   receiverAttitudeProvider));
-        InterSatellitesPhaseBuilder builder     = new InterSatellitesPhaseBuilder(null,
-                                                                                  receiverSat, emitterSat,
+        InterSatellitesPhaseBuilder builder     = new InterSatellitesPhaseBuilder(receiverSat, emitterSat,
                                                                                   PredefinedGnssSignal.G01.getWavelength(),
                                                                                   0.01 * PredefinedGnssSignal.G01.getWavelength(),
                                                                                   1.0,

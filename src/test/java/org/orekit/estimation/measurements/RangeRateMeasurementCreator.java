@@ -16,15 +16,10 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-
-import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.StationDataProvider;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -51,24 +46,16 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.getStations()) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockBiasDriver(),
-                                                        station.getClockDriftDriver(),
-                                                        station.getEastOffsetDriver(),
-                                                        station.getNorthOffsetDriver(),
-                                                        station.getZenithOffsetDriver(),
-                                                        station.getPrimeMeridianOffsetDriver(),
-                                                        station.getPrimeMeridianDriftDriver(),
-                                                        station.getPolarOffsetXDriver(),
-                                                        station.getPolarDriftXDriver(),
-                                                        station.getPolarOffsetYDriver(),
-                                                        station.getPolarDriftYDriver())) {
+            for (final ParameterDriver driver : station.getParametersDrivers()) {
                 if (driver.getReferenceDate() == null) {
                     driver.setReferenceDate(s0.getDate());
                 }
             }
         }
-        if (satellite.getClockDriftDriver().getReferenceDate() == null) {
-            satellite.getClockDriftDriver().setReferenceDate(s0.getDate());
+        for (final ParameterDriver driver : satellite.getParametersDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                driver.setReferenceDate(s0.getDate());
+            }
         }
     }
 
@@ -78,21 +65,17 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
             final Frame            inertial  = currentState.getFrame();
             final Vector3D         position  = currentState.getPosition();
             final Vector3D         velocity  = currentState.getVelocity();
-            final double           groundDft = station.getClockDriftDriver().getValue(date);
-            final double           satDft    = satellite.getClockDriftDriver().getValue(date);
+
+            final double groundDft = station.getOffsetRate(date);
+            final double satDft = satellite.getOffsetRate(date);
+
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
 
             if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
-                final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
-                final double downLinkDelay  = solver.solve(1000, x -> {
-                    final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
-                    final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }, -1.0, 1.0);
-                final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
-                final PVCoordinates stationAtReception =
-                                station.getOffsetToInertial(inertial, receptionDate, false).transformPVCoordinates(PVCoordinates.ZERO);
+                final double        downLinkDelay      = solveDownlinkDelay(station, currentState, Vector3D.ZERO);
+                final AbsoluteDate  receptionDate      = currentState.getDate().shiftedBy(downLinkDelay);
+                final PVCoordinates stationAtReception = station.getPVCoordinatesProvider().getPVCoordinates(receptionDate, inertial);
 
                 // line of sight at reception
                 final Vector3D receptionLOS = (position.subtract(stationAtReception.getPosition())).normalize();
@@ -100,14 +83,9 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                 // relative velocity, spacecraft-station, at the date of reception
                 final Vector3D deltaVr = velocity.subtract(stationAtReception.getVelocity());
 
-                final double upLinkDelay = solver.solve(1000, x -> {
-                    final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x), false);
-                    final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }, -1.0, 1.0);
-                final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
-                final PVCoordinates stationAtEmission  =
-                                station.getOffsetToInertial(inertial, emissionDate, false).transformPVCoordinates(PVCoordinates.ZERO);
+                final double        upLinkDelay       = solveDownlinkDelay(station, currentState, Vector3D.ZERO);
+                final AbsoluteDate  emissionDate      = currentState.getDate().shiftedBy(-upLinkDelay);
+                final PVCoordinates stationAtEmission = station.getPVCoordinatesProvider().getPVCoordinates(emissionDate, inertial);
 
                 // line of sight at emission
                 final Vector3D emissionLOS = (position.subtract(stationAtEmission.getPosition())).normalize();
@@ -120,7 +98,8 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                                   0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
                                   deltaVr.dotProduct(receptionLOS) + deltaD;
 
-                addMeasurement(new RangeRate(station, receptionDate, rr, 1.0, 10, twoWay, satellite));
+                final double clockOffset = station.getOffsetValue(receptionDate);
+                addMeasurement(new RangeRate(station, receptionDate.shiftedBy(clockOffset), rr, 1.0, 10, twoWay, satellite));
             }
 
         }

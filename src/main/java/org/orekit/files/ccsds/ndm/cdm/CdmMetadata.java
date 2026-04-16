@@ -20,15 +20,15 @@ import java.util.List;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.section.Metadata;
@@ -134,19 +134,33 @@ public class CdmMetadata extends Metadata {
     private FrameFacade altCovRefFrame;
 
     /** Simple constructor.
+     * @deprecated in favor of {@link #CdmMetadata(DataContext, CcsdsFrameMapper)}.
      */
+    @Deprecated
     @DefaultDataContext
     public CdmMetadata() {
-        super(null);
-        orbitCenter = new BodyFacade(CelestialBodyFactory.EARTH.toUpperCase(), CelestialBodyFactory.getEarth());
+        this(DataContext.getDefault());
     }
 
     /** Simple constructor.
      *
      * @param dataContext data context
+     * @deprecated in favor of {@link #CdmMetadata(DataContext, CcsdsFrameMapper)}.
      */
+    @Deprecated
     public CdmMetadata(final DataContext dataContext) {
-        super(null);
+        this(dataContext, new OrekitCcsdsFrameMapper());
+    }
+
+    /** Simple constructor.
+     *
+     * @param dataContext data context
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 14.0
+     */
+    public CdmMetadata(final DataContext dataContext,
+                       final CcsdsFrameMapper frameMapper) {
+        super(null, frameMapper);
         final CelestialBody earth = dataContext.getCelestialBodies().getEarth();
         orbitCenter = new BodyFacade(earth.getName().toUpperCase(), earth);
     }
@@ -428,31 +442,8 @@ public class CdmMetadata extends Metadata {
      * @return the reference frame
      */
     public Frame getFrame() {
-        if (orbitCenter == null || orbitCenter.getBody() == null) {
-            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, "No Orbit center name");
-        }
-        if (refFrame == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, "No reference frame");
-        }
-        else  {
-            if (refFrame.asFrame() == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, refFrame.getName());
-            }
-        }
-        // Just return frame if we don't need to shift the center based on CENTER_NAME
-        // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
-        final boolean isMci  = refFrame.asCelestialBodyFrame() == CelestialBodyFrame.MCI;
-        final boolean isIcrf = refFrame.asCelestialBodyFrame() == CelestialBodyFrame.ICRF;
-        final boolean isSolarSystemBarycenter =
-                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(orbitCenter.getBody().getName());
-        if (!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(orbitCenter.getBody().getName()) ||
-            isMci && CelestialBodyFactory.MARS.equals(orbitCenter.getBody().getName()) ||
-            isIcrf && isSolarSystemBarycenter) {
-            return refFrame.asFrame();
-        }
-        // else, translate frame to specified center.
-        return new ModifiedFrame(refFrame.asFrame(), refFrame.asCelestialBodyFrame(),
-                                 orbitCenter.getBody(), orbitCenter.getName());
+        // CDM format does not allow specifying frame epoch
+        return getFrameMapper().buildCcsdsFrame(getOrbitCenter(), getRefFrame(), null);
     }
 
     /**
@@ -649,6 +640,20 @@ public class CdmMetadata extends Metadata {
         } else {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, altCovRefFrame.getName());
         }
+    }
+
+    /**
+     * Get the reference frame in which the alternative covariance data is
+     * given.
+     *
+     * @return alternative covariance reference frame.
+     * @see #getAltCovType()
+     * @see #getAltCovRefFrame()
+     * @since 14.0
+     */
+    public Frame getAltCovFrame() {
+        // Epoch of AltCovRefFrame can't be specified.
+        return getFrameMapper().buildCcsdsFrame(getAltCovRefFrame(), null);
     }
 
     /** Get the unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message.

@@ -24,11 +24,13 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.DutyCycleType;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
@@ -56,6 +58,9 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
      * @since 12.0
      */
     public static final DutyCycleType DEFAULT_DC_TYPE = DutyCycleType.CONTINUOUS;
+
+    /** For creating a {@link Frame}. */
+    private final CcsdsFrameMapper frameMapper;
 
     /** Maneuver identification number. */
     private String manID;
@@ -147,13 +152,19 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Units of covariance element set. */
     private List<Unit> manUnits;
 
-    /** Simple constructor.
-     * @param epochT0 T0 epoch from file metadata
+    /**
+     * Simple constructor.
+     *
+     * @param epochT0     T0 epoch from file metadata
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 14.0
      */
-    public OrbitManeuverHistoryMetadata(final AbsoluteDate epochT0) {
+    public OrbitManeuverHistoryMetadata(final AbsoluteDate epochT0,
+                                        final CcsdsFrameMapper frameMapper) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         // In 502.0-B-3 (p. 6-39) MAN_BASIS is optional and has no default
+        this.frameMapper    = frameMapper;
         manBasis            = null;
         manReferenceFrame   = new FrameFacade(null, null,
                                               OrbitRelativeFrame.TNW_INERTIAL, null,
@@ -385,6 +396,32 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     public void setManFrameEpoch(final AbsoluteDate manFrameEpoch) {
         refuseFurtherComments();
         this.manFrameEpoch = manFrameEpoch;
+    }
+
+    /**
+     * Get the mapping between a CCSDS frame and a {@link Frame}.
+     *
+     * @return the frame mapper.
+     * @since 14.0
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Get the frame in which this maneuver is defined. Note that only the
+     * orientation of the returned frame is significant, the position of the
+     * returned frame is irrelevant and should be ignored.
+     *
+     * @return Orekit frame for this covariance history.
+     * @see #getManReferenceFrame()
+     * @see #getManFrameEpoch()
+     * @see #getFrameMapper()
+     * @since 14.0
+     */
+    public Frame getManFrame() {
+        return getFrameMapper()
+                .buildCcsdsFrame(getManReferenceFrame(), getManFrameEpoch());
     }
 
     /** Get the origin of gravitational assist.

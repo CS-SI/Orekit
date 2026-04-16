@@ -122,7 +122,7 @@ class LibraryArchUnitTest {
         final ArchRule myRule = noClasses()
                 .that().resideInAPackage(FRAMES_NAME)
                 .should().dependOnClassesThat().resideInAnyPackage(SSA_NAME, ESTIMATION_NAME, CONTROL_NAME,
-                        FORCES_NAME, ORBITS_NAME, GNSS_NAME);
+                        FORCES_NAME, ORBITS_NAME, GNSS_NAME, SIGNAL_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }
@@ -133,7 +133,7 @@ class LibraryArchUnitTest {
         final ArchRule myRule = noClasses()
                 .that().resideInAPackage(BODIES_NAME)
                 .should().dependOnClassesThat().resideInAnyPackage(SSA_NAME, ESTIMATION_NAME, CONTROL_NAME,
-                        FORCES_NAME, ORBITS_NAME, GNSS_NAME, FILES_NAME);
+                        FORCES_NAME, ORBITS_NAME, GNSS_NAME, FILES_NAME, SIGNAL_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }
@@ -156,7 +156,7 @@ class LibraryArchUnitTest {
                 .that().resideInAPackage(ERRORS_NAME)
                 .should().dependOnClassesThat().resideInAnyPackage(SSA_NAME, ESTIMATION_NAME, CONTROL_NAME,
                         FORCES_NAME, BODIES_NAME, PROPAGATION_NAME, ATTITUDES_NAME, DATA_NAME, TIME_NAME,
-                        FRAMES_NAME, ORBITS_NAME, MODELS_NAME, GNSS_NAME, FILES_NAME);
+                        FRAMES_NAME, ORBITS_NAME, MODELS_NAME, GNSS_NAME, FILES_NAME, SIGNAL_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }
@@ -178,7 +178,7 @@ class LibraryArchUnitTest {
         final ArchRule myRule = noClasses()
                 .that().resideInAPackage(ORBITS_NAME).and().resideOutsideOfPackage(CR3BP_NAME)
                 .should().dependOnClassesThat().resideInAnyPackage(SSA_NAME, ESTIMATION_NAME, CONTROL_NAME,
-                        FORCES_NAME, PROPAGATION_NAME, CR3BP_NAME, GNSS_NAME, FILES_NAME);
+                        FORCES_NAME, PROPAGATION_NAME, CR3BP_NAME, GNSS_NAME, FILES_NAME, SIGNAL_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }
@@ -200,7 +200,7 @@ class LibraryArchUnitTest {
         final ArchRule myRule = noClasses()
                 .that().resideInAPackage(UTILS_NAME)
                 .should().dependOnClassesThat().resideInAnyPackage(SSA_NAME, ESTIMATION_NAME, CONTROL_NAME,
-                        FORCES_NAME);
+                        FORCES_NAME, GNSS_NAME, SIGNAL_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }

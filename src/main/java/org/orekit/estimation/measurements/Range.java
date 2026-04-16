@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.signal.FieldSignalReceptionCondition;
@@ -30,7 +31,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a range measurement received by an observer.
@@ -167,9 +167,9 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final AbsoluteDate emissionDate = estimated.getParticipants()[0].getDate();
 
         // clock bias, taken in account only in case of one way
-        final ObservableSatellite satellite    = getSatellites().get(0);
-        final double              dts       = satellite.getClockBiasDriver().getValue(emissionDate);
-        final double              dtg       = getObserver().getClockBiasDriver().getValue(receptionDate);
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final double              dts       = satellite.getOffsetValue(emissionDate);
+        final double              dtg       = getObserver().getOffsetValue(receptionDate);
         final double clockBias = dtg - dts;
 
         final double range = (clockBias + receptionDate.durationFrom(emissionDate)) * Constants.SPEED_OF_LIGHT;
@@ -188,12 +188,11 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final Frame frame = state.getFrame();
         final FieldPVCoordinatesProvider<Gradient> observerPVProvider = getObserver().getFieldPVCoordinatesProvider(nbParams, indices);
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
-        final TimeStampedFieldPVCoordinates<Gradient> receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
+        final FieldVector3D<Gradient> receiverPosition = observerPVProvider.getPosition(receptionDate, frame);
         final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
-                receiverPV.getPosition(), frame);
-        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition,
-                satellitePVProvider, observerPVProvider);
+                receiverPosition, frame);
+        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition, satellitePVProvider, observerPVProvider);
 
         // Prepare the evaluation
         final FieldAbsoluteDate<Gradient> transitDate = receptionDate.shiftedBy(delays[1].negate());
@@ -204,7 +203,7 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
                 new TimeStampedPVCoordinates[] {
                         getObserver().getPVCoordinatesProvider().getPVCoordinates(emissionDate.toAbsoluteDate(), frame),
                         transitState.getPVCoordinates(),
-                        receiverPV.toTimeStampedPVCoordinates()});
+                        getObserver().getPVCoordinatesProvider().getPVCoordinates(receptionDate.toAbsoluteDate(), frame)});
 
         // Compute range
         final Gradient range = delays[0].add(delays[1]).multiply(Constants.SPEED_OF_LIGHT / 2.);
@@ -225,10 +224,10 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final Field<Gradient> field = receptionDate.getField();
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
                 field, satellitePVProvider);
-        final TimeStampedFieldPVCoordinates<Gradient> observerPVAtReception = getObserver().getFieldPVCoordinatesProvider(nbParams, indices)
-                .getPVCoordinates(receptionDate, frame);
+        final FieldVector3D<Gradient> observerPositionAtReception = getObserver().getFieldPVCoordinatesProvider(nbParams, indices)
+                .getPosition(receptionDate, frame);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
-                observerPVAtReception.getPosition(), frame);
+                observerPositionAtReception, frame);
         final Gradient delay = adjustableEmitter.computeDelay(receptionCondition);
 
         // prepare the evaluation
@@ -237,12 +236,13 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final EstimatedMeasurement<Range> estimated =
                 new EstimatedMeasurement<>(this, iteration, evaluation,
                         new SpacecraftState[] { emissionState }, new TimeStampedPVCoordinates[] {
-                        emissionState.getPVCoordinates(), observerPVAtReception.toTimeStampedPVCoordinates() });
+                        emissionState.getPVCoordinates(),
+                        getObserver().getPVCoordinatesProvider().getPVCoordinates(receptionDate.toAbsoluteDate(), frame) });
 
         // clock offset, taken in account only in case of one way
         final ObservableSatellite satellite    = getSatellites().get(0);
-        final Gradient            dts       = satellite.getClockBiasDriver().getValue(nbParams, indices, emissionDate.toAbsoluteDate());
-        final Gradient            dtg       = getObserver().getClockBiasDriver().getValue(nbParams, indices, receptionDate.toAbsoluteDate());
+        final Gradient dts = satellite.getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), indices);
+        final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, receptionDate.toAbsoluteDate(), indices);
         final Gradient clockBias = dtg.subtract(dts);
 
         final Gradient range = clockBias.add(delay).multiply(Constants.SPEED_OF_LIGHT);
