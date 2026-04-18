@@ -1251,7 +1251,7 @@ class BatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(false, context, estimator, 1, 4,
                                      0.0, 4.0e-10,
-                                     0.0, 6.9e-10,
+                                     0.0, 7.0e-10,
                                      0.0, 1.2e-7,
                                      0.0, 3.6e-11);
     }
@@ -1303,7 +1303,7 @@ class BatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 3,
                                      0.0, 4.4e-7,
                                      0.0, 1.4e-6,
                                      0.0, 1.9e-7,

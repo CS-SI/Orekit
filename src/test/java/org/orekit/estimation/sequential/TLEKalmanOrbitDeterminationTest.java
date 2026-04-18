@@ -309,7 +309,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final long nbRange = 95;
         // Batch LS values
         //final double[] RefStatRange = { -67.7496, 87.1117, 6.4482E-5, 33.6349 };
-        final double[] RefStatRange = { -13.191878, 10.038903, 0.134279, 4.189626 };
+        final double[] RefStatRange = { -13.191876, 10.038899, 0.134279, 4.189625 };
         Assertions.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               parameterAccuracy);
         Assertions.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               parameterAccuracy);

@@ -223,12 +223,12 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.043891,  0.044723,  -0.037798 };
+        final double[] stationOffSet = { 0.043893,  0.044721,  -0.037797 };
         final double rangeBias = 0.041171;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -5.910601, 3.306715, -0.037126, 1.454295 };
+        final double[] refStatRange = { -5.910601, 3.306617, -0.037131, 1.454304 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
                 smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,

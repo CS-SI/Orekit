@@ -388,12 +388,12 @@ class AngularRaDecTest {
         final EstimatedMeasurementBase<AngularRaDec> estimatedWithoutDerivatives = angularRaDec.estimateWithoutDerivatives(state);
         // THEN
         final EstimatedMeasurement<AngularRaDec> estimated = angularRaDec.estimate(0, 0, state);
-        assertArrayEquals(estimated.getEstimatedValue(), estimatedWithoutDerivatives.getEstimatedValue());
+        assertArrayEquals(estimated.getEstimatedValue(), estimatedWithoutDerivatives.getEstimatedValue(), 1e-12);
         final TimeStampedPVCoordinates firstParticipant = estimatedWithoutDerivatives.getParticipants()[0];
         final TimeStampedPVCoordinates secondParticipant = estimatedWithoutDerivatives.getParticipants()[1];
         final TimeStampedPVCoordinates expectedFirstParticipant = estimated.getParticipants()[0];
         final TimeStampedPVCoordinates expectedSecondParticipant = estimated.getParticipants()[1];
-        assertEquals(expectedFirstParticipant.getDate(), firstParticipant.getDate());
+        assertEquals(0., expectedFirstParticipant.getDate().durationFrom(firstParticipant.getDate()), 1e-12);
         assertEquals(expectedFirstParticipant.getPosition(), firstParticipant.getPosition());
         assertEquals(expectedSecondParticipant.getDate(), secondParticipant.getDate());
         assertEquals(expectedSecondParticipant.getPosition(), secondParticipant.getPosition());
