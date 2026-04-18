@@ -571,14 +571,22 @@ public class GroundStation extends AbstractParticipant implements Observer {
      */
     private FieldStaticTransform<Gradient> shiftKinematicTransform(final KinematicTransform kinematicTransform,
                                                                    final Gradient dt) {
+        // shift translation
         final Field<Gradient> field = dt.getField();
         final AbsoluteDate date = kinematicTransform.getDate();
         final FieldVector3D<Gradient> fieldVelocity = new FieldVector3D<>(field, kinematicTransform.getVelocity());
+        final FieldVector3D<Gradient> shiftedTranslation = fieldVelocity.scalarMultiply(dt).add(kinematicTransform.getTranslation());
+        // shift rotation
         final FieldAngularCoordinates<Gradient> fieldAngularCoordinates = new FieldAngularCoordinates<>(field,
                 new AngularCoordinates(kinematicTransform.getRotation(), kinematicTransform.getRotationRate()));
-        final FieldRotation<Gradient> shiftedRotation = fieldAngularCoordinates.shiftedBy(dt).getRotation();
-        return FieldStaticTransform.of(new FieldAbsoluteDate<>(field, date).shiftedBy(dt),
-                fieldVelocity.scalarMultiply(dt).add(kinematicTransform.getTranslation()), shiftedRotation);
+        final FieldVector3D<Gradient> rotationRate = fieldAngularCoordinates.getRotationRate();
+        final Gradient rate = rotationRate.getNorm();
+        final FieldRotation<Gradient> shiftedRotation = (rate.getReal() == 0.0) ?
+                fieldAngularCoordinates.getRotation() :
+                new FieldRotation<>(rotationRate, rate.multiply(dt), RotationConvention.FRAME_TRANSFORM)
+                .compose(fieldAngularCoordinates.getRotation(), RotationConvention.VECTOR_OPERATOR);
+        return FieldStaticTransform.of(new FieldAbsoluteDate<>(field, date).shiftedBy(dt), shiftedTranslation,
+                shiftedRotation);
     }
 
     /**
@@ -589,14 +597,20 @@ public class GroundStation extends AbstractParticipant implements Observer {
      */
     private FieldVector3D<Gradient> getOrigin(final FieldAbsoluteDate<Gradient> date,
                                               final Map<String, Integer> indices) {
+        // compute position in topocentric frame
         final int freeParameters = date.getField().getZero().getFreeParameters();
         final AbsoluteDate absoluteDate = date.toAbsoluteDate();
         final Gradient x          = eastOffsetDriver.getValue(freeParameters, indices, absoluteDate);
         final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices, absoluteDate);
         final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices, absoluteDate);
+        final FieldVector3D<Gradient> position = new FieldVector3D<>(x, y, z);
+        // approximate linearly (for performance) static transform from topocentric to body shape frame
         final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
-        final FieldStaticTransform<Gradient> staticTopoToBody = baseFrame.getStaticTransformTo(bodyFrame, date);
-        final FieldVector3D<Gradient>        originBeforeDisplacement     = staticTopoToBody.transformPosition(new FieldVector3D<>(x, y, z));
+        final KinematicTransform kinematicTopoToBody = baseFrame.getKinematicTransformTo(bodyFrame, absoluteDate);
+        final FieldStaticTransform<Gradient> staticTopoToBody = shiftKinematicTransform(kinematicTopoToBody,
+                date.durationFrom(absoluteDate));
+        // apply transform and displacement
+        final FieldVector3D<Gradient>        originBeforeDisplacement     = staticTopoToBody.transformPosition(position);
         return originBeforeDisplacement.add(computeDisplacement(absoluteDate, originBeforeDisplacement.toVector3D()));
     }
 
