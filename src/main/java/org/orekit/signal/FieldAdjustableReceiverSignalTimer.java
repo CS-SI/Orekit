@@ -27,10 +27,10 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
  * The delay is calculated via a fixed-point algorithm with customizable settings (even enabling instantaneous transmission).
  * Note that a couple of iterations are usually enough for Earth orbits.
  * @since 14.0
- * @see SignalTravelTimeAdjustableReceiver
+ * @see AdjustableReceiverSignalTimer
  * @author Romain Serra
  */
-public class FieldSignalTravelTimeAdjustableReceiver<T extends CalculusFieldElement<T>>
+public class FieldAdjustableReceiverSignalTimer<T extends CalculusFieldElement<T>>
         extends FieldAbstractSignalTravelTime<T> {
 
     /** Position/velocity provider of emitter. */
@@ -40,7 +40,7 @@ public class FieldSignalTravelTimeAdjustableReceiver<T extends CalculusFieldElem
      * Constructor with default iteration settings.
      * @param adjustableReceiverPVProvider adjustable receiver
      */
-    public FieldSignalTravelTimeAdjustableReceiver(final FieldPVCoordinatesProvider<T> adjustableReceiverPVProvider) {
+    public FieldAdjustableReceiverSignalTimer(final FieldPVCoordinatesProvider<T> adjustableReceiverPVProvider) {
         this(adjustableReceiverPVProvider, getDefaultConvergenceChecker());
     }
 
@@ -49,8 +49,8 @@ public class FieldSignalTravelTimeAdjustableReceiver<T extends CalculusFieldElem
      * @param adjustableReceiverPVProvider adjustable receiver
      * @param convergenceChecker convergence checker for fixed-point algorithm
      */
-    public FieldSignalTravelTimeAdjustableReceiver(final FieldPVCoordinatesProvider<T> adjustableReceiverPVProvider,
-                                                   final ConvergenceChecker<T> convergenceChecker) {
+    public FieldAdjustableReceiverSignalTimer(final FieldPVCoordinatesProvider<T> adjustableReceiverPVProvider,
+                                              final ConvergenceChecker<T> convergenceChecker) {
         super(convergenceChecker);
         this.adjustableReceiverPVProvider = adjustableReceiverPVProvider;
     }

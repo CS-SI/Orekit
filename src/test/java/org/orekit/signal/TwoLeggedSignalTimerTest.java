@@ -33,14 +33,14 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class TwoLeggedSignalTravelTimerTest {
+class TwoLeggedSignalTimerTest {
 
     @Test
     void testComputeNoVelocity() {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(new SignalTravelTimeModel());
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(new SignalTravelTimeModel());
         final Vector3D receiverPosition = Vector3D.ZERO;
         final PVCoordinates pvRelay = new PVCoordinates(new Vector3D(1e5, 1e6, -1e4));
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(2e5, -3e4, 1e5));
@@ -48,7 +48,7 @@ class TwoLeggedSignalTravelTimerTest {
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPosition, frame);
         // WHEN
-        final double[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition, relay, emitter);
+        final double[] delays = twoLeggedSignalTimer.computeDelays(receptionCondition, relay, emitter);
         // THEN
         assertEquals(pvRelay.getPosition().subtract(receiverPosition).getNorm2(), Constants.SPEED_OF_LIGHT * delays[1], 1e-9);
         assertEquals(pvRelay.getPosition().subtract(pvEmitter.getPosition()).getNorm2(), Constants.SPEED_OF_LIGHT * delays[0], 1e-9);
@@ -59,7 +59,7 @@ class TwoLeggedSignalTravelTimerTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(new SignalTravelTimeModel());
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(new SignalTravelTimeModel());
         final Vector3D receiverPosition = Vector3D.ZERO;
         final PVCoordinates pvRelay = new PVCoordinates(new Vector3D(1e5, 1e6, -1e4));
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(2e5, -3e4, 1e5));
@@ -67,10 +67,10 @@ class TwoLeggedSignalTravelTimerTest {
         final AbsolutePVCoordinates emitter = new AbsolutePVCoordinates(frame, date, pvEmitter);
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPosition, frame);
         // WHEN
-        final double[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition, relay,
+        final double[] delays = twoLeggedSignalTimer.computeDelays(receptionCondition, relay,
                 emitter);
         // THEN
-        final double[] expectedDelays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition, relay, date,
+        final double[] expectedDelays = twoLeggedSignalTimer.computeDelays(receptionCondition, relay, date,
                 emitter, date);
         assertEquals(expectedDelays[0], delays[0]);
         assertEquals(expectedDelays[1], delays[1]);
@@ -82,7 +82,7 @@ class TwoLeggedSignalTravelTimerTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(new SignalTravelTimeModel());
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(new SignalTravelTimeModel());
         final Vector3D receiverPosition = Vector3D.PLUS_I.scalarMultiply(position);
         final PVCoordinates pvRelay = new PVCoordinates(new Vector3D(1e5, 1e6, -1e4), Vector3D.MINUS_J);
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(2e5, -3e4, 1e5), new Vector3D(1, 2, 3));
@@ -93,11 +93,11 @@ class TwoLeggedSignalTravelTimerTest {
         final FieldSignalReceptionCondition<Gradient> fieldCondition = new FieldSignalReceptionCondition<>(fieldDate,
                 new FieldVector3D<>(field, receiverPosition), frame);
         // WHEN
-        final Gradient[] fieldDelays = twoLeggedSignalTravelTimer.computeDelays(fieldCondition,
+        final Gradient[] fieldDelays = twoLeggedSignalTimer.computeDelays(fieldCondition,
                 new FieldAbsolutePVCoordinates<>(field, relay), new FieldAbsolutePVCoordinates<>(field, emitter));
         // THEN
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(date, receiverPosition, frame);
-        final double[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition, relay, emitter);
+        final double[] delays = twoLeggedSignalTimer.computeDelays(receptionCondition, relay, emitter);
         assertEquals(delays[0], fieldDelays[0].getValue());
         assertEquals(delays[1], fieldDelays[1].getValue());
     }

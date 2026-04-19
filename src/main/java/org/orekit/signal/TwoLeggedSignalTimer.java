@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public class TwoLeggedSignalTravelTimer {
+public class TwoLeggedSignalTimer {
 
     /** Signal travel time model. */
     private final SignalTravelTimeModel signalTravelTimeModel;
@@ -41,7 +41,7 @@ public class TwoLeggedSignalTravelTimer {
      * Constructor.
      * @param signalTravelTimeModel time delay computer
      */
-    public TwoLeggedSignalTravelTimer(final SignalTravelTimeModel signalTravelTimeModel) {
+    public TwoLeggedSignalTimer(final SignalTravelTimeModel signalTravelTimeModel) {
         this.signalTravelTimeModel = signalTravelTimeModel;
     }
 

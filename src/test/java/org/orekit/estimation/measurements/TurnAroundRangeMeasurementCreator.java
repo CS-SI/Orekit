@@ -29,14 +29,15 @@ import org.orekit.estimation.Context;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
 /**
  * Class creating a list of turn-around range measurement
  * @author Maxime Journot
@@ -178,7 +179,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // Primary station uplink delay - from primary station to P1
                     // Here the state date is known. Thus we can use the function "signalTimeOfFlight"
                     // of the AbstractMeasurement class
-                    final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(new AbsolutePVCoordinates(inertial, primaryStationAtReception));
+                    final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(new AbsolutePVCoordinates(inertial, primaryStationAtReception));
                     final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(T1, P1, inertial);
                     final double primaryTauU = signalTimeOfFlight.computeDelay(receptionCondition, primaryStationAtReception.getDate());
 

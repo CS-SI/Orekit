@@ -25,9 +25,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -53,7 +53,7 @@ class OneLeggedRangeRateModelTest {
         final double rangeRate = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(), emitter);
         // THEN
         final FieldPVCoordinates<UnivariateDerivative2> fieldPV = pvEmitter.toUnivariateDerivative2PV();
-        final double delay = new SignalTravelTimeAdjustableEmitter(emitter).computeDelay(receptionCondition);
+        final double delay = new AdjustableEmitterSignalTimer(emitter).computeDelay(receptionCondition);
         assertEquals(fieldPV.shiftedBy(-delay).getPosition().getNorm2().getFirstDerivative(), rangeRate, 1e-12);
     }
 

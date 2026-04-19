@@ -19,10 +19,10 @@ package org.orekit.estimation.measurements.model;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -71,7 +71,7 @@ public class OneLeggedRangeRateModel extends AbstractSignalBasedModel {
      */
     public double value(final SignalReceptionCondition receptionCondition, final Vector3D receiverVelocity,
                         final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
-        final SignalTravelTimeAdjustableEmitter adjustableEmitter = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter);
+        final AdjustableEmitterSignalTimer adjustableEmitter = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter);
         final AbsoluteDate receptionDate = receptionCondition.getReceptionDate();
         final double delay = adjustableEmitter.computeDelay(receptionCondition, approxEmissionDate);
         final AbsoluteDate emissionDate = receptionDate.shiftedBy(-delay);
@@ -108,7 +108,7 @@ public class OneLeggedRangeRateModel extends AbstractSignalBasedModel {
                                                        final FieldPVCoordinatesProvider<T> emitter,
                                                        final FieldAbsoluteDate<T> approxEmissionDate) {
         final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
-        final FieldSignalTravelTimeAdjustableEmitter<T> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
+        final FieldAdjustableEmitterSignalTimer<T> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
                 receptionDate.getField(), emitter);
         final T delay = adjustableEmitter.computeDelay(receptionCondition, approxEmissionDate);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(delay.negate());

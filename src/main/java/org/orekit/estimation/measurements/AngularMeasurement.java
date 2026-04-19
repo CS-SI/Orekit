@@ -25,8 +25,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
@@ -87,11 +87,11 @@ public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> ex
                                                                    final FieldVector3D<Gradient> receiverPosition,
                                                                    final FieldAbsoluteDate<Gradient> receptionDate,
                                                                    final FieldPVCoordinatesProvider<Gradient> emitter) {
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldSignalTravelTimeAdjustableEmitter = getSignalTravelTimeModel().
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldAdjustableEmitterSignalTimer = getSignalTravelTimeModel().
                 getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
                 receiverPosition, frame);
-        final Gradient signalTravelTime = fieldSignalTravelTimeAdjustableEmitter.computeDelay(receptionCondition,
+        final Gradient signalTravelTime = fieldAdjustableEmitterSignalTimer.computeDelay(receptionCondition,
                 receptionDate);
         return receptionDate.shiftedBy(signalTravelTime.negate());
     }

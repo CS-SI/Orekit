@@ -34,10 +34,10 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -168,7 +168,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         final PVCoordinatesProvider pvCoordinatesProvider = AbstractParticipant.extractPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay / determine time of emission of signal by ObservableSatellite
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel()
+        final AdjustableEmitterSignalTimer signalTimeOfFlight = getSignalTravelTimeModel()
                 .getAdjustableEmitterComputer(pvCoordinatesProvider);
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(downlinkDate,
                 satelliteDownlink.getPosition(), frame);
@@ -235,7 +235,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, fieldPVCoordinatesProvider);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(downlinkDate,
                 satelliteDownlink.getPosition(), frame);

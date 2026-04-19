@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.TwoLeggedSignalTravelTimer;
+import org.orekit.signal.TwoLeggedSignalTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -39,13 +39,13 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class TwoLeggedRangeRateModel {
 
     /** Signal travel time model. */
-    private final TwoLeggedSignalTravelTimer twoWayTimer;
+    private final TwoLeggedSignalTimer twoWayTimer;
 
     /**
      * Constructor.
      * @param twoWayTimer two-way time delay computer
      */
-    public TwoLeggedRangeRateModel(final TwoLeggedSignalTravelTimer twoWayTimer) {
+    public TwoLeggedRangeRateModel(final TwoLeggedSignalTimer twoWayTimer) {
         this.twoWayTimer = twoWayTimer;
     }
 
