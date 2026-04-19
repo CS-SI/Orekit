@@ -26,7 +26,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
-import org.orekit.signal.TwoLeggedSignalTravelTimer;
+import org.orekit.signal.TwoLeggedSignalTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -66,7 +66,7 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
     private final Observer receiver;
 
     /** Two-way signal model .*/
-    private final TwoLeggedSignalTravelTimer twoLeggedSignalTimer;
+    private final TwoLeggedSignalTimer twoLeggedSignalTimer;
 
     /**
      * Simple constructor.
@@ -93,14 +93,14 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
         // Set emitter
         this.emitter  = emitter;
         this.receiver = receiver;
-        this.twoLeggedSignalTimer = new TwoLeggedSignalTravelTimer(signalTravelTimeModel);
+        this.twoLeggedSignalTimer = new TwoLeggedSignalTimer(signalTravelTimeModel);
     }
 
     /**
      * Getter for the two legs timer.
      * @return model
      */
-    public TwoLeggedSignalTravelTimer getTwoLeggedSignalTimer() {
+    public TwoLeggedSignalTimer getTwoLeggedSignalTimer() {
         return twoLeggedSignalTimer;
     }
 
