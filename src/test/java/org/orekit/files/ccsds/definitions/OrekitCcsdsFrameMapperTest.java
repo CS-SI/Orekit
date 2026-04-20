@@ -113,4 +113,45 @@ public class OrekitCcsdsFrameMapperTest {
         }
     }
 
+    /** Exception (not NPE) for a null center. */
+    @Test
+    public void testBuildNullCenter() {
+        // setup
+        CcsdsFrameMapper mapper = new OrekitCcsdsFrameMapper();
+
+        // action
+        try {
+            mapper.buildCcsdsFrame(null, null, null);
+            Assertions.fail("Expected exception");
+        } catch (OrekitException e) {
+            // expected
+        }
+    }
+
+    /** All instances are equivalent. */
+    @Test
+    public void testInstancesAreEqual() {
+        // setup
+        CcsdsFrameMapper m1 = new OrekitCcsdsFrameMapper();
+        CcsdsFrameMapper m2 = new OrekitCcsdsFrameMapper();
+
+        // verify
+        MatcherAssert.assertThat(m1.hashCode(), Matchers.is(m2.hashCode()));
+        MatcherAssert.assertThat(m1, Matchers.is(m2));
+        MatcherAssert.assertThat(m2, Matchers.is(m1));
+    }
+
+    /** Assumes a subclass implements a different mapping. */
+    @Test
+    public void testSubclassesNotEqual() {
+        // setup
+        CcsdsFrameMapper m1 = new OrekitCcsdsFrameMapper();
+        CcsdsFrameMapper m2 = new OrekitCcsdsFrameMapper(){};
+
+        // verify
+        MatcherAssert.assertThat(m1.hashCode(), Matchers.not(m2.hashCode()));
+        MatcherAssert.assertThat(m1, Matchers.not(m2));
+        MatcherAssert.assertThat(m2, Matchers.not(m1));
+    }
+
 }
