@@ -31,6 +31,7 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
@@ -53,6 +54,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Test class for CCSDS Tracking Data Message parsing.<p>
@@ -1199,4 +1201,22 @@ public class TdmParserTest {
                 tdm.getSegments().get(0).getMetadata().getRadecFrame(),
                 Matchers.sameInstance(myTod));
     }
+
+    /** Test deprecated constructor. Can be removed in 14.0. */
+    @Test
+    public void testDeprecatedConstructor() {
+        // action
+        TdmParser actual = new TdmParser(
+                null,
+                true,
+                null,
+                null,
+                null,
+                new Function[0]);
+
+        // verify
+        MatcherAssert.assertThat(actual.getFrameMapper(),
+                Matchers.is(new OrekitCcsdsFrameMapper()));
+    }
+
 }

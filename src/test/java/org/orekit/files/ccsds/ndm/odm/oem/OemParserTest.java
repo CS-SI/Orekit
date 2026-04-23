@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -48,6 +49,7 @@ import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.frames.FactoryManagedFrame;
@@ -932,6 +934,18 @@ public class OemParserTest {
             MatcherAssert.assertThat(covariances.size(), Matchers.is(1));
         }
         MatcherAssert.assertThat(segments.size(), Matchers.is(1));
+    }
+
+    /** Test deprecated constructor. Can be removed in 14.0. */
+    @Test
+    public void testDeprecatedConstructor() {
+        // action
+        OemParser actual = new OemParser(
+                null, true, null, null, 0, 0, null, new Function[0]);
+
+        // verify
+        MatcherAssert.assertThat(actual.getFrameMapper(),
+                Matchers.is(new OrekitCcsdsFrameMapper()));
     }
 
 }

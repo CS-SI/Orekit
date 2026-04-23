@@ -37,6 +37,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodType;
 import org.orekit.files.ccsds.definitions.OnOff;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
@@ -67,6 +68,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 public class OcmParserTest {
 
@@ -1481,5 +1483,23 @@ public class OcmParserTest {
                 Matchers.sameInstance(zzrf));
     }
 
+    /** Test deprecated constructor. Can be removed in 14.0. */
+    @Test
+    public void testDeprecatedConstructor() {
+        // action
+        OcmParser actual = new OcmParser(
+                null,
+                0,
+                0,
+                true,
+                null,
+                0,
+                null,
+                new Function[0]);
+
+        // verify
+        MatcherAssert.assertThat(actual.getFrameMapper(),
+                Matchers.is(new OrekitCcsdsFrameMapper()));
+    }
 
 }

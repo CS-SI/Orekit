@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.function.Function;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -35,6 +36,7 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.PocMethodType;
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -2021,4 +2023,17 @@ public class CdmParserTest {
                 cdm.getDataObject1().getAdditionalParametersBlock().getOebParent(),
                 Matchers.sameInstance(myItrf));
     }
+
+    /** Test deprecated constructor. Can be removed in 14.0. */
+    @Test
+    public void testDeprecatedConstructor() {
+        // action
+        CdmParser actual = new CdmParser(
+                null, true, null, null, new Function[0]);
+
+        // verify
+        MatcherAssert.assertThat(actual.getFrameMapper(),
+                Matchers.is(new OrekitCcsdsFrameMapper()));
+    }
+
 }
