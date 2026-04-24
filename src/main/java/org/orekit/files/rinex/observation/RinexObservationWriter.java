@@ -575,7 +575,7 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
     /** Process all pending measurements.
      * @exception IOException if an I/O error occurs.
      */
-    private void processPending() throws IOException {
+    public void processPending() throws IOException {
 
         if (!pending.isEmpty()) {
 
