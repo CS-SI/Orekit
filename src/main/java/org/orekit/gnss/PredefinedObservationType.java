@@ -607,13 +607,13 @@ public enum PredefinedObservationType implements ObservationType {
     /** Carrier-phase GPS L1 codeless for Rinex3. */
     L1N(MeasurementType.CARRIER_PHASE, SignalCode.CODELESS, PredefinedGnssSignal.G01),
 
-    /** Carrier-phase GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot / NavIC L1 Pilot. */
-    L1P(MeasurementType.CARRIER_PHASE, SignalCode.P, PredefinedGnssSignal.G02, PredefinedGnssSignal.R02, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
+    /** Carrier-phase GPS L1 P(AS off) / GLONASS G1 P / Beidou B1 Pilot / NavIC L1 Pilot. */
+    L1P(MeasurementType.CARRIER_PHASE, SignalCode.P, PredefinedGnssSignal.G01, PredefinedGnssSignal.R01, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
-    /** Carrier-phase GPS L2 M (RMP antenna) for Rinex4.01.
+    /** Carrier-phase GPS L1 M (RMP antenna) for Rinex4.01.
      * @since 13.0
      */
-    L1R(MeasurementType.CARRIER_PHASE, SignalCode.M, PredefinedGnssSignal.G02),
+    L1R(MeasurementType.CARRIER_PHASE, SignalCode.M, PredefinedGnssSignal.G01),
 
     /** Carrier-phase GPS L1 L1C(D) / QZSS L1 L1C(D) for Rinex3, Beidou B1A for Rinex3.03. */
     L1S(MeasurementType.CARRIER_PHASE, SignalCode.S, PredefinedGnssSignal.G01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A),
