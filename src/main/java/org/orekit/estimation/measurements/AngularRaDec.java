@@ -24,6 +24,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.model.RaDecModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalReceptionCondition;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -133,10 +135,12 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
         final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final Frame frame = state.getFrame();
         final TimeStampedPVCoordinates receiverPV = receiver.getPVCoordinates(receptionDate, frame);
-        final AbsoluteDate emissionDate = computeEmissionDate(referenceFrame, receiverPV.getPosition(), receptionDate, emitter);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate,
+                receiverPV.getPosition(), frame);
+        final AbsoluteDate emissionDate = computeEmissionDate(receptionCondition, emitter);
 
         // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)
-        final double[] raDec = measurementModel.value(frame, receiverPV.getPosition(), receptionDate, emitter, emissionDate);
+        final double[] raDec = measurementModel.value(receptionCondition, emitter, emissionDate);
 
         // Prepare the estimation
         final double shift = emissionDate.durationFrom(state);
@@ -176,7 +180,9 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
         final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(referenceFrame, receiverPosition, receptionDate, emitter);
 
         // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)
-        final Gradient[] raDec = measurementModel.value(frame, receiverPosition, receptionDate, emitter, emissionDate);
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                receiverPosition, frame);
+        final Gradient[] raDec = measurementModel.value(receptionCondition, emitter, emissionDate);
 
         // Prepare the estimation
         final double shift = emissionDate.toAbsoluteDate().durationFrom(state);

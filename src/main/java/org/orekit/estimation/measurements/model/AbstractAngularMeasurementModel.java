@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements.model;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.Frame;
 import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
@@ -65,25 +64,21 @@ public abstract class AbstractAngularMeasurementModel extends AbstractSignalBase
     /**
      * Compute emitter-to-receiver vector with FIeld.
      * @param <T> field type
-     * @param frame frame where receiver position is given
-     * @param receiverPosition receiver position in input frame at reception time
-     * @param receptionDate signal reception date
+     * @param receptionCondition signal reception conditions
      * @param emitter signal emitter coordinates provider
      * @param approxEmissionDate guess for the emission date (shall be adjusted by signal travel time computer)
      * @return emitter-to-receiver vector
      */
-    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getEmitterToReceiverVector(final Frame frame, final FieldVector3D<T> receiverPosition,
-                                                                                              final FieldAbsoluteDate<T> receptionDate,
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getEmitterToReceiverVector(final FieldSignalReceptionCondition<T> receptionCondition,
                                                                                               final FieldPVCoordinatesProvider<T> emitter,
                                                                                               final FieldAbsoluteDate<T> approxEmissionDate) {
         // Refine time delay
-        final FieldSignalReceptionCondition<T> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
-                receiverPosition, frame);
+        final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
         final T signalTravelTime = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter)
                 .computeDelay(receptionCondition, approxEmissionDate);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(signalTravelTime.negate());
 
-        final FieldVector3D<T> observedPosition = emitter.getPosition(emissionDate, frame);
-        return observedPosition.subtract(receiverPosition);
+        final FieldVector3D<T> observedPosition = emitter.getPosition(emissionDate, receptionCondition.getReferenceFrame());
+        return observedPosition.subtract(receptionCondition.getReceiverPosition());
     }
 }
