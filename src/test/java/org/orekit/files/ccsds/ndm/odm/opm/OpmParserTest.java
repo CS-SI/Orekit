@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.ndm.odm.opm;
 
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.util.FastMath;
@@ -31,21 +32,25 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
-import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
-import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
+import org.orekit.files.ccsds.ndm.odm.*;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -59,6 +64,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.Function;
 
 public class OpmParserTest {
 
@@ -870,6 +876,85 @@ public class OpmParserTest {
         }
     }
 
+    /** Unit tests for parsing an OPM with a custom frame mapper. */
+    @Test
+    public void testFrameMapper() {
+        // setup
+        Frame parent = FramesFactory.getEME2000();
+        Frame zzrf = new Frame(parent, Transform.IDENTITY, "ZZRF");
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate expectedEpoch = new AbsoluteDate("2019-09-09T00:00:00.0", tai);
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("ZZRF".equals(orientation.getName()) && null == epoch) {
+                    return zzrf;
+                }
+                throw new IllegalArgumentException(orientation + " " + epoch);
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate epoch) {
+                if ("EARTH".equals(center.getName()) &&
+                        "ZZRF".equals(orientation.getName()) &&
+                        expectedEpoch.equals(epoch)) {
+                    return zzrf;
+                }
+                throw new IllegalArgumentException(
+                        center + " " + orientation + " " + epoch);
+            }
+
+        };
+        OpmParser parser = new ParserBuilder().
+                withFrameMapper(mapper).
+                withMu(Constants.EIGEN5C_EARTH_MU).
+                withDefaultMass(1000.0).
+                buildOpmParser();
+        final String name = "/ccsds/odm/opm/OPM-unknown-frame-mapper.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+
+        // action
+        final Opm opm = parser.parseMessage(source);
+
+        // verify
+        // check metadata reference frame
+        final OdmCommonMetadata metadata = opm.getMetadata();
+        MatcherAssert.assertThat(metadata.getFrameMapper(), Matchers.sameInstance(mapper));
+        MatcherAssert.assertThat(metadata.getFrame(), Matchers.sameInstance(zzrf));
+
+        // Check only block with reference frame explicitly specified (covariance)
+        final OpmData data = opm.getData();
+        MatcherAssert.assertThat(
+                data.getCovarianceBlock().getFrame(),
+                Matchers.sameInstance(zzrf));
+    }
+
+    /** Unit test for parsing an OPM with a custom frame mapper to map Earth-centered ICRF to GCRF. */
+    @Test
+    public void testFrameMapperGCRF() {
+        // setup
+        Frame gcrf = FramesFactory.getGCRF();
+
+        OpmParser originalParser = new ParserBuilder().
+                withMu(Constants.EIGEN5C_EARTH_MU).
+                withDefaultMass(1000.0).
+                buildOpmParser();
+
+        final String name = "/ccsds/odm/opm/OPM-frame-mapper-gcrf.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+
+        // action
+        final Opm opm = originalParser.parseMessage(source);
+
+        // verify
+        // check metadata reference frame correctly assigned
+        final OdmCommonMetadata metadata = opm.getMetadata();
+        final Frame opmFrame = metadata.getFrame();
+        MatcherAssert.assertThat(opmFrame, Matchers.sameInstance(gcrf));
+    }
+
     @Test
     public void testNonExistentFile() throws URISyntaxException {
         final String realName = getClass().getResource("/ccsds/odm/opm/OPMExample1.txt").toURI().getPath();
@@ -982,6 +1067,18 @@ public class OpmParserTest {
         final Frame actualFrame = file.getMetadata().getFrame();
         MatcherAssert.assertThat(moon.getPVCoordinates(date, actualFrame),
                                  OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));
+    }
+
+    /** Test deprecated constructor. Can be removed in 14.0. */
+    @Test
+    public void testDeprecatedConstructor() {
+        // action
+        OpmParser actual = new OpmParser(
+                null, true, null, null, 0, 0, null, new Function[0]);
+
+        // verify
+        MatcherAssert.assertThat(actual.getFrameMapper(),
+                Matchers.is(new OrekitCcsdsFrameMapper()));
     }
 
 }

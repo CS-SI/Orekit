@@ -19,7 +19,10 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -42,15 +45,22 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Segment;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.PositionAngleType;
@@ -897,6 +907,134 @@ public class AEMParserTest {
         Assertions.assertEquals(0.0, provider.getMinDate().durationFrom(segment0.getMetadata().getStart()), 0.0001);
         Assertions.assertEquals(0.0, provider.getMaxDate().durationFrom(segment0.getMetadata().getStop()), 0.0001);
 
+    }
+
+    /** Unit tests for parsing an AEM with a custom frame mapper. */
+    @Test
+    public void testFrameMapper() {
+        // setup
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate expectedEpoch = new AbsoluteDate("2023-01-01T00:00:00.0000", tai);
+        Frame parent = FramesFactory.getEME2000();
+        Frame itrf93 = FramesFactory.getITRF(ITRFVersion.ITRF_1993, IERSConventions.IERS_2010, true);
+        Frame myJ2000 = new Frame(parent, Transform.IDENTITY, "MyJ2000");
+        Frame scBodyFrame = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 4, Math.PI / 2, Math.PI /3)), "SC_BODY_1");
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("SC_BODY_1".equals(orientation.getName()) && null == epoch) {
+                    return scBodyFrame;
+                } else if (("J2000".equals(orientation.getName()) || "EME2000".equals(orientation.getName()))
+                        && null == epoch) {
+                    return myJ2000;
+                } else if ("ITRF1993".equals(orientation.getName()) && null == epoch) {
+                    return itrf93;
+                } else {
+                    throw new IllegalArgumentException(orientation.getName() + " " + epoch);
+                }
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate epoch) {
+                if ("EARTH".equals(center.getName()) &&
+                        "SC_BODY_1".equals(orientation.getName()) &&
+                        null == epoch) {
+                    return scBodyFrame;
+                } else if ("EARTH".equals(center.getName()) && null == epoch &&
+                        ("EME2000".equals(orientation.getName()) || "J2000".equals(orientation.getName()))) {
+                        return myJ2000;
+                } else if ("EARTH".equals(center.getName()) && "ITRF1993".equals(orientation.getName()) &&
+                        null == epoch) {
+                    return itrf93;
+                } else {
+                    throw new IllegalArgumentException(
+                            center + " " + orientation + " " + epoch);
+                }
+            }
+
+        };
+
+        // Test 3 types of attitude specifications: quaternion, Euler, and spin
+        final String quaternionExample = "/ccsds/adm/aem/AEMExample04.txt";
+        final String eulerExample = "/ccsds/adm/aem/AEMExample12.txt";
+        final String spinExample = "/ccsds/adm/aem/AEMExample06b.txt";
+        final DataSource quaternionSource = new DataSource(quaternionExample, () -> getClass().getResourceAsStream(quaternionExample));
+        final DataSource eulerSource = new DataSource(eulerExample, () -> getClass().getResourceAsStream(eulerExample));
+        final DataSource spinSource = new DataSource(spinExample, () -> getClass().getResourceAsStream(spinExample));
+
+        // action
+        final AemParser parser = new ParserBuilder().withFrameMapper(mapper).buildAemParser();
+        final Aem qAem = parser.parseMessage(quaternionSource);
+        final Aem eAem = parser.parseMessage(eulerSource);
+        final Aem sAem = parser.parseMessage(spinSource);
+
+        // verify
+        // only one segment per Aem
+        final AemSegment qAemSegment = qAem.getSegments().get(0);
+        final AemMetadata qAemMetadata = qAemSegment.getMetadata();
+        final AttitudeEndpoints qEndpoints = qAemMetadata.getEndpoints();
+        final BodyFacade qCenter = qAemMetadata.getCenter();
+        final AemSegment eAemSegment = eAem.getSegments().get(0);
+        final AemMetadata eAemMetadata = eAemSegment.getMetadata();
+        final AttitudeEndpoints eEndpoints = eAemMetadata.getEndpoints();
+        final BodyFacade eCenter = eAemMetadata.getCenter();
+        final AemSegment sAemSegment = sAem.getSegments().get(0);
+        final AemMetadata sAemMetadata = sAemSegment.getMetadata();
+        final AttitudeEndpoints sEndpoints = sAemMetadata.getEndpoints();
+        final BodyFacade sCenter = sAemMetadata.getCenter();
+
+        // getReferenceFrame() returns a Frame, not FrameFacade from the endpoints object
+        MatcherAssert.assertThat(qAemSegment.getReferenceFrame(), Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                qAemSegment.getMetadata().getEndpoints().getExternal(),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                qAemSegment.getMetadata().getFrameMapper(),
+                Matchers.sameInstance(mapper));
+        // The frameA and frameB and therefore ExternalFrame and SpacecraftBodyFrame are all stored as FrameFacades
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(qCenter, qEndpoints.getFrameA(), null),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(qCenter, qEndpoints.getFrameB(), null),
+                Matchers.sameInstance(scBodyFrame));
+
+        MatcherAssert.assertThat(eAemSegment.getReferenceFrame(), Matchers.sameInstance(itrf93));
+        MatcherAssert.assertThat(
+                eAemSegment.getMetadata().getEndpoints().getExternal(),
+                Matchers.sameInstance(itrf93));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(eCenter, eEndpoints.getFrameA(), null),
+                Matchers.sameInstance(itrf93));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(eCenter, eEndpoints.getFrameB(), null),
+                Matchers.sameInstance(scBodyFrame));
+
+        MatcherAssert.assertThat(sAemSegment.getReferenceFrame(), Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                sAemSegment.getMetadata().getEndpoints().getExternal(),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(sCenter, sEndpoints.getFrameA(), null),
+                Matchers.sameInstance(myJ2000));
+        MatcherAssert.assertThat(
+                mapper.buildCcsdsFrame(sCenter, sEndpoints.getFrameB(), null),
+                Matchers.sameInstance(scBodyFrame));
+    }
+
+    /** Test deprecated constructor. Can be removed in 14.0. */
+    @Test
+    public void testDeprecatedConstructor() {
+        // action
+        AemParser actual = new AemParser(
+                null, true, null, null, 0, null, new Function[0]);
+
+        // verify
+        MatcherAssert.assertThat(actual.getFrameMapper(),
+                Matchers.is(new OrekitCcsdsFrameMapper()));
     }
 
 }

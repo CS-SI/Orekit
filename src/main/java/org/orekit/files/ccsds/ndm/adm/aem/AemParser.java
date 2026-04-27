@@ -25,6 +25,8 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
@@ -40,6 +42,7 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.AttitudeEphemerisFileParser;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -101,13 +104,43 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
      * @since 12.0
+     * @deprecated in favor of {@link #AemParser(IERSConventions, boolean, DataContext,
+     * AbsoluteDate, int, ParsedUnitsBehavior, Function[], CcsdsFrameMapper)}.
      */
+    @Deprecated
     public AemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
                      final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior,
                      final Function<ParseToken, List<ParseToken>>[] filters) {
+        this(conventions, simpleEOP, dataContext, missionReferenceDate,
+                defaultInterpolationDegree, parsedUnitsBehavior, filters,
+                new OrekitCcsdsFrameMapper());
+    }
+
+    /**Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildAemParser()
+     * parserBuilder.buildAemParser()}.
+     * </p>
+     * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param dataContext used to retrieve frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * (may be null if time system is absolute)
+     * @param defaultInterpolationDegree default interpolation degree
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
+     */
+    public AemParser(final IERSConventions conventions, final boolean simpleEOP,
+                     final DataContext dataContext, final AbsoluteDate missionReferenceDate,
+                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
         super(Aem.ROOT, Aem.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, parsedUnitsBehavior, filters);
+              missionReferenceDate, parsedUnitsBehavior, filters, frameMapper);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -166,7 +199,9 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
         if (metadata != null) {
             return false;
         }
-        metadata  = new AemMetadata(defaultInterpolationDegree);
+        metadata  = new AemMetadata(
+                defaultInterpolationDegree,
+                getFrameMapper());
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,

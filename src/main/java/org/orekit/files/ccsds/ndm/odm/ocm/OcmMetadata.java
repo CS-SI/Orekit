@@ -20,9 +20,12 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.List;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadata;
 import org.orekit.files.ccsds.section.MetadataKey;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Meta-data for {@link OcmMetadata Orbit Comprehensive Message}.
@@ -192,11 +195,25 @@ public class OcmMetadata extends OdmMetadata {
 
     /** Create a new meta-data.
      * @param dataContext data context
+     * @deprecated in favor of {@link #OcmMetadata(DataContext, CcsdsFrameMapper)}.
      */
+    @Deprecated
     public OcmMetadata(final DataContext dataContext) {
+        this(dataContext, new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Create a new meta-data.
+     *
+     * @param dataContext data context
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
+     */
+    public OcmMetadata(final DataContext dataContext,
+                       final CcsdsFrameMapper frameMapper) {
 
         // set up the few fields that have default values as per CCSDS standard
-        super(TimeSystem.UTC);
+        super(TimeSystem.UTC, frameMapper);
         sclkOffsetAtEpoch = DEFAULT_SCLK_OFFSET_AT_EPOCH;
         sclkSecPerSISec   = DEFAULT_SCLK_SEC_PER_SI_SEC;
         timeSpan          = Double.NaN;
@@ -917,7 +934,7 @@ public class OcmMetadata extends OdmMetadata {
         validate(version);
 
         // allocate new instance
-        final OcmMetadata copy = new OcmMetadata(dataContext);
+        final OcmMetadata copy = new OcmMetadata(dataContext, getFrameMapper());
 
         // copy comments
         for (String comment : getComments()) {
