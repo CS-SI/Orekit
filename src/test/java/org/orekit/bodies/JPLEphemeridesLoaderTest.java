@@ -16,6 +16,13 @@
  */
 package org.orekit.bodies;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Scanner;
+import java.util.Set;
+
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -34,12 +41,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
 
 public class JPLEphemeridesLoaderTest {
 
@@ -351,8 +352,10 @@ public class JPLEphemeridesLoaderTest {
 
         int i = 0;
         // 431  1999.12.01 2451513.5  8 11  2      -23.03253618370120000000
-        try(InputStream is = this.getClass().getResourceAsStream(name)) {
-            final Scanner scanner = new Scanner(is, "UTF-8");
+        try(InputStream is = this.getClass().getResourceAsStream(name);
+            final Scanner scanner = new Scanner(is, "UTF-8"))
+        {
+            scanner.useLocale(Locale.ROOT);
             while (scanner.hasNext()) {
                 final int version = scanner.nextInt();
                 final String dateString = scanner.next().replace('.', '-');
