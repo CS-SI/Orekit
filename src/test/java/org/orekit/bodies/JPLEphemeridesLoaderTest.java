@@ -352,9 +352,10 @@ public class JPLEphemeridesLoaderTest {
 
         int i = 0;
         // 431  1999.12.01 2451513.5  8 11  2      -23.03253618370120000000
-        try(InputStream is = this.getClass().getResourceAsStream(name)) {
-            final Scanner scanner = new Scanner(is, "UTF-8");
-            scanner.useLocale(Locale.US);
+        try(InputStream is = this.getClass().getResourceAsStream(name);
+            final Scanner scanner = new Scanner(is, "UTF-8"))
+        {
+            scanner.useLocale(Locale.ROOT);
             while (scanner.hasNext()) {
                 final int version = scanner.nextInt();
                 final String dateString = scanner.next().replace('.', '-');
