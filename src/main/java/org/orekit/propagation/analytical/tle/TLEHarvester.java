@@ -56,7 +56,7 @@ class TLEHarvester extends AbstractAnalyticalMatricesHarvester {
     /** {@inheritDoc} */
     @Override
     public AbstractAnalyticalGradientConverter getGradientConverter() {
-        return new TLEGradientConverter(propagator);
+        return new TLEGradientConverter(propagator, propagator.getTleGenerationAlgorithm());
     }
 
 }

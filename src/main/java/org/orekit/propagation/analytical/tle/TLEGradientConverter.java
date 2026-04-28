@@ -16,15 +16,16 @@
  */
 package org.orekit.propagation.analytical.tle;
 
+import java.util.List;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.List;
 
 /** Converter for TLE propagator.
  * @author Luc Maisonobe
@@ -49,16 +50,21 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
     /** Attitude provider. */
     private final AttitudeProvider provider;
 
+    /** TLE generation algorithm. */
+    private final TleGenerationAlgorithm generationAlgorithm;
+
     /** Simple constructor.
      * @param propagator TLE propagator used to access initial orbit
+     * @param generationAlgorithm TLE generation algorithm
      */
-    TLEGradientConverter(final TLEPropagator propagator) {
+    TLEGradientConverter(final TLEPropagator propagator,
+                         final TleGenerationAlgorithm generationAlgorithm) {
         super(propagator, FREE_STATE_PARAMETERS);
-        // TLE and related parameters
-        this.tle      = propagator.getTLE();
-        this.teme     = propagator.getFrame();
-        this.utc      = tle.getUtc();
-        this.provider = propagator.getAttitudeProvider();
+        this.tle                 = propagator.getTLE();
+        this.teme                = propagator.getFrame();
+        this.utc                 = tle.getUtc();
+        this.provider            = propagator.getAttitudeProvider();
+        this.generationAlgorithm = generationAlgorithm;
     }
 
     /** {@inheritDoc} */
@@ -84,17 +90,16 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
 
         // Initialize the new TLE
         final FieldTLE<Gradient> templateTLE = new FieldTLE<>(satelliteNumber, classification,
-                                                              launchYear, launchNumber, launchPiece,
-                                                              ephemerisType, elementNumber, state.getDate(),
-                                                              zero, zero, zero, zero, zero, zero, zero, zero,
-                                                              revolutionNumberAtEpoch, bStar, utc);
+                launchYear, launchNumber, launchPiece,
+                ephemerisType, elementNumber, state.getDate(),
+                zero, zero, zero, zero, zero, zero, zero, zero,
+                revolutionNumberAtEpoch, bStar, utc);
 
         // TLE
-        final FieldTLE<Gradient> gTLE = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme).generate(state, templateTLE);
+        final FieldTLE<Gradient> gTLE = generationAlgorithm.generate(state, templateTLE);
 
         // Return the "Field" propagator
-        return FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme, parameters);
-
+        return FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme, parameters, generationAlgorithm);
     }
 
     /** {@inheritDoc} */
