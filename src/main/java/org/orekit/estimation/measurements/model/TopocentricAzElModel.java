@@ -31,6 +31,7 @@ import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.StaticTransform;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
@@ -153,8 +154,9 @@ public class TopocentricAzElModel extends AbstractAngularMeasurementModel {
         final FieldStaticTransform<T> toInertialFrameAtReception = bodyFixedFrame.getStaticTransformTo(inertialFrame,
                 receptionDate);
         final FieldVector3D<T> receiverPosition = toInertialFrameAtReception.transformPosition(bodyFixedReceiverPosition);
-        final FieldVector3D<T> apparentLineOfSight = getEmitterToReceiverVector(inertialFrame, receiverPosition,
-                receptionDate, emitter, approxEmissionDate).normalize();
+        final FieldSignalReceptionCondition<T> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
+                receiverPosition, inertialFrame);
+        final FieldVector3D<T> apparentLineOfSight = getEmitterToReceiverVector(receptionCondition, emitter, approxEmissionDate).normalize();
 
         // Compute azimuth and elevation
         final FieldVector3D<T> east = toInertialFrameAtReception.transformVector(receiver.getEast());

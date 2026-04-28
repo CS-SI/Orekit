@@ -28,6 +28,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.measurements.model.TopocentricAzElModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -107,7 +108,9 @@ public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
         final Frame frame = state.getFrame();
         final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
-        final AbsoluteDate emissionDate = computeEmissionDate(frame, receiverPV.getPosition(), receptionDate, emitter);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate,
+                receiverPV.getPosition(), frame);
+        final AbsoluteDate emissionDate = computeEmissionDate(receptionCondition, emitter);
 
         // Compute azimuth and elevation
         final BodyShape bodyShape = station.getBaseFrame().getParentShape();
