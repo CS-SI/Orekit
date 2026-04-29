@@ -80,8 +80,15 @@ public class TLEStateTransitionMatrixTest {
         });
     }
 
+    /** Test for issue #1936.
+     * <p>
+     * Ensure the configured generation.TleGenerationAlgorithm
+     * is effectively used during matrices computation (STM/gradient path), instead of
+     * falling back to the default algorithm.
+     * </p>
+     */
     @Test
-    public void testConfiguredAlgorithmUsedForMatricesComputation() {
+    public void testMatricesUseConfiguredAlgorithm() {
 
         final CountingTleGenerationAlgorithm countingAlgorithm =
                 new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm());

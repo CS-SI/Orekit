@@ -93,8 +93,14 @@ public class TLEPropagatorBuilderTest {
         Assertions.assertEquals(0., dA, 0.);
     }
 
+    /** Test for issue #1936.
+     * <p>
+     * Ensure the algorithm configured in {@link TLEPropagatorBuilder} is propagated to the created
+     * propagator and reused during TLE reset, instead of using the hardcoded default algorithm.
+     * </p>
+     */
     @Test
-    void testConfiguredGenerationAlgorithmUsedForPropagatorReset() {
+    void testResetUsesConfiguredAlgorithm() {
 
         // Given
         final DataContext dataContext = Utils.setDataRoot("regular-data");
