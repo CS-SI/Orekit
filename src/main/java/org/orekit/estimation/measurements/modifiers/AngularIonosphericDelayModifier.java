@@ -109,7 +109,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
      * @param topocentricFrame ground station frame
      * @param measurement measurement object
      * @return azimuth and elevation array [rad]
-     * @since 14.0
+     * @since 13.2.5
      */
     private double[] computeAzimuthElevation(final SpacecraftState transitState, final TopocentricFrame topocentricFrame,
                                              final AngularAzEl measurement) {
@@ -126,7 +126,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
      * @param station ground station
      * @param date date
      * @return topocentric frame
-     * @since 14.0
+     * @since 13.1.5
      */
     private TopocentricFrame buildTopocentricFrame(final GroundStation station, final AbsoluteDate date) {
         final GeodeticPoint geodeticPoint = station.getOffsetGeodeticPoint(date);
