@@ -17,6 +17,7 @@
 
 package org.orekit.propagation.analytical.tle;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -24,11 +25,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -73,6 +78,24 @@ public class TLEStateTransitionMatrixTest {
             TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleSPOT);
             propagator.setupMatricesComputation(null, null, null);
         });
+    }
+
+    @Test
+    public void testConfiguredAlgorithmUsedForMatricesComputation() {
+
+        final CountingTleGenerationAlgorithm countingAlgorithm =
+                new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm());
+        final TLEPropagator propagator =
+                TLEPropagator.selectExtrapolator(tleSPOT, FrameAlignedProvider.of(FramesFactory.getTEME()),
+                                                 1000.0, DataContext.getDefault().getFrames().getTEME(),
+                                                 countingAlgorithm);
+        final SpacecraftState initialState = propagator.getInitialState();
+        final AbsoluteDate target = initialState.getDate().shiftedBy(120.0);
+        propagator.setupMatricesComputation("stm", null, null);
+
+        propagator.propagate(target);
+
+        Assertions.assertTrue(countingAlgorithm.getFieldCalls() > 0);
     }
 
     private void doTestStateJacobian(double tolerance, TLE tle) {
@@ -171,10 +194,48 @@ public class TLEStateTransitionMatrixTest {
 
 
     private SpacecraftState arrayToState(double[][] array,
-                                           Frame frame, AbsoluteDate date, double mu,
-                                           Attitude attitude) {
+                                            Frame frame, AbsoluteDate date, double mu,
+                                            Attitude attitude) {
         CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
         return new SpacecraftState(orbit, attitude);
+    }
+
+    /** Counting wrapper around a TLE generation algorithm. */
+    private static class CountingTleGenerationAlgorithm implements TleGenerationAlgorithm {
+
+        /** Delegate. */
+        private final TleGenerationAlgorithm delegate;
+
+        /** Number of field state generations. */
+        private int fieldCalls;
+
+        /** Constructor.
+         * @param delegate delegate algorithm
+         */
+        CountingTleGenerationAlgorithm(final TleGenerationAlgorithm delegate) {
+            this.delegate = delegate;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TLE generate(final SpacecraftState state, final TLE templateTLE) {
+            return delegate.generate(state, templateTLE);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
+                                                                         final FieldTLE<T> templateTLE) {
+            fieldCalls++;
+            return delegate.generate(state, templateTLE);
+        }
+
+        /** Get the number of calls with field states.
+         * @return number of calls with field states
+         */
+        int getFieldCalls() {
+            return fieldCalls;
+        }
     }
 
 }
