@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="serrof" type="fix" issue="1951">
+            Remove while loop in (Field)KeplerianPropagator.
+        </action>
         <action dev="evan" type="fix" issue="1914">
             Account for central body in CCSDS NDM when ModifiedFrame is used.
             When parsing a CCSDS file Earth-centered ICRF is GCRF.

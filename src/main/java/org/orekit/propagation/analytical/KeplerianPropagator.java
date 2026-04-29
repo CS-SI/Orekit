@@ -26,8 +26,8 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.DataDictionary;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 
 /** Simple Keplerian orbit propagator.
@@ -178,16 +178,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     public Orbit propagateOrbit(final AbsoluteDate date) {
-
-        // propagate orbit
-        Orbit orbit = states.get(date).getOrbit();
-        do {
-            // we use a loop here to compensate for very small date shifts error
-            // that occur with long propagation time
-            orbit = orbit.shiftedBy(date.durationFrom(orbit.getDate()));
-        } while (!date.equals(orbit.getDate()));
-
-        return orbit;
+        final Orbit closestOrbit = states.get(date).getOrbit();
+        return closestOrbit.shiftedBy(date.accurateDurationFrom(closestOrbit.getDate()));
 
     }
 
