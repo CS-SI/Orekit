@@ -43,6 +43,9 @@
       <action dev="maxime" type="fix" issue="1930">
           Fixed parsing DitanceUnit keyword in STK ephemeris file parser.
       </action>
+      <action dev="serrof" type="fix" issue="1903">
+          Use actual station position in ionospheric angular correction.
+      </action>
     </release>
     <release version="13.1.4" date="2026-02-08" description="Orekit 13.1.4 is a patch release. It fixes bugs related to DSST, parsing, time and interpolation">
       <action dev="lebihanbastien" type="fix" issue="1907">
