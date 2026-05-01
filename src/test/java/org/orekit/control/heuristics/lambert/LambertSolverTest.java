@@ -184,9 +184,6 @@ class LambertSolverTest {
                 solution.getBoundaryConditions(),
                 solution.getBoundaryVelocities());
         checkLambertSolution(solutionCopy, expectedVelocity1, expectedVelocity2, 0.1, 1e-3);
-
-        // Print solution for coverage
-        System.out.println(solution);
     }
 
     // Der examples are extracted from section Lambert Numerical Examples of https://amostech.com/TechnicalPapers/2011/Poster/DER.pdf
@@ -427,6 +424,28 @@ class LambertSolverTest {
         final Vector3D solutionPosigrade1ExpectedVelocity2 = new Vector3D(-45087.49723745, 8953.99053394, 6738.00090557);
 
         checkLambertSolution(solutionsPosigrade.get(0), solutionPosigrade1ExpectedVelocity1, solutionPosigrade1ExpectedVelocity2, 1, 1e-3);
+    }
+
+    // Test case from issue 1950
+
+    @Test
+    void testSolveNMaxReducedByMinimumTimeOfFlight() {
+        final double mu = 398600.0;
+        final Vector3D position1 = new Vector3D(7e3, 0.0, 0.0);
+        final Vector3D position2 = new Vector3D(0.0, 2e4, 2e4);
+        final Frame frame = FramesFactory.getGCRF();
+        final AbsoluteDate date1 = AbsoluteDate.ARBITRARY_EPOCH;
+        final AbsoluteDate date2 = date1.shiftedBy(Constants.JULIAN_DAY);
+        final LambertBoundaryConditions boundaryConditions =
+                new LambertBoundaryConditions(date1, position1, date2, position2, frame);
+        final LambertSolver solver = new LambertSolver(mu);
+        final List<LambertSolution> solutions = solver.solve(true, boundaryConditions);
+        // one solution for 0 revolutions plus two solutions for each of 1, 2 and 3 revolutions
+        assertEquals(7, solutions.size());
+        final OrekitException exception = assertThrows(OrekitException.class,
+                () -> solver.solve(true, 4, boundaryConditions));
+        assertEquals(OrekitMessages.LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS, exception.getSpecifier());
+        assertEquals(3, exception.getParts()[1]);
     }
 
     private static void checkLambertSolution(final LambertSolution solution,

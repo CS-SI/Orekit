@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="rafa" type="fix" issue="1950">
+            Implement logic from Algorithm 2 from Izzo's 2014 paper to correct nMax in LambertSolver.
+        </action>
         <action dev="serrof" type="fix" issue="1951">
             Remove while loop in (Field)KeplerianPropagator.
         </action>
