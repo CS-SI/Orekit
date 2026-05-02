@@ -14,6 +14,7 @@ public class OdmCommonMetadataTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         OdmCommonMetadata actual = new OdmCommonMetadata();

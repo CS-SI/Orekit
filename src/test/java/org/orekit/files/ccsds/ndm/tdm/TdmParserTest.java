@@ -16,6 +16,17 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -44,17 +55,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
 
 /**
  * Test class for CCSDS Tracking Data Message parsing.<p>
@@ -1204,6 +1204,7 @@ public class TdmParserTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         TdmParser actual = new TdmParser(

@@ -14,6 +14,7 @@ public class OrbitManeuverHistoryMetadataTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         OrbitManeuverHistoryMetadata actual =

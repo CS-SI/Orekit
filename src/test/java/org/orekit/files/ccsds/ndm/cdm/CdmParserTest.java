@@ -2026,6 +2026,7 @@ public class CdmParserTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         CdmParser actual = new CdmParser(

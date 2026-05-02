@@ -15,6 +15,7 @@ public class AcmMetadataTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         AcmMetadata actual = new AcmMetadata((DataContext) null);

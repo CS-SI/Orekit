@@ -16,6 +16,15 @@
  */
 package org.orekit.files.ccsds.ndm.odm.opm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -40,7 +49,10 @@ import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.ndm.odm.*;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
+import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
@@ -56,15 +68,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.function.Function;
 
 public class OpmParserTest {
 
@@ -1071,6 +1074,7 @@ public class OpmParserTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         OpmParser actual = new OpmParser(

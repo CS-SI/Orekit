@@ -10,11 +10,12 @@ import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
  *
  * @author Evan Ward
  */
-public class CommonPhysicalPropertiesTest {
+class CommonPhysicalPropertiesTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
-    public void testDeprecatedConstructor() {
+    @Deprecated
+    void testDeprecatedConstructor() {
         // action
         CommonPhysicalProperties actual = new CommonPhysicalProperties();
 

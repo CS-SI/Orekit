@@ -16,6 +16,7 @@ public class MetadataTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         final Metadata actual = new Metadata(TimeSystem.UTC);

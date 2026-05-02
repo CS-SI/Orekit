@@ -14,6 +14,7 @@ public class AemMetadataTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         AemMetadata actual = new AemMetadata(5);

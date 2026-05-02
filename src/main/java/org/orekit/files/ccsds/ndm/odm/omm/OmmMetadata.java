@@ -21,9 +21,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.OdmMetadata;
 import org.orekit.frames.Frame;
 
 /** Metadata for Orbit Mean Messages.
@@ -54,7 +52,7 @@ public class OmmMetadata extends OdmCommonMetadata {
      * Empty constructor.
      *
      * @since 12.0
-     * @deprecated in favor of {@link OdmMetadata(TimeSystem, CcsdsFrameMapper)}.
+     * @deprecated in favor of {@link #OmmMetadata(CcsdsFrameMapper)}.
      */
     @Deprecated
     public OmmMetadata() {

@@ -16,6 +16,15 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -60,15 +69,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
-
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Function;
 
 public class OcmParserTest {
 
@@ -1485,6 +1485,7 @@ public class OcmParserTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         OcmParser actual = new OcmParser(

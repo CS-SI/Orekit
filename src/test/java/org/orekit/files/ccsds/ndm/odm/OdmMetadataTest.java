@@ -15,6 +15,7 @@ public class OdmMetadataTest {
 
     /** Test deprecated constructor. Can be removed in 14.0. */
     @Test
+    @Deprecated
     public void testDeprecatedConstructor() {
         // action
         OdmMetadata actual = new OdmMetadata(TimeSystem.UTC);
