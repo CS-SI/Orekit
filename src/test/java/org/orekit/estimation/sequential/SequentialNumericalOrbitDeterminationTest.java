@@ -420,13 +420,13 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Batch LS results
         // final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
         // final double   CastleRangeBias = 11274.4677;
-        final double[] castleAzElBias  = { 0.086136, -0.032682};
+        final double[] castleAzElBias  = { 0.086129, -0.032682};
         final double   castleRangeBias = 11473.6163;
 
         // Batch LS results
         // final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
         // final double   FucRangeBias = 13467.8256;
-        final double[] fucAzElBias  = { -0.067443, 0.064581 };
+        final double[] fucAzElBias  = { -0.067443, 0.064578 };
         final double   fucRangeBias = 13468.9624;
 
         // Batch LS results
@@ -438,7 +438,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Batch LS results
         // final double[] PreAzElBias = { 0.030201539, 0.009747877 };
         // final double PreRangeBias = 13594.11889;
-        final double[] preAzElBias = { 0.029973, 0.011140 };
+        final double[] preAzElBias = { 0.029971, 0.011135 };
         final double   preRangeBias = 13370.1890;
 
         // Batch LS results
@@ -454,7 +454,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         final double[] refStatAzi = { -0.024691, 0.020452, -0.001111, 0.006750 };
 
         //statistics for the elevation residual (min, max, mean, std)
-        final double[] refStatEle = { -0.030255, 0.026288, 0.002044, 0.007260 };
+        final double[] refStatEle = { -0.030255, 0.026307, 0.002044, 0.007260 };
 
         // Expected covariance
         final double dragVariance = 0.999722;

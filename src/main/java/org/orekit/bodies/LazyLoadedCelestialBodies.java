@@ -323,6 +323,7 @@ public class LazyLoadedCelestialBodies implements CelestialBodies {
                     List<CelestialBodyLoader> loaders = loadersMap.get(name);
                     if (loaders == null || loaders.isEmpty()) {
                         addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES);
+                        addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_DE_2021_SUPPORTED_NAMES);
                         addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES);
                         loaders = loadersMap.get(name);
                     }

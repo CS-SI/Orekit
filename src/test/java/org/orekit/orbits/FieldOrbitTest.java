@@ -74,13 +74,15 @@ class FieldOrbitTest {
     @EnumSource(value = Predefined.class, names = {"EME2000", "GCRF"})
     void testGetVelocity(final Predefined predefined) {
         // GIVEN
-        final TestFieldOrbit testFieldOrbit = new TestFieldOrbit(1.);
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldOrbit<Complex> testFieldOrbit = new FieldCartesianOrbit<>(ComplexField.getInstance(), orbit)
+                .inFrame(FramesFactory.getFrame(predefined));
         final FieldAbsoluteDate<Complex> date = testFieldOrbit.getDate().shiftedBy(0.);
-        final Frame frame = FramesFactory.getFrame(predefined);
+        final Frame outputFrame = FramesFactory.getEME2000();
         // WHEN
-        final FieldVector3D<Complex> actualVelocity = testFieldOrbit.getVelocity(date, frame);
+        final FieldVector3D<Complex> actualVelocity = testFieldOrbit.getVelocity(date, outputFrame);
         // THEN
-        final FieldVector3D<Complex> expectedVelocity = testFieldOrbit.getPVCoordinates(date, frame).getVelocity();
+        final FieldVector3D<Complex> expectedVelocity = testFieldOrbit.getPVCoordinates(date, outputFrame).getVelocity();
         Assertions.assertEquals(expectedVelocity, actualVelocity);
     }
 
@@ -149,7 +151,7 @@ class FieldOrbitTest {
     }
 
     @Test
-    public void testIssue1557() {
+    void testIssue1557() {
         // GIVEN
         final FieldOrbit<Binary64> fakeOrbit = TestUtils.getFakeFieldOrbit();
 

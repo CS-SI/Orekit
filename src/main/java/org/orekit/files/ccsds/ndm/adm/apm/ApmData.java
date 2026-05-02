@@ -99,7 +99,7 @@ public class ApmData implements Data {
             // quaternion block is mandatory in ADM V1
             if (quaternionBlock == null) {
                 // generate a dummy entry just for triggering the exception
-                new ApmQuaternion().validate(version);
+                new ApmQuaternion(null).validate(version);
             }
         } else {
             // at least one logical block is mandatory in ADM V2
