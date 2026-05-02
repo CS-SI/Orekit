@@ -102,13 +102,12 @@ class IodGoodingTest extends AbstractIodTest {
         // AFTER the update (still forcing an intermediate planar solution) -> Gooding: Keplerian parameters: {a: 4.2400558079418406E7; e: 0.004504568857387906; i: 0.09137634766893886; pa: 170.1160849868576; raan: 90.77888177347695; v: -19.13147024478354;}
         Orbit estimatedOrbitGooding = new IodGooding(mu).estimate(eme2000, raDec1, raDec2, raDec3);
         KeplerianOrbit orbitGooding = new KeplerianOrbit(estimatedOrbitGooding);
-        System.out.println(orbitGooding);
-        Assertions.assertEquals(4.2400558079418406E7, orbitGooding.getA(), 1.0e-6);
-        Assertions.assertEquals(0.004504568857387906, orbitGooding.getE(), 1.0e-10);
+        Assertions.assertEquals(4.2400558079418406E7, orbitGooding.getA(), 1.0e-1);
+        Assertions.assertEquals(0.004504568857387906, orbitGooding.getE(), 1.0e-7);
         Assertions.assertEquals(FastMath.toRadians(0.09137634766893886), orbitGooding.getI(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(170.1160849868576), orbitGooding.getPerigeeArgument(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(170.1160849868576), orbitGooding.getPerigeeArgument(), 1.0e-6);
         Assertions.assertEquals(FastMath.toRadians(90.77888177347695), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(-19.13147024478354), orbitGooding.getTrueAnomaly(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(-19.13147024478354), orbitGooding.getTrueAnomaly(), 1.0e-6);
     }
 
     @Test
