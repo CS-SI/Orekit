@@ -19,8 +19,11 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
+import org.orekit.frames.Frame;
 
 /** Inertia.
  * @author Luc Maisonobe
@@ -34,9 +37,24 @@ public class Inertia extends CommonPhysicalProperties {
     /** Inertia matrix. */
     private RealMatrix inertiaMatrix;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @deprecated in favor of {@link #Inertia(CcsdsFrameMapper)}.
      */
+    @Deprecated
     public Inertia() {
+        this(new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
+     */
+    public Inertia(final CcsdsFrameMapper frameMapper) {
+        super(frameMapper);
         inertiaMatrix = MatrixUtils.createRealMatrix(new double[][] {
             { Double.NaN, Double.NaN, Double.NaN },
             { Double.NaN, Double.NaN, Double.NaN },

@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -97,12 +95,7 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
     /** {@inheritDoc} */
     @Override
     public Frame getFrame() {
-        final Frame frame = metadata.getTrajReferenceFrame().asFrame();
-        if (frame == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
-                                      metadata.getTrajReferenceFrame().getName());
-        }
-        return frame;
+        return getMetadata().getFrame();
     }
 
     /** {@inheritDoc} */

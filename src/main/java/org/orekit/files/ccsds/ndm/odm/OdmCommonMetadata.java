@@ -17,13 +17,10 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.ModifiedFrame;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -53,9 +50,21 @@ public class OdmCommonMetadata extends OdmMetadata {
     private AbsoluteDate frameEpoch;
 
     /** Simple constructor.
+     * @deprecated in favor of {@link #OdmCommonMetadata(CcsdsFrameMapper)}.
      */
+    @Deprecated
     public OdmCommonMetadata() {
-        super(null);
+        this(new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Complete constructor.
+     *
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
+     */
+    public OdmCommonMetadata(final CcsdsFrameMapper frameMapper) {
+        super(null, frameMapper);
     }
 
     /** {@inheritDoc} */
@@ -138,28 +147,13 @@ public class OdmCommonMetadata extends OdmMetadata {
      * Keplerian elements data (and for the covariance reference frame if none is given).
      *
      * @return the reference frame
+     * @see #getFrameMapper()
      */
     public Frame getFrame() {
-        if (center.getBody() == null) {
-            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, center.getName());
-        }
-        if (referenceFrame.asFrame() == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, referenceFrame.getName());
-        }
-        // Just return frame if we don't need to shift the center based on CENTER_NAME
-        // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
-        final boolean isMci  = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.MCI;
-        final boolean isIcrf = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.ICRF;
-        final boolean isSolarSystemBarycenter =
-                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(center.getBody().getName());
-        if (!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(center.getBody().getName()) ||
-            isMci && CelestialBodyFactory.MARS.equals(center.getBody().getName()) ||
-            isIcrf && isSolarSystemBarycenter) {
-            return referenceFrame.asFrame();
-        }
-        // else, translate frame to specified center.
-        return new ModifiedFrame(referenceFrame.asFrame(), referenceFrame.asCelestialBodyFrame(),
-                                 center.getBody(), center.getName());
+        return getFrameMapper().buildCcsdsFrame(
+                getCenter(),
+                getReferenceFrame(),
+                getFrameEpoch());
     }
 
     /**

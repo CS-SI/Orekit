@@ -513,7 +513,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     public FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
-        final FieldPVCoordinates<T> pv = getPVCoordinates(otherDate, otherFrame);
+        final FieldPVCoordinates<T> pv = getPVCoordinates(otherDate, frame);
         if (otherFrame == getFrame()) {
             return pv.getVelocity();
         }
