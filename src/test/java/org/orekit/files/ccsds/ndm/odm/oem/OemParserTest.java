@@ -25,8 +25,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -42,8 +44,12 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.frames.FactoryManagedFrame;
@@ -55,6 +61,7 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
@@ -868,6 +875,78 @@ public class OemParserTest {
         Assertions.assertEquals("", iss.getSegments().get(0).getData().getComments().get(13));
         Assertions.assertEquals("", iss.getSegments().get(0).getData().getComments().get(20));
         Assertions.assertEquals(25, iss.getSegments().get(0).getData().getCoordinates().size());
+    }
+
+
+    /** Unit tests for parsing an OEM with a custom frame mapper. */
+    @Test
+    public void testFrameMapper() {
+        // setup
+        TimeScale utc = TimeScalesFactory.getUTC();
+        Frame tod = FramesFactory.getTOD(false);
+        Frame myTod = new Frame(tod, Transform.IDENTITY, "MyTOD");
+        AbsoluteDate expectedEpoch = new AbsoluteDate("2019-09-09", utc);
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("TOD".equals(orientation.getName()) && null == epoch) {
+                    return myTod;
+                }
+                throw new IllegalArgumentException("" + orientation + " " + epoch);
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate frameEpoch) {
+                if ("EARTH".equals(center.getName()) &&
+                        "TOD".equals(orientation.getName()) &&
+                        expectedEpoch.equals(frameEpoch)) {
+                    return myTod;
+                }
+                throw new IllegalArgumentException(
+                        center + " " + orientation + " " + frameEpoch);
+            }
+        };
+        OemParser parser = new ParserBuilder()
+                .withFrameMapper(mapper)
+                .buildOemParser();
+        String name = "/ccsds/odm/oem/test_cov.oem";
+        DataSource source =
+                new DataSource(name, () -> getClass().getResourceAsStream(name));
+
+        // action
+        Oem oem = parser.parse(source);
+
+        // verify
+        List<OemSegment> segments = oem.getSegments();
+        for (OemSegment segment : segments) {
+            MatcherAssert.assertThat(segment.getFrame(), Matchers.sameInstance(myTod));
+            // myTod is not "pseudo-inertial", so use closest ancestor
+            MatcherAssert.assertThat(segment.getInertialFrame(),
+                    Matchers.sameInstance(tod));
+            List<CartesianCovariance> covariances = segment.getCovarianceMatrices();
+            for (CartesianCovariance covariance : covariances) {
+                MatcherAssert.assertThat(
+                        covariance.getFrame(),
+                        Matchers.sameInstance(myTod));
+            }
+            MatcherAssert.assertThat(covariances.size(), Matchers.is(1));
+        }
+        MatcherAssert.assertThat(segments.size(), Matchers.is(1));
+    }
+
+    /** Test deprecated constructor. Can be removed in 14.0. */
+    @Test
+    @Deprecated
+    public void testDeprecatedConstructor() {
+        // action
+        OemParser actual = new OemParser(
+                null, true, null, null, 0, 0, null, new Function[0]);
+
+        // verify
+        MatcherAssert.assertThat(actual.getFrameMapper(),
+                Matchers.is(new OrekitCcsdsFrameMapper()));
     }
 
 }

@@ -19,9 +19,12 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
@@ -44,6 +47,9 @@ import org.orekit.utils.units.Unit;
  * @since 11.0
  */
 public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
+
+    /** For creating a {@link Frame}. */
+    private final CcsdsFrameMapper frameMapper;
 
     /** Covariance identification number. */
     private String covID;
@@ -86,10 +92,26 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
 
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
+     * @deprecated in favor of {@link
+     * #OrbitCovarianceHistoryMetadata(AbsoluteDate, CcsdsFrameMapper)}.
      */
+    @Deprecated
     public OrbitCovarianceHistoryMetadata(final AbsoluteDate epochT0) {
+        this(epochT0, new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param epochT0     T0 epoch from file metadata
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
+     */
+    public OrbitCovarianceHistoryMetadata(final AbsoluteDate epochT0,
+                                          final CcsdsFrameMapper frameMapper) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
+        this.frameMapper  = frameMapper;
         covBasis          = null;
         covReferenceFrame = new FrameFacade(null, null,
                                             OrbitRelativeFrame.TNW_INERTIAL, null,
@@ -214,6 +236,32 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     public void setCovFrameEpoch(final AbsoluteDate covFrameEpoch) {
         refuseFurtherComments();
         this.covFrameEpoch = covFrameEpoch;
+    }
+
+    /**
+     * Get the mapping between a CCSDS frame and a {@link Frame}.
+     *
+     * @return the frame mapper.
+     * @since 13.1.5
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Get the frame in which this covariance matrix is defined. Note that only
+     * the orientation of the returned frame is significant, the position of the
+     * returned frame is irrelevant and should be ignored.
+     *
+     * @return Orekit frame for this covariance history.
+     * @see #getCovReferenceFrame()
+     * @see #getCovFrameEpoch()
+     * @see #getFrameMapper()
+     * @since 13.1.5
+     */
+    public Frame getCovFrame() {
+        return getFrameMapper()
+                .buildCcsdsFrame(getCovReferenceFrame(), getCovFrameEpoch());
     }
 
     /** Set the minimum scale factor to apply to achieve realism.

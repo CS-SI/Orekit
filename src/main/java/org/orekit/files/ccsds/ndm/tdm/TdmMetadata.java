@@ -24,7 +24,9 @@ import java.util.TreeMap;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -218,9 +220,21 @@ public class TdmMetadata extends Metadata {
     private CorrectionApplied correctionsApplied;
 
     /** Create a new TDM meta-data.
+     * @deprecated in favor of {@link #TdmMetadata(CcsdsFrameMapper)}.
      */
+    @Deprecated
     public TdmMetadata() {
-        super(null);
+        this(new OrekitCcsdsFrameMapper());
+    }
+
+    /**
+     * Create a new TDM meta-data.
+     *
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
+     */
+    public TdmMetadata(final CcsdsFrameMapper frameMapper) {
+        super(null, frameMapper);
         participants          = new TreeMap<>();
         ephemerisNames        = new TreeMap<>();
         doppplerCountBias     = Double.NaN;
@@ -607,6 +621,7 @@ public class TdmMetadata extends Metadata {
 
     /** Get the the value of {@code REFERENCE_FRAME} as an Orekit {@link Frame}.
      * @return The reference frame specified by the {@code REFERENCE_FRAME} keyword.
+     * @see #getRadecFrame()
      */
     public FrameFacade getReferenceFrame() {
         return referenceFrame;
@@ -618,6 +633,25 @@ public class TdmMetadata extends Metadata {
     public void setReferenceFrame(final FrameFacade referenceFrame) {
         refuseFurtherComments();
         this.referenceFrame = referenceFrame;
+    }
+
+    /**
+     * Get the reference frame used right ascension and declination
+     * measurements.
+     *
+     * <p>Note that CCSDS 503 says "The origin (center) of the
+     * reference frame is assumed to be at the antenna reference point", but
+     * since the TDM does not provide the location of the antenna reference
+     * point the returned frame is not centered at the antenna reference point.
+     * Therefore, only the orientation of the returned frame is significant.
+     *
+     * @return Orientation of the frame used for RADEC observations.
+     * @see #getReferenceFrame()
+     * @since 13.1.5
+     */
+    public Frame getRadecFrame() {
+        // TDM doesn't allow specifying an epoch
+        return getFrameMapper().buildCcsdsFrame(getReferenceFrame(), null);
     }
 
     /**

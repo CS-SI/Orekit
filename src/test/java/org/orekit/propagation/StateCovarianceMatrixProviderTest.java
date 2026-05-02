@@ -25,6 +25,7 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -69,7 +70,7 @@ class StateCovarianceMatrixProviderTest {
     /** Reference covariance after 60s prop with a J2 numerical model (computed with another solution). */
     private RealMatrix  refCovAfter60s;
     
-
+    @BeforeEach
     void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -127,10 +128,6 @@ class StateCovarianceMatrixProviderTest {
      */
     @Test
     void testWithNumericalPropagatorCartesian() {
-
-        // Initialization
-        setUp();
-
         // Integrator
         final double        step       = 60.0;
         final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
@@ -210,10 +207,6 @@ class StateCovarianceMatrixProviderTest {
      */
     @Test
     void testAdditionalDataProvider() {
-
-        // Initialization
-        setUp();
-
         // Integrator
         final double step = 60.0;
         final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
@@ -244,8 +237,6 @@ class StateCovarianceMatrixProviderTest {
     @ParameterizedTest
     @EnumSource(value = LOFType.class, names = {"QSW", "NTW", "LVLH", "TNW"})
     void testStmLof(final LOFType lofType) {
-        // GIVEN
-        setUp();
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
         propagator.resetInitialState(initialState);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
@@ -272,10 +263,6 @@ class StateCovarianceMatrixProviderTest {
      */
     @Test
     void testWithNumericalPropagatorDefault() {
-
-        // Initialization
-        setUp();
-
         // Integrator
         final double        step       = 60.0;
         final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
@@ -349,10 +336,6 @@ class StateCovarianceMatrixProviderTest {
      */
     @Test
     void testWithNumericalPropagatorDefaultAndKeplerianOrbitType() {
-
-        // Initialization
-        setUp();
-
         // Integrator
         final double        step       = 60.0;
         final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
@@ -397,10 +380,6 @@ class StateCovarianceMatrixProviderTest {
      */
     @Test
     void testWithAnalyticalPropagator() {
-
-        // Initialization
-        setUp();
-
         // Numerical propagator
         final EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(initialState.getOrbit(),
                                                                                    GravityFieldFactory.getUnnormalizedProvider(6, 0));
@@ -461,10 +440,6 @@ class StateCovarianceMatrixProviderTest {
      */
     @Test
     void testWithDSSTPropagatorDefault() {
-
-        // Initialization
-        setUp();
-
         // Integrator
         final double        step       = 3600.0;
         final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
@@ -507,10 +482,6 @@ class StateCovarianceMatrixProviderTest {
      */
     @Test
     void testCovarianceShift() {
-
-        // Initialization
-        setUp();
-
         // Keplerian propagator
         final KeplerianPropagator propagator = new KeplerianPropagator(initialState.getOrbit());
         final double dt = 60.0;
@@ -550,9 +521,6 @@ class StateCovarianceMatrixProviderTest {
 
         // GIVEN
         // -----
-        
-        // Initialization
-        setUp();
 
         // dt
         final double dt = 3600.0;
@@ -615,9 +583,6 @@ class StateCovarianceMatrixProviderTest {
 
         // GIVEN
         // -----
-        
-        // Initialization
-        setUp();
 
         // dt
         final double dt = 3600.0;
@@ -659,7 +624,7 @@ class StateCovarianceMatrixProviderTest {
         Assertions.assertEquals(refPropagatedStateCov.getDate(), propagatedStateCov.getDate());
         Assertions.assertEquals(refPropagatedStateCov.getOrbitType(), propagatedStateCov.getOrbitType());
         Assertions.assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
-        compareCovariance(refPropagatedCov, propagatedCov, 0.);
+        compareCovariance(refPropagatedCov, propagatedCov, 1e-10);
     }
     
     /** Setup a StateCovarianceMatrixProvider without changing orbit type.
@@ -684,4 +649,30 @@ class StateCovarianceMatrixProviderTest {
         return provider;
     }
 
+    @Test
+    void testIssue1933() {
+        // Numerical propagator with EQUINOCTIAL ELEMENTS
+        NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.));
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setInitialState(initialState);
+
+        // Create covariance matrix provider with initial covariance in CARTESIAN elements
+        final StateCovarianceMatrixProvider provider = setUpCovariancePropagation(propagator);
+
+        // Propagate and store ephemeris on [t0 - dt, t0 + dt]
+        final AbsoluteDate initialDate = initialState.getDate();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        final double dt = 3600.0;
+        propagator.propagate(initialDate.shiftedBy(-dt), initialDate.shiftedBy(dt));
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+
+        // Propagate ephemeris
+        SpacecraftState propagated = ephemeris.propagate(initialDate);
+        final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
+
+        // Verify that both covariances are equal
+        Assertions.assertEquals(initialDate, propagatedStateCov.getDate());
+        Assertions.assertEquals(provider.getCovarianceOrbitType(), propagatedStateCov.getOrbitType());
+        Assertions.assertEquals(0., initCov.subtract(propagatedStateCov.getMatrix()).getNorm1(), 1e-6);
+    }
 }

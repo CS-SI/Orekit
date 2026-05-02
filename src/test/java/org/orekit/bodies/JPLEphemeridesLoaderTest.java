@@ -16,15 +16,24 @@
  */
 package org.orekit.bodies;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Scanner;
+import java.util.Set;
+
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -32,13 +41,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
 
 public class JPLEphemeridesLoaderTest {
 
@@ -306,6 +308,31 @@ public class JPLEphemeridesLoaderTest {
         MatcherAssert.assertThat(nChecked, Matchers.is(11));
     }
 
+    /**
+     * Test parsing of 2021 format against a truncated version of de440-ephemerides.
+     *
+     * @param ephemerisType type of ephemeris to load.
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/work_items/1938">Issue 1938</a>
+     */
+    @ParameterizedTest
+    @EnumSource(JPLEphemeridesLoader.EphemerisType.class)
+    public void Test2021FormatParsing(final JPLEphemeridesLoader.EphemerisType ephemerisType) {
+
+        // GIVEN
+        Utils.setDataRoot("regular-data/de440-ephemerides");
+
+        // WHEN
+        JPLEphemeridesLoader loaderWithout2021Format =
+                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES, ephemerisType);
+
+        JPLEphemeridesLoader loaderWith2021Format =
+                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_2021_SUPPORTED_NAMES, ephemerisType);
+
+        // THEN
+        Assertions.assertThrows(OrekitException.class, loaderWithout2021Format::getLoadedAstronomicalUnit);
+        Assertions.assertDoesNotThrow(loaderWith2021Format::getLoadedAstronomicalUnit);
+    }
+
     private int testPo(String name) throws IOException {
         JPLEphemeridesLoader loader = new JPLEphemeridesLoader(
                 JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
@@ -325,8 +352,10 @@ public class JPLEphemeridesLoaderTest {
 
         int i = 0;
         // 431  1999.12.01 2451513.5  8 11  2      -23.03253618370120000000
-        try(InputStream is = this.getClass().getResourceAsStream(name)) {
-            final Scanner scanner = new Scanner(is, "UTF-8");
+        try(InputStream is = this.getClass().getResourceAsStream(name);
+            final Scanner scanner = new Scanner(is, "UTF-8"))
+        {
+            scanner.useLocale(Locale.ROOT);
             while (scanner.hasNext()) {
                 final int version = scanner.nextInt();
                 final String dateString = scanner.next().replace('.', '-');

@@ -16,28 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.orekit.Utils;
-import org.orekit.data.DataSource;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.TimeSystem;
-import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.files.ccsds.utils.generation.KvnGenerator;
-import org.orekit.frames.FramesFactory;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
@@ -47,6 +25,36 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.data.DataSource;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 /**
  * Test class for CCSDS Tracking Data Message parsing.<p>
@@ -1153,6 +1161,63 @@ public class TdmParserTest {
         final List<String> dataComment = new ArrayList<String>();
         dataComment.add("Data Related Keywords");
         Assertions.assertEquals(dataComment, file.getSegments().get(0).getData().getComments());
+    }
+
+    /** Unit tests for parsing a TDM with a custom frame mapper. */
+    @Test
+    public void testFrameMapper() {
+        // setup
+        Frame tod = FramesFactory.getTOD(false);
+        Frame myTod = new Frame(tod, Transform.IDENTITY, "MyTOD");
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("TOD_EARTH".equals(orientation.getName()) && null == epoch) {
+                    return myTod;
+                }
+                throw new IllegalArgumentException("" + orientation + " " + epoch);
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate frameEpoch) {
+                if ("TOD_EARTH".equals(orientation.getName()) && frameEpoch == null) {
+                    return myTod;
+                }
+                throw new IllegalArgumentException(
+                        center + " " + orientation + " " + frameEpoch);
+            }
+        };
+        final String name = "/ccsds/tdm/kvn/TDM-Custom-Frame.txt";
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
+
+        // action
+        TdmParser parser = new ParserBuilder().withFrameMapper(mapper).buildTdmParser();
+        Tdm tdm = parser.parseMessage(source);
+
+        // verify
+        MatcherAssert.assertThat(
+                tdm.getSegments().get(0).getMetadata().getRadecFrame(),
+                Matchers.sameInstance(myTod));
+    }
+
+    /** Test deprecated constructor. Can be removed in 14.0. */
+    @Test
+    @Deprecated
+    public void testDeprecatedConstructor() {
+        // action
+        TdmParser actual = new TdmParser(
+                null,
+                true,
+                null,
+                null,
+                null,
+                new Function[0]);
+
+        // verify
+        MatcherAssert.assertThat(actual.getFrameMapper(),
+                Matchers.is(new OrekitCcsdsFrameMapper()));
     }
 
 }

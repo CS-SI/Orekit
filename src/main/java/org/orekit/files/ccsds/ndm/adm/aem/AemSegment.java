@@ -20,8 +20,6 @@ import java.util.List;
 
 import org.orekit.attitudes.BoundedAttitudeProvider;
 import org.orekit.attitudes.TabulatedProvider;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
@@ -54,12 +52,7 @@ public class AemSegment extends Segment<AemMetadata, AemData>
     /** {@inheritDoc} */
     @Override
     public Frame getReferenceFrame() {
-        final Frame frame = getMetadata().getEndpoints().getExternalFrame().asFrame();
-        if (frame == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
-                                      getMetadata().getEndpoints().getExternalFrame().getName());
-        }
-        return frame;
+        return getMetadata().getEndpoints().getExternal();
     }
 
     /** {@inheritDoc} */

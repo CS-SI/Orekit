@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 
 import org.orekit.attitudes.BoundedAttitudeProvider;
 import org.orekit.attitudes.TabulatedProvider;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -70,12 +68,8 @@ public class AttitudeStateHistory implements AttitudeEphemerisFile.AttitudeEphem
     /** {@inheritDoc} */
     @Override
     public Frame getReferenceFrame() {
-        final Frame frame = metadata.getEndpoints().getFrameA().asFrame();
-        if (frame == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
-                                      metadata.getEndpoints().getFrameA().getName());
-        }
-        return frame;
+        return metadata.getEndpoints().getFrameMapper()
+                .buildCcsdsFrame(metadata.getEndpoints().getFrameA(), null);
     }
 
     /** {@inheritDoc} */
