@@ -159,6 +159,7 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             LineParser.INTERPOLATION_SAMPLESM1,
             LineParser.CENTRAL_BODY,
             LineParser.COORDINATE_SYSTEM,
+            LineParser.DISTANCE_UNIT,
             LineParser.BEGIN_SEGMENT_BOUNDARY_TIMES,
             LineParser.EPHEMERIS_TIME_POS,
             LineParser.EPHEMERIS_TIME_POS_VEL,

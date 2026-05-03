@@ -19,13 +19,10 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.AtmosphericRefractionModel;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical angular measurement with tropospheric radio refractive index.
@@ -45,9 +42,9 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
     private final AtmosphericRefractionModel atmosModel;
 
     /** Constructor.
-    *
-    * @param model  tropospheric refraction model appropriate for the current angular measurement method.
-    */
+     *
+     * @param model  tropospheric refraction model appropriate for the current angular measurement method.
+     */
     public AngularRadioRefractionModifier(final AtmosphericRefractionModel model) {
         atmosModel = model;
     }
@@ -58,25 +55,6 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
         return "refraction";
     }
 
-    /** Compute the measurement error due to troposphere refraction.
-    * @param station station
-    * @param state spacecraft state
-    * @return the measurement error due to troposphere
-    */
-    private double angularErrorRadioRefractionModel(final GroundStation station,
-                                                    final SpacecraftState state) {
-
-        final Vector3D position = state.getPosition();
-
-        // elevation in radians
-        final double elevation =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
-                        getElevation();
-
-        // angle correction (rad)
-        return atmosModel.getRefraction(elevation);
-    }
-
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
@@ -85,19 +63,11 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
 
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularAzEl> estimated) {
-        final AngularAzEl     measure = estimated.getObservedMeasurement();
-        final GroundStation   station = measure.getStation();
-        final SpacecraftState state   = estimated.getStates()[0];
-        final double correction = angularErrorRadioRefractionModel(station, state);
-
         // update estimated value taking into account the tropospheric elevation correction.
         // The tropospheric elevation correction is directly added to the elevation.
         final double[] oldValue = estimated.getEstimatedValue();
-        final double[] newValue = oldValue.clone();
-
-        // consider only effect on elevation
-        newValue[1] = newValue[1] + correction;
-        estimated.modifyEstimatedValue(this, newValue[0], newValue[1]);
+        final double refractedElevation = oldValue[1] + atmosModel.getRefraction(oldValue[1]);
+        estimated.modifyEstimatedValue(this, oldValue[0], refractedElevation);
     }
 
 }
