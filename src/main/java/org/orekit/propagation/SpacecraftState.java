@@ -290,12 +290,10 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState addAdditionalData(final String name, final Object value) {
         final DataDictionary newDict = new DataDictionary(additional);
-        if (value instanceof double[] doubles) {
-            newDict.put(name, doubles.clone());
-        } else if (value instanceof Double double1) {
-            newDict.put(name, new double[] {double1});
-        } else {
-            newDict.put(name, value);
+        switch (value) {
+            case double[] doubles -> newDict.put(name, doubles.clone());
+            case Double double1 -> newDict.put(name, new double[]{double1});
+            case null, default -> newDict.put(name, value);
         }
         return withAdditionalData(newDict);
     }
