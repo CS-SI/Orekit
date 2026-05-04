@@ -77,7 +77,7 @@ public class SpacecraftBodyFrame {
         STARTRACKER,
 
         /** Three Axis Magnetometer. */
-        TAM;
+        TAM
 
     }
 

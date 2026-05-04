@@ -367,7 +367,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     public double getXM10B(final AbsoluteDate date) {
         // The date is shifted by 2 day as described in the JB2008 Model with a 2-day lag.
         final AbsoluteDate workDate = date.shiftedBy(-2.0 * Constants.JULIAN_DAY);
-        bracketDateSOL(workDate);;
+        bracketDateSOL(workDate);
         return getLinearInterpolationSOL(workDate, previousParamSOL.getXM10B(), nextParamSOL.getXM10B());
     }
 

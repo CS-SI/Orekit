@@ -158,9 +158,7 @@ public class TLETheory implements MeanTheory {
     @Override
     public double getReferenceRadius() {
         return 1000 * TLEConstants.EARTH_RADIUS;
-    };
-
-    /** Pre-treatment of the osculating orbit to be converted.
+    }/** Pre-treatment of the osculating orbit to be converted.
      * <p>The osculating orbit is transformed to TEME frame.</p>
      */
     @Override

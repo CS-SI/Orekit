@@ -27,6 +27,6 @@ public enum LibrationOrbitType {
     HALO,
 
     /** Lyapunov orbit type. */
-    LYAPUNOV;
+    LYAPUNOV
 
 }

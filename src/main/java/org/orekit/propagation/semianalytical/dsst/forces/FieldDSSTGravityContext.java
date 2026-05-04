@@ -121,12 +121,9 @@ public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends 
         // 2 * a / A
         this.ax2oA = a.divide(A).multiply(2.);
         // B / A
-        this.BoA = B.divide(A);;
-        // 1 / AB
-        this.ooAB = A.multiply(B).reciprocal();;
-        // C / 2AB
-        this.Co2AB =  auxiliaryElements.getC().multiply(ooAB).divide(2.);;
-        // B / (A * (1 + B))
+        this.BoA = B.divide(A);// 1 / AB
+        this.ooAB = A.multiply(B).reciprocal();// C / 2AB
+        this.Co2AB =  auxiliaryElements.getC().multiply(ooAB).divide(2.);// B / (A * (1 + B))
         this.BoABpo = BoA.divide(B.add(1.));
         // &mu / a
         this.muoa = mu.divide(a);

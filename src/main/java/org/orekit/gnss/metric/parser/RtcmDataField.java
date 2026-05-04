@@ -1621,6 +1621,6 @@ public enum RtcmDataField implements DataField {
         public int intValue(final EncodedMessage message) {
             return DataType.BIT_1.decode(message).intValue();
         }
-    };
+    }
 
 }

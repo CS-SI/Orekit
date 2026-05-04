@@ -415,6 +415,6 @@ public enum IgsSsrDataField implements DataField {
         public double doubleValue(final EncodedMessage message) {
             return DataType.U_INT_9.decode(message).intValue() * 0.05;
         }
-    };
+    }
 
 }

@@ -42,6 +42,6 @@ public enum MeasurementType {
     /** Two-way time transfer measurement.
      * @since 13.0
      */
-    TWO_WAY_TIME_TRANSFER;
+    TWO_WAY_TIME_TRANSFER
 
 }

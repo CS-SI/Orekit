@@ -32,6 +32,6 @@ public enum AngleType {
     XEYN,
 
     /** X-South, Y-East. */
-    XSYE;
+    XSYE
 
 }

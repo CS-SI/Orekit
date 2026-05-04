@@ -69,6 +69,6 @@ abstract class AbstractInterpolationGrid implements InterpolationGrid {
      */
     protected <T extends CalculusFieldElement<T>> int getPointsPerStep(final T stepStart, final T stepEnd) {
         return getPointsPerStep(stepStart.getReal(), stepEnd.getReal());
-    };
+    }
 
 }

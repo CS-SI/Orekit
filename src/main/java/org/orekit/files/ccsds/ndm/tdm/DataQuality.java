@@ -29,6 +29,6 @@ public enum DataQuality {
     VALIDATED,
 
     /** Data exhibits quality issues. */
-    DEGRADED;
+    DEGRADED
 
 }

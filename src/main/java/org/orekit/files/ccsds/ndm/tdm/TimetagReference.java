@@ -26,6 +26,6 @@ public enum TimetagReference {
     TRANSMIT,
 
     /** Reference at receive time. */
-    RECEIVE;
+    RECEIVE
 
 }

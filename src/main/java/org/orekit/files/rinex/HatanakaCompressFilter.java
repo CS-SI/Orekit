@@ -722,7 +722,7 @@ public class HatanakaCompressFilter implements DataFilter {
             EPOCH,
 
             /** Observation section. */
-            OBSERVATION;
+            OBSERVATION
 
         }
 

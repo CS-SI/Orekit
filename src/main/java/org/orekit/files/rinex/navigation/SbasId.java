@@ -51,6 +51,6 @@ public enum SbasId {
     A_SBAS,
 
     /** Southern Positioning Augmentation System. */
-    SPAN;
+    SPAN
 
 }

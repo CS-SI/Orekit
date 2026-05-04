@@ -38,6 +38,6 @@ public enum AcmElements {
     AD,
 
     /** User defined. */
-    USER;
+    USER
 
 }

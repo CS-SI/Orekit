@@ -26,6 +26,6 @@ public enum CorrectionApplied {
     YES,
 
     /** Corrections have not been applied to the tracking data. */
-    NO;
+    NO
 
 }
