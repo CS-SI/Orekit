@@ -100,11 +100,11 @@ public class TimeStampedCacheException extends OrekitException {
     public static TimeStampedCacheException unwrap(final MathRuntimeException exception) {
 
         for (Throwable t = exception; t != null; t = t.getCause()) {
-            if (t instanceof OrekitException) {
+            if (t instanceof OrekitException orekitException) {
                 if (t instanceof TimeStampedCacheException cacheException) {
                     return cacheException;
                 } else {
-                    return new TimeStampedCacheException((OrekitException) t);
+                    return new TimeStampedCacheException(orekitException);
                 }
             }
         }
