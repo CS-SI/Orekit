@@ -93,9 +93,9 @@ public class IodGauss {
     public Orbit estimate(final Frame outputFrame, final AngularRaDec raDec1,
                           final AngularRaDec raDec2, final AngularRaDec raDec3) {
         return estimate(outputFrame,
-                        raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), outputFrame), raDec1.getDate(), raDec1.getObservedLineOfSight(outputFrame),
-                        raDec2.getStation().getPVCoordinatesProvider().getPosition(raDec2.getDate(), outputFrame), raDec2.getDate(), raDec2.getObservedLineOfSight(outputFrame),
-                        raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), outputFrame), raDec3.getDate(), raDec3.getObservedLineOfSight(outputFrame));
+                        raDec1.getObserver().getPVCoordinatesProvider().getPosition(raDec1.getDate(), outputFrame), raDec1.getDate(), raDec1.getObservedLineOfSight(outputFrame),
+                        raDec2.getObserver().getPVCoordinatesProvider().getPosition(raDec2.getDate(), outputFrame), raDec2.getDate(), raDec2.getObservedLineOfSight(outputFrame),
+                        raDec3.getObserver().getPVCoordinatesProvider().getPosition(raDec3.getDate(), outputFrame), raDec3.getDate(), raDec3.getObservedLineOfSight(outputFrame));
     }
 
     /**

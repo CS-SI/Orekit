@@ -23,12 +23,12 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
-import org.orekit.signal.TwoLeggedSignalTravelTimer;
+import org.orekit.signal.TwoLeggedSignalTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -151,7 +151,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
 
         // compute transit and emission dates
         final Frame           frame = local.getFrame();
-        final TwoLeggedSignalTravelTimer travelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
+        final TwoLeggedSignalTimer travelTimer = new TwoLeggedSignalTimer(getSignalTravelTimeModel());
         final SpacecraftState localAtReception = local.shiftedBy(receptionDate.durationFrom(local));
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, localAtReception.getPosition(),
                 frame);
@@ -194,7 +194,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         // compute emission date
         final Frame           frame = local.getFrame();
         final SpacecraftState localAtReception = local.shiftedBy(receptionDate.durationFrom(local));
-        final SignalTravelTimeAdjustableEmitter adjustableEmitterComputer = getSignalTravelTimeModel()
+        final AdjustableEmitterSignalTimer adjustableEmitterComputer = getSignalTravelTimeModel()
                 .getAdjustableEmitterComputer(AbstractParticipant.extractPVCoordinatesProvider(remote, remote.getPVCoordinates()));
         final double delay = adjustableEmitterComputer.computeDelay(new SignalReceptionCondition(receptionDate,
                 localAtReception.getPosition(), frame));
@@ -282,7 +282,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         final FieldAbsoluteDate<Gradient> receptionDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         // compute transit and emission dates
-        final TwoLeggedSignalTravelTimer travelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
+        final TwoLeggedSignalTimer travelTimer = new TwoLeggedSignalTimer(getSignalTravelTimeModel());
         final FieldPVCoordinatesProvider<Gradient> localPVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(local, pvaL);
         final FieldPVCoordinatesProvider<Gradient> remotePVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(remote, pvaR);
         final TimeStampedFieldPVCoordinates<Gradient> localPVAtReception = localPVProvider.getPVCoordinates(receptionDate, frame);
@@ -335,7 +335,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         final FieldPVCoordinatesProvider<Gradient> remotePVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(remote, pvaR);
         final TimeStampedFieldPVCoordinates<Gradient> localPVAtReception = AbstractParticipant.extractFieldPVCoordinatesProvider(local, pvaL)
                 .getPVCoordinates(receptionDate, frame);
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitterComputer = getSignalTravelTimeModel()
+        final FieldAdjustableEmitterSignalTimer<Gradient> adjustableEmitterComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(dtl.getField(), remotePVProvider);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
                 localPVAtReception.getPosition(), frame);

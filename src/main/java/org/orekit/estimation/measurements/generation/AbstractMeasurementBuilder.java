@@ -29,6 +29,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeUtils;
 import org.orekit.utils.ParameterDriver;
 
 /** Base class for {@link MeasurementBuilder measurements builders}.
@@ -179,9 +180,7 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         // set a reference date for parameters missing one
         for (final ParameterDriver driver : observed.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
+                driver.setReferenceDate(TimeUtils.earliest(getStart(), getEnd()));
             }
         }
 

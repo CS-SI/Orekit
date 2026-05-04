@@ -62,7 +62,7 @@ class SignalTravelTimeModelTest {
         final ConvergenceChecker<Double> convergenceChecker = (iteration, previous, current) -> true;
         final SignalTravelTimeModel signalTravelTimeModel = new SignalTravelTimeModel(convergenceChecker);
         // WHEN
-        final SignalTravelTimeAdjustableReceiver adjustableReceiver = signalTravelTimeModel.getAdjustableReceiverComputer(mock(PVCoordinatesProvider.class));
+        final AdjustableReceiverSignalTimer adjustableReceiver = signalTravelTimeModel.getAdjustableReceiverComputer(mock(PVCoordinatesProvider.class));
         // THEN
         assertEquals(convergenceChecker, adjustableReceiver.getConvergenceChecker());
     }
@@ -73,7 +73,7 @@ class SignalTravelTimeModelTest {
         final ConvergenceChecker<Double> convergenceChecker = (iteration, previous, current) -> true;
         final SignalTravelTimeModel signalTravelTimeModel = new SignalTravelTimeModel(convergenceChecker);
         // WHEN
-        final SignalTravelTimeAdjustableEmitter adjustableEmitter = signalTravelTimeModel.getAdjustableEmitterComputer(mock(PVCoordinatesProvider.class));
+        final AdjustableEmitterSignalTimer adjustableEmitter = signalTravelTimeModel.getAdjustableEmitterComputer(mock(PVCoordinatesProvider.class));
         // THEN
         assertEquals(convergenceChecker, adjustableEmitter.getConvergenceChecker());
     }
@@ -95,7 +95,7 @@ class SignalTravelTimeModelTest {
         final FieldAbsolutePVCoordinates<Gradient> fieldAbsolutePVCoordinates = new FieldAbsolutePVCoordinates<>(FramesFactory.getGCRF(),
                 FieldAbsoluteDate.getArbitraryEpoch(gradientField), fieldPVCoordinates);
         // WHEN
-        final FieldSignalTravelTimeAdjustableReceiver<Gradient> adjustableReceiver = signalTravelTimeModel
+        final FieldAdjustableReceiverSignalTimer<Gradient> adjustableReceiver = signalTravelTimeModel
                 .getFieldAdjustableReceiverComputer(gradientField, fieldAbsolutePVCoordinates);
         // THEN
         assertEquals(convergenceChecker, adjustableReceiver.getConvergenceChecker());
@@ -118,7 +118,7 @@ class SignalTravelTimeModelTest {
         final FieldAbsolutePVCoordinates<Gradient> fieldAbsolutePVCoordinates = new FieldAbsolutePVCoordinates<>(FramesFactory.getGCRF(),
                 FieldAbsoluteDate.getArbitraryEpoch(gradientField), fieldPVCoordinates);
         // WHEN
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitter = signalTravelTimeModel
+        final FieldAdjustableEmitterSignalTimer<Gradient> adjustableEmitter = signalTravelTimeModel
                 .getFieldAdjustableEmitterComputer(gradientField, fieldAbsolutePVCoordinates);
         // THEN
         assertEquals(convergenceChecker, adjustableEmitter.getConvergenceChecker());

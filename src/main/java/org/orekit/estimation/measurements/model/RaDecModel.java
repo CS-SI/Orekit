@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
+import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
@@ -57,34 +58,29 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
 
     /**
      * Compute theoretical measurement.
-     * @param frame frame where receiver position is given
-     * @param receiverPosition receiver position in input frame at reception time
-     * @param receptionDate signal reception date
+     * @param receptionCondition signal reception condition
      * @param emitter signal emitter coordinates provider
      * @return RA-Dec (radians)
      */
-    public double[] value(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
+    public double[] value(final SignalReceptionCondition receptionCondition,
                           final PVCoordinatesProvider emitter) {
-        return value(frame, receiverPosition, receptionDate, emitter, receptionDate);
+        return value(receptionCondition, emitter, receptionCondition.getReceptionDate());
     }
 
     /**
      * Compute theoretical measurement with guess for the emission date.
-     * @param frame frame where receiver position is given
-     * @param receiverPosition receiver position in input frame at reception time
-     * @param receptionDate signal reception date
+     * @param receptionCondition signal reception condition
      * @param emitter signal emitter coordinates provider
      * @param approxEmissionDate guess for the emission date (shall be adjusted by signal travel time computer)
      * @return RA-Dec (radians)
      */
-    public double[] value(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
+    public double[] value(final SignalReceptionCondition receptionCondition,
                           final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
         // Compute line-of-sight
-        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPosition,
-                frame);
         final Vector3D apparentLineOfSightInInputFrame = getEmitterToReceiverVector(receptionCondition, emitter,
                 approxEmissionDate).normalize();
-        final StaticTransform toInertialFrameAtReception = frame.getStaticTransformTo(referenceFrame, receptionDate);
+        final StaticTransform toInertialFrameAtReception = receptionCondition.getReferenceFrame()
+                .getStaticTransformTo(referenceFrame, receptionCondition.getReceptionDate());
         final Vector3D apparentLineOfSight = toInertialFrameAtReception.transformVector(apparentLineOfSightInInputFrame);
 
         // Compute right ascension and declination
@@ -96,42 +92,38 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
     /**
      * Compute theoretical measurement with FIeld.
      * @param <T> field type
-     * @param frame frame where receiver position is given
-     * @param receiverPosition receiver position in input frame at reception time
-     * @param receptionDate signal reception date
+     * @param receptionCondition signal reception condition
      * @param emitter signal emitter coordinates provider
      * @return RA-Dec (radians)
      */
-    public <T extends CalculusFieldElement<T>> T[] value(final Frame frame, final FieldVector3D<T> receiverPosition,
-                                                         final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T[] value(final FieldSignalReceptionCondition<T> receptionCondition,
                                                          final FieldPVCoordinatesProvider<T> emitter) {
-        return value(frame, receiverPosition, receptionDate, emitter, receptionDate);
+        return value(receptionCondition, emitter, receptionCondition.getReceptionDate());
     }
 
     /**
      * Compute theoretical measurement with FIeld with guess for emission date.
      * @param <T> field type
-     * @param frame frame where receiver position is given
-     * @param receiverPosition receiver position in input frame at reception time
-     * @param receptionDate signal reception date
+     * @param receptionCondition signal reception condition
      * @param emitter signal emitter coordinates provider
      * @param approxEmissionDate guess for the emission date (shall be adjusted by signal travel time computer)
      * @return RA-Dec (radians)
      */
-    public <T extends CalculusFieldElement<T>> T[] value(final Frame frame, final FieldVector3D<T> receiverPosition,
-                                                         final FieldAbsoluteDate<T> receptionDate,
+    public <T extends CalculusFieldElement<T>> T[] value(final FieldSignalReceptionCondition<T> receptionCondition,
                                                          final FieldPVCoordinatesProvider<T> emitter,
                                                          final FieldAbsoluteDate<T> approxEmissionDate) {
         // Compute line-of-sight
-        final FieldVector3D<T> apparentLineOfSightInInputFrame = getEmitterToReceiverVector(frame, receiverPosition,
-                receptionDate, emitter, approxEmissionDate).normalize();
-        final FieldStaticTransform<T> toInertialFrameAtReception = frame.getStaticTransformTo(referenceFrame, receptionDate);
+        final FieldVector3D<T> apparentLineOfSightInInputFrame = getEmitterToReceiverVector(receptionCondition,
+                emitter, approxEmissionDate).normalize();
+        final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
+        final FieldStaticTransform<T> toInertialFrameAtReception = receptionCondition.getReferenceFrame()
+                .getStaticTransformTo(referenceFrame, receptionDate);
         final FieldVector3D<T> apparentLineOfSight = toInertialFrameAtReception.transformVector(apparentLineOfSightInInputFrame);
 
         // Compute right ascension and declination
         final T rightAscension = apparentLineOfSight.getAlpha();
         final T declination = apparentLineOfSight.getDelta();
-        final T[] output = MathArrays.buildArray(receiverPosition.getX().getField(), 2);
+        final T[] output = MathArrays.buildArray(receptionDate.getField(), 2);
         output[0] = rightAscension;
         output[1] = declination;
         return output;

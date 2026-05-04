@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -39,14 +41,13 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.function.Function;
 
 class FieldOrbitTest {
 
@@ -73,13 +74,15 @@ class FieldOrbitTest {
     @EnumSource(value = Predefined.class, names = {"EME2000", "GCRF"})
     void testGetVelocity(final Predefined predefined) {
         // GIVEN
-        final TestFieldOrbit testFieldOrbit = new TestFieldOrbit(1.);
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldOrbit<Complex> testFieldOrbit = new FieldCartesianOrbit<>(ComplexField.getInstance(), orbit)
+                .inFrame(FramesFactory.getFrame(predefined));
         final FieldAbsoluteDate<Complex> date = testFieldOrbit.getDate().shiftedBy(0.);
-        final Frame frame = FramesFactory.getFrame(predefined);
+        final Frame outputFrame = FramesFactory.getEME2000();
         // WHEN
-        final FieldVector3D<Complex> actualVelocity = testFieldOrbit.getVelocity(date, frame);
+        final FieldVector3D<Complex> actualVelocity = testFieldOrbit.getVelocity(date, outputFrame);
         // THEN
-        final FieldVector3D<Complex> expectedVelocity = testFieldOrbit.getPVCoordinates(date, frame).getVelocity();
+        final FieldVector3D<Complex> expectedVelocity = testFieldOrbit.getPVCoordinates(date, outputFrame).getVelocity();
         Assertions.assertEquals(expectedVelocity, actualVelocity);
     }
 
@@ -148,7 +151,7 @@ class FieldOrbitTest {
     }
 
     @Test
-    public void testIssue1557() {
+    void testIssue1557() {
         // GIVEN
         final FieldOrbit<Binary64> fakeOrbit = TestUtils.getFakeFieldOrbit();
 
@@ -399,6 +402,11 @@ class FieldOrbitTest {
         @Override
         public FieldOrbit<Complex> shiftedBy(double dt) {
             return new TestFieldOrbit(a.getReal());
+        }
+
+        @Override
+        public FieldOrbit<Complex> shiftedBy(TimeOffset dt) {
+            return shiftedBy(dt.toDouble());
         }
 
         @Override

@@ -24,11 +24,11 @@ import org.orekit.estimation.measurements.model.OneLeggedRangeRateModel;
 import org.orekit.estimation.measurements.model.TwoLeggedRangeRateModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
-import org.orekit.signal.TwoLeggedSignalTravelTimer;
+import org.orekit.signal.TwoLeggedSignalTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -123,11 +123,11 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
                 receptionDate, state);
 
         // Compute range rate
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel().getWarmedUpModel());
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(getSignalTravelTimeModel().getWarmedUpModel());
         final TimeStampedPVCoordinates[] participantsPV = estimated.getParticipants();
         final AbsoluteDate transitDate = participantsPV[1].getDate();
         final AbsoluteDate emissionDate = participantsPV[0].getDate();
-        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer);
+        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTimer);
         final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final double rangeRate = rangeRateModel.value(state.getFrame(), participantsPV[2], receptionDate,
                 satellitePVProvider, transitDate, getObserver().getPVCoordinatesProvider(), emissionDate) / 2.;
@@ -182,10 +182,10 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
         final FieldPVCoordinatesProvider<Gradient> observerPVProvider = getObserver().getFieldPVCoordinatesProvider(nbParams, indices);
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(getSignalTravelTimeModel());
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
                 receiverPV.getPosition(), frame);
-        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition,
+        final Gradient[] delays = twoLeggedSignalTimer.computeDelays(receptionCondition,
                 satellitePVProvider, observerPVProvider);
 
         // Prepare the evaluation
@@ -200,7 +200,7 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
                         receiverPV.toTimeStampedPVCoordinates()});
 
         // Compute range rate
-        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer);
+        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTimer);
         final Gradient rangeRate = rangeRateModel.value(receptionCondition, receiverPV.getVelocity(),
                 satellitePVProvider, transitDate, observerPVProvider, emissionDate).half();
         fillEstimation(rangeRate, indices, estimated);
@@ -218,7 +218,7 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
         final Frame frame = state.getFrame();
         final Field<Gradient> field = receptionDate.getField();
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
+        final FieldAdjustableEmitterSignalTimer<Gradient> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
                 field, satellitePVProvider);
         final FieldPVCoordinatesProvider<Gradient> observer = getObserver().getFieldPVCoordinatesProvider(nbParams, indices);
         final TimeStampedFieldPVCoordinates<Gradient> observerPVAtReception = observer.getPVCoordinates(receptionDate, frame);

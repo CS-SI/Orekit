@@ -23,10 +23,10 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
-import org.orekit.signal.TwoLeggedSignalTravelTimer;
+import org.orekit.signal.TwoLeggedSignalTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -189,10 +189,10 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final FieldPVCoordinatesProvider<Gradient> observerPVProvider = getObserver().getFieldPVCoordinatesProvider(nbParams, indices);
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
         final FieldVector3D<Gradient> receiverPosition = observerPVProvider.getPosition(receptionDate, frame);
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(getSignalTravelTimeModel());
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
                 receiverPosition, frame);
-        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition, satellitePVProvider, observerPVProvider);
+        final Gradient[] delays = twoLeggedSignalTimer.computeDelays(receptionCondition, satellitePVProvider, observerPVProvider);
 
         // Prepare the evaluation
         final FieldAbsoluteDate<Gradient> transitDate = receptionDate.shiftedBy(delays[1].negate());
@@ -222,7 +222,7 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
         final Frame frame = state.getFrame();
         final Field<Gradient> field = receptionDate.getField();
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
+        final FieldAdjustableEmitterSignalTimer<Gradient> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
                 field, satellitePVProvider);
         final FieldVector3D<Gradient> observerPositionAtReception = getObserver().getFieldPVCoordinatesProvider(nbParams, indices)
                 .getPosition(receptionDate, frame);

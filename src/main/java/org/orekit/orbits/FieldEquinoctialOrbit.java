@@ -16,8 +16,8 @@
  */
 package org.orekit.orbits;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -1001,7 +1001,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         this.computePVWithoutA();
         final FieldVector3D<T> fixedP = new FieldVector3D<>(getOne(), this.partialPV.getPosition(),
                                                             dt.square().multiply(0.5), nonKeplerianAcceleration);
-        final T fixedR2 = fixedP.getNormSq();
+        final T fixedR2 = fixedP.getNorm2Sq();
         final T fixedR  = fixedR2.sqrt();
         final FieldVector3D<T> fixedV = new FieldVector3D<>(getOne(), this.partialPV.getVelocity(),
                                                             dt, nonKeplerianAcceleration);

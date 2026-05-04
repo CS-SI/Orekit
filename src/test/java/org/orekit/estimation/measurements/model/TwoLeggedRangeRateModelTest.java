@@ -28,7 +28,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
-import org.orekit.signal.TwoLeggedSignalTravelTimer;
+import org.orekit.signal.TwoLeggedSignalTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -46,8 +46,8 @@ class TwoLeggedRangeRateModelTest {
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate receptionDate = AbsoluteDate.ARBITRARY_EPOCH;
         final SignalTravelTimeModel signalTravelTimeModel = new SignalTravelTimeModel();
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(signalTravelTimeModel);
-        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer);
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(signalTravelTimeModel);
+        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTimer);
         final PVCoordinates pvRelay = new PVCoordinates(new Vector3D(1e3, 1e4,-1e2), new Vector3D(1, 2, 3),
                 Vector3D.MINUS_I);
         final PVCoordinates pvObserver = new PVCoordinates(Vector3D.MINUS_J, Vector3D.MINUS_K);
@@ -74,8 +74,8 @@ class TwoLeggedRangeRateModelTest {
         final GradientField field = GradientField.getField(1);
         final FieldAbsoluteDate<Gradient> receptionDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         final SignalTravelTimeModel signalTravelTimeModel = new SignalTravelTimeModel();
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(signalTravelTimeModel);
-        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer);
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(signalTravelTimeModel);
+        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTimer);
         final FieldVector3D<Gradient> fieldVelocity = new FieldVector3D<>(field.getOne(), new Gradient(0., 1.), field.getZero());
         final FieldPVCoordinates<Gradient> pvRelay = new FieldPVCoordinates<>(new FieldVector3D<>(field, new Vector3D(1e3, 1e4,-1e2)),
                 fieldVelocity);
@@ -107,8 +107,8 @@ class TwoLeggedRangeRateModelTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(new SignalTravelTimeModel());
-        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer);
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(new SignalTravelTimeModel());
+        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTimer);
         final PVCoordinates pvRelay = new PVCoordinates(new Vector3D(1e5, 1e6, -1e4));
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(2e5, -3e4, 1e5));
         final AbsolutePVCoordinates relay = new AbsolutePVCoordinates(frame, date, pvRelay);
@@ -125,8 +125,8 @@ class TwoLeggedRangeRateModelTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(new SignalTravelTimeModel());
-        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer);
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(new SignalTravelTimeModel());
+        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTimer);
         final PVCoordinates pvRelay = new PVCoordinates(new Vector3D(1e5, 0., 0.), Vector3D.PLUS_I.scalarMultiply(radialSpeed));
         final PVCoordinates pvEmitter = new PVCoordinates();
         final AbsolutePVCoordinates relay = new AbsolutePVCoordinates(frame, date, pvRelay);
@@ -142,8 +142,8 @@ class TwoLeggedRangeRateModelTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(new SignalTravelTimeModel());
-        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer);
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(new SignalTravelTimeModel());
+        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTimer);
         final PVCoordinates pvRelay = new PVCoordinates(new Vector3D(1e5, 1e4,-1e6), Vector3D.PLUS_I);
         final PVCoordinates pvEmitter = new PVCoordinates();
         final AbsolutePVCoordinates relay = new AbsolutePVCoordinates(frame, date, pvRelay);
@@ -160,8 +160,8 @@ class TwoLeggedRangeRateModelTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(new SignalTravelTimeModel());
-        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer);
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(new SignalTravelTimeModel());
+        final TwoLeggedRangeRateModel rangeRateModel = new TwoLeggedRangeRateModel(twoLeggedSignalTimer);
         final PVCoordinates receiverPV = new PVCoordinates(Vector3D.PLUS_I.scalarMultiply(1e4), Vector3D.MINUS_K);
         final PVCoordinates pvRelay = new PVCoordinates(new Vector3D(1e5, 1e6, -1e4), Vector3D.MINUS_J);
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(2e5, -3e4, 1e5), new Vector3D(1, 2, 3));

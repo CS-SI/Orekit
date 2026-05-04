@@ -25,10 +25,10 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -198,7 +198,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
 
         // Compute propagation times
         final PVCoordinatesProvider localCoordsProvider = AbstractParticipant.extractPVCoordinatesProvider(state, pva);
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel().getAdjustableEmitterComputer(localCoordsProvider);
+        final AdjustableEmitterSignalTimer signalTimeOfFlight = getSignalTravelTimeModel().getAdjustableEmitterComputer(localCoordsProvider);
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(measurementDate, primaryArrival.getPosition(),
                 state.getFrame());
         final double primaryTauD = signalTimeOfFlight.computeDelay(receptionCondition, pva.getDate());
@@ -217,7 +217,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
 
         // Uplink time of flight from secondary station to transit state of leg2
         final PVCoordinatesProvider secondPVCoordinatesProvider = getSecondaryObserver().getPVCoordinatesProvider();
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlightQSecondary =
+        final AdjustableEmitterSignalTimer signalTimeOfFlightQSecondary =
                             getSignalTravelTimeModel().getAdjustableEmitterComputer(secondPVCoordinatesProvider);
         final SignalReceptionCondition transitLeg2ReceptionCondition = new SignalReceptionCondition(transitStateLeg2PV.getDate(),
                 transitStateLeg2PV.getPosition(), state.getFrame());
@@ -236,7 +236,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
         final TimeStampedPVCoordinates secondaryRebound = secondPVCoordinatesProvider.getPVCoordinates(reboundDate, state.getFrame());
 
         // Downlink time of flight from transitStateLeg1 to secondary station at rebound date
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlightLeg2 =
+        final AdjustableEmitterSignalTimer signalTimeOfFlightLeg2 =
                     getSignalTravelTimeModel().getAdjustableEmitterComputer(localCoordsProvider);
         final SignalReceptionCondition transitReboundReceptionCondition = new SignalReceptionCondition(reboundDate,
                 secondaryRebound.getPosition(), state.getFrame());
@@ -254,7 +254,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
         final TimeStampedPVCoordinates QPrimaryApprox = primaryPVProvider.getPVCoordinates(approxEmissionDate, state.getFrame());
 
         // Uplink time of flight from primary station to transit state of leg1
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlightQPrimary =
+        final AdjustableEmitterSignalTimer signalTimeOfFlightQPrimary =
                         getSignalTravelTimeModel().getAdjustableEmitterComputer(primaryPVProvider);
         final SignalReceptionCondition firstReception = new SignalReceptionCondition(transitStateLeg1PV.getDate(),
                 transitStateLeg1PV.getPosition(), state.getFrame());
@@ -372,7 +372,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
         // Compute propagation times
         final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractParticipant
                 .extractFieldPVCoordinatesProvider(state, pvaDS);
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, satellitePVProvider);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(measurementDateDS,
                 primaryArrival.getPosition(), state.getFrame());
@@ -389,7 +389,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
 
         // Uplink time of flight from secondary station to transit state of leg2
         final FieldPVCoordinatesProvider<Gradient> secondaryCoordsProvider = getSecondaryObserver().getFieldPVCoordinatesProvider(nbParams, indices);
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputerSecondaryU = getSignalTravelTimeModel()
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldComputerSecondaryU = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, secondaryCoordsProvider);
         final FieldSignalReceptionCondition<Gradient> leg2ReceptionCondition = new FieldSignalReceptionCondition<>(transitStateLeg2PV.getDate(),
                 transitStateLeg2PV.getPosition(), state.getFrame());
@@ -406,7 +406,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
         final TimeStampedFieldPVCoordinates<Gradient> secondaryRebound = secondaryCoordsProvider.getPVCoordinates(reboundDateDS, state.getFrame());
 
         // Downlink time of flight from transitStateLeg1 to secondary station at rebound date
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputerD = getSignalTravelTimeModel()
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldComputerD = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, satellitePVProvider);
         final FieldSignalReceptionCondition<Gradient> reboundCondition = new FieldSignalReceptionCondition<>(reboundDateDS,
                 secondaryRebound.getPosition(), state.getFrame());
@@ -422,7 +422,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
         // Primary station PV in inertial frame at approximate emission date
 
         // Uplink time of flight from primary station to transit state of leg1
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputerPrimaryU = getSignalTravelTimeModel()
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldComputerPrimaryU = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, primaryCoordsProvider);
         final FieldSignalReceptionCondition<Gradient> firstReception = new FieldSignalReceptionCondition<>(transitStateLeg1PV.getDate(),
                 transitStateLeg1PV.getPosition(), state.getFrame());

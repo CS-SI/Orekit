@@ -16,11 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Map;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -229,30 +226,9 @@ class GroundStationTransformProvider implements TransformProvider {
 
     }
 
-    /**
-     * Get transform with automatic differentiation parameters.
-     * @param date date
-     * @param freeParameters number of free parameters in the gradient
-     * @param indices mapping from parameters' name to derivatives' index.
-     * @return frame transform
-     */
-    public FieldTransform<Gradient> getTransform(final FieldAbsoluteDate<Gradient> date,
-                                                 final int freeParameters,
-                                                 final Map<String, Integer> indices) {
-
-        // take Earth offsets into account
-        final FieldTransform<Gradient> intermediateToBody =
-                estimatedEarthFrameProvider.getTransform(date, freeParameters, indices).getInverse();
-
-        // take station offsets into account
-        final FieldVector3D<Gradient> origin = getOrigin(date, indices);
-        return getTransform(date, origin, intermediateToBody);
-
-    }
-
-    private <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
-                                           final FieldVector3D<T> origin,
-                                           final FieldTransform<T> intermediateToBody) {
+    <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
+                                                                       final FieldVector3D<T> origin,
+                                                                       final FieldTransform<T> intermediateToBody) {
         final Field<T>         field = date.getField();
         final FieldVector3D<T> zero  = FieldVector3D.getZero(field);
         final FieldVector3D<T> plusI = FieldVector3D.getPlusI(field);
@@ -277,24 +253,6 @@ class GroundStationTransformProvider implements TransformProvider {
                 new FieldTransform<>(date, intermediateToBody, bodyToInert));
 
     }
-    /**
-     * Get static transform with automatic differentiation parameters.
-     * @param date date
-     * @param freeParameters number of free parameters in the gradient
-     * @param indices mapping from parameters' name to derivatives' index.
-     * @return frame static transform
-     */
-    public FieldStaticTransform<Gradient> getStaticTransform(final FieldAbsoluteDate<Gradient> date,
-                                                             final int freeParameters, final Map<String, Integer> indices) {
-
-        // take Earth offsets into account
-        final FieldStaticTransform<Gradient> intermediateToBody = estimatedEarthFrameProvider.getStaticTransform(date,
-                freeParameters, indices).getInverse();
-
-        final FieldVector3D<Gradient> origin = getOrigin(date, indices);
-        return getStaticTransform(date, origin, intermediateToBody);
-
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -304,13 +262,6 @@ class GroundStationTransformProvider implements TransformProvider {
         final FieldStaticTransform<T> intermediateToBody = estimatedEarthFrameProvider.getStaticTransform(date).getInverse();
 
         final FieldVector3D<T> origin = new FieldVector3D<>(date.getField(), getOrigin(date.toAbsoluteDate()));
-        return getStaticTransform(date, origin, intermediateToBody);
-
-    }
-
-    private <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date,
-                                                                                           final FieldVector3D<T> origin,
-                                                                                           final FieldStaticTransform<T> intermediateToBody) {
         // take station offsets into account
         final Field<T>         field = date.getField();
         final FieldVector3D<T> plusI = FieldVector3D.getPlusI(field);
@@ -347,25 +298,6 @@ class GroundStationTransformProvider implements TransformProvider {
         final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
         final FieldStaticTransform<T> staticTopoToBody = baseFrame.getStaticTransformTo(bodyFrame, date);
         final FieldVector3D<T>        originBeforeDisplacement     = staticTopoToBody.transformPosition(new FieldVector3D<>(x, y, z));
-        return originBeforeDisplacement.add(computeDisplacement(absoluteDate, originBeforeDisplacement.toVector3D()));
-    }
-
-    /**
-     * Retrieve station's position in body shape frame.
-     * @param date date
-     * @param indices mapping from parameters' name to derivatives' index.
-     * @return origin position
-     */
-    private FieldVector3D<Gradient> getOrigin(final FieldAbsoluteDate<Gradient> date,
-                                              final Map<String, Integer> indices) {
-        final int freeParameters = date.getField().getZero().getFreeParameters();
-        final AbsoluteDate absoluteDate = date.toAbsoluteDate();
-        final Gradient x          = eastOffsetDriver.getValue(freeParameters, indices, absoluteDate);
-        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices, absoluteDate);
-        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices, absoluteDate);
-        final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
-        final FieldStaticTransform<Gradient> staticTopoToBody = baseFrame.getStaticTransformTo(bodyFrame, date);
-        final FieldVector3D<Gradient>        originBeforeDisplacement     = staticTopoToBody.transformPosition(new FieldVector3D<>(x, y, z));
         return originBeforeDisplacement.add(computeDisplacement(absoluteDate, originBeforeDisplacement.toVector3D()));
     }
 

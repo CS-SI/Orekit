@@ -19,12 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-class SignalTravelTimeAdjustableReceiverTest {
+class AdjustableReceiverSignalTimerTest {
 
     @Test
     void testConstructorDefaultConvergenceChecker() {
         // GIVEN
-        final SignalTravelTimeAdjustableReceiver adjustableReceiver = new SignalTravelTimeAdjustableReceiver(mock());
+        final AdjustableReceiverSignalTimer adjustableReceiver = new AdjustableReceiverSignalTimer(mock());
         // WHEN
         final ConvergenceChecker<Double> convergenceChecker = adjustableReceiver.getConvergenceChecker();
         final double convergedValue = 0.;
@@ -40,7 +40,7 @@ class SignalTravelTimeAdjustableReceiverTest {
         final AbsoluteDate emissionDate = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, emissionDate, new PVCoordinates());
         final Vector3D emitterPosition = new Vector3D(1e2, 1e3, 1e4);
-        final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = new SignalTravelTimeAdjustableReceiver(absolutePVCoordinates);
+        final AdjustableReceiverSignalTimer signalTimeOfFlight = new AdjustableReceiverSignalTimer(absolutePVCoordinates);
         final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emitterPosition, frame);
         // WHEN
         final double actual = signalTimeOfFlight.computeDelay(emissionCondition);
@@ -58,7 +58,7 @@ class SignalTravelTimeAdjustableReceiverTest {
         final Vector3D emitterPosition = new Vector3D(-1e1, 1e2, -1e3);
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, emissionDate,
                 new PVCoordinates(emitterPosition, Vector3D.MINUS_J.scalarMultiply(speed), Vector3D.PLUS_J));
-        final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = new SignalTravelTimeAdjustableReceiver(absolutePVCoordinates);
+        final AdjustableReceiverSignalTimer signalTimeOfFlight = new AdjustableReceiverSignalTimer(absolutePVCoordinates);
         final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emitterPosition, frame);
         // WHEN
         final double actual = signalTimeOfFlight.computeDelay(emissionCondition);
@@ -80,7 +80,7 @@ class SignalTravelTimeAdjustableReceiverTest {
         final PVCoordinates pvCoordinates = new PVCoordinates(Vector3D.MINUS_I, new Vector3D(1, -2, 3).scalarMultiply(speedFactor));
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, emissionDate, pvCoordinates);
         final Vector3D emitterPosition = new Vector3D(1e2, 1e3, 1e4);
-        final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = new SignalTravelTimeAdjustableReceiver(absolutePVCoordinates);
+        final AdjustableReceiverSignalTimer signalTimeOfFlight = new AdjustableReceiverSignalTimer(absolutePVCoordinates);
         final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emitterPosition, frame);
         // WHEN
         final double actual = signalTimeOfFlight.computeDelay(emissionCondition);
@@ -99,7 +99,7 @@ class SignalTravelTimeAdjustableReceiverTest {
         final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(1e4, 1e6, -1e5), Vector3D.PLUS_J.scalarMultiply(speedFactor));
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, emissionDate, pvCoordinates);
         final Vector3D emitterPosition = Vector3D.ZERO;
-        final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = new SignalTravelTimeAdjustableReceiver(absolutePVCoordinates,
+        final AdjustableReceiverSignalTimer signalTimeOfFlight = new AdjustableReceiverSignalTimer(absolutePVCoordinates,
                 ((iteration, previous, current) -> iteration >= 1));
         final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emitterPosition, frame);
         // WHEN

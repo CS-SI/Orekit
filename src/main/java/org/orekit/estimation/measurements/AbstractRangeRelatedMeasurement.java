@@ -24,10 +24,10 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
-import org.orekit.signal.TwoLeggedSignalTravelTimer;
+import org.orekit.signal.TwoLeggedSignalTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -107,10 +107,10 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
         final TimeStampedPVCoordinates receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
         final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
-        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
+        final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(getSignalTravelTimeModel());
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPV.getPosition(),
                 frame);
-        final double[] delays = twoLeggedSignalTravelTimer.computeDelays(receptionCondition, satellitePVProvider,
+        final double[] delays = twoLeggedSignalTimer.computeDelays(receptionCondition, satellitePVProvider,
                 observerPVProvider);
 
         // Prepare estimation
@@ -139,7 +139,7 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
         // compute light time delay
         final Frame frame = state.getFrame();
         final PVCoordinatesProvider observablePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
-        final SignalTravelTimeAdjustableEmitter adjustableEmitter = getSignalTravelTimeModel()
+        final AdjustableEmitterSignalTimer adjustableEmitter = getSignalTravelTimeModel()
                 .getAdjustableEmitterComputer(observablePVProvider);
         final TimeStampedPVCoordinates observerPVAtReception = getObserver().getPVCoordinatesProvider()
                 .getPVCoordinates(receptionDate, frame);

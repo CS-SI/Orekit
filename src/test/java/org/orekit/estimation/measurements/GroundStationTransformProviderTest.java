@@ -142,14 +142,20 @@ class GroundStationTransformProviderTest {
         final FieldAbsoluteDate<Gradient> date = FieldAbsoluteDate.getArbitraryEpoch(field).shiftedBy(new Gradient(1., 1.));
         final Map<String, Integer> parameters = new HashMap<>();
         when(estimatedEarthFrameProvider.getTransform(date)).thenReturn(FieldTransform.getIdentity(field));
-        when(estimatedEarthFrameProvider.getTransform(date, field.getZero().getFreeParameters(), parameters)).thenReturn(FieldTransform.getIdentity(field));
+        final ParameterDriver eastOffsetDriver = mockDriverWithGradient(10., freeParameters);
+        final ParameterDriver northOffsetDriver = mockDriverWithGradient(-20., freeParameters);
+        final ParameterDriver zenithOffsetDriver = mockDriverWithGradient(5., freeParameters);
         final GroundStationTransformProvider provider = new GroundStationTransformProvider(frame, topocentricFrame,
-                mockDriverWithGradient(10., freeParameters), mockDriverWithGradient(-20., freeParameters), mockDriverWithGradient(5., freeParameters),
-                estimatedEarthFrameProvider, null);
+                eastOffsetDriver, northOffsetDriver, zenithOffsetDriver, estimatedEarthFrameProvider, null);
         // WHEN
         final FieldTransform<Gradient> transform = provider.getTransform(date);
         // THEN
-        final FieldTransform<Gradient> transformGradient = provider.getTransform(date, freeParameters, parameters);
+        final GroundStation station = new GroundStation(topocentricFrame);
+        station.getEastOffsetDriver().setValue(eastOffsetDriver.getValue());
+        station.getNorthOffsetDriver().setValue(northOffsetDriver.getValue());
+        station.getZenithOffsetDriver().setValue(zenithOffsetDriver.getValue());
+        station.getParametersDrivers().forEach(driver -> driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldTransform<Gradient> transformGradient = station.getOffsetToInertial(frame, date, freeParameters, parameters);
         assertEquals(transform.getFieldDate(), transformGradient.getFieldDate());
         assertEquals(transform.getTranslation(), transformGradient.getTranslation());
         assertEquals(0., Rotation.distance(transform.getRotation().toRotation(), transformGradient.getRotation().toRotation()), 1.e-13);
@@ -172,13 +178,20 @@ class GroundStationTransformProviderTest {
         when(estimatedEarthFrameProvider.getStaticTransform(date, freeParameters, parameters)).thenReturn(FieldStaticTransform.getIdentity(field));
         when(estimatedEarthFrameProvider.getStaticTransform(date)).thenReturn(FieldTransform.getIdentity(field));
         when(estimatedEarthFrameProvider.getTransform(date, field.getZero().getFreeParameters(), parameters)).thenReturn(FieldTransform.getIdentity(field));
+        final ParameterDriver eastOffsetDriver = mockDriverWithGradient(10., freeParameters);
+        final ParameterDriver northOffsetDriver = mockDriverWithGradient(-20., freeParameters);
+        final ParameterDriver zenithOffsetDriver = mockDriverWithGradient(5., freeParameters);
         final GroundStationTransformProvider provider = new GroundStationTransformProvider(frame, topocentricFrame,
-                mockDriverWithGradient(10., freeParameters), mockDriverWithGradient(-20., freeParameters), mockDriverWithGradient(5., freeParameters),
-                estimatedEarthFrameProvider, null);
+                eastOffsetDriver, northOffsetDriver, zenithOffsetDriver, estimatedEarthFrameProvider, null);
         // WHEN
         final FieldStaticTransform<Gradient> staticTransform = provider.getStaticTransform(date);
         // THEN
-        final FieldStaticTransform<Gradient> transformGradient = provider.getStaticTransform(date, freeParameters, parameters);
+        final GroundStation station = new GroundStation(topocentricFrame);
+        station.getEastOffsetDriver().setValue(eastOffsetDriver.getValue());
+        station.getNorthOffsetDriver().setValue(northOffsetDriver.getValue());
+        station.getZenithOffsetDriver().setValue(zenithOffsetDriver.getValue());
+        station.getParametersDrivers().forEach(driver -> driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldStaticTransform<Gradient> transformGradient = station.getOffsetToInertial(frame, date, freeParameters, parameters);
         assertEquals(staticTransform.getDate(), transformGradient.getDate());
         assertEquals(staticTransform.getTranslation(), transformGradient.getTranslation());
         assertEquals(0., Rotation.distance(staticTransform.getRotation().toRotation(), transformGradient.getRotation().toRotation()), 1.e-13);
@@ -186,6 +199,7 @@ class GroundStationTransformProviderTest {
 
     private static ParameterDriver mockDriver(final double value) {
         final ParameterDriver driver = mock();
+        when(driver.getValue()).thenReturn(value);
         when(driver.getValue(any(AbsoluteDate.class))).thenReturn(value);
         return driver;
     }

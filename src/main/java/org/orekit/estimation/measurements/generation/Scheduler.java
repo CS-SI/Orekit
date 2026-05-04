@@ -49,7 +49,9 @@ public interface Scheduler<T extends ObservedMeasurement<T>> {
      * @param start start of the measurements time span
      * @param end end of the measurements time span
      */
-    void init(AbsoluteDate start, AbsoluteDate end);
+    default void init(final AbsoluteDate start, final AbsoluteDate end) {
+        getBuilder().init(start, end);
+    }
 
     /** Generate a sequence of measurements.
      * @param interpolators interpolators for spacecraft states

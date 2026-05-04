@@ -29,7 +29,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public class SignalTravelTimeAdjustableReceiver extends AbstractSignalTravelTime {
+public class AdjustableReceiverSignalTimer extends AbstractSignalTravelTime {
 
     /** Position/velocity provider of receiver. */
     private final PVCoordinatesProvider adjustableReceiverPVProvider;
@@ -38,7 +38,7 @@ public class SignalTravelTimeAdjustableReceiver extends AbstractSignalTravelTime
      * Constructor.
      * @param adjustableReceiverPVProvider adjustable receiver
      */
-    public SignalTravelTimeAdjustableReceiver(final PVCoordinatesProvider adjustableReceiverPVProvider) {
+    public AdjustableReceiverSignalTimer(final PVCoordinatesProvider adjustableReceiverPVProvider) {
         this(adjustableReceiverPVProvider, getDefaultConvergenceChecker());
     }
 
@@ -47,8 +47,8 @@ public class SignalTravelTimeAdjustableReceiver extends AbstractSignalTravelTime
      * @param adjustableReceiverPVProvider adjustable receiver
      * @param checker convergence checker for fixed-point algorithm
      */
-    public SignalTravelTimeAdjustableReceiver(final PVCoordinatesProvider adjustableReceiverPVProvider,
-                                             final ConvergenceChecker<Double> checker) {
+    public AdjustableReceiverSignalTimer(final PVCoordinatesProvider adjustableReceiverPVProvider,
+                                         final ConvergenceChecker<Double> checker) {
         super(checker);
         this.adjustableReceiverPVProvider = adjustableReceiverPVProvider;
     }

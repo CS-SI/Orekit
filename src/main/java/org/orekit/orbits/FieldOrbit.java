@@ -534,7 +534,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     public FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
-        final FieldPVCoordinates<T> pv = getPVCoordinates(otherDate, otherFrame);
+        final FieldPVCoordinates<T> pv = getPVCoordinates(otherDate, frame);
         if (otherFrame == getFrame()) {
             return pv.getVelocity();
         }
@@ -661,6 +661,18 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @return a new orbit, shifted with respect to the instance (which is immutable)
      */
     public abstract FieldOrbit<T> shiftedBy(double dt);
+
+    /** Get a time-shifted orbit.
+     * <p>
+     * The orbit can be slightly shifted to close dates. This shift is based on
+     * a simple Keplerian model. It is <em>not</em> intended as a replacement
+     * for proper orbit and attitude propagation but should be sufficient for
+     * small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new orbit, shifted with respect to the instance (which is immutable)
+     */
+    public abstract FieldOrbit<T> shiftedBy(TimeOffset dt);
 
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>

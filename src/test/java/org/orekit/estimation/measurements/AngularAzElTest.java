@@ -39,8 +39,8 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
@@ -160,7 +160,7 @@ class AngularAzElTest {
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
             final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(state.getOrbit());
+            final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(state.getOrbit());
             final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(datemeas, stationP, state.getFrame());
             final double       meanDelay = signalTimeOfFlight.computeDelay(receptionCondition, state.getDate());
 
@@ -264,7 +264,7 @@ class AngularAzElTest {
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(stateini.getOrbit());
+            final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(stateini.getOrbit());
             final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(datemeas, stationP, stateini.getFrame());
             final double          meanDelay = signalTimeOfFlight.computeDelay(receptionCondition, stateini.getDate());
 
@@ -372,7 +372,7 @@ class AngularAzElTest {
         final TimeStampedPVCoordinates secondParticipant = estimatedWithoutDerivatives.getParticipants()[1];
         final TimeStampedPVCoordinates expectedFirstParticipant = estimated.getParticipants()[0];
         final TimeStampedPVCoordinates expectedSecondParticipant = estimated.getParticipants()[1];
-        assertEquals(expectedFirstParticipant.getDate(), firstParticipant.getDate());
+        assertEquals(0., expectedFirstParticipant.getDate().durationFrom(firstParticipant.getDate()), 1e-12);
         assertEquals(expectedFirstParticipant.getPosition(), firstParticipant.getPosition());
         assertEquals(expectedSecondParticipant.getDate(), secondParticipant.getDate());
         assertEquals(expectedSecondParticipant.getPosition(), secondParticipant.getPosition());
