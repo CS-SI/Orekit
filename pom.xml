@@ -57,8 +57,6 @@
     <orekit.compiler.source>21</orekit.compiler.source>
     <orekit.compiler.target>21</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
-    <tools.jar.dir>${java.home}/../lib/</tools.jar.dir>
-    <tools.jar.path>${tools.jar.dir}/tools.jar</tools.jar.path>
   </properties>
 
   <developers>
@@ -597,8 +595,10 @@
             <goals>
               <goal>compile</goal>
             </goals>
-            <!-- the phase before compile. -->
-            <phase>process-resources</phase>
+            <!-- Run before process-resources so the META-INF/services/com.sun.source.util.Plugin
+                 descriptor is not yet on the compile classpath (it would otherwise cause javac's
+                 ServiceLoader to try to load the plugin class while we are still building it). -->
+            <phase>generate-sources</phase>
             <configuration>
               <includes>
                 <include>org/orekit/annotation/**</include>
@@ -606,10 +606,6 @@
               </includes>
               <compilerArgs>
                 <arg>-Xlint:deprecation</arg>
-                <!-- Add the Java compiler to the classpath. This avoids creating a system
-                     dependency which is inherited by projects using Orekit. -->
-                <arg>-classpath</arg>
-                <arg>${tools.jar.path}</arg>
               </compilerArgs>
             </configuration>
           </execution>
@@ -719,9 +715,6 @@
         <version>${orekit.maven-surefire-plugin.version}</version>
         <configuration>
           <argLine>@{argLine} -Xmx2048m</argLine>
-          <additionalClasspathElements>
-            <additionalClasspathElement>${tools.jar.path}</additionalClasspathElement>
-          </additionalClasspathElements>
         </configuration>
       </plugin>
       <plugin>
