@@ -39,9 +39,7 @@
     <orekit.maven-source-plugin.version>3.3.1</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>3.5.3</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>3.5.2</orekit.maven-surefire-report-plugin.version>
-    <!-- Mockito 4.11.0 is the last supported version with java 8
-         https://github.com/mockito/mockito/releases -->
-    <orekit.mockito-core.version>4.11.0</orekit.mockito-core.version>
+    <orekit.mockito-core.version>5.14.2</orekit.mockito-core.version>
     <orekit.archunit.version>1.4.1</orekit.archunit.version>
     <orekit.slf4j.version>2.0.17</orekit.slf4j.version>
     <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
