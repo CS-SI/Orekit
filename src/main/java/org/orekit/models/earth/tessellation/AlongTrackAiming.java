@@ -70,8 +70,8 @@ public class AlongTrackAiming implements TileAiming {
     @Override
     public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp) {
 
-        final double lStart = halfTrack.get(0).getFirst().getLatitude();
-        final double lEnd   = halfTrack.get(halfTrack.size() - 1).getFirst().getLatitude();
+        final double lStart = halfTrack.getFirst().getFirst().getLatitude();
+        final double lEnd   = halfTrack.getLast().getFirst().getLatitude();
 
         // special handling for out of range latitudes
         if (gp.getLatitude() < FastMath.min(lStart, lEnd) || gp.getLatitude() > FastMath.max(lStart, lEnd)) {

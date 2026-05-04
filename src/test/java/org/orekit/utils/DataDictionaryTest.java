@@ -112,7 +112,7 @@ public class DataDictionaryTest {
         Assertions.assertFalse(dictionary.remove("not-a-key"));
         Assertions.assertEquals(2, dictionary.size());
 
-        Assertions.assertEquals("a", dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("a", dictionary.getData().getFirst().getKey());
         Assertions.assertEquals("b", dictionary.getData().get(1).getKey());
 
         dictionary.clear();
@@ -134,7 +134,7 @@ public class DataDictionaryTest {
         Assertions.assertArrayEquals(new double[]{1.0, 2.0, 3.0}, ((double[]) dictionary.get("a")), 1.0e-15);
         Assertions.assertEquals(file, dictionary.get("toreplace"));
         Assertions.assertEquals(9, dictionary.get("b"));
-        Assertions.assertEquals("a", dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("a", dictionary.getData().getFirst().getKey());
         Assertions.assertEquals("b", dictionary.getData().get(1).getKey());
         Assertions.assertEquals("toreplace", dictionary.getData().get(2).getKey());
     }

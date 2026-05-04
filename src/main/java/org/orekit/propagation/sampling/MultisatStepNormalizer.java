@@ -90,15 +90,15 @@ public class MultisatStepNormalizer implements MultiSatStepHandler {
 
         // take the propagation direction into account
         double step = h;
-        forward = interpolators.get(0).isForward();
+        forward = interpolators.getFirst().isForward();
         if (!forward) {
             step = -h;
         }
 
 
         // use the interpolator to push fixed steps events to the underlying handler
-        AbsoluteDate nextTime = lastStates.get(0).getDate().shiftedBy(step);
-        boolean nextInStep = forward ^ nextTime.compareTo(interpolators.get(0).getCurrentState().getDate()) > 0;
+        AbsoluteDate nextTime = lastStates.getFirst().getDate().shiftedBy(step);
+        boolean nextInStep = forward ^ nextTime.compareTo(interpolators.getFirst().getCurrentState().getDate()) > 0;
         while (nextInStep) {
 
             // output the stored previous step
@@ -110,7 +110,7 @@ public class MultisatStepNormalizer implements MultiSatStepHandler {
 
             // prepare next iteration
             nextTime = nextTime.shiftedBy(step);
-            nextInStep = forward ^ nextTime.compareTo(interpolators.get(0).getCurrentState().getDate()) > 0;
+            nextInStep = forward ^ nextTime.compareTo(interpolators.getFirst().getCurrentState().getDate()) > 0;
 
         }
 

@@ -121,7 +121,7 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
                                     filter(e -> e.getKey().getEffectName().equals("Shapiro")).count());
 
         }
-        final double wavelength = ((OneWayGNSSPhase) measurements.get(0)).getWavelength();
+        final double wavelength = ((OneWayGNSSPhase) measurements.getFirst()).getWavelength();
 
         Assertions.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
         Assertions.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);

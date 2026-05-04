@@ -62,13 +62,13 @@ public class AemSatelliteEphemeris
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return blocks.get(0).getStart();
+        return blocks.getFirst().getStart();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return blocks.get(blocks.size() - 1).getStop();
+        return blocks.getLast().getStop();
     }
 
 }

@@ -218,7 +218,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().get(0).setSelected(false);
+        templateTLE.getParametersDrivers().getFirst().setSelected(false);
 
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;
@@ -300,7 +300,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         sortParametersChanges(list);
         final double[] stationOffSet = { 0.069571, -0.114921,  -0.084817 };
         final double rangeBias = -0.041797;
-        Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), parameterAccuracy);
+        Assertions.assertEquals(stationOffSet[0], list.getFirst().getValue(), parameterAccuracy);
         Assertions.assertEquals(stationOffSet[1], list.get(1).getValue(), parameterAccuracy);
         Assertions.assertEquals(stationOffSet[2], list.get(2).getValue(), parameterAccuracy);
         Assertions.assertEquals(rangeBias,        list.get(3).getValue(), parameterAccuracy);
@@ -337,7 +337,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line1 = "1 32711U 08012A   16044.40566018 -.00000039 +00000-0 +00000-0 0  9993";
         final String line2 = "2 32711 055.4362 301.3402 0091581 207.7162 151.8496 02.00563594058026";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().get(0).setSelected(false);
+        templateTLE.getParametersDrivers().getFirst().setSelected(false);
 
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;

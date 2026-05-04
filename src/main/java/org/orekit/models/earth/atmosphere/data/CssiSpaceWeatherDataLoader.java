@@ -109,11 +109,11 @@ public class CssiSpaceWeatherDataLoader extends AbstractSolarActivityDataLoader<
                 if (!line.isEmpty()) {
 
                     if (line.equals("BEGIN DAILY_PREDICTED")) {
-                        lastObservedDate = set.last().getDate();
+                        lastObservedDate = set.getLast().getDate();
                     }
 
                     if (line.equals("BEGIN MONTHLY_FIT")) {
-                        lastDailyPredictedDate = set.last().getDate();
+                        lastDailyPredictedDate = set.getLast().getDate();
                     }
 
                     if (line.length() == 130 && isNumeric(line.substring(0, 4))) {
@@ -164,8 +164,8 @@ public class CssiSpaceWeatherDataLoader extends AbstractSolarActivityDataLoader<
         }
 
         try {
-            setMinDate(set.first().getDate());
-            setMaxDate(set.last().getDate());
+            setMinDate(set.getFirst().getDate());
+            setMaxDate(set.getLast().getDate());
         }
         catch (NoSuchElementException nse) {
             throw new OrekitException(nse, OrekitMessages.NO_DATA_IN_FILE, name);

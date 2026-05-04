@@ -203,7 +203,7 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
         }
 
         checkNotNull(manComposition, OrbitManeuverHistoryMetadataKey.MAN_COMPOSITION.name());
-        if (!manComposition.get(0).isTime()) {
+        if (!manComposition.getFirst().isTime()) {
             throw new OrekitException(OrekitMessages.CCSDS_MANEUVER_MISSING_TIME, manID);
         }
         final int firstNonTime = (manComposition.size() > 1 && manComposition.get(1).isTime()) ? 2 : 1;

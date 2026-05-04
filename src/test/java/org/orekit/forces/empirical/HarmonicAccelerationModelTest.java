@@ -100,7 +100,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                                                                           Double.POSITIVE_INFINITY, 1);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
         Assertions.assertTrue(inertialAcceleration.dependsOnPositionOnly());
-        inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass);
+        inertialAcceleration.getParametersDrivers().getFirst().setValue(f / mass);
         inertialAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 1.0e-15);
     }
@@ -119,7 +119,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                                                                           Double.POSITIVE_INFINITY, 1);
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, false, accelerationModel);
         Assertions.assertFalse(lofAcceleration.dependsOnPositionOnly());
-        lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
+        lofAcceleration.getParametersDrivers().getFirst().setValue(f / mass);
         lofAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(mass, commonLaw, maneuver, commonLaw, lofAcceleration, 1.0e-15);
     }
@@ -140,7 +140,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final AccelerationModel accelerationModel = new HarmonicAccelerationModel("prefix", null,
                                                                                           Double.POSITIVE_INFINITY, 1);
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, accelerationModel);
-        lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
+        lofAcceleration.getParametersDrivers().getFirst().setValue(f / mass);
         lofAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(mass, maneuverLaw, maneuver, accelerationLaw, lofAcceleration, 1.0e-15);
     }
@@ -183,7 +183,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator1.addForceModel(parametricAcceleration);
 
         MultiSatStepHandler handler = interpolators -> {
-            Vector3D p0 = interpolators.get(0).getCurrentState().getPosition();
+            Vector3D p0 = interpolators.getFirst().getCurrentState().getPosition();
             Vector3D p1 = interpolators.get(1).getCurrentState().getPosition();
             Assertions.assertEquals(0.0, Vector3D.distance(p0, p1), positionTolerance);
         };
@@ -211,7 +211,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final AccelerationModel accelerationModel = new HarmonicAccelerationModel("", AbsoluteDate.J2000_EPOCH,
                                                                                           Double.POSITIVE_INFINITY, 1);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
-        inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass);
+        inertialAcceleration.getParametersDrivers().getFirst().setValue(f / mass);
         inertialAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(Binary64Field.getInstance(),
                                  mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 3.0e-9);
@@ -230,7 +230,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final HarmonicAccelerationModel accelerationModel = new HarmonicAccelerationModel("", null,
                                                                                           Double.POSITIVE_INFINITY, 1);
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, false, accelerationModel);
-        lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
+        lofAcceleration.getParametersDrivers().getFirst().setValue(f / mass);
         lofAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(Binary64Field.getInstance(),
                                  mass, commonLaw, maneuver, commonLaw, lofAcceleration, 1.0e-15);
@@ -252,7 +252,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final HarmonicAccelerationModel accelerationModel = new HarmonicAccelerationModel( "prefix", null,
                                                                                            Double.POSITIVE_INFINITY, 1);
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, accelerationModel);
-        lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
+        lofAcceleration.getParametersDrivers().getFirst().setValue(f / mass);
         lofAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(Binary64Field.getInstance(),
                                  mass, maneuverLaw, maneuver, accelerationLaw, lofAcceleration, 1.0e-15);
@@ -351,7 +351,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                                                                           state.getOrbit().getKeplerianPeriod(), harmonicMultiplier);
         final ParametricAcceleration hpa = new ParametricAcceleration(Vector3D.PLUS_K, false, accelerationModel);
         hpa.init(state, state.getDate().shiftedBy(3600.0));
-        hpa.getParametersDrivers().get(0).setValue(0.00001);
+        hpa.getParametersDrivers().getFirst().setValue(0.00001);
         hpa.getParametersDrivers().get(1).setValue(0.00002);
         checkParameterDerivative(state, hpa, "kT γ", 1.0e-3, amplitudeDerivativeTolerance);
         checkParameterDerivative(state, hpa, "kT φ",     1.0e-3, phaseDerivativeTolerance);
@@ -394,11 +394,11 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                                                            new HarmonicAccelerationModel("refY1", null, period, 1));
         final ParametricAcceleration hpaRefZ2 = new ParametricAcceleration(Vector3D.PLUS_K, true,
                                                                            new HarmonicAccelerationModel("refZ2", null, period, 2));
-        hpaRefX1.getParametersDrivers().get(0).setValue(2.4e-2);
+        hpaRefX1.getParametersDrivers().getFirst().setValue(2.4e-2);
         hpaRefX1.getParametersDrivers().get(1).setValue(3.1);
-        hpaRefY1.getParametersDrivers().get(0).setValue(4.0e-2);
+        hpaRefY1.getParametersDrivers().getFirst().setValue(4.0e-2);
         hpaRefY1.getParametersDrivers().get(1).setValue(0.3);
-        hpaRefZ2.getParametersDrivers().get(0).setValue(1.0e-2);
+        hpaRefZ2.getParametersDrivers().getFirst().setValue(1.0e-2);
         hpaRefZ2.getParametersDrivers().get(1).setValue(1.8);
         propagator0.addForceModel(hpaRefX1);
         propagator0.addForceModel(hpaRefY1);
@@ -447,11 +447,11 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         Assertions.assertTrue(estimator.getEvaluationsCount() < 15);
         Assertions.assertEquals(0.0, estimator.getOptimum().getRMS(), 1.6e-5);
 
-        Assertions.assertEquals(hpaRefX1.getParametersDrivers().get(0).getValue(), getParameter(estimator, "X1 γ"), 1.e-12);
+        Assertions.assertEquals(hpaRefX1.getParametersDrivers().getFirst().getValue(), getParameter(estimator, "X1 γ"), 1.e-12);
         Assertions.assertEquals(hpaRefX1.getParametersDrivers().get(1).getValue(), getParameter(estimator, "X1 φ"), 1.e-12);
-        Assertions.assertEquals(hpaRefY1.getParametersDrivers().get(0).getValue(), getParameter(estimator, "Y1 γ"), 1.e-12);
+        Assertions.assertEquals(hpaRefY1.getParametersDrivers().getFirst().getValue(), getParameter(estimator, "Y1 γ"), 1.e-12);
         Assertions.assertEquals(hpaRefY1.getParametersDrivers().get(1).getValue(), getParameter(estimator, "Y1 φ"), 1.e-12);
-        Assertions.assertEquals(hpaRefZ2.getParametersDrivers().get(0).getValue(), getParameter(estimator, "Z2 γ"), 1.e-12);
+        Assertions.assertEquals(hpaRefZ2.getParametersDrivers().getFirst().getValue(), getParameter(estimator, "Z2 γ"), 1.e-12);
         Assertions.assertEquals(hpaRefZ2.getParametersDrivers().get(1).getValue(), getParameter(estimator, "Z2 φ"), 1.e-12);
 
     }

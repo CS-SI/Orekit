@@ -98,7 +98,7 @@ class BistaticRangeRateTest {
         Assertions.assertEquals(0.0, diffStat.getMean(), 1.3e-7);
         Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 1.2e-7);
         // Test measurement type
-        Assertions.assertEquals(BistaticRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(BistaticRangeRate.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /**

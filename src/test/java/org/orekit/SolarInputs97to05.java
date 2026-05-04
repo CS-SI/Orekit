@@ -188,9 +188,9 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
         // search starting from entries a few steps before the target date
         SortedSet<TimeStamped> tailSet = data.tailSet(before);
         if (tailSet != null) {
-            currentParam = (LineParameters) tailSet.first();
+            currentParam = (LineParameters) tailSet.getFirst();
             if (currentParam.date.durationFrom(date) == -Constants.JULIAN_DAY) {
-                currentParam = (LineParameters) data.tailSet(date).first();
+                currentParam = (LineParameters) data.tailSet(date).getFirst();
             }
         } else {
             throw new OrekitException(new DummyLocalizable("unable to find data for date {0}"), date);

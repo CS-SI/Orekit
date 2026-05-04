@@ -82,11 +82,11 @@ public class SortedListTrimmer {
 
         // check index in in the range of the data
         if (i < 0) {
-            final AbsoluteDate earliest = data.get(0).getDate();
+            final AbsoluteDate earliest = data.getFirst().getDate();
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                 earliest, central, earliest.durationFrom(central));
         } else if (i >= data.size()) {
-            final AbsoluteDate latest = data.get(data.size() - 1).getDate();
+            final AbsoluteDate latest = data.getLast().getDate();
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
                                                 latest, central, central.durationFrom(latest));
         }
@@ -116,7 +116,7 @@ public class SortedListTrimmer {
 
         // left bracket of search algorithm
         int    iInf  = 0;
-        double dtInf = t.durationFrom(data.get(0));
+        double dtInf = t.durationFrom(data.getFirst());
         if (dtInf < 0) {
             // before first entry
             return -1;
@@ -124,7 +124,7 @@ public class SortedListTrimmer {
 
         // right bracket of search algorithm
         int    iSup  = data.size() - 1;
-        double dtSup = t.durationFrom(data.get(data.size() - 1));
+        double dtSup = t.durationFrom(data.getLast());
         if (dtSup > 0) {
             // after last entry
             return data.size();

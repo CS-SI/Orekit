@@ -94,7 +94,7 @@ public class ShapiroInterSatelliteRangeModifierTest {
             final List<ObservedMeasurement<?>> converted = new ArrayList<>();
             for (final ObservedMeasurement<?> m : measurements) {
                 final InterSatellitesRange sr = (InterSatellitesRange) m;
-                converted.add(new InterSatellitesRange(sr.getSatellites().get(0), sr.getSatellites().get(1),
+                converted.add(new InterSatellitesRange(sr.getSatellites().getFirst(), sr.getSatellites().get(1),
                                                        false, sr.getDate(),
                                                        sr.getObservedValue()[0],
                                                        sr.getTheoreticalStandardDeviation()[0],

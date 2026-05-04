@@ -53,7 +53,7 @@ public class CRDConfiguration {
      * @return the system configuration record
      */
     public SystemConfiguration getSystemRecord() {
-        return systemConfigurationRecords.isEmpty() ? null : systemConfigurationRecords.get(0);
+        return systemConfigurationRecords.isEmpty() ? null : systemConfigurationRecords.getFirst();
     }
 
     /**
@@ -61,7 +61,7 @@ public class CRDConfiguration {
      * @return the system configuration record
      */
     public SystemConfiguration getLastSystemRecord() {
-        return systemConfigurationRecords.isEmpty() ? null : systemConfigurationRecords.get(systemConfigurationRecords.size() - 1);
+        return systemConfigurationRecords.isEmpty() ? null : systemConfigurationRecords.getLast();
     }
 
     /**

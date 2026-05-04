@@ -224,7 +224,7 @@ public class OpmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2000, 6, 3, 9, 0,
                                                  new TimeOffset(34, TimeOffset.SECOND, 100, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
-                            file.getManeuvers().get(0).getEpochIgnition());
+                            file.getManeuvers().getFirst().getEpochIgnition());
         Assertions.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
         Assertions.assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
         Assertions.assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
@@ -338,7 +338,7 @@ public class OpmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2000, 6, 3, 9, 0,
                                                  new TimeOffset(34, TimeOffset.SECOND, 100, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getGPS()),
-                            file.getManeuvers().get(0).getEpochIgnition());
+                            file.getManeuvers().getFirst().getEpochIgnition());
         Assertions.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
         Assertions.assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
         Assertions.assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
@@ -395,7 +395,7 @@ public class OpmParserTest {
                                                  TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
-        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().getFirst());
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assertions.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
@@ -492,7 +492,7 @@ public class OpmParserTest {
                                              TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
-        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().getFirst());
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assertions.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
@@ -656,7 +656,7 @@ public class OpmParserTest {
                                                  TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
-        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().getFirst());
         Assertions.assertEquals("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C", file.getHeader().getMessageId());
 
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);

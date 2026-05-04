@@ -95,7 +95,7 @@ class ParameterDrivenDateIntervalDetectorTest {
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(3600.0));
 
         Assertions.assertEquals(2, logger.getLoggedEvents().size());
-        Assertions.assertEquals(0.0, logger.getLoggedEvents().get(0).getDate().durationFrom(start), 1.0e-10);
+        Assertions.assertEquals(0.0, logger.getLoggedEvents().getFirst().getDate().durationFrom(start), 1.0e-10);
         Assertions.assertEquals(0.0, logger.getLoggedEvents().get(1).getDate().durationFrom(stop),  1.0e-10);
     }
 
@@ -125,7 +125,7 @@ class ParameterDrivenDateIntervalDetectorTest {
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(3600.0));
 
         Assertions.assertEquals(2, logger.getLoggedEvents().size());
-        Assertions.assertEquals(startShift, logger.getLoggedEvents().get(0).getDate().durationFrom(start), 1.0e-10);
+        Assertions.assertEquals(startShift, logger.getLoggedEvents().getFirst().getDate().durationFrom(start), 1.0e-10);
         Assertions.assertEquals(stopShift,  logger.getLoggedEvents().get(1).getDate().durationFrom(stop),  1.0e-10);
     }
 

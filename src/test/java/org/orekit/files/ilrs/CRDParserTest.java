@@ -131,7 +131,7 @@ public class CRDParserTest {
         final CRD file = parser.parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify first data block
-        final CRDDataBlock first = file.getDataBlocks().get(0);
+        final CRDDataBlock first = file.getDataBlocks().getFirst();
         final CRDHeader firstHeader = first.getHeader();
         final CRDConfiguration firstConf = first.getConfigurationRecords();
         final AbsoluteDate firstStartDate = new AbsoluteDate("2018-02-01T15:14:58.000", TimeScalesFactory.getUTC());
@@ -230,7 +230,7 @@ public class CRDParserTest {
         Assertions.assertEquals(80.0, meteoFirst.getHumidity(), 1.0e-15);
 
         // Range data
-        final RangeMeasurement rangeFirst1 = first.getRangeData().get(0);
+        final RangeMeasurement rangeFirst1 = first.getRangeData().getFirst();
         Assertions.assertEquals(54927.620161400002, rangeFirst1.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assertions.assertEquals(0.044106029140, rangeFirst1.getTimeOfFlight(), 1.0e-15);
         Assertions.assertEquals(2, rangeFirst1.getEpochEvent());
@@ -344,7 +344,7 @@ public class CRDParserTest {
         Assertions.assertEquals(67.0, meteoLast.getHumidity(), 1.0e-15);
 
         // Range data
-        final RangeMeasurement rangeLast1 = last.getRangeData().get(0);
+        final RangeMeasurement rangeLast1 = last.getRangeData().getFirst();
         Assertions.assertEquals(51080.935001603524, rangeLast1.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assertions.assertEquals(0.045673108965, rangeLast1.getTimeOfFlight(), 1.0e-15);
         Assertions.assertEquals(2, rangeLast1.getEpochEvent());
@@ -370,7 +370,7 @@ public class CRDParserTest {
         final CRD file = parser.parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Data block
-        final CRDDataBlock block = file.getDataBlocks().get(0);
+        final CRDDataBlock block = file.getDataBlocks().getFirst();
         final CRDHeader header = block.getHeader();
         final CRDConfiguration conf = block.getConfigurationRecords();
         final AbsoluteDate startDate = new AbsoluteDate("2017-09-26T03:55:41.000", TimeScalesFactory.getUTC());
@@ -444,14 +444,14 @@ public class CRDParserTest {
 
         // Range data
         Assertions.assertEquals(4, block.getRangeData().size());
-        final RangeMeasurement range = block.getRangeData().get(0);
+        final RangeMeasurement range = block.getRangeData().getFirst();
         Assertions.assertEquals(14487.343206247217, range.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assertions.assertEquals(0.003603959600, range.getTimeOfFlight(), 1.0e-15);
         Assertions.assertEquals(2, range.getEpochEvent());
 
         // Angles data
         Assertions.assertEquals(4, block.getAnglesData().size());
-        final AnglesMeasurement angles = block.getAnglesData().get(0);
+        final AnglesMeasurement angles = block.getAnglesData().getFirst();
         Assertions.assertEquals(14343.574333000000, angles.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assertions.assertEquals(FastMath.toRadians(215.000000), angles.getAzimuth(), 1.0e-15);
         Assertions.assertEquals(FastMath.toRadians(15.000010), angles.getElevation(), 1.0e-15);
@@ -470,7 +470,7 @@ public class CRDParserTest {
 
         final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
-        final CRDDataBlock block = file.getDataBlocks().get(0);
+        final CRDDataBlock block = file.getDataBlocks().getFirst();
         Assertions.assertEquals(0, file.getComments().size());
         Assertions.assertEquals(4, block.getRangeData().size());
         Assertions.assertEquals(4, block.getAnglesData().size());
@@ -543,7 +543,7 @@ public class CRDParserTest {
 
         final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
-        final CRDDataBlock block = file.getDataBlocks().get(0);
+        final CRDDataBlock block = file.getDataBlocks().getFirst();
         Assertions.assertEquals(0, file.getComments().size());
         Assertions.assertEquals(4, block.getRangeData().size());
         Assertions.assertEquals(4, block.getAnglesData().size());
@@ -552,7 +552,7 @@ public class CRDParserTest {
         final List<MeteorologicalMeasurement> data = meteo.getData();
         Assertions.assertEquals(1, data.size());
 
-        final MeteorologicalMeasurement measurement = data.get(0);
+        final MeteorologicalMeasurement measurement = data.getFirst();
         Assertions.assertEquals(0.92374, measurement.getPressure(),    0.00001);
         Assertions.assertEquals(289.42,  measurement.getTemperature(), 0.01);
         Assertions.assertEquals(28.1,    measurement.getHumidity(),    0.01);
@@ -568,7 +568,7 @@ public class CRDParserTest {
 
         // Verify
         Assertions.assertEquals(6, file.getComments().size());
-        Assertions.assertEquals("New CFD in the STOP channel", file.getComments().get(0));
+        Assertions.assertEquals("New CFD in the STOP channel", file.getComments().getFirst());
         Assertions.assertEquals("No CFD in the START channel", file.getComments().get(1));
         Assertions.assertEquals("New experimental detector (transistor) in the START channel**", file.getComments().get(2));
         Assertions.assertEquals("New CFD in the STOP channel", file.getComments().get(3));
@@ -581,10 +581,10 @@ public class CRDParserTest {
         final String ex = "/ilrs/glonass125_trunc.frd";
         final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
-        final CRDDataBlock block = file.getDataBlocks().get(0);
+        final CRDDataBlock block = file.getDataBlocks().getFirst();
         final List<RangeMeasurement> rangeBlock = block.getRangeData();
-        final RangeMeasurement rangeFirst = rangeBlock.get(0);
-        final RangeMeasurement rangeLast = rangeBlock.get(rangeBlock.size() - 1);
+        final RangeMeasurement rangeFirst = rangeBlock.getFirst();
+        final RangeMeasurement rangeLast = rangeBlock.getLast();
 
         DateComponents startEpoch = new DateComponents(2019, 04, 19);
         DateComponents lastEpoch = new DateComponents(2019, 04, 20);
@@ -606,10 +606,10 @@ public class CRDParserTest {
         // Verify each block
 
         // Block 1
-        CRDDataBlock block = file.getDataBlocks().get(0);
+        CRDDataBlock block = file.getDataBlocks().getFirst();
         List<RangeMeasurement> rangeBlock = block.getRangeData();
-        RangeMeasurement rangeFirst = rangeBlock.get(0);
-        RangeMeasurement rangeLast = rangeBlock.get(rangeBlock.size() - 1);
+        RangeMeasurement rangeFirst = rangeBlock.getFirst();
+        RangeMeasurement rangeLast = rangeBlock.getLast();
 
         DateComponents startEpoch = new DateComponents(2022, 6, 6);
         DateComponents lastEpoch = new DateComponents(2022, 6, 6);
@@ -624,8 +624,8 @@ public class CRDParserTest {
         // Block 2
         block = file.getDataBlocks().get(1);
         rangeBlock = block.getRangeData();
-        rangeFirst = rangeBlock.get(0);
-        rangeLast = rangeBlock.get(rangeBlock.size() - 1);
+        rangeFirst = rangeBlock.getFirst();
+        rangeLast = rangeBlock.getLast();
 
         startEpoch = new DateComponents(2022, 6, 6);
         lastEpoch = new DateComponents(2022, 6, 6);
@@ -640,8 +640,8 @@ public class CRDParserTest {
         // Block 3
         block = file.getDataBlocks().get(2);
         rangeBlock = block.getRangeData();
-        rangeFirst = rangeBlock.get(0);
-        rangeLast = rangeBlock.get(rangeBlock.size() - 1);
+        rangeFirst = rangeBlock.getFirst();
+        rangeLast = rangeBlock.getLast();
 
         startEpoch = new DateComponents(2021, 1, 26);
         lastEpoch = new DateComponents(2021, 1, 27);
@@ -674,7 +674,7 @@ public class CRDParserTest {
         Assertions.assertEquals(12, dataBlocks.size());
 
         // block0: Full rate
-        final CRDDataBlock block0 = dataBlocks.get(0);
+        final CRDDataBlock block0 = dataBlocks.getFirst();
         final List<RangeMeasurement> b0_rangeData = block0.getRangeData();
         final List<RangeSupplement> b0_rangeSupplementData = block0.getRangeSupplementData();
         final List<MeteorologicalMeasurement> b0_meteorologicalMeasurementData = block0.getMeteoData().getData();
@@ -685,8 +685,8 @@ public class CRDParserTest {
         Assertions.assertEquals(3, b0_rangeData.size());
         Assertions.assertEquals(0, block0.getHeader().getDataType());  // 0=full rate
         Assertions.assertEquals(DataType.FULL_RATE, DataType.getDataType(block0.getHeader().getDataType()));
-        Assertions.assertInstanceOf(FrRangeMeasurement.class, b0_rangeData.get(0));
-        final FrRangeMeasurement b0_fr0 = (FrRangeMeasurement)b0_rangeData.get(0);
+        Assertions.assertInstanceOf(FrRangeMeasurement.class, b0_rangeData.getFirst());
+        final FrRangeMeasurement b0_fr0 = (FrRangeMeasurement)b0_rangeData.getFirst();
         Assertions.assertEquals(0.047960587856, b0_fr0.getTimeOfFlight(), DELTA_PS);
         Assertions.assertEquals(2, b0_fr0.getEpochEvent());
         Assertions.assertEquals(Double.NaN, b0_fr0.getSnr(), DELTA_CENTI);
@@ -710,7 +710,7 @@ public class CRDParserTest {
         Assertions.assertEquals(0.0, b0_rangeSupplement1.getRangeRate(), DELTA_MILLI);
         Assertions.assertEquals("12 55435.642974600000 std1 20697.0 1601.0000  0.00   0.0000 0.000000", b0_rangeSupplement1.toCrdString());
 
-        final MeteorologicalMeasurement b0_meteorologicalMeasurement0 = b0_meteorologicalMeasurementData.get(0);
+        final MeteorologicalMeasurement b0_meteorologicalMeasurement0 = b0_meteorologicalMeasurementData.getFirst();
         Assertions.assertEquals(1, b0_meteorologicalMeasurementData.size());
         Assertions.assertEquals("2006-11-13T15:23:52.0414338", b0_meteorologicalMeasurement0.getDate().toStringWithoutUtcOffset(utc, 7));
         Assertions.assertEquals(801.80e-3, b0_meteorologicalMeasurement0.getPressure(), 0.01e-3);
@@ -731,7 +731,7 @@ public class CRDParserTest {
         Assertions.assertEquals(Double.NaN, b0_angles2.getElevationRate(), 1e-6);
         Assertions.assertEquals("30 56735.802  15.2330  45.7100 0 2 1        na        na", b0_angles2.toCrdString());
 
-        final Calibration b0_calibration0 = b0_calibrations.get(0);
+        final Calibration b0_calibration0 = b0_calibrations.getFirst();
         Assertions.assertEquals(1, b0_calibrations.size());
         Assertions.assertEquals("2006-11-13T15:23:52.0414338", b0_calibration0.getDate().toStringWithoutUtcOffset(utc, 7));
         Assertions.assertEquals(0, b0_calibration0.getTypeOfData());
@@ -764,7 +764,7 @@ public class CRDParserTest {
         Assertions.assertEquals(8, b1_rangeData.size());
         Assertions.assertEquals(1, block1.getHeader().getDataType());  // 1=normal point
         Assertions.assertEquals(DataType.NORMAL_POINT, DataType.getDataType(block1.getHeader().getDataType()));
-        Assertions.assertInstanceOf(NptRangeMeasurement.class, b1_rangeData.get(0));
+        Assertions.assertInstanceOf(NptRangeMeasurement.class, b1_rangeData.getFirst());
         final NptRangeMeasurement b1_npt3 = (NptRangeMeasurement)b1_rangeData.get(3);
         Assertions.assertEquals(0.044605221903, b1_npt3.getTimeOfFlight(), DELTA_PS);
         Assertions.assertEquals(2, b1_npt3.getEpochEvent());
@@ -1077,7 +1077,7 @@ public class CRDParserTest {
         Assertions.assertEquals(2, block10.getHeader().getVersion());
         final List<RangeMeasurement> b10_rangeData = block10.getRangeData();
         Assertions.assertEquals(4, b10_rangeData.size());
-        final NptRangeMeasurement b10_npt0 = (NptRangeMeasurement)b10_rangeData.get(0);
+        final NptRangeMeasurement b10_npt0 = (NptRangeMeasurement)b10_rangeData.getFirst();
         Assertions.assertEquals(0.040190018544, b10_npt0.getTimeOfFlight(), DELTA_PS);
         Assertions.assertEquals(532.000e-9, block10.getWavelength(b10_npt0), DELTA_MILLI_NM);
         
@@ -1170,7 +1170,7 @@ public class CRDParserTest {
         Assertions.assertEquals(2, b10_calibrationDetailData.size());
         final List<CalibrationDetail> b10_calibrationDetails = block10.getCalibrationDetailRecords();
         Assertions.assertEquals(2, b10_calibrationDetails.size());
-        final CalibrationDetail b10_calibrationDetail0 = b10_calibrationDetails.get(0);
+        final CalibrationDetail b10_calibrationDetail0 = b10_calibrationDetails.getFirst();
         Assertions.assertEquals("41  7907.550577400252 0  new      822      819 150.4245    96809.6      na   18.0     na     na    na 2 2 0 1   na",
                 b10_calibrationDetail0.toCrdString());
         Assertions.assertTrue(block10.getCalibrationDetailRecords("std").isEmpty());

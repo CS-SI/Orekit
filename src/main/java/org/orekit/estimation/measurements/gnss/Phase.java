@@ -189,7 +189,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
                                                        });
 
         // Clock offsets
-        final ObservableSatellite satellite = getSatellites().get(0);
+        final ObservableSatellite satellite = getSatellites().getFirst();
 
         final double dts = satellite.getOffsetValue(state.getDate());
         final double dtg = getObserver().getOffsetValue(getDate());
@@ -257,7 +257,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
                                         satelliteDownlink.toTimeStampedPVCoordinates()});
 
         // Clock offsets
-        final ObservableSatellite satellite = getSatellites().get(0);
+        final ObservableSatellite satellite = getSatellites().getFirst();
 
         final Gradient dts = satellite.getFieldOffsetValue(nbParams, state.getDate(), paramIndices);
         final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, getDate(), paramIndices);

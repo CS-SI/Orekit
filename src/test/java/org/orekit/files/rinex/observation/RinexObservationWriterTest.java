@@ -110,7 +110,7 @@ public class RinexObservationWriterTest {
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
             writer.setReceiverClockModel(robs.extractClockModel(2));
-            writer.writeObservationDataSet(robs.getObservationDataSets().get(0));
+            writer.writeObservationDataSet(robs.getObservationDataSets().getFirst());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.HEADER_NOT_WRITTEN, oe.getSpecifier());

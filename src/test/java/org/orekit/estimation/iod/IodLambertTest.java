@@ -87,7 +87,7 @@ public class IodLambertTest {
         final Frame frame = FramesFactory.getGCRF();
         final LambertBoundaryConditions lambertBoundaryConditions = new LambertBoundaryConditions(date1, P1, date2, P2, frame);
         final LambertSolver lambertSolver = new LambertSolver(1.0);
-        final LambertSolution lambertSolution = lambertSolver.solve(posigrade, 0, lambertBoundaryConditions).get(0);
+        final LambertSolution lambertSolution = lambertSolver.solve(posigrade, 0, lambertBoundaryConditions).getFirst();
         final Vector3D initialVelocity = lambertSolution.getBoundaryVelocities().getInitialVelocity();
         Assertions.assertEquals(initialVelocity.getX(), v[0]);
         Assertions.assertEquals(initialVelocity.getY(), v[1]);

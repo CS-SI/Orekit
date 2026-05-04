@@ -140,7 +140,7 @@ public class EphemerisOemWriterTest {
         final Oem oem = parser.parseMessage(source);
         EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      oem.getHeader(),
-                                                     oem.getSegments().get(0).getMetadata(),
+                                                     oem.getSegments().getFirst().getMetadata(),
                                                      FileFormat.KVN, "dummy",
                                                      Constants.JULIAN_DAY, 0);
         try {
@@ -178,8 +178,8 @@ public class EphemerisOemWriterTest {
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
                                          parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        Assertions.assertEquals(oem.getSegments().get(0).getMetadata().getObjectID(),
-                generatedOem.getSegments().get(0).getMetadata().getObjectID());
+        Assertions.assertEquals(oem.getSegments().getFirst().getMetadata().getObjectID(),
+                generatedOem.getSegments().getFirst().getMetadata().getObjectID());
     }
 
     @Test
@@ -191,7 +191,7 @@ public class EphemerisOemWriterTest {
 
         EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      oem.getHeader(),
-                                                     oem.getSegments().get(0).getMetadata(),
+                                                     oem.getSegments().getFirst().getMetadata(),
                                                      FileFormat.KVN, "TestOEMIssue723.aem",
                                                      Constants.JULIAN_DAY, 0);
         final CharArrayWriter caw = new CharArrayWriter();
@@ -202,7 +202,7 @@ public class EphemerisOemWriterTest {
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
                                          parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        Assertions.assertEquals(oem.getHeader().getComments().get(0), generatedOem.getHeader().getComments().get(0));
+        Assertions.assertEquals(oem.getHeader().getComments().getFirst(), generatedOem.getHeader().getComments().getFirst());
     }
 
     /**

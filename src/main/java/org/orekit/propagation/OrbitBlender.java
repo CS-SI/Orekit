@@ -97,7 +97,7 @@ public class OrbitBlender extends AbstractOrbitInterpolator {
 
         // Get first and last entry
         final List<Orbit> neighborList  = interpolationData.getNeighborList();
-        final Orbit       previousOrbit = neighborList.get(0);
+        final Orbit       previousOrbit = neighborList.getFirst();
         final Orbit       nextOrbit     = neighborList.get(1);
 
         // Propagate orbits

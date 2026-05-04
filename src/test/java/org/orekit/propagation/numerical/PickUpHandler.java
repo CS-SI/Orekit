@@ -52,7 +52,7 @@ class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator
             Assertions.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
         } else {
             Assertions.assertEquals(1, harvester.getJacobiansColumnsNames().size());
-            Assertions.assertEquals(columnName, harvester.getJacobiansColumnsNames().get(0));
+            Assertions.assertEquals(columnName, harvester.getJacobiansColumnsNames().getFirst());
         }
     }
 

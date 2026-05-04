@@ -209,7 +209,7 @@ class FieldDataDictionaryTest {
         Assertions.assertFalse(dictionary.remove("not-a-key"));
         Assertions.assertEquals(2, dictionary.size());
 
-        Assertions.assertEquals("a", dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("a", dictionary.getData().getFirst().getKey());
         Assertions.assertEquals("b", dictionary.getData().get(1).getKey());
 
         dictionary.clear();
@@ -233,7 +233,7 @@ class FieldDataDictionaryTest {
         checkArray(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"));
         checkArray(new double[] { 17.0 },          dictionary.get("another"));
         checkArray(new double[] { -1.0, -1.0 },    dictionary.get("b"));
-        Assertions.assertEquals("a",       dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("a",       dictionary.getData().getFirst().getKey());
         Assertions.assertEquals("another", dictionary.getData().get(1).getKey());
         Assertions.assertEquals("b",       dictionary.getData().get(2).getKey());
 

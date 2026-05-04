@@ -72,7 +72,7 @@ class KalmanEstimatorTest {
         for (final ParameterDriver driver: propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
             driver.setSelected(false);
         }
-        propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
+        propagatorBuilder.getPropagationParametersDrivers().getDrivers().getFirst().setSelected(true);
         final KalmanEstimatorBuilder builder = new KalmanEstimatorBuilder();
         builder.addPropagationConfiguration(propagatorBuilder,
                 new ConstantProcessNoise(MatrixUtils.createRealMatrix(1, 1)));
@@ -434,7 +434,7 @@ class KalmanEstimatorTest {
         measurementParameters.add(rangeBias.getParameterDriver("range bias"));
 
         // Change semi-major axis of 1.2m as in the batch test
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
+        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -560,7 +560,7 @@ class KalmanEstimatorTest {
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -627,10 +627,10 @@ class KalmanEstimatorTest {
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Change semi-major axis of 1.2m as in the batch test
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
+        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -721,10 +721,10 @@ class KalmanEstimatorTest {
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Change semi-major axis of 1.2m as in the batch test
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
+        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -800,7 +800,7 @@ class KalmanEstimatorTest {
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Cartesian covariance matrix initialization
         // 100m on position / 1e-2m/s on velocity
@@ -877,7 +877,7 @@ class KalmanEstimatorTest {
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Cartesian covariance matrix initialization
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -953,7 +953,7 @@ class KalmanEstimatorTest {
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Cartesian covariance matrix initialization
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -1048,7 +1048,7 @@ class KalmanEstimatorTest {
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Biased propagator for the Kalman
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -1139,7 +1139,7 @@ class KalmanEstimatorTest {
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Cartesian covariance matrix initialization
         // 100m on position / 1e-2m/s on velocity
@@ -1238,7 +1238,7 @@ class KalmanEstimatorTest {
                         build();
 
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
-        ParameterDriver a0Driver = parameters.get(0);
+        ParameterDriver a0Driver = parameters.getFirst();
         Assertions.assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
@@ -1268,8 +1268,8 @@ class KalmanEstimatorTest {
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {
-            propagatorBuilder1.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
-            propagatorBuilder2.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+            propagatorBuilder1.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit(),
+            propagatorBuilder2.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit()
         };
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
                                            refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
@@ -1446,7 +1446,7 @@ class KalmanEstimatorTest {
                         build();
 
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
-        ParameterDriver a0Driver = parameters.get(0);
+        ParameterDriver a0Driver = parameters.getFirst();
         Assertions.assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
@@ -1476,8 +1476,8 @@ class KalmanEstimatorTest {
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {
-            propagatorBuilder1.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
-            propagatorBuilder2.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+            propagatorBuilder1.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit(),
+            propagatorBuilder2.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit()
         };
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
                                            refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
@@ -1541,8 +1541,8 @@ class KalmanEstimatorTest {
 
         // Create a multiplexed measurement
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
-        measurements.add(measurements1.get(0));
-        measurements.add(measurements2.get(0));
+        measurements.add(measurements1.getFirst());
+        measurements.add(measurements2.getFirst());
         final ObservedMeasurement<?> multiplexed = new MultiplexedMeasurement(measurements);
 
         // Covariance matrix initialization

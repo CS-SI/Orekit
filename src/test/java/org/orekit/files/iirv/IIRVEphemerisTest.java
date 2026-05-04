@@ -110,7 +110,7 @@ public class IIRVEphemerisTest {
         IIRVSegment iirv_segment = new IIRVSegment(2020, iirvBuilder.buildIIRVMessage(Arrays.asList(pv_before_midnight, pv_after_midnight)));
 
         List<TimeStampedPVCoordinates> coordinates_from_segment = iirv_segment.getCoordinates();
-        assert (coordinates_from_segment.get(0).getDate().getComponents(UTC).getDate().getYear() == 2020);
+        assert (coordinates_from_segment.getFirst().getDate().getComponents(UTC).getDate().getYear() == 2020);
         assert (coordinates_from_segment.get(1).getDate().getComponents(UTC).getDate().getYear() == 2021);
     }
 }

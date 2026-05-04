@@ -139,7 +139,7 @@ class CR3BPMultipleShooterTest {
         propagator.addForceModel(new CR3BPForceModel(syst));
 
         // Add new set of additional equations to the propagator
-        propagator.addAdditionalDerivativesProvider(cr3bpAdditionalEquations.get(0));
+        propagator.addAdditionalDerivativesProvider(cr3bpAdditionalEquations.getFirst());
 
         propagatorList.add(propagator);
 
@@ -175,8 +175,8 @@ class CR3BPMultipleShooterTest {
 
         // Multiple shooting computation
         List<SpacecraftState> result = multipleShooting.compute();
-        final AbsolutePVCoordinates initialPVMS = result.get(0).getAbsPVA();
-        final double periodMS = 2 * result.get(1).getDate().durationFrom(result.get(0).getDate());
+        final AbsolutePVCoordinates initialPVMS = result.getFirst().getAbsPVA();
+        final double periodMS = 2 * result.get(1).getDate().durationFrom(result.getFirst().getDate());
 
         Assertions.assertEquals(0.0, initialPVDC.getPosition().getY(), 1E-15);
         Assertions.assertEquals(0.0, initialPVDC.getVelocity().getX(), 1E-15);
@@ -230,10 +230,10 @@ class CR3BPMultipleShooterTest {
         propagator.setOrbitType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(earthMoon));
-        propagator.setInitialState(initialGuess.get(0));
+        propagator.setInitialState(initialGuess.getFirst());
         initialGuess.add(propagator.propagate(date.shiftedBy(periodGuess / 2.0)));
 
-        propagator.setInitialState(initialGuess.get(0));
+        propagator.setInitialState(initialGuess.getFirst());
         initialGuess.add(propagator.propagate(date.shiftedBy(periodGuess)));
 
         // shooting
@@ -245,7 +245,7 @@ class CR3BPMultipleShooterTest {
 
         final List<SpacecraftState> corrStates = shooter.compute();
 
-        final PVCoordinates pv0 = corrStates.get(0).getPVCoordinates();
+        final PVCoordinates pv0 = corrStates.getFirst().getPVCoordinates();
         final PVCoordinates pv2 = corrStates.get(nArcs).getPVCoordinates();
         Assertions.assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-13);
         Assertions.assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-13);
@@ -297,10 +297,10 @@ class CR3BPMultipleShooterTest {
         propagator.setOrbitType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(earthMoon));
-        propagator.setInitialState(initialGuess.get(0));
+        propagator.setInitialState(initialGuess.getFirst());
         initialGuess.add(propagator.propagate(date.shiftedBy(periodGuess / 2.0)));
 
-        propagator.setInitialState(initialGuess.get(0));
+        propagator.setInitialState(initialGuess.getFirst());
         initialGuess.add(propagator.propagate(date.shiftedBy(periodGuess)));
 
         // shooting
@@ -313,7 +313,7 @@ class CR3BPMultipleShooterTest {
 
         final List<SpacecraftState> corrStates = shooter.compute();
 
-        final PVCoordinates pv0 = corrStates.get(0).getPVCoordinates();
+        final PVCoordinates pv0 = corrStates.getFirst().getPVCoordinates();
         final PVCoordinates pv2 = corrStates.get(2).getPVCoordinates();
         Assertions.assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-4);
         Assertions.assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-4);

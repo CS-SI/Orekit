@@ -194,7 +194,7 @@ public class GNSSDate implements Serializable, TimeStamped {
                 // lazy setting of a default reference, using end of EOP entries
                 final UT1Scale       ut1       = timeScales.getUT1(IERSConventions.IERS_2010, true);
                 final List<EOPEntry> eop       = ut1.getEOPHistory().getEntries();
-                final int            lastMJD   = eop.get(eop.size() - 1).getMjd();
+                final int            lastMJD   = eop.getLast().getMjd();
                 reference = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, lastMJD);
                 ROLLOVER_REFERENCE.compareAndSet(null, reference);
             }

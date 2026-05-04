@@ -101,7 +101,7 @@ public final class STKEphemerisFileParserTest {
     assertEquals(stopDate, ephemeris.getStop());
     assertEquals(1, ephemeris.getSegments().size());
 
-    final STKEphemerisSegment segment = ephemeris.getSegments().get(0);
+    final STKEphemerisSegment segment = ephemeris.getSegments().getFirst();
     assertEquals(frame, segment.getFrame());
     assertEquals(MU, segment.getMu());
     assertEquals(startDate, segment.getStart());
@@ -112,11 +112,11 @@ public final class STKEphemerisFileParserTest {
 
     final List<TimeStampedPVCoordinates> coordinates = segment.getCoordinates();
 
-    assertEquals(startDate, coordinates.get(0).getDate());
+    assertEquals(startDate, coordinates.getFirst().getDate());
     assertEquals(new Vector3D(-4.2001828159554983e+06, -3.9105939267270239e+06, -4.5819301444368772e+06),
-            coordinates.get(0).getPosition());
-    assertEquals(Vector3D.ZERO, coordinates.get(0).getVelocity());
-    assertEquals(Vector3D.ZERO, coordinates.get(0).getAcceleration());
+            coordinates.getFirst().getPosition());
+    assertEquals(Vector3D.ZERO, coordinates.getFirst().getVelocity());
+    assertEquals(Vector3D.ZERO, coordinates.getFirst().getAcceleration());
 
     assertEquals(new AbsoluteDate(2007, 1, 12, 0, 5, 00.000883, UTC), coordinates.get(5).getDate());
     assertEquals(new Vector3D(-2.3930847437297828e+06, -5.1030332553920103e+06, -4.6952642374704480e+06),
@@ -162,7 +162,7 @@ public final class STKEphemerisFileParserTest {
     assertEquals(stopDate, ephemeris.getStop());
     assertEquals(1, ephemeris.getSegments().size());
 
-    final STKEphemerisSegment segment = ephemeris.getSegments().get(0);
+    final STKEphemerisSegment segment = ephemeris.getSegments().getFirst();
     assertEquals(frame, segment.getFrame());
     assertEquals(MU, segment.getMu());
     assertEquals(startDate, segment.getStart());
@@ -173,12 +173,12 @@ public final class STKEphemerisFileParserTest {
 
     final List<TimeStampedPVCoordinates> coordinates = segment.getCoordinates();
 
-    assertEquals(startDate, coordinates.get(0).getDate());
+    assertEquals(startDate, coordinates.getFirst().getDate());
     assertEquals(new Vector3D(-4.2001828159554983e+06, -3.9105939267270239e+06, -4.5819301444368772e+06),
-            coordinates.get(0).getPosition());
+            coordinates.getFirst().getPosition());
     assertEquals(new Vector3D(5.4770282903204152e+03, -4.6296785954320931e+03, -1.0817325337227874e+03),
-            coordinates.get(0).getVelocity());
-    assertEquals(Vector3D.ZERO, coordinates.get(0).getAcceleration());
+            coordinates.getFirst().getVelocity());
+    assertEquals(Vector3D.ZERO, coordinates.getFirst().getAcceleration());
 
     assertEquals(new AbsoluteDate(2007, 1, 12, 0, 5, 00.000883, UTC), coordinates.get(5).getDate());
     assertEquals(new Vector3D(-2.3930847437297828e+06, -5.1030332553920103e+06, -4.6952642374704480e+06),
@@ -226,7 +226,7 @@ public final class STKEphemerisFileParserTest {
     assertEquals(stopDate, ephemeris.getStop());
     assertEquals(2, ephemeris.getSegments().size());
 
-    final STKEphemerisSegment segment1 = ephemeris.getSegments().get(0);
+    final STKEphemerisSegment segment1 = ephemeris.getSegments().getFirst();
     assertEquals(frame, segment1.getFrame());
     assertEquals(MU, segment1.getMu());
     assertEquals(startDate, segment1.getStart());
@@ -237,12 +237,12 @@ public final class STKEphemerisFileParserTest {
 
     final List<TimeStampedPVCoordinates> coordinates1 = segment1.getCoordinates();
 
-    assertEquals(startDate, coordinates1.get(0).getDate());
+    assertEquals(startDate, coordinates1.getFirst().getDate());
     assertEquals(new Vector3D(6.9999999999999553e+06, -1.2559721622877134e-03, -7.9186900106575397e-01),
-            coordinates1.get(0).getPosition());
+            coordinates1.getFirst().getPosition());
     assertEquals(new Vector3D(4.1824064674153972e-04, 6.7895303333415395e+03, 3.6864141134955967e+03),
-            coordinates1.get(0).getVelocity());
-    assertEquals(Vector3D.ZERO, coordinates1.get(0).getAcceleration());
+            coordinates1.getFirst().getVelocity());
+    assertEquals(Vector3D.ZERO, coordinates1.getFirst().getAcceleration());
 
     assertEquals(new AbsoluteDate(2007, 1, 12, 0, 1, 00.000883, UTC), coordinates1.get(1).getDate());
     assertEquals(new Vector3D(6.9853436721346313e+06, 4.0708747687269317e+05, 2.2102922871869511e+05),
@@ -269,12 +269,12 @@ public final class STKEphemerisFileParserTest {
 
     final List<TimeStampedPVCoordinates> coordinates2 = segment2.getCoordinates();
 
-    assertEquals(new AbsoluteDate(2007, 1, 12, 0, 5, 00.000883, UTC), coordinates2.get(0).getDate());
+    assertEquals(new AbsoluteDate(2007, 1, 12, 0, 5, 00.000883, UTC), coordinates2.getFirst().getDate());
     assertEquals(new Vector3D(6.6370788283674866e+06, 2.0015702515387577e+06, 1.0867112801511162e+06),
-            coordinates2.get(0).getPosition());
+            coordinates2.getFirst().getPosition());
     assertEquals(new Vector3D(-2.4109546214707530e+03, 6.4801591037886537e+03, 3.5179240960554193e+03),
-            coordinates2.get(0).getVelocity());
-    assertEquals(Vector3D.ZERO, coordinates2.get(0).getAcceleration());
+            coordinates2.getFirst().getVelocity());
+    assertEquals(Vector3D.ZERO, coordinates2.getFirst().getAcceleration());
 
     assertEquals(new AbsoluteDate(2007, 1, 12, 0, 6, 00.000883, UTC), coordinates2.get(1).getDate());
     assertEquals(new Vector3D(6.4787418082331438e+06, 2.3859551936109182e+06, 1.2953780350291547e+06),
@@ -322,7 +322,7 @@ public final class STKEphemerisFileParserTest {
     assertEquals(stopDate, ephemeris.getStop());
     assertEquals(1, ephemeris.getSegments().size());
 
-    final STKEphemerisSegment segment = ephemeris.getSegments().get(0);
+    final STKEphemerisSegment segment = ephemeris.getSegments().getFirst();
     assertEquals(frame, segment.getFrame());
     assertEquals(MU, segment.getMu());
     assertEquals(startDate, segment.getStart());
@@ -333,13 +333,13 @@ public final class STKEphemerisFileParserTest {
 
     final List<TimeStampedPVCoordinates> coordinates = segment.getCoordinates();
 
-    assertEquals(startDate, coordinates.get(0).getDate());
+    assertEquals(startDate, coordinates.getFirst().getDate());
     assertEquals(new Vector3D(-4.2001828159554983e+06, -3.9105939267270239e+06, -4.5819301444368772e+06),
-            coordinates.get(0).getPosition());
+            coordinates.getFirst().getPosition());
     assertEquals(new Vector3D(5.4770282903204152e+03, -4.6296785954320931e+03, -1.0817325337227874e+03),
-            coordinates.get(0).getVelocity());
+            coordinates.getFirst().getVelocity());
     assertEquals(new Vector3D(4.2195714111001097e+00, 3.9335215635670262e+00, 4.6186527996456137e+00),
-            coordinates.get(0).getAcceleration());
+            coordinates.getFirst().getAcceleration());
 
     assertEquals(new AbsoluteDate(2007, 1, 12, 0, 5, 00.000883, UTC), coordinates.get(5).getDate());
     assertEquals(new Vector3D(-2.3930847437297828e+06, -5.1030332553920103e+06, -4.6952642374704480e+06),

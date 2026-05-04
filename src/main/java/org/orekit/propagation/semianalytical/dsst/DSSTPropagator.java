@@ -553,7 +553,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // we want to add the central attraction force model
 
             // ensure we are notified of any mu change
-            force.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
+            force.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {

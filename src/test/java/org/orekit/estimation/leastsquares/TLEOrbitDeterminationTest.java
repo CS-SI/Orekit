@@ -190,7 +190,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final String line1 = "1 32711U 08012A   16044.40566026 -.00000039  00000-0  00000+0 0  9991";
         final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().get(0).setSelected(false);
+        templateTLE.getParametersDrivers().getFirst().setSelected(false);
 
         //orbit determination run.
         ResultBatchLeastSquares odGNSS = runBLS(input, false);
@@ -245,7 +245,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().get(0).setSelected(false);
+        templateTLE.getParametersDrivers().getFirst().setSelected(false);
 
         //orbit determination run.
         ResultBatchLeastSquares odLageos2 = runBLS(input, false);

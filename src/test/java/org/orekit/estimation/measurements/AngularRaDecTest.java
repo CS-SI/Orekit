@@ -230,7 +230,7 @@ class AngularRaDecTest {
         Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsV), 9.0e-6);
 
         // Test measurement type
-        Assertions.assertEquals(AngularRaDec.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(AngularRaDec.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /** Test the values of the parameters' derivatives using a numerical

@@ -315,7 +315,7 @@ public class IIRVVector implements Comparable<IIRVVector> {
      * @param utc   UTC time scale
      */
     public IIRVVector(final List<String> lines, final UTCScale utc) {
-        this(lines.get(0), lines.get(1), lines.get(2), lines.get(3), lines.get(4), lines.get(5), utc);
+        this(lines.getFirst(), lines.get(1), lines.get(2), lines.get(3), lines.get(4), lines.get(5), utc);
     }
 
     /**
@@ -418,7 +418,7 @@ public class IIRVVector implements Comparable<IIRVVector> {
         if (lines.size() != 6) {
             return false;
         }
-        return isFormatOK(lines.get(0), lines.get(1), lines.get(2), lines.get(3), lines.get(4), lines.get(5));
+        return isFormatOK(lines.getFirst(), lines.get(1), lines.get(2), lines.get(3), lines.get(4), lines.get(5));
     }
 
     /**
@@ -465,7 +465,7 @@ public class IIRVVector implements Comparable<IIRVVector> {
             throw new OrekitIllegalArgumentException(OrekitMessages.INCONSISTENT_NUMBER_OF_ELEMENTS, 6, lines.size());
         }
 
-        validateLines(lines.get(0), lines.get(1), lines.get(2), lines.get(3), lines.get(4), lines.get(5), firstLineIncludesMessageMetadata);
+        validateLines(lines.getFirst(), lines.get(1), lines.get(2), lines.get(3), lines.get(4), lines.get(5), firstLineIncludesMessageMetadata);
     }
 
 

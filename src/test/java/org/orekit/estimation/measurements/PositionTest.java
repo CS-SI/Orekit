@@ -89,7 +89,7 @@ public class PositionTest {
         }
 
         // Test measurement type
-        Assertions.assertEquals(Position.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(Position.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.
@@ -190,7 +190,7 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 3; i++) {
@@ -256,7 +256,7 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 3; i++) {
@@ -334,7 +334,7 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 3; i++) {

@@ -64,10 +64,10 @@ public class RecordAndContinueTest {
         // verify
         List<Event> events = handler.getEvents();
         Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(s1, events.get(0).getState());
+        Assertions.assertEquals(s1, events.getFirst().getState());
         Assertions.assertEquals(s2, events.get(1).getState());
         Assertions.assertEquals(s3, events.get(2).getState());
-        Assertions.assertTrue(events.get(0).isIncreasing());
+        Assertions.assertTrue(events.getFirst().isIncreasing());
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertFalse(events.get(2).isIncreasing());
         for (Event event : events) {
@@ -86,9 +86,9 @@ public class RecordAndContinueTest {
         // verify new events
         events = handler.getEvents();
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(s4, events.get(0).getState());
-        Assertions.assertFalse(events.get(0).isIncreasing());
-        Assertions.assertEquals(detector, events.get(0).getDetector());
+        Assertions.assertEquals(s4, events.getFirst().getState());
+        Assertions.assertFalse(events.getFirst().isIncreasing());
+        Assertions.assertEquals(detector, events.getFirst().getDetector());
     }
 
 }

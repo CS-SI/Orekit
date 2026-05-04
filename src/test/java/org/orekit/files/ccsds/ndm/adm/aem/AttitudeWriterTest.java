@@ -90,7 +90,7 @@ public class AttitudeWriterTest {
         header.setCreationDate(aem.getHeader().getCreationDate());
         header.setOriginator(aem.getHeader().getOriginator());
 
-        final AemSegment s0 = aem.getSegments().get(0);
+        final AemSegment s0 = aem.getSegments().getFirst();
         AemMetadata metadata = new AemMetadata(s0.getInterpolationSamples() - 1);
         metadata.setObjectName(s0.getMetadata().getObjectName());
         metadata.setObjectID(s0.getMetadata().getObjectID());
@@ -146,7 +146,7 @@ public class AttitudeWriterTest {
                                                    withDataContext(aem.getDataContext()).
                                                    buildAemWriter(),
                                                    aem.getHeader(),
-                                                   aem.getSegments().get(0).getMetadata(),
+                                                   aem.getSegments().getFirst().getMetadata(),
                                                    FileFormat.KVN,
                                                    "dummy", Constants.JULIAN_DAY, 0);
         try {
@@ -181,12 +181,12 @@ public class AttitudeWriterTest {
 
         final File temp = temporaryFolderPath.resolve("writeAEMExample01.xml").toFile();
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   aem.getHeader(), aem.getSegments().get(0).getMetadata(),
+                                                   aem.getHeader(), aem.getSegments().getFirst().getMetadata(),
                                                    FileFormat.XML, temp.getName(), Constants.JULIAN_DAY, 1);
         writer.write(temp.getAbsolutePath(), aem);
         final Aem generatedAem = new ParserBuilder().buildAemParser().parseMessage(new DataSource(temp));
-        Assertions.assertEquals(aem.getSegments().get(0).getMetadata().getObjectID(),
-                     generatedAem.getSegments().get(0).getMetadata().getObjectID());
+        Assertions.assertEquals(aem.getSegments().getFirst().getMetadata().getObjectID(),
+                     generatedAem.getSegments().getFirst().getMetadata().getObjectID());
     }
 
     @Test
@@ -241,7 +241,7 @@ public class AttitudeWriterTest {
         final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   aem.getHeader(), aem.getSegments().get(0).getMetadata(),
+                                                   aem.getHeader(), aem.getSegments().getFirst().getMetadata(),
                                                    FileFormat.KVN, "TestAEMIssue723.aem",
                                                    Constants.JULIAN_DAY, 0);
         final CharArrayWriter caw = new CharArrayWriter();
@@ -250,7 +250,7 @@ public class AttitudeWriterTest {
 
         final Aem generatedAem = new ParserBuilder().buildAemParser().
                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        Assertions.assertEquals(aem.getHeader().getComments().get(0), generatedAem.getHeader().getComments().get(0));
+        Assertions.assertEquals(aem.getHeader().getComments().getFirst(), generatedAem.getHeader().getComments().getFirst());
     }
 
     @Test

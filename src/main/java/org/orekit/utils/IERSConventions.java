@@ -1261,8 +1261,8 @@ public enum IERSConventions {
             final SimpleTimeStampedTableParser<MeanPole> parser =
                     new SimpleTimeStampedTableParser<>(3, converter);
             final List<MeanPole> annualPoleList = load(ANNUAL_POLE, in -> parser.parse(in, ANNUAL_POLE));
-            final AbsoluteDate firstAnnualPoleDate = annualPoleList.get(0).getDate();
-            final AbsoluteDate lastAnnualPoleDate  = annualPoleList.get(annualPoleList.size() - 1).getDate();
+            final AbsoluteDate firstAnnualPoleDate = annualPoleList.getFirst().getDate();
+            final AbsoluteDate lastAnnualPoleDate  = annualPoleList.getLast().getDate();
             final ImmutableTimeStampedCache<MeanPole> annualCache =
                     new ImmutableTimeStampedCache<>(2, annualPoleList);
 

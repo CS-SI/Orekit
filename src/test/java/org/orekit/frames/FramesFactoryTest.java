@@ -383,8 +383,8 @@ public class FramesFactoryTest {
         Utils.setLoaders(IERSConventions.IERS_2010, converted);
         Frame todConvertedCorrection  = FramesFactory.getTOD(IERSConventions.IERS_2010, false);
 
-        for (AbsoluteDate date = forced.get(0).getDate();
-             date.compareTo(forced.get(forced.size() - 1).getDate()) < 0;
+        for (AbsoluteDate date = forced.getFirst().getDate();
+             date.compareTo(forced.getLast().getDate()) < 0;
              date = date.shiftedBy(3600)) {
             Transform tNoCorrection =
                     FramesFactory.getNonInterpolatingTransform(todNoCorrection, cirf, date);

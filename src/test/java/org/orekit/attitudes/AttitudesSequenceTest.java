@@ -327,7 +327,7 @@ class AttitudesSequenceTest {
         SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(-10000.0));
         Assertions.assertEquals(42.0, finalState.getAdditionalState("fortyTwo")[0], 1.0e-10);
         Assertions.assertEquals(1, handler.dates.size());
-        Assertions.assertEquals(-500.0, handler.dates.get(0).durationFrom(initialDate), 1.0e-3);
+        Assertions.assertEquals(-500.0, handler.dates.getFirst().durationFrom(initialDate), 1.0e-3);
         Assertions.assertEquals(-490.0, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
     }
@@ -402,16 +402,16 @@ class AttitudesSequenceTest {
             Attitude targetAttitude = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame());
             Attitude stateAttitude  = state.getAttitude();
 
-            if (nadirToTarget.dates.isEmpty() || state.getDate().durationFrom(nadirToTarget.dates.get(0)) < 0) {
+            if (nadirToTarget.dates.isEmpty() || state.getDate().durationFrom(nadirToTarget.dates.getFirst()) < 0) {
                 // we are stabilized in nadir pointing, before first switch
                 checkEqualAttitudes(nadirAttitude, stateAttitude);
-            } else if (state.getDate().durationFrom(nadirToTarget.dates.get(0)) <= transitionTime) {
+            } else if (state.getDate().durationFrom(nadirToTarget.dates.getFirst()) <= transitionTime) {
                 // we are in transition from nadir to target
                 checkBetweenAttitudes(nadirAttitude, targetAttitude, stateAttitude);
-            } else if (targetToNadir.dates.isEmpty() || state.getDate().durationFrom(targetToNadir.dates.get(0)) < 0) {
+            } else if (targetToNadir.dates.isEmpty() || state.getDate().durationFrom(targetToNadir.dates.getFirst()) < 0) {
                 // we are stabilized in target pointing between the two switches
                 checkEqualAttitudes(targetAttitude, stateAttitude);
-            } else if (state.getDate().durationFrom(targetToNadir.dates.get(0)) <= transitionTime) {
+            } else if (state.getDate().durationFrom(targetToNadir.dates.getFirst()) <= transitionTime) {
                 // we are in transition from target to nadir
                 checkBetweenAttitudes(targetAttitude, nadirAttitude, stateAttitude);
             } else {
@@ -472,7 +472,7 @@ class AttitudesSequenceTest {
         // check that if we restart a forward propagation from an intermediate state
         // we properly get an interpolated attitude despite we missed the event trigger
 
-        final AbsoluteDate midTransition = nadirToTarget.get(0).shiftedBy(0.5 * transitionTime);
+        final AbsoluteDate midTransition = nadirToTarget.getFirst().shiftedBy(0.5 * transitionTime);
         SpacecraftState state   = propagator.propagate(midTransition.shiftedBy(-60), midTransition);
         Rotation nadirR  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
         Rotation targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
@@ -537,7 +537,7 @@ class AttitudesSequenceTest {
 
         // check that if we restart a backward propagation from an intermediate state
         // we properly get an interpolated attitude despite we missed the event trigger
-        final AbsoluteDate midTransition = nadirToTarget.get(0).shiftedBy(0.5 * transitionTime);
+        final AbsoluteDate midTransition = nadirToTarget.getFirst().shiftedBy(0.5 * transitionTime);
         SpacecraftState state   = propagator.propagate(midTransition.shiftedBy(+60), midTransition);
         Rotation nadirR  = nadirPointing.getAttitude(state.getAbsPVA(), state.getDate(), state.getFrame()).getRotation();
         Rotation targetR = targetPointing.getAttitude(state.getAbsPVA(), state.getDate(), state.getFrame()).getRotation();
@@ -643,7 +643,7 @@ class AttitudesSequenceTest {
         // THEN
         Assertions.assertEquals(1, switches1.size());
         Assertions.assertNotSame(switches1, switches2);
-        Assertions.assertFalse(switches1.get(0).getEventFunction().dependsOnMainVariablesOnly());
+        Assertions.assertFalse(switches1.getFirst().getEventFunction().dependsOnMainVariablesOnly());
     }
 
     private static class Handler implements AttitudeSwitchHandler {

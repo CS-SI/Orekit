@@ -73,7 +73,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
      */
     public EphemerisPropagatorBuilder(final List<SpacecraftState> states,
                                       final TimeInterpolator<SpacecraftState> stateInterpolator) {
-        this(states, stateInterpolator, states.isEmpty() ? null : new FrameAlignedProvider(states.get(0).getFrame()));
+        this(states, stateInterpolator, states.isEmpty() ? null : new FrameAlignedProvider(states.getFirst().getFrame()));
     }
 
     /**
@@ -103,7 +103,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
                                       final AttitudeProvider attitudeProvider) {
         this(states,
              new SpacecraftStateInterpolator(interpolationPoints, extrapolationThreshold,
-                                             states.get(0).getFrame(), states.get(0).getFrame()),
+                                             states.getFirst().getFrame(), states.getFirst().getFrame()),
              attitudeProvider);
     }
 
@@ -126,7 +126,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
                                       final List<StateCovariance> covariances,
                                       final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator) {
         this(states, stateInterpolator, covariances, covarianceInterpolator,
-             states.isEmpty() ? null : new FrameAlignedProvider(states.get(0).getFrame()));
+             states.isEmpty() ? null : new FrameAlignedProvider(states.getFirst().getFrame()));
     }
 
     /**
@@ -143,7 +143,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
                                       final List<StateCovariance> covariances,
                                       final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator,
                                       final AttitudeProvider attitudeProvider) {
-        super(states.get(0).getOrbit(), PositionAngleType.TRUE, DEFAULT_SCALE, false, attitudeProvider);
+        super(states.getFirst().getOrbit(), PositionAngleType.TRUE, DEFAULT_SCALE, false, attitudeProvider);
         deselectDynamicParameters();
 
         // Check input consistency the same way Ephemeris is checking consistency

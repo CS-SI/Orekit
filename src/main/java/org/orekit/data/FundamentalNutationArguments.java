@@ -199,7 +199,7 @@ public class FundamentalNutationArguments {
                 conventions.getGMSTFunction(timeScale, timeScales);
         this.gmstRateFunction   = (timeScale == null) ? null :
                 conventions.getGMSTRateFunction(timeScale, timeScales);
-        this.lCoefficients      = coefficients.get( 0);
+        this.lCoefficients      = coefficients.getFirst();
         this.lPrimeCoefficients = coefficients.get( 1);
         this.fCoefficients      = coefficients.get( 2);
         this.dCoefficients      = coefficients.get( 3);

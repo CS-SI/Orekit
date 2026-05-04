@@ -138,7 +138,7 @@ class EventShifterTest {
                                                      false, -5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assertions.assertEquals(6, log.size());
-        log.get(0).checkExpected(log.get(2).getDT() - 20, "shifted decreasing");
+        log.getFirst().checkExpected(log.get(2).getDT() - 20, "shifted decreasing");
         log.get(1).checkExpected(log.get(2).getDT(),      "unshifted decreasing");
         log.get(3).checkExpected(log.get(5).getDT() - 15, "shifted increasing");
         log.get(4).checkExpected(log.get(5).getDT(),      "unshifted increasing");
@@ -153,8 +153,8 @@ class EventShifterTest {
                                                      false, -5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assertions.assertEquals(6, log.size());
-        log.get(1).checkExpected(log.get(0).getDT(),      "unshifted decreasing");
-        log.get(2).checkExpected(log.get(0).getDT() + 20, "shifted decreasing");
+        log.get(1).checkExpected(log.getFirst().getDT(),      "unshifted decreasing");
+        log.get(2).checkExpected(log.getFirst().getDT() + 20, "shifted decreasing");
         log.get(3).checkExpected(log.get(5).getDT() - 15, "shifted increasing");
         log.get(4).checkExpected(log.get(5).getDT(),      "unshifted increasing");
     }
@@ -168,7 +168,7 @@ class EventShifterTest {
                                                      false,  5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assertions.assertEquals(6, log.size());
-        log.get(0).checkExpected(log.get(2).getDT() - 20, "shifted decreasing");
+        log.getFirst().checkExpected(log.get(2).getDT() - 20, "shifted decreasing");
         log.get(1).checkExpected(log.get(2).getDT(),      "unshifted decreasing");
         log.get(4).checkExpected(log.get(3).getDT(),      "unshifted increasing");
         log.get(5).checkExpected(log.get(3).getDT() + 15, "shifted increasing");
@@ -183,8 +183,8 @@ class EventShifterTest {
                                                      false,  5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assertions.assertEquals(6, log.size());
-        log.get(1).checkExpected(log.get(0).getDT(),      "unshifted decreasing");
-        log.get(2).checkExpected(log.get(0).getDT() + 20, "shifted decreasing");
+        log.get(1).checkExpected(log.getFirst().getDT(),      "unshifted decreasing");
+        log.get(2).checkExpected(log.getFirst().getDT() + 20, "shifted decreasing");
         log.get(4).checkExpected(log.get(3).getDT(),      "unshifted increasing");
         log.get(5).checkExpected(log.get(3).getDT() + 15, "shifted increasing");
     }

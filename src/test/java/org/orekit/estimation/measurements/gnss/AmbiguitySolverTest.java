@@ -49,7 +49,7 @@ public class AmbiguitySolverTest {
                                                           new SimpleRatioAmbiguityAcceptance(0.8)).
                                       fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance);
         Assertions.assertEquals(3, fixed.size());
-        Assertions.assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(5, fixed.getFirst().getValue(), 1.0e-15);
         Assertions.assertEquals(3, fixed.get(1).getValue(), 1.0e-15);
         Assertions.assertEquals(4, fixed.get(2).getValue(), 1.0e-15);
     }

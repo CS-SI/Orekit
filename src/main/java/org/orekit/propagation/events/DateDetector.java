@@ -232,11 +232,11 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
             eventDateList.add(new EventDate(target, increasing));
         } else {
             final int          lastIndex = eventDateList.size() - 1;
-            final AbsoluteDate firstDate = eventDateList.get(0).getDate();
+            final AbsoluteDate firstDate = eventDateList.getFirst().getDate();
             final AbsoluteDate lastDate  = eventDateList.get(lastIndex).getDate();
             if (firstDate.durationFrom(target) > minGap) {
-                increasing = !eventDateList.get(0).isgIncrease();
-                eventDateList.add(0, new EventDate(target, increasing));
+                increasing = !eventDateList.getFirst().isgIncrease();
+                eventDateList.addFirst(new EventDate(target, increasing));
                 currentIndex++;
             } else if (target.durationFrom(lastDate) > minGap) {
                 increasing = !eventDateList.get(lastIndex).isgIncrease();

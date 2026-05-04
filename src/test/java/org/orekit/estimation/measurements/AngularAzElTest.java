@@ -110,7 +110,7 @@ class AngularAzElTest {
         Assertions.assertEquals(0.0, elDiffStat.getStandardDeviation(), 3.3e-9);
 
         // Test measurement type
-        Assertions.assertEquals(AngularAzEl.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(AngularAzEl.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.

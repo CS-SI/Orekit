@@ -113,7 +113,7 @@ class FieldQuadraticPenaltyCartesianFuelTest {
         Assertions.assertEquals(2, actualDetectors.size());
         final SpacecraftState state = buildState(10);
         final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(Binary64Field.getInstance(), state);
-        final Binary64 g1 = actualDetectors.get(0).g(fieldState);
+        final Binary64 g1 = actualDetectors.getFirst().g(fieldState);
         final Binary64 g2 = actualDetectors.get(1).g(fieldState);
         final Binary64 difference = FastMath.abs(g2.subtract(g1));
         Assertions.assertEquals(0., penalizedCartesianFuel.getMaximumThrustMagnitude().subtract(difference).getReal(), 1e-12);

@@ -303,7 +303,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             try {
                 // ensure we are notified of any mu change
-                model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
+                model.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
@@ -854,7 +854,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final AbstractStateTransitionMatrixGenerator generator = (AbstractStateTransitionMatrixGenerator)
                 getAdditionalDerivativesProviders().stream()
                         .filter(AbstractStateTransitionMatrixGenerator.class::isInstance)
-                        .collect(Collectors.toList()).get(0);
+                        .collect(Collectors.toList()).getFirst();
         final int expectedSize = generator.getStateDimension();
         if (dYdQ.length != expectedSize) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, dYdQ.length, expectedSize);
@@ -1005,7 +1005,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 if (numberOfForces > 1) {
                     recomputingJacobian = true;
                 } else {
-                    recomputingJacobian = !(forceModelList.get(0) instanceof NewtonianAttraction);
+                    recomputingJacobian = !(forceModelList.getFirst() instanceof NewtonianAttraction);
                 }
             } else {
                 recomputingJacobian = false;

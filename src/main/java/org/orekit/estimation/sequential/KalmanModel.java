@@ -333,7 +333,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(getBuilders().get(0).getInitialOrbitDate());
+                driver.setReferenceDate(getBuilders().getFirst().getInitialOrbitDate());
             }
         }
 

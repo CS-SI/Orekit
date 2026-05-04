@@ -86,7 +86,7 @@ public class FieldEphemeris<T extends CalculusFieldElement<T>> extends FieldAbst
      */
     public FieldEphemeris(final List<FieldSpacecraftState<T>> states, final int interpolationPoints)
             throws MathIllegalArgumentException {
-        this(states, new FieldSpacecraftStateInterpolator<>(interpolationPoints, states.get(0).getFrame(), states.get(0).getFrame()));
+        this(states, new FieldSpacecraftStateInterpolator<>(interpolationPoints, states.getFirst().getFrame(), states.getFirst().getFrame()));
     }
 
     /**
@@ -103,7 +103,7 @@ public class FieldEphemeris<T extends CalculusFieldElement<T>> extends FieldAbst
     public FieldEphemeris(final List<FieldSpacecraftState<T>> states,
                           final FieldTimeInterpolator<FieldSpacecraftState<T>, T> stateInterpolator)
             throws MathIllegalArgumentException {
-        this(states, stateInterpolator, new FrameAlignedProvider(states.get(0).getFrame()));
+        this(states, stateInterpolator, new FrameAlignedProvider(states.getFirst().getFrame()));
     }
 
     /**
@@ -122,15 +122,15 @@ public class FieldEphemeris<T extends CalculusFieldElement<T>> extends FieldAbst
                           final FieldTimeInterpolator<FieldSpacecraftState<T>, T> stateInterpolator,
                           final AttitudeProvider attitudeProvider)
             throws MathIllegalArgumentException {
-        super(states.get(0).getDate().getField(), attitudeProvider);
+        super(states.getFirst().getDate().getField(), attitudeProvider);
 
         // Check input consistency
         checkInputConsistency(states, stateInterpolator);
 
         // Initialize variables
-        final FieldSpacecraftState<T> s0 = states.get(0);
+        final FieldSpacecraftState<T> s0 = states.getFirst();
         minDate = s0.getDate();
-        maxDate = states.get(states.size() - 1).getDate();
+        maxDate = states.getLast().getDate();
         frame   = s0.getFrame();
 
         final List<FieldDataDictionary<T>.Entry> as = s0.getAdditionalDataValues().getData();
@@ -186,7 +186,7 @@ public class FieldEphemeris<T extends CalculusFieldElement<T>> extends FieldAbst
      */
     public void checkStatesDefinitionsConsistency(final List<FieldSpacecraftState<T>> states) {
         // Check all states handle the same additional states and are defined the same way (orbit or absolute PVA)
-        final FieldSpacecraftState<T> s0               = states.get(0);
+        final FieldSpacecraftState<T> s0               = states.getFirst();
         final boolean         s0IsOrbitDefined = s0.isOrbitDefined();
         for (final FieldSpacecraftState<T> state : states) {
             s0.ensureCompatibleAdditionalStates(state);

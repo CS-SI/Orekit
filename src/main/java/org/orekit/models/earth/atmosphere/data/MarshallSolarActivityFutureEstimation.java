@@ -360,7 +360,7 @@ public class MarshallSolarActivityFutureEstimation
         final UnivariateFunction interpolatingFunction = interpolator.interpolate(x, y);
 
         // Interpolate
-        final AbsoluteDate previousDate = neighbors.get(0).getDate();
+        final AbsoluteDate previousDate = neighbors.getFirst().getDate();
         final AbsoluteDate nextDate     = neighbors.get(1).getDate();
 
         // TODO Temporary fix for issue 1719 until GenericTimeStampedCache is fixed

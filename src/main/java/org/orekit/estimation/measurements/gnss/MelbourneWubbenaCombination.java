@@ -104,9 +104,9 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
                             final double combinedFrequency = odWL.getCombinedFrequency();
                             // Used observation data to build the Melbourn-Wübbena measurement
                             final List<ObservationData> usedData = new ArrayList<>(4);
-                            usedData.add(0, odWL.getUsedObservationData().get(0));
+                            usedData.addFirst(odWL.getUsedObservationData().getFirst());
                             usedData.add(1, odWL.getUsedObservationData().get(1));
-                            usedData.add(2, odNL.getUsedObservationData().get(0));
+                            usedData.add(2, odNL.getUsedObservationData().getFirst());
                             usedData.add(3, odNL.getUsedObservationData().get(1));
                             // Update the combined observation data list
                             combined.add(new CombinedObservationData(combinedValue, combinedFrequency,

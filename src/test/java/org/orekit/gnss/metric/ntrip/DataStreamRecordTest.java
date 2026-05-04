@@ -37,8 +37,8 @@ public class DataStreamRecordTest {
         Assertions.assertEquals("IGS-SSR APC",                         str.getSourceIdentifier());
         Assertions.assertEquals(DataFormat.RTCM_3,                     str.getFormat());
         Assertions.assertEquals(5,                                     str.getFormatDetails().size());
-        Assertions.assertEquals("4076_021",                            str.getFormatDetails().get(0).getId());
-        Assertions.assertEquals(60,                                    str.getFormatDetails().get(0).getRate());
+        Assertions.assertEquals("4076_021",                            str.getFormatDetails().getFirst().getId());
+        Assertions.assertEquals(60,                                    str.getFormatDetails().getFirst().getRate());
         Assertions.assertEquals("4076_022",                            str.getFormatDetails().get(1).getId());
         Assertions.assertEquals(5,                                     str.getFormatDetails().get(1).getRate());
         Assertions.assertEquals("4076_025",                            str.getFormatDetails().get(2).getId());
@@ -49,8 +49,8 @@ public class DataStreamRecordTest {
         Assertions.assertEquals(5,                                     str.getFormatDetails().get(4).getRate());
         Assertions.assertEquals(CarrierPhase.NO,                       str.getCarrierPhase());
         Assertions.assertEquals(2,                                     str.getNavigationSystems().size());
-        Assertions.assertEquals(NavigationSystem.GPS,                  str.getNavigationSystems().get(0));
-        Assertions.assertEquals("GPS",                                 str.getNavigationSystems().get(0).toString());
+        Assertions.assertEquals(NavigationSystem.GPS,                  str.getNavigationSystems().getFirst());
+        Assertions.assertEquals("GPS",                                 str.getNavigationSystems().getFirst().toString());
         Assertions.assertEquals(NavigationSystem.GLO,                  str.getNavigationSystems().get(1));
         Assertions.assertEquals("Glonass",                             str.getNavigationSystems().get(1).toString());
         Assertions.assertEquals("MISC",                                str.getNetwork());
@@ -75,11 +75,11 @@ public class DataStreamRecordTest {
         Assertions.assertEquals("BRDC_CoM_ITRF",      str.getSourceIdentifier());
         Assertions.assertEquals(DataFormat.RTCM_3,    str.getFormat());
         Assertions.assertEquals(1,                    str.getFormatDetails().size());
-        Assertions.assertEquals("1060",               str.getFormatDetails().get(0).getId());
-        Assertions.assertEquals(5,                    str.getFormatDetails().get(0).getRate());
+        Assertions.assertEquals("1060",               str.getFormatDetails().getFirst().getId());
+        Assertions.assertEquals(5,                    str.getFormatDetails().getFirst().getRate());
         Assertions.assertEquals(CarrierPhase.NO,      str.getCarrierPhase());
         Assertions.assertEquals(1,                    str.getNavigationSystems().size());
-        Assertions.assertEquals(NavigationSystem.GPS, str.getNavigationSystems().get(0));
+        Assertions.assertEquals(NavigationSystem.GPS, str.getNavigationSystems().getFirst());
         Assertions.assertEquals("MISC",               str.getNetwork());
         Assertions.assertEquals("DEU",                str.getCountry());
         Assertions.assertEquals(49.87,                FastMath.toDegrees(str.getLatitude()),  1.0e-15);
@@ -102,8 +102,8 @@ public class DataStreamRecordTest {
         Assertions.assertEquals("Assisted-GNSS",                       str.getSourceIdentifier());
         Assertions.assertEquals(DataFormat.RTCM_3,                     str.getFormat());
         Assertions.assertEquals(7,                                     str.getFormatDetails().size());
-        Assertions.assertEquals("1019",                                str.getFormatDetails().get(0).getId());
-        Assertions.assertEquals(-1,                                    str.getFormatDetails().get(0).getRate());
+        Assertions.assertEquals("1019",                                str.getFormatDetails().getFirst().getId());
+        Assertions.assertEquals(-1,                                    str.getFormatDetails().getFirst().getRate());
         Assertions.assertEquals("1020",                                str.getFormatDetails().get(1).getId());
         Assertions.assertEquals(-1,                                    str.getFormatDetails().get(1).getRate());
         Assertions.assertEquals("1042",                                str.getFormatDetails().get(2).getId());
@@ -118,8 +118,8 @@ public class DataStreamRecordTest {
         Assertions.assertEquals(-1,                                    str.getFormatDetails().get(6).getRate());
         Assertions.assertEquals(CarrierPhase.NO,                       str.getCarrierPhase());
         Assertions.assertEquals(6,                                     str.getNavigationSystems().size());
-        Assertions.assertEquals(NavigationSystem.GPS,                  str.getNavigationSystems().get(0));
-        Assertions.assertEquals("GPS",                                 str.getNavigationSystems().get(0).toString());
+        Assertions.assertEquals(NavigationSystem.GPS,                  str.getNavigationSystems().getFirst());
+        Assertions.assertEquals("GPS",                                 str.getNavigationSystems().getFirst().toString());
         Assertions.assertEquals(NavigationSystem.GLO,                  str.getNavigationSystems().get(1));
         Assertions.assertEquals("Glonass",                             str.getNavigationSystems().get(1).toString());
         Assertions.assertEquals(NavigationSystem.GAL,                  str.getNavigationSystems().get(2));

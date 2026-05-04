@@ -408,7 +408,7 @@ class RangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -447,7 +447,7 @@ class RangeTest {
         Assertions.assertEquals(0.0, relErrorsMax,    3.0e-14);
 
         // Test measurement type
-        Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
@@ -567,7 +567,7 @@ class RangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -719,7 +719,7 @@ class RangeTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
@@ -784,7 +784,7 @@ class RangeTest {
                         driver.setSelected(true);
                     }
 
-                    parameters.get(0).setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
+                    parameters.getFirst().setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
                     final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(tropoModel);
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
@@ -801,7 +801,7 @@ class RangeTest {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        parameters.get(0)
+                        parameters.getFirst()
                     };
 
                     if (printResults) {
@@ -861,7 +861,7 @@ class RangeTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();

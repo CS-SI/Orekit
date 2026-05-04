@@ -96,7 +96,7 @@ public class OneWayGNSSRangeRate extends AbstractOneWayGNSS<OneWayGNSSRangeRate>
                                                                                                     final SpacecraftState[] states) {
 
         final CommonParametersWithoutDerivatives common =
-            computeLocalParametersWithout(states, getSatellites().get(0), getDate());
+            computeLocalParametersWithout(states, getSatellites().getFirst(), getDate());
 
         // Estimated measurement
         final EstimatedMeasurementBase<OneWayGNSSRangeRate> estimatedRangeRate =
@@ -128,7 +128,7 @@ public class OneWayGNSSRangeRate extends AbstractOneWayGNSS<OneWayGNSSRangeRate>
                                                                               final SpacecraftState[] states) {
 
         final CommonParametersWithDerivatives common =
-            computeLocalParametersWith(states, getSatellites().get(0), getDate());
+            computeLocalParametersWith(states, getSatellites().getFirst(), getDate());
 
         // Estimated measurement
         final EstimatedMeasurement<OneWayGNSSRangeRate> estimatedRangeRate =

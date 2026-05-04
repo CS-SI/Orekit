@@ -71,7 +71,7 @@ public class PseudoRangeFilteringTest {
         nd = filter.filter(nd);
         final RinexObservationParser parser = new RinexObservationParser();
         List<ObservationDataSet> listObsDataSet = parser.parse(nd).getObservationDataSets();
-        ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
+        ObservationDataSet lastObsDataSet = listObsDataSet.getLast();
 
         // Test reset and null condition on doppler
         ObservationData obsDataRange = new ObservationData(rangeType, 10, 0, 7);
@@ -99,7 +99,7 @@ public class PseudoRangeFilteringTest {
 
         List<SmoothedObservationDataSet> listObsDataSetUpdate = prs.getFilteredDataMap().get(rangeType.getName());
 
-        double lastUpdatedValue = listObsDataSetUpdate.get(listObsDataSetUpdate.size() - 1).getSmoothedData().getValue();
+        double lastUpdatedValue = listObsDataSetUpdate.getLast().getSmoothedData().getValue();
         Assertions.assertEquals(2.0650729099E7, lastUpdatedValue, 1E-6);
 
     }
@@ -143,7 +143,7 @@ public class PseudoRangeFilteringTest {
 
         // Test SatelliteSystem / SNR
         List<ObservationDataSet> listObsDataSet = parser.parse(nd).getObservationDataSets();
-        ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
+        ObservationDataSet lastObsDataSet = listObsDataSet.getLast();
 
         ObservationData obsDataRange = new ObservationData(rangeType, 0, 0, 0);
         ObservationData obsDataRangeSNR = new ObservationData(rangeType, 0, 0, 1);
@@ -227,8 +227,8 @@ public class PseudoRangeFilteringTest {
         ArrayList<Double> codeDFArray = filterDF.getCodeHistory();
         ArrayList<Double> smoothedDFArray = filterDF.getSmoothedCodeHistory();
 
-        double lastValueSmoothed = smoothedDFArray.get(smoothedDFArray.size()-1);
-        double lastValueCode = codeDFArray.get(codeDFArray.size()-1);
+        double lastValueSmoothed = smoothedDFArray.getLast();
+        double lastValueCode = codeDFArray.getLast();
 
         // Regression test
         Assertions.assertEquals(2.4715822416833777E7, lastValueSmoothed, 1e-6);
@@ -244,8 +244,8 @@ public class PseudoRangeFilteringTest {
         ArrayList<Double> codeSFArray = filterSF.getCodeHistory();
         ArrayList<Double> smoothedSFArray = filterSF.getSmoothedCodeHistory();
 
-        lastValueSmoothed = smoothedSFArray.get(smoothedSFArray.size()-1);
-        lastValueCode = codeSFArray.get(codeSFArray.size()-1);
+        lastValueSmoothed = smoothedSFArray.getLast();
+        lastValueCode = codeSFArray.getLast();
 
         // Regression test
         Assertions.assertEquals(2.4715820677129257E7, lastValueSmoothed, 1e-6);
@@ -258,10 +258,10 @@ public class PseudoRangeFilteringTest {
         List<SmoothedObservationDataSet> listObsDataSetUpdateDF = prs.getFilteredDataMap().get(rangeType);
         List<SmoothedObservationDataSet> listObsDataSetUpdateSF = prsSF.getFilteredDataMap().get(rangeType);
 
-        double lastUpdatedValueDF = listObsDataSetUpdateDF.get(listObsDataSetUpdateDF.size() - 1).getSmoothedData().getValue();
+        double lastUpdatedValueDF = listObsDataSetUpdateDF.getLast().getSmoothedData().getValue();
         Assertions.assertEquals(2.4715822416833777E7, lastUpdatedValueDF, 1E-6);
 
-        double lastUpdatedValueSF = listObsDataSetUpdateSF.get(listObsDataSetUpdateSF.size() - 1).getSmoothedData().getValue();
+        double lastUpdatedValueSF = listObsDataSetUpdateSF.getLast().getSmoothedData().getValue();
         Assertions.assertEquals(2.4715820677129257E7, lastUpdatedValueSF, 1E-6);
 
     }

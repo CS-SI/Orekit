@@ -788,8 +788,8 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(2,  drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
         Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
         Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
 
@@ -797,8 +797,8 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         IsotropicDrag isoDrag = (IsotropicDrag) forceModel.getSpacecraft();
         drivers = isoDrag.getDragParametersDrivers();
         Assertions.assertEquals(2, drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(new AbsoluteDate()), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(new AbsoluteDate()), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
         Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(new AbsoluteDate()), 0.);
         Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
 
@@ -809,18 +809,18 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         double dt = 120.;
         // Build the force model
         isoDrag = new IsotropicDrag(dragArea, dragCd0);
-        isoDrag.getDragParametersDrivers().get(0).addSpans(date.shiftedBy(-3*dt), date.shiftedBy(2.0*dt), 2*dt);
-        isoDrag.getDragParametersDrivers().get(0).setValue(dragCd2, date.shiftedBy(-2*dt));
-        isoDrag.getDragParametersDrivers().get(0).setValue(dragCd0, date.shiftedBy(-dt));
-        isoDrag.getDragParametersDrivers().get(0).setValue(dragCd1, date.shiftedBy(dt));
+        isoDrag.getDragParametersDrivers().getFirst().addSpans(date.shiftedBy(-3*dt), date.shiftedBy(2.0*dt), 2*dt);
+        isoDrag.getDragParametersDrivers().getFirst().setValue(dragCd2, date.shiftedBy(-2*dt));
+        isoDrag.getDragParametersDrivers().getFirst().setValue(dragCd0, date.shiftedBy(-dt));
+        isoDrag.getDragParametersDrivers().getFirst().setValue(dragCd1, date.shiftedBy(dt));
 
         forceModel = new DragForce(atmosphere, isoDrag);
         // Extract the drivers and check their values and names
         drivers = forceModel.getParametersDrivers();
         int nnb = 0;
-        Assertions.assertEquals(3,  drivers.get(0).getNbOfValues());
-        for (Span<String> span = isoDrag.getDragParametersDrivers().get(0).getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assertions.assertEquals("Span" + drivers.get(0).getName() + Integer.toString(nnb++),
+        Assertions.assertEquals(3,  drivers.getFirst().getNbOfValues());
+        for (Span<String> span = isoDrag.getDragParametersDrivers().getFirst().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        	Assertions.assertEquals("Span" + drivers.getFirst().getName() + Integer.toString(nnb++),
                     span.getData());
         }
 
@@ -828,17 +828,17 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         // Cd0 model
         double eps = 1.e-14;
         // Cd2 model
-        Assertions.assertEquals(dragCd2,  drivers.get(0).getValue(date.shiftedBy(-2 * dt)), 0.);
-        Assertions.assertEquals(dragCd2,  drivers.get(0).getValue(date.shiftedBy(-dt - eps)), 0.);
-        Assertions.assertEquals(dragCd2,  drivers.get(0).getValue(date.shiftedBy(-dt - 86400.)), 0.);
+        Assertions.assertEquals(dragCd2,  drivers.getFirst().getValue(date.shiftedBy(-2 * dt)), 0.);
+        Assertions.assertEquals(dragCd2,  drivers.getFirst().getValue(date.shiftedBy(-dt - eps)), 0.);
+        Assertions.assertEquals(dragCd2,  drivers.getFirst().getValue(date.shiftedBy(-dt - 86400.)), 0.);
         // Cd0 model
-        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(date), 0.);
-        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(date.shiftedBy(dt - eps)), 0.);
-        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(date.shiftedBy(-dt)), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.getFirst().getValue(date), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.getFirst().getValue(date.shiftedBy(dt - eps)), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.getFirst().getValue(date.shiftedBy(-dt)), 0.);
         // Cd1 model
-        Assertions.assertEquals(dragCd1,  drivers.get(0).getValue(date.shiftedBy(2 * dt)), 0.);
-        Assertions.assertEquals(dragCd1,  drivers.get(0).getValue(date.shiftedBy(dt + eps)), 0.);
-        Assertions.assertEquals(dragCd1,  drivers.get(0).getValue(date.shiftedBy(dt + 86400.)), 0.);
+        Assertions.assertEquals(dragCd1,  drivers.getFirst().getValue(date.shiftedBy(2 * dt)), 0.);
+        Assertions.assertEquals(dragCd1,  drivers.getFirst().getValue(date.shiftedBy(dt + eps)), 0.);
+        Assertions.assertEquals(dragCd1,  drivers.getFirst().getValue(date.shiftedBy(dt + 86400.)), 0.);
 
     }
 
@@ -872,22 +872,22 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         // Initialize force model (first coef is valid at all epochs)
         final double dragCd  = 1.2;
         final IsotropicDrag isotropicDrag = new IsotropicDrag(dragArea, dragCd);
-        isotropicDrag.getDragParametersDrivers().get(0).setName("Cd");
+        isotropicDrag.getDragParametersDrivers().getFirst().setName("Cd");
 
         // After t2 = t + 4h
         final double dragCd2 = 3.;
         final double dt2 = 4 * 3600.;
         final AbsoluteDate date2 = date.shiftedBy(dt2);
-        isotropicDrag.getDragParametersDrivers().get(0).getValueSpanMap().addValidAfter(dragCd2, date2, false);
-        isotropicDrag.getDragParametersDrivers().get(0).getNamesSpanMap().addValidAfter("Cd2", date2, false);
-        isotropicDrag.getDragParametersDrivers().get(0).getNamesSpanMap().addValidBefore("Cd", date2, false);
+        isotropicDrag.getDragParametersDrivers().getFirst().getValueSpanMap().addValidAfter(dragCd2, date2, false);
+        isotropicDrag.getDragParametersDrivers().getFirst().getNamesSpanMap().addValidAfter("Cd2", date2, false);
+        isotropicDrag.getDragParametersDrivers().getFirst().getNamesSpanMap().addValidBefore("Cd", date2, false);
 
         // Before t3 = t - 1day
         final double dragCd3 = 3.;
         final double dt3 = -86400.;
         final AbsoluteDate date3 = date.shiftedBy(dt3);
-        isotropicDrag.getDragParametersDrivers().get(0).getValueSpanMap().addValidAfter(dragCd3, date3, false);
-        isotropicDrag.getDragParametersDrivers().get(0).getNamesSpanMap().addValidAfter("Cd3", date3, false);
+        isotropicDrag.getDragParametersDrivers().getFirst().getValueSpanMap().addValidAfter(dragCd3, date3, false);
+        isotropicDrag.getDragParametersDrivers().getFirst().getNamesSpanMap().addValidAfter("Cd3", date3, false);
 
 
         final DragForce forceModel = new DragForce(atmosphere, isotropicDrag);

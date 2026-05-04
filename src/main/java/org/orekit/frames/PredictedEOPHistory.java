@@ -94,7 +94,7 @@ public class PredictedEOPHistory extends EOPHistory {
 
         // generate extension entries
         final List<EOPEntry> rawEntries = rawHistory.getEntries();
-        final EOPEntry       last       = rawEntries.get(rawEntries.size() - 1);
+        final EOPEntry       last       = rawEntries.getLast();
         final int n = (int) FastMath.rint(extensionDuration / Constants.JULIAN_DAY);
         final List<EOPEntry> entries = new ArrayList<>(rawEntries.size() + n);
         entries.addAll(rawEntries);

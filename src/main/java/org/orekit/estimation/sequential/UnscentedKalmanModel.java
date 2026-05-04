@@ -96,7 +96,7 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(getBuilders().get(0).getInitialOrbitDate());
+                driver.setReferenceDate(getBuilders().getFirst().getInitialOrbitDate());
             }
         }
 

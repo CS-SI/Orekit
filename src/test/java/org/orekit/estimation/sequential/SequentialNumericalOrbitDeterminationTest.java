@@ -391,7 +391,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         final List<DelegatingDriver> list = new ArrayList<>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
-        Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), parametersAccuracy);
+        Assertions.assertEquals(stationOffSet[0], list.getFirst().getValue(), parametersAccuracy);
         Assertions.assertEquals(stationOffSet[1], list.get(1).getValue(), parametersAccuracy);
         Assertions.assertEquals(stationOffSet[2], list.get(2).getValue(), parametersAccuracy);
         Assertions.assertEquals(rangeBias,        list.get(3).getValue(), parametersAccuracy);
@@ -556,7 +556,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Test on propagator parameters
         // -----------------------------
         final ParameterDriversList propagatorParameters = kalmanW3B.getPropagatorParameters();
-        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-4);
+        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().getFirst().getValue(), 1e-4);
         final Vector3D leakAcceleration0 =
                         new Vector3D(propagatorParameters.getDrivers().get(1).getValue(),
                                      propagatorParameters.getDrivers().get(3).getValue(),
@@ -576,7 +576,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         sortParametersChanges(list);
 
         // Station CastleRock
-        Assertions.assertEquals(castleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
+        Assertions.assertEquals(castleAzElBias[0], FastMath.toDegrees(list.getFirst().getValue()), angleAccuracy);
         Assertions.assertEquals(castleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
         Assertions.assertEquals(castleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 

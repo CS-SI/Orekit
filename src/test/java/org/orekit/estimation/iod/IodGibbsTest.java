@@ -73,10 +73,10 @@ public class IodGibbsTest {
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 60.0);
 
-        final Vector3D position1 = new Vector3D(measurements.get(0).getObservedValue()[0],
-                                                measurements.get(0).getObservedValue()[1],
-                                                measurements.get(0).getObservedValue()[2]);
-        final PV pv1 = new PV(measurements.get(0).getDate(), position1, Vector3D.ZERO, 0., 0., 1., satellite);
+        final Vector3D position1 = new Vector3D(measurements.getFirst().getObservedValue()[0],
+                                                measurements.getFirst().getObservedValue()[1],
+                                                measurements.getFirst().getObservedValue()[2]);
+        final PV pv1 = new PV(measurements.getFirst().getDate(), position1, Vector3D.ZERO, 0., 0., 1., satellite);
 
         final Vector3D position2 = new Vector3D(measurements.get(1).getObservedValue()[0],
                                                 measurements.get(1).getObservedValue()[1],

@@ -100,9 +100,9 @@ public class PropagatorsParallelizerTest {
         final double deltaT = 30.0;
 
         final PropagatorsParallelizer parallelizer =
-                        new PropagatorsParallelizer(Arrays.asList(propagator),  interpolators -> {interpolators.get(0).getCurrentState().getDate();});
+                        new PropagatorsParallelizer(Arrays.asList(propagator),  interpolators -> {interpolators.getFirst().getCurrentState().getDate();});
 
-        final SpacecraftState state = parallelizer.propagate(orbit.getDate().shiftedBy(deltaT).shiftedBy(+1.0), orbit.getDate().shiftedBy(-2.0 * deltaT).shiftedBy(-1.0)).get(0);
+        final SpacecraftState state = parallelizer.propagate(orbit.getDate().shiftedBy(deltaT).shiftedBy(+1.0), orbit.getDate().shiftedBy(-2.0 * deltaT).shiftedBy(-1.0)).getFirst();
 
         // Verify that the backward propagation worked properly
         Assertions.assertNotNull(state);
@@ -141,11 +141,11 @@ public class PropagatorsParallelizerTest {
         // ----
 
         // First propagation
-        SpacecraftState state = parallelizer.propagate(date, date.shiftedBy(10.)).get(0);
+        SpacecraftState state = parallelizer.propagate(date, date.shiftedBy(10.)).getFirst();
 
         // Second propagation
         // Was stuck before resolution of 1105
-        state = parallelizer.propagate(date.shiftedBy(10.), date.shiftedBy(20.)).get(0);
+        state = parallelizer.propagate(date.shiftedBy(10.), date.shiftedBy(20.)).getFirst();
 
         // THEN
         // ----
@@ -187,13 +187,13 @@ public class PropagatorsParallelizerTest {
                         new PropagatorsParallelizer(propagators,
                                                     interpolators -> {
                                                         Assertions.assertEquals(2, interpolators.size());
-                                                        AbsoluteDate aPrev = interpolators.get(0).getPreviousState().getDate();
-                                                        AbsoluteDate aCurr = interpolators.get(0).getCurrentState().getDate();
+                                                        AbsoluteDate aPrev = interpolators.getFirst().getPreviousState().getDate();
+                                                        AbsoluteDate aCurr = interpolators.getFirst().getCurrentState().getDate();
                                                         AbsoluteDate nPrev = interpolators.get(1).getPreviousState().getDate();
                                                         AbsoluteDate nCurr = interpolators.get(1).getCurrentState().getDate();
                                                         Assertions.assertEquals(0.0, aPrev.durationFrom(nPrev), 3.0e-13);
                                                         Assertions.assertEquals(0.0, aCurr.durationFrom(nCurr), 3.0e-13);
-                                                        Vector3D aPos = interpolators.get(0).getCurrentState().getPosition();
+                                                        Vector3D aPos = interpolators.getFirst().getCurrentState().getPosition();
                                                         Vector3D nPos = interpolators.get(1).getCurrentState().getPosition();
                                                         Assertions.assertTrue(Vector3D.distance(aPos, nPos) < 111.0);
                                                     });
@@ -222,8 +222,8 @@ public class PropagatorsParallelizerTest {
         PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(propagators,
                                                     interpolators -> {
-                                                        AbsoluteDate aCurr = interpolators.get(0).getCurrentState().getDate();
-                                                        Vector3D aPos = interpolators.get(0).getCurrentState().getPosition();
+                                                        AbsoluteDate aCurr = interpolators.getFirst().getCurrentState().getDate();
+                                                        Vector3D aPos = interpolators.getFirst().getCurrentState().getPosition();
                                                         Vector3D ePos = ephemeris.getPosition(aCurr, orbit.getFrame());
                                                         Assertions.assertEquals(0, Vector3D.distance(ePos, aPos), 1.0e-15);
                                                     });
@@ -273,7 +273,7 @@ public class PropagatorsParallelizerTest {
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
                                                      buildNumerical());
-        propagators.get(0).addEventDetector(new DateDetector(startDate.shiftedBy(900.0)).
+        propagators.getFirst().addEventDetector(new DateDetector(startDate.shiftedBy(900.0)).
                                             withHandler((state, detector, increasing) -> {
                                                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                                 "inTest");
@@ -294,7 +294,7 @@ public class PropagatorsParallelizerTest {
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
                                                      buildNumerical());
-        propagators.get(0).addEventDetector(new DateDetector(startDate.shiftedBy(900.0)).
+        propagators.getFirst().addEventDetector(new DateDetector(startDate.shiftedBy(900.0)).
                                             withHandler((state, detector, increasing) -> {
                                                 throw new RuntimeException("boo!");
                                             }));
@@ -316,11 +316,11 @@ public class PropagatorsParallelizerTest {
         final AbsoluteDate stopDate  = startDate.shiftedBy(0.01);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
                                                      buildNumerical());
-        propagators.get(0).addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent()));
+        propagators.getFirst().addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent()));
         List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
                         propagate(startDate, endDate);
         Assertions.assertEquals(2, results.size());
-        Assertions.assertEquals(0.0, results.get(0).getDate().durationFrom(stopDate), 1.0e-15);
+        Assertions.assertEquals(0.0, results.getFirst().getDate().durationFrom(stopDate), 1.0e-15);
         Assertions.assertEquals(0.0, results.get(1).getDate().durationFrom(stopDate), 1.0e-15);
     }
 
@@ -331,11 +331,11 @@ public class PropagatorsParallelizerTest {
         final AbsoluteDate stopDate  = startDate.shiftedBy(900.0);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
                                                      buildNumerical());
-        propagators.get(0).addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent()));
+        propagators.getFirst().addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent()));
         List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
                         propagate(startDate, endDate);
         Assertions.assertEquals(2, results.size());
-        Assertions.assertEquals(0.0, results.get(0).getDate().durationFrom(stopDate), 1.0e-15);
+        Assertions.assertEquals(0.0, results.getFirst().getDate().durationFrom(stopDate), 1.0e-15);
         Assertions.assertEquals(0.0, results.get(1).getDate().durationFrom(stopDate), 1.0e-15);
     }
 
@@ -346,13 +346,13 @@ public class PropagatorsParallelizerTest {
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
                                                      buildNumerical());
         final AtomicInteger called0 = new AtomicInteger();
-        propagators.get(0).getMultiplexer().add(interpolator -> called0.set(11));
+        propagators.getFirst().getMultiplexer().add(interpolator -> called0.set(11));
         final AtomicInteger called1 = new AtomicInteger();
         propagators.get(1).getMultiplexer().add(interpolator -> called1.set(22));
         List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
                         propagate(startDate, endDate);
         Assertions.assertEquals(2, results.size());
-        Assertions.assertEquals(0.0, results.get(0).getDate().durationFrom(endDate), 1.0e-15);
+        Assertions.assertEquals(0.0, results.getFirst().getDate().durationFrom(endDate), 1.0e-15);
         Assertions.assertEquals(0.0, results.get(1).getDate().durationFrom(endDate), 1.0e-15);
         Assertions.assertEquals(11, called0.get());
         Assertions.assertEquals(22, called1.get());
@@ -396,7 +396,7 @@ public class PropagatorsParallelizerTest {
                         propagate(startDate, endDate);
         double expected0 = FastMath.exp(base0 * endDate.durationFrom(startDate));
         double expected1 = FastMath.exp(base1 * endDate.durationFrom(startDate));
-        Assertions.assertEquals(expected0, results.get(0).getAdditionalState(name)[0], 6.0e-9 * expected0);
+        Assertions.assertEquals(expected0, results.getFirst().getAdditionalState(name)[0], 6.0e-9 * expected0);
         Assertions.assertEquals(expected1, results.get(1).getAdditionalState(name)[0], 5.0e-8 * expected1);
     }
 

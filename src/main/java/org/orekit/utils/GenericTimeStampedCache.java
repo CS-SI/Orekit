@@ -263,7 +263,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             if (slots.isEmpty()) {
                 throw new OrekitIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
             }
-            return slots.get(0).getEarliest();
+            return slots.getFirst().getEarliest();
         } finally {
             lock.readLock().unlock();
         }
@@ -279,7 +279,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             if (slots.isEmpty()) {
                 throw new OrekitIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
             }
-            return slots.get(slots.size() - 1).getLatest();
+            return slots.getLast().getLatest();
         } finally {
             lock.readLock().unlock();
         }
@@ -462,14 +462,14 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             for (final T entry : generateAndCheck(null, generationDate)) {
                 cache.add(new Entry(entry, quantum(entry.getDate())));
             }
-            earliestQuantum = new AtomicLong(cache.get(0).getQuantum());
-            latestQuantum   = new AtomicLong(cache.get(cache.size() - 1).getQuantum());
+            earliestQuantum = new AtomicLong(cache.getFirst().getQuantum());
+            latestQuantum   = new AtomicLong(cache.getLast().getQuantum());
 
             while (cache.size() < maxNeighborsSize) {
                 // we need to generate more entries
 
-                final AbsoluteDate entry0 = cache.get(0).getData().getDate();
-                final AbsoluteDate entryN = cache.get(cache.size() - 1).getData().getDate();
+                final AbsoluteDate entry0 = cache.getFirst().getData().getDate();
+                final AbsoluteDate entryN = cache.getLast().getData().getDate();
                 generateCalls.incrementAndGet();
 
                 final AbsoluteDate existingDate;
@@ -496,7 +496,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
          * @return earliest entry contained in the slot
          */
         public T getEarliest() {
-            return cache.get(0).getData();
+            return cache.getFirst().getData();
         }
 
         /** Get the quantum of the earliest date contained in the slot.
@@ -510,7 +510,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
          * @return latest entry contained in the slot
          */
         public T getLatest() {
-            return cache.get(cache.size() - 1).getData();
+            return cache.getLast().getData();
         }
 
         /** Get the quantum of the latest date contained in the slot.
@@ -540,8 +540,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                 if (!Double.isNaN(overridingMeanStep)) {
                     return overridingMeanStep;
                 } else {
-                    final AbsoluteDate t0 = cache.get(0).getData().getDate();
-                    final AbsoluteDate tn = cache.get(cache.size() - 1).getData().getDate();
+                    final AbsoluteDate t0 = cache.getFirst().getData().getDate();
+                    final AbsoluteDate tn = cache.getLast().getData().getDate();
                     return tn.durationFrom(t0) / (cache.size() - 1);
                 }
             }
@@ -596,11 +596,11 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                             final AbsoluteDate generationDate;
                             final boolean simplyRebalance;
                             if (firstNeighbor < 0) {
-                                existingDate    = cache.get(0).getData().getDate();
+                                existingDate    = cache.getFirst().getData().getDate();
                                 generationDate  = existingDate.getDate().shiftedBy(step * firstNeighbor);
                                 simplyRebalance = existingDate.getDate().compareTo(central) <= 0;
                             } else {
-                                existingDate    = cache.get(cache.size() - 1).getData().getDate();
+                                existingDate    = cache.getLast().getData().getDate();
                                 generationDate  = existingDate.getDate().shiftedBy(step * (firstNeighbor + n - cache.size()));
                                 simplyRebalance = existingDate.getDate().compareTo(central) >= 0;
                             }
@@ -743,22 +743,22 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
 
             if (!inserted) {
-                final AbsoluteDate earliest = cache.get(0).getData().getDate();
+                final AbsoluteDate earliest = cache.getFirst().getData().getDate();
                 throw new TimeStampedCacheException(
                         OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                         earliest, requestedDate, earliest.durationFrom(requestedDate));
             }
 
             // evict excess data at end
-            final AbsoluteDate t0 = cache.get(0).getData().getDate();
+            final AbsoluteDate t0 = cache.getFirst().getData().getDate();
             while (cache.size() > maxNeighborsSize &&
-                   cache.get(cache.size() - 1).getData().getDate().durationFrom(t0) > maxSpan) {
-                cache.remove(cache.size() - 1);
+                   cache.getLast().getData().getDate().durationFrom(t0) > maxSpan) {
+                cache.removeLast();
             }
 
             // update boundaries
-            earliestQuantum.set(cache.get(0).getQuantum());
-            latestQuantum.set(cache.get(cache.size() - 1).getQuantum());
+            earliestQuantum.set(cache.getFirst().getQuantum());
+            latestQuantum.set(cache.getLast().getQuantum());
 
         }
 
@@ -783,22 +783,22 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
 
             if (!appended) {
-                final AbsoluteDate latest = cache.get(cache.size() - 1).getData().getDate();
+                final AbsoluteDate latest = cache.getLast().getData().getDate();
                 throw new TimeStampedCacheException(
                         OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
                         latest, requestedDate, requestedDate.durationFrom(latest));
             }
 
             // evict excess data at start
-            final AbsoluteDate tn = cache.get(cache.size() - 1).getData().getDate();
+            final AbsoluteDate tn = cache.getLast().getData().getDate();
             while (cache.size() > maxNeighborsSize &&
-                   tn.durationFrom(cache.get(0).getData().getDate()) > maxSpan) {
-                cache.remove(0);
+                   tn.durationFrom(cache.getFirst().getData().getDate()) > maxSpan) {
+                cache.removeFirst();
             }
 
             // update boundaries
-            earliestQuantum.set(cache.get(0).getQuantum());
-            latestQuantum.set(cache.get(cache.size() - 1).getQuantum());
+            earliestQuantum.set(cache.getFirst().getQuantum());
+            latestQuantum.set(cache.getLast().getQuantum());
 
         }
 

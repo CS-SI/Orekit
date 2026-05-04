@@ -277,7 +277,7 @@ public class Generator {
         @Override
         public void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
 
-            final AbsoluteDate start = states0.get(0).getDate();
+            final AbsoluteDate start = states0.getFirst().getDate();
 
             // initialize schedulers
             for (final Scheduler<?> scheduler : schedulers) {
@@ -301,7 +301,7 @@ public class Generator {
             for (int i = 0; i < interpolators.size(); ++i) {
                 interpolatorsMap.put(observableSatellites.get(i), interpolators.get(i));
             }
-            final AbsoluteDate lastDate = interpolators.get(0).getCurrentState().getDate();
+            final AbsoluteDate lastDate = interpolators.getFirst().getCurrentState().getDate();
 
             synchronized (generated) {
 

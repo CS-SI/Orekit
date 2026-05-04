@@ -208,7 +208,7 @@ public class InterSatellitesOneWayRangeRateTest {
                     Assertions.assertEquals(2, participants.length);
                     final PVCoordinates delta = new PVCoordinates(participants[0], participants[1]);
                     final double radialVelocity = Vector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize());
-                    final AbsoluteDate t0 = measurement.getSatellites().get(0).getClockBiasDriver().getReferenceDate();
+                    final AbsoluteDate t0 = measurement.getSatellites().getFirst().getClockBiasDriver().getReferenceDate();
                     final double dtLocal    = measurement.getDate().durationFrom(t0);
                     final double localRate  = 2 * localClockAcceleration * dtLocal + localClockRate;
                     final double dtRemote   = participants[0].getDate().durationFrom(t0);
@@ -253,7 +253,7 @@ public class InterSatellitesOneWayRangeRateTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -283,7 +283,7 @@ public class InterSatellitesOneWayRangeRateTest {
         Assertions.assertEquals(0.0, relErrorsMax,    5.8e-8);
 
         // Test measurement type
-        Assertions.assertEquals(InterSatellitesOneWayRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(InterSatellitesOneWayRangeRate.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -418,7 +418,7 @@ public class InterSatellitesOneWayRangeRateTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -518,9 +518,9 @@ public class InterSatellitesOneWayRangeRateTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockBiasDriver(),
-                        measurement.getSatellites().get(0).getClockDriftDriver(),
-                        measurement.getSatellites().get(0).getClockAccelerationDriver(),
+                        measurement.getSatellites().getFirst().getClockBiasDriver(),
+                        measurement.getSatellites().getFirst().getClockDriftDriver(),
+                        measurement.getSatellites().getFirst().getClockAccelerationDriver(),
                         measurement.getSatellites().get(1).getClockBiasDriver(),
                         measurement.getSatellites().get(1).getClockDriftDriver(),
                         measurement.getSatellites().get(1).getClockAccelerationDriver()
@@ -587,7 +587,7 @@ public class InterSatellitesOneWayRangeRateTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();

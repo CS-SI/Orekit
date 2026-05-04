@@ -429,7 +429,7 @@ public class TriggersDerivativesTest {
         }
 
         public void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
-            final AbsoluteDate t0 = states0.get(0).getDate();
+            final AbsoluteDate t0 = states0.getFirst().getDate();
             if (t.isAfterOrEqualTo(t0)) {
                 forward = true;
                 next    = t0.shiftedBy(samplingtep);
@@ -440,8 +440,8 @@ public class TriggersDerivativesTest {
         }
 
         public void handleStep(final List<OrekitStepInterpolator> interpolators) {
-            final AbsoluteDate previousDate = interpolators.get(0).getPreviousState().getDate();
-            final AbsoluteDate currentDate  = interpolators.get(0).getCurrentState().getDate();
+            final AbsoluteDate previousDate = interpolators.getFirst().getPreviousState().getDate();
+            final AbsoluteDate currentDate  = interpolators.getFirst().getCurrentState().getDate();
             while ( forward && (next.isAfter(previousDate)  && next.isBeforeOrEqualTo(currentDate)) ||
                    !forward && (next.isBefore(previousDate) && next.isAfterOrEqualTo(currentDate))) {
                 // don't sample points where finite differences are in an intermediate state (some before, some after discontinuity)

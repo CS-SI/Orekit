@@ -193,7 +193,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
         sorted.addAll(clocks);
 
         // prepare spliced file
-        final RinexClock first   = sorted.first();
+        final RinexClock first   = sorted.getFirst();
         final RinexClock spliced = new RinexClock();
         spliced.getHeader().setFormatVersion(first.getHeader().getFormatVersion());
         spliced.getHeader().setSatelliteSystem(first.getHeader().getSatelliteSystem());

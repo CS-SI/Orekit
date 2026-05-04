@@ -74,13 +74,13 @@ public class StreamingAemWriterTest {
             Aem aem  = parser.parseMessage(source0);
 
             // Satellite attitude ephemeris as read from the reference file
-            AemSegment ephemerisBlock = aem.getSegments().get(0);
+            AemSegment ephemerisBlock = aem.getSegments().getFirst();
 
             // Meta data are extracted from the reference file
             String            originator   = aem.getHeader().getOriginator();
             String            objectName   = ephemerisBlock.getMetadata().getObjectName();
             String            objectID     = ephemerisBlock.getMetadata().getObjectID();
-            String            headerCmt    = aem.getHeader().getComments().get(0);
+            String            headerCmt    = aem.getHeader().getComments().getFirst();
             FrameFacade       frameA       = ephemerisBlock.getMetadata().getEndpoints().getFrameA();
             FrameFacade       frameB       = ephemerisBlock.getMetadata().getEndpoints().getFrameB();
             boolean           a2b          = ephemerisBlock.getMetadata().getEndpoints().isA2b();
@@ -117,7 +117,7 @@ public class StreamingAemWriterTest {
             StreamingAemWriter.SegmentWriter segment = writer.newSegment();
             KeplerianPropagator propagator =
                             createPropagator(ephemerisBlock.getStart(),
-                                             new FrameAlignedProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
+                                             new FrameAlignedProvider(ephemerisBlock.getAngularCoordinates().getFirst().getRotation(),
                                                                       FramesFactory.getEME2000()));
 
             // We propagate 60 seconds after the start date with a step equals to 10.0 seconds
@@ -134,7 +134,7 @@ public class StreamingAemWriterTest {
 
             // There is only one attitude ephemeris block
             Assertions.assertEquals(1, generatedAem.getSegments().size());
-            AemSegment attitudeBlocks = generatedAem.getSegments().get(0);
+            AemSegment attitudeBlocks = generatedAem.getSegments().getFirst();
             // There are 7 data lines in the attitude ephemeris block
             List<? extends TimeStampedAngularCoordinates> ac  = attitudeBlocks.getAngularCoordinates();
             Assertions.assertEquals(7, ac.size());

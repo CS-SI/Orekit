@@ -166,8 +166,8 @@ public abstract class AbstractStateCovarianceInterpolator
 
         // Otherwise, select sublist around interpolation date
         final AbsoluteDate central = getCentralDate(interpolationData.getInterpolationDate(),
-                                                    neighborList.get(0).getDate(),
-                                                    neighborList.get(neighborList.size() - 1).getDate(),
+                                                    neighborList.getFirst().getDate(),
+                                                    neighborList.getLast().getDate(),
                                                     getExtrapolationThreshold());
 
         return new SortedListTrimmer(getInternalNbInterpolationPoints()).getNeighborsSubList(central,

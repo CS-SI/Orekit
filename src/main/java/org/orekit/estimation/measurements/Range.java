@@ -167,7 +167,7 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final AbsoluteDate emissionDate = estimated.getParticipants()[0].getDate();
 
         // clock bias, taken in account only in case of one way
-        final ObservableSatellite satellite = getSatellites().get(0);
+        final ObservableSatellite satellite = getSatellites().getFirst();
         final double              dts       = satellite.getOffsetValue(emissionDate);
         final double              dtg       = getObserver().getOffsetValue(receptionDate);
         final double clockBias = dtg - dts;
@@ -240,7 +240,7 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
                         getObserver().getPVCoordinatesProvider().getPVCoordinates(receptionDate.toAbsoluteDate(), frame) });
 
         // clock offset, taken in account only in case of one way
-        final ObservableSatellite satellite    = getSatellites().get(0);
+        final ObservableSatellite satellite    = getSatellites().getFirst();
         final Gradient dts = satellite.getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), indices);
         final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, receptionDate.toAbsoluteDate(), indices);
         final Gradient clockBias = dtg.subtract(dts);

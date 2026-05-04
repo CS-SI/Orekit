@@ -93,7 +93,7 @@ public class PVTest {
         }
 
         // Test measurement type
-        Assertions.assertEquals(PV.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(PV.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.
@@ -202,7 +202,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -277,7 +277,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -363,7 +363,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -442,7 +442,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 6; i++) {

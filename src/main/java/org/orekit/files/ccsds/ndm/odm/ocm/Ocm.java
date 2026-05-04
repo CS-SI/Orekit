@@ -75,14 +75,14 @@ public class Ocm extends NdmConstituent<OdmHeader, Segment<OcmMetadata, OcmData>
      * @return metadata from the single {@link #getSegments() segment}
      */
     public OcmMetadata getMetadata() {
-        return getSegments().get(0).getMetadata();
+        return getSegments().getFirst().getMetadata();
     }
 
     /** Get the data from the single {@link #getSegments() segment}.
      * @return data from the single {@link #getSegments() segment}
      */
     public OcmData getData() {
-        return getSegments().get(0).getData();
+        return getSegments().getFirst().getData();
     }
 
     /** {@inheritDoc}
@@ -111,7 +111,7 @@ public class Ocm extends NdmConstituent<OdmHeader, Segment<OcmMetadata, OcmData>
         } else {
             name = UNKNOWN_OBJECT;
         }
-        final List<TrajectoryStateHistory> histories = getSegments().get(0).getData().getTrajectoryBlocks();
+        final List<TrajectoryStateHistory> histories = getSegments().getFirst().getData().getTrajectoryBlocks();
         final OcmSatelliteEphemeris        ose       = new OcmSatelliteEphemeris(name, mu, histories);
         return Collections.singletonMap(name, ose);
     }

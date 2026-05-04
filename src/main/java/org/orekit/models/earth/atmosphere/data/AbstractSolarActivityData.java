@@ -265,7 +265,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
             final List<L> neighbours = cache.getNeighbors(date).collect(Collectors.toList());
 
             this.currentDate   = date;
-            this.previousParam = neighbours.get(0);
+            this.previousParam = neighbours.getFirst();
             this.nextParam     = neighbours.get(1);
         }
 

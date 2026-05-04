@@ -150,7 +150,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         // local and remote satellites
         final Frame                    frame          = states[0].getFrame();
         final TimeStampedPVCoordinates pvaLocal       = states[0].getPVCoordinates(frame);
-        final ClockOffset              localClock     = getSatellites().get(0).
+        final ClockOffset              localClock     = getSatellites().getFirst().
                                                         getQuadraticClockModel().getOffset(getDate());
         final double                   localClockBias = localClock.getBias();
         final PVCoordinatesProvider    remotePV       = getRemotePV(states[1]);
@@ -206,7 +206,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
 
         // local and remote satellites
         final TimeStampedFieldPVCoordinates<Gradient> pvaLocal         = getCoordinates(states[0], 0, nbParams);
-        final QuadraticFieldClockModel<Gradient>      localClock       = getSatellites().get(0).getQuadraticClockModel().
+        final QuadraticFieldClockModel<Gradient>      localClock       = getSatellites().getFirst().getQuadraticClockModel().
                                                                          toGradientModel(nbParams, paramIndices, getDate());
         final FieldClockOffset<Gradient>              localClockOffset = localClock.getOffset(gDate);
         final FieldPVCoordinatesProvider<Gradient>    remotePV         = getRemotePV(states[1], nbParams);

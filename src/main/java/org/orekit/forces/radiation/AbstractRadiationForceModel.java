@@ -215,7 +215,7 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
 
         // as parent frame for occulting body frame,
         // we select the first inertial frame in central body hierarchy
-        Frame parent = occultingBodies.get(0).getOcculting().getBodyFrame();
+        Frame parent = occultingBodies.getFirst().getOcculting().getBodyFrame();
         while (!parent.isPseudoInertial()) {
             parent = parent.getParent();
         }
@@ -246,7 +246,7 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
     public void addOccultingBody(final OneAxisEllipsoid occulting) {
 
         // retrieve Sun from the central occulting body engine
-        final OccultationEngine central = occultingBodies.get(0);
+        final OccultationEngine central = occultingBodies.getFirst();
 
         // create a new occultation engine for the new occulting body
         final OccultationEngine additional =

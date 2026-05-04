@@ -299,7 +299,7 @@ public class CRD {
 
             if (systemConfigurationId == null) {
                 // default (the first one)
-                return sessionStatisticsData.get(0);
+                return sessionStatisticsData.getFirst();
             }
 
             // Loop to find the appropriate one
@@ -1332,8 +1332,8 @@ public class CRD {
                 this.meteo = new ImmutableTimeStampedCache<>(neighborsSize, meteoData);
 
                 // Initialize first and last available dates
-                this.firstDate = meteoData.first().getDate();
-                this.lastDate  = meteoData.last().getDate();
+                this.firstDate = meteoData.getFirst().getDate();
+                this.lastDate  = meteoData.getLast().getDate();
 
             }
 
@@ -1400,7 +1400,7 @@ public class CRD {
             } else {
                 // Current date is between first and last date
                 final List<MeteorologicalMeasurement> neighbors = meteo.getNeighbors(date).collect(Collectors.toList());
-                previousParam = neighbors.get(0);
+                previousParam = neighbors.getFirst();
                 nextParam     = neighbors.get(1);
             }
 

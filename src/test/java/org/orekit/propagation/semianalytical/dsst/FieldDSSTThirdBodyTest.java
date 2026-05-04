@@ -392,7 +392,7 @@ public class FieldDSSTThirdBodyTest {
             }
         }
 
-        ParameterDriver selected = bound.getDrivers().get(0);
+        ParameterDriver selected = bound.getDrivers().getFirst();
         double[] parameters = new double[1];
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale() * 2;

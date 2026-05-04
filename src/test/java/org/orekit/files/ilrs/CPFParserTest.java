@@ -66,7 +66,7 @@ public class CPFParserTest {
         // Verify comments
         final List<String> comments = file.getComments();
         Assertions.assertEquals(8, comments.size());
-        Assertions.assertEquals("Col 1 : <Record type=10)>", comments.get(0));
+        Assertions.assertEquals("Col 1 : <Record type=10)>", comments.getFirst());
         Assertions.assertEquals("Col 8 : <Geocentric Z position in meters>", comments.get(7));
 
         // Verify header
@@ -102,26 +102,26 @@ public class CPFParserTest {
         // Verify first coordinate
         final AbsoluteDate firstEpoch = AbsoluteDate.createMJDDate(58282, 0.0, file.getTimeScale());
         final Vector3D firstPos = new Vector3D(6566174.663, 2703003.220, -3022783.901);
-        Assertions.assertEquals(0, coord.get(0).getLeap());
-        Assertions.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
-        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.getFirst().getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coord.getFirst().getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.getFirst().getDate()), 1.0e-15);
 
         // Verify last coordinate
         final AbsoluteDate lastEpoch = AbsoluteDate.createMJDDate(58287, 0.0, file.getTimeScale());
         final Vector3D lastPos  = new Vector3D(6045281.907, 1607181.391, -4519215.355);
-        Assertions.assertEquals(0, coord.get(coord.size() - 1).getLeap());
-        Assertions.assertEquals(0.0, lastPos.distance(coord.get(coord.size() - 1).getPosition()), 1.0e-15);
-        Assertions.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.getLast().getLeap());
+        Assertions.assertEquals(0.0, lastPos.distance(coord.getLast().getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, lastEpoch.durationFrom(coord.getLast().getDate()), 1.0e-15);
 
         // Verify Ephemeris
         Assertions.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
         Assertions.assertEquals(10, ephemeris.getInterpolationSamples());
         Assertions.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
         Assertions.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
-        Assertions.assertEquals(ephemeris,                        ephemeris.getSegments().get(0));
+        Assertions.assertEquals(ephemeris,                        ephemeris.getSegments().getFirst());
         Assertions.assertEquals(0.0, start.durationFrom(ephemeris.getStart()), 1.0e-15);
         Assertions.assertEquals(0.0, end.durationFrom(ephemeris.getStop()), 1.0e-15);
-        Assertions.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().getFirst().getPosition()), 1.0e-15);
         Assertions.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
 
         // Verify propagator
@@ -185,24 +185,24 @@ public class CPFParserTest {
         // Verify first coordinate
         final AbsoluteDate firstEpoch = AbsoluteDate.createMJDDate(58281, 84600.00000, file.getTimeScale());
         final Vector3D firstPos = new Vector3D(2966379.904, 4195129.466, -11136763.061);
-        Assertions.assertEquals(0, coord.get(0).getLeap());
-        Assertions.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
-        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.getFirst().getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coord.getFirst().getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.getFirst().getDate()), 1.0e-15);
 
         // Verify last coordinate
         final AbsoluteDate lastEpoch = AbsoluteDate.createMJDDate(58283, 86100.00000, file.getTimeScale());
         final Vector3D lastPos  = new Vector3D(-5292229.761, 4106329.723, -10235338.181);
-        Assertions.assertEquals(0, coord.get(coord.size() - 1).getLeap());
-        Assertions.assertEquals(0.0, lastPos.distance(coord.get(coord.size() - 1).getPosition()), 1.0e-15);
-        Assertions.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.getLast().getLeap());
+        Assertions.assertEquals(0.0, lastPos.distance(coord.getLast().getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, lastEpoch.durationFrom(coord.getLast().getDate()), 1.0e-15);
 
         // Verify Ephemeris
         Assertions.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
         Assertions.assertEquals(10, ephemeris.getInterpolationSamples());
         Assertions.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
         Assertions.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
-        Assertions.assertEquals(ephemeris,                        ephemeris.getSegments().get(0));
-        Assertions.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(ephemeris,                        ephemeris.getSegments().getFirst());
+        Assertions.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().getFirst().getPosition()), 1.0e-15);
         Assertions.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
 
         // Verify propagator
@@ -263,24 +263,24 @@ public class CPFParserTest {
         // Verify first coordinate
         final AbsoluteDate firstEpoch = AbsoluteDate.createMJDDate(58281, 86382.000000, file.getTimeScale());
         final Vector3D firstPos = new Vector3D(-3442706.377, 29234902.063, 3170080.159);
-        Assertions.assertEquals(0, coord.get(0).getLeap());
-        Assertions.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
-        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.getFirst().getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coord.getFirst().getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.getFirst().getDate()), 1.0e-15);
 
         // Verify last coordinate
         final AbsoluteDate lastEpoch = AbsoluteDate.createMJDDate(58283, 86382.00000, file.getTimeScale());
         final Vector3D lastPos  = new Vector3D(-7329586.488, -24111259.078, -15507306.979);
-        Assertions.assertEquals(0, coord.get(coord.size() - 1).getLeap());
-        Assertions.assertEquals(0.0, lastPos.distance(coord.get(coord.size() - 1).getPosition()), 1.0e-15);
-        Assertions.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.getLast().getLeap());
+        Assertions.assertEquals(0.0, lastPos.distance(coord.getLast().getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, lastEpoch.durationFrom(coord.getLast().getDate()), 1.0e-15);
 
         // Verify Ephemeris
         Assertions.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
         Assertions.assertEquals(10, ephemeris.getInterpolationSamples());
         Assertions.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
         Assertions.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
-        Assertions.assertEquals(ephemeris,                        ephemeris.getSegments().get(0));
-        Assertions.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(ephemeris,                        ephemeris.getSegments().getFirst());
+        Assertions.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().getFirst().getPosition()), 1.0e-15);
         Assertions.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
 
         // Verify propagator

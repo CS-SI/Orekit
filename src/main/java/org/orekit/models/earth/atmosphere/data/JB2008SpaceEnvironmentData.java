@@ -240,7 +240,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
         }
 
         final List<SOLFSMYDataLoader.LineParameters> neigbors = dataSOL.getNeighbors(date).collect(Collectors.toList());
-        previousParamSOL = neigbors.get(0);
+        previousParamSOL = neigbors.getFirst();
         nextParamSOL = neigbors.get(1);
 
     }
@@ -269,7 +269,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
         }
 
         final List<DtcDataLoader.LineParameters> neigbors = dataDTC.getNeighbors(date).collect(Collectors.toList());
-        previousParamDTC = neigbors.get(0);
+        previousParamDTC = neigbors.getFirst();
         nextParamDTC = neigbors.get(1);
 
     }

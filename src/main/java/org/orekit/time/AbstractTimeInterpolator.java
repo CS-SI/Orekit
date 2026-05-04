@@ -152,7 +152,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     public int getNbInterpolationPoints() {
         final List<TimeInterpolator<? extends TimeStamped>> subInterpolators = getSubInterpolators();
         // In case the interpolator does not have sub interpolators
-        if (subInterpolators.size() == 1 && subInterpolators.get(0) == this) {
+        if (subInterpolators.size() == 1 && subInterpolators.getFirst() == this) {
             return interpolationPoints;
         }
         // Otherwise find maximum number of interpolation points among sub interpolators

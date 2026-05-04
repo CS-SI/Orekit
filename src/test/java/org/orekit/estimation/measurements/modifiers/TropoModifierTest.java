@@ -152,7 +152,7 @@ public class TropoModifierTest {
             final EstimatedModel                 tropoModel       = new EstimatedModel(mappingFunction, 5.0);
             final RangeTroposphericDelayModifier modifier         = new RangeTroposphericDelayModifier(tropoModel);
 
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
             parameterDriver.setName(observerName + EstimatedModel.TOTAL_ZENITH_DELAY);
             range.addModifier(modifier);
@@ -183,7 +183,7 @@ public class TropoModifierTest {
                                                                1.0, 1.1, 300.0);
         propagator.clearStepHandlers();
 
-        final ObservedMeasurement<?> measurement = measurements.get(0);
+        final ObservedMeasurement<?> measurement = measurements.getFirst();
         final AbsoluteDate           date        = measurement.getDate();
         final SpacecraftState        refState    = propagator.propagate(date);
         final Range                  range       = (Range) measurement;
@@ -194,7 +194,7 @@ public class TropoModifierTest {
         final EstimatedModel                 tropoModel       = new EstimatedModel(mappingFunction, 5.0);
         final RangeTroposphericDelayModifier modifier         = new RangeTroposphericDelayModifier(tropoModel);
 
-        final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+        final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
         parameterDriver.setSelected(true);
         parameterDriver.setName(observerName + EstimatedModel.TOTAL_ZENITH_DELAY);
         range.addModifier(modifier);
@@ -309,7 +309,7 @@ public class TropoModifierTest {
             final EstimatedModel                 tropoModel       = new EstimatedModel(mappingFunction, 5.0);
             final PhaseTroposphericDelayModifier modifier         = new PhaseTroposphericDelayModifier(tropoModel);
 
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
             parameterDriver.setName(observerName + EstimatedModel.TOTAL_ZENITH_DELAY);
             phase.addModifier(modifier);
@@ -516,7 +516,7 @@ public class TropoModifierTest {
             final BistaticRangeRateTroposphericDelayModifier modifier =
                             new BistaticRangeRateTroposphericDelayModifier(tropoModel);
 
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
             parameterDriver.setName(biRangeRate.getReceiver().getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
 
@@ -623,7 +623,7 @@ public class TropoModifierTest {
             final EstimatedModel                tropoModel   = new EstimatedModel(mappingFunct, 5.0);
             final TDOATroposphericDelayModifier modifier     = new TDOATroposphericDelayModifier(tropoModel);
 
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
             parameterDriver.setName(tdoa.getPrimeObserver().getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
 
@@ -722,7 +722,7 @@ public class TropoModifierTest {
             final EstimatedModel                     tropoModel       = new EstimatedModel(mappingFunction, 5.0);
             final RangeRateTroposphericDelayModifier modifier         = new RangeRateTroposphericDelayModifier(tropoModel, false);
 
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
             parameterDriver.setName( stationName + EstimatedModel.TOTAL_ZENITH_DELAY);
             rangeRate.addModifier(modifier);

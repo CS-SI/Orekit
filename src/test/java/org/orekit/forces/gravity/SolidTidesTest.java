@@ -467,24 +467,24 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         }
         
         detectors      = solidTidesModel.getEventDetectors().collect(Collectors.toList());
-        DateDetector dateDetector = (DateDetector) detectors.get(0);
+        DateDetector dateDetector = (DateDetector) detectors.getFirst();
         List<TimeStamped> dates = dateDetector.getDates();
         
         fieldDetectors = solidTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
-        FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.get(0);
+        FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.getFirst();
         FieldAbsoluteDate<Binary64> fieldDate = fieldDateDetector.getDate();
         
         // Then
         Assertions.assertFalse(detectors.isEmpty());
         Assertions.assertEquals(1, detectors.size());
-        Assertions.assertInstanceOf(DateDetector.class, detectors.get(0));
+        Assertions.assertInstanceOf(DateDetector.class, detectors.getFirst());
         
         Assertions.assertEquals(1, dates.size());
-        Assertions.assertEquals(0., dates.get(0).durationFrom(t0), 0.);
+        Assertions.assertEquals(0., dates.getFirst().durationFrom(t0), 0.);
         
         Assertions.assertFalse(fieldDetectors.isEmpty());
         Assertions.assertEquals(1, fieldDetectors.size());
-        Assertions.assertInstanceOf(FieldDateDetector.class, fieldDetectors.get(0));
+        Assertions.assertInstanceOf(FieldDateDetector.class, fieldDetectors.getFirst());
         Assertions.assertEquals(0., fieldDate.durationFrom(t0).getReal(), 0.);
     }
 

@@ -77,7 +77,7 @@ public class UTCScale implements TimeScale {
         // copy input so the original list is unmodified
         final List<OffsetModel> offsetModels = new ArrayList<>(baseOffsets);
         offsetModels.sort(Comparator.comparing(OffsetModel::getStart));
-        if (offsetModels.get(0).getStart().getYear() > 1968) {
+        if (offsetModels.getFirst().getStart().getYear() > 1968) {
             // the pre-1972 linear offsets are missing, add them manually
             // excerpt from UTC-TAI.history file:
             //  1961  Jan.  1 - 1961  Aug.  1     1.422 818 0s + (MJD - 37 300) x 0.001 296s
@@ -98,7 +98,7 @@ public class UTCScale implements TimeScale {
             //  0.0011232 s/d → 13 ns/s
             //  0.0025920 s/d → 30 ns/s
             // CHECKSTYLE: stop MultipleStringLiterals check
-            offsetModels.add( 0, linearModel(1961,  1, 1, 37300, "1.4228180", "0.001296"));
+            offsetModels.addFirst(linearModel(1961,  1, 1, 37300, "1.4228180", "0.001296"));
             offsetModels.add( 1, linearModel(1961,  8, 1, 37300, "1.3728180", "0.001296"));
             offsetModels.add( 2, linearModel(1962,  1, 1, 37665, "1.8458580", "0.0011232"));
             offsetModels.add( 3, linearModel(1963, 11, 1, 37665, "1.9458580", "0.0011232"));

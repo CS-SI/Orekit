@@ -89,7 +89,7 @@ public class SingleParameterFitter implements Serializable {
     public SecularAndHarmonic fit(final EOPHistory rawHistory, final ToDoubleFunction<EOPEntry> extractor) {
 
         final List<EOPEntry> rawEntries = rawHistory.getEntries();
-        final EOPEntry       last       = rawEntries.get(rawEntries.size() - 1);
+        final EOPEntry       last       = rawEntries.getLast();
 
         // create fitter
         final SecularAndHarmonic sh = new SecularAndHarmonic(degree, pulsations);

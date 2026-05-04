@@ -359,7 +359,7 @@ public class GenericTimeStampedCacheTest {
                         AbsoluteDate t = existingDate.shiftedBy(10 * step);
                         do {
                             t = t.shiftedBy(-step);
-                            list.add(0, t);
+                            list.addFirst(t);
                         } while (t.compareTo(date) >= 0);
                     }
                 }
@@ -570,7 +570,7 @@ public class GenericTimeStampedCacheTest {
                 while (date.compareTo(previous) < 0) {
                     previous = previous.shiftedBy(-step);
                     if (previous.compareTo(earliest) >= 0 && previous.compareTo(latest) <= 0) {
-                        dates.add(0, previous);
+                        dates.addFirst(previous);
                     }
                 }
             }
