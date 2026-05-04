@@ -2085,19 +2085,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final String notConfigured = " not configured";
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(satId);
-        final int prnNumber;
-        switch (system) {
+        final int prnNumber = switch (system) {
             case GPS:
             case GLONASS:
-            case GALILEO:
-                prnNumber = Integer.parseInt(satId.substring(1));
-                break;
-            case SBAS:
-                prnNumber = Integer.parseInt(satId.substring(1)) + 100;
-                break;
-            default:
-                prnNumber = -1;
-        }
+            case GALILEO: yield Integer.parseInt(satId.substring(1));
+            case SBAS: yield Integer.parseInt(satId.substring(1)) + 100;
+            default: yield -1;
+        };
         final RinexObservation rinexObs = new RinexObservationParser().parse(source);
         for (final ObservationDataSet observationDataSet : rinexObs.getObservationDataSets()) {
             if (observationDataSet.getSatellite().getSystem() == system    &&
