@@ -727,6 +727,12 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
+          <!-- Use javadoc's recursive subpackage discovery instead of the plugin's
+               explicit @packages list. Java 21 javadoc rejects packages that only
+               contain package-info.java (e.g. org.orekit.propagation.semianalytical)
+               when listed explicitly; subpackage mode handles them correctly. -->
+          <sourcepath>${basedir}/src/main/java</sourcepath>
+          <subpackages>org.orekit</subpackages>
           <additionalOptions>
             <option>--allow-script-in-comments</option>
             <option>-header</option>
@@ -738,7 +744,6 @@
             <link>https://docs.oracle.com/en/java/javase/21/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
-          <source>${orekit.compiler.source}</source>
         </configuration>
       </plugin>
       <plugin>
@@ -875,8 +880,8 @@
           <archive>
             <manifestFile>${project.build.directory}/osgi/MANIFEST.MF</manifestFile>
             <manifestEntries>
-              <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
-              <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
+              <X-Compile-Source-JDK>${orekit.compiler.release}</X-Compile-Source-JDK>
+              <X-Compile-Target-JDK>${orekit.compiler.release}</X-Compile-Target-JDK>
               <Automatic-Module-Name>org.orekit</Automatic-Module-Name>
             </manifestEntries>
           </archive>
@@ -1000,6 +1005,12 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
+          <!-- Use javadoc's recursive subpackage discovery instead of the plugin's
+               explicit @packages list. Java 21 javadoc rejects packages that only
+               contain package-info.java (e.g. org.orekit.propagation.semianalytical)
+               when listed explicitly; subpackage mode handles them correctly. -->
+          <sourcepath>${basedir}/src/main/java</sourcepath>
+          <subpackages>org.orekit</subpackages>
           <additionalOptions>
             <option>--allow-script-in-comments</option>
             <option>-header</option>
@@ -1011,7 +1022,6 @@
             <link>https://docs.oracle.com/en/java/javase/21/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
-          <source>${orekit.compiler.source}</source>
           <doclint>none</doclint>
         </configuration>
         <reportSets>
@@ -1062,8 +1072,8 @@
               <manifestFile>${project.build.directory}/osgi/MANIFEST.MF</manifestFile>
               <manifestEntries>
                 <Implementation-Build>${orekit.implementation.build}</Implementation-Build>
-                <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
-                <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
+                <X-Compile-Source-JDK>${orekit.compiler.release}</X-Compile-Source-JDK>
+                <X-Compile-Target-JDK>${orekit.compiler.release}</X-Compile-Target-JDK>
               </manifestEntries>
              </archive>
             </configuration>
