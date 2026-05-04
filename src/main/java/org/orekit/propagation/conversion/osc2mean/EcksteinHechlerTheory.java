@@ -82,7 +82,9 @@ public class EcksteinHechlerTheory implements MeanTheory {
     @Override
     public double getReferenceRadius() {
         return provider.getAe();
-    }/** {@inheritDoc} */
+    }
+
+    /** {@inheritDoc} */
     @Override
     public Orbit meanToOsculating(final Orbit mean) {
         final EcksteinHechlerPropagator propagator =

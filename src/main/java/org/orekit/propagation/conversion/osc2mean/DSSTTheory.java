@@ -95,7 +95,9 @@ public class DSSTTheory implements MeanTheory {
     @Override
     public double getReferenceRadius() {
         return Constants.IERS2010_EARTH_EQUATORIAL_RADIUS;
-    }/** {@inheritDoc} */
+    }
+
+    /** {@inheritDoc} */
     @Override
     public Orbit preprocessing(final Orbit osculating) {
         // If not defined

@@ -24,8 +24,7 @@
     <orekit.maven-bundle-plugin.version>5.1.9</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>3.0.0-M3</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>3.6.0</orekit.maven-checkstyle-plugin.version>
-    <!-- Checkstyle 9.3 seems to be the last version usable with JDK 8 -->
-    <orekit.checkstyle.version>9.3</orekit.checkstyle.version>
+    <orekit.checkstyle.version>10.20.2</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.4.1</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.15.0</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>3.11.3</orekit.maven-javadoc-plugin.version>
