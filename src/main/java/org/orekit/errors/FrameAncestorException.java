@@ -16,6 +16,9 @@
  */
 package org.orekit.errors;
 
+import java.io.Serial;
+
+
 import org.hipparchus.exception.Localizable;
 
 /** This class is the base class for exception thrown by
@@ -26,6 +29,7 @@ import org.hipparchus.exception.Localizable;
 public class FrameAncestorException extends OrekitException {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = -8279818119798166504L;
 
     /** Simple constructor.

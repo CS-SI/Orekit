@@ -16,6 +16,7 @@
  */
 package org.orekit.utils.units;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
@@ -143,6 +144,7 @@ public class Unit implements Serializable {
     public static final Unit EARTH_RADII = new Unit("ER", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20210402L;
 
     /** Name name of the unit. */
@@ -577,8 +579,7 @@ public class Unit implements Serializable {
             return true;
         }
 
-        if (unit instanceof Unit) {
-            final Unit u = (Unit) unit;
+        if (unit instanceof Unit u) {
             return Precision.equals(scale, u.scale, 1) &&
                    mass.equals(u.mass) && length.equals(u.length) && time.equals(u.time) &&
                    current.equals(u.current) && angle.equals(u.angle);

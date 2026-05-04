@@ -147,7 +147,7 @@ public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoade
 
         final Optional<OceanLoadingCoefficients> optional =
                         coefficients.stream().filter(c -> c.getSiteName().equalsIgnoreCase(site)).findFirst();
-        if (!optional.isPresent()) {
+        if (optional.isEmpty()) {
             throw new OrekitException(OrekitMessages.STATION_NOT_FOUND,
                                       site,
                                       String.join(", ", getSites()));

@@ -161,8 +161,7 @@ public class AntennaKey {
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof AntennaKey) {
-            final AntennaKey other = (AntennaKey) object;
+        if (object instanceof AntennaKey other) {
             return this.getName().equals(other.getName()) &&
                    this.getRadomeCode().equals(other.getRadomeCode()) &&
                    this.getSerialNumber().equals(other.getSerialNumber());

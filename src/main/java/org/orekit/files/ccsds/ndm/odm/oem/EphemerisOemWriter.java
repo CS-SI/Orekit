@@ -210,8 +210,7 @@ public class EphemerisOemWriter implements EphemerisFileWriter {
         void writeSegment(final Generator generator, final S segment) throws IOException {
 
         // override template metadata with segment values
-        if (segment instanceof OemSegment) {
-            final OemSegment oemSegment = (OemSegment) segment;
+        if (segment instanceof OemSegment oemSegment) {
             metadata.setReferenceFrame(oemSegment.getMetadata().getReferenceFrame());
         } else {
             metadata.setReferenceFrame(FrameFacade.map(segment.getFrame()));
@@ -224,9 +223,9 @@ public class EphemerisOemWriter implements EphemerisFileWriter {
         // we enter data section
         writer.startData(generator);
 
-        if (segment instanceof OemSegment) {
+        if (segment instanceof OemSegment oemSegment1) {
             // write data comments
-            generator.writeComments(((OemSegment) segment).getData().getComments());
+            generator.writeComments(oemSegment1.getData().getComments());
         }
 
         // Loop on orbit data
@@ -239,9 +238,9 @@ public class EphemerisOemWriter implements EphemerisFileWriter {
             writer.writeOrbitEphemerisLine(generator, metadata, coordinates, useAcceleration);
         }
 
-        if (segment instanceof OemSegment) {
+        if (segment instanceof OemSegment oemSegment2) {
             // output covariance data
-            writer.writeCovariances(generator, metadata, ((OemSegment) segment).getCovarianceMatrices());
+            writer.writeCovariances(generator, metadata, oemSegment2.getCovarianceMatrices());
         }
 
         // we exit data section

@@ -64,7 +64,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -158,7 +158,7 @@ public class OrekitEphemerisFileTest {
 
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
         EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFrom = parser.parse(new DataSource(tempOem));
-        Files.delete(Paths.get(tempOem));
+        Files.delete(Path.of(tempOem));
 
         EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
         Assertions.assertEquals(states.get(0).getDate(), segment.getStart());

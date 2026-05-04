@@ -162,8 +162,8 @@ public class Generator {
             final StepHandlerMultiplexer multiplexer = propagators.get(entry.getKey().getPropagatorIndex()).getMultiplexer();
             final List<OrekitStepHandler> toBeRemoved = new ArrayList<>();
             for (final OrekitStepHandler handler : multiplexer.getHandlers()) {
-                if (handler instanceof SingleSatGeneratorHandler &&
-                    ((SingleSatGeneratorHandler<?>) handler).globalHandler == globalHandler) {
+                if (handler instanceof SingleSatGeneratorHandler<?> generatorHandler &&
+                    generatorHandler.globalHandler == globalHandler) {
                     toBeRemoved.add(handler);
                 }
             }

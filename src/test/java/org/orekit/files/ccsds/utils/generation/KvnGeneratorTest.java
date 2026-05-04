@@ -36,10 +36,12 @@ public class KvnGeneratorTest {
             generator.writeEntry("KEY", 1234567.8, Unit.parse("Hz"), false);
             generator.exitSection();
             generator.endMessage("abc");
-            Assertions.assertEquals("CCSDS_ABC_VERSION = 99.0\n" +
-                                "BLOCK_START\n" +
-                                "KEY        = 1234567.8   [Hz]\n" +
-                                "BLOCK_STOP\n",
+            Assertions.assertEquals("""
+                                CCSDS_ABC_VERSION = 99.0
+                                BLOCK_START
+                                KEY        = 1234567.8   [Hz]
+                                BLOCK_STOP
+                                """,
                                 caw.toString());
         }
     }
@@ -52,10 +54,12 @@ public class KvnGeneratorTest {
             generator.writeEntry("KEY_2",    1234567.8,   Unit.parse("n/a"),       false);
             generator.writeEntry("KEY_3",    1234567.8,   Unit.parse("1"),         false);
             generator.writeEntry("LOOOOONG", "1234567.8", null,                    false);
-            Assertions.assertEquals("KEY_1      = 1234.5678   [km*kg**3/s**0.5]\n" +
-                                "KEY_2      = 1234567.8\n" +
-                                "KEY_3      = 1234567.8\n" +
-                                "LOOOOONG   = 1234567.8\n",
+            Assertions.assertEquals("""
+                                KEY_1      = 1234.5678   [km*kg**3/s**0.5]
+                                KEY_2      = 1234567.8
+                                KEY_3      = 1234567.8
+                                LOOOOONG   = 1234567.8
+                                """,
                                 caw.toString());
         }
     }
@@ -67,9 +71,11 @@ public class KvnGeneratorTest {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), false);
             generator.writeEntry("PERCENT", 0.25, Unit.parse("%"), false);
-            Assertions.assertEquals("KEY_1      = 90.0   [deg]\n" +
-                                "KEY_2      = 180.0  [deg]\n" +
-                                "PERCENT    = 25.0   [%]\n",
+            Assertions.assertEquals("""
+                                KEY_1      = 90.0   [deg]
+                                KEY_2      = 180.0  [deg]
+                                PERCENT    = 25.0   [%]
+                                """,
                                 caw.toString());
         }
     }
@@ -80,8 +86,10 @@ public class KvnGeneratorTest {
         try (Generator generator = new KvnGenerator(caw, 10, "", Constants.JULIAN_DAY, 0)) {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), true);
-            Assertions.assertEquals("KEY_1      = 90.0\n" +
-                                "KEY_2      = 180.0\n", caw.toString());
+            Assertions.assertEquals("""
+                                KEY_1      = 90.0
+                                KEY_2      = 180.0
+                                """, caw.toString());
         }
     }
 

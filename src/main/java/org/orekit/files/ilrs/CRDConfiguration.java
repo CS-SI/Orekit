@@ -125,9 +125,9 @@ public class CRDConfiguration {
 
         mapConfigurationRecords.put(config.getConfigurationId(), config);
 
-        if (config instanceof SystemConfiguration) {
+        if (config instanceof SystemConfiguration configuration) {
             // Add to the list systemConfigurationRecords if it is a SystemConfiguration
-            systemConfigurationRecords.add((SystemConfiguration) config);
+            systemConfigurationRecords.add(configuration);
         }
     }
 
@@ -1294,8 +1294,7 @@ public class CRDConfiguration {
         public String toString() {
             // CRD suggested format, excluding the record type
             // stationUTCOffset, transpUTCOffset: s --> ns
-            final String str = String.format(
-                    "%s %.3f %.2f %.3f %.2f %.12f %d %d %d",
+            final String str = "%s %.3f %.2f %.3f %.2f %.12f %d %d %d".formatted(
                     getConfigurationId(),
                     stationUTCOffset * 1e9, stationOscDrift,
                     transpUTCOffset * 1e9, transpOscDrift,
@@ -1646,13 +1645,13 @@ public class CRDConfiguration {
         /** {@inheritDoc} */
         @Override
         public String toCrdString() {
-            return String.format("C6 0 %s", toString());
+            return "C6 0 %s".formatted(toString());
         }
 
         @Override
         public String toString() {
             // CRD suggested format, excluding the record type
-            return String.format("%s %s %s %s %s %s %s %s %s %s",
+            return "%s %s %s %s %s %s %s %s %s %s".formatted(
                     getConfigurationId(), pressSensorManufacturer,
                     pressSensorModel, pressSensorSerialNumber,
                     tempSensorManufacturer, tempSensorModel,
@@ -1818,14 +1817,14 @@ public class CRDConfiguration {
         /** {@inheritDoc} */
         @Override
         public String toCrdString() {
-            return String.format("C7 0 %s", toString());
+            return "C7 0 %s".formatted(toString());
         }
 
         @Override
         public String toString() {
             // CRD suggested format, excluding the record type
             // surveyError: m --> mm
-            final String str = String.format("%s %s %.5f %.2f %.4f %.2f %s %s",
+            final String str = "%s %s %.5f %.2f %.4f %.2f %s %s".formatted(
                     getConfigurationId(), targetName, surveyedTargetDistance,
                     surveyError * 1e3, sumOfAllConstantDelays, pulseEnergy,
                     processingSoftwareName, processingSoftwareVersion);

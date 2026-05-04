@@ -399,18 +399,19 @@ public final class STKEphemerisFileParserTest {
   @Test
   void testIssue1930ParseDistanceUnit() {
 
-    final String content = "stk.v.12.0\n" +
-            "BEGIN Ephemeris\n" +
-            "NumberOfEphemerisPoints 1\n" +
-            "ScenarioEpoch 01 Jan 2000 12:00:00.000000\n" +
-            "InterpolationMethod Lagrange\n" +
-            "InterpolationSamplesM1 7\n" +
-            "CentralBody Earth\n" +
-            "CoordinateSystem J2000\n" +
-            "DistanceUnit Kilometers\n" +
-            "EphemerisTimePosVel\n" +
-            "0.0000000000000000e+00  1.0000000000000000e+03  2.0000000000000000e+03  3.0000000000000000e+03  1.0000000000000000e+00  2.0000000000000000e+00  3.0000000000000000e+00\n" +
-            "END Ephemeris";
+    final String content = """
+            stk.v.12.0
+            BEGIN Ephemeris
+            NumberOfEphemerisPoints 1
+            ScenarioEpoch 01 Jan 2000 12:00:00.000000
+            InterpolationMethod Lagrange
+            InterpolationSamplesM1 7
+            CentralBody Earth
+            CoordinateSystem J2000
+            DistanceUnit Kilometers
+            EphemerisTimePosVel
+            0.0000000000000000e+00  1.0000000000000000e+03  2.0000000000000000e+03  3.0000000000000000e+03  1.0000000000000000e+00  2.0000000000000000e+00  3.0000000000000000e+00
+            END Ephemeris""";
 
     final DataSource source = new DataSource("inline", () -> new StringReader(content));
     final String satelliteId = "00000";

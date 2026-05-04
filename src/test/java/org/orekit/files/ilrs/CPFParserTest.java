@@ -36,7 +36,7 @@ import org.orekit.utils.IERSConventions;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 
 
@@ -54,7 +54,7 @@ public class CPFParserTest {
         final String ex = "/ilrs/jason3_cpf_180613_16401.cne";
 
         final CPFParser parser = new CPFParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final String fileName = Path.of(getClass().getResource(ex).toURI()).toString();
         final CPF file = (CPF) parser.parse(new DataSource(fileName));
 
         // Start date

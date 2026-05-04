@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -292,11 +292,11 @@ public class GlobalIonosphereMapModelTest {
 
         Utils.setDataRoot("regular-data");
         URL url1 = DirectoryCrawlerTest.class.getClassLoader().getResource("ionex/split-1.19i");
-        DataSource ds1 = new DataSource(Paths.get(url1.toURI()).toString());
+        DataSource ds1 = new DataSource(Path.of(url1.toURI()).toString());
         URL url2 = DirectoryCrawlerTest.class.getClassLoader().getResource("ionex/split-2.19i");
-        DataSource ds2 = new DataSource(Paths.get(url2.toURI()).toString());
+        DataSource ds2 = new DataSource(Path.of(url2.toURI()).toString());
         URL url3 = DirectoryCrawlerTest.class.getClassLoader().getResource("ionex/split-3.19i");
-        DataSource ds3 = new DataSource(Paths.get(url3.toURI()).toString());
+        DataSource ds3 = new DataSource(Path.of(url3.toURI()).toString());
         GlobalIonosphereMapModel model =
             new GlobalIonosphereMapModel(earth, TimeScalesFactory.getUTC(),
                                          GlobalIonosphereMapModel.TimeInterpolator.SIMPLE_LINEAR,

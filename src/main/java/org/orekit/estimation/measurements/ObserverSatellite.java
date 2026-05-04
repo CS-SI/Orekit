@@ -83,9 +83,9 @@ public class ObserverSatellite extends AbstractParticipant implements Observer {
                                                                               final Map<String, Integer> parameterIndices) {
 
         // If a FieldPVCoordinatesProvider<Gradient> already exists, use it
-        if (pvCoordsProvider instanceof ExtendedPositionProvider) {
+        if (pvCoordsProvider instanceof ExtendedPositionProvider provider) {
             final Field<Gradient> check = GradientField.getField(freeParameters);
-            return ((ExtendedPositionProvider) pvCoordsProvider).toFieldPVCoordinatesProvider(check);
+            return provider.toFieldPVCoordinatesProvider(check);
         }
 
         // Otherwise, convert the PVCoordinatesProvider to a FieldPVCoordinatesProvider<Gradient>

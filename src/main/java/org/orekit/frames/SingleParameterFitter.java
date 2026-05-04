@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ListIterator;
@@ -42,6 +43,7 @@ public class SingleParameterFitter implements Serializable {
     public static final double MOON_DRACONIC_PULSATION = MathUtils.TWO_PI / (27.212221 * Constants.JULIAN_DAY);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20230309L;
 
     /** Time constant of the exponential decay weight. */

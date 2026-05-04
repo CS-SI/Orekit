@@ -410,10 +410,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // add the STM generator corresponding to the current settings, and setup state accordingly
         DSSTStateTransitionMatrixGenerator stmGenerator = null;
         for (final AdditionalDerivativesProvider equations : getAdditionalDerivativesProviders()) {
-            if (equations instanceof DSSTStateTransitionMatrixGenerator &&
+            if (equations instanceof DSSTStateTransitionMatrixGenerator generator &&
                 equations.getName().equals(dsstHarvester.getStmName())) {
                 // the STM generator has already been set up in a previous propagation
-                stmGenerator = (DSSTStateTransitionMatrixGenerator) equations;
+                stmGenerator = generator;
                 break;
             }
         }
@@ -467,10 +467,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
                 // check if we already have set up the providers
                 for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
-                    if (provider instanceof DSSTIntegrableJacobianColumnGenerator &&
+                    if (provider instanceof DSSTIntegrableJacobianColumnGenerator columnGenerator &&
                         provider.getName().equals(span.getData())) {
                         // the Jacobian column generator has already been set up in a previous propagation
-                        generator = (DSSTIntegrableJacobianColumnGenerator) provider;
+                        generator = columnGenerator;
                         break;
                     }
                 }

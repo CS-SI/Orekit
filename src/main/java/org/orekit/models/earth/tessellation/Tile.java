@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -35,6 +36,7 @@ import org.orekit.bodies.GeodeticPoint;
 public class Tile implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20150313L;
 
     /** First vertex. */

@@ -533,8 +533,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         if (print) {
-            final String headerBLS = "\nBatch Least Square Estimator :\n"
-                            + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
+            final String headerBLS = """
+                            
+                            Batch Least Square Estimator :
+                            iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n""";
             estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerBLS, print));
         }
 
@@ -575,8 +577,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         if (print) {
-            final String headerSBLS = "\nSequentiel Batch Least Square Estimator :\n"
-                            + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
+            final String headerSBLS = """
+                            
+                            Sequentiel Batch Least Square Estimator :
+                            iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n""";
 
             estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerSBLS, print));
         }
@@ -2512,13 +2516,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                          kalman.getCurrentDate().toString(TimeScalesFactory.getUTC()));
 
         // Covariances
-        String strFormat = String.format("%%%2ds  ", paramSize);
+        String strFormat = "%%%2ds  ".formatted(paramSize);
         logStream.format(strFormat, "Covariances:");
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
         }
         logStream.println();
-        String numFormat = String.format("%%%2d.6f  ", paramSize);
+        String numFormat = "%%%2d.6f  ".formatted(paramSize);
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
             for (int j = 0; j <= i; j++) {

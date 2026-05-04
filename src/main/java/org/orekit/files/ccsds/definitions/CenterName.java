@@ -129,8 +129,8 @@ public enum CenterName {
      */
     public static String guessCenter(final Frame frame) {
         final String name = frame.getName();
-        if (frame instanceof ModifiedFrame) {
-            return ((ModifiedFrame) frame).getCenterName();
+        if (frame instanceof ModifiedFrame modifiedFrame) {
+            return modifiedFrame.getCenterName();
         } else if (frame.getName().equals(Predefined.ICRF.getName())) {
             return CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.toUpperCase(STANDARDIZED_LOCALE);
         } else if (frame.getDepth() == 0 || frame instanceof FactoryManagedFrame) {

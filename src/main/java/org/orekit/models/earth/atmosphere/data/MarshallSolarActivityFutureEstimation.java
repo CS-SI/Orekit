@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.atmosphere.data;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,6 +91,7 @@ public class MarshallSolarActivityFutureEstimation
             "\\p{Alpha}\\p{Lower}\\p{Lower}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}(?:f|F)10(?:[-_]prd)?\\.(?:txt|TXT)";
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = -5212198874900835369L;
 
     /** Selected strength level of activity. */

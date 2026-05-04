@@ -16,6 +16,7 @@
  */
 package org.orekit.errors;
 
+import java.io.Serial;
 import java.text.MessageFormat;
 import java.util.Locale;
 
@@ -42,6 +43,7 @@ import org.hipparchus.exception.MathRuntimeException;
 public class OrekitException extends RuntimeException implements LocalizedException {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20150611L;
 
     /** Format specifier (to be translated). */
@@ -146,8 +148,8 @@ public class OrekitException extends RuntimeException implements LocalizedExcept
     public static OrekitException unwrap(final MathRuntimeException exception) {
 
         for (Throwable t = exception; t != null; t = t.getCause()) {
-            if (t instanceof OrekitException) {
-                return (OrekitException) t;
+            if (t instanceof OrekitException orekitException) {
+                return orekitException;
             }
         }
 

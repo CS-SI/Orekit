@@ -53,7 +53,7 @@ import org.orekit.time.TimeScalesFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -80,7 +80,7 @@ public class CRDParserTest {
         try {
             final String ex = "/ilrs/crd_unexpected_end_of_file.v2C";
             final CRDParser parser = new CRDParser();
-            final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+            final String fileName = Path.of(getClass().getResource(ex).toURI()).toString();
             parser.parse(new DataSource(fileName));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

@@ -25,7 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -114,7 +114,7 @@ class DAFWriterTest {
 
         // Byte-by-byte comparison between original and re-written file
         final byte[] rewrittenBytes = Files.readAllBytes(tempFile.toPath());
-        final byte[] originalBytes = Files.readAllBytes(Paths.get(getClass().getResource(ex).toURI()));
+        final byte[] originalBytes = Files.readAllBytes(Path.of(getClass().getResource(ex).toURI()));
         Assertions.assertEquals(originalBytes.length, rewrittenBytes.length);
         Assertions.assertArrayEquals(originalBytes, rewrittenBytes);
     }
@@ -178,7 +178,7 @@ class DAFWriterTest {
 
         // Byte-by-byte comparison between original and re-written file
         final byte[] rewrittenBytes = Files.readAllBytes(tempFile.toPath());
-        final byte[] originalBytes = Files.readAllBytes(Paths.get(getClass().getResource(ex).toURI()));
+        final byte[] originalBytes = Files.readAllBytes(Path.of(getClass().getResource(ex).toURI()));
         Assertions.assertEquals(originalBytes.length, rewrittenBytes.length);
         Assertions.assertArrayEquals(originalBytes, rewrittenBytes);
     }

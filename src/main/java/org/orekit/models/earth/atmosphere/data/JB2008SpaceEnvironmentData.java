@@ -20,6 +20,7 @@ package org.orekit.models.earth.atmosphere.data;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,6 +66,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     public static final String DEFAULT_SUPPORTED_NAMES_DTC = "DTCFILE.TXT";
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 7735042547323407578L;
 
     /** Size of the list. */

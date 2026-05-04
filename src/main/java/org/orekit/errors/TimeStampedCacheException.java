@@ -16,6 +16,9 @@
  */
 package org.orekit.errors;
 
+import java.io.Serial;
+
+
 import org.hipparchus.exception.Localizable;
 import org.hipparchus.exception.MathRuntimeException;
 
@@ -27,6 +30,7 @@ import org.hipparchus.exception.MathRuntimeException;
 public class TimeStampedCacheException extends OrekitException {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 9015424948577907926L;
 
     /** Simple constructor.
@@ -76,8 +80,8 @@ public class TimeStampedCacheException extends OrekitException {
     public static TimeStampedCacheException unwrap(final OrekitException oe) {
 
         for (Throwable t = oe; t != null; t = t.getCause()) {
-            if (t instanceof TimeStampedCacheException) {
-                return (TimeStampedCacheException) t;
+            if (t instanceof TimeStampedCacheException exception) {
+                return exception;
             }
         }
 
@@ -97,8 +101,8 @@ public class TimeStampedCacheException extends OrekitException {
 
         for (Throwable t = exception; t != null; t = t.getCause()) {
             if (t instanceof OrekitException) {
-                if (t instanceof TimeStampedCacheException) {
-                    return (TimeStampedCacheException) t;
+                if (t instanceof TimeStampedCacheException cacheException) {
+                    return cacheException;
                 } else {
                     return new TimeStampedCacheException((OrekitException) t);
                 }

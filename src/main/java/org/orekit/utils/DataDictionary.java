@@ -16,6 +16,7 @@
  */
 package org.orekit.utils;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +42,7 @@ import java.util.Map;
 public class DataDictionary implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20250208L;
 
     /** Default capacity. */
@@ -243,6 +245,7 @@ public class DataDictionary implements Serializable {
     public static class Entry implements Serializable {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20250208L;
 
         /** Key. */
@@ -271,7 +274,7 @@ public class DataDictionary implements Serializable {
          * @return a copy of the value (independent from internal array if it is a double array)
          */
         public Object getValue() {
-            return value instanceof double[] ? ((double[]) value).clone() : value;
+            return value instanceof double[] ds ? ds.clone() : value;
         }
 
         /** Increment the value if it is a double array.
@@ -281,9 +284,9 @@ public class DataDictionary implements Serializable {
          * @param increment increment to apply to the entry value
          */
         public void increment(final double[] increment) {
-            if (value instanceof double[]) {
+            if (value instanceof double[] doubles) {
                 for (int i = 0; i < increment.length; ++i) {
-                    ((double[]) value)[i] += increment[i];
+                    doubles[i] += increment[i];
                 }
             }
         }
@@ -299,9 +302,9 @@ public class DataDictionary implements Serializable {
          * @param raw raw increment to be multiplied by {@code factor} and then added
          */
         public void scaledIncrement(final double factor, final DoubleArrayDictionary.Entry raw) {
-            if (value instanceof double[]) {
+            if (value instanceof double[] doubles) {
                 for (int i = 0; i < raw.getValue().length; ++i) {
-                    ((double[]) value)[i] += factor * raw.getValue()[i];
+                    doubles[i] += factor * raw.getValue()[i];
                 }
             }
         }
@@ -309,8 +312,8 @@ public class DataDictionary implements Serializable {
         /** Reset the value to zero if it is a double array.
          */
         public void zero() {
-            if (value instanceof double[]) {
-                Arrays.fill((double[]) value, 0.0);
+            if (value instanceof double[] doubles) {
+                Arrays.fill(doubles, 0.0);
             }
         }
     }

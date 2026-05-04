@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 /** Container associating a name with a stream or reader that can be opened <em>lazily</em>.
  * <p>
@@ -90,7 +90,7 @@ public class DataSource {
      * @since 11.0
      */
     public DataSource(final String fileName) {
-        this(Paths.get(fileName).toFile());
+        this(Path.of(fileName).toFile());
     }
 
     /** Build an instance from a file on the local file system.
@@ -106,7 +106,7 @@ public class DataSource {
      * @since 11.0
      */
     public DataSource(final URI uri) {
-        this(Paths.get(uri).toFile());
+        this(Path.of(uri).toFile());
     }
 
     /** Get the name of the data.

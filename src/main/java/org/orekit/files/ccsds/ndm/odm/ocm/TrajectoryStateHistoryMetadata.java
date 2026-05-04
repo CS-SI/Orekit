@@ -267,8 +267,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         final int    index    = end < original.length() ? Integer.parseInt(original.substring(end)) : 0;
 
         // build offset index, taking care to use at least the same number of digits
-        final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
-                                              index + 1);
+        final String newIndex = "%%0%dd".formatted(original.length() - end).formatted(
+                index + 1);
 
         return prefix + newIndex;
 

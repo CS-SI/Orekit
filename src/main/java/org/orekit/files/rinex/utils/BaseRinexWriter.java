@@ -103,8 +103,8 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> implements Auto
     @Override
     public void close() throws IOException {
         try {
-            if (!closed && output instanceof AutoCloseable) {
-                ((AutoCloseable) output).close();
+            if (!closed && output instanceof AutoCloseable closeable) {
+                closeable.close();
             }
             closed = true;
         // CHECKSTYLE: stop IllegalCatch check

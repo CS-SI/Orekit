@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.orekit.utils.IERSConventions;
 public class GNSSDate implements Serializable, TimeStamped {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20221228L;
 
     /** Duration of a week in days. */

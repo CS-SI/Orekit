@@ -20,7 +20,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -140,7 +140,7 @@ public class OrekitAttitudeEphemerisFileTest {
         Assertions.assertEquals(refRot.getQ3(), attitude.getRotation().getQ3(), quaternionTolerance);
 
         String tempAem = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAem), StandardCharsets.UTF_8)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(Path.of(tempAem), StandardCharsets.UTF_8)) {
             final AdmHeader header = new AdmHeader();
             header.setFormatVersion(1.0);
             new AttitudeWriter(new WriterBuilder().buildAemWriter(),
@@ -150,7 +150,7 @@ public class OrekitAttitudeEphemerisFileTest {
 
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFrom =
                         new ParserBuilder().buildAemParser().parseMessage(new DataSource(tempAem));
-        Files.delete(Paths.get(tempAem));
+        Files.delete(Path.of(tempAem));
 
         segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
         Assertions.assertEquals(states.get(0).getDate(), segment.getStart());

@@ -312,8 +312,7 @@ class FieldDataDictionaryTest {
 
     @SuppressWarnings("rawtypes")
     private <T extends CalculusFieldElement<T>> void checkArray(final double[] expected, final Object actual) {
-        if (actual instanceof double[]) {
-            double[] actualField = (double[]) actual;
+        if (actual instanceof double[] actualField) {
             Assertions.assertEquals(expected.length, actualField.length);
             for (int i = 0; i < expected.length; ++i) {
                 Assertions.assertEquals(expected[i], actualField[i], 1.0E-15);

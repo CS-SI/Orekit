@@ -17,6 +17,7 @@
 package org.orekit.time;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,6 +118,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = -2462694707837970938L;
 
     /** Factory for proleptic julian calendar (up to 0000-12-31). */

@@ -1336,8 +1336,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
             return true;
         }
 
-        if (other instanceof FieldAbsoluteDate) {
-            final FieldAbsoluteDate<?> otherF = (FieldAbsoluteDate<?>) other;
+        if (other instanceof FieldAbsoluteDate<?> otherF) {
             return fieldOffset.getField().equals(otherF.fieldOffset.getField()) &&
                    date.equals(otherF.date) && fieldOffset.getAddendum().equals(otherF.fieldOffset.getAddendum());
         }

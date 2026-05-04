@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.formatting.FastLongFormatter;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
@@ -183,6 +184,7 @@ public class TimeOffset
     private static final String NEGATIVE_INTINITY_STRING = "-∞";
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20240711L;
 
     /** Seconds part. */

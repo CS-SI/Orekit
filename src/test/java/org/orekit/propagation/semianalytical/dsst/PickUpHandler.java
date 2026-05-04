@@ -71,8 +71,8 @@ class PickUpHandler implements OrekitStepHandler, DSSTStateTransitionMatrixGener
         // as the generators are only created on the fly at propagation start
         // we retrieve the STM generator here
         for (final AdditionalDerivativesProvider provider : propagator.getAdditionalDerivativesProviders()) {
-            if (provider instanceof DSSTStateTransitionMatrixGenerator) {
-                stmGenerator = (DSSTStateTransitionMatrixGenerator) provider;
+            if (provider instanceof DSSTStateTransitionMatrixGenerator generator) {
+                stmGenerator = generator;
                 stmGenerator.addObserver(accParamName, this);
             }
         }

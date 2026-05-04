@@ -26,11 +26,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.SortedSet;
@@ -48,6 +44,7 @@ import java.util.TreeSet;
 public class SolarInputs97to05 implements DTM2000InputParameters {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = -3687601846334870069L;
 
     private static final double third = 1.0/3.0;
@@ -204,6 +201,7 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
     private static class LineParameters implements TimeStamped, Serializable {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = -1127762834954768272L;
 
         /** Entries */

@@ -86,8 +86,7 @@ public class AmbiguityCache {
         /** {@inheritDoc} */
         @Override
         public boolean equals(final Object object) {
-            if (object instanceof Key) {
-                final Key other = (Key) object;
+            if (object instanceof Key other) {
                 return emitter.equals(other.emitter) && receiver.equals(other.receiver) &&
                        Precision.equals(wavelength, other.wavelength, 1);
             }

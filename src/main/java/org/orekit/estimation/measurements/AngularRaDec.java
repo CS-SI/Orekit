@@ -109,8 +109,8 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
      */
     @Deprecated
     public GroundStation getStation() {
-        if (observer instanceof GroundStation) {
-            return (GroundStation) observer;
+        if (observer instanceof GroundStation station) {
+            return station;
         } else {
             return null;
         }

@@ -16,6 +16,7 @@
  */
 package org.orekit.utils;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /** Container for Love numbers.
@@ -25,6 +26,7 @@ import java.io.Serializable;
 public class LoveNumbers implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20131014L;
 
     /** Real part of the nominal Love numbers. */

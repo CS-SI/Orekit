@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /** TAI UTC offset model.
@@ -26,6 +27,7 @@ import java.io.Serializable;
 public class OffsetModel implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20240721L;
 
     /** Date of the offset start. */
