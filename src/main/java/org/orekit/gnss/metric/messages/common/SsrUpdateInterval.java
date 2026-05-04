@@ -42,24 +42,24 @@ public class SsrUpdateInterval {
      * @return the update interval in seconds
      */
     public double getUpdateInterval() {
-        switch (indicator) {
-            case 0  : return 1.0;
-            case 1  : return 2.0;
-            case 2  : return 5.0;
-            case 3  : return 10.0;
-            case 4  : return 15.0;
-            case 5  : return 30.0;
-            case 6  : return 60.0;
-            case 7  : return 120.0;
-            case 8  : return 240.0;
-            case 9  : return 300.0;
-            case 10 : return 600.0;
-            case 11 : return 900.0;
-            case 12 : return 1800.0;
-            case 13 : return 3600.0;
-            case 14 : return 7200.0;
-            default : return 10800.0;
-        }
+        return switch (indicator) {
+            case 0   -> 1.0;
+            case 1   -> 2.0;
+            case 2   -> 5.0;
+            case 3   -> 10.0;
+            case 4   -> 15.0;
+            case 5   -> 30.0;
+            case 6   -> 60.0;
+            case 7   -> 120.0;
+            case 8   -> 240.0;
+            case 9   -> 300.0;
+            case 10  -> 600.0;
+            case 11  -> 900.0;
+            case 12  -> 1800.0;
+            case 13  -> 3600.0;
+            case 14  -> 7200.0;
+            default  -> 10800.0;
+        };
     }
 
 }

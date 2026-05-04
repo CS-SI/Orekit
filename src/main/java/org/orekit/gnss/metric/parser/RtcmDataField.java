@@ -350,12 +350,12 @@ public enum RtcmDataField implements DataField {
         @Override
         public int intValue(final EncodedMessage message) {
             // Word P1 indicates a time interval (in sec) between two adjacent values of tb parameter
-            switch (DataType.BIT_2.decode(message).intValue()) {
-                case 0  : return 0;
-                case 1  : return 1800;
-                case 2  : return 2700;
-                default : return 3600;
-            }
+            return switch (DataType.BIT_2.decode(message).intValue()) {
+                case 0   -> 0;
+                case 1   -> 1800;
+                case 2   -> 2700;
+                default  -> 3600;
+            };
         }
     },
 

@@ -1195,33 +1195,20 @@ abstract class PredefinedIAUPoles implements IAUPole {
     public static PredefinedIAUPoles getIAUPole(final EphemerisType body,
                                                 final TimeScales timeScales) {
 
-        switch (body) {
-            case SUN :
-                return new Sun(timeScales);
-            case MERCURY :
-                return new Mercury(timeScales);
-            case VENUS :
-                return new Venus(timeScales);
-            case EARTH :
-                return new Earth(timeScales);
-            case MOON :
-                return new Moon(timeScales);
-            case MARS :
-                return new Mars(timeScales);
-            case JUPITER :
-                return new Jupiter(timeScales);
-            case SATURN :
-                return new Saturn(timeScales);
-            case URANUS :
-                return new Uranus(timeScales);
-            case NEPTUNE :
-                return new Neptune(timeScales);
-            case PLUTO :
-                return new Pluto(timeScales);
-            default :
-                // Solar system & Earth Moon barycenter
-                return new GcrfAligned(timeScales);
-        }
+        return switch (body) {
+            case SUN  -> new Sun(timeScales);
+            case MERCURY  -> new Mercury(timeScales);
+            case VENUS  -> new Venus(timeScales);
+            case EARTH  -> new Earth(timeScales);
+            case MOON  -> new Moon(timeScales);
+            case MARS  -> new Mars(timeScales);
+            case JUPITER  -> new Jupiter(timeScales);
+            case SATURN  -> new Saturn(timeScales);
+            case URANUS  -> new Uranus(timeScales);
+            case NEPTUNE  -> new Neptune(timeScales);
+            case PLUTO  -> new Pluto(timeScales);
+            default  -> new GcrfAligned(timeScales);
+        };
     }
 
     /**

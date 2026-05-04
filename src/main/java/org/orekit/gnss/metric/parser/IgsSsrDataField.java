@@ -59,24 +59,24 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public int intValue(final EncodedMessage message) {
-            switch (DataType.BIT_4.decode(message).byteValue()) {
-                case 0  : return 1;
-                case 1  : return 2;
-                case 2  : return 5;
-                case 3  : return 10;
-                case 4  : return 15;
-                case 5  : return 30;
-                case 6  : return 60;
-                case 7  : return 120;
-                case 8  : return 240;
-                case 9  : return 300;
-                case 10 : return 600;
-                case 11 : return 900;
-                case 12 : return 1800;
-                case 13 : return 3600;
-                case 14 : return 7200;
-                default : return 10800;
-            }
+            return switch (DataType.BIT_4.decode(message).byteValue()) {
+                case 0   -> 1;
+                case 1   -> 2;
+                case 2   -> 5;
+                case 3   -> 10;
+                case 4   -> 15;
+                case 5   -> 30;
+                case 6   -> 60;
+                case 7   -> 120;
+                case 8   -> 240;
+                case 9   -> 300;
+                case 10  -> 600;
+                case 11  -> 900;
+                case 12  -> 1800;
+                case 13  -> 3600;
+                case 14  -> 7200;
+                default  -> 10800;
+            };
         }
     },
 
