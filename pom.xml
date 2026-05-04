@@ -749,13 +749,11 @@
             <option>--allow-script-in-comments</option>
             <option>-header</option>
             <option>'${orekit.mathjax.config} ${orekit.mathjax.enable}'</option>
-            <option>-extdirs</option>
-            <option>${tools.jar.dir}</option>
           </additionalOptions>
           <javadocDirectory>${project.build.directory}/generated-sources/plantuml</javadocDirectory>
           <bottom>Copyright &amp;copy; ${project.inceptionYear}-{currentYear} &lt;a href="https://www.cs-soprasteria.com/en/"&gt;CS GROUP&lt;/a&gt;. All rights reserved.</bottom>
           <links>
-            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+            <link>https://docs.oracle.com/en/java/javase/21/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
           <source>${orekit.compiler.source}</source>
@@ -1024,13 +1022,11 @@
             <option>--allow-script-in-comments</option>
             <option>-header</option>
             <option>'${orekit.mathjax.config} ${orekit.mathjax.enable}'</option>
-            <option>-extdirs</option>
-            <option>${tools.jar.dir}</option>
           </additionalOptions>
           <javadocDirectory>${project.build.directory}/generated-sources/plantuml</javadocDirectory>
           <bottom>Copyright &amp;copy; ${project.inceptionYear}-{currentYear} &lt;a href="https://www.cs-soprasteria.com/en/"&gt;CS GROUP&lt;/a&gt;. All rights reserved.</bottom>
           <links>
-            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+            <link>https://docs.oracle.com/en/java/javase/21/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
           <source>${orekit.compiler.source}</source>
