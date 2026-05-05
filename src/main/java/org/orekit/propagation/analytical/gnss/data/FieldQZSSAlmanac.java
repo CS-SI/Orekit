@@ -33,7 +33,7 @@ import java.util.function.Function;
  *
  */
 public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldGnssOrbitalElements<T, QZSSAlmanac, FieldQZSSAlmanac<T>> {
+    extends FieldGnssOrbitalElements<T, QZSSAlmanac> {
 
     /** Source of the almanac. */
     private final String source;
@@ -73,17 +73,18 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, QZSSAlmanac, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldQZSSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                          getType(), getPrn(), getGnssDate().getGnssDate(),
-                                          orbit, nonKeplerian,
-                                          converter.apply(getTgd()),
-                                          new FieldAbsoluteDate<>(orbit.getDate().getField(),
-                                                                  getToc().toAbsoluteDate()),
-                                          getSource(), getHealth());
+    public <U extends CalculusFieldElement<U>>
+        FieldQZSSAlmanac<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                    final U[] nonKeplerian,
+                                    final Function<T, U> converter) {
+        return new FieldQZSSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                      getType(), getPrn(), getGnssDate().getGnssDate(),
+                                      orbit, nonKeplerian,
+                                      converter.apply(getTgd()),
+                                      new FieldAbsoluteDate<>(orbit.getDate().getField(),
+                                                              getToc().toAbsoluteDate()),
+                                      getSource(), getHealth());
     }
 
     /**

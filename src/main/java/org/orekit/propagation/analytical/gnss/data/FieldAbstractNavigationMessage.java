@@ -22,13 +22,10 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
-import java.util.function.Function;
-
 /**
  * Base class for GNSS navigation messages.
  * @param <T> type of the field elements
  * @param <O> type of the orbital elements (non-field version)
- * @param <P> type of the orbital elements (field version)
  * @author Luc Maisonobe
  * @since 13.0
  *
@@ -39,9 +36,8 @@ import java.util.function.Function;
  * @see FieldNavicLegacyNavigationMessage
  */
 public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElement<T>,
-                                                     O extends AbstractNavigationMessage<O>,
-                                                     P extends FieldAbstractNavigationMessage<T, O, P>>
-    extends FieldGnssOrbitalElements<T, O, P> {
+                                                     O extends AbstractNavigationMessage<O>>
+    extends FieldGnssOrbitalElements<T, O> {
 
     /** Transmission time. */
     private final T transmissionTime;

@@ -31,7 +31,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, BeidouLegacyNavigationMessage, FieldBeidouLegacyNavigationMessage<T>> {
+    extends FieldAbstractNavigationMessage<T, BeidouLegacyNavigationMessage> {
 
     /** Indicator for D2 messages.
      * @since 14.0
@@ -105,20 +105,21 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, BeidouLegacyNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldBeidouLegacyNavigationMessage<>(isD2(),
-                                                            getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                            getType(), getPrn(), getGnssDate().getGnssDate(),
-                                                            orbit, nonKeplerian,
-                                                            converter.apply(getTgd()), toFieldToc(orbit),
-                                                            converter.apply(getTransmissionTime()),
-                                                            getAODE(), getAODC(), getSatH1(),
-                                                            converter.apply(getTGD1()),
-                                                            converter.apply(getTGD2()),
-                                                            converter.apply(getSvAccuracy()));
+    public <U extends CalculusFieldElement<U>>
+        FieldBeidouLegacyNavigationMessage<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                                      final U[] nonKeplerian,
+                                                      final Function<T, U> converter) {
+        return new FieldBeidouLegacyNavigationMessage<>(isD2(),
+                                                        getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                        getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                        orbit, nonKeplerian,
+                                                        converter.apply(getTgd()), toFieldToc(orbit),
+                                                        converter.apply(getTransmissionTime()),
+                                                        getAODE(), getAODC(), getSatH1(),
+                                                        converter.apply(getTGD1()),
+                                                        converter.apply(getTGD2()),
+                                                        converter.apply(getSvAccuracy()));
     }
 
     /**

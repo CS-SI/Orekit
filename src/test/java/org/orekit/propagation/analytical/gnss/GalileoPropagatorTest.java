@@ -168,7 +168,7 @@ public class GalileoPropagatorTest {
         almanacFactory.setHealthE5a(0);
         almanacFactory.setHealthE5b(0);
         final FieldGalileoAlmanac<Binary64> almanac =
-            almanacFactory.createFromDrivers().toField(Binary64Field.getInstance());
+            (FieldGalileoAlmanac<Binary64>) almanacFactory.createFromDrivers().toField(Binary64Field.getInstance());
 
         // Intermediate verification
         Assertions.assertEquals(1,                   almanacFactory.getPrn());
@@ -181,7 +181,7 @@ public class GalileoPropagatorTest {
         Assertions.assertEquals(-7.275957614183E-12, almanac.getAf1().getReal(), 1.0e-15);
 
         // Builds the GalileoPropagator from the almanac
-        final FieldGnssPropagator<Binary64, GalileoAlmanac, FieldGalileoAlmanac<Binary64>> propagator =
+        final FieldGnssPropagator<Binary64, GalileoAlmanac> propagator =
             new FieldGnssPropagator<>(Binary64Field.getInstance(), almanacFactory);
         // Propagate at the Galileo date and one Galileo cycle later
         final FieldAbsoluteDate<Binary64> date0 = almanac.getOrbit().getDate();

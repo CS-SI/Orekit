@@ -124,7 +124,7 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      * @param original regular field instance
      */
     protected <T extends CalculusFieldElement<T>, A extends LegacyNavigationMessage<A>>
-        LegacyNavigationMessage(final FieldLegacyNavigationMessage<T, A, ?> original) {
+        LegacyNavigationMessage(final FieldLegacyNavigationMessage<T, A> original) {
         super(original);
         iode        = original.getIODE();
         iodc        = original.getIODC();

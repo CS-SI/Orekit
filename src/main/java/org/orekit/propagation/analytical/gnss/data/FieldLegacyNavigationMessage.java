@@ -26,14 +26,12 @@ import org.orekit.time.TimeScales;
  * Container for data contained in a GPS/QZNSS legacy navigation message.
  * @param <T> type of the field elements
  * @param <O> type of the orbital elements (non-field version)
- * @param <P> type of the orbital elements (field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
 public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElement<T>,
-                                                   O extends LegacyNavigationMessage<O>,
-                                                   P extends FieldLegacyNavigationMessage<T, O, P>>
-    extends FieldAbstractNavigationMessage<T, O, P> {
+                                                   O extends LegacyNavigationMessage<O>>
+    extends FieldAbstractNavigationMessage<T, O> {
 
     /** Issue of Data, Ephemeris. */
     private final int iode;

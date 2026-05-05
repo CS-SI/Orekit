@@ -156,7 +156,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * @param original regular field instance
      */
     protected <T extends CalculusFieldElement<T>,
-               A extends CivilianNavigationMessage<A>> CivilianNavigationMessage(final FieldCivilianNavigationMessage<T, A, ?> original) {
+               A extends CivilianNavigationMessage<A>> CivilianNavigationMessage(final FieldCivilianNavigationMessage<T, A> original) {
         super(original);
         cnv2       = original.isCnv2();
         svAccuracy = original.getSvAccuracy().getReal();

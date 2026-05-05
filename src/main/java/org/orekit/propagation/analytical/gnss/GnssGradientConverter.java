@@ -28,6 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
@@ -36,12 +37,10 @@ import java.util.List;
 
 /** Converter for GNSS propagator.
  * @param <O> type of the orbital elements (non-field version)
- * @param <P> type of the orbital elements (field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
-class GnssGradientConverter<O extends GNSSOrbitalElements<O>,
-                            P extends FieldGnssOrbitalElements<Gradient, O, P>>
+class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
     extends AbstractAnalyticalGradientConverter {
 
     /** Fixed dimension of the state. */
@@ -60,7 +59,7 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>,
 
     /** {@inheritDoc} */
     @Override
-    public FieldGnssPropagator<Gradient, O, P> getPropagator() {
+    public FieldGnssPropagator<Gradient, O> getPropagator() {
 
         // count the required number of parameters
         int n = FREE_STATE_PARAMETERS;
@@ -103,13 +102,35 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>,
         final Gradient[] parameters = propagator.getDriversFactory().toGradients(nbParams);
 
         // convert elements to support gradient
-        final P elements = propagator.getOrbitalElements().toField(gOrbit,
-                                                                   parameters,
-                                                                   d  -> Gradient.constant(nbParams, d));
+        final FieldGnssOrbitalElements<Gradient, O> nonKeplerian = propagator.getOrbitalElements().toField(gOrbit,
+                                                                       parameters,
+                                                                       d  -> Gradient.constant(nbParams, d));
+        final FieldGnssOrbitalElements<Gradient, O> elements = FieldGnssPropagator.buildOrbitalElements(gState, nonKeplerian,
+                                                                    new NonKeplerianDriversFactory(),
+                                                                    propagator.getECEF(),
+                                                                    propagator.getAttitudeProvider(),
+                                                                    gState.getMass());
+
+         // the fixed point method used above found the correct orbital elements values,
+        // but it messed up with the partial derivatives,
+        // we have to reset them to pure ones and zeros
+        final FieldKeplerianOrbit<Gradient> gOrbit2 =
+            new FieldKeplerianOrbit<>(Gradient.variable(nbParams, 0, orbit.getA()),
+                                      Gradient.variable(nbParams, 1, orbit.getE()),
+                                      Gradient.variable(nbParams, 2, orbit.getI()),
+                                      Gradient.variable(nbParams, 3, orbit.getPerigeeArgument()),
+                                      Gradient.variable(nbParams, 4, orbit.getRightAscensionOfAscendingNode()),
+                                      Gradient.variable(nbParams, 5, orbit.getMeanAnomaly()),
+                                      PositionAngleType.MEAN, PositionAngleType.MEAN,
+                                      orbit.getFrame(),
+                                      new FieldAbsoluteDate<>(GradientField.getField(nbParams), orbit.getDate()),
+                                      Gradient.constant(nbParams, orbit.getMu()));
+        final FieldGnssOrbitalElements<Gradient, O> gElements2 =
+            elements.toField(gOrbit2, parameters, d -> Gradient.constant(nbParams, d.getValue()));
 
         // build propagator handling gradient
-        final FieldGnssPropagator<Gradient, O, P> gPropagator =
-            new FieldGnssPropagator<>(gState, elements,
+        final FieldGnssPropagator<Gradient, O> gPropagator =
+            new FieldGnssPropagator<>(gElements2, gState.getFrame(),
                                       propagator.getECEF(), propagator.getAttitudeProvider(),
                                       gState.getMass());
         final List<ParameterDriver> gDrivers = gPropagator.getParametersDrivers();

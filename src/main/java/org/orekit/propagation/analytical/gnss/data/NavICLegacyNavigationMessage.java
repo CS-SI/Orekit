@@ -98,18 +98,19 @@ public class NavICLegacyNavigationMessage
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, NavICLegacyNavigationMessage, P>>
-    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
-        return (P) new FieldNavicLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                           getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                           converter.apply(getTgd()), toFieldToc(orbit),
-                                                           converter.apply(getTransmissionTime()),
-                                                           getIODE(), getIODC(),
-                                                           converter.apply(getSvAccuracy()),
-                                                           getSvHealth(), getFitInterval(),
-                                                           getL2Codes(), getL2PFlags());
+    public <T extends CalculusFieldElement<T>>
+    FieldNavicLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                 final T[] nonKeplerian,
+                                                 final DoubleFunction<T> converter) {
+        return new FieldNavicLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                       getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                                       converter.apply(getTgd()), toFieldToc(orbit),
+                                                       converter.apply(getTransmissionTime()),
+                                                       getIODE(), getIODC(),
+                                                       converter.apply(getSvAccuracy()),
+                                                       getSvHealth(), getFitInterval(),
+                                                       getL2Codes(), getL2PFlags());
     }
 
     /** {@inheritDoc} */

@@ -120,9 +120,9 @@ class GPSPropagatorTest {
 
     @Test
     void testFieldClockCorrections() {
-        final FieldGPSAlmanac<Binary64> gpsAlmanac = almanacs.get(0).toField(Binary64Field.getInstance());
-        final FieldGnssPropagator<Binary64, GPSAlmanac, FieldGPSAlmanac<Binary64>>
-            propagator =
+        final FieldGPSAlmanac<Binary64> gpsAlmanac =
+            (FieldGPSAlmanac<Binary64>) almanacs.get(0).toField(Binary64Field.getInstance());
+        final FieldGnssPropagator<Binary64, GPSAlmanac> propagator =
             new FieldGnssPropagator<>(Binary64Field.getInstance(), almanacs.get(0)
                 .factory(context.getFrames().getEME2000(),
                          context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
@@ -609,9 +609,9 @@ class GPSPropagatorTest {
     @Test
     void testFieldIssue544() {
         // Builds the GPSPropagator from the almanac
-        final FieldGPSAlmanac<Binary64> a0 = almanacs.get(0).toField(Binary64Field.getInstance());
-        final FieldGnssPropagator<Binary64, GPSAlmanac, FieldGPSAlmanac<Binary64>>
-            propagator =
+        final FieldGPSAlmanac<Binary64> a0 =
+            (FieldGPSAlmanac<Binary64>) almanacs.get(0).toField(Binary64Field.getInstance());
+        final FieldGnssPropagator<Binary64, GPSAlmanac> propagator =
             new FieldGnssPropagator<>(a0, context.getFrames().getEME2000(),
                                       context.getFrames().getITRF(IERSConventions.IERS_2010, false),
                                       new FrameAlignedProvider(context.getFrames().getEME2000()),
