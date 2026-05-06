@@ -23,11 +23,14 @@
           <action dev="vcucchie" type="update" issue="1954">
               Upgrade to JUnit 6.
           </action>
-          <action dev="rafa" type="fix" issue="1950">
-              Implement logic from Algorithm 2 from Izzo's 2014 paper to correct nMax in LambertSolver.
+          <action dev="luc" type="fix" issue="1953">
+              Removed default implementation of `Propagator.setupMatricesComputation`.
           </action>
           <action dev="serrof" type="fix" issue="1951">
               Remove while loop in (Field)KeplerianPropagator.
+          </action>
+          <action dev="rafa" type="fix" issue="1950">
+              Implement logic from Algorithm 2 from Izzo's 2014 paper to correct nMax in LambertSolver.
           </action>
           <action dev="evan" type="fix" issue="1914">
               Account for central body in CCSDS NDM when ModifiedFrame is used.
