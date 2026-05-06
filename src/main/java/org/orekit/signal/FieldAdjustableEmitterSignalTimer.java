@@ -56,6 +56,19 @@ public class FieldAdjustableEmitterSignalTimer<T extends CalculusFieldElement<T>
         this.adjustableEmitterPVProvider = adjustableEmitterPVProvider;
     }
 
+    /** Compute the signal emission condition on a link leg (typically downlink or uplink).
+     * @param approxEmissionDate approximate emission date
+     * @param receptionCondition signal reception condition
+     * @return emission condition
+     */
+    public FieldSignalEmissionCondition<T> computeEmissionCondition(final FieldSignalReceptionCondition<T> receptionCondition,
+                                                                    final FieldAbsoluteDate<T> approxEmissionDate) {
+        final T delay = computeDelay(receptionCondition, approxEmissionDate);
+        final FieldAbsoluteDate<T> emissionDate = receptionCondition.getReceptionDate().shiftedBy(delay.negate());
+        final Frame frame = receptionCondition.getReferenceFrame();
+        return new FieldSignalEmissionCondition<>(emissionDate, adjustableEmitterPVProvider.getPosition(emissionDate, frame), frame);
+    }
+
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
      * @param receptionCondition signal reception condition
      * @return <em>positive</em> delay between signal emission and signal reception dates
