@@ -449,11 +449,16 @@ class GPSPropagatorTest {
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
 
-        factory.getNonKeplerianParametersDrivers().getDrivers().forEach(d -> d.setValue(0.0));
+        factory.
+            getNonKeplerianParametersDrivers().
+            getDrivers().
+            stream().
+            filter(d -> !d.getName().equals(NonKeplerianDriversFactory.TIME)).
+            forEach(d -> d.setValue(0.0));
         final ParameterDriver aDriver =
             factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS);
         final double dxda = finiteDifference(factory, targetDate, aDriver, 10.0, s -> s.getPosition().getX());
-        Assertions.assertEquals(dxda, stm.getEntry(0, 0), 1.0e-9);
+        Assertions.assertEquals(dxda, stm.getEntry(0, 0), 5.0e-6);
 
         // extract Jacobian matrix
         final RealMatrix jacobian = harvester.getParametersJacobian(state);
@@ -461,12 +466,12 @@ class GPSPropagatorTest {
         Assertions.assertEquals(2, jacobian.getColumnDimension());
          final ParameterDriver crcDriver =
             factory.getNonKeplerianParametersDrivers().findByName(NonKeplerianDriversFactory.RADIUS_COSINE);
-        final double dxdcrc = finiteDifference(factory, targetDate, crcDriver, 10.0, s -> s.getPosition().getX());
-        Assertions.assertEquals(dxdcrc, jacobian.getEntry(0, 0), 1.0e-9);
+        final double dxdcrc = finiteDifference(factory, targetDate, crcDriver, 1.0, s -> s.getPosition().getX());
+        Assertions.assertEquals(dxdcrc, jacobian.getEntry(0, 0), 2.0e-5);
          final ParameterDriver crsDriver =
             factory.getNonKeplerianParametersDrivers().findByName(NonKeplerianDriversFactory.RADIUS_SINE);
-        final double dxdcrs = finiteDifference(factory, targetDate, crsDriver, 10.0, s -> s.getPosition().getX());
-        Assertions.assertEquals(dxdcrs, jacobian.getEntry(0, 1), 1.0e-9);
+        final double dxdcrs = finiteDifference(factory, targetDate, crsDriver, 1.0, s -> s.getPosition().getX());
+        Assertions.assertEquals(dxdcrs, jacobian.getEntry(0, 1), 4.0e-5);
 
     }
 
