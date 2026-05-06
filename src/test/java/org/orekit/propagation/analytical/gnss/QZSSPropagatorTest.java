@@ -155,7 +155,7 @@ public class QZSSPropagatorTest {
 
             // create interpolator
             final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
-                    new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+                    new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_PV);
 
             final PVCoordinates interpolated = interpolator.interpolate(central, sample);
             errorP = FastMath.max(errorP, Vector3D.distance(pv.getPosition(), interpolated.getPosition()));
@@ -163,9 +163,9 @@ public class QZSSPropagatorTest {
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
 
-        Assertions.assertEquals(0.0, errorP, 3.8e-9);
-        Assertions.assertEquals(0.0, errorV, 8.7e-8);
-        Assertions.assertEquals(0.0, errorA, 2.1e-8);
+        Assertions.assertEquals(0.0, errorP, 1.5e-8);
+        Assertions.assertEquals(0.0, errorV, 1.2e-13);
+        Assertions.assertEquals(0.0, errorA, 6.5e-9);
 
     }
 
