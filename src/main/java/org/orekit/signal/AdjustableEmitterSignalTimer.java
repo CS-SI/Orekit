@@ -53,19 +53,31 @@ public class AdjustableEmitterSignalTimer extends AbstractSignalTravelTime {
         this.adjustableEmitterPVProvider = adjustableEmitterPVProvider;
     }
 
+    /** Compute the signal emission condition on a link leg (typically downlink or uplink).
+     * @param approxEmissionDate approximate emission date
+     * @param receptionCondition signal reception condition
+     * @return emission condition
+     */
+    public SignalEmissionCondition computeEmissionCondition(final SignalReceptionCondition receptionCondition,
+                                                            final AbsoluteDate approxEmissionDate) {
+        final double delay = computeDelay(receptionCondition, approxEmissionDate);
+        final AbsoluteDate emissionDate = receptionCondition.getReceptionDate().shiftedBy(-delay);
+        final Frame frame = receptionCondition.getReferenceFrame();
+        return new SignalEmissionCondition(emissionDate, adjustableEmitterPVProvider.getPosition(emissionDate, frame), frame);
+    }
+
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
      * @param receptionCondition signal reception condition
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
     public double computeDelay(final SignalReceptionCondition receptionCondition) {
-        final Frame frame = receptionCondition.getReferenceFrame();
         final AbsoluteDate signalArrivalDate = receptionCondition.getReceptionDate();
         final Vector3D emitterPosition = adjustableEmitterPVProvider.getPosition(receptionCondition.getReceptionDate(),
                 receptionCondition.getReferenceFrame());
         final Vector3D receiverPosition = receptionCondition.getReceiverPosition();
         final double distance = receiverPosition.subtract(emitterPosition).getNorm();
         final AbsoluteDate approxEmissionDate = signalArrivalDate.shiftedBy(-distance * C_RECIPROCAL);
-        return computeDelay(new SignalReceptionCondition(signalArrivalDate, receiverPosition, frame), approxEmissionDate);
+        return computeDelay(receptionCondition, approxEmissionDate);
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink).

@@ -19,6 +19,7 @@ package org.orekit.signal;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.optim.ConvergenceChecker;
+import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
@@ -53,6 +54,20 @@ public class FieldAdjustableReceiverSignalTimer<T extends CalculusFieldElement<T
                                               final ConvergenceChecker<T> convergenceChecker) {
         super(convergenceChecker);
         this.adjustableReceiverPVProvider = adjustableReceiverPVProvider;
+    }
+
+
+    /** Compute signal reception condition on a link leg (typically downlink or uplink).
+     * @param emissionCondition signal emission conditions
+     * @param approxReceptionDate approximate reception date
+     * @return reception condition
+     */
+    public FieldSignalReceptionCondition<T> computeReceptionCondition(final FieldSignalEmissionCondition<T> emissionCondition,
+                                                                      final FieldAbsoluteDate<T> approxReceptionDate) {
+        final T delay = computeDelay(emissionCondition, approxReceptionDate);
+        final FieldAbsoluteDate<T> receptionDate = approxReceptionDate.shiftedBy(delay);
+        final Frame frame = emissionCondition.getReferenceFrame();
+        return new FieldSignalReceptionCondition<>(receptionDate, adjustableReceiverPVProvider.getPosition(receptionDate, frame), frame);
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
