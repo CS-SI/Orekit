@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester;
@@ -32,7 +33,7 @@ import org.orekit.utils.DoubleArrayDictionary;
 class GnssHarvester extends AbstractAnalyticalMatricesHarvester {
 
     /** Propagator bound to this harvester. */
-    private final GNSSPropagator propagator;
+    private final GNSSPropagator<?> propagator;
 
     /** Simple constructor.
      * <p>
@@ -48,7 +49,7 @@ class GnssHarvester extends AbstractAnalyticalMatricesHarvester {
      * if null or if some selected parameters are missing from the dictionary, the corresponding
      * initial column is assumed to be 0
      */
-    GnssHarvester(final GNSSPropagator propagator, final String stmName,
+    GnssHarvester(final GNSSPropagator<?> propagator, final String stmName,
                   final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
         super(propagator, stmName, initialStm, initialJacobianColumns);
         this.propagator = propagator;
@@ -56,8 +57,15 @@ class GnssHarvester extends AbstractAnalyticalMatricesHarvester {
 
     /** {@inheritDoc} */
     @Override
+    public OrbitType getOrbitType() {
+        // since 14.0, GNSS propagators work in Keplerian elements
+        return OrbitType.KEPLERIAN;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public AbstractAnalyticalGradientConverter getGradientConverter() {
-        return new GnssGradientConverter(propagator);
+        return new GnssGradientConverter<>(propagator);
     }
 
 }

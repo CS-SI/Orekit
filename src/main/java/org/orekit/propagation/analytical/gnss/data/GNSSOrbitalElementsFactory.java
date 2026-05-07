@@ -113,7 +113,7 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     protected GNSSOrbitalElementsFactory(final double angularVelocity, final TimeScales timeScales,
                                          final SatelliteSystem system, final String type,
                                          final Frame inertial, final Frame bodyFixed, final double mu) {
-        super(buildOrbitalDrivers(), null, PositionAngleType.MEAN, null, mu);
+        super(OrbitType.KEPLERIAN, buildOrbitalDrivers(), null, PositionAngleType.MEAN, null, mu);
 
         // immutable fields
         this.angularVelocity = angularVelocity;

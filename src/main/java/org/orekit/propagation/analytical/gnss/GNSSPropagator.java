@@ -32,7 +32,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianAnomalyUtility;
@@ -275,12 +274,12 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     /** {@inheritDoc} */
     @Override
     public Orbit propagateOrbit(final AbsoluteDate date) {
-        // Gets the PVCoordinates in ECEF frame
+        // Get the PVCoordinates in ECEF frame
         final PVCoordinates pvaInECEF = propagateInEcef(date);
-        // Transforms the PVCoordinates to ECI frame
+        // Transform the PVCoordinates to ECI frame
         final PVCoordinates pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
-        // Returns the Cartesian orbit
-        return new CartesianOrbit(pvaInECI, eci, date, getMU());
+        // Return the Keplerian orbit
+        return new KeplerianOrbit(pvaInECI, eci, date, getMU());
     }
 
     /**

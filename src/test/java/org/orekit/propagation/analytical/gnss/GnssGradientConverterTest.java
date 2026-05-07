@@ -48,6 +48,7 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.ToDoubleFunction;
 
@@ -113,8 +114,7 @@ class GnssGradientConverterTest {
     void testStmAndJacobian() {
         // Initial GPS orbital elements (Ref: IGS)
         final GPSLegacyNavigationMessageFactory factory =
-            new GPSLegacyNavigationMessageFactory(DataContext.getDefault().getTimeScales(),
-                                                  SatelliteSystem.GPS,
+            new GPSLegacyNavigationMessageFactory(context.getTimeScales(), SatelliteSystem.GPS,
                                                   GPSLegacyNavigationMessage.LNAV,
                                                   context.getFrames().getEME2000(),
                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
@@ -157,8 +157,8 @@ class GnssGradientConverterTest {
 
         // check STM against finite differences
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
-        final double hP   = 100000.0;
-        final double hV   = 100.0;
+        final double hP   = 100.0;
+        final double hV   = 0.1;
         double maxErrorPP = 0.0;
         double maxErrorPV = 0.0;
         double maxErrorVP = 0.0;
@@ -167,21 +167,26 @@ class GnssGradientConverterTest {
             for (int j = 0; j < 6; j++) {
                 final double h = j < 3 ? hP : hV;
                 final double error = differentiate(propagator, state.getDate(), h, i, j) - stm.getEntry(i, j);
+                System.out.format(Locale.ROOT, "%s%12.3f", j == 3 ? "     " : " ", error);
                 if (i < 3) {
                     if (j < 3) {
-                        maxErrorPP = FastMath.max(maxErrorPP, error);
+                        maxErrorPP = FastMath.max(maxErrorPP, FastMath.abs(error));
                     } else {
-                        maxErrorPV = FastMath.max(maxErrorPV, error);
+                        maxErrorPV = FastMath.max(maxErrorPV, FastMath.abs(error));
                     }
                 } else {
                     if (j < 3) {
-                        maxErrorVP = FastMath.max(maxErrorVP, error);
+                        maxErrorVP = FastMath.max(maxErrorVP, FastMath.abs(error));
                     } else {
-                        maxErrorVV = FastMath.max(maxErrorVV, error);
+                        maxErrorVV = FastMath.max(maxErrorVV, FastMath.abs(error));
                     }
                 }
             }
+            System.out.format(Locale.ROOT, "%n");
         }
+        System.out.format(Locale.ROOT,
+                          "maxErrorPP = %10.3e, maxErrorPV = %10.3e, maxErrorVP = %10.3e, maxErrorVV = %10.3e",
+                          maxErrorPP, maxErrorPV, maxErrorVP, maxErrorVV);
         Assertions.assertEquals(0.0, maxErrorPP, 6.5e-13);
         Assertions.assertEquals(0.0, maxErrorPV, 8.2e-10);
         Assertions.assertEquals(0.0, maxErrorVP, 8.4e-17);
@@ -206,14 +211,14 @@ class GnssGradientConverterTest {
                 final double error = differentiate(factory, state.getDate(), getter, setter, h, i) -
                                      jacobian.getEntry(i, j);
                 if (i < 3) {
-                    maxErrorP = FastMath.max(maxErrorP, error);
+                    maxErrorP = FastMath.max(maxErrorP, FastMath.abs(error));
                 } else {
-                    maxErrorV = FastMath.max(maxErrorV, error);
+                    maxErrorV = FastMath.max(maxErrorV, FastMath.abs(error));
                 }
             }
         }
-        Assertions.assertEquals(0.0, maxErrorP, 6.9e-14);
-        Assertions.assertEquals(0.0, maxErrorV, 1.7e-17);
+        Assertions.assertEquals(0.0, maxErrorP, 4.7e-14);
+        Assertions.assertEquals(0.0, maxErrorV, 2.2e-17);
 
     }
 

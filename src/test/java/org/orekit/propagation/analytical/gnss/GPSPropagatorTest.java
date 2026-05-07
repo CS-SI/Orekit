@@ -445,7 +445,7 @@ class GPSPropagatorTest {
 
         // extract state transition matrix
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
-        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
+        Assertions.assertEquals(OrbitType.KEPLERIAN, harvester.getOrbitType());
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
 
