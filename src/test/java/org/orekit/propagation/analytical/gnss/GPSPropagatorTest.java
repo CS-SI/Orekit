@@ -445,7 +445,7 @@ class GPSPropagatorTest {
 
         // extract state transition matrix
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
-        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
+        Assertions.assertEquals(OrbitType.KEPLERIAN, harvester.getOrbitType());
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
 
@@ -457,8 +457,8 @@ class GPSPropagatorTest {
             forEach(d -> d.setValue(0.0));
         final ParameterDriver aDriver =
             factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS);
-        final double dxda = finiteDifference(factory, targetDate, aDriver, 10.0, s -> s.getPosition().getX());
-        Assertions.assertEquals(dxda, stm.getEntry(0, 0), 5.0e-6);
+        final double dada = finiteDifference(factory, targetDate, aDriver, 10.0, s -> s.getOrbit().getA());
+        Assertions.assertEquals(dada, stm.getEntry(0, 0), 6.0e-5);
 
         // extract Jacobian matrix
         final RealMatrix jacobian = harvester.getParametersJacobian(state);
@@ -466,12 +466,12 @@ class GPSPropagatorTest {
         Assertions.assertEquals(2, jacobian.getColumnDimension());
          final ParameterDriver crcDriver =
             factory.getNonKeplerianParametersDrivers().findByName(NonKeplerianDriversFactory.RADIUS_COSINE);
-        final double dxdcrc = finiteDifference(factory, targetDate, crcDriver, 1.0, s -> s.getPosition().getX());
-        Assertions.assertEquals(dxdcrc, jacobian.getEntry(0, 0), 2.0e-5);
+        final double dadcrc = finiteDifference(factory, targetDate, crcDriver, 1.0, s -> s.getOrbit().getA());
+        Assertions.assertEquals(dadcrc, jacobian.getEntry(0, 0), 6.0e-4);
          final ParameterDriver crsDriver =
             factory.getNonKeplerianParametersDrivers().findByName(NonKeplerianDriversFactory.RADIUS_SINE);
-        final double dxdcrs = finiteDifference(factory, targetDate, crsDriver, 1.0, s -> s.getPosition().getX());
-        Assertions.assertEquals(dxdcrs, jacobian.getEntry(0, 1), 4.0e-5);
+        final double dadcrs = finiteDifference(factory, targetDate, crsDriver, 10.0, s -> s.getOrbit().getA());
+        Assertions.assertEquals(dadcrs, jacobian.getEntry(0, 1), 3.0e-4);
 
     }
 
@@ -570,29 +570,38 @@ class GPSPropagatorTest {
         Assertions.assertEquals(factory.getCisDriver().getValue(), oe2.getCis(), 1.0e-20);
 
         // orbital parameters, those are rebuilt from the initial state
-        Assertions.assertEquals(
-            factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).getValue(),
-            oe2.getOrbit().getA(), 4.0e-8);
-        Assertions.assertEquals(
-            factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).getValue(),
-            oe2.getOrbit().getE(), 1.e-15);
-        Assertions.assertEquals(
-            factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION).getValue(),
-            oe2.getOrbit().getI(), 2.0e-16);
-        Assertions.assertEquals(
-            factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).getValue(),
-            MathUtils.normalizeAngle(oe2.getOrbit().getPerigeeArgument(), factory.getOrbitalParametersDrivers()
-                .findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).getValue()), 1.e-13);
-        Assertions.assertEquals(
-            factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).getValue(),
-            MathUtils.normalizeAngle(oe2.getOrbit().getRightAscensionOfAscendingNode(),
-                                     factory.getOrbitalParametersDrivers()
-                                         .findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).getValue()), 1.7e-14);
-        Assertions.assertEquals(
-            factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).getValue(),
-            MathUtils.normalizeAngle(oe2.getOrbit().getMeanAnomaly(), factory.getOrbitalParametersDrivers()
-                .findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).getValue()), 1.e-13);
+        checkParameter(oe2.getOrbit().getA(),
+                       factory, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS,
+                       false, 4.9e-8);
+        checkParameter(oe2.getOrbit().getE(),
+                       factory, GNSSOrbitalElementsFactory.ECCENTRICITY,
+                       false, 5.9e-16);
+        checkParameter(oe2.getOrbit().getI(),
+                       factory, GNSSOrbitalElementsFactory.INCLINATION,
+                       false, 2.3e-16);
+        checkParameter(oe2.getOrbit().getPerigeeArgument(),
+                       factory, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE,
+                       true, 8.7e-14);
+        checkParameter(oe2.getOrbit().getRightAscensionOfAscendingNode(),
+                       factory, GNSSOrbitalElementsFactory.NODE_LONGITUDE,
+                       true, 1.8e-15);
+        checkParameter(oe2.getOrbit().getMeanAnomaly(),
+                       factory, GNSSOrbitalElementsFactory.MEAN_ANOMALY,
+                       true, 8.6e-14);
 
+    }
+
+    private void checkParameter(final double rebuilt,
+                                final GPSLegacyNavigationMessageFactory factory, final String parameterName,
+                                final boolean normalize, final double tolerance) {
+        final double original = factory.getOrbitalParametersDrivers().findByName(parameterName).getValue();
+        if (normalize) {
+            Assertions.assertEquals(original,
+                                    MathUtils.normalizeAngle(rebuilt, original),
+                                    tolerance);
+        } else {
+            Assertions.assertEquals(original, rebuilt, tolerance);
+        }
     }
 
     @Test

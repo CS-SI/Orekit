@@ -35,6 +35,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
@@ -48,6 +49,7 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.ToDoubleFunction;
 
@@ -113,8 +115,7 @@ class GnssGradientConverterTest {
     void testStmAndJacobian() {
         // Initial GPS orbital elements (Ref: IGS)
         final GPSLegacyNavigationMessageFactory factory =
-            new GPSLegacyNavigationMessageFactory(DataContext.getDefault().getTimeScales(),
-                                                  SatelliteSystem.GPS,
+            new GPSLegacyNavigationMessageFactory(context.getTimeScales(), SatelliteSystem.GPS,
                                                   GPSLegacyNavigationMessage.LNAV,
                                                   context.getFrames().getEME2000(),
                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
@@ -157,35 +158,24 @@ class GnssGradientConverterTest {
 
         // check STM against finite differences
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
-        final double hP   = 100000.0;
-        final double hV   = 100.0;
-        double maxErrorPP = 0.0;
-        double maxErrorPV = 0.0;
-        double maxErrorVP = 0.0;
-        double maxErrorVV = 0.0;
+        OrbitType type = harvester.getOrbitType();
+        Assertions.assertEquals(OrbitType.KEPLERIAN, type);
+        final double [] steps = ToleranceProvider.
+                                getDefaultToleranceProvider(100.0).
+                                getTolerances(state.getOrbit(), type)[0];
+        double maxRelativeError = 0;
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
-                final double h = j < 3 ? hP : hV;
-                final double error = differentiate(propagator, state.getDate(), h, i, j) - stm.getEntry(i, j);
-                if (i < 3) {
-                    if (j < 3) {
-                        maxErrorPP = FastMath.max(maxErrorPP, error);
-                    } else {
-                        maxErrorPV = FastMath.max(maxErrorPV, error);
-                    }
-                } else {
-                    if (j < 3) {
-                        maxErrorVP = FastMath.max(maxErrorVP, error);
-                    } else {
-                        maxErrorVV = FastMath.max(maxErrorVV, error);
-                    }
-                }
+                final double finiteDifferences = differentiate(propagator, type, state.getDate(), steps[j], i, j);
+                final double relativeError = (finiteDifferences - stm.getEntry(i, j)) / finiteDifferences;
+                System.out.format(Locale.ROOT, "%s%12.3f (%.4e %.4e)",
+                                  j == 3 ? "     " : " ", relativeError, finiteDifferences, stm.getEntry(i, j));
+                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs(relativeError));
             }
+            System.out.format(Locale.ROOT, "%n");
         }
-        Assertions.assertEquals(0.0, maxErrorPP, 6.5e-13);
-        Assertions.assertEquals(0.0, maxErrorPV, 8.2e-10);
-        Assertions.assertEquals(0.0, maxErrorVP, 8.4e-17);
-        Assertions.assertEquals(0.0, maxErrorVV, 3.8e-13);
+        System.out.format(Locale.ROOT, "maxRelativeError = %10.3e%n", maxRelativeError);
+        Assertions.assertEquals(0.0, maxRelativeError, 6.5e-13);
 
         // check Jacobian against finite differences
         final RealMatrix jacobian = harvester.getParametersJacobian(state);
@@ -206,14 +196,14 @@ class GnssGradientConverterTest {
                 final double error = differentiate(factory, state.getDate(), getter, setter, h, i) -
                                      jacobian.getEntry(i, j);
                 if (i < 3) {
-                    maxErrorP = FastMath.max(maxErrorP, error);
+                    maxErrorP = FastMath.max(maxErrorP, FastMath.abs(error));
                 } else {
-                    maxErrorV = FastMath.max(maxErrorV, error);
+                    maxErrorV = FastMath.max(maxErrorV, FastMath.abs(error));
                 }
             }
         }
-        Assertions.assertEquals(0.0, maxErrorP, 6.9e-14);
-        Assertions.assertEquals(0.0, maxErrorV, 1.7e-17);
+        Assertions.assertEquals(0.0, maxErrorP, 4.7e-14);
+        Assertions.assertEquals(0.0, maxErrorV, 2.2e-17);
 
     }
 
@@ -244,10 +234,11 @@ class GnssGradientConverterTest {
     }
 
     private <O extends GNSSOrbitalElements<O>> double differentiate(final GNSSPropagator<O> basePropagator,
+                                                                    final OrbitType type,
                                                                     final AbsoluteDate target, final double step,
                                                                     final int outIndex, final int inIndex) {
 
-        // function that converts a shift in one element of initial state (i.e. Px, Py, Pz, Vx, Vy, Vz)
+        // function that converts a shift in one element of initial state
         // into one element of propagated state
         final UnivariateFunction f = h -> {
 
@@ -256,14 +247,14 @@ class GnssGradientConverterTest {
 
             // shift element at specified index
             final double[] in = new double[6];
-            OrbitType.CARTESIAN.mapOrbitToArray(original.getOrbit(), PositionAngleType.MEAN, in, null);
+            type.mapOrbitToArray(original.getOrbit(), PositionAngleType.MEAN, in, null);
             in[inIndex] += h;
 
             // build shifted initial state
             final SpacecraftState shiftedState =
-                new SpacecraftState(OrbitType.CARTESIAN.mapArrayToOrbit(in, null, PositionAngleType.MEAN,
-                                                                        original.getDate(),
-                                                                        original.getOrbit().getMu(), original.getFrame()),
+                new SpacecraftState(type.mapArrayToOrbit(in, null, PositionAngleType.MEAN,
+                                                         original.getDate(),
+                                                         original.getOrbit().getMu(), original.getFrame()),
                                     original.getAttitude()).withMass(original.getMass());
 
             // build shifted propagator
@@ -279,7 +270,7 @@ class GnssGradientConverterTest {
 
             // return desired coordinate
             final double[] out = new double[6];
-            OrbitType.CARTESIAN.mapOrbitToArray(outState.getOrbit(), PositionAngleType.MEAN, out, null);
+            type.mapOrbitToArray(outState.getOrbit(), PositionAngleType.MEAN, out, null);
             return out[outIndex];
 
         };
