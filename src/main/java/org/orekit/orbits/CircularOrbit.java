@@ -618,19 +618,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return v + ω true latitude argument (rad)
      */
     public double getAlphaV() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return cachedAlpha;
-
-            case ECCENTRIC:
-                return CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, cachedAlpha);
-
-            case MEAN:
-                return CircularLatitudeArgumentUtility.meanToTrue(ex, ey, cachedAlpha);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> cachedAlpha;
+            case ECCENTRIC -> CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, cachedAlpha);
+            case MEAN -> CircularLatitudeArgumentUtility.meanToTrue(ex, ey, cachedAlpha);
+        };
     }
 
     /** Get the true latitude argument derivative.
@@ -670,19 +662,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return E + ω eccentric latitude argument (rad)
      */
     public double getAlphaE() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, cachedAlpha);
-
-            case ECCENTRIC:
-                return cachedAlpha;
-
-            case MEAN:
-                return CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, cachedAlpha);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, cachedAlpha);
+            case ECCENTRIC -> cachedAlpha;
+            case MEAN -> CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, cachedAlpha);
+        };
     }
 
     /** Get the eccentric latitude argument derivative.
@@ -722,19 +706,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return M + ω mean latitude argument (rad)
      */
     public double getAlphaM() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return CircularLatitudeArgumentUtility.trueToMean(ex, ey, cachedAlpha);
-
-            case MEAN:
-                return cachedAlpha;
-
-            case ECCENTRIC:
-                return CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, cachedAlpha);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> CircularLatitudeArgumentUtility.trueToMean(ex, ey, cachedAlpha);
+            case MEAN -> cachedAlpha;
+            case ECCENTRIC -> CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, cachedAlpha);
+        };
     }
 
     /** Get the mean latitude argument derivative.

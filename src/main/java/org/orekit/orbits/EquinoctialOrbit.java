@@ -469,19 +469,11 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public double getLv() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return cachedL;
-
-            case ECCENTRIC:
-                return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
-
-            case MEAN:
-                return EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> cachedL;
+            case ECCENTRIC -> EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
+            case MEAN -> EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -515,19 +507,11 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public double getLE() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
-
-            case ECCENTRIC:
-                return cachedL;
-
-            case MEAN:
-                return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
+            case ECCENTRIC -> cachedL;
+            case MEAN -> EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -561,19 +545,11 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public double getLM() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
-
-            case MEAN:
-                return cachedL;
-
-            case ECCENTRIC:
-                return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
+            case MEAN -> cachedL;
+            case ECCENTRIC -> EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
