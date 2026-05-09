@@ -131,7 +131,7 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
 
     /** {@inheritDoc} */
     public T getEarliest() {
-        return this.data.get(0);
+        return this.data.getFirst();
     }
 
     /** {@inheritDoc} */

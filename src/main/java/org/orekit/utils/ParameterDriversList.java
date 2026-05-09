@@ -109,8 +109,8 @@ public class ParameterDriversList {
      */
     private DelegatingDriver getAssociatedDelegatingDriver(final ParameterDriver driver) {
         for (final ParameterObserver observer : driver.getObservers()) {
-            if (observer instanceof ChangesForwarder) {
-                return ((ChangesForwarder) observer).getDelegatingDriver();
+            if (observer instanceof ChangesForwarder forwarder) {
+                return forwarder.getDelegatingDriver();
             }
         }
         return null;

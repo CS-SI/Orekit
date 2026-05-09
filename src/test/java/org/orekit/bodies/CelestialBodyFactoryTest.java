@@ -263,7 +263,7 @@ class CelestialBodyFactoryTest {
                                            earth.getInertiallyOrientedFrame());
 
         AbsoluteDate date = new AbsoluteDate(1969, 7, 23, TimeScalesFactory.getTT());
-        final double refDistance = bodyDistance(sun, earthMoonBarycenter, date, frames.get(0));
+        final double refDistance = bodyDistance(sun, earthMoonBarycenter, date, frames.getFirst());
         for (Frame frame : frames) {
             Assertions.assertEquals(refDistance,
                                 bodyDistance(sun, earthMoonBarycenter, date, frame),

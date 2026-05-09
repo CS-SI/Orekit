@@ -65,8 +65,8 @@ class ConicallyShadowedLightFluxModelTest {
         final List<EventDetector> detectors = fluxModel.getEclipseConditionsDetector();
         // THEN
         final EventDetectionSettings detectionSettings = ConicallyShadowedLightFluxModel.getDefaultEclipseDetectionSettings();
-        Assertions.assertEquals(detectionSettings.getMaxIterationCount(), detectors.get(0).getMaxIterationCount());
-        Assertions.assertEquals(detectionSettings.getThreshold(), detectors.get(0).getThreshold());
+        Assertions.assertEquals(detectionSettings.getMaxIterationCount(), detectors.getFirst().getMaxIterationCount());
+        Assertions.assertEquals(detectionSettings.getThreshold(), detectors.getFirst().getThreshold());
     }
 
     @Test

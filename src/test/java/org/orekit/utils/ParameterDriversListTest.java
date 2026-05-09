@@ -147,7 +147,7 @@ public class ParameterDriversListTest {
         listB.add(pB1);
         listB.add(pB2);
 
-        listA.add(listB.getDrivers().get(0));
+        listA.add(listB.getDrivers().getFirst());
 
         pA1.setValue(0.5);
         for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
@@ -162,25 +162,25 @@ public class ParameterDriversListTest {
 
         for (final ParameterDriversList list : new ParameterDriversList[] { listA, listB }) {
             Assertions.assertEquals(1, list.getNbParams());
-            Assertions.assertEquals(5, list.getDrivers().get(0).getRawDrivers().size());
-            Assertions.assertSame(pA1, list.getDrivers().get(0).getRawDrivers().get(0));
-            Assertions.assertSame(pA2, list.getDrivers().get(0).getRawDrivers().get(1));
-            Assertions.assertSame(pA3, list.getDrivers().get(0).getRawDrivers().get(2));
-            Assertions.assertSame(pB1, list.getDrivers().get(0).getRawDrivers().get(3));
-            Assertions.assertSame(pB2, list.getDrivers().get(0).getRawDrivers().get(4));
+            Assertions.assertEquals(5, list.getDrivers().getFirst().getRawDrivers().size());
+            Assertions.assertSame(pA1, list.getDrivers().getFirst().getRawDrivers().getFirst());
+            Assertions.assertSame(pA2, list.getDrivers().getFirst().getRawDrivers().get(1));
+            Assertions.assertSame(pA3, list.getDrivers().getFirst().getRawDrivers().get(2));
+            Assertions.assertSame(pB1, list.getDrivers().getFirst().getRawDrivers().get(3));
+            Assertions.assertSame(pB2, list.getDrivers().getFirst().getRawDrivers().get(4));
         }
 
         // this should be a no-op
-        listB.add(listA.getDrivers().get(0));
+        listB.add(listA.getDrivers().getFirst());
 
         for (final ParameterDriversList list : new ParameterDriversList[] { listA, listB }) {
             Assertions.assertEquals(1, list.getNbParams());
-            Assertions.assertEquals(5, list.getDrivers().get(0).getRawDrivers().size());
-            Assertions.assertSame(pA1, list.getDrivers().get(0).getRawDrivers().get(0));
-            Assertions.assertSame(pA2, list.getDrivers().get(0).getRawDrivers().get(1));
-            Assertions.assertSame(pA3, list.getDrivers().get(0).getRawDrivers().get(2));
-            Assertions.assertSame(pB1, list.getDrivers().get(0).getRawDrivers().get(3));
-            Assertions.assertSame(pB2, list.getDrivers().get(0).getRawDrivers().get(4));
+            Assertions.assertEquals(5, list.getDrivers().getFirst().getRawDrivers().size());
+            Assertions.assertSame(pA1, list.getDrivers().getFirst().getRawDrivers().getFirst());
+            Assertions.assertSame(pA2, list.getDrivers().getFirst().getRawDrivers().get(1));
+            Assertions.assertSame(pA3, list.getDrivers().getFirst().getRawDrivers().get(2));
+            Assertions.assertSame(pB1, list.getDrivers().getFirst().getRawDrivers().get(3));
+            Assertions.assertSame(pB2, list.getDrivers().getFirst().getRawDrivers().get(4));
         }
 
         listB.findByName("p").setValue(0.0);
@@ -228,7 +228,7 @@ public class ParameterDriversListTest {
         }
         listB.add(qB1);
 
-        ParameterDriversList.DelegatingDriver oldDelegating = listB.getDrivers().get(0);
+        ParameterDriversList.DelegatingDriver oldDelegating = listB.getDrivers().getFirst();
         listA.add(oldDelegating);
         listA.add(qB1);
         new ParameterDriversList().add(pC1);
@@ -249,31 +249,31 @@ public class ParameterDriversListTest {
 
         listB.filter(false);
         Assertions.assertEquals(2, listA.getNbParams());
-        Assertions.assertEquals(6, listA.getDrivers().get(0).getRawDrivers().size());
-        Assertions.assertSame(pA1, listA.getDrivers().get(0).getRawDrivers().get(0));
-        Assertions.assertSame(pA2, listA.getDrivers().get(0).getRawDrivers().get(1));
-        Assertions.assertSame(pA3, listA.getDrivers().get(0).getRawDrivers().get(2));
-        Assertions.assertSame(pB1, listA.getDrivers().get(0).getRawDrivers().get(3));
-        Assertions.assertSame(pB2, listA.getDrivers().get(0).getRawDrivers().get(4));
-        Assertions.assertSame(pC1, listA.getDrivers().get(0).getRawDrivers().get(5));
+        Assertions.assertEquals(6, listA.getDrivers().getFirst().getRawDrivers().size());
+        Assertions.assertSame(pA1, listA.getDrivers().getFirst().getRawDrivers().getFirst());
+        Assertions.assertSame(pA2, listA.getDrivers().getFirst().getRawDrivers().get(1));
+        Assertions.assertSame(pA3, listA.getDrivers().getFirst().getRawDrivers().get(2));
+        Assertions.assertSame(pB1, listA.getDrivers().getFirst().getRawDrivers().get(3));
+        Assertions.assertSame(pB2, listA.getDrivers().getFirst().getRawDrivers().get(4));
+        Assertions.assertSame(pC1, listA.getDrivers().getFirst().getRawDrivers().get(5));
         Assertions.assertEquals(3, listA.getDrivers().get(1).getRawDrivers().size());
-        Assertions.assertSame(qA1, listA.getDrivers().get(1).getRawDrivers().get(0));
+        Assertions.assertSame(qA1, listA.getDrivers().get(1).getRawDrivers().getFirst());
         Assertions.assertSame(qA2, listA.getDrivers().get(1).getRawDrivers().get(1));
         Assertions.assertSame(qB1, listA.getDrivers().get(1).getRawDrivers().get(2));
         Assertions.assertEquals(1, listB.getNbParams());
-        Assertions.assertEquals(3, listB.getDrivers().get(0).getRawDrivers().size());
-        Assertions.assertSame(qA1, listB.getDrivers().get(0).getRawDrivers().get(0));
-        Assertions.assertSame(qA2, listB.getDrivers().get(0).getRawDrivers().get(1));
-        Assertions.assertSame(qB1, listB.getDrivers().get(0).getRawDrivers().get(2));
+        Assertions.assertEquals(3, listB.getDrivers().getFirst().getRawDrivers().size());
+        Assertions.assertSame(qA1, listB.getDrivers().getFirst().getRawDrivers().getFirst());
+        Assertions.assertSame(qA2, listB.getDrivers().getFirst().getRawDrivers().get(1));
+        Assertions.assertSame(qB1, listB.getDrivers().getFirst().getRawDrivers().get(2));
 
-        Assertions.assertNotSame(oldDelegating, listB.getDrivers().get(0));
+        Assertions.assertNotSame(oldDelegating, listB.getDrivers().getFirst());
         Assertions.assertEquals(6, oldDelegating.getRawDrivers().size());
-        Assertions.assertSame(pA1, oldDelegating.getRawDrivers().get(0));
+        Assertions.assertSame(pA1, oldDelegating.getRawDrivers().getFirst());
         Assertions.assertSame(pA2, oldDelegating.getRawDrivers().get(1));
         Assertions.assertSame(pA3, oldDelegating.getRawDrivers().get(2));
         Assertions.assertSame(pB1, oldDelegating.getRawDrivers().get(3));
         Assertions.assertSame(pB2, oldDelegating.getRawDrivers().get(4));
-        Assertions.assertSame(pC1, listA.getDrivers().get(0).getRawDrivers().get(5));
+        Assertions.assertSame(pC1, listA.getDrivers().getFirst().getRawDrivers().get(5));
 
     }
 
@@ -289,12 +289,12 @@ public class ParameterDriversListTest {
         list.add(q);
         list.add(r);
         Assertions.assertEquals(3, list.getDrivers().size());
-        Assertions.assertEquals(1, list.getDrivers().get(0).getRawDrivers().size());
-        Assertions.assertSame(p, list.getDrivers().get(0).getRawDrivers().get(0));
+        Assertions.assertEquals(1, list.getDrivers().getFirst().getRawDrivers().size());
+        Assertions.assertSame(p, list.getDrivers().getFirst().getRawDrivers().getFirst());
         Assertions.assertEquals(1, list.getDrivers().get(1).getRawDrivers().size());
-        Assertions.assertSame(q, list.getDrivers().get(1).getRawDrivers().get(0));
+        Assertions.assertSame(q, list.getDrivers().get(1).getRawDrivers().getFirst());
         Assertions.assertEquals(1, list.getDrivers().get(2).getRawDrivers().size());
-        Assertions.assertSame(r, list.getDrivers().get(2).getRawDrivers().get(0));
+        Assertions.assertSame(r, list.getDrivers().get(2).getRawDrivers().getFirst());
 
         // then add the same ones several times more, this should be a no-op
         list.add(p);
@@ -307,24 +307,24 @@ public class ParameterDriversListTest {
         list.add(p);
         list.add(r);
         Assertions.assertEquals(3, list.getDrivers().size());
-        Assertions.assertEquals(1, list.getDrivers().get(0).getRawDrivers().size());
-        Assertions.assertSame(p, list.getDrivers().get(0).getRawDrivers().get(0));
+        Assertions.assertEquals(1, list.getDrivers().getFirst().getRawDrivers().size());
+        Assertions.assertSame(p, list.getDrivers().getFirst().getRawDrivers().getFirst());
         Assertions.assertEquals(1, list.getDrivers().get(1).getRawDrivers().size());
-        Assertions.assertSame(q, list.getDrivers().get(1).getRawDrivers().get(0));
+        Assertions.assertSame(q, list.getDrivers().get(1).getRawDrivers().getFirst());
         Assertions.assertEquals(1, list.getDrivers().get(2).getRawDrivers().size());
-        Assertions.assertSame(r, list.getDrivers().get(2).getRawDrivers().get(0));
+        Assertions.assertSame(r, list.getDrivers().get(2).getRawDrivers().getFirst());
 
         // then add a new driver for the second parameter
         ParameterDriver newQ = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
         list.add(newQ);
         Assertions.assertEquals(3, list.getDrivers().size());
-        Assertions.assertEquals(1, list.getDrivers().get(0).getRawDrivers().size());
-        Assertions.assertSame(p, list.getDrivers().get(0).getRawDrivers().get(0));
+        Assertions.assertEquals(1, list.getDrivers().getFirst().getRawDrivers().size());
+        Assertions.assertSame(p, list.getDrivers().getFirst().getRawDrivers().getFirst());
         Assertions.assertEquals(2, list.getDrivers().get(1).getRawDrivers().size());
-        Assertions.assertSame(q, list.getDrivers().get(1).getRawDrivers().get(0));
+        Assertions.assertSame(q, list.getDrivers().get(1).getRawDrivers().getFirst());
         Assertions.assertSame(newQ, list.getDrivers().get(1).getRawDrivers().get(1));
         Assertions.assertEquals(1, list.getDrivers().get(2).getRawDrivers().size());
-        Assertions.assertSame(r, list.getDrivers().get(2).getRawDrivers().get(0));
+        Assertions.assertSame(r, list.getDrivers().get(2).getRawDrivers().getFirst());
 
     }
 

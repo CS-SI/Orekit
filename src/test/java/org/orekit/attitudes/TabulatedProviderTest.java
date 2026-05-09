@@ -114,8 +114,8 @@ public class TabulatedProviderTest {
         AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
         List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
-        final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
-        final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
+        final AbsoluteDate start             = sample.getFirst().getDate().shiftedBy(margin);
+        final AbsoluteDate end               = sample.getLast().getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_R);
         Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 2.2e-14);
@@ -129,8 +129,8 @@ public class TabulatedProviderTest {
         AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
         List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
-        final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
-        final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
+        final AbsoluteDate start             = sample.getFirst().getDate().shiftedBy(margin);
+        final AbsoluteDate end               = sample.getLast().getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_RR);
         Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.3e-11);
@@ -144,8 +144,8 @@ public class TabulatedProviderTest {
         AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
         List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
-        final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
-        final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
+        final AbsoluteDate start             = sample.getFirst().getDate().shiftedBy(margin);
+        final AbsoluteDate end               = sample.getLast().getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_RRA);
         Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 4.3e-9);

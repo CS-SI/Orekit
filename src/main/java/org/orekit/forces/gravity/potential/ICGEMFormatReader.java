@@ -331,8 +331,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         if (referenceIndex != 0) {
                             // we already know the reference date, check this lines does not define a new one
                             throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
-                                                      referenceDates.get(0), lineDate, name,
-                                                      lineDate.durationFrom(referenceDates.get(0)));
+                                                      referenceDates.getFirst(), lineDate, name,
+                                                      lineDate.durationFrom(referenceDates.getFirst()));
                         }
 
                         final Container single = containers.getFirstSpan().getData();

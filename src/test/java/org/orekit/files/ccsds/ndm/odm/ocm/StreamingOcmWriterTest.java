@@ -80,13 +80,13 @@ public class StreamingOcmWriterTest {
         final Oem original = oemParser.parse(source);
         final OemSatelliteEphemeris originalEphem =
                 original.getSatellites().values().iterator().next();
-        final Frame frame = originalEphem.getSegments().get(0).getInertialFrame();
+        final Frame frame = originalEphem.getSegments().getFirst().getInertialFrame();
         final BoundedPropagator propagator = originalEphem.getPropagator(new FrameAlignedProvider(frame));
         StringBuilder buffer = new StringBuilder();
         OdmHeader header = original.getHeader();
         OcmMetadata metadata = new OcmMetadata(DataContext.getDefault());
         metadata.setTimeSystem(TimeSystem.UTC);
-        metadata.setEpochT0(original.getSegments().get(0).getStart());
+        metadata.setEpochT0(original.getSegments().getFirst().getStart());
         TrajectoryStateHistoryMetadata trajectoryMetadata = new TrajectoryStateHistoryMetadata(metadata.getEpochT0(),
                                                                                                DataContext.getDefault());
         trajectoryMetadata.setTrajReferenceFrame(FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
@@ -126,13 +126,13 @@ public class StreamingOcmWriterTest {
         final Oem original = oemParser.parse(source);
         final OemSatelliteEphemeris originalEphem =
                 original.getSatellites().values().iterator().next();
-        final Frame frame = originalEphem.getSegments().get(0).getInertialFrame();
+        final Frame frame = originalEphem.getSegments().getFirst().getInertialFrame();
         final BoundedPropagator propagator = originalEphem.getPropagator(new FrameAlignedProvider(frame));
         StringBuilder buffer = new StringBuilder();
         OdmHeader header = original.getHeader();
         OcmMetadata metadata = new OcmMetadata(DataContext.getDefault());
         metadata.setTimeSystem(TimeSystem.UTC);
-        metadata.setEpochT0(original.getSegments().get(0).getStart());
+        metadata.setEpochT0(original.getSegments().getFirst().getStart());
         TrajectoryStateHistoryMetadata trajectoryMetadata = new TrajectoryStateHistoryMetadata(metadata.getEpochT0(),
                                                                                                DataContext.getDefault());
         trajectoryMetadata.setTrajReferenceFrame(FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
@@ -216,11 +216,11 @@ public class StreamingOcmWriterTest {
 
     void partialCompareOcms(Ocm file1, Ocm file2) {
         Assertions.assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
-        Assertions.assertEquals(file1.getSegments().get(0).getData().getTrajectoryBlocks().size(),
-                                file2.getSegments().get(0).getData().getTrajectoryBlocks().size());
-        for (int i = 0; i < file1.getSegments().get(0).getData().getTrajectoryBlocks().size(); i++) {
-            partialCompareOcmEphemerisBlocks(file1.getSegments().get(0).getData().getTrajectoryBlocks().get(i),
-                                             file2.getSegments().get(0).getData().getTrajectoryBlocks().get(i));
+        Assertions.assertEquals(file1.getSegments().getFirst().getData().getTrajectoryBlocks().size(),
+                                file2.getSegments().getFirst().getData().getTrajectoryBlocks().size());
+        for (int i = 0; i < file1.getSegments().getFirst().getData().getTrajectoryBlocks().size(); i++) {
+            partialCompareOcmEphemerisBlocks(file1.getSegments().getFirst().getData().getTrajectoryBlocks().get(i),
+                                             file2.getSegments().getFirst().getData().getTrajectoryBlocks().get(i));
         }
     }
 

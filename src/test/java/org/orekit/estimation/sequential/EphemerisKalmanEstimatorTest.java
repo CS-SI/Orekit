@@ -118,11 +118,11 @@ public class EphemerisKalmanEstimatorTest {
         final Bias<Range> rangeBias = new Bias<>(new String[] {"rangeBias"}, new double[] {0.0},
                                                  new double[] {1.0},
                                                  new double[] {0.0}, new double[] {10000.0});
-        rangeBias.getParametersDrivers().get(0).setSelected(true);
+        rangeBias.getParametersDrivers().getFirst().setSelected(true);
 
         // List of estimated measurement parameters
         final ParameterDriversList drivers = new ParameterDriversList();
-        drivers.add(rangeBias.getParametersDrivers().get(0));
+        drivers.add(rangeBias.getParametersDrivers().getFirst());
 
         // Propagator builder
         final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(states, interpolator);
@@ -244,7 +244,7 @@ public class EphemerisKalmanEstimatorTest {
         final Bias<AngularAzEl> azElBias = new Bias<>(new String[] {"azBias", "elBias"}, new double[] {0.0, 0.0},
         	                                          new double[] {1.0, 1.0},
         	                                          new double[] {0.0, 0.0}, new double[] {2.0, 2.0});
-        azElBias.getParametersDrivers().get(0).setSelected(true);
+        azElBias.getParametersDrivers().getFirst().setSelected(true);
         azElBias.getParametersDrivers().get(1).setSelected(true);
 
         // List of estimated measurement parameters

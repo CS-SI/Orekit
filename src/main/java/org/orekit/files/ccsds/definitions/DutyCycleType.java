@@ -31,6 +31,6 @@ public enum DutyCycleType {
     TIME,
 
     /** Duty cycle based on phasing/clocking of space object body past a reference direction. */
-    TIME_AND_ANGLE;
+    TIME_AND_ANGLE
 
 }

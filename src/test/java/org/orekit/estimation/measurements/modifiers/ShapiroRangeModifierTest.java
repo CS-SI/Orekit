@@ -73,7 +73,7 @@ public class ShapiroRangeModifierTest {
                                         range.getObservedValue()[0],
                                         range.getTheoreticalStandardDeviation()[0],
                                         range.getBaseWeight()[0],
-                                        range.getSatellites().get(0)));
+                                        range.getSatellites().getFirst()));
             }
             measurements = converted;
         }

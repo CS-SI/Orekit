@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -30,6 +31,7 @@ import org.orekit.utils.units.UnitsConverter;
 public class GeoMagneticElements implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 1881493738280586855L;
 
     /** The magnetic field vector (East=X, North=Y, Nadir=Z). */

@@ -301,29 +301,21 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
         if (isEnabled) {
             // we need to select a transformer that can produce zero crossings,
             // so it is either Transformer.PLUS or Transformer.MINUS
-            switch (previous) {
-                case UNINITIALIZED :
-                    return Transformer.PLUS; // this initial choice is arbitrary, it could have been Transformer.MINUS
-                case MIN :
-                    return previousG.getReal() >= 0 ? Transformer.MINUS : Transformer.PLUS;
-                case MAX :
-                    return previousG.getReal() >= 0 ? Transformer.PLUS : Transformer.MINUS;
-                default :
-                    return previous;
-            }
+            return switch (previous) {
+                case UNINITIALIZED  -> Transformer.PLUS; // this initial choice is arbitrary, it could have been Transformer.MINUS
+                case MIN  -> previousG.getReal() >= 0 ? Transformer.MINUS : Transformer.PLUS;
+                case MAX  -> previousG.getReal() >= 0 ? Transformer.PLUS : Transformer.MINUS;
+                default  -> previous;
+            };
         } else {
             // we need to select a transformer that cannot produce any zero crossings,
             // so it is either Transformer.MAX or Transformer.MIN
-            switch (previous) {
-                case UNINITIALIZED :
-                    return Transformer.MAX; // this initial choice is arbitrary, it could have been Transformer.MIN
-                case PLUS :
-                    return previousG.getReal() >= 0 ? Transformer.MAX : Transformer.MIN;
-                case MINUS :
-                    return previousG.getReal() >= 0 ? Transformer.MIN : Transformer.MAX;
-                default :
-                    return previous;
-            }
+            return switch (previous) {
+                case UNINITIALIZED  -> Transformer.MAX; // this initial choice is arbitrary, it could have been Transformer.MIN
+                case PLUS  -> previousG.getReal() >= 0 ? Transformer.MAX : Transformer.MIN;
+                case MINUS  -> previousG.getReal() >= 0 ? Transformer.MIN : Transformer.MAX;
+                default  -> previous;
+            };
         }
     }
 

@@ -827,13 +827,13 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         @Override
         public void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
             currentMax = 0.0;
-            nextSample = states0.get(0).getDate().shiftedBy(samplingStep);
+            nextSample = states0.getFirst().getDate().shiftedBy(samplingStep);
         }
 
         public void handleStep(List<OrekitStepInterpolator> interpolators) {
-            while (interpolators.get(0).getPreviousState().getDate().isBefore(nextSample) &&
-                   interpolators.get(0).getCurrentState().getDate().isAfterOrEqualTo(nextSample)) {
-                final SpacecraftState state0 = interpolators.get(0).getInterpolatedState(nextSample);
+            while (interpolators.getFirst().getPreviousState().getDate().isBefore(nextSample) &&
+                   interpolators.getFirst().getCurrentState().getDate().isAfterOrEqualTo(nextSample)) {
+                final SpacecraftState state0 = interpolators.getFirst().getInterpolatedState(nextSample);
                 final SpacecraftState state1 = interpolators.get(1).getInterpolatedState(nextSample);
                 final double distance = Vector3D.distance(state0.getPosition(),
                                                           state1.getPosition());
@@ -1002,7 +1002,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             }
 
             // Earth umbra and penumbra conditions
-            final OccultationEngine.OccultationAngles angles = srp.getOccultingBodies().get(0).angles(currentState);
+            final OccultationEngine.OccultationAngles angles = srp.getOccultingBodies().getFirst().angles(currentState);
 
             final double earthUmbra = angles.getSeparation() - angles.getLimbRadius() + angles.getOccultedApparentRadius();
             final boolean isInEarthUmbra = (earthUmbra < 1.0e-10);
@@ -1196,7 +1196,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             }
 
             // Earth umbra and penumbra conditions
-            final OccultationEngine.FieldOccultationAngles<T> angles = srp.getOccultingBodies().get(0).angles(currentState);
+            final OccultationEngine.FieldOccultationAngles<T> angles = srp.getOccultingBodies().getFirst().angles(currentState);
 
             final T earthUmbra = angles.getSeparation().subtract(angles.getLimbRadius()).add(angles.getOccultedApparentRadius());
             final boolean isInEarthUmbra = (earthUmbra.getReal() < 1.0e-10);

@@ -479,37 +479,22 @@ public class JPLEphemeridesLoaderTest {
                        12-Solar System Barycenter, 13-Earth-Moon Barycenter
                        14-Nutations, 15-Librations)
          */
-        switch (body) {
-            case 1:
-                return CelestialBodyFactory.MERCURY;
-            case 2:
-                return CelestialBodyFactory.VENUS;
-            case 3:
-                return CelestialBodyFactory.EARTH;
-            case 4:
-                return CelestialBodyFactory.MARS;
-            case 5:
-                return CelestialBodyFactory.JUPITER;
-            case 6:
-                return CelestialBodyFactory.SATURN;
-            case 7:
-                return CelestialBodyFactory.URANUS;
-            case 8:
-                return CelestialBodyFactory.NEPTUNE;
-            case 9:
-                return CelestialBodyFactory.PLUTO;
-            case 10:
-                return CelestialBodyFactory.MOON;
-            case 11:
-                return CelestialBodyFactory.SUN;
-            case 12:
-                return CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER;
-            case 13:
-                return CelestialBodyFactory.EARTH_MOON;
-            default:
-                // nutations and librations not implemented
-                return null;
-        }
+        return switch (body) {
+            case 1 -> CelestialBodyFactory.MERCURY;
+            case 2 -> CelestialBodyFactory.VENUS;
+            case 3 -> CelestialBodyFactory.EARTH;
+            case 4 -> CelestialBodyFactory.MARS;
+            case 5 -> CelestialBodyFactory.JUPITER;
+            case 6 -> CelestialBodyFactory.SATURN;
+            case 7 -> CelestialBodyFactory.URANUS;
+            case 8 -> CelestialBodyFactory.NEPTUNE;
+            case 9 -> CelestialBodyFactory.PLUTO;
+            case 10 -> CelestialBodyFactory.MOON;
+            case 11 -> CelestialBodyFactory.SUN;
+            case 12 -> CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER;
+            case 13 -> CelestialBodyFactory.EARTH_MOON;
+            default -> null;
+        };
     }
 
     private void checkDerivative(String supportedNames, AbsoluteDate date, double maxChunkDuration)

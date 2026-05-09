@@ -133,8 +133,8 @@ class FieldCartesianFuelCostTest {
         final List<FieldEventDetector<Binary64>> fieldDetectorList = detectorStream.collect(Collectors.toList());
         final List<EventDetector> detectorList = cartesianFuel.toCartesianCost().getEventDetectors().collect(Collectors.toList());
         Assertions.assertEquals(detectorList.size(), fieldDetectorList.size());
-        final EventDetector detector = detectorList.get(0);
-        final FieldEventDetector<Binary64> fieldEventDetector = fieldDetectorList.get(0);
+        final EventDetector detector = detectorList.getFirst();
+        final FieldEventDetector<Binary64> fieldEventDetector = fieldDetectorList.getFirst();
         Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, fieldEventDetector.getHandler());
         final FieldSpacecraftState<Binary64> fieldState = buildFieldState(mass, adjointName);
         Assertions.assertEquals(detector.g(fieldState.toSpacecraftState()), fieldEventDetector.g(fieldState).getReal());

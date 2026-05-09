@@ -35,7 +35,7 @@ class ParameterEstimatorTest {
         final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(TestUtils.getTestOrbit(),
                 PositionAngleType.MEAN, 1.);
         builder.getOrbitalParametersDrivers().getDrivers().forEach(delegatingDriver -> delegatingDriver.setSelected(false));
-        builder.getOrbitalParametersDrivers().getDrivers().get(0).setSelected(true);  // select only one
+        builder.getOrbitalParametersDrivers().getDrivers().getFirst().setSelected(true);  // select only one
         final TestEstimator testEstimator = new TestEstimator(builder);
         // WHEN
         final ParameterDriversList driversList = testEstimator.getOrbitalParametersDrivers(estimateOnly);

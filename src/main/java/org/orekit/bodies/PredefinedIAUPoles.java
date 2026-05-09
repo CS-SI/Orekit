@@ -16,6 +16,7 @@
  */
 package org.orekit.bodies;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +46,7 @@ import org.orekit.utils.Constants;
 abstract class PredefinedIAUPoles implements IAUPole {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20200130L;
 
     /** Time scales. */
@@ -83,6 +85,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Sun extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the prime meridian. */
@@ -130,6 +133,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Mercury extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -246,6 +250,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Venus extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the prime meridian. */
@@ -293,6 +298,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Earth extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -368,6 +374,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Moon extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -671,6 +678,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Mars extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -730,6 +738,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Jupiter extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -896,6 +905,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Saturn extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -955,6 +965,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Uranus extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the prime meridian. */
@@ -1002,6 +1013,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Neptune extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -1074,6 +1086,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Pluto extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the prime meridian. */
@@ -1127,6 +1140,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class GcrfAligned extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /**
@@ -1181,33 +1195,20 @@ abstract class PredefinedIAUPoles implements IAUPole {
     public static PredefinedIAUPoles getIAUPole(final EphemerisType body,
                                                 final TimeScales timeScales) {
 
-        switch (body) {
-            case SUN :
-                return new Sun(timeScales);
-            case MERCURY :
-                return new Mercury(timeScales);
-            case VENUS :
-                return new Venus(timeScales);
-            case EARTH :
-                return new Earth(timeScales);
-            case MOON :
-                return new Moon(timeScales);
-            case MARS :
-                return new Mars(timeScales);
-            case JUPITER :
-                return new Jupiter(timeScales);
-            case SATURN :
-                return new Saturn(timeScales);
-            case URANUS :
-                return new Uranus(timeScales);
-            case NEPTUNE :
-                return new Neptune(timeScales);
-            case PLUTO :
-                return new Pluto(timeScales);
-            default :
-                // Solar system & Earth Moon barycenter
-                return new GcrfAligned(timeScales);
-        }
+        return switch (body) {
+            case SUN  -> new Sun(timeScales);
+            case MERCURY  -> new Mercury(timeScales);
+            case VENUS  -> new Venus(timeScales);
+            case EARTH  -> new Earth(timeScales);
+            case MOON  -> new Moon(timeScales);
+            case MARS  -> new Mars(timeScales);
+            case JUPITER  -> new Jupiter(timeScales);
+            case SATURN  -> new Saturn(timeScales);
+            case URANUS  -> new Uranus(timeScales);
+            case NEPTUNE  -> new Neptune(timeScales);
+            case PLUTO  -> new Pluto(timeScales);
+            default  -> new GcrfAligned(timeScales);
+        };
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /** Simple container class for pole correction parameters.
@@ -30,6 +31,7 @@ public class PoleCorrection implements Serializable {
         new PoleCorrection(0, 0);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 8695216598525302806L;
 
     /** x<sub>p</sub> parameter (radians). */

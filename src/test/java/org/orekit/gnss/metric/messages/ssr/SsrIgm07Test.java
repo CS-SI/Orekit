@@ -76,12 +76,12 @@ public class SsrIgm07Test {
         Assertions.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G01
-        final SsrIgm07Data g1 = igm07.getSsrIgm07Data().get("G01").get(0);
+        final SsrIgm07Data g1 = igm07.getSsrIgm07Data().get("G01").getFirst();
         Assertions.assertEquals(1,                         g1.getSatelliteID());
         Assertions.assertEquals(23.0,                      g1.getSsrUra(), eps);
 
         // Verify data for satellite G12
-        final SsrIgm07Data g12 = igm07.getSsrIgm07Data().get("G12").get(0);
+        final SsrIgm07Data g12 = igm07.getSsrIgm07Data().get("G12").getFirst();
         Assertions.assertEquals(12,                         g12.getSatelliteID());
         Assertions.assertEquals(60.0,                       g12.getSsrUra(), eps);
 
@@ -129,12 +129,12 @@ public class SsrIgm07Test {
         Assertions.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
-        final SsrIgm07Data e01 = igm07.getSsrIgm07Data().get("E01").get(0);
+        final SsrIgm07Data e01 = igm07.getSsrIgm07Data().get("E01").getFirst();
         Assertions.assertEquals(1,                         e01.getSatelliteID());
         Assertions.assertEquals(23.0,                      e01.getSsrUra(), eps);
 
         // Verify data for satellite E12
-        final SsrIgm07Data e12 = igm07.getSsrIgm07Data().get("E12").get(0);
+        final SsrIgm07Data e12 = igm07.getSsrIgm07Data().get("E12").getFirst();
         Assertions.assertEquals(12,                         e12.getSatelliteID());
         Assertions.assertEquals(60.0,                       e12.getSsrUra(), eps);
 

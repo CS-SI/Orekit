@@ -479,8 +479,8 @@ public enum CelestialBodyFrame {
             // should handle J2000, GCRF, TEME, and some frames created by OEMParser.
             return CelestialBodyFrame.valueOf(name);
         } catch (IllegalArgumentException iae) {
-            if (frame instanceof ModifiedFrame) {
-                return ((ModifiedFrame) frame).getRefFrame();
+            if (frame instanceof ModifiedFrame modifiedFrame) {
+                return modifiedFrame.getRefFrame();
             } else if ((CelestialBodyFactory.MARS + INERTIAL_FRAME_SUFFIX).equals(name)) {
                 return MCI;
             } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + INERTIAL_FRAME_SUFFIX).equals(name)) {
@@ -491,9 +491,9 @@ public enum CelestialBodyFrame {
                 return TOD;
             } else if (name.contains("Equinox") && name.contains(ITRF_SUBSTRING)) {
                 return GRC;
-            } else if (frame instanceof VersionedITRF) {
+            } else if (frame instanceof VersionedITRF rF) {
                 try {
-                    final ITRFVersion itrfVersion = ((VersionedITRF) frame).getITRFVersion();
+                    final ITRFVersion itrfVersion = rF.getITRFVersion();
                     return CelestialBodyFrame.valueOf(itrfVersion.name().replace("_", ""));
                 } catch (IllegalArgumentException iae2) {
                     // this should never happen

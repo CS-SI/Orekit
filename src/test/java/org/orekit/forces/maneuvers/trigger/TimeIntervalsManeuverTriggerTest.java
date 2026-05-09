@@ -157,6 +157,6 @@ class TimeIntervalsManeuverTriggerTest {
         assertInstanceOf(FieldBooleanDetector.class, fieldEventDetector);
         final FieldBooleanDetector<Binary64> fieldBooleanDetector = (FieldBooleanDetector<Binary64>) fieldEventDetector;
         assertEquals(1, fieldBooleanDetector.getDetectors().size());
-        assertInstanceOf(FieldTimeIntervalDetector.class, fieldBooleanDetector.getDetectors().get(0));
+        assertInstanceOf(FieldTimeIntervalDetector.class, fieldBooleanDetector.getDetectors().getFirst());
     }
 }

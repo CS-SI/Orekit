@@ -79,7 +79,7 @@ public class Rtcm1241Test {
         Assertions.assertEquals(1,                            rtcm1241.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
-        final RtcmClockCorrectionData e01 = rtcm1241.getDataMap().get("E01").get(0);
+        final RtcmClockCorrectionData e01 = rtcm1241.getDataMap().get("E01").getFirst();
         Assertions.assertEquals(1,                            e01.getSatelliteID());
         Assertions.assertEquals(96.6527,                      e01.getClockCorrection().getDeltaClockC0(),            eps);
         Assertions.assertEquals(0.483263,                     e01.getClockCorrection().getDeltaClockC1(),            eps);

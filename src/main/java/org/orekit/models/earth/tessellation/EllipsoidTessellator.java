@@ -361,7 +361,7 @@ public class EllipsoidTessellator {
             expanding = false;
             final List<Mesh.Node> boundary = mesh.getTaxicabBoundary(false);
             if (boundary.size() > 1) {
-                Mesh.Node previous = boundary.get(boundary.size() - 1);
+                Mesh.Node previous = boundary.getLast();
                 for (final Mesh.Node node : boundary) {
                     if (meetInside(previous.getS2P(), node.getS2P(), zone)) {
                         // part of the mesh boundary is still inside the zone!

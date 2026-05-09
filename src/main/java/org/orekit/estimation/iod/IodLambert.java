@@ -194,7 +194,7 @@ public class IodLambert {
             velocities = solutionsList.get(1).getBoundaryVelocities();
         } else {
             // then we are getting either the only solution (case nRev = 0) or the low path solution for a multi-revolution, posigrade transfer problem
-            velocities = solutionsList.get(0).getBoundaryVelocities();
+            velocities = solutionsList.getFirst().getBoundaryVelocities();
         }
         if (velocities == null) {
             return null;
@@ -233,7 +233,7 @@ public class IodLambert {
         // Use the local solver
         final List<LambertSolution> solutions = lambertSolver.solve(posigrade, mRev, boundaryConditions);
         // Select the first solution (unique one for mRev=0, low path for mRev>0)
-        final LambertSolution selectedSolution = solutions.get(0);
+        final LambertSolution selectedSolution = solutions.getFirst();
         // Extract velocity components
         final LambertBoundaryVelocities velocities = selectedSolution.getBoundaryVelocities();
         final Vector3D v1 = velocities.getInitialVelocity();

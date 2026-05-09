@@ -85,7 +85,7 @@ public class SEMParserTest {
         Assertions.assertEquals(31, reader.getPRNNumbers().size());
 
         // Checks the first almanac read
-        final GPSAlmanac alm = reader.getAlmanacs().get(0);
+        final GPSAlmanac alm = reader.getAlmanacs().getFirst();
         Assertions.assertEquals(1, alm.getPRN());
         Assertions.assertEquals(63, alm.getSVN());
         Assertions.assertEquals(862, alm.getWeek());

@@ -29,6 +29,6 @@ public enum RangeMode {
     CONSTANT,
 
     /** Special value used in delta-DOR. */
-    ONE_WAY;
+    ONE_WAY
 
 }

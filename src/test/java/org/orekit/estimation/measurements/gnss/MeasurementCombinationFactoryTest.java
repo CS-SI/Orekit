@@ -68,7 +68,7 @@ public class MeasurementCombinationFactoryTest {
         List<ObservationDataSet> parsed2 = parser.parse(new DataSource(name2,
                                                                        () -> Utils.class.getClassLoader().getResourceAsStream(name2))).
                                            getObservationDataSets();
-        dataSetRinex2 = parsed2.get(0);
+        dataSetRinex2 = parsed2.getFirst();
 
         // RINEX 3 Observation data set
         final String name3 = "rinex/aaaa0000.00o";
@@ -255,8 +255,8 @@ public class MeasurementCombinationFactoryTest {
         // Verify the combined observation data
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L2/P2
-        Assertions.assertEquals(expectedL2P2,       data.get(0).getValue(),                eps);
-        Assertions.assertEquals(120 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
+        Assertions.assertEquals(expectedL2P2,       data.getFirst().getValue(),                eps);
+        Assertions.assertEquals(120 * GnssSignal.F0, data.getFirst().getCombinedFrequency(), eps);
 
     }
 
@@ -313,8 +313,8 @@ public class MeasurementCombinationFactoryTest {
         // Verify the combined observation data
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L1C/C1C
-        Assertions.assertEquals(expected1C,          data.get(0).getValue(),                eps);
-        Assertions.assertEquals(154 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
+        Assertions.assertEquals(expected1C,          data.getFirst().getValue(),                eps);
+        Assertions.assertEquals(154 * GnssSignal.F0, data.getFirst().getCombinedFrequency(), eps);
         // L2W/C2W
         Assertions.assertEquals(expected2W,          data.get(1).getValue(),                eps);
         Assertions.assertEquals(120 * GnssSignal.F0, data.get(1).getCombinedFrequency(), eps);

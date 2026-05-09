@@ -239,7 +239,7 @@ class InterSatellitesRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -270,7 +270,7 @@ class InterSatellitesRangeTest {
 
         // Test measurement type
         Assertions.assertEquals(InterSatellitesRange.MEASUREMENT_TYPE,
-                                measurements.get(0).getMeasurementType());
+                                measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -399,7 +399,7 @@ class InterSatellitesRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -505,14 +505,14 @@ class InterSatellitesRangeTest {
                         ephemeris.propagate(date)
                     };
                     ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockBiasDriver(),
+                        measurement.getSatellites().getFirst().getClockBiasDriver(),
                         measurement.getSatellites().get(1).getClockBiasDriver()
                     };
 
                     // Only local satellite clock offset is considered for two ways measurements
                     if (((InterSatellitesRange) measurement).isTwoWay()) {
                         drivers = new ParameterDriver[] {
-                            measurement.getSatellites().get(0).getClockBiasDriver()
+                            measurement.getSatellites().getFirst().getClockBiasDriver()
                         };
                     }
 
@@ -553,7 +553,7 @@ class InterSatellitesRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();

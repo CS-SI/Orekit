@@ -85,7 +85,7 @@ public class SsrIgm03Test {
         Assertions.assertEquals(1,                            igm03.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E12
-        final SsrIgm03Data e12 = igm03.getSsrIgm03Data().get("E12").get(0);
+        final SsrIgm03Data e12 = igm03.getSsrIgm03Data().get("E12").getFirst();
         Assertions.assertEquals(12,                           e12.getSatelliteID());
         Assertions.assertEquals(132,                          e12.getGnssIod());
         Assertions.assertEquals(18.0095,                      e12.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
@@ -151,7 +151,7 @@ public class SsrIgm03Test {
         Assertions.assertEquals(1,                            igm03.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G01
-        final SsrIgm03Data g01 = igm03.getSsrIgm03Data().get("G01").get(0);
+        final SsrIgm03Data g01 = igm03.getSsrIgm03Data().get("G01").getFirst();
         Assertions.assertEquals(1,                            g01.getSatelliteID());
         Assertions.assertEquals(132,                          g01.getGnssIod());
         Assertions.assertEquals(18.0095,                      g01.getOrbitCorrection().getDeltaOrbitRadial(),         eps);

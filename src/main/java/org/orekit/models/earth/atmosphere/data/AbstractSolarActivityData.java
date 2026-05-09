@@ -33,6 +33,7 @@ import org.orekit.utils.TimeStampedGenerator;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
     protected static final int N_NEIGHBORS = 2;
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 8804818166227680449L;
 
     /** Weather data thread safe cache. */
@@ -263,7 +265,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
             final List<L> neighbours = cache.getNeighbors(date).collect(Collectors.toList());
 
             this.currentDate   = date;
-            this.previousParam = neighbours.get(0);
+            this.previousParam = neighbours.getFirst();
             this.nextParam     = neighbours.get(1);
         }
 

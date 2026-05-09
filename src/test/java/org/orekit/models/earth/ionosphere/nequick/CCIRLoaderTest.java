@@ -70,11 +70,13 @@ public class CCIRLoaderTest {
     public void testParsingError() {
         try {
             new CCIRLoader().
-                loadData(new DataSource("dummy", () -> new StringReader("\n" +
-                                                                        "  0.52396593E+01 -0.56523629E-01 -0.18704616E-01  0.12128916E-01\n" +
-                                                                        "  0.79412200E-02 -0.10031432E-01  0.21567253E-01 -0.68602669E-02\n" +
-                                                                        "  0.37022347E-02  0.78359321E-02  0.63161589E-02 -0.10695398E-01\n" +
-                                                                        "  0.29390156E-01  not-a-number   -0.28997501E-01  0.10946779E+00\n")));
+                loadData(new DataSource("dummy", () -> new StringReader("""
+                                                                        
+                                                                          0.52396593E+01 -0.56523629E-01 -0.18704616E-01  0.12128916E-01
+                                                                          0.79412200E-02 -0.10031432E-01  0.21567253E-01 -0.68602669E-02
+                                                                          0.37022347E-02  0.78359321E-02  0.63161589E-02 -0.10695398E-01
+                                                                          0.29390156E-01  not-a-number   -0.28997501E-01  0.10946779E+00
+                                                                        """)));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());

@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Comparator;
 
@@ -27,6 +28,7 @@ import java.util.Comparator;
 public class ChronologicalComparator implements Comparator<TimeStamped>, Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 3092980292741000025L;
 
     /** Simple constructor.

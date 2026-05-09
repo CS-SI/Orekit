@@ -652,17 +652,11 @@ public enum IgsSsrMessageType implements MessageType {
     public static int getSatelliteId(final SatelliteSystem system, final int id) {
 
         // Switch on satellite systems
-        switch (system) {
-            case QZSS:
-                // ID = ID(parsed) + 192
-                return id + 192;
-            case SBAS:
-                // ID = ID(parsed) + 119
-                return id + 119;
-            default:
-                // For GPS, GLONASS, Beidou, and Galileo the id is unchanged
-                return id;
-        }
+        return switch (system) {
+            case QZSS -> id + 192;
+            case SBAS -> id + 119;
+            default -> id;
+        };
 
     }
 

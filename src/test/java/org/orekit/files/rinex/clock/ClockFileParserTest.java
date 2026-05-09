@@ -122,7 +122,7 @@ public class ClockFileParserTest {
                               id, type, timeScale, dataEpoch, numberOfValues,
                               clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
 
-        final ClockDataLine dataLine = file.getClockData().get(id).get(0);
+        final ClockDataLine dataLine = file.getClockData().get(id).getFirst();
         Assertions.assertEquals(new AbsoluteDate(1994, 7, 14, 20, 59, 0.0, TimeScalesFactory.getGPS()),
                                 dataLine.getDate());
 
@@ -716,9 +716,9 @@ public class ClockFileParserTest {
         Assertions.assertEquals(2, totalReferenceClockNumber);
 
         // Check contents
-        checkReferenceClock(referenceClocks1.get(0),
+        checkReferenceClock(referenceClocks1.getFirst(),
                             referenceName1, clockId1, clockConstraint1, startDate1, endDate1);
-        checkReferenceClock(referenceClocks2.get(0),
+        checkReferenceClock(referenceClocks2.getFirst(),
                             referenceName2, clockId2, clockConstraint2, startDate2, endDate2);
     }
 
@@ -1052,11 +1052,11 @@ public class ClockFileParserTest {
         Assertions.assertEquals(54, file.getHeader().getSatellites().size());
         Assertions.assertEquals(10, file.getHeader().getReceivers().size());
         Assertions.assertEquals(1, file.getHeader().getListAppliedDCBS().size());
-        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedDCBS().get(0).getSatelliteSystem());
-        Assertions.assertEquals("P1C1_RINEX_20200830.DCB", file.getHeader().getListAppliedDCBS().get(0).getSourceDCBS());
+        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedDCBS().getFirst().getSatelliteSystem());
+        Assertions.assertEquals("P1C1_RINEX_20200830.DCB", file.getHeader().getListAppliedDCBS().getFirst().getSourceDCBS());
         Assertions.assertEquals(1, file.getHeader().getListAppliedPCVS().size());
-        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedPCVS().get(0).getSatelliteSystem());
-        Assertions.assertEquals("igs14_20200830.atx", file.getHeader().getListAppliedPCVS().get(0).getSourcePCVS());
+        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedPCVS().getFirst().getSatelliteSystem());
+        Assertions.assertEquals("igs14_20200830.atx", file.getHeader().getListAppliedPCVS().getFirst().getSourcePCVS());
     }
 
     /** Check the content of a clock file. */

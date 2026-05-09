@@ -28,5 +28,5 @@ public enum LambertPathType {
     /** low path type. */
     LOW_PATH,
     /** high path type. */
-    HIGH_PATH;
+    HIGH_PATH
 }

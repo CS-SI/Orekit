@@ -16,6 +16,7 @@
  */
 package org.orekit.utils;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +41,7 @@ import java.util.Map;
 public class DoubleArrayDictionary implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20211121L;
 
     /** Default capacity. */
@@ -217,6 +219,7 @@ public class DoubleArrayDictionary implements Serializable {
     public static class Entry implements Serializable {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20211121L;
 
         /** Key. */

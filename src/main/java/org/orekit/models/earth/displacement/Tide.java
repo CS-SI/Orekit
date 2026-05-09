@@ -202,8 +202,8 @@ public class Tide {
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof Tide) {
-            return doodsonNumber == ((Tide) object).doodsonNumber;
+        if (object instanceof Tide tide) {
+            return doodsonNumber == tide.doodsonNumber;
         }
         return false;
     }

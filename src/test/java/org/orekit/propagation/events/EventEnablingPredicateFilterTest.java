@@ -252,12 +252,12 @@ class EventEnablingPredicateFilterTest {
         propagator.propagate(orbit.getDate().shiftedBy(Constants.JULIAN_DAY));
         List<LoggedEvent> events = logger.getLoggedEvents();
         Assertions.assertEquals(4, events.size());
-        Assertions.assertEquals(6 * 3600, events.get(0).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(6 * 3600, events.getFirst().getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(7 * 3600, events.get(1).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(8 * 3600, events.get(2).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(9 * 3600, events.get(3).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(4, reset.size());
-        Assertions.assertEquals(6 * 3600, reset.get(0).durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(6 * 3600, reset.getFirst().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(7 * 3600, reset.get(1).durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(8 * 3600, reset.get(2).durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(9 * 3600, reset.get(3).durationFrom(orbit.getDate()), 1.0e-6);

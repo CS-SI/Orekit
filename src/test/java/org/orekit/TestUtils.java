@@ -407,36 +407,35 @@ public class TestUtils {
      * @return if the object contains any NaNs.
      */
     public static boolean isAnyNan(Object o) {
-        if (o instanceof Double) {
-            return Double.isNaN((Double) o);
-        } else if (o instanceof double[]) {
-            for (double v : (double[]) o) {
+        if (o instanceof Double double1) {
+            return Double.isNaN(double1);
+        } else if (o instanceof double[] doubles) {
+            for (double v : doubles) {
                 if (Double.isNaN(v)) {
                     return true;
                 }
             }
-        } else if (o instanceof Object[]) {
-            for (Object object : (Object[]) o) {
+        } else if (o instanceof Object[] object1s) {
+            for (Object object : object1s) {
                 if (isAnyNan(object)) {
                     return true;
                 }
             }
-        } else if (o instanceof Collection) {
-            for (Object object : (Collection<?>) o) {
+        } else if (o instanceof Collection<?> collection) {
+            for (Object object : collection) {
                 if (isAnyNan(object)) {
                     return true;
                 }
             }
-        } else if (o instanceof CalculusFieldElement) {
-            CalculusFieldElement<?> cfe = (CalculusFieldElement<?>) o;
+        } else if (o instanceof CalculusFieldElement<?> cfe) {
             if (cfe.isNaN()) {
                 return true;
             }
-            if (cfe instanceof Gradient) {
-                return isAnyNan(((Gradient) cfe).getGradient());
+            if (cfe instanceof Gradient gradient) {
+                return isAnyNan(gradient.getGradient());
             }
-            if (cfe instanceof DerivativeStructure) {
-                return isAnyNan(((DerivativeStructure) cfe).getAllDerivatives());
+            if (cfe instanceof DerivativeStructure structure) {
+                return isAnyNan(structure.getAllDerivatives());
             }
         }
         return false;

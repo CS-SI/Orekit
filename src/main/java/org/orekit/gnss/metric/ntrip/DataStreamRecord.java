@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.gnss.metric.ntrip.Record;
 
 /** Data stream record in source table.
  * @author Luc Maisonobe

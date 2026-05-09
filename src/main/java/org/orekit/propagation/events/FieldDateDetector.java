@@ -229,11 +229,11 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
             eventDateList.add(new FieldEventDate<>(target, increasing));
         } else {
             final                      int lastIndex = eventDateList.size() - 1;
-            final FieldAbsoluteDate<T> firstDate     = eventDateList.get(0).getDate();
+            final FieldAbsoluteDate<T> firstDate     = eventDateList.getFirst().getDate();
             final FieldAbsoluteDate<T> lastDate      = eventDateList.get(lastIndex).getDate();
             if (firstDate.durationFrom(target).getReal() > minGap) {
-                increasing = !eventDateList.get(0).isgIncrease();
-                eventDateList.add(0, new FieldEventDate<>(target, increasing));
+                increasing = !eventDateList.getFirst().isgIncrease();
+                eventDateList.addFirst(new FieldEventDate<>(target, increasing));
                 currentIndex++;
             } else if (target.durationFrom(lastDate).getReal() > minGap) {
                 increasing = !eventDateList.get(lastIndex).isgIncrease();

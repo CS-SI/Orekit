@@ -237,7 +237,7 @@ public class IIRVBuilder {
      * @return the newly constructed {@link IIRVEphemerisFile} containing the given coordinates
      */
     public <C extends TimeStampedPVCoordinates> IIRVEphemerisFile buildEphemerisFile(final List<C> timeStampedPVCoordinates) {
-        final int year = timeStampedPVCoordinates.get(0).getDate().getComponents(utc).getDate().getYear();
+        final int year = timeStampedPVCoordinates.getFirst().getDate().getComponents(utc).getDate().getYear();
         return new IIRVEphemerisFile(year, buildIIRVMessage(timeStampedPVCoordinates));
     }
 

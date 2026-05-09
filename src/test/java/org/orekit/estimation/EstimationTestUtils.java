@@ -281,7 +281,7 @@ public class EstimationTestUtils {
         context.stations = Collections.singletonList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
 
         // Compute the frames transformation from station frame to EME2000
-        Transform topoToEME = context.stations.get(0).getBaseFrame().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
+        Transform topoToEME = context.stations.getFirst().getBaseFrame().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
 
         // Station position in EME2000 at reference date
         Vector3D stationPositionEME = topoToEME.transformPosition(Vector3D.ZERO);

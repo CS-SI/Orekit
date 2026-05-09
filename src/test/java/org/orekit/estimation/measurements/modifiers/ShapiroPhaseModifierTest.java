@@ -105,7 +105,7 @@ public class ShapiroPhaseModifierTest {
         }
 
         // wavelength
-        final double wavelength = ((Phase) measurements.get(0)).getWavelength();
+        final double wavelength = ((Phase) measurements.getFirst()).getWavelength();
 
         Assertions.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
         Assertions.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);

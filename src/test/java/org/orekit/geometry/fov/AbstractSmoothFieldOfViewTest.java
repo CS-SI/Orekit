@@ -86,7 +86,7 @@ public abstract class AbstractSmoothFieldOfViewTest {
         Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
         Assertions.assertEquals(1, footprint.size());
-        List<GeodeticPoint> loop = footprint.get(0);
+        List<GeodeticPoint> loop = footprint.getFirst();
         double minOffset = Double.POSITIVE_INFINITY;
         double maxOffset = 0;
         double minEl     = Double.POSITIVE_INFINITY;

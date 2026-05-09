@@ -106,7 +106,7 @@ class RangeRateTest {
         Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
 
         // Test measurement type
-        Assertions.assertEquals(RangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(RangeRate.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /** Compare observed values and estimated values.
@@ -340,7 +340,7 @@ class RangeRateTest {
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
                 stationParameter.getZenithOffsetDriver(),
-                measurement.getSatellites().get(0).getClockDriftDriver()
+                measurement.getSatellites().getFirst().getClockDriftDriver()
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
@@ -644,7 +644,7 @@ class RangeRateTest {
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
                 stationParameter.getZenithOffsetDriver(),
-                measurement.getSatellites().get(0).getClockDriftDriver()
+                measurement.getSatellites().getFirst().getClockDriftDriver()
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
@@ -724,7 +724,7 @@ class RangeRateTest {
             final SpacecraftState state     = propagator.propagate(date);
 
             final ParameterDriver[] drivers = new ParameterDriver[] {
-                parameters.get(0)
+                parameters.getFirst()
             };
             for (int i = 0; i < 1; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);

@@ -122,7 +122,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
                                                                                                      final int evaluation,
                                                                                                      final SpacecraftState[] states) {
         // compute actual reception date
-        final double dtl = getSatellites().get(0).getOffsetValue(getDate());
+        final double dtl = getSatellites().getFirst().getOffsetValue(getDate());
         final AbsoluteDate receptionDate = getDate().shiftedBy(-dtl);
 
         if (isTwoWay()) {
@@ -207,7 +207,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
                 remoteAtEmission.getPVCoordinates(frame), localAtReception.getPVCoordinates()});
 
         // range value
-        final double dtl = getSatellites().get(0).getOffsetValue(getDate());
+        final double dtl = getSatellites().getFirst().getOffsetValue(getDate());
         final double dtr = getSatellites().get(1).getOffsetValue(remoteAtEmission.getDate());
         final double range  = (delay + dtl - dtr) * Constants.SPEED_OF_LIGHT;
 
@@ -278,7 +278,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
 
         // compute actual reception date
         final int nbParams = pvaL.getDate().getField().getZero().getFreeParameters();
-        final Gradient dtl = getSatellites().get(0).getFieldOffsetValue(nbParams, getDate(), indices);
+        final Gradient dtl = getSatellites().getFirst().getFieldOffsetValue(nbParams, getDate(), indices);
         final FieldAbsoluteDate<Gradient> receptionDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         // compute transit and emission dates
@@ -328,7 +328,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
 
         // compute actual reception date
         final int nbParams = pvaL.getDate().getField().getZero().getFreeParameters();
-        final Gradient dtl = getSatellites().get(0).getFieldOffsetValue(nbParams, getDate(), indices);
+        final Gradient dtl = getSatellites().getFirst().getFieldOffsetValue(nbParams, getDate(), indices);
         final FieldAbsoluteDate<Gradient> receptionDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         // compute emission date

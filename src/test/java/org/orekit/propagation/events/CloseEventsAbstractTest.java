@@ -103,8 +103,8 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertEquals(detector1, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(detector1, events.getFirst().getDetector());
     }
 
     @Test
@@ -131,8 +131,8 @@ public abstract class CloseEventsAbstractTest {
         // verify
         List<Event> events = handler.getEvents();
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertEquals(detector1, events.get(0).getDetector());
+        Assertions.assertEquals(5, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(detector1, events.getFirst().getDetector());
         Assertions.assertEquals(5.5, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertEquals(detector2, events.get(1).getDetector());
     }
@@ -161,10 +161,10 @@ public abstract class CloseEventsAbstractTest {
         // verify
         List<Event> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(5, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(5, events1.getFirst().getState().getDate().durationFrom(epoch), 0.0);
         List<Event> events2 = handler2.getEvents();
         Assertions.assertEquals(1, events2.size());
-        Assertions.assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(5, events2.getFirst().getState().getDate().durationFrom(epoch), 0.0);
     }
 
     /**
@@ -215,9 +215,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         // order is important to make sure the test checks what it is supposed to
-        Assertions.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(detector1, events.get(0).getDetector());
+        Assertions.assertEquals(5, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertEquals(detector1, events.getFirst().getDetector());
         Assertions.assertEquals(5, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertEquals(detector2, events.get(1).getDetector());
@@ -260,13 +260,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(10));
 
         // verify
-        Assertions.assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch), tol);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(resetDetector, events.get(0).getDetector());
+        Assertions.assertEquals(t, events.getFirst().getState().getDate().durationFrom(epoch), tol);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertEquals(resetDetector, events.getFirst().getDetector());
         // next two events can occur in either order
         Assertions.assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch), tol);
         Assertions.assertTrue(events.get(1).isIncreasing());
-        Assertions.assertEquals(detectors.get(0), events.get(1).getDetector());
+        Assertions.assertEquals(detectors.getFirst(), events.get(1).getDetector());
         Assertions.assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch), tol);
         Assertions.assertTrue(events.get(2).isIncreasing());
         Assertions.assertEquals(detectors.get(1), events.get(2).getDetector());
@@ -298,8 +298,8 @@ public abstract class CloseEventsAbstractTest {
         // finds one or three events. Not 2.
         List<Event> events1 = handler.getEvents();
         Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(9.9, events1.get(0).getState().getDate().durationFrom(epoch), 0.1);
-        Assertions.assertTrue(events1.get(0).isIncreasing());
+        Assertions.assertEquals(9.9, events1.getFirst().getState().getDate().durationFrom(epoch), 0.1);
+        Assertions.assertTrue(events1.getFirst().isIncreasing());
     }
 
     /** "A Tricky Problem" from bug #239. */
@@ -336,8 +336,8 @@ public abstract class CloseEventsAbstractTest {
         // really we only care that the Rules of Event Handling are not violated,
         // but I only know one way to do that in this case.
         Assertions.assertEquals(5, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertFalse(events.get(0).isIncreasing());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertFalse(events.getFirst().isIncreasing());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
@@ -377,15 +377,15 @@ public abstract class CloseEventsAbstractTest {
         // verify
         // if these fail the event finding did its job,
         // but this test isn't testing what it is supposed to be
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertSame(detectorB, events.getFirst().getDetector());
         Assertions.assertSame(detectorA, events.get(1).getDetector());
-        Assertions.assertTrue(events.get(0).getState().getDate().compareTo(
+        Assertions.assertTrue(events.getFirst().getState().getDate().compareTo(
                 events.get(1).getState().getDate()) < 0);
 
         // check event detection worked
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch), 0.5);
-        Assertions.assertTrue(events.get(0).isIncreasing());
+        Assertions.assertEquals(t3, events.getFirst().getState().getDate().durationFrom(epoch), 0.5);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), 1e-6);
         Assertions.assertTrue(events.get(1).isIncreasing());
     }
@@ -418,9 +418,9 @@ public abstract class CloseEventsAbstractTest {
         // verify
         // we only care that the rules are satisfied, there are other solutions
         Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), toleranceB);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), toleranceB);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorB, events.getFirst().getDetector());
         Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), toleranceB);
         Assertions.assertFalse(events.get(1).isIncreasing());
         Assertions.assertSame(detectorB, events.get(1).getDetector());
@@ -457,9 +457,9 @@ public abstract class CloseEventsAbstractTest {
         // verify
         // allowed to find t1 or t3.
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorB, events.getFirst().getDetector());
     }
 
     /**
@@ -491,9 +491,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         // detector worked correctly
         Assertions.assertEquals(0.0, detectorB.g(state(t1)));
         Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)) < 0);
@@ -529,9 +529,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         // detector worked correctly
         Assertions.assertEquals(0.0, detectorB.g(state(t1)), 0.0);
         Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)) > 0);
@@ -558,9 +558,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertFalse(events.get(1).isIncreasing());
         Assertions.assertSame(detectorA, events.get(1).getDetector());
@@ -587,9 +587,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertFalse(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertFalse(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorA, events.get(1).getDetector());
@@ -628,9 +628,9 @@ public abstract class CloseEventsAbstractTest {
         //verify
         // need at least 5 events to check that multiple backups occurred
         Assertions.assertEquals(5, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertEquals(detectorB, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertEquals(detectorC, events.get(1).getDetector());
@@ -693,9 +693,9 @@ public abstract class CloseEventsAbstractTest {
         //verify
         // really we only care that the Rules of Event Handling are not violated,
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertEquals(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertEquals(detectorB, events.get(1).getDetector());
@@ -722,9 +722,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
     }
 
     /**
@@ -771,9 +771,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorC, events.get(1).getDetector());
@@ -823,9 +823,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
     }
 
     /**
@@ -873,9 +873,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorC, events.get(1).getDetector());
@@ -926,9 +926,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorC, events.get(1).getDetector());
@@ -956,9 +956,9 @@ public abstract class CloseEventsAbstractTest {
         // verify
         Assertions.assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t1, finalState.getDate().durationFrom(epoch), tolerance);
 
         // try to resume propagation
@@ -1010,9 +1010,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorB, events.get(1).getDetector());
@@ -1044,9 +1044,9 @@ public abstract class CloseEventsAbstractTest {
         Assertions.assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
         Assertions.assertEquals(t1.durationFrom(epoch),
-                events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+                events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
     }
 
     /** Check that steps are restricted correctly with a continue event. */
@@ -1072,7 +1072,7 @@ public abstract class CloseEventsAbstractTest {
         Assertions.assertEquals(10.0, stepHandler.targetDate.durationFrom(epoch), tolerance);
         Assertions.assertEquals(10.0,
                 stepHandler.finalState.getDate().durationFrom(epoch), tolerance);
-        OrekitStepInterpolator interpolator = stepHandler.interpolators.get(0);
+        OrekitStepInterpolator interpolator = stepHandler.interpolators.getFirst();
         Assertions.assertEquals(0.0,
                 interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertEquals(5.0,
@@ -1154,7 +1154,7 @@ public abstract class CloseEventsAbstractTest {
         // verify
         List<Event> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(t1, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(t1, events1.getFirst().getState().getDate().durationFrom(epoch), 0.0);
         List<Event> events2 = handler2.getEvents();
         Assertions.assertEquals(0, events2.size());
     }
@@ -1184,10 +1184,10 @@ public abstract class CloseEventsAbstractTest {
         // verify
         List<Event> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(-5, events1.getFirst().getState().getDate().durationFrom(epoch), tolerance);
         List<Event> events2 = handler2.getEvents();
         Assertions.assertEquals(1, events2.size());
-        Assertions.assertEquals(-5.5, events2.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(-5.5, events2.getFirst().getState().getDate().durationFrom(epoch), tolerance);
     }
 
     @Test
@@ -1214,10 +1214,10 @@ public abstract class CloseEventsAbstractTest {
         // verify
         List<Event> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(-5, events1.getFirst().getState().getDate().durationFrom(epoch), 0.0);
         List<Event> events2 = handler2.getEvents();
         Assertions.assertEquals(1, events2.size());
-        Assertions.assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(-5, events2.getFirst().getState().getDate().durationFrom(epoch), 0.0);
     }
 
     /**
@@ -1268,9 +1268,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         // order is important to make sure the test checks what it is supposed to
-        Assertions.assertEquals(-5, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(detector1, events.get(0).getDetector());
+        Assertions.assertEquals(-5, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertEquals(detector1, events.getFirst().getDetector());
         Assertions.assertEquals(-5, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertEquals(detector2, events.get(1).getDetector());
@@ -1301,8 +1301,8 @@ public abstract class CloseEventsAbstractTest {
         //verify
         // finds one or three events. Not 2.
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(-9.9, events.get(0).getState().getDate().durationFrom(epoch), 0.2);
-        Assertions.assertTrue(events.get(0).isIncreasing());
+        Assertions.assertEquals(-9.9, events.getFirst().getState().getDate().durationFrom(epoch), 0.2);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
     }
 
     /** "A Tricky Problem" from bug #239. */
@@ -1339,8 +1339,8 @@ public abstract class CloseEventsAbstractTest {
         // really we only care that the Rules of Event Handling are not violated,
         // but I only know one way to do that in this case.
         Assertions.assertEquals(5, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertFalse(events.get(0).isIncreasing());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertFalse(events.getFirst().isIncreasing());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
@@ -1380,15 +1380,15 @@ public abstract class CloseEventsAbstractTest {
         // verify
         // if these fail the event finding did its job,
         // but this test isn't testing what it is supposed to be
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertSame(detectorB, events.getFirst().getDetector());
         Assertions.assertSame(detectorA, events.get(1).getDetector());
-        Assertions.assertTrue(events.get(0).getState().getDate().compareTo(
+        Assertions.assertTrue(events.getFirst().getState().getDate().compareTo(
                 events.get(1).getState().getDate()) > 0);
 
         // check event detection worked
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch), 0.5);
-        Assertions.assertTrue(events.get(0).isIncreasing());
+        Assertions.assertEquals(t3, events.getFirst().getState().getDate().durationFrom(epoch), 0.5);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), 1e-6);
         Assertions.assertTrue(events.get(1).isIncreasing());
     }
@@ -1421,9 +1421,9 @@ public abstract class CloseEventsAbstractTest {
         // verify
         // we only care that the rules are satisfied. There are multiple solutions.
         Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), toleranceB);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), toleranceB);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorB, events.getFirst().getDetector());
         Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), toleranceB);
         Assertions.assertFalse(events.get(1).isIncreasing());
         Assertions.assertSame(detectorB, events.get(1).getDetector());
@@ -1431,7 +1431,7 @@ public abstract class CloseEventsAbstractTest {
         Assertions.assertTrue(events.get(2).isIncreasing());
         Assertions.assertSame(detectorA, events.get(2).getDetector());
         // ascending order
-        Assertions.assertTrue(events.get(0).getState().getDate().compareTo(
+        Assertions.assertTrue(events.getFirst().getState().getDate().compareTo(
                 events.get(1).getState().getDate()) >= 0);
         Assertions.assertTrue(events.get(1).getState().getDate().compareTo(
                 events.get(2).getState().getDate()) >= 0);
@@ -1460,9 +1460,9 @@ public abstract class CloseEventsAbstractTest {
         // verify
         // allowed to report t1 or t3.
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorB, events.getFirst().getDetector());
     }
 
     /**
@@ -1494,9 +1494,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         // detector worked correctly
         Assertions.assertEquals(0.0, detectorB.g(state(t1)));
         Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)) < 0);
@@ -1533,9 +1533,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         // detector worked correctly
         Assertions.assertEquals(0.0, detectorB.g(state(t1)), 0.0);
         Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)) > 0);
@@ -1563,9 +1563,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertFalse(events.get(1).isIncreasing());
         Assertions.assertSame(detectorA, events.get(1).getDetector());
@@ -1592,9 +1592,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertFalse(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertFalse(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorA, events.get(1).getDetector());
@@ -1633,9 +1633,9 @@ public abstract class CloseEventsAbstractTest {
         //verify
         // really we only care that the Rules of Event Handling are not violated,
         Assertions.assertEquals(5, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertEquals(detectorB, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertEquals(detectorC, events.get(1).getDetector());
@@ -1698,9 +1698,9 @@ public abstract class CloseEventsAbstractTest {
         //verify
         // really we only care that the Rules of Event Handling are not violated,
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertEquals(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertFalse(events.get(1).isIncreasing());
         Assertions.assertEquals(detectorB, events.get(1).getDetector());
@@ -1727,9 +1727,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
     }
 
     /**
@@ -1776,9 +1776,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorC, events.get(1).getDetector());
@@ -1828,9 +1828,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
     }
 
     /**
@@ -1878,9 +1878,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorC, events.get(1).getDetector());
@@ -1931,9 +1931,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorC, events.get(1).getDetector());
@@ -1961,9 +1961,9 @@ public abstract class CloseEventsAbstractTest {
         // verify
         Assertions.assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t1, finalState.getDate().durationFrom(epoch), tolerance);
 
         // try to resume propagation
@@ -2015,9 +2015,9 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assertions.assertFalse(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.getFirst().getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertFalse(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
         Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertSame(detectorB, events.get(1).getDetector());
@@ -2049,10 +2049,10 @@ public abstract class CloseEventsAbstractTest {
         Assertions.assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
         Assertions.assertEquals(t1.durationFrom(epoch),
-                events.get(0).getState().getDate().durationFrom(epoch),
+                events.getFirst().getState().getDate().durationFrom(epoch),
                 FastMath.ulp(-15.0));
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertTrue(events.getFirst().isIncreasing());
+        Assertions.assertSame(detectorA, events.getFirst().getDetector());
     }
 
     /** Check that steps are restricted correctly with a continue event. */
@@ -2077,7 +2077,7 @@ public abstract class CloseEventsAbstractTest {
         Assertions.assertEquals(-10.0, stepHandler.targetDate.durationFrom(epoch), tolerance);
         Assertions.assertEquals(-10.0,
                 stepHandler.finalState.getDate().durationFrom(epoch), tolerance);
-        OrekitStepInterpolator interpolator = stepHandler.interpolators.get(0);
+        OrekitStepInterpolator interpolator = stepHandler.interpolators.getFirst();
         Assertions.assertEquals(0.0,
                 interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertEquals(-5.0,
@@ -2196,7 +2196,7 @@ public abstract class CloseEventsAbstractTest {
             }
             i--;
             if (i < 0) {
-                return t.durationFrom(eventTs.get(0));
+                return t.durationFrom(eventTs.getFirst());
             } else {
                 int sign = (i % 2) * 2 - 1;
                 return -sign * (t.durationFrom(eventTs.get(i)));
@@ -2276,7 +2276,7 @@ public abstract class CloseEventsAbstractTest {
             }
             i--;
             if (i < 0) {
-                return t.durationFrom(eventTs.get(0));
+                return t.durationFrom(eventTs.getFirst());
             } else if (i < eventTs.size() - 1) {
                 int sign = (i % 2) * 2 - 1;
                 return -sign * (t.durationFrom(eventTs.get(i)))

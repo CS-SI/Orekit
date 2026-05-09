@@ -92,7 +92,7 @@ public class SsrIm201Test {
         Assertions.assertEquals(1,                            im201.getHeader().getNumberOfIonosphericLayers());
 
         // Verify data
-        final SsrIm201Data data = im201.getData().get(0);
+        final SsrIm201Data data = im201.getData().getFirst();
         final double[][] cnm = data.getCnm();
         final double[][] snm = data.getSnm();
         Assertions.assertEquals(650000,            data.getHeightIonosphericLayer(), eps);
@@ -181,7 +181,7 @@ public class SsrIm201Test {
         Assertions.assertEquals(1,                            im201.getHeader().getNumberOfIonosphericLayers());
 
         // Verify data
-        final SsrIm201Data data = im201.getData().get(0);
+        final SsrIm201Data data = im201.getData().getFirst();
         final double[][] cnm = data.getCnm();
         final double[][] snm = data.getSnm();
         Assertions.assertEquals(650000,            data.getHeightIonosphericLayer(), eps);

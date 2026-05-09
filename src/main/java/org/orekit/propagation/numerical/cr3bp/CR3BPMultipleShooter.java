@@ -164,8 +164,8 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
 
         if (isClosedOrbit) {
 
-            final AbsolutePVCoordinates apv1i = patchedSpacecraftStates.get(0).getAbsPVA();
-            final AbsolutePVCoordinates apvni = patchedSpacecraftStates.get(patchedSpacecraftStates.size() - 1).getAbsPVA();
+            final AbsolutePVCoordinates apv1i = patchedSpacecraftStates.getFirst().getAbsPVA();
+            final AbsolutePVCoordinates apvni = patchedSpacecraftStates.getLast().getAbsPVA();
 
             fxAdditional[0] = apvni.getPosition().getX() - apv1i.getPosition().getX();
             fxAdditional[1] = apvni.getPosition().getY() - apv1i.getPosition().getY();

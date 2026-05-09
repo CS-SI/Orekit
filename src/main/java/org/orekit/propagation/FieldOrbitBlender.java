@@ -86,7 +86,7 @@ public class FieldOrbitBlender<T extends CalculusFieldElement<T>> extends Abstra
 
         // Get first and last entry
         final List<FieldOrbit<T>> neighborList  = interpolationData.getNeighborList();
-        final FieldOrbit<T>       previousOrbit = neighborList.get(0);
+        final FieldOrbit<T>       previousOrbit = neighborList.getFirst();
         final FieldOrbit<T>       nextOrbit     = neighborList.get(1);
 
         // Propagate orbits

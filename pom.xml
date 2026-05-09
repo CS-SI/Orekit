@@ -18,16 +18,14 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <!-- Spotbugs version higher than 4.2.3 will trigger numerous EI_EXPOSE_REP errors not handled by Orekit yet -->
-    <orekit.spotbugs-maven-plugin.version>4.2.3</orekit.spotbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.8.12</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-bundle-plugin.version>5.1.9</orekit.maven-bundle-plugin.version>
+    <orekit.spotbugs-maven-plugin.version>4.9.8.3</orekit.spotbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.8.14</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-bundle-plugin.version>6.0.0</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>3.0.0-M3</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>3.6.0</orekit.maven-checkstyle-plugin.version>
-    <!-- Checkstyle 9.3 seems to be the last version usable with JDK 8 -->
-    <orekit.checkstyle.version>9.3</orekit.checkstyle.version>
+    <orekit.checkstyle.version>10.20.2</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.4.1</orekit.maven-clean-plugin.version>
-    <orekit.maven-compiler-plugin.version>3.14.0</orekit.maven-compiler-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.15.0</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>3.11.3</orekit.maven-javadoc-plugin.version>
     <orekit.maven-jar-plugin.version>3.4.2</orekit.maven-jar-plugin.version>
     <orekit.maven-jxr-plugin.version>3.6.0</orekit.maven-jxr-plugin.version>
@@ -39,9 +37,7 @@
     <orekit.maven-source-plugin.version>3.3.1</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>3.5.3</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>3.5.2</orekit.maven-surefire-report-plugin.version>
-    <!-- Mockito 4.11.0 is the last supported version with java 8
-         https://github.com/mockito/mockito/releases -->
-    <orekit.mockito-core.version>4.11.0</orekit.mockito-core.version>
+    <orekit.mockito-core.version>5.14.2</orekit.mockito-core.version>
     <orekit.archunit.version>1.4.1</orekit.archunit.version>
     <orekit.slf4j.version>2.0.17</orekit.slf4j.version>
     <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
@@ -54,11 +50,8 @@
     <orekit.hipparchus.version>4.1-SNAPSHOT</orekit.hipparchus.version>
     <orekit.junit.version>5.13.2</orekit.junit.version>
     <orekit.hamcrest.version>3.0</orekit.hamcrest.version>
-    <orekit.compiler.source>1.8</orekit.compiler.source>
-    <orekit.compiler.target>1.8</orekit.compiler.target>
+    <orekit.compiler.release>21</orekit.compiler.release>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
-    <tools.jar.dir>${java.home}/../lib/</tools.jar.dir>
-    <tools.jar.path>${tools.jar.dir}/tools.jar</tools.jar.path>
   </properties>
 
   <developers>
@@ -549,14 +542,13 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${orekit.maven-compiler-plugin.version}</version>
         <configuration>
-          <source>${orekit.compiler.source}</source>
-          <target>${orekit.compiler.target}</target>
           <showWarnings>true</showWarnings>
           <compilerArgs>
             <arg>-Xlint:deprecation</arg>
             <arg>-Xlint:unchecked</arg>
             <arg>-Xplugin:dataContextPlugin</arg>
           </compilerArgs>
+          <release>${orekit.compiler.release}</release>
         </configuration>
         <executions>
           <execution>
@@ -592,8 +584,10 @@
             <goals>
               <goal>compile</goal>
             </goals>
-            <!-- the phase before compile. -->
-            <phase>process-resources</phase>
+            <!-- Run before process-resources so the META-INF/services/com.sun.source.util.Plugin
+                 descriptor is not yet on the compile classpath (it would otherwise cause javac's
+                 ServiceLoader to try to load the plugin class while we are still building it). -->
+            <phase>generate-sources</phase>
             <configuration>
               <includes>
                 <include>org/orekit/annotation/**</include>
@@ -601,10 +595,6 @@
               </includes>
               <compilerArgs>
                 <arg>-Xlint:deprecation</arg>
-                <!-- Add the Java compiler to the classpath. This avoids creating a system
-                     dependency which is inherited by projects using Orekit. -->
-                <arg>-classpath</arg>
-                <arg>${tools.jar.path}</arg>
               </compilerArgs>
             </configuration>
           </execution>
@@ -714,9 +704,6 @@
         <version>${orekit.maven-surefire-plugin.version}</version>
         <configuration>
           <argLine>@{argLine} -Xmx2048m</argLine>
-          <additionalClasspathElements>
-            <additionalClasspathElement>${tools.jar.path}</additionalClasspathElement>
-          </additionalClasspathElements>
         </configuration>
       </plugin>
       <plugin>
@@ -740,20 +727,23 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
+          <!-- Use javadoc's recursive subpackage discovery instead of the plugin's
+               explicit @packages list. Java 21 javadoc rejects packages that only
+               contain package-info.java (e.g. org.orekit.propagation.semianalytical)
+               when listed explicitly; subpackage mode handles them correctly. -->
+          <sourcepath>${basedir}/src/main/java</sourcepath>
+          <subpackages>org.orekit</subpackages>
           <additionalOptions>
             <option>--allow-script-in-comments</option>
             <option>-header</option>
             <option>'${orekit.mathjax.config} ${orekit.mathjax.enable}'</option>
-            <option>-extdirs</option>
-            <option>${tools.jar.dir}</option>
           </additionalOptions>
           <javadocDirectory>${project.build.directory}/generated-sources/plantuml</javadocDirectory>
           <bottom>Copyright &amp;copy; ${project.inceptionYear}-{currentYear} &lt;a href="https://www.cs-soprasteria.com/en/"&gt;CS GROUP&lt;/a&gt;. All rights reserved.</bottom>
           <links>
-            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+            <link>https://docs.oracle.com/en/java/javase/21/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
-          <source>${orekit.compiler.source}</source>
         </configuration>
       </plugin>
       <plugin>
@@ -890,8 +880,8 @@
           <archive>
             <manifestFile>${project.build.directory}/osgi/MANIFEST.MF</manifestFile>
             <manifestEntries>
-              <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
-              <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
+              <X-Compile-Source-JDK>${orekit.compiler.release}</X-Compile-Source-JDK>
+              <X-Compile-Target-JDK>${orekit.compiler.release}</X-Compile-Target-JDK>
               <Automatic-Module-Name>org.orekit</Automatic-Module-Name>
             </manifestEntries>
           </archive>
@@ -1015,20 +1005,23 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
+          <!-- Use javadoc's recursive subpackage discovery instead of the plugin's
+               explicit @packages list. Java 21 javadoc rejects packages that only
+               contain package-info.java (e.g. org.orekit.propagation.semianalytical)
+               when listed explicitly; subpackage mode handles them correctly. -->
+          <sourcepath>${basedir}/src/main/java</sourcepath>
+          <subpackages>org.orekit</subpackages>
           <additionalOptions>
             <option>--allow-script-in-comments</option>
             <option>-header</option>
             <option>'${orekit.mathjax.config} ${orekit.mathjax.enable}'</option>
-            <option>-extdirs</option>
-            <option>${tools.jar.dir}</option>
           </additionalOptions>
           <javadocDirectory>${project.build.directory}/generated-sources/plantuml</javadocDirectory>
           <bottom>Copyright &amp;copy; ${project.inceptionYear}-{currentYear} &lt;a href="https://www.cs-soprasteria.com/en/"&gt;CS GROUP&lt;/a&gt;. All rights reserved.</bottom>
           <links>
-            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+            <link>https://docs.oracle.com/en/java/javase/21/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
-          <source>${orekit.compiler.source}</source>
           <doclint>none</doclint>
         </configuration>
         <reportSets>
@@ -1079,8 +1072,8 @@
               <manifestFile>${project.build.directory}/osgi/MANIFEST.MF</manifestFile>
               <manifestEntries>
                 <Implementation-Build>${orekit.implementation.build}</Implementation-Build>
-                <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
-                <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
+                <X-Compile-Source-JDK>${orekit.compiler.release}</X-Compile-Source-JDK>
+                <X-Compile-Target-JDK>${orekit.compiler.release}</X-Compile-Target-JDK>
               </manifestEntries>
              </archive>
             </configuration>

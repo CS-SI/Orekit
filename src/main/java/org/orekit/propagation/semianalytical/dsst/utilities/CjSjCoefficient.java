@@ -116,7 +116,7 @@ public class CjSjCoefficient {
      * @param j order
      */
     private void updateCjSj(final int j) {
-        Complex last = cjsj.get(cjsj.size() - 1);
+        Complex last = cjsj.getLast();
         for (int i = jLast; i < j; i++) {
             final Complex next = last.multiply(kih);
             cjsj.add(next);

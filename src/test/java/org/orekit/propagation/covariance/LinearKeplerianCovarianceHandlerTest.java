@@ -67,7 +67,7 @@ class LinearKeplerianCovarianceHandlerTest {
         // WHEN
         propagator.propagate(targetDate);
         final List<StateCovariance> covariances = covarianceHandler.getStatesCovariances();
-        final StateCovariance actualTerminalCovariance = covariances.get(covariances.size() - 1);
+        final StateCovariance actualTerminalCovariance = covariances.getLast();
         // THEN
         final NumericalPropagator otherPropagator = buildPropagator(initialOrbit, orbitType);
         final String stmName = "stm";

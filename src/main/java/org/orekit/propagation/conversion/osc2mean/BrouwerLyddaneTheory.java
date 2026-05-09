@@ -92,7 +92,7 @@ public class BrouwerLyddaneTheory implements MeanTheory {
     @Override
     public double getReferenceRadius() {
         return provider.getAe();
-    };
+    }
 
     /** {@inheritDoc} */
     @Override

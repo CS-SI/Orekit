@@ -1096,8 +1096,8 @@ public class FieldTimeSpanMapTest {
         Assertions.assertEquals(11, map.getSpansNumber());
         SortedSet<FieldTimeSpanMap.Transition<Integer, Binary64>> transitions = map.getTransitions();
         Assertions.assertEquals(10, transitions.size());
-        Assertions.assertEquals(  0.0, transitions.first().getDate().durationFrom(arbitraryEpoch).getReal(), 1.0e-15);
-        Assertions.assertEquals(100.0, transitions.last().getDate().durationFrom(arbitraryEpoch).getReal(), 1.0e-15);
+        Assertions.assertEquals(  0.0, transitions.getFirst().getDate().durationFrom(arbitraryEpoch).getReal(), 1.0e-15);
+        Assertions.assertEquals(100.0, transitions.getLast().getDate().durationFrom(arbitraryEpoch).getReal(), 1.0e-15);
     }
 
     private <T, F extends CalculusFieldElement<F>> void checkException(final FieldTimeSpanMap<T, F> map,

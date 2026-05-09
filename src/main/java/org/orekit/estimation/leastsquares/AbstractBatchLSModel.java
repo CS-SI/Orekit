@@ -224,8 +224,8 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
         // Sort the measurement list chronologically
         measurements.sort(new ChronologicalComparator());
-        firstDate = measurements.get(0).getDate();
-        lastDate  = measurements.get(measurements.size() - 1).getDate();
+        firstDate = measurements.getFirst().getDate();
+        lastDate  = measurements.getLast().getDate();
 
         // Decide the direction of propagation
         forwardPropagation = FastMath.abs(refDate.durationFrom(firstDate)) <= FastMath.abs(refDate.durationFrom(lastDate));
@@ -541,8 +541,8 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         precompensated.sort(new ChronologicalComparator());
 
         // Assign first and last date
-        firstDate = precompensated.get(0).getDate();
-        lastDate  = precompensated.get(precompensated.size() - 1).getDate();
+        firstDate = precompensated.getFirst().getDate();
+        lastDate  = precompensated.getLast().getDate();
 
         // Reverse the list in case of backward propagation
         if (!forwardPropagation) {

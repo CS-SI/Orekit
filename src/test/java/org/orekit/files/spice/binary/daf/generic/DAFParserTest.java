@@ -60,7 +60,7 @@ class DAFParserTest {
         Assertions.assertEquals(1, parsedFile.getArrays().size());
         final DAFFileRecord testFileRecord = parsedFile.getMetadata();
         final String testComments = parsedFile.getComments();
-        final DAFArray testArray = parsedFile.getArrays().get(0);
+        final DAFArray testArray = parsedFile.getArrays().getFirst();
         final DAFArraySummary testArraySummary = testArray.getArraySummary();
         final List<Double> testArrayElements = testArray.getArrayElements();
         // file record tests
@@ -82,16 +82,16 @@ class DAFParserTest {
         Assertions.assertEquals(330161, testArraySummary.getFinalArrayAddress());
         Assertions.assertEquals(2, testArraySummary.getSummaryDoubles().size());
         Assertions.assertEquals(6, testArraySummary.getSummaryInts().size());
-        Assertions.assertEquals(-649364400.000000, testArraySummary.getSummaryDoubles().get(0), 1e-6);
+        Assertions.assertEquals(-649364400.000000, testArraySummary.getSummaryDoubles().getFirst(), 1e-6);
         Assertions.assertEquals(-645364800.000000, testArraySummary.getSummaryDoubles().get(1), 1e-6);
-        Assertions.assertEquals(-32, testArraySummary.getSummaryInts().get(0));
+        Assertions.assertEquals(-32, testArraySummary.getSummaryInts().getFirst());
         Assertions.assertEquals(5, testArraySummary.getSummaryInts().get(1));
         Assertions.assertEquals(1, testArraySummary.getSummaryInts().get(2));
         Assertions.assertEquals(1, testArraySummary.getSummaryInts().get(3));
         Assertions.assertEquals(513, testArraySummary.getSummaryInts().get(4));
         Assertions.assertEquals(41270, testArraySummary.getSummaryInts().get(5));
         Assertions.assertEquals(40758, testArrayElements.size());
-        Assertions.assertEquals(-649364399.000000, testArrayElements.get(0), 1e-6);
+        Assertions.assertEquals(-649364399.000000, testArrayElements.getFirst(), 1e-6);
         Assertions.assertEquals(1.000000, testArrayElements.get(1), 1e-6);
         Assertions.assertEquals(-0.603684, testArrayElements.get(7401), 1e-6);
         Assertions.assertEquals(-645842469.316287, testArrayElements.get(40756), 1e-6);
@@ -118,16 +118,16 @@ class DAFParserTest {
 
         // single array
         Assertions.assertEquals(1, parsedFile.getArrays().size());
-        final DAFArray array = parsedFile.getArrays().get(0);
+        final DAFArray array = parsedFile.getArrays().getFirst();
         Assertions.assertEquals("TEST", array.getArrayName());
 
         // summary
         // doubles
         final DAFArraySummary summary = array.getArraySummary();
-        Assertions.assertEquals(0.0, summary.getSummaryDoubles().get(0), 1e-6);
+        Assertions.assertEquals(0.0, summary.getSummaryDoubles().getFirst(), 1e-6);
         Assertions.assertEquals(100.0, summary.getSummaryDoubles().get(1), 1e-6);
         // ints
-        Assertions.assertEquals(1, summary.getSummaryInts().get(0));
+        Assertions.assertEquals(1, summary.getSummaryInts().getFirst());
         Assertions.assertEquals(2, summary.getSummaryInts().get(1));
         Assertions.assertEquals(3, summary.getSummaryInts().get(2));
         Assertions.assertEquals(2, summary.getSummaryInts().get(3));
@@ -136,7 +136,7 @@ class DAFParserTest {
 
         // elements
         Assertions.assertEquals(3, array.getArrayElements().size());
-        Assertions.assertEquals(1.0, array.getArrayElements().get(0), 1e-10);
+        Assertions.assertEquals(1.0, array.getArrayElements().getFirst(), 1e-10);
         Assertions.assertEquals(2.0, array.getArrayElements().get(1), 1e-10);
         Assertions.assertEquals(3.0, array.getArrayElements().get(2), 1e-10);
     }

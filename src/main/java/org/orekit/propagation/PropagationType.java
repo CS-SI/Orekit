@@ -29,6 +29,6 @@ public enum PropagationType {
     MEAN,
 
     /** Osculating propagation. */
-    OSCULATING;
+    OSCULATING
 
 }

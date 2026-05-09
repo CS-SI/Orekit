@@ -27,6 +27,6 @@ public enum YesNoUnknown {
     NO,
 
     /** UNKOWN value. */
-    UNKOWN;
+    UNKOWN
 
 }

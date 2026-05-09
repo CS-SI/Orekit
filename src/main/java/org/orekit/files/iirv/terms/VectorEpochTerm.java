@@ -156,10 +156,10 @@ public class VectorEpochTerm extends IIRVVectorTerm<TimeComponents> {
             return toEncodedString(new TimeComponents(nextHour, nextMinute, nextSecond));
         }
 
-        return String.format("%02d%02d%s",
-            value.getHour(),
-            value.getMinute(),
-            ss_sss.replace(".", "")
+        return "%02d%02d%s".formatted(
+                value.getHour(),
+                value.getMinute(),
+                ss_sss.replace(".", "")
         );
     }
 }

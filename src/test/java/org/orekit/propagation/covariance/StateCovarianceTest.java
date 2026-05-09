@@ -1056,9 +1056,9 @@ public class StateCovarianceTest {
         // WHEN
         final StateCovariance originalCovariance;
         final StateCovariance covariance;
-        if (frameOrLOF instanceof LOF) {
-            originalCovariance = new StateCovariance(expectedMatrix, date, (LOF) frameOrLOF);
-            covariance         = originalCovariance.changeCovarianceFrame(orbit, (LOF) frameOrLOF);
+        if (frameOrLOF instanceof LOF oF) {
+            originalCovariance = new StateCovariance(expectedMatrix, date, oF);
+            covariance         = originalCovariance.changeCovarianceFrame(orbit, oF);
         } else {
             originalCovariance = new StateCovariance(expectedMatrix, date, (Frame) frameOrLOF, orbit.getType(), anomalyType);
             covariance         = originalCovariance.changeCovarianceFrame(orbit, (Frame) frameOrLOF);

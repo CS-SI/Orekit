@@ -125,7 +125,7 @@ public class FieldCjSjCoefficient <T extends CalculusFieldElement<T>> {
      * @param j order
      */
     private void updateCjSj(final int j) {
-        FieldComplex<T> last = cjsj.get(cjsj.size() - 1);
+        FieldComplex<T> last = cjsj.getLast();
         for (int i = jLast; i < j; i++) {
             final FieldComplex<T> next = last.multiply(kih);
             cjsj.add(next);

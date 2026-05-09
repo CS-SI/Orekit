@@ -64,7 +64,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,14 +135,14 @@ public class OrekitEphemerisFileTest {
         satellite.addNewSegment(states);
         Assertions.assertEquals(satId, satellite.getId());
         Assertions.assertEquals(body.getGM(), satellite.getMu(), muTolerance);
-        Assertions.assertEquals(0.0, states.get(0).getDate().durationFrom(satellite.getStart()), 1.0e-15);
-        Assertions.assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(satellite.getStop()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.getFirst().getDate().durationFrom(satellite.getStart()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.getLast().getDate().durationFrom(satellite.getStop()), 1.0e-15);
         Assertions.assertEquals(CartesianDerivativesFilter.USE_PV,
-                     satellite.getSegments().get(0).getAvailableDerivatives());
+                     satellite.getSegments().getFirst().getAvailableDerivatives());
         Assertions.assertEquals("GCRF",
-                     satellite.getSegments().get(0).getFrame().getName());
+                     satellite.getSegments().getFirst().getFrame().getName());
         Assertions.assertEquals(body.getGM(),
-                     satellite.getSegments().get(0).getMu(), muTolerance);
+                     satellite.getSegments().getFirst().getMu(), muTolerance);
 
         String tempOem = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
         OemMetadata template = new OemMetadata(2);
@@ -158,11 +158,11 @@ public class OrekitEphemerisFileTest {
 
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
         EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFrom = parser.parse(new DataSource(tempOem));
-        Files.delete(Paths.get(tempOem));
+        Files.delete(Path.of(tempOem));
 
-        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
-        Assertions.assertEquals(states.get(0).getDate(), segment.getStart());
-        Assertions.assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
+        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().getFirst();
+        Assertions.assertEquals(states.getFirst().getDate(), segment.getStart());
+        Assertions.assertEquals(states.getLast().getDate(), segment.getStop());
         Assertions.assertEquals(states.size(), segment.getCoordinates().size());
         Assertions.assertEquals(frame, segment.getFrame());
         Assertions.assertEquals(body.getGM(), segment.getMu(), muTolerance);

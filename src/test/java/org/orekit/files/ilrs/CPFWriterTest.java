@@ -242,7 +242,7 @@ public class CPFWriterTest {
 
         // Verify
         final List<CPFCoordinate> coordinatesInFile = cpf.getSatellites().get(header.getIlrsSatelliteId()).getCoordinates();
-        Assertions.assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.get(0).getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.getFirst().getPosition()), 1.0e-10);
         Assertions.assertEquals(0.0, Vector3D.PLUS_J.distance(coordinatesInFile.get(1).getPosition()), 1.0e-10);
         Assertions.assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
 
@@ -291,7 +291,7 @@ public class CPFWriterTest {
 
         // Verify
         final List<CPFCoordinate> coordinatesInFile = cpf.getSatellites().get(header.getIlrsSatelliteId()).getCoordinates();
-        Assertions.assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.get(0).getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.getFirst().getPosition()), 1.0e-10);
         Assertions.assertEquals(0.0, Vector3D.PLUS_J.distance(coordinatesInFile.get(1).getPosition()), 1.0e-10);
         Assertions.assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
 
@@ -368,10 +368,10 @@ public class CPFWriterTest {
         final AbsoluteDate firstEpoch = AbsoluteDate.createMJDDate(59709, 0.0, generatedCpfFile.getTimeScale());
         final Vector3D firstPos = new Vector3D(1036869.533, 6546536.585, 0.000);
         final Vector3D firstVel = new Vector3D(-9994.355199, 1582.950355, -1242.449125);
-        Assertions.assertEquals(0, coord.get(0).getLeap());
-        Assertions.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
-        Assertions.assertEquals(0.0, firstVel.distance(coord.get(0).getVelocity()), 1.0e-15);
-        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.getFirst().getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coord.getFirst().getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstVel.distance(coord.getFirst().getVelocity()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.getFirst().getDate()), 1.0e-15);
 
 
         // Repeat without velocity components for regression testing
@@ -390,10 +390,10 @@ public class CPFWriterTest {
         final List<CPFCoordinate> coordReg = ephemerisReg.getCoordinates();
 
         // Verify first coordinate and that the velocity components are zero
-        Assertions.assertEquals(0, coordReg.get(0).getLeap());
-        Assertions.assertEquals(0.0, firstPos.distance(coordReg.get(0).getPosition()), 1.0e-15);
-        Assertions.assertEquals(0.0, coordReg.get(0).getVelocity().getNorm(), 1.0e-15);
-        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coordReg.get(0).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coordReg.getFirst().getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coordReg.getFirst().getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, coordReg.getFirst().getVelocity().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coordReg.getFirst().getDate()), 1.0e-15);
 
     }
 
@@ -415,10 +415,10 @@ public class CPFWriterTest {
         final List<CPFCoordinate> coord1 = eph1.getCoordinates();
         final List<CPFCoordinate> coord2 = eph2.getCoordinates();
         Assertions.assertEquals(coord1.size(), coord1.size());
-        verifyEphemerisLine(coord1.get(0), coord2.get(0));
+        verifyEphemerisLine(coord1.getFirst(), coord2.getFirst());
         verifyEphemerisLine(coord1.get(1), coord2.get(1));
         verifyEphemerisLine(coord1.get(100), coord2.get(100));
-        verifyEphemerisLine(coord1.get(coord1.size() - 1), coord2.get(coord2.size() - 1));
+        verifyEphemerisLine(coord1.getLast(), coord2.getLast());
 
     }
 

@@ -32,8 +32,8 @@ class CustomTimeSystem implements TimeSystem {
 
     @Override
     public boolean equals(final Object type) {
-        if (type instanceof CustomTimeSystem) {
-            return key.equals(((CustomTimeSystem) type).key);
+        if (type instanceof CustomTimeSystem system) {
+            return key.equals(system.key);
         }
         return false;
     }

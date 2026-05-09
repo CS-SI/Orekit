@@ -104,8 +104,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             throws MathIllegalArgumentException {
         // If states is empty an exception will be thrown in the other constructor
         this(states, new SpacecraftStateInterpolator(interpolationPoints,
-                                                     states.get(0).getFrame(),
-                                                     states.get(0).getFrame()),
+                                                     states.getFirst().getFrame(),
+                                                     states.getFirst().getFrame()),
              new ArrayList<>(), null);
     }
 
@@ -169,7 +169,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             throws MathIllegalArgumentException {
         this(states, stateInterpolator, covariances, covarianceInterpolator,
              // if states is empty an exception will be thrown in the other constructor
-             states.isEmpty() ? null : FrameAlignedProvider.of(states.get(0).getFrame()));
+             states.isEmpty() ? null : FrameAlignedProvider.of(states.getFirst().getFrame()));
     }
 
     /**
@@ -205,9 +205,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         checkInputConsistency(states, stateInterpolator, covariances, covarianceInterpolator);
 
         // Initialize variables
-        final SpacecraftState s0 = states.get(0);
+        final SpacecraftState s0 = states.getFirst();
         minDate = s0.getDate();
-        maxDate = states.get(states.size() - 1).getDate();
+        maxDate = states.getLast().getDate();
         frame   = s0.getFrame();
 
         final List<DataDictionary.Entry> as = s0.getAdditionalDataValues().getData();

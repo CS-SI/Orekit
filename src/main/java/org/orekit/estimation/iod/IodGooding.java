@@ -741,7 +741,7 @@ public class IodGooding {
         final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(date1, P1_planar, date3, P3_planar, frame);
         final LambertSolver lambertSolver = new LambertSolver(1.0);
         final List<LambertSolution> solutions = lambertSolver.solve(posigrade, nRev, boundaryConditions);
-        final LambertSolution selectedSolution = solutions.get(0);
+        final LambertSolution selectedSolution = solutions.getFirst();
         final LambertBoundaryVelocities velocities = selectedSolution.getBoundaryVelocities();
         Vector3D vel1 = velocities.getInitialVelocity();
 

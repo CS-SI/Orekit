@@ -102,7 +102,7 @@ public class WalkerConstellationTest {
         final WalkerConstellation w = new WalkerConstellation(24, 3, 1);
         final List<List<WalkerConstellationSlot<CircularOrbit>>> regular = w.buildRegularSlots(reference);
         Assertions.assertEquals(3, regular.size());
-        final WalkerConstellationSlot<CircularOrbit> slot00 = regular.get(0).get(0);
+        final WalkerConstellationSlot<CircularOrbit> slot00 = regular.getFirst().getFirst();
 
         final WalkerConstellationSlot<CircularOrbit> spare0 = w.buildSlot(slot00, 0, 4.5);
         Assertions.assertEquals(0,   spare0.getPlane());
@@ -205,7 +205,7 @@ public class WalkerConstellationTest {
         final WalkerConstellation w = new WalkerConstellation(24, 3, 1, Pattern.STAR);
         final List<List<WalkerConstellationSlot<CircularOrbit>>> regular = w.buildRegularSlots(reference);
         Assertions.assertEquals(3, regular.size());
-        final WalkerConstellationSlot<CircularOrbit> slot00 = regular.get(0).get(0);
+        final WalkerConstellationSlot<CircularOrbit> slot00 = regular.getFirst().getFirst();
 
         final WalkerConstellationSlot<CircularOrbit> spare0 = w.buildSlot(slot00, 0, 4.5);
         Assertions.assertEquals(0,   spare0.getPlane());

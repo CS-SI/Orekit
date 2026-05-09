@@ -125,12 +125,10 @@ public class CartesianOrbit extends Orbit {
     public CartesianOrbit(final Orbit op) {
         super(op.getPVCoordinates(), op.getFrame(), op.getMu());
         hasNonKeplerianAcceleration = op.hasNonKeplerianAcceleration();
-        if (op instanceof EquinoctialOrbit) {
-            equinoctial = (EquinoctialOrbit) op;
-        } else if (op instanceof CartesianOrbit) {
-            equinoctial = ((CartesianOrbit) op).equinoctial;
-        } else {
-            equinoctial = null;
+        switch (op) {
+            case EquinoctialOrbit orbit1 -> equinoctial = orbit1;
+            case CartesianOrbit orbit -> equinoctial = orbit.equinoctial;
+            case null, default -> equinoctial = null;
         }
     }
 

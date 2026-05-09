@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import java.io.Serial;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -241,6 +242,7 @@ public class AbsoluteDate
     public static final AbsoluteDate FUTURE_INFINITY = ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20240711L;
 
     /** Create an instance with a default value ({@link #J2000_EPOCH}).

@@ -97,7 +97,7 @@ public class TLEParametersDerivativesTest {
         TLEPropagator propagator2 = TLEPropagator.selectExtrapolator(tle);
         double[][] dYdPRef = new double[6][1];
 
-        ParameterDriver selected = bound.getDrivers().get(0);
+        ParameterDriver selected = bound.getDrivers().getFirst();
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
         selected.setValue(p0 - 4 * h);

@@ -36,7 +36,7 @@ public class SP3CoordinateHermiteInterpolatorTest {
         final SP3Parser           parser      = new SP3Parser();
         final DataSource          compressed  = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3                 file        = parser.parse(new UnixCompressFilter().filter(compressed));
-        final List<SP3Coordinate> coordinates = file.getEphemeris("G03").getSegments().get(0).getCoordinates();
+        final List<SP3Coordinate> coordinates = file.getEphemeris("G03").getSegments().getFirst().getCoordinates();
 
         Assertions.assertEquals(288, coordinates.size());
 
@@ -83,7 +83,7 @@ public class SP3CoordinateHermiteInterpolatorTest {
         final SP3Parser           parser      = new SP3Parser();
         final DataSource          source      = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3                 file        = parser.parse(source);
-        final List<SP3Coordinate> coordinates = file.getEphemeris("L51").getSegments().get(0).getCoordinates();
+        final List<SP3Coordinate> coordinates = file.getEphemeris("L51").getSegments().getFirst().getCoordinates();
 
         Assertions.assertEquals(91, coordinates.size());
 

@@ -235,8 +235,8 @@ public class MarshallSolarActivityFutureEstimationLoader
         if (data.isEmpty()) {
             throw new OrekitException(OrekitMessages.NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE, name);
         }
-        setMinDate(data.first().getDate());
-        setMaxDate(data.last().getDate());
+        setMinDate(data.getFirst().getDate());
+        setMaxDate(data.getLast().getDate());
 
     }
 

@@ -35,6 +35,6 @@ public enum ObjectType {
     UNKNOWN,
 
     /** Other. */
-    OTHER;
+    OTHER
 
 }

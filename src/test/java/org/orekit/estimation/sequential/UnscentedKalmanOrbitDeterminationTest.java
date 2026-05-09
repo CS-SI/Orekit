@@ -179,7 +179,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
 
         // Verify the last estimated position
         final RealVector estimatedState = estimation.getPhysicalEstimatedState();
-        final Vector3D ref       = ((Position) measurements.get(measurements.size() - 1)).getPosition();
+        final Vector3D ref       = ((Position) measurements.getLast()).getPosition();
         final Vector3D estimated = new Vector3D(estimatedState.getEntry(0),
                                                 estimatedState.getEntry(1),
                                                 estimatedState.getEntry(2));

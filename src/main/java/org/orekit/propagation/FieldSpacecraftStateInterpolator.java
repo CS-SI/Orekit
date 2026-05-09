@@ -359,7 +359,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
 
         // Get first state definition
-        final FieldSpacecraftState<KK> earliestState   = interpolationData.getNeighborList().get(0);
+        final FieldSpacecraftState<KK> earliestState   = interpolationData.getNeighborList().getFirst();
         final boolean                  areOrbitDefined = earliestState.isOrbitDefined();
 
         // Prepare samples
@@ -595,7 +595,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
                 // Get current entry
                 final List<Pair<FieldAbsoluteDate<KK>, O>> currentAdditionalSamples = entry.getValue();
                 final O currentInterpolatedAdditional;
-                if (currentAdditionalSamples.get(0).getValue() instanceof CalculusFieldElement[]) {
+                if (currentAdditionalSamples.getFirst().getValue() instanceof CalculusFieldElement[]) {
                     //noinspection unchecked
                     currentInterpolatedAdditional = (O) interpolateAdditionalSamples(field, interpolationDate, currentAdditionalSamples);
                 } else {
@@ -623,7 +623,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
     private <O> KK[] interpolateAdditionalSamples(final Field<KK> field, final FieldAbsoluteDate<KK> interpolationDate, final List<Pair<FieldAbsoluteDate<KK>, O>> currentAdditionalSamples) {
 
         // Extract number of values for this specific entry
-        final int nbOfValues = ((KK[]) currentAdditionalSamples.get(0).getValue()).length;
+        final int nbOfValues = ((KK[]) currentAdditionalSamples.getFirst().getValue()).length;
 
         // For each value of current additional state entry
         final KK[] currentInterpolatedAdditional = MathArrays.buildArray(field, nbOfValues);

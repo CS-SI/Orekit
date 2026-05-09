@@ -87,7 +87,7 @@ public class AttitudeStateHistory implements AttitudeEphemerisFile.AttitudeEphem
     /** {@inheritDoc} */
     @Override
     public AngularDerivativesFilter getAvailableDerivatives() {
-        return states.get(0).getAvailableDerivatives();
+        return states.getFirst().getAvailableDerivatives();
     }
 
     /** {@inheritDoc} */
@@ -101,13 +101,13 @@ public class AttitudeStateHistory implements AttitudeEphemerisFile.AttitudeEphem
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return states.get(0).getDate();
+        return states.getFirst().getDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return states.get(states.size() - 1).getDate();
+        return states.getLast().getDate();
     }
 
     /** {@inheritDoc} */

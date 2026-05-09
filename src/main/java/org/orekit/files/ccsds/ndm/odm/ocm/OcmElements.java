@@ -41,6 +41,6 @@ public enum OcmElements {
     OD,
 
     /** User defined. */
-    USER;
+    USER
 
 }

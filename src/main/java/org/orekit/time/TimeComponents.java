@@ -17,6 +17,7 @@
 package org.orekit.time;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -115,6 +116,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     };
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20240712L;
 
     /** Basic and extends formats for local time, with optional timezone. */

@@ -133,7 +133,7 @@ class CylindricallyShadowedLightFluxModelTest {
         final List<EventDetector> detectors = model.getEclipseConditionsDetector();
         // THEN
         Assertions.assertEquals(1, detectors.size());
-        final EventDetector detector = detectors.get(0);
+        final EventDetector detector = detectors.getFirst();
         Assertions.assertInstanceOf(CylindricalShadowEclipseDetector.class, detector);
         final Action action = detector.getHandler().eventOccurred(Mockito.mock(SpacecraftState.class), detector, false);
         Assertions.assertEquals(Action.RESET_DERIVATIVES, action);
@@ -153,9 +153,9 @@ class CylindricallyShadowedLightFluxModelTest {
         // THEN
         final List<EventDetector> eventDetectors = model.getEclipseConditionsDetector();
         Assertions.assertEquals(eventDetectors.size(), fieldEventDetectors.size());
-        Assertions.assertInstanceOf(FieldCylindricalShadowEclipseDetector.class, fieldEventDetectors.get(0));
-        final FieldCylindricalShadowEclipseDetector<Complex> fieldShadowDetector = (FieldCylindricalShadowEclipseDetector<Complex>) fieldEventDetectors.get(0);
-        final CylindricalShadowEclipseDetector shadowDetector = (CylindricalShadowEclipseDetector) eventDetectors.get(0);
+        Assertions.assertInstanceOf(FieldCylindricalShadowEclipseDetector.class, fieldEventDetectors.getFirst());
+        final FieldCylindricalShadowEclipseDetector<Complex> fieldShadowDetector = (FieldCylindricalShadowEclipseDetector<Complex>) fieldEventDetectors.getFirst();
+        final CylindricalShadowEclipseDetector shadowDetector = (CylindricalShadowEclipseDetector) eventDetectors.getFirst();
         Assertions.assertEquals(shadowDetector.getThreshold(), fieldShadowDetector.getThreshold().getReal());
         compareActions(shadowDetector, fieldShadowDetector);
     }

@@ -61,8 +61,8 @@ public class ObservableSatellite extends AbstractParticipant {
      */
     @Override
     public boolean equals(final Object other) {
-        if (other instanceof ObservableSatellite) {
-            return propagatorIndex == ((ObservableSatellite) other).propagatorIndex;
+        if (other instanceof ObservableSatellite satellite) {
+            return propagatorIndex == satellite.propagatorIndex;
         } else {
             return false;
 

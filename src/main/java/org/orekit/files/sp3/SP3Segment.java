@@ -105,13 +105,13 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return coordinates.get(0).getDate();
+        return coordinates.getFirst().getDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return coordinates.get(coordinates.size() - 1).getDate();
+        return coordinates.getLast().getDate();
     }
 
     /** {@inheritDoc} */

@@ -337,7 +337,7 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
         //test on propagator parameters
         final double dragCoef  = -0.2154;
         final ParameterDriversList propagatorParameters = odsatW3.getPropagatorParameters();
-        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-3);
+        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().getFirst().getValue(), 1e-3);
         final Vector3D leakAcceleration0 =
                         new Vector3D(propagatorParameters.getDrivers().get(1).getValue(),
                                      propagatorParameters.getDrivers().get(3).getValue(),
@@ -357,7 +357,7 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
         //station CastleRock
         final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
         final double   CastleRangeBias = 11274.4195;
-        Assertions.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
+        Assertions.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.getFirst().getValue()), angleAccuracy);
         Assertions.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
         Assertions.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 

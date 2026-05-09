@@ -290,12 +290,10 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState addAdditionalData(final String name, final Object value) {
         final DataDictionary newDict = new DataDictionary(additional);
-        if (value instanceof double[]) {
-            newDict.put(name, ((double[]) value).clone());
-        } else if (value instanceof Double) {
-            newDict.put(name, new double[] {(double) value});
-        } else {
-            newDict.put(name, value);
+        switch (value) {
+            case double[] doubles -> newDict.put(name, doubles.clone());
+            case Double double1 -> newDict.put(name, new double[] {double1});
+            case null, default -> newDict.put(name, value);
         }
         return withAdditionalData(newDict);
     }
@@ -601,9 +599,9 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
                 throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                           entry.getKey());
             }
-            if (other instanceof double[] && ((double[]) other).length != ((double[]) entry.getValue()).length) {
+            if (other instanceof double[] doubles && doubles.length != ((double[]) entry.getValue()).length) {
                 throw new MathIllegalStateException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                    ((double[]) other).length, ((double[]) entry.getValue()).length);
+                                                    doubles.length, ((double[]) entry.getValue()).length);
             }
         }
 
@@ -653,8 +651,8 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public double[] getAdditionalState(final String name) {
         final Object data = getAdditionalData(name);
         if (!(data instanceof double[])) {
-            if (data instanceof Double) {
-                return new double[] {(double) data};
+            if (data instanceof Double double1) {
+                return new double[] {double1};
             } else {
                 throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_BAD_TYPE, name);
             }

@@ -615,7 +615,7 @@ public class IIRVMessage {
     private void validateStaticValues(final List<IIRVVector> iirvVectors) {
 
         // Check thatM select values are consistent across entire vector
-        final IIRVVector firstIIRV = iirvVectors.get(0);
+        final IIRVVector firstIIRV = iirvVectors.getFirst();
         for (int i = 1; i < iirvVectors.size(); i++) {
             final IIRVVector iirv = iirvVectors.get(i);
 
@@ -649,7 +649,7 @@ public class IIRVMessage {
      * @see org.orekit.files.iirv.terms.VehicleIdCodeTerm
      */
     public String getSatelliteID() {
-        return vectors.get(0).getVehicleIdCode().toEncodedString();
+        return vectors.getFirst().getVehicleIdCode().toEncodedString();
     }
 
     /**
