@@ -64,8 +64,8 @@ public class FieldAdjustableEmitterSignalTimer<T extends CalculusFieldElement<T>
     public FieldSignalEmissionCondition<T> computeEmissionCondition(final FieldSignalReceptionCondition<T> receptionCondition,
                                                                     final FieldAbsoluteDate<T> approxEmissionDate) {
         final T delay = computeDelay(receptionCondition, approxEmissionDate);
-        final FieldAbsoluteDate<T> emissionDate = receptionCondition.getReceptionDate().shiftedBy(delay.negate());
-        final Frame frame = receptionCondition.getReferenceFrame();
+        final FieldAbsoluteDate<T> emissionDate = receptionCondition.receptionDate().shiftedBy(delay.negate());
+        final Frame frame = receptionCondition.referenceFrame();
         return new FieldSignalEmissionCondition<>(emissionDate, adjustableEmitterPVProvider.getPosition(emissionDate, frame), frame);
     }
 
@@ -74,9 +74,9 @@ public class FieldAdjustableEmitterSignalTimer<T extends CalculusFieldElement<T>
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
     public T computeDelay(final FieldSignalReceptionCondition<T> receptionCondition) {
-        final FieldAbsoluteDate<T> signalArrivalDate = receptionCondition.getReceptionDate();
-        final Frame frame = receptionCondition.getReferenceFrame();
-        final FieldVector3D<T> receiverPosition = receptionCondition.getReceiverPosition();
+        final FieldAbsoluteDate<T> signalArrivalDate = receptionCondition.receptionDate();
+        final Frame frame = receptionCondition.referenceFrame();
+        final FieldVector3D<T> receiverPosition = receptionCondition.receiverPosition();
         final FieldVector3D<T> emitterPosition = adjustableEmitterPVProvider.getPosition(signalArrivalDate, frame);
         final T distance = receiverPosition.subtract(emitterPosition).getNorm();
         final FieldAbsoluteDate<T> approxEmissionDate = signalArrivalDate.shiftedBy(distance.multiply(-C_RECIPROCAL));
@@ -92,10 +92,10 @@ public class FieldAdjustableEmitterSignalTimer<T extends CalculusFieldElement<T>
                           final FieldAbsoluteDate<T> approxEmissionDate) {
 
         // Initialize emission date search loop assuming the emitter PV is almost correct
-        final T offset = receptionCondition.getReceptionDate().durationFrom(approxEmissionDate);
+        final T offset = receptionCondition.receptionDate().durationFrom(approxEmissionDate);
 
-        return compute(adjustableEmitterPVProvider, offset, receptionCondition.getReceiverPosition(), approxEmissionDate,
-                receptionCondition.getReferenceFrame());
+        return compute(adjustableEmitterPVProvider, offset, receptionCondition.receiverPosition(), approxEmissionDate,
+                receptionCondition.referenceFrame());
     }
 
     @Override

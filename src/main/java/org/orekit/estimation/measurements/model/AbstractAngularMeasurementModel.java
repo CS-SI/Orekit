@@ -60,8 +60,8 @@ public abstract class AbstractAngularMeasurementModel extends AbstractSignalBase
         final AdjustableEmitterSignalTimer signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter);
         final SignalEmissionCondition emissionCondition = signalTravelTime.computeEmissionCondition(receptionCondition,
                 approxEmissionDate);
-        final Vector3D observedPosition = emissionCondition.getEmitterPosition();
-        return observedPosition.subtract(receptionCondition.getReceiverPosition()).normalize();
+        final Vector3D observedPosition = emissionCondition.emitterPosition();
+        return observedPosition.subtract(receptionCondition.receiverPosition()).normalize();
     }
 
     /**
@@ -75,12 +75,12 @@ public abstract class AbstractAngularMeasurementModel extends AbstractSignalBase
     protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getEmitterToReceiverVector(final FieldSignalReceptionCondition<T> receptionCondition,
                                                                                               final FieldPVCoordinatesProvider<T> emitter,
                                                                                               final FieldAbsoluteDate<T> approxEmissionDate) {
-        final Field<T> field = receptionCondition.getReceptionDate().getField();
+        final Field<T> field = receptionCondition.receptionDate().getField();
         final FieldAdjustableEmitterSignalTimer<T> signalTravelTime = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, emitter);
         final FieldSignalEmissionCondition<T> emissionCondition = signalTravelTime.computeEmissionCondition(receptionCondition,
                 approxEmissionDate);
-        final FieldVector3D<T> observedPosition = emissionCondition.getEmitterPosition();
-        return observedPosition.subtract(receptionCondition.getReceiverPosition());
+        final FieldVector3D<T> observedPosition = emissionCondition.emitterPosition();
+        return observedPosition.subtract(receptionCondition.receiverPosition());
     }
 }

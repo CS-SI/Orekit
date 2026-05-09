@@ -68,7 +68,7 @@ public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> ex
                                                final PVCoordinatesProvider emitter) {
         final AdjustableEmitterSignalTimer signalTimer = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter);
         final double signalTravelTime = signalTimer.computeDelay(receptionCondition);
-        return receptionCondition.getReceptionDate().shiftedBy(-signalTravelTime);
+        return receptionCondition.receptionDate().shiftedBy(-signalTravelTime);
     }
 
     /**

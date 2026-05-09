@@ -167,10 +167,10 @@ class FieldAdjustableEmitterSignalTimerTest {
         final FieldSignalEmissionCondition<Binary64> emissionCondition = fieldComputer.computeEmissionCondition(fieldCondition,
                 fieldDate);
         // THEN
-        final FieldAbsoluteDate<Binary64> emissionDate = emissionCondition.getEmissionDate();
+        final FieldAbsoluteDate<Binary64> emissionDate = emissionCondition.emissionDate();
         final Binary64 delay = fieldComputer.computeDelay(fieldCondition, fieldDate);
         assertEquals(delay, fieldDate.durationFrom(emissionDate));
-        assertEquals(fieldProvider.getPosition(emissionDate, orbit.getFrame()), emissionCondition.getEmitterPosition());
+        assertEquals(fieldProvider.getPosition(emissionDate, orbit.getFrame()), emissionCondition.emitterPosition());
     }
 
 }

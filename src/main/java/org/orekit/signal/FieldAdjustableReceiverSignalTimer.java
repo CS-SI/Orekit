@@ -66,7 +66,7 @@ public class FieldAdjustableReceiverSignalTimer<T extends CalculusFieldElement<T
                                                                       final FieldAbsoluteDate<T> approxReceptionDate) {
         final T delay = computeDelay(emissionCondition, approxReceptionDate);
         final FieldAbsoluteDate<T> receptionDate = approxReceptionDate.shiftedBy(delay);
-        final Frame frame = emissionCondition.getReferenceFrame();
+        final Frame frame = emissionCondition.referenceFrame();
         return new FieldSignalReceptionCondition<>(receptionDate, adjustableReceiverPVProvider.getPosition(receptionDate, frame), frame);
     }
 
@@ -75,10 +75,10 @@ public class FieldAdjustableReceiverSignalTimer<T extends CalculusFieldElement<T
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
     public T computeDelay(final FieldSignalEmissionCondition<T> emissionCondition) {
-        final FieldAbsoluteDate<T> emissionDate = emissionCondition.getEmissionDate();
+        final FieldAbsoluteDate<T> emissionDate = emissionCondition.emissionDate();
         final FieldVector3D<T> receiverPosition = adjustableReceiverPVProvider.getPosition(emissionDate,
-                emissionCondition.getReferenceFrame());
-        final T distance = receiverPosition.subtract(emissionCondition.getEmitterPosition()).getNorm();
+                emissionCondition.referenceFrame());
+        final T distance = receiverPosition.subtract(emissionCondition.emitterPosition()).getNorm();
         final FieldAbsoluteDate<T> approxReceptionDate = emissionDate.shiftedBy(distance.multiply(C_RECIPROCAL));
         return computeDelay(emissionCondition, approxReceptionDate);
     }
@@ -91,10 +91,10 @@ public class FieldAdjustableReceiverSignalTimer<T extends CalculusFieldElement<T
     public T computeDelay(final FieldSignalEmissionCondition<T> emissionCondition,
                           final FieldAbsoluteDate<T> approxReceptionDate) {
         // initialize reception date search loop assuming the state is already correct
-        final T offset = approxReceptionDate.durationFrom(emissionCondition.getEmissionDate());
+        final T offset = approxReceptionDate.durationFrom(emissionCondition.emissionDate());
 
-        return compute(adjustableReceiverPVProvider, offset, emissionCondition.getEmitterPosition(), approxReceptionDate,
-                emissionCondition.getReferenceFrame());
+        return compute(adjustableReceiverPVProvider, offset, emissionCondition.emitterPosition(), approxReceptionDate,
+                emissionCondition.referenceFrame());
     }
 
     @Override

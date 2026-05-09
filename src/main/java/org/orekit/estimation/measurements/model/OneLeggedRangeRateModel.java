@@ -57,7 +57,7 @@ public class OneLeggedRangeRateModel extends AbstractSignalBasedModel {
      */
     public double value(final SignalReceptionCondition receptionCondition, final Vector3D receiverVelocity,
                         final PVCoordinatesProvider emitter) {
-        return value(receptionCondition, receiverVelocity, emitter, receptionCondition.getReceptionDate());
+        return value(receptionCondition, receiverVelocity, emitter, receptionCondition.receptionDate());
     }
 
     /**
@@ -72,11 +72,11 @@ public class OneLeggedRangeRateModel extends AbstractSignalBasedModel {
     public double value(final SignalReceptionCondition receptionCondition, final Vector3D receiverVelocity,
                         final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
         final AdjustableEmitterSignalTimer adjustableEmitter = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter);
-        final AbsoluteDate receptionDate = receptionCondition.getReceptionDate();
+        final AbsoluteDate receptionDate = receptionCondition.receptionDate();
         final double delay = adjustableEmitter.computeDelay(receptionCondition, approxEmissionDate);
         final AbsoluteDate emissionDate = receptionDate.shiftedBy(-delay);
-        final TimeStampedPVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, receptionCondition.getReferenceFrame());
-        final Vector3D relativePosition = receptionCondition.getReceiverPosition().subtract(emitterPV.getPosition());
+        final TimeStampedPVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, receptionCondition.referenceFrame());
+        final Vector3D relativePosition = receptionCondition.receiverPosition().subtract(emitterPV.getPosition());
         final Vector3D relativeVelocity = receiverVelocity.subtract(emitterPV.getVelocity());
         return Vector3D.dotProduct(relativeVelocity, relativePosition.normalize());
     }
@@ -92,7 +92,7 @@ public class OneLeggedRangeRateModel extends AbstractSignalBasedModel {
     public <T extends CalculusFieldElement<T>> T value(final FieldSignalReceptionCondition<T> receptionCondition,
                                                        final FieldVector3D<T> receiverVelocity,
                                                        final FieldPVCoordinatesProvider<T> emitter) {
-        return value(receptionCondition, receiverVelocity, emitter, receptionCondition.getReceptionDate());
+        return value(receptionCondition, receiverVelocity, emitter, receptionCondition.receptionDate());
     }
     /**
      * Compute measurement.
@@ -107,13 +107,13 @@ public class OneLeggedRangeRateModel extends AbstractSignalBasedModel {
                                                        final FieldVector3D<T> receiverVelocity,
                                                        final FieldPVCoordinatesProvider<T> emitter,
                                                        final FieldAbsoluteDate<T> approxEmissionDate) {
-        final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
+        final FieldAbsoluteDate<T> receptionDate = receptionCondition.receptionDate();
         final FieldAdjustableEmitterSignalTimer<T> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
                 receptionDate.getField(), emitter);
         final T delay = adjustableEmitter.computeDelay(receptionCondition, approxEmissionDate);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(delay.negate());
-        final TimeStampedFieldPVCoordinates<T> emitterPV = emitter.getPVCoordinates(emissionDate, receptionCondition.getReferenceFrame());
-        final FieldVector3D<T> relativePosition = receptionCondition.getReceiverPosition().subtract(emitterPV.getPosition());
+        final TimeStampedFieldPVCoordinates<T> emitterPV = emitter.getPVCoordinates(emissionDate, receptionCondition.referenceFrame());
+        final FieldVector3D<T> relativePosition = receptionCondition.receiverPosition().subtract(emitterPV.getPosition());
         final FieldVector3D<T> relativeVelocity = receiverVelocity.subtract(emitterPV.getVelocity());
         return FieldVector3D.dotProduct(relativeVelocity, relativePosition.normalize());
     }
