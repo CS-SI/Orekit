@@ -564,17 +564,14 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return true anomaly (rad)
      */
     public T getTrueAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(e, cachedAnomaly) :
+        return switch (cachedPositionAngleType) {
+            case MEAN -> (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(e, cachedAnomaly) :
                     FieldKeplerianAnomalyUtility.ellipticMeanToTrue(e, cachedAnomaly);
-
-            case TRUE: return cachedAnomaly;
-
-            case ECCENTRIC: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+            case TRUE -> cachedAnomaly;
+            case ECCENTRIC ->
+                    (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, cachedAnomaly) :
+                            FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, cachedAnomaly);
+        };
     }
 
     /** Get the true anomaly derivative.
@@ -610,21 +607,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return eccentric anomaly (rad)
      */
     public T getEccentricAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN:
-                return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, cachedAnomaly) :
+        return switch (cachedPositionAngleType) {
+            case MEAN -> (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, cachedAnomaly) :
                     FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, cachedAnomaly);
-
-            case ECCENTRIC:
-                return cachedAnomaly;
-
-            case TRUE:
-                return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, cachedAnomaly) :
+            case ECCENTRIC -> cachedAnomaly;
+            case TRUE -> (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, cachedAnomaly) :
                     FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(e, cachedAnomaly);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        };
     }
 
     /** Get the eccentric anomaly derivative.
@@ -660,17 +649,14 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return mean anomaly (rad)
      */
     public T getMeanAnomaly() {
-        switch (cachedPositionAngleType) {
-            case ECCENTRIC: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, cachedAnomaly);
-
-            case MEAN: return cachedAnomaly;
-
-            case TRUE: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(e, cachedAnomaly) :
+        return switch (cachedPositionAngleType) {
+            case ECCENTRIC ->
+                    (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, cachedAnomaly) :
+                            FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, cachedAnomaly);
+            case MEAN -> cachedAnomaly;
+            case TRUE -> (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(e, cachedAnomaly) :
                     FieldKeplerianAnomalyUtility.ellipticTrueToMean(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+        };
     }
 
     /** Get the mean anomaly derivative.

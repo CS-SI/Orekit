@@ -176,9 +176,9 @@ class FieldAdjustableReceiverSignalTimerTest {
         final FieldSignalReceptionCondition<Binary64> receptionCondition = fieldComputer.computeReceptionCondition(fieldEmissionCondition,
                 fieldDate);
         // THEN
-        final FieldAbsoluteDate<Binary64> receptionDate = receptionCondition.getReceptionDate();
+        final FieldAbsoluteDate<Binary64> receptionDate = receptionCondition.receptionDate();
         final Binary64 delay = fieldComputer.computeDelay(fieldEmissionCondition, fieldDate);
         assertEquals(delay, receptionDate.durationFrom(fieldDate));
-        assertEquals(positionProvider.getPosition(receptionDate, orbit.getFrame()), receptionCondition.getReceiverPosition());
+        assertEquals(positionProvider.getPosition(receptionDate, orbit.getFrame()), receptionCondition.receiverPosition());
     }
 }

@@ -22,42 +22,12 @@ import org.orekit.time.AbsoluteDate;
 
 /**
  * Data container describing signal reception conditions.
- * @since 14.0
+ *
+ * @param receptionDate    Signal reception date.
+ * @param receiverPosition Receiver position's vector at signal reception.
+ * @param referenceFrame   Frame where position is given.
  * @author Romain Serra
+ * @since 14.0
  */
-public class SignalReceptionCondition {
-
-    /** Signal reception date. */
-    private final AbsoluteDate receptionDate;
-
-    /** Receiver position's vector at signal reception. */
-    private final Vector3D receiverPosition;
-
-    /** Frame where position is given. */
-    private final Frame referenceFrame;
-
-    /**
-     * Constructor.
-     * @param receptionDate reception date
-     * @param receiverPosition receiver position
-     * @param referenceFrame frame where position is given
-     */
-    public SignalReceptionCondition(final AbsoluteDate receptionDate, final Vector3D receiverPosition,
-                                    final Frame referenceFrame) {
-        this.receptionDate = receptionDate;
-        this.receiverPosition = receiverPosition;
-        this.referenceFrame = referenceFrame;
-    }
-
-    public Vector3D getReceiverPosition() {
-        return receiverPosition;
-    }
-
-    public AbsoluteDate getReceptionDate() {
-        return receptionDate;
-    }
-
-    public Frame getReferenceFrame() {
-        return referenceFrame;
-    }
+public record SignalReceptionCondition(AbsoluteDate receptionDate, Vector3D receiverPosition, Frame referenceFrame) {
 }

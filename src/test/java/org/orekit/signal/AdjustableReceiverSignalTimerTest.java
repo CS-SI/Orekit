@@ -130,9 +130,9 @@ class AdjustableReceiverSignalTimerTest {
         final SignalReceptionCondition receptionCondition = signalTimeOfFlight.computeReceptionCondition(emissionCondition,
                 emissionDate);
         // THEN
-        final AbsoluteDate receptionDate = receptionCondition.getReceptionDate();
+        final AbsoluteDate receptionDate = receptionCondition.receptionDate();
         final double delay = signalTimeOfFlight.computeDelay(emissionCondition, receptionDate);
         assertEquals(delay, receptionDate.durationFrom(emissionDate), 1e-15);
-        assertEquals(absolutePVCoordinates.getPosition(receptionDate, frame), receptionCondition.getReceiverPosition());
+        assertEquals(absolutePVCoordinates.getPosition(receptionDate, frame), receptionCondition.receiverPosition());
     }
 }

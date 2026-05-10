@@ -38,8 +38,8 @@ class FieldSignalReceptionConditionTest {
         // WHEN
         final SignalReceptionCondition actualCondition = fieldCondition.toReceptionCondition();
         // THEN
-        assertEquals(expectedCondition.getReceptionDate(), actualCondition.getReceptionDate());
-        assertEquals(expectedCondition.getReceiverPosition(), actualCondition.getReceiverPosition());
-        assertEquals(frame, actualCondition.getReferenceFrame());
+        assertEquals(expectedCondition.receptionDate(), actualCondition.receptionDate());
+        assertEquals(expectedCondition.receiverPosition(), actualCondition.receiverPosition());
+        assertEquals(frame, actualCondition.referenceFrame());
     }
 }

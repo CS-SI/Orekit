@@ -529,17 +529,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @return true anomaly (rad)
      */
     public double getTrueAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN: return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicMeanToTrue(e, cachedAnomaly) :
+        return switch (cachedPositionAngleType) {
+            case MEAN -> (a < 0.) ? KeplerianAnomalyUtility.hyperbolicMeanToTrue(e, cachedAnomaly) :
                     KeplerianAnomalyUtility.ellipticMeanToTrue(e, cachedAnomaly);
-
-            case TRUE: return cachedAnomaly;
-
-            case ECCENTRIC: return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, cachedAnomaly) :
+            case TRUE -> cachedAnomaly;
+            case ECCENTRIC -> (a < 0.) ? KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, cachedAnomaly) :
                     KeplerianAnomalyUtility.ellipticEccentricToTrue(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+        };
     }
 
     /** Get the true anomaly derivative.
@@ -575,21 +571,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @return eccentric anomaly (rad)
      */
     public double getEccentricAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN:
-                return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, cachedAnomaly) :
+        return switch (cachedPositionAngleType) {
+            case MEAN -> (a < 0.) ? KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, cachedAnomaly) :
                     KeplerianAnomalyUtility.ellipticMeanToEccentric(e, cachedAnomaly);
-
-            case ECCENTRIC:
-                return cachedAnomaly;
-
-            case TRUE:
-                return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, cachedAnomaly) :
+            case ECCENTRIC -> cachedAnomaly;
+            case TRUE -> (a < 0.) ? KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, cachedAnomaly) :
                     KeplerianAnomalyUtility.ellipticTrueToEccentric(e, cachedAnomaly);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        };
     }
 
     /** Get the eccentric anomaly derivative.
@@ -626,17 +614,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @return mean anomaly (rad)
      */
     public double getMeanAnomaly() {
-        switch (cachedPositionAngleType) {
-            case ECCENTRIC: return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicEccentricToMean(e, cachedAnomaly) :
+        return switch (cachedPositionAngleType) {
+            case ECCENTRIC -> (a < 0.) ? KeplerianAnomalyUtility.hyperbolicEccentricToMean(e, cachedAnomaly) :
                     KeplerianAnomalyUtility.ellipticEccentricToMean(e, cachedAnomaly);
-
-            case MEAN: return cachedAnomaly;
-
-            case TRUE: return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicTrueToMean(e, cachedAnomaly) :
+            case MEAN -> cachedAnomaly;
+            case TRUE -> (a < 0.) ? KeplerianAnomalyUtility.hyperbolicTrueToMean(e, cachedAnomaly) :
                     KeplerianAnomalyUtility.ellipticTrueToMean(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+        };
     }
 
     /** Get the mean anomaly derivative.

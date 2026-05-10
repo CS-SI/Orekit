@@ -201,9 +201,9 @@ class AdjustableEmitterSignalTimerTest {
         final SignalEmissionCondition emissionCondition = signalTimeOfFlight.computeEmissionCondition(receptionCondition,
                 receptionDate);
         // THEN
-        final AbsoluteDate emittingDate = emissionCondition.getEmissionDate();
+        final AbsoluteDate emittingDate = emissionCondition.emissionDate();
         final double delay = signalTimeOfFlight.computeDelay(receptionCondition, emittingDate);
         assertEquals(delay, -emittingDate.durationFrom(receptionDate), 1e-15);
-        assertEquals(absolutePVCoordinates.getPosition(emittingDate, frame), emissionCondition.getEmitterPosition());
+        assertEquals(absolutePVCoordinates.getPosition(emittingDate, frame), emissionCondition.emitterPosition());
     }
 }

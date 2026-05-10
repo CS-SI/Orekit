@@ -235,11 +235,11 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
             final AbsoluteDate firstDate = eventDateList.getFirst().getDate();
             final AbsoluteDate lastDate  = eventDateList.get(lastIndex).getDate();
             if (firstDate.durationFrom(target) > minGap) {
-                increasing = !eventDateList.getFirst().isgIncrease();
+                increasing = !eventDateList.getFirst().gIncrease;
                 eventDateList.addFirst(new EventDate(target, increasing));
                 currentIndex++;
             } else if (target.durationFrom(lastDate) > minGap) {
-                increasing = !eventDateList.get(lastIndex).isgIncrease();
+                increasing = !eventDateList.get(lastIndex).gIncrease;
                 eventDateList.add(new EventDate(target, increasing));
             } else {
                 throw new OrekitIllegalArgumentException(OrekitMessages.EVENT_DATE_TOO_CLOSE,
@@ -266,7 +266,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
                 return -1.0;
             } else {
                 final EventDate event = getClosest(gDate);
-                return event.isgIncrease() ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);
+                return event.gIncrease ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);
             }
         }
 
@@ -305,38 +305,16 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
         }
     }
 
-    /** Event date specification. */
-    private static class EventDate implements TimeStamped {
+    /** Event date specification.
+     * @param date event date
+     * @param gIncrease flag for g function way around event date
+     */
+    private record EventDate(AbsoluteDate date, boolean gIncrease) implements TimeStamped {
 
-        /** Event date. */
-        private final AbsoluteDate date;
-
-        /** Flag for g function way around event date. */
-        private final boolean gIncrease;
-
-        /** Simple constructor.
-         * @param date date
-         * @param increase if true, g function increases around event date
-         */
-        EventDate(final AbsoluteDate date, final boolean increase) {
-            this.date = date;
-            this.gIncrease = increase;
-        }
-
-        /** Getter for event date.
-         * @return event date
-         */
+        @Override
         public AbsoluteDate getDate() {
             return date;
         }
-
-        /** Getter for g function way at event date.
-         * @return g function increasing flag
-         */
-        public boolean isgIncrease() {
-            return gIncrease;
-        }
-
     }
 
 }
