@@ -146,7 +146,7 @@ public class StreamingOemWriterTest {
 
             OdmHeader header = new OdmHeader();
             header.setOriginator(originator);
-            OemMetadata metadata = new OemMetadata(1);
+            OemMetadata metadata = new OemMetadata(1, null);
             metadata.setObjectName(objectName);
             metadata.setObjectID(objectID);
             metadata.setTimeSystem(TimeSystem.UTC);

@@ -95,7 +95,7 @@ public class TdmParser extends AbstractConstituentParser<TdmHeader, Tdm, TdmPars
      * are no range observations in {@link RangeUnits#RU Range Units})
      * @param filters filters to apply to parse tokens
      * @param frameMapper for creating an Orekit {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public TdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final ParsedUnitsBehavior parsedUnitsBehavior, final RangeUnitsConverter converter,

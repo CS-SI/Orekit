@@ -305,7 +305,7 @@ public class EphemerisOcmWriterTest {
     }
 
     private OcmMetadata dummyMetadata() {
-        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault());
+        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault(), null);
         metadata.addComment("dummy metadata comment");
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setInternationalDesignator("9999-999ZZZ");
@@ -318,7 +318,7 @@ public class EphemerisOcmWriterTest {
 
     private TrajectoryStateHistoryMetadata dummyTrajectoryMetadata() {
         final AbsoluteDate t0 = new AbsoluteDate(2003, 5, 7, 19, 43, 56.75, TimeScalesFactory.getUTC());
-        TrajectoryStateHistoryMetadata metadata = new TrajectoryStateHistoryMetadata(t0, DataContext.getDefault());
+        TrajectoryStateHistoryMetadata metadata = new TrajectoryStateHistoryMetadata(t0, DataContext.getDefault(), null);
         metadata.addComment("dummy trajectory comment");
         metadata.setTrajID("traj 17");
         metadata.setTrajBasis("PREDICTED");

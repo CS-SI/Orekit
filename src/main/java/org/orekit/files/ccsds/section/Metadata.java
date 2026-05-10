@@ -60,7 +60,7 @@ public class Metadata extends CommentsContainer {
      *
      * @param defaultTimeSystem default time system (may be null)
      * @param frameMapper       for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     protected Metadata(final TimeSystem defaultTimeSystem,
                        final CcsdsFrameMapper frameMapper) {
@@ -72,7 +72,7 @@ public class Metadata extends CommentsContainer {
      * Get the mapping between a CCSDS frame and a {@link Frame}.
      *
      * @return the frame mapper.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CcsdsFrameMapper getFrameMapper() {
         return frameMapper;

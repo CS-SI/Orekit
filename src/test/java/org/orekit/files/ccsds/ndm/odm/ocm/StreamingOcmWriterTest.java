@@ -28,6 +28,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -84,11 +85,13 @@ public class StreamingOcmWriterTest {
         final BoundedPropagator propagator = originalEphem.getPropagator(new FrameAlignedProvider(frame));
         StringBuilder buffer = new StringBuilder();
         OdmHeader header = original.getHeader();
-        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault());
+        CcsdsFrameMapper frameMapper = null;
+        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault(), frameMapper);
         metadata.setTimeSystem(TimeSystem.UTC);
         metadata.setEpochT0(original.getSegments().getFirst().getStart());
         TrajectoryStateHistoryMetadata trajectoryMetadata = new TrajectoryStateHistoryMetadata(metadata.getEpochT0(),
-                                                                                               DataContext.getDefault());
+                                                                                               DataContext.getDefault(),
+                frameMapper);
         trajectoryMetadata.setTrajReferenceFrame(FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
         trajectoryMetadata.setInterpolationMethod(InterpolationMethod.LAGRANGE);
         trajectoryMetadata.setInterpolationDegree(2);
@@ -130,11 +133,13 @@ public class StreamingOcmWriterTest {
         final BoundedPropagator propagator = originalEphem.getPropagator(new FrameAlignedProvider(frame));
         StringBuilder buffer = new StringBuilder();
         OdmHeader header = original.getHeader();
-        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault());
+        CcsdsFrameMapper frameMapper = null;
+        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault(), frameMapper);
         metadata.setTimeSystem(TimeSystem.UTC);
         metadata.setEpochT0(original.getSegments().getFirst().getStart());
         TrajectoryStateHistoryMetadata trajectoryMetadata = new TrajectoryStateHistoryMetadata(metadata.getEpochT0(),
-                                                                                               DataContext.getDefault());
+                                                                                               DataContext.getDefault(),
+                frameMapper);
         trajectoryMetadata.setTrajReferenceFrame(FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
         trajectoryMetadata.setInterpolationMethod(InterpolationMethod.LAGRANGE);
         trajectoryMetadata.setInterpolationDegree(2);

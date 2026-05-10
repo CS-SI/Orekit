@@ -75,7 +75,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * Simple constructor.
      *
      * @param frameMapper for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public AttitudeEndpoints(final CcsdsFrameMapper frameMapper) {
         this.frameMapper = frameMapper;
@@ -199,7 +199,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * Get the mapping between a CCSDS frame and a {@link Frame}.
      *
      * @return the frame mapper.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CcsdsFrameMapper getFrameMapper() {
         return frameMapper;
@@ -210,7 +210,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      *
      * @return the external frame.
      * @see #getExternalFrame()
-     * @since 14.0
+     * @since 13.1.5
      */
     public Frame getExternal() {
         // no reference frame epoch

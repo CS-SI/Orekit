@@ -18,18 +18,16 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.List;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.definitions.BodyFacade;
-import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
@@ -134,29 +132,10 @@ public class CdmMetadata extends Metadata {
     private FrameFacade altCovRefFrame;
 
     /** Simple constructor.
-     * @deprecated in favor of {@link #CdmMetadata(DataContext, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    @DefaultDataContext
-    public CdmMetadata() {
-        this(DataContext.getDefault());
-    }
-
-    /** Simple constructor.
-     *
-     * @param dataContext data context
-     * @deprecated in favor of {@link #CdmMetadata(DataContext, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public CdmMetadata(final DataContext dataContext) {
-        this(dataContext, new OrekitCcsdsFrameMapper());
-    }
-
-    /** Simple constructor.
      *
      * @param dataContext data context
      * @param frameMapper for creating an Orekit {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CdmMetadata(final DataContext dataContext,
                        final CcsdsFrameMapper frameMapper) {
@@ -649,7 +628,7 @@ public class CdmMetadata extends Metadata {
      * @return alternative covariance reference frame.
      * @see #getAltCovType()
      * @see #getAltCovRefFrame()
-     * @since 14.0
+     * @since 13.1.5
      */
     public Frame getAltCovFrame() {
         // Epoch of AltCovRefFrame can't be specified.

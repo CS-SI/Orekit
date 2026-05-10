@@ -122,7 +122,7 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
      * @param frameMapper for creating an Orekit {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public AcmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final ParsedUnitsBehavior parsedUnitsBehavior,

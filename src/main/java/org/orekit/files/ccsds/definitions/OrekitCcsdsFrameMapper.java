@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * Orekit's default implementation of {@link CcsdsFrameMapper}.
  *
  * @author Evan M. Ward
- * @since 14.0
+ * @since 13.1.5
  */
 public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
 

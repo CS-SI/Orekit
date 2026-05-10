@@ -103,7 +103,7 @@ public class CommonPhysicalProperties extends CommentsContainer {
      * Simple constructor.
      *
      * @param frameMapper for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CommonPhysicalProperties(final CcsdsFrameMapper frameMapper) {
         // 502.0-B-3 (page 6-23) says the default is RSW_ROTATING, but also says,
@@ -130,12 +130,6 @@ public class CommonPhysicalProperties extends CommentsContainer {
         vmApparent               = Double.NaN;
         vmApparentMax            = Double.NaN;
         reflectance              = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void validate(final double version) {
-        super.validate(version);
     }
 
     /** Get the Optimally Enclosing Box parent reference frame.
@@ -172,7 +166,7 @@ public class CommonPhysicalProperties extends CommentsContainer {
      * Get the mapping between a CCSDS frame and a {@link Frame}.
      *
      * @return the frame mapper.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CcsdsFrameMapper getFrameMapper() {
         return frameMapper;
@@ -187,7 +181,7 @@ public class CommonPhysicalProperties extends CommentsContainer {
      * @see #getOebParentFrame()
      * @see #getOebParentFrameEpoch()
      * @see #getFrameMapper()
-     * @since 14.0
+     * @since 13.1.5
      */
     public Frame getOebParent() {
         return getFrameMapper()

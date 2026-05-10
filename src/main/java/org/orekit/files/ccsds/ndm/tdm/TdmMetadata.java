@@ -222,7 +222,7 @@ public class TdmMetadata extends Metadata {
      * Create a new TDM meta-data.
      *
      * @param frameMapper for creating an Orekit {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public TdmMetadata(final CcsdsFrameMapper frameMapper) {
         super(null, frameMapper);
@@ -638,7 +638,7 @@ public class TdmMetadata extends Metadata {
      *
      * @return Orientation of the frame used for RADEC observations.
      * @see #getReferenceFrame()
-     * @since 14.0
+     * @since 13.1.5
      */
     public Frame getRadecFrame() {
         // TDM doesn't allow specifying an epoch

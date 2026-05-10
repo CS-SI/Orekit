@@ -65,7 +65,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 public class OrekitAttitudeEphemerisFileTest {
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -227,7 +227,7 @@ public class OrekitAttitudeEphemerisFileTest {
     }
 
     private AemMetadata dummyMetadata() {
-        AemMetadata metadata = new AemMetadata(4);
+        AemMetadata metadata = new AemMetadata(4, null);
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("SATELLITE1");
         metadata.setObjectName("transgalactic");

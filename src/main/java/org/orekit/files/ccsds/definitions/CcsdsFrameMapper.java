@@ -42,7 +42,7 @@ import org.orekit.time.AbsoluteDate;
  * rotations.
  *
  * @author Evan M. Ward
- * @since 14.0
+ * @since 13.1.5
  */
 public interface CcsdsFrameMapper {
 
@@ -56,7 +56,7 @@ public interface CcsdsFrameMapper {
      * @return a {@link Frame} with the given orientation. Never {@code null}.
      * @throws OrekitException if a frame cannot be constructed for the given
      *                         orientation.
-     * @since 14.0
+     * @since 13.1.5
      */
     Frame buildCcsdsFrame(FrameFacade orientation,
                           AbsoluteDate frameEpoch);
@@ -73,7 +73,7 @@ public interface CcsdsFrameMapper {
      * @return a {@link Frame} with the given center and orientation. Never {@code null}.
      * @throws OrekitException if a frame cannot be constructed for the given center and
      *                         orientation.
-     * @since 14.0
+     * @since 13.1.5
      */
     Frame buildCcsdsFrame(BodyFacade center,
                           FrameFacade orientation,

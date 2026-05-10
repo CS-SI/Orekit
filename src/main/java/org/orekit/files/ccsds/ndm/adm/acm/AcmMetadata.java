@@ -81,7 +81,7 @@ public class AcmMetadata extends AdmMetadata {
      * Create a new meta-data.
      *
      * @param frameMapper for creating an Orekit {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public AcmMetadata(final CcsdsFrameMapper frameMapper) {
         super(frameMapper);

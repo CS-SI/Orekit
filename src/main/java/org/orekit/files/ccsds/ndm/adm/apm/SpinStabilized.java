@@ -87,7 +87,7 @@ public class SpinStabilized extends CommentsContainer {
      * Simple constructor.
      *
      * @param frameMapper for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public SpinStabilized(final CcsdsFrameMapper frameMapper) {
         endpoints      = new AttitudeEndpoints(frameMapper);

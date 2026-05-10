@@ -29,6 +29,7 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -50,7 +51,7 @@ public class CdmMetaDataTest {
     @DefaultDataContext
     public void testGetFrame() {
         
-        CdmMetadata meta = new CdmMetadata();
+        CdmMetadata meta = new CdmMetadata(DataContext.getDefault(), new OrekitCcsdsFrameMapper());
         
         // refFrame == null
         try {
@@ -127,7 +128,7 @@ public class CdmMetaDataTest {
     @DefaultDataContext
     public void testSetAltCovRefFrame() {
         
-        final CdmMetadata meta = new CdmMetadata();
+        final CdmMetadata meta = new CdmMetadata(DataContext.getDefault(), null);
         final FrameFacade altCovRefFrame = new FrameFacade(null, null, null, null, null);
 
         // getAltCovType()

@@ -94,7 +94,7 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
      *
      * @param epochT0     T0 epoch from file metadata
      * @param frameMapper for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public OrbitCovarianceHistoryMetadata(final AbsoluteDate epochT0,
                                           final CcsdsFrameMapper frameMapper) {
@@ -231,7 +231,7 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
      * Get the mapping between a CCSDS frame and a {@link Frame}.
      *
      * @return the frame mapper.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CcsdsFrameMapper getFrameMapper() {
         return frameMapper;
@@ -246,7 +246,7 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
      * @see #getCovReferenceFrame()
      * @see #getCovFrameEpoch()
      * @see #getFrameMapper()
-     * @since 14.0
+     * @since 13.1.5
      */
     public Frame getCovFrame() {
         return getFrameMapper()

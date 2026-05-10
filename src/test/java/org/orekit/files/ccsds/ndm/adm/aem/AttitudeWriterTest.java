@@ -44,6 +44,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -91,7 +92,7 @@ public class AttitudeWriterTest {
         header.setOriginator(aem.getHeader().getOriginator());
 
         final AemSegment s0 = aem.getSegments().getFirst();
-        AemMetadata metadata = new AemMetadata(s0.getInterpolationSamples() - 1);
+        AemMetadata metadata = new AemMetadata(s0.getInterpolationSamples() - 1, null);
         metadata.setObjectName(s0.getMetadata().getObjectName());
         metadata.setObjectID(s0.getMetadata().getObjectID());
         metadata.getEndpoints().setFrameA(s0.getMetadata().getEndpoints().getFrameA());
@@ -362,7 +363,7 @@ public class AttitudeWriterTest {
     }
 
     private AemMetadata dummyMetadata() {
-        AemMetadata metadata = new AemMetadata(4);
+        AemMetadata metadata = new AemMetadata(4, new OrekitCcsdsFrameMapper());
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
