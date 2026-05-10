@@ -30,6 +30,7 @@ import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -45,7 +46,6 @@ import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFacto
 import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
@@ -208,13 +208,14 @@ class GnssGradientConverterTest {
     }
 
     private void checkUnitaryInitialSTM(final FieldSpacecraftState<Gradient> initialState) {
-        final FieldPVCoordinates<Gradient> pv0 = initialState.getPVCoordinates();
-        checkUnitary(pv0.getPosition().getX().getGradient(), 0, 4.0e-13, 2.0e-8);
-        checkUnitary(pv0.getPosition().getY().getGradient(), 1, 4.0e-13, 2.0e-8);
-        checkUnitary(pv0.getPosition().getZ().getGradient(), 2, 4.0e-13, 2.0e-8);
-        checkUnitary(pv0.getVelocity().getX().getGradient(), 3, 2.0e-12, 2.0e-12);
-        checkUnitary(pv0.getVelocity().getY().getGradient(), 4, 2.0e-12, 2.0e-12);
-        checkUnitary(pv0.getVelocity().getZ().getGradient(), 5, 2.0e-12, 2.0e-12);
+        final FieldKeplerianOrbit<Gradient> orbit =
+            (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(initialState.getOrbit());
+        checkUnitary(orbit.getA().getGradient(),                             0, 6.0e-6, 2.0e-8);
+        checkUnitary(orbit.getE().getGradient(),                             1, 4.0e-13, 2.0e-8);
+        checkUnitary(orbit.getI().getGradient(),                             2, 4.0e-13, 2.0e-8);
+        checkUnitary(orbit.getPerigeeArgument().getGradient(),               3, 2.0e-12, 2.0e-12);
+        checkUnitary(orbit.getRightAscensionOfAscendingNode().getGradient(), 4, 2.0e-12, 2.0e-12);
+        checkUnitary(orbit.getMeanAnomaly().getGradient(),                   5, 2.0e-12, 2.0e-12);
     }
 
     private void checkUnitary(final double[] gradient, final int index,
