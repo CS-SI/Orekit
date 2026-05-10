@@ -16,6 +16,12 @@
  */
 package org.orekit.files.general;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -62,16 +68,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
 public class OrekitEphemerisFileTest {
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -145,7 +145,7 @@ public class OrekitEphemerisFileTest {
                      satellite.getSegments().getFirst().getMu(), muTolerance);
 
         String tempOem = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
-        OemMetadata template = new OemMetadata(2);
+        OemMetadata template = new OemMetadata(2, null);
         template.setTimeSystem(TimeSystem.UTC);
         template.setObjectID(satId);
         template.setObjectName(satId);

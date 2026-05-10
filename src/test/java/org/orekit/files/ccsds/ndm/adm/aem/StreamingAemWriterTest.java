@@ -93,7 +93,7 @@ public class StreamingAemWriterTest {
             header.setOriginator(originator);
             header.addComment(headerCmt);
 
-            AemMetadata metadata = new AemMetadata(1);
+            AemMetadata metadata = new AemMetadata(1, null);
             metadata.setTimeSystem(TimeSystem.UTC);
             metadata.setObjectID(objectID);
             metadata.setObjectName(objectName);

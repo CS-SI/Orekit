@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadata;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -193,21 +192,12 @@ public class OcmMetadata extends OdmMetadata {
      */
     private final DataContext dataContext;
 
-    /** Create a new meta-data.
-     * @param dataContext data context
-     * @deprecated in favor of {@link #OcmMetadata(DataContext, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OcmMetadata(final DataContext dataContext) {
-        this(dataContext, new OrekitCcsdsFrameMapper());
-    }
-
     /**
      * Create a new meta-data.
      *
      * @param dataContext data context
      * @param frameMapper for creating an Orekit {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public OcmMetadata(final DataContext dataContext,
                        final CcsdsFrameMapper frameMapper) {

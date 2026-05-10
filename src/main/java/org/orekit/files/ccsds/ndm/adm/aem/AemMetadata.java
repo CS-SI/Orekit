@@ -21,7 +21,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
@@ -72,21 +71,12 @@ public class AemMetadata extends AdmMetadata {
     /** The interpolation degree. */
     private int interpolationDegree;
 
-    /** Simple constructor.
-     * @param defaultInterpolationDegree default interpolation degree
-     * @deprecated in favor of {@link #AemMetadata(int, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AemMetadata(final int defaultInterpolationDegree) {
-        this(defaultInterpolationDegree, new OrekitCcsdsFrameMapper());
-    }
-
     /**
      * Simple constructor.
      *
      * @param defaultInterpolationDegree default interpolation degree
      * @param frameMapper                for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public AemMetadata(final int defaultInterpolationDegree,
                        final CcsdsFrameMapper frameMapper) {

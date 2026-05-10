@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,7 +31,7 @@ class EulerTest {
     // This test was added to increase overall conditions coverage in the scope of issue 1453
     public void testIssue1453() {
         // GIVEN
-        final Euler euler = new Euler();
+        final Euler euler = new Euler(new OrekitCcsdsFrameMapper());
 
         final String KEY_ANGLES_V1 = "{X|Y|Z}_ANGLE";
         final String KEY_ANGLES_V2 = "ANGLE_{1|2|3}";
