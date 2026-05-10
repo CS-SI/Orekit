@@ -76,56 +76,56 @@ public class BeidouLegacyNavigationMessageFactory
     /** Get the Age Of Data Clock (AODC).
      * @return the Age Of Data Clock (AODC)
      */
-    public int getAODC() {
+    public int getAodc() {
         return aodc;
     }
 
     /** Set the Age Of Data Clock (AODC).
      * @param aodc the Age Of Data Clock (AODC)
      */
-    public void setAODC(final int aodc) {
+    public void setAodc(final int aodc) {
         this.aodc = aodc;
     }
 
     /** Get the Age Of Data Ephemeris (AODE).
      * @return the Age Of Data Ephemeris (AODE)
      */
-    public int getAODE() {
+    public int getAode() {
         return aode;
     }
 
     /** Set the Age Of Data Ephemeris (AODE).
      * @param aode the Age Of Data Ephemeris (AODE)
      */
-    public void setAODE(final int aode) {
+    public void setAode(final int aode) {
         this.aode = aode;
     }
 
     /** Get the estimated group delay differential TGD1 for B1I signal.
      * @return the estimated group delay differential TGD1 for B1I signal (s)
      */
-    public double getTGD1() {
+    public double getTgd1() {
         return tgd1;
     }
 
     /** Set the estimated group delay differential TGD1 for B1I signal.
      * @param tgd1 the estimated group delay differential TGD1 for B1I signal (s)
      */
-    public void setTGD1(final double tgd1) {
+    public void setTgd1(final double tgd1) {
         this.tgd1 = tgd1;
     }
 
     /** Get the estimated group delay differential TGD for B2I signal.
      * @return the estimated group delay differential TGD2 for B2I signal (s)
      */
-    public double getTGD2() {
+    public double getTgd2() {
         return tgd2;
     }
 
     /** Set the estimated group delay differential TGD for B2I signal.
      * @param tgd2 the estimated group delay differential TGD2 for B2I signal (s)
      */
-    public void setTGD2(final double tgd2) {
+    public void setTgd2(final double tgd2) {
         this.tgd2 = tgd2;
     }
 
@@ -173,8 +173,8 @@ public class BeidouLegacyNavigationMessageFactory
                                                  getAf0Driver().getValue(), getAf1Driver().getValue(),
                                                  getAf2Driver().getValue(),
                                                  getTgd(), getToc(), getTransmissionTime(),
-                                                 getAODE(), getAODC(), getSatH1(),
-                                                 getTGD1(), getTGD2(), getSvAccuracy());
+                                                 getAode(), getAodc(), getSatH1(),
+                                                 getTgd1(), getTgd2(), getSvAccuracy());
     }
 
 }

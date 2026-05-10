@@ -119,7 +119,7 @@ public class MeanSmaChangeImpulseProvider extends AbstractInPlaneImpulseProvider
         }
 
         @Override
-        public double value(double t) {
+        public double value(final double t) {
             // this implementation is not used, but is required to match interface
             return Double.NaN;
         }

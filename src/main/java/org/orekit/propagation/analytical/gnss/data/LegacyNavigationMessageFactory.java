@@ -69,28 +69,28 @@ public abstract class LegacyNavigationMessageFactory<O extends LegacyNavigationM
     /** Get the Issue Of Data Ephemeris (IODE).
      * @return the Issue Of Data Ephemeris (IODE)
      */
-    public int getIODE() {
+    public int getIode() {
         return iode;
     }
 
     /** Set the Issue Of Data Ephemeris (IODE).
      * @param iode the Issue Of Data Ephemeris (IODE)
      */
-    public void setIODE(final int iode) {
+    public void setIode(final int iode) {
         this.iode = iode;
     }
 
     /** Get the Issue Of Data Clock (IODC).
      * @return the Issue Of Data Clock (IODC)
      */
-    public int getIODC() {
+    public int getIodc() {
         return iodc;
     }
 
     /** Set the Issue Of Data Clock (IODC).
      * @param iodc the Issue Of Data Clock (IODC)
      */
-    public void setIODC(final int iodc) {
+    public void setIodc(final int iodc) {
         this.iodc = iodc;
     }
 

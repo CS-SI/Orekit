@@ -62,7 +62,7 @@ public class NavICLnavParser
         super.parseLine01();
         // for NavIC legacy, Issue Of Data applies to both clock and ephemeris
         final NavICLegacyNavigationMessageFactory factory = getFactory();
-        factory.setIODC(factory.getIODE());
+        factory.setIodc(factory.getIode());
     }
 
     /** {@inheritDoc} */

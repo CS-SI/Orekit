@@ -51,7 +51,7 @@ public class BeidouD1D2Parser
     public void parseLine01() {
         super.parseLine01();
         final BeidouLegacyNavigationMessageFactory factory = getFactory();
-        factory.setAODE(getParseInfo().parseInt1());
+        factory.setAode(getParseInfo().parseInt1());
     }
 
     /** {@inheritDoc} */
@@ -61,8 +61,8 @@ public class BeidouD1D2Parser
         final BeidouLegacyNavigationMessageFactory factory = getFactory();
         factory.setSvAccuracy(parseInfo.parseDouble1(Unit.METRE));
         factory.setSatH1(parseInfo.parseInt2());
-        factory.setTGD1(parseInfo.parseDouble3(Unit.SECOND));
-        factory.setTGD2(parseInfo.parseDouble4(Unit.SECOND));
+        factory.setTgd1(parseInfo.parseDouble3(Unit.SECOND));
+        factory.setTgd2(parseInfo.parseDouble4(Unit.SECOND));
     }
 
     /** {@inheritDoc} */
@@ -71,7 +71,7 @@ public class BeidouD1D2Parser
         final ParseInfo parseInfo = getParseInfo();
         final BeidouLegacyNavigationMessageFactory factory = getFactory();
         factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-        factory.setAODC(parseInfo.parseInt2());
+        factory.setAodc(parseInfo.parseInt2());
         parseInfo.closePendingRecord();
     }
 

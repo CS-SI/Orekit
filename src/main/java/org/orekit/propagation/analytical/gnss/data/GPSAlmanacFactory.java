@@ -74,14 +74,14 @@ public class GPSAlmanacFactory extends GNSSOrbitalElementsFactory<GPSAlmanac> {
     /** Get the satellite "SVN" reference number.
      * @return the satellite "SVN" reference number
      */
-    public int getSVN() {
+    public int getSvn() {
         return svn;
     }
 
     /** Set the satellite "SVN" reference number.
      * @param svn the satellite "SVN" reference number
      */
-    public void setSVN(final int svn) {
+    public void setSvn(final int svn) {
         this.svn = svn;
     }
 
@@ -102,14 +102,14 @@ public class GPSAlmanacFactory extends GNSSOrbitalElementsFactory<GPSAlmanac> {
     /** Get the average URA number.
      * @return the average URA number
      */
-    public int getURA() {
+    public int getUra() {
         return ura;
     }
 
     /** Set the average URA number.
      * @param ura the average URA number
      */
-    public void setURA(final int ura) {
+    public void setUra(final int ura) {
         this.ura = ura;
     }
 
@@ -142,7 +142,7 @@ public class GPSAlmanacFactory extends GNSSOrbitalElementsFactory<GPSAlmanac> {
                               getAf0Driver().getValue(), getAf1Driver().getValue(),
                               getAf2Driver().getValue(),
                               getTgd(), getToc(),
-                              getSource(), getSVN(), getHealth(), getURA(), getSatConfiguration());
+                              getSource(), getSvn(), getHealth(), getUra(), getSatConfiguration());
     }
 
 }

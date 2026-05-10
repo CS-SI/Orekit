@@ -63,14 +63,14 @@ public class GalileoNavigationMessageFactory
     /** Get the Issue Of Data (IOD).
      * @return Issue Of Data (IOD)
      */
-    public int getIODNav() {
+    public int getIodNav() {
         return iodNav;
     }
 
     /** Set the Issue Of Data (IOD).
      * @param iodNav Issue Of Data (IOD)
      */
-    public void setIODNav(final int iodNav) {
+    public void setIodNav(final int iodNav) {
         this.iodNav = iodNav;
     }
 
@@ -96,10 +96,10 @@ public class GalileoNavigationMessageFactory
     }
 
     /** Set the E1/E5a broadcast group delay.
-     * @param bgdE1E5a the E1/E5a broadcast group delay (s)
+     * @param newBgdE1E5a the E1/E5a broadcast group delay (s)
      */
-    public void setBGDE1E5a(final double bgdE1E5a) {
-        this.bgdE1E5a = bgdE1E5a;
+    public void setBGDE1E5a(final double newBgdE1E5a) {
+        this.bgdE1E5a = newBgdE1E5a;
     }
 
     /** Get the Broadcast Group Delay E5b/E1.
@@ -110,10 +110,10 @@ public class GalileoNavigationMessageFactory
     }
 
     /** Set the Broadcast Group Delay E5b/E1.
-     * @param bgdE5bE1 the Broadcast Group Delay E5b/E1 (s)
+     * @param newBgdE5bE1 the Broadcast Group Delay E5b/E1 (s)
      */
-    public void setBGDE5bE1(final double bgdE5bE1) {
-        this.bgdE5bE1 = bgdE5bE1;
+    public void setBGDE5bE1(final double newBgdE5bE1) {
+        this.bgdE5bE1 = newBgdE5bE1;
     }
 
     /** Get the signal in space accuracy (m).
@@ -158,7 +158,7 @@ public class GalileoNavigationMessageFactory
                                             getAf0Driver().getValue(), getAf1Driver().getValue(),
                                             getAf2Driver().getValue(),
                                             getTgd(), getToc(), getTransmissionTime(),
-                                            getIODNav(), getDataSource(),
+                                            getIodNav(), getDataSource(),
                                             getBGDE1E5a(), getBGDE5bE1(),
                                             getSisa(), getSvHealth());
     }

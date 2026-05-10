@@ -134,9 +134,9 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldGalileoNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                             final T[] nonKeplerian,
-                                             final DoubleFunction<T> converter) {
+        FieldGalileoNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                 final T[] nonKeplerian,
+                                                 final DoubleFunction<T> converter) {
         return new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                    getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
                                                    converter.apply(getTgd()), toFieldToc(orbit),

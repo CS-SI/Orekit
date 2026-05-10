@@ -251,51 +251,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
                 frame, date, mu);
     }
 
-    /** Creates a new instance.
-     * @param a  semi-major axis (m)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param i inclination (rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param alpha  input latitude argument (rad)
-     * @param aDot  semi-major axis derivative (m/s)
-     * @param exDot d(e cos(ω))/dt, first component of circular eccentricity vector derivative
-     * @param eyDot d(e sin(ω))/dt, second component of circular eccentricity vector derivative
-     * @param iDot inclination  derivative(rad/s)
-     * @param raanDot right ascension of ascending node derivative (rad/s)
-     * @param alphaDot  input latitude argument derivative (rad/s)
-     * @param pvCoordinates the {@link PVCoordinates} in inertial frame
-     * @param positionAngleType type of position angle
-     * @param frame the frame in which are defined the parameters
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param mu central attraction coefficient (m³/s²)
-     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
-     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
-     */
-    private CircularOrbit(final double a, final double ex, final double ey,
-                          final double i, final double raan, final double alpha,
-                          final double aDot, final double exDot, final double eyDot,
-                          final double iDot, final double raanDot, final double alphaDot,
-                          final TimeStampedPVCoordinates pvCoordinates,
-                          final PositionAngleType positionAngleType, final Frame frame, final double mu)
-        throws IllegalArgumentException {
-        super(pvCoordinates, frame, mu);
-        this.a           =  a;
-        this.aDot        =  aDot;
-        this.ex          = ex;
-        this.exDot       = exDot;
-        this.ey          = ey;
-        this.eyDot       = eyDot;
-        this.i           = i;
-        this.iDot        = iDot;
-        this.raan        = raan;
-        this.raanDot     = raanDot;
-        this.cachedAlpha = alpha;
-        this.cachedAlphaDot = alphaDot;
-        this.cachedPositionAngleType = positionAngleType;
-        this.partialPV   = null;
-    }
-
     /** Constructor from Cartesian parameters.
      *
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
@@ -491,7 +446,8 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
 
     /** {@inheritDoc} */
     @Override
-    public AbstractOrbitFactory<CircularOrbit> factory(PositionAngleType positionAngleType, double positionScale) {
+    public AbstractOrbitFactory<CircularOrbit> factory(final PositionAngleType positionAngleType,
+                                                       final double positionScale) {
         return new CircularOrbitFactory(this, positionScale, positionAngleType);
     }
 

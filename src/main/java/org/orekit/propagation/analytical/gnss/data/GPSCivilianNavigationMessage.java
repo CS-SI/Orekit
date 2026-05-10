@@ -115,9 +115,9 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldGPSCivilianNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                                 final T[] nonKeplerian,
-                                                 final DoubleFunction<T> converter) {
+        FieldGPSCivilianNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                     final T[] nonKeplerian,
+                                                     final DoubleFunction<T> converter) {
         return new FieldGPSCivilianNavigationMessage<>(isCnv2(),
                                                        getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                        getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,

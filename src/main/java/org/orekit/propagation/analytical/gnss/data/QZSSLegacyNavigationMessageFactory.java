@@ -57,7 +57,7 @@ public class QZSSLegacyNavigationMessageFactory
                                                getAf0Driver().getValue(), getAf1Driver().getValue(),
                                                getAf2Driver().getValue(),
                                                getTgd(), getToc(), getTransmissionTime(),
-                                               getIODE(), getIODC(), getSvAccuracy(),
+                                               getIode(), getIodc(), getSvAccuracy(),
                                                getSvHealth(), getFitInterval(),
                                                getL2Codes(), getL2PFlags());
     }

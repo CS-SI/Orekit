@@ -166,6 +166,7 @@ public class NtripClient {
      * @param host caster host providing the source table
      * @param port port to use for connection
      * @param timeScales known time scales
+     * @param maxRetries maximum number of reconnect attempts without reading any data
      * @param inertial reference inertial frame
      * @param bodyFixed body fixed frame (will be frozen at {@code date} to build the orbital elements
      * @since 14.0
@@ -180,7 +181,7 @@ public class NtripClient {
         setTimeout(DEFAULT_TIMEOUT);
         setReconnectParameters(DEFAULT_RECONNECT_DELAY,
                                DEFAULT_RECONNECT_DELAY_FACTOR,
-                               DEFAULT_MAX_RECONNECT);
+                               maxRetries);
         setProxy(Type.DIRECT, null, -1);
         this.gga             = new AtomicReference<>(null);
         this.sourceTable     = null;
@@ -222,7 +223,7 @@ public class NtripClient {
     /** Set Reconnect parameters.
      * @param delay delay before we reconnect after connection close
      * @param delayFactor factor by which reconnection delay is multiplied after each attempt
-     * @param max max number of reconnect a attempts without reading any data
+     * @param max max number of reconnect attempts without reading any data
      */
     public void setReconnectParameters(final double delay,
                                        final double delayFactor,
@@ -381,7 +382,7 @@ public class NtripClient {
 
                         ++lineNumber;
                         line = line.trim();
-                        if (line.length() == 0) {
+                        if (line.isEmpty()) {
                             continue;
                         }
 

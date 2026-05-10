@@ -44,7 +44,7 @@ public abstract class LegacyNavigationParser<T extends LegacyNavigationMessage<T
     @Override
     public void parseLine01() {
         super.parseLine01();
-        getFactory().setIODE(getParseInfo().parseInt1());
+        getFactory().setIode(getParseInfo().parseInt1());
     }
 
      /** {@inheritDoc} */
@@ -65,7 +65,7 @@ public abstract class LegacyNavigationParser<T extends LegacyNavigationMessage<T
         factory.setSvAccuracy(parseInfo.parseDouble1(Unit.METRE));
         factory.setSvHealth(parseInfo.parseInt2());
         factory.setTgd(parseInfo.parseDouble3(Unit.SECOND));
-        factory.setIODC(parseInfo.parseInt4());
+        factory.setIodc(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */

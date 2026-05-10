@@ -237,7 +237,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      * @since 14.0
      */
     public <T extends CalculusFieldElement<T>>
-        FieldGnssOrbitalElements<T, O> toField(Field<T> field) {
+        FieldGnssOrbitalElements<T, O> toField(final Field<T> field) {
         final T zero = field.getZero();
         final T[] parameters = MathArrays.buildArray(field, NonKeplerianDriversFactory.SIZE);
         parameters[NonKeplerianDriversFactory.TIME_INDEX]         = zero.newInstance(getGnssDate().getSecondsInWeek());
@@ -260,28 +260,28 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
 
     /** Create another field version of the instance.
      * @param <T>          type of the field elements
-     * @param orbit        orbit in the correct gradient field
+     * @param keplerian    orbit in the correct gradient field
      * @param nonKeplerian non-Keplerian parameters
      * @param converter    converter for remaining elements
      * @return gradient version of the instance
      * @since 14.0
      */
     public abstract <T extends CalculusFieldElement<T>>
-        FieldGnssOrbitalElements<T, O> toField(FieldKeplerianOrbit<T> orbit,
+        FieldGnssOrbitalElements<T, O> toField(FieldKeplerianOrbit<T> keplerian,
                                                T[] nonKeplerian,
                                                DoubleFunction<T> converter);
 
     /** Convert TOC.
      * @param <T>   type of the field elements
-     * @param orbit orbit in the correct gradient field
+     * @param keplerian orbit in the correct gradient field
      * @return converted Time Of Clock
      * @since 14.0
      */
     protected <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T>
-        toFieldToc(final FieldKeplerianOrbit<T> orbit) {
+        toFieldToc(final FieldKeplerianOrbit<T> keplerian) {
         return getToc() == null ?
                null :
-               new FieldAbsoluteDate<>(orbit.getDate().getField(), getToc());
+               new FieldAbsoluteDate<>(keplerian.getDate().getField(), getToc());
     }
 
     /** Get known time scales.

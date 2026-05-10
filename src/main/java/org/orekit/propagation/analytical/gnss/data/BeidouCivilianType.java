@@ -23,7 +23,7 @@ import org.orekit.gnss.RadioWave;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public enum BeidouCivilianType{
+public enum BeidouCivilianType {
 
     /** CNV1 message. */
     CNV1(PredefinedGnssSignal.B1C),
@@ -47,7 +47,7 @@ public enum BeidouCivilianType{
     /** Get radiowave for message.
      * @return radio wave on which navigation signal is sent
      */
-   public RadioWave getRadioWave() {
+    public RadioWave getRadioWave() {
         return radioWave;
     }
 

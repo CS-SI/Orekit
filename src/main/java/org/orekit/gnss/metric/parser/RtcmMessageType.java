@@ -106,7 +106,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Accuracy provider
             final AccuracyProvider gpsProvider = new UserRangeAccuracy(RtcmDataField.DF077.intValue(encodedMessage));
-           factory.setSvAccuracy(gpsProvider.getAccuracy());
+            factory.setSvAccuracy(gpsProvider.getAccuracy());
 
             // GPS Code on L2
             factory.setL2Codes(RtcmDataField.DF078.intValue(encodedMessage));
@@ -115,14 +115,14 @@ public enum RtcmMessageType implements MessageType {
             final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
             factory.setPrn(gpsId);
             factory.getIDotDriver().setValue(RtcmDataField.DF079.doubleValue(encodedMessage));
-            factory.setIODE(RtcmDataField.DF071.intValue(encodedMessage));
+            factory.setIode(RtcmDataField.DF071.intValue(encodedMessage));
             factory.setToc(new GNSSDate(gpsWeekNumber,
                                         RtcmDataField.DF081.doubleValue(encodedMessage),
                                         SatelliteSystem.GPS, timeScales).getDate());
             factory.getAf2Driver().setValue(RtcmDataField.DF082.doubleValue(encodedMessage));
             factory.getAf1Driver().setValue(RtcmDataField.DF083.doubleValue(encodedMessage));
             factory.getAf0Driver().setValue(RtcmDataField.DF084.doubleValue(encodedMessage));
-            factory.setIODC(RtcmDataField.DF085.intValue(encodedMessage));
+            factory.setIodc(RtcmDataField.DF085.intValue(encodedMessage));
             factory.getCrsDriver().setValue(RtcmDataField.DF086.doubleValue(encodedMessage));
             factory.getDeltaN0Driver().setValue(RtcmDataField.DF087.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.MEAN_ANOMALY, RtcmDataField.DF088, encodedMessage);
@@ -251,14 +251,14 @@ public enum RtcmMessageType implements MessageType {
             final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
             factory.setPrn(beidouId);
             factory.getIDotDriver().setValue(RtcmDataField.DF491.doubleValue(encodedMessage));
-            factory.setAODE(RtcmDataField.DF492.intValue(encodedMessage));
+            factory.setAode(RtcmDataField.DF492.intValue(encodedMessage));
             factory.setToc(new GNSSDate(beidouWeekNumber,
                                         RtcmDataField.DF493.doubleValue(encodedMessage),
                                         SatelliteSystem.BEIDOU, timeScales).getDate());
             factory.getAf2Driver().setValue(RtcmDataField.DF494.doubleValue(encodedMessage));
             factory.getAf1Driver().setValue(RtcmDataField.DF495.doubleValue(encodedMessage));
             factory.getAf0Driver().setValue(RtcmDataField.DF496.doubleValue(encodedMessage));
-            factory.setAODC(RtcmDataField.DF497.intValue(encodedMessage));
+            factory.setAodc(RtcmDataField.DF497.intValue(encodedMessage));
             factory.getCrsDriver().setValue(RtcmDataField.DF498.doubleValue(encodedMessage));
             factory.getDeltaN0Driver().setValue(RtcmDataField.DF499.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.MEAN_ANOMALY, RtcmDataField.DF500, encodedMessage);
@@ -276,8 +276,8 @@ public enum RtcmMessageType implements MessageType {
             factory.getCrcDriver().setValue(RtcmDataField.DF510.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE, RtcmDataField.DF511, encodedMessage);
             factory.getOmegaDotDriver().setValue(RtcmDataField.DF512.doubleValue(encodedMessage));
-            factory.setTGD1(RtcmDataField.DF513.doubleValue(encodedMessage));
-            factory.setTGD2(RtcmDataField.DF514.doubleValue(encodedMessage));
+            factory.setTgd1(RtcmDataField.DF513.doubleValue(encodedMessage));
+            factory.setTgd2(RtcmDataField.DF514.doubleValue(encodedMessage));
             factory.setSatH1(RtcmDataField.DF515.intValue(encodedMessage));
 
             // Return the parsed message
@@ -311,7 +311,7 @@ public enum RtcmMessageType implements MessageType {
             factory.getAf2Driver().setValue(RtcmDataField.DF431.doubleValue(encodedMessage));
             factory.getAf1Driver().setValue(RtcmDataField.DF432.doubleValue(encodedMessage));
             factory.getAf0Driver().setValue(RtcmDataField.DF433.doubleValue(encodedMessage));
-            factory.setIODE(RtcmDataField.DF434.intValue(encodedMessage));
+            factory.setIode(RtcmDataField.DF434.intValue(encodedMessage));
             factory.getCrsDriver().setValue(RtcmDataField.DF435.doubleValue(encodedMessage));
             factory.getDeltaN0Driver().setValue(RtcmDataField.DF436.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.MEAN_ANOMALY, RtcmDataField.DF437, encodedMessage);
@@ -346,7 +346,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Tgd, IODC, and fit interval
             factory.setTgd(RtcmDataField.DF455.doubleValue(encodedMessage));
-            factory.setIODC(RtcmDataField.DF456.intValue(encodedMessage));
+            factory.setIodc(RtcmDataField.DF456.intValue(encodedMessage));
             factory.setFitInterval(RtcmDataField.DF457.intValue(encodedMessage));
 
             // Return the parsed message
@@ -377,11 +377,11 @@ public enum RtcmMessageType implements MessageType {
             final int galileoWeekNumber = RtcmDataField.DF289.intValue(encodedMessage);
 
             // IODNav
-            factory.setIODNav(RtcmDataField.DF290.intValue(encodedMessage));
+            factory.setIodNav(RtcmDataField.DF290.intValue(encodedMessage));
 
             // Accuracy provider
             final AccuracyProvider galileoProvider = new SignalInSpaceAccuracy(RtcmDataField.DF291.intValue(encodedMessage));
-           factory.setSisa(galileoProvider.getAccuracy());
+            factory.setSisa(galileoProvider.getAccuracy());
 
             // Fill navigation message
             final ParameterDriversList orb = factory.getOrbitalParametersDrivers();

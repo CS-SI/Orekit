@@ -346,8 +346,8 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
             if (readOK(checks)) {
 
                 // Add default values to missing keys
-                factory.setSVN(-1);
-                factory.setURA(-1);
+                factory.setSvn(-1);
+                factory.setUra(-1);
                 factory.setSatConfiguration(-1);
 
                 return factory.createFromDrivers();

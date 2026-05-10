@@ -93,9 +93,9 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldBeidouAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                  final T[] nonKeplerian,
-                                  final DoubleFunction<T> converter) {
+        FieldBeidouAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                      final T[] nonKeplerian,
+                                      final DoubleFunction<T> converter) {
         return new FieldBeidouAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                         getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
                                         converter.apply( getTgd()), toFieldToc(orbit),

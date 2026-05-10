@@ -174,12 +174,12 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         final FieldSpacecraftState<Gradient> state      = gPropagator.getInitialState();
         final Gradient[]                     parameters = converter.getParameters(state, converter);
         final FieldOrbit<Gradient>           gOrbit     = gPropagator.propagateOrbit(start.shiftedBy(dt), parameters);
-        Gradient[] derivatives = new Gradient[6];
-        getOrbitType().mapOrbitToArray(gOrbit, getPositionAngleType(), derivatives, null);
+        Gradient[] orbitDerivatives = new Gradient[6];
+        getOrbitType().mapOrbitToArray(gOrbit, getPositionAngleType(), orbitDerivatives, null);
 
         // Update Jacobian with respect to state
-        for (int i = 0; i < derivatives.length; ++i) {
-            addToRow(derivatives[i].getGradient(), i);
+        for (int i = 0; i < orbitDerivatives.length; ++i) {
+            addToRow(orbitDerivatives[i].getGradient(), i);
         }
 
         // Partial derivatives of the state with respect to propagation parameters
@@ -200,12 +200,12 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
                     // add the contribution of the current force model
                     entry.increment(new double[] {
-                        derivatives[0].getPartialDerivative(paramsIndex),
-                        derivatives[1].getPartialDerivative(paramsIndex),
-                        derivatives[2].getPartialDerivative(paramsIndex),
-                        derivatives[3].getPartialDerivative(paramsIndex),
-                        derivatives[4].getPartialDerivative(paramsIndex),
-                        derivatives[5].getPartialDerivative(paramsIndex)
+                        orbitDerivatives[0].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[1].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[2].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[3].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[4].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[5].getPartialDerivative(paramsIndex)
                     });
                     ++paramsIndex;
                 }

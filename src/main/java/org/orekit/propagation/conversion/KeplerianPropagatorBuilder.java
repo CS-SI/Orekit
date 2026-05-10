@@ -21,7 +21,6 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitalParameterFactory;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 

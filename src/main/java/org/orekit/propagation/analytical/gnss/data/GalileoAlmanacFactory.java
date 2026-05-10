@@ -97,14 +97,14 @@ public class GalileoAlmanacFactory extends GNSSOrbitalElementsFactory<GalileoAlm
     /** Get the Issue of Data (IOD).
      * @return the Issue Of Data
      */
-    public int getIOD() {
+    public int getIod() {
         return iod;
     }
 
     /** Set the Issue of Data (IOD).
      * @param iod the Issue Of Data
      */
-    public void setIOD(final int iod) {
+    public void setIod(final int iod) {
         this.iod = iod;
     }
 
@@ -123,7 +123,7 @@ public class GalileoAlmanacFactory extends GNSSOrbitalElementsFactory<GalileoAlm
                                   getAf0Driver().getValue(), getAf1Driver().getValue(),
                                   getAf2Driver().getValue(),
                                   getTgd(), getToc(),
-                                  getHealthE5a(), getHealthE5b(), getHealthE1(), getIOD());
+                                  getHealthE5a(), getHealthE5b(), getHealthE1(), getIod());
     }
 
 }

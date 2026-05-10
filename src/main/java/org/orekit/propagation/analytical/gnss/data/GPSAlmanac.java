@@ -119,10 +119,10 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>>
-    FieldGPSAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
-                               final T[] nonKeplerian,
-                               final DoubleFunction<T> converter) {
+    public <T extends CalculusFieldElement<T>> FieldGPSAlmanac<T>
+        toField(final FieldKeplerianOrbit<T> orbit,
+                final T[] nonKeplerian,
+                final DoubleFunction<T> converter) {
         return new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                      getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
                                      converter.apply(getTgd()), toFieldToc(orbit),

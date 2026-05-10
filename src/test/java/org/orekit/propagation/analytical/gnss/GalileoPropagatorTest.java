@@ -109,7 +109,7 @@ public class GalileoPropagatorTest {
         orb.findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         orb.findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.000152587890625);
         orb.findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(GalileoAlmanac.I0 + 0.003356933593);
-        almanacFactory.setIOD(4);
+        almanacFactory.setIod(4);
         orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(0.2739257812499857891);
         almanacFactory.getOmegaDotDriver().setValue(-1.74622982740407E-9);
         orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(0.7363586425);
@@ -123,7 +123,7 @@ public class GalileoPropagatorTest {
         // Intermediate verification
         Assertions.assertEquals(1,                   almanacFactory.getPrn());
         Assertions.assertEquals(1024,                almanacFactory.getWeek());
-        Assertions.assertEquals(4,                   almanacFactory.getIOD());
+        Assertions.assertEquals(4,                   almanacFactory.getIod());
         Assertions.assertEquals(0,                   almanacFactory.getHealthE1());
         Assertions.assertEquals(0,                   almanacFactory.getHealthE5a());
         Assertions.assertEquals(0,                   almanacFactory.getHealthE5b());
@@ -157,7 +157,7 @@ public class GalileoPropagatorTest {
         orb.findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         orb.findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.000152587890625);
         orb.findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(GalileoAlmanac.I0 + 0.003356933593);
-        almanacFactory.setIOD(4);
+        almanacFactory.setIod(4);
         orb.findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(0.2739257812499857891);
         almanacFactory.getOmegaDotDriver().setValue(-1.74622982740407E-9);
         orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(0.7363586425);
