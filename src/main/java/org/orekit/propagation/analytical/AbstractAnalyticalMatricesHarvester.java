@@ -168,13 +168,13 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         final FieldAbstractAnalyticalPropagator<Gradient> gPropagator = converter.getPropagator();
 
         // Compute Jacobian
-        final AbsoluteDate                   target     = reference.getDate();
-        final FieldAbsoluteDate<Gradient>    start      = gPropagator.getInitialState().getDate();
-        final double                         dt         = target.durationFrom(start.toAbsoluteDate());
-        final FieldSpacecraftState<Gradient> state      = gPropagator.getInitialState();
-        final Gradient[]                     parameters = converter.getParameters(state, converter);
-        final FieldOrbit<Gradient>           gOrbit     = gPropagator.propagateOrbit(start.shiftedBy(dt), parameters);
-        Gradient[] orbitDerivatives = new Gradient[6];
+        final AbsoluteDate                   target           = reference.getDate();
+        final FieldAbsoluteDate<Gradient>    start            = gPropagator.getInitialState().getDate();
+        final double                         dt               = target.durationFrom(start.toAbsoluteDate());
+        final FieldSpacecraftState<Gradient> state            = gPropagator.getInitialState();
+        final Gradient[]                     parameters       = converter.getParameters(state, converter);
+        final FieldOrbit<Gradient>           gOrbit           = gPropagator.propagateOrbit(start.shiftedBy(dt), parameters);
+        final Gradient[]                     orbitDerivatives = new Gradient[6];
         getOrbitType().mapOrbitToArray(gOrbit, getPositionAngleType(), orbitDerivatives, null);
 
         // Update Jacobian with respect to state

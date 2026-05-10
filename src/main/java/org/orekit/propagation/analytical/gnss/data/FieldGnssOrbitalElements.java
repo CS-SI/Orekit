@@ -250,7 +250,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
              orbit.getMu().newInstance(original.getAf2()),
              orbit.getMu().newInstance(original.getTgd()),
              new FieldAbsoluteDate<>(orbit.getDate().getField(), original.getToc()));
-     }
+    }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
@@ -322,25 +322,27 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
 
     /** Create another field version of the instance.
      * @param <U>          type of the new field elements
-     * @param orbit        orbit in the correct gradient field
+     * @param keplerian    orbit in the correct gradient field
      * @param nonKeplerian non-Keplerian parameters
      * @param converter    converter for remaining elements
      * @return field version of the instance
      */
     public abstract <U extends CalculusFieldElement<U>>
-    FieldGnssOrbitalElements<U, O> toField(FieldKeplerianOrbit<U> orbit, U[] nonKeplerian, Function<T, U> converter);
+        FieldGnssOrbitalElements<U, O> toField(FieldKeplerianOrbit<U> keplerian,
+                                               U[] nonKeplerian,
+                                               Function<T, U> converter);
 
     /** Convert TOC.
      * @param <U>   type of the field elements
-     * @param orbit orbit in the correct gradient field
+     * @param keplerian orbit in the correct gradient field
      * @return converted Time Of Clock
      * @since 14.0
      */
     protected <U extends CalculusFieldElement<U>> FieldAbsoluteDate<U>
-        toFieldToc(final FieldKeplerianOrbit<U> orbit) {
+        toFieldToc(final FieldKeplerianOrbit<U> keplerian) {
         return getToc() == null ?
                null :
-               new FieldAbsoluteDate<>(orbit.getDate().getField(), getToc().toAbsoluteDate());
+               new FieldAbsoluteDate<>(keplerian.getDate().getField(), getToc().toAbsoluteDate());
     }
 
     /** Get known time scales.
