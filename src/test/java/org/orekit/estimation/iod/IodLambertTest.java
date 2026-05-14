@@ -84,15 +84,15 @@ public class IodLambertTest {
 
         // measurement data 1
         final int idMeasure1 = 0;
-        final AbsoluteDate date1 = measurements.get(idMeasure1).getDate();
+        final AbsoluteDate date1 = measurements.getFirst().getDate();
         /*final Vector3D stapos1 = context.stations.get(0)  // FIXME we need to access the station of the measurement
                                     .getBaseFrame()
                                     .getPVCoordinates(date1, frame)
                                     .getPosition();*/
         final Vector3D position1 = new Vector3D(
-                                                measurements.get(idMeasure1).getObservedValue()[0],
-                                                measurements.get(idMeasure1).getObservedValue()[1],
-                                                measurements.get(idMeasure1).getObservedValue()[2]);
+                                                measurements.getFirst().getObservedValue()[0],
+                                                measurements.getFirst().getObservedValue()[1],
+                                                measurements.getFirst().getObservedValue()[2]);
 
         // measurement data 2
         final int idMeasure2 = 10;
