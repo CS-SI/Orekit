@@ -16,8 +16,12 @@
  */
 package org.orekit.gnss.metric.messages.ssr;
 
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -26,8 +30,6 @@ import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
-
-import java.util.ArrayList;
 
 public class SsrIm201Test {
 
@@ -285,4 +287,8 @@ public class SsrIm201Test {
         return array;
     }
 
+    @BeforeAll
+    public static void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
 }
