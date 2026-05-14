@@ -417,6 +417,51 @@ public enum CelestialBodyFrame {
             return dataContext.getFrames().getTOD(conventions, simpleEOP);
         }
 
+    },
+
+    /** Fixed Earth frame (alias for ITRF).
+     * @since 14.0
+     */
+    FIXED_EARTH {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return ITRF.getFrame(conventions, simpleEOP, dataContext);
+        }
+
+    },
+
+    /** WGS84 frame (alias for ITRF).
+     * @since 14.0
+     */
+    WGS84 {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return ITRF.getFrame(conventions, simpleEOP, dataContext);
+        }
+
+    },
+
+    /** True of Date Earth frame (alias for TOD).
+     * @since 14.0
+     */
+    TOD_EARTH {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return TOD.getFrame(conventions, simpleEOP, dataContext);
+        }
+
     };
 
     /** Pattern for dash. */
