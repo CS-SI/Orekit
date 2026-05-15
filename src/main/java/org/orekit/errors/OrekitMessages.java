@@ -288,6 +288,9 @@ public enum OrekitMessages implements Localizable {
     /** NO_DATA_LOADED_FOR_CELESTIAL_BODY. */
     NO_DATA_LOADED_FOR_CELESTIAL_BODY("no data loaded for celestial body {0}"),
 
+    /** UNKNOWN_CELESTIAL_BODY. */
+    UNKNOWN_CELESTIAL_BODY("unknown celestial body: {0}"),
+
     /** NOT_A_JPL_EPHEMERIDES_BINARY_FILE. */
     NOT_A_JPL_EPHEMERIDES_BINARY_FILE("file {0} is not a JPL ephemerides binary file"),
 

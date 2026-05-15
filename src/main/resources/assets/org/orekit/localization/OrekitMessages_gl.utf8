@@ -259,6 +259,9 @@ INCONSISTENT_EARTH_MOON_RATIO_IN_FILES=valores incoherentes da relación de masa
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY=non hai datos para o corpo celeste {0}
 
+# unknown celestial body: {0}
+UNKNOWN_CELESTIAL_BODY=<MISSING TRANSLATION>
+
 # file {0} is not a JPL ephemerides binary file
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE=o ficheiro {0} non é un ficheiro binario de efemérides do JPL
 
