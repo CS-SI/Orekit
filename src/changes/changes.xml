@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="vcucchie" type="fix" issue="1955">
+              Fix IntelliJ compilation issue.
+          </action>
           <action dev="rafa" type="fix" issue="1950">
               Implement logic from Algorithm 2 from Izzo's 2014 paper to correct nMax in LambertSolver.
           </action>
