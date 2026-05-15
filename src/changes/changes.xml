@@ -23,6 +23,9 @@
           <action dev="vcucchie" type="fix" issue="1955">
               Fix IntelliJ compilation issue.
           </action>
+          <action dev="vcucchie" type="update" issue="1954">
+              Upgrade to JUnit 6.
+          </action>
           <action dev="rafa" type="fix" issue="1950">
               Implement logic from Algorithm 2 from Izzo's 2014 paper to correct nMax in LambertSolver.
           </action>
@@ -248,6 +251,9 @@
           </action>
           <action dev="serrof" type="add" issue="1808">
               Added mass rate in state.
+          </action>
+          <action dev="vcucchie" type="update" issue="1805">
+              Upgrade to Java 21.
           </action>
           <action dev="luc" type="add" issue="1803">
               Added TimeUtils.earliest() and TimeUtils.latest().

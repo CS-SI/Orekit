@@ -37,7 +37,7 @@
     <orekit.maven-source-plugin.version>3.3.1</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>3.5.3</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>3.5.2</orekit.maven-surefire-report-plugin.version>
-    <orekit.mockito-core.version>5.14.2</orekit.mockito-core.version>
+    <orekit.mockito-core.version>5.23.0</orekit.mockito-core.version>
     <orekit.archunit.version>1.4.1</orekit.archunit.version>
     <orekit.slf4j.version>2.0.17</orekit.slf4j.version>
     <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
@@ -48,7 +48,7 @@
     <orekit.mathjax.config>&lt;script type="text/x-mathjax-config"&gt;MathJax.Hub.Config({ TeX: { extensions: ["autoload.js"]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML"&gt;&lt;/script&gt;</orekit.mathjax.enable>
     <orekit.hipparchus.version>4.1-SNAPSHOT</orekit.hipparchus.version>
-    <orekit.junit.version>5.13.2</orekit.junit.version>
+    <orekit.junit.version>6.0.3</orekit.junit.version>
     <orekit.hamcrest.version>3.0</orekit.hamcrest.version>
     <orekit.compiler.release>21</orekit.compiler.release>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
