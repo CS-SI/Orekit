@@ -327,6 +327,9 @@ public class LazyLoadedCelestialBodies implements CelestialBodies {
                         addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES);
                         loaders = loadersMap.get(name);
                     }
+                    if (loaders == null || loaders.isEmpty()) {
+                        throw new OrekitException(OrekitMessages.UNKNOWN_CELESTIAL_BODY, name);
+                    }
                     OrekitException delayedException = null;
                     for (CelestialBodyLoader loader : loaders) {
                         try {

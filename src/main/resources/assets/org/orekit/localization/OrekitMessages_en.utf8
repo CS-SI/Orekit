@@ -259,6 +259,9 @@ INCONSISTENT_EARTH_MOON_RATIO_IN_FILES=inconsistent values of Earth/Moon mass ra
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY=no data loaded for celestial body {0}
 
+# unknown celestial body: {0}
+UNKNOWN_CELESTIAL_BODY=unknown celestial body: {0}
+
 # file {0} is not a JPL ephemerides binary file
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE=file {0} is not a JPL ephemerides binary file
 

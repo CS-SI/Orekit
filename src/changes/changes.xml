@@ -318,6 +318,9 @@
           <action dev="serrof" type="update" issue="1244">
               Add abstract classes for detectors based on body shape.
           </action>
+          <action dev="bryan" type="fix" issue="1162">
+              Throw OrekitException with clear message when getBody() is called with an unknown celestial body name.
+          </action>
       </release>
       <release version="13.1.5" date="2026-05-02" description="Orekit 13.1.5 is a patch release. It solves various bugs including the proper handling of central body in CCSDS frames">
         <action dev="evan" type="fix" issue="1914">
