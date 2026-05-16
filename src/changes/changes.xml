@@ -24,6 +24,14 @@
           Fixed FieldDSSTPropagator.afterIntegration() which was not preserving user-added
           step handlers after osculating propagation.
       </action>
+      <action dev="bryan" type="fix" issue="1076">
+          Corrected CombinationType returned by AbstractSingleFrequencyCombination
+          (was always PHASE_MINUS_CODE instead of the actual type).
+      </action>
+      <action dev="bryan" type="fix" issue="1076">
+          Fixed unit inconsistency in MelbourneWubbenaCombination
+          (wide-lane phase was in cycles instead of meters).
+      </action>
     </release>
     <release version="13.1.5" date="2026-05-02" description="Orekit 13.1.5 is a patch release. It solves various bugs including the proper handling of central body in CCSDS frames">
       <action dev="evan" type="fix" issue="1914">
