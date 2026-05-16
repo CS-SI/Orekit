@@ -1552,6 +1552,37 @@ public class FieldDSSTPropagatorTest {
 
     }
 
+    @Test
+    void testIssue1348() {
+        doTestIssue1348(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue1348(Field<T> field) {
+        // Initialize propagator
+        final FieldSpacecraftState<T> state = getLEOState(field);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
+        final AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 60.0, 3600.0, tol[0], tol[1]);
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(4, 4);
+        propagator.addForceModel(new DSSTZonal(provider));
+        propagator.setInitialState(state);
+
+        // Add a step handler directly to the integrator (not via the multiplexer)
+        final int[] callCount = {0};
+        integrator.addStepHandler(interpolator -> callCount[0]++);
+        Assertions.assertEquals(1, integrator.getStepHandlers().size());
+
+        // Propagation
+        propagator.propagate(state.getDate().shiftedBy(3600));
+        final int firstCount = callCount[0];
+        Assertions.assertTrue(firstCount > 0);
+
+        // After propagation, the user-added handler should still be on the integrator
+        // (only the internal FieldShortPeriodicsHandler should have been removed)
+        Assertions.assertEquals(1, integrator.getStepHandlers().size());
+        Assertions.assertFalse(integrator.getStepHandlers().get(0).getClass().getSimpleName().equals("FieldShortPeriodicsHandler"));
+    }
+
     @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
