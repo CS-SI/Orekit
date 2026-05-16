@@ -20,6 +20,10 @@
   </properties>
   <body>
     <release version="13.1.6" date="TBD" description="Orekit 13.1.6 is a patch release">
+      <action dev="bryan" type="fix" issue="1348">
+          Fixed FieldDSSTPropagator.afterIntegration() which was not preserving user-added
+          step handlers after osculating propagation.
+      </action>
     </release>
     <release version="13.1.5" date="2026-05-02" description="Orekit 13.1.5 is a patch release. It solves various bugs including the proper handling of central body in CCSDS frames">
       <action dev="evan" type="fix" issue="1914">
