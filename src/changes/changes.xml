@@ -19,6 +19,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.1.6" date="TBD" description="Orekit 13.1.6 is a patch release">
+    </release>
     <release version="13.1.5" date="2026-05-02" description="Orekit 13.1.5 is a patch release. It solves various bugs including the proper handling of central body in CCSDS frames">
       <action dev="evan" type="fix" issue="1914">
           Account for central body in CCSDS NDM when ModifiedFrame is used.
