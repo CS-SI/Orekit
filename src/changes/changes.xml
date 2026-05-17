@@ -309,6 +309,9 @@
           <action dev="serrof" type="add" issue="1517">
               Add analytical ephemerides for the Moon.
           </action>
+          <action dev="vcucchie" type="add" issue="1502">
+              Added GitLab issue templates for bug reports and feature requests.
+          </action>
           <action dev="rodrigomarcelino" type="add" issue="1103">
               Exposed Alpha-5 satellite number parsing in TLE class.
           </action>
