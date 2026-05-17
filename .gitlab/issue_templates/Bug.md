@@ -2,6 +2,7 @@
 
 Before submitting, please:
 - Search existing issues to avoid duplicates: https://gitlab.orekit.org/orekit/orekit/-/issues
+  If unsure, don't worry! We'll most probably know if this is a known issue.
 - Consider discussing first on the forum if you are not sure: https://forum.orekit.org/
 -->
 
