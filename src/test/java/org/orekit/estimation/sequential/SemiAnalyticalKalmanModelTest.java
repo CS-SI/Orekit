@@ -42,6 +42,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SemiAnalyticalKalmanModelTest {
@@ -162,8 +163,8 @@ public class SemiAnalyticalKalmanModelTest {
     private void checkModelAtT0() {
 
         // Instantiate a Model from attributes
-        final SemiAnalyticalKalmanModel model = new SemiAnalyticalKalmanModel(propagatorBuilder,
-                                                  covMatrixProvider,
+        final SemiAnalyticalKalmanModel model = new SemiAnalyticalKalmanModel(Collections.singletonList(propagatorBuilder),
+                                                  Collections.singletonList(covMatrixProvider),
                                                   estimatedMeasurementsParameters,
                                                   null);
         model.setObserver(modelLogger);

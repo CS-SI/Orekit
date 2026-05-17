@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
 import org.orekit.errors.OrekitException;
@@ -34,11 +37,11 @@ public class SemiAnalyticalKalmanEstimatorBuilder {
     /** Decomposer to use for the correction phase. */
     private MatrixDecomposer decomposer;
 
-    /** Builder for propagator. */
-    private DSSTPropagatorBuilder dsstPropagatorBuilder;
+    /** Builders for propagators. */
+    private final List<DSSTPropagatorBuilder> dsstPropagatorBuilders;
 
-    /** Process noise matrix provider. */
-    private CovarianceMatrixProvider processNoiseMatrixProvider;
+    /** Process noise matrices providers. */
+    private final List<CovarianceMatrixProvider> processNoiseMatricesProviders;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
@@ -51,25 +54,25 @@ public class SemiAnalyticalKalmanEstimatorBuilder {
      */
     public SemiAnalyticalKalmanEstimatorBuilder() {
         this.decomposer                      = new QRDecomposer(1.0e-15);
-        this.dsstPropagatorBuilder           = null;
-        this.processNoiseMatrixProvider      = null;
+        this.dsstPropagatorBuilders          = new ArrayList<>();
+        this.processNoiseMatricesProviders   = new ArrayList<>();
         this.estimatedMeasurementsParameters = new ParameterDriversList();
         this.measurementProcessNoiseMatrix   = null;
     }
 
-    /** Construct a {@link KalmanEstimator} from the data in this builder.
+    /** Construct a {@link SemiAnalyticalKalmanEstimator} from the data in this builder.
      * <p>
      * Before this method is called, {@link #addPropagationConfiguration(DSSTPropagatorBuilder,
      * CovarianceMatrixProvider) addPropagationConfiguration()} must have been called
      * at least once, otherwise configuration is incomplete and an exception will be raised.
      * </p>
-     * @return a new {@link KalmanEstimator}.
+     * @return a new {@link SemiAnalyticalKalmanEstimator}.
      */
     public SemiAnalyticalKalmanEstimator build() {
-        if (dsstPropagatorBuilder == null) {
+        if (dsstPropagatorBuilders.isEmpty()) {
             throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);
         }
-        return new SemiAnalyticalKalmanEstimator(decomposer, dsstPropagatorBuilder, processNoiseMatrixProvider,
+        return new SemiAnalyticalKalmanEstimator(decomposer, dsstPropagatorBuilders, processNoiseMatricesProviders,
                                                  estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
@@ -84,17 +87,18 @@ public class SemiAnalyticalKalmanEstimatorBuilder {
 
     /** Add a propagation configuration.
      * <p>
-     * This method must be called once initialize the propagator builder
-     * used by the Kalman Filter.
+     * This method must be called once for each propagator to manage with the
+     * {@link SemiAnalyticalKalmanEstimator Kalman estimator}. The propagators order in the
+     * Kalman filter will be the call order.
      * </p>
      * @param builder The propagator builder to use in the Kalman filter.
      * @param provider The process noise matrices provider to use, consistent with the builder.
      * @return this object.
      */
     public SemiAnalyticalKalmanEstimatorBuilder addPropagationConfiguration(final DSSTPropagatorBuilder builder,
-                                                                            final CovarianceMatrixProvider provider) {
-        dsstPropagatorBuilder      = builder;
-        processNoiseMatrixProvider = provider;
+                                                                             final CovarianceMatrixProvider provider) {
+        dsstPropagatorBuilders.add(builder);
+        processNoiseMatricesProviders.add(provider);
         return this;
     }
 
@@ -107,7 +111,7 @@ public class SemiAnalyticalKalmanEstimatorBuilder {
      * @return this object.
      */
     public SemiAnalyticalKalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams,
-                                                                                final CovarianceMatrixProvider provider) {
+                                                                                 final CovarianceMatrixProvider provider) {
         estimatedMeasurementsParameters = estimatedMeasurementsParams;
         measurementProcessNoiseMatrix   = provider;
         return this;

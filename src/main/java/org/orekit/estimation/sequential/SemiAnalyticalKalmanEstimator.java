@@ -33,7 +33,7 @@ import org.orekit.utils.ParameterDriversList;
 /**
  * Implementation of an Extended Semi-analytical Kalman Filter (ESKF) to perform orbit determination.
  * <p>
- * The filter uses a {@link DSSTPropagatorBuilder}.
+ * The filter uses a list of {@link DSSTPropagatorBuilder} for multi-satellite support.
  * </p>
  * <p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
@@ -72,20 +72,20 @@ public class SemiAnalyticalKalmanEstimator extends AbstractKalmanEstimator {
 
     /** Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
-     * @param propagatorBuilder propagator builder used to evaluate the orbit.
-     * @param covarianceMatrixProvider provider for process noise matrix
+     * @param propagatorBuilders propagator builders used to evaluate the orbits.
+     * @param covarianceMatrixProviders providers for process noise matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
-    public SemiAnalyticalKalmanEstimator(final MatrixDecomposer decomposer,
-                                         final DSSTPropagatorBuilder propagatorBuilder,
-                                         final CovarianceMatrixProvider covarianceMatrixProvider,
-                                         final ParameterDriversList estimatedMeasurementParameters,
-                                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        super(decomposer, Collections.singletonList(propagatorBuilder));
+    SemiAnalyticalKalmanEstimator(final MatrixDecomposer decomposer,
+                                  final List<DSSTPropagatorBuilder> propagatorBuilders,
+                                  final List<CovarianceMatrixProvider> covarianceMatrixProviders,
+                                  final ParameterDriversList estimatedMeasurementParameters,
+                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        super(decomposer, propagatorBuilders);
         // Build the process model and measurement model
-        this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilder, covarianceMatrixProvider,
-                                                          estimatedMeasurementParameters,  measurementProcessNoiseMatrix);
+        this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilders, covarianceMatrixProviders,
+                                                          estimatedMeasurementParameters, measurementProcessNoiseMatrix);
 
         // Extended Kalman Filter of Hipparchus
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
@@ -123,14 +123,14 @@ public class SemiAnalyticalKalmanEstimator extends AbstractKalmanEstimator {
         return processModel.getObserver();
     }
 
-    /** Process a single measurement.
+    /** Process a list of measurements.
      * <p>
-     * Update the filter with the new measurement by calling the estimate method.
+     * Update the filter with the new measurements by calling the estimate method.
      * </p>
      * @param observedMeasurements the list of measurements to process
      * @return estimated propagators
      */
-    public DSSTPropagator processMeasurements(final List<ObservedMeasurement<?>> observedMeasurements) {
+    public DSSTPropagator[] processMeasurements(final List<ObservedMeasurement<?>> observedMeasurements) {
         try {
             return processModel.processMeasurements(observedMeasurements, filter);
         } catch (MathRuntimeException mrte) {
@@ -139,4 +139,3 @@ public class SemiAnalyticalKalmanEstimator extends AbstractKalmanEstimator {
     }
 
 }
-

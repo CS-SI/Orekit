@@ -47,6 +47,7 @@ import org.orekit.estimation.sequential.SemiAnalyticalKalmanEstimator;
 import org.orekit.estimation.sequential.SemiAnalyticalUnscentedKalmanEstimator;
 import org.orekit.estimation.sequential.UnscentedKalmanEstimator;
 import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
@@ -606,8 +607,8 @@ public class EstimationTestUtils {
                                                             final double expectedDeltaVel, final double velEps,
                                                             final double[] expectedSigmasPos, final double sigmaPosEps,
                                                             final double[] expectedSigmasVel, final double sigmaVelEps) {
-        Propagator estimated = kalman.processMeasurements(measurements);
-        checkKalmanFit(print, new Propagator[]{estimated}, kalman.getPhysicalEstimatedCovarianceMatrix(), measurements,
+        DSSTPropagator[] estimated = kalman.processMeasurements(measurements);
+        checkKalmanFit(print, estimated, kalman.getPhysicalEstimatedCovarianceMatrix(), measurements,
                        new Orbit[]{refOrbit}, new PositionAngleType[]{positionAngleType}, kalman.getCurrentMeasurementNumber(),
                        new double[] {expectedDeltaPos}, new double[] {posEps},
                        new double[] {expectedDeltaVel}, new double[] {velEps},

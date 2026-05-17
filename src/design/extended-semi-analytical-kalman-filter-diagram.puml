@@ -101,31 +101,42 @@
       class SemiAnalyticalKalmanEstimator {
          - ExtendedKalmanFilter filter
          - SemiAnalyticalKalmanModel processModel
-         + DSSTPropagator processMeasurements(List<ObservedMeasurement> measurements)
+         + DSSTPropagator[] processMeasurements(List<ObservedMeasurement> measurements)
       }
       
       class SemiAnalyticalKalmanEstimatorBuilder {
+        - List<DSSTPropagatorBuilder> dsstPropagatorBuilders
+        - List<CovarianceMatrixProvider> processNoiseMatricesProviders
         + decomposer(MatrixDecomposer decomposer)
-        + addPropagationConfiguration(DSSTPropagator propagator, CovarianceMatrixProvider initialCovariance)
+        + addPropagationConfiguration(DSSTPropagatorBuilder builder, CovarianceMatrixProvider provider)
         + SemiAnalyticalKalmanEstimator build()
       }
       
       class SemiAnalyticalKalmanModel {
-         - DSSTHarvester mapper
-         - DSSTPropagator dsstPropagator
-         + DSSTPropagator processMeasurements(List<ObservedMeasurement> measurements)
-         - void updateNominalSpacecraftState(SpacecraftState nominal)
+         - DSSTHarvester[] harvesters
+         - DSSTPropagator[] dsstPropagators
+         + DSSTPropagator[] processMeasurements(List<ObservedMeasurement> measurements)
+         - void updateNominalSpacecraftState(SpacecraftState nominal, int satelliteIndex)
          - RealMatrix getErrorStateTransitionMatrix()
          - RealMatrix getMeasurementMatrix()
-         - RealVector predictFilterCorrection(RealMatrix stm)
-         - computeOsculatingElements()
       }
-      
+
+      abstract class AbstractSemiAnalyticalKalmanEstimationCommon {
+        - List<DSSTPropagatorBuilder> builders
+        - ParameterDriversList[] estimatedOrbitalParameters
+        - ParameterDriversList[] estimatedPropagationParameters
+        - int[][] covarianceIndirection
+        - double[] scale
+        + DSSTPropagator[] getEstimatedPropagators()
+        # RealMatrix getNormalizedProcessNoise(int stateDimension)
+      }
+
       class SemiAnalyticalMeasurementHandler
 
       OrekitStepHandler <|..  SemiAnalyticalMeasurementHandler
       SemiAnalyticalKalmanEstimator <--   SemiAnalyticalKalmanEstimatorBuilder
       NonLinearProcess <|..  SemiAnalyticalKalmanModel
+      AbstractSemiAnalyticalKalmanEstimationCommon <|-- SemiAnalyticalKalmanModel
       SemiAnalyticalKalmanModel <--   SemiAnalyticalKalmanEstimator
       ExtendedKalmanFilter <--   SemiAnalyticalKalmanEstimator
       SemiAnalyticalMeasurementHandler <--   SemiAnalyticalKalmanModel

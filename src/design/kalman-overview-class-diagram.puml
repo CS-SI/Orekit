@@ -76,6 +76,13 @@
         class DSSTKalmanModel
         class TLEKalmanModel
 
+        class SemiAnalyticalKalmanEstimator {
+          +DSSTPropagator[] processMeasurements(measurements)
+        }
+
+        class SemiAnalyticalKalmanModel
+        abstract class AbstractSemiAnalyticalKalmanEstimationCommon
+
         AbstractKalmanModel <-left-* KalmanEstimator
         KalmanEstimator *-right-> ExtendedKalmanFilter_T
         AbstractKalmanModel *--> CovarianceMatrixProvider
@@ -83,6 +90,11 @@
         KalmanModel     --|> AbstractKalmanModel
         DSSTKalmanModel --|> AbstractKalmanModel
         TLEKalmanModel  --|> AbstractKalmanModel
+
+        SemiAnalyticalKalmanEstimator --> SemiAnalyticalKalmanModel
+        SemiAnalyticalKalmanModel --|> AbstractSemiAnalyticalKalmanEstimationCommon
+        SemiAnalyticalKalmanModel --> CovarianceMatrixProvider
+        SemiAnalyticalKalmanModel --> DSSTPropagator
 
       }
 

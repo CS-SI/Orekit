@@ -26,6 +26,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 
 /** {@link org.orekit.propagation.sampling.OrekitStepHandler Step handler} picking up
@@ -56,6 +57,9 @@ public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
     /** Flag indicating if the handler is used by a unscented kalman filter. */
     private final boolean isUnscented;
 
+    /** DSST propagators for multi-satellite support. */
+    private final DSSTPropagator[] propagators;
+
     /** Simple constructor.
      * <p>
      * Using this constructor, the Kalman filter is supposed to be extended.
@@ -70,7 +74,7 @@ public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
                                   final KalmanFilter<MeasurementDecorator> filter,
                                   final List<ObservedMeasurement<?>> observedMeasurements,
                                   final AbsoluteDate referenceDate) {
-        this(model, filter, observedMeasurements, referenceDate, false);
+        this(model, filter, observedMeasurements, referenceDate, false, null);
     }
 
     /** Simple constructor.
@@ -86,20 +90,51 @@ public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
                                   final List<ObservedMeasurement<?>> observedMeasurements,
                                   final AbsoluteDate referenceDate,
                                   final boolean isUnscented) {
+        this(model, filter, observedMeasurements, referenceDate, isUnscented, null);
+    }
+
+    /** Simple constructor with propagators for multi-satellite support.
+     * @param model semi-analytical kalman model
+     * @param filter kalman filter instance
+     * @param observedMeasurements list of observed measurements
+     * @param referenceDate reference date
+     * @param isUnscented true if the Kalman filter is unscented
+     * @param propagators DSST propagators for multi-satellite support
+     */
+    public SemiAnalyticalMeasurementHandler(final SemiAnalyticalProcess model,
+                                  final KalmanFilter<MeasurementDecorator> filter,
+                                  final List<ObservedMeasurement<?>> observedMeasurements,
+                                  final AbsoluteDate referenceDate,
+                                  final boolean isUnscented,
+                                  final DSSTPropagator[] propagators) {
         this.model                = model;
         this.filter               = filter;
         this.observedMeasurements = observedMeasurements;
         this.referenceDate        = referenceDate;
         this.isUnscented          = isUnscented;
+        this.propagators          = propagators;
     }
 
     /** {@inheritDoc} */
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         this.index = 0;
-        // Initialize short periodic terms.
-        model.initializeShortPeriodicTerms(s0);
-        model.updateShortPeriods(s0);
+        // Initialize short periodic terms for all satellites
+        if (propagators != null) {
+            for (int k = 0; k < propagators.length; k++) {
+                final SpacecraftState initialState = propagators[k].getInitialState();
+                if (model instanceof SemiAnalyticalKalmanModel) {
+                    ((SemiAnalyticalKalmanModel) model).initializeShortPeriodicTerms(initialState, k);
+                    ((SemiAnalyticalKalmanModel) model).updateShortPeriods(initialState, k);
+                } else {
+                    model.initializeShortPeriodicTerms(initialState);
+                    model.updateShortPeriods(initialState);
+                }
+            }
+        } else {
+            model.initializeShortPeriodicTerms(s0);
+            model.updateShortPeriods(s0);
+        }
     }
 
     /** {@inheritDoc} */
@@ -117,17 +152,30 @@ public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
 
             try {
 
-                // Update predicted spacecraft state
-                model.updateNominalSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(index).getDate()));
+                final ObservedMeasurement<?> measurement = observedMeasurements.get(index);
+                final AbsoluteDate measDate = measurement.getDate();
+
+                // Update predicted spacecraft state(s)
+                if (propagators != null && model instanceof SemiAnalyticalKalmanModel) {
+                    // Multi-satellite: update all propagator states using interpolated state
+                    final SemiAnalyticalKalmanModel kalmanModel = (SemiAnalyticalKalmanModel) model;
+                    final SpacecraftState interpolatedState = interpolator.getInterpolatedState(measDate);
+                    for (int k = 0; k < propagators.length; k++) {
+                        kalmanModel.updateNominalSpacecraftState(interpolatedState, k);
+                    }
+                } else {
+                    // Single satellite (backward compatibility)
+                    model.updateNominalSpacecraftState(interpolator.getInterpolatedState(measDate));
+                }
 
                 // Process the current observation
                 final MeasurementDecorator decorated = isUnscented ?
-                        KalmanEstimatorUtil.decorateUnscented(observedMeasurements.get(index), referenceDate) :
-                            KalmanEstimatorUtil.decorate(observedMeasurements.get(index), referenceDate);
+                        KalmanEstimatorUtil.decorateUnscented(measurement, referenceDate) :
+                            KalmanEstimatorUtil.decorate(measurement, referenceDate);
                 final ProcessEstimate estimate = filter.estimationStep(decorated);
 
                 // Finalize the estimation
-                model.finalizeEstimation(observedMeasurements.get(index), estimate);
+                model.finalizeEstimation(measurement, estimate);
 
             } catch (MathRuntimeException mrte) {
                 throw new OrekitException(mrte);
