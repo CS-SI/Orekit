@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldGradient;
@@ -44,8 +46,6 @@ import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.List;
 
 /** Common handling of {@link FieldAbstractAnalyticalPropagator} methods for GNSS propagators.
  * <p>
@@ -463,8 +463,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final T meanAnomaly      = FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, eccentricAnomaly);
 
         return new FieldKeplerianOrbit<>(sma, e, i0, aop, om0, meanAnomaly, PositionAngleType.MEAN,
-                                         PositionAngleType.MEAN, frozenEcef,
-                                         initialState.getDate(), mu);
+                frozenEcef, initialState.getDate(), mu);
 
     }
 
