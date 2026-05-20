@@ -35,6 +35,10 @@
       <action dev="vcucchie" type="fix" issue="1025">
           Fixed frame alignement mistake in the Frames webpage.
       </action>
+      <action dev="bryan" type="fix" issue="852">
+          Fixed Earth horizon angle computation in KnockeRediffusedForceModel for correct
+          visibility cone calculation.
+      </action>
     </release>
     <release version="13.1.5" date="2026-05-02" description="Orekit 13.1.5 is a patch release. It solves various bugs including the proper handling of central body in CCSDS frames">
       <action dev="evan" type="fix" issue="1914">
