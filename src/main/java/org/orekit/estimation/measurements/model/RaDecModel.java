@@ -64,7 +64,7 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
      */
     public double[] value(final SignalReceptionCondition receptionCondition,
                           final PVCoordinatesProvider emitter) {
-        return value(receptionCondition, emitter, receptionCondition.getReceptionDate());
+        return value(receptionCondition, emitter, receptionCondition.receptionDate());
     }
 
     /**
@@ -79,8 +79,8 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
         // Compute line-of-sight
         final Vector3D apparentLineOfSightInInputFrame = getEmitterToReceiverVector(receptionCondition, emitter,
                 approxEmissionDate).normalize();
-        final StaticTransform toInertialFrameAtReception = receptionCondition.getReferenceFrame()
-                .getStaticTransformTo(referenceFrame, receptionCondition.getReceptionDate());
+        final StaticTransform toInertialFrameAtReception = receptionCondition.referenceFrame()
+                .getStaticTransformTo(referenceFrame, receptionCondition.receptionDate());
         final Vector3D apparentLineOfSight = toInertialFrameAtReception.transformVector(apparentLineOfSightInInputFrame);
 
         // Compute right ascension and declination
@@ -98,7 +98,7 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
      */
     public <T extends CalculusFieldElement<T>> T[] value(final FieldSignalReceptionCondition<T> receptionCondition,
                                                          final FieldPVCoordinatesProvider<T> emitter) {
-        return value(receptionCondition, emitter, receptionCondition.getReceptionDate());
+        return value(receptionCondition, emitter, receptionCondition.receptionDate());
     }
 
     /**
@@ -115,8 +115,8 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
         // Compute line-of-sight
         final FieldVector3D<T> apparentLineOfSightInInputFrame = getEmitterToReceiverVector(receptionCondition,
                 emitter, approxEmissionDate).normalize();
-        final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
-        final FieldStaticTransform<T> toInertialFrameAtReception = receptionCondition.getReferenceFrame()
+        final FieldAbsoluteDate<T> receptionDate = receptionCondition.receptionDate();
+        final FieldStaticTransform<T> toInertialFrameAtReception = receptionCondition.referenceFrame()
                 .getStaticTransformTo(referenceFrame, receptionDate);
         final FieldVector3D<T> apparentLineOfSight = toInertialFrameAtReception.transformVector(apparentLineOfSightInInputFrame);
 

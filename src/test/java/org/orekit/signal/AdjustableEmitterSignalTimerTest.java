@@ -186,4 +186,24 @@ class AdjustableEmitterSignalTimerTest {
         final Vector3D shiftedEmitter = pvCoordinatesProvider.getPosition(date.shiftedBy(travelTimeGuess), frame);
         return shiftedEmitter.subtract(position).getNorm2() / Constants.SPEED_OF_LIGHT;
     }
+
+    @Test
+    void testComputeEmissionCondition() {
+        // GIVEN
+        final Frame frame = FramesFactory.getGCRF();
+        final AbsoluteDate receptionDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final PVCoordinates pvCoordinates = new PVCoordinates(Vector3D.MINUS_I, new Vector3D(1, -2, 3).scalarMultiply(-10));
+        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, receptionDate, pvCoordinates);
+        final Vector3D receiverPosition = new Vector3D(1e2, 1e3, 1e4);
+        final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(absolutePVCoordinates);
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPosition, frame);
+        // WHEN
+        final SignalEmissionCondition emissionCondition = signalTimeOfFlight.computeEmissionCondition(receptionCondition,
+                receptionDate);
+        // THEN
+        final AbsoluteDate emittingDate = emissionCondition.emissionDate();
+        final double delay = signalTimeOfFlight.computeDelay(receptionCondition, emittingDate);
+        assertEquals(delay, -emittingDate.durationFrom(receptionDate), 1e-15);
+        assertEquals(absolutePVCoordinates.getPosition(emittingDate, frame), emissionCondition.emitterPosition());
+    }
 }

@@ -37,6 +37,6 @@ public enum OdMethodType {
     SRIF,
 
     /** Sequential Simultaneous Estimation Method. */
-    SSEM;
+    SSEM
 
 }

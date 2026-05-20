@@ -620,19 +620,11 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @return v + ω true latitude argument (rad)
      */
     public T getAlphaV() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return cachedAlpha;
-
-            case ECCENTRIC:
-                return FieldCircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, cachedAlpha);
-
-            case MEAN:
-                return FieldCircularLatitudeArgumentUtility.meanToTrue(ex, ey, cachedAlpha);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> cachedAlpha;
+            case ECCENTRIC -> FieldCircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, cachedAlpha);
+            case MEAN -> FieldCircularLatitudeArgumentUtility.meanToTrue(ex, ey, cachedAlpha);
+        };
     }
 
     /** Get the true latitude argument derivative.
@@ -669,19 +661,11 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @return E + ω eccentric latitude argument (rad)
      */
     public T getAlphaE() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return FieldCircularLatitudeArgumentUtility.trueToEccentric(ex, ey, cachedAlpha);
-
-            case ECCENTRIC:
-                return cachedAlpha;
-
-            case MEAN:
-                return FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, cachedAlpha);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> FieldCircularLatitudeArgumentUtility.trueToEccentric(ex, ey, cachedAlpha);
+            case ECCENTRIC -> cachedAlpha;
+            case MEAN -> FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, cachedAlpha);
+        };
     }
 
     /** Get the eccentric latitude argument derivative.
@@ -719,19 +703,11 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @return M + ω mean latitude argument (rad)
      */
     public T getAlphaM() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return FieldCircularLatitudeArgumentUtility.trueToMean(ex, ey, cachedAlpha);
-
-            case MEAN:
-                return cachedAlpha;
-
-            case ECCENTRIC:
-                return FieldCircularLatitudeArgumentUtility.eccentricToMean(ex, ey, cachedAlpha);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> FieldCircularLatitudeArgumentUtility.trueToMean(ex, ey, cachedAlpha);
+            case MEAN -> cachedAlpha;
+            case ECCENTRIC -> FieldCircularLatitudeArgumentUtility.eccentricToMean(ex, ey, cachedAlpha);
+        };
     }
 
     /** Get the mean latitude argument derivative.

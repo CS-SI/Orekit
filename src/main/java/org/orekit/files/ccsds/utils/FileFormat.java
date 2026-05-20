@@ -26,6 +26,6 @@ public enum FileFormat {
     KVN,
 
     /** XML format. */
-    XML;
+    XML
 
 }

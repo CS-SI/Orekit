@@ -68,7 +68,7 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
     /** {@inheritDoc} */
     @Override
     public String getEffectName() {
-        return drivers.get(0).getName();
+        return drivers.getFirst().getName();
     }
 
     /** {@inheritDoc}

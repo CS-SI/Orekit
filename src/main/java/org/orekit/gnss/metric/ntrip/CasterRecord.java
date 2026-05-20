@@ -17,6 +17,7 @@
 package org.orekit.gnss.metric.ntrip;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.gnss.metric.ntrip.Record;
 
 /** Caster record in source table.
  * @author Luc Maisonobe

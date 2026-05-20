@@ -125,7 +125,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
 
         // Verify
         Assertions.assertEquals(M2, prop.getM2(), Double.MIN_VALUE);
-        Assertions.assertTrue(prop.getParametersDrivers().get(0).isSelected());
+        Assertions.assertTrue(prop.getParametersDrivers().getFirst().isSelected());
 
     }
 
@@ -177,8 +177,8 @@ public class BrouwerLyddanePropagatorBuilderTest {
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
         Assertions.assertEquals(builder.getM2Value(), copyBuilder.getM2Value());
-        Assertions.assertTrue(builder.getPropagationParametersDrivers().getDrivers().get(0).isSelected());
-        Assertions.assertTrue(copyBuilder.getPropagationParametersDrivers().getDrivers().get(0).isSelected());
+        Assertions.assertTrue(builder.getPropagationParametersDrivers().getDrivers().getFirst().isSelected());
+        Assertions.assertTrue(copyBuilder.getPropagationParametersDrivers().getDrivers().getFirst().isSelected());
     }
 
     /** Test for issue #1741.

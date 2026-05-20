@@ -121,8 +121,7 @@ public class SatInSystem {
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof SatInSystem) {
-            final SatInSystem other = (SatInSystem) object;
+        if (object instanceof SatInSystem other) {
             return getSystem().equals(other.getSystem()) && getPRN() == other.getPRN();
         }
         return false;

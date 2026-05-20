@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
+import org.orekit.gnss.metric.ntrip.Record;
+
 /** Network record in source table.
  * @author Luc Maisonobe
  * @since 11.0

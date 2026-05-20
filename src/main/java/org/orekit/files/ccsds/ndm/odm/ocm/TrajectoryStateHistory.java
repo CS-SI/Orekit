@@ -107,19 +107,19 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
     /** {@inheritDoc} */
     @Override
     public CartesianDerivativesFilter getAvailableDerivatives() {
-        return states.get(0).getAvailableDerivatives();
+        return states.getFirst().getAvailableDerivatives();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return states.get(0).getDate();
+        return states.getFirst().getDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return states.get(states.size() - 1).getDate();
+        return states.getLast().getDate();
     }
 
     /** {@inheritDoc} */

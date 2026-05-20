@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Comparator;
 
@@ -34,6 +35,7 @@ public class FieldChronologicalComparator<KK extends CalculusFieldElement<KK>>
         implements Comparator<FieldTimeStamped<KK>>, Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = -5373507372120707293L;
 
     /** Simple constructor. */

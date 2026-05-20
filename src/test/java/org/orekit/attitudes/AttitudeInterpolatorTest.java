@@ -212,7 +212,7 @@ class AttitudeInterpolatorTest {
 
         // THEN
         Assertions.assertEquals(1, actualSubInterpolators.size());
-        Assertions.assertSame(mockTimeInterpolator, actualSubInterpolators.get(0));
+        Assertions.assertSame(mockTimeInterpolator, actualSubInterpolators.getFirst());
     }
 
 }

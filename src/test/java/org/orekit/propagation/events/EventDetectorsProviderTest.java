@@ -113,28 +113,28 @@ public class EventDetectorsProviderTest {
         // Detectors list not empty
         Assertions.assertFalse(detectors.isEmpty());
         Assertions.assertEquals(1, detectors.size());
-        Assertions.assertInstanceOf(DateDetector.class, detectors.get(0));
+        Assertions.assertInstanceOf(DateDetector.class, detectors.getFirst());
         
         Assertions.assertFalse(fieldDetectors.isEmpty());
         Assertions.assertEquals(1, fieldDetectors.size());
-        Assertions.assertInstanceOf(FieldDateDetector.class, fieldDetectors.get(0));
+        Assertions.assertInstanceOf(FieldDateDetector.class, fieldDetectors.getFirst());
 
         // Check dates
         final int expectedDatesNb = 39;
-        final DateDetector       dateDetector = (DateDetector) detectors.get(0);
+        final DateDetector       dateDetector = (DateDetector) detectors.getFirst();
         final List<TimeStamped>  dates        = dateDetector.getDates();
                 
         Assertions.assertEquals(expectedDatesNb, dates.size());
-        Assertions.assertEquals(0., dates.get(0).durationFrom(t0.shiftedBy(-2. * Constants.JULIAN_DAY + step3)), 0.);
+        Assertions.assertEquals(0., dates.getFirst().durationFrom(t0.shiftedBy(-2. * Constants.JULIAN_DAY + step3)), 0.);
         Assertions.assertEquals(0., dates.get(expectedDatesNb-1).durationFrom(t0.shiftedBy(Constants.JULIAN_DAY - step2)), 0.);
 
         // Field version
-        final FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.get(0);
+        final FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.getFirst();
         List<FieldTimeStamped<Binary64>>  fieldDates        = fieldDateDetector.getDates();
         
         Assertions.assertEquals(expectedDatesNb, dates.size());
         Assertions.assertEquals(0.,
-                                fieldDates.get(0).durationFrom(new FieldAbsoluteDate<>(b64Field,
+                                fieldDates.getFirst().durationFrom(new FieldAbsoluteDate<>(b64Field,
                                                 t0.shiftedBy(-2. * Constants.JULIAN_DAY + step3))).getReal(),
                                 0.);
         Assertions.assertEquals(0.,

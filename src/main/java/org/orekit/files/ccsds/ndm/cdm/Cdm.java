@@ -53,14 +53,14 @@ public class Cdm extends NdmConstituent<CdmHeader, CdmSegment> {
      * @return file metadata
      */
     public CdmRelativeMetadata getRelativeMetadata() {
-        return getSegments().get(0).getMetadata().getRelativeMetadata();
+        return getSegments().getFirst().getMetadata().getRelativeMetadata();
     }
 
     /** Get the file metadata.
      * @return file metadata
      */
     public CdmMetadata getMetadataObject1() {
-        return getSegments().get(0).getMetadata();
+        return getSegments().getFirst().getMetadata();
     }
 
     /** Get the file metadata.
@@ -74,7 +74,7 @@ public class Cdm extends NdmConstituent<CdmHeader, CdmSegment> {
      * @return file data
      */
     public CdmData getDataObject1() {
-        return getSegments().get(0).getData();
+        return getSegments().getFirst().getData();
     }
 
     /** Get the file data.
@@ -89,7 +89,7 @@ public class Cdm extends NdmConstituent<CdmHeader, CdmSegment> {
      * @return file data
      */
     public UserDefined getUserDefinedParameters() {
-        return getSegments().get(0).getData().getUserDefinedBlock();
+        return getSegments().getFirst().getData().getUserDefinedBlock();
     }
 
 }

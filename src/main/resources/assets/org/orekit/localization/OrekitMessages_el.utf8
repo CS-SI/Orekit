@@ -262,6 +262,9 @@ INCONSISTENT_EARTH_MOON_RATIO_IN_FILES=μη έγκυρες τιμές αναλο
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY=η πληροφορία για το ουράνιο σώμα {0} δεν φορτώθηκε
 
+# unknown celestial body: {0}
+UNKNOWN_CELESTIAL_BODY=<MISSING TRANSLATION>
+
 # file {0} is not a JPL ephemerides binary file
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE=το αρχείο {0} δεν είναι JPL δυαδικό αρχείο εφημερίδων
 

@@ -113,16 +113,16 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         double maxErrorY = 0;
         double maxErrorZ = 0;
         for (final List<ParsedLine> dataBlock : dataBlocks) {
-            final AbsoluteDate validityStart = dataBlock.get(0).gpsDate.getDate();
-            final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).gpsDate.getDate();
-            final int          prnNumber     = dataBlock.get(0).prnNumber;
+            final AbsoluteDate validityStart = dataBlock.getFirst().gpsDate.getDate();
+            final AbsoluteDate validityEnd   = dataBlock.getLast().gpsDate.getDate();
+            final int          prnNumber     = dataBlock.getFirst().prnNumber;
             final ExtendedPositionProvider fakedSun = new FakedSun(dataBlock);
             final GNSSAttitudeProvider attitudeProvider = useGenericAttitude ?
                                                           new GenericGNSS(validityStart, validityEnd, fakedSun, eme2000) :
-                                                          dataBlock.get(0).satType.buildAttitudeProvider(validityStart, validityEnd,
+                                                          dataBlock.getFirst().satType.buildAttitudeProvider(validityStart, validityEnd,
                                                                                                          fakedSun, eme2000, prnNumber);
-            Assertions.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).gpsDate.getDate());
-            Assertions.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).gpsDate.getDate());
+            Assertions.assertEquals(attitudeProvider.validityStart(), dataBlock.getFirst().gpsDate.getDate());
+            Assertions.assertEquals(attitudeProvider.validityEnd(), dataBlock.getLast().gpsDate.getDate());
 
             for (final ParsedLine parsedLine : dataBlock) {
 
@@ -182,7 +182,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                      parsedLine.gpsDate.getDate().durationFrom(previous.gpsDate.getDate()) > 14400)) {
                     dataBlocks.add(new ArrayList<>());
                 }
-                dataBlocks.get(dataBlocks.size() - 1).add(parsedLine);
+                dataBlocks.getLast().add(parsedLine);
             }
 
         } catch (IOException ioe) {

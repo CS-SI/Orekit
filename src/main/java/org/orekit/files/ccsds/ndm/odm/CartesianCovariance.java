@@ -76,7 +76,7 @@ public class CartesianCovariance extends CommentsContainer implements Data {
      * @param defaultFrameSupplier supplier for default reference frame if no
      *                             frame is specified in the CCSDS message
      * @param frameMapper          for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CartesianCovariance(final Supplier<FrameFacade> defaultFrameSupplier,
                                final CcsdsFrameMapper frameMapper) {
@@ -142,7 +142,7 @@ public class CartesianCovariance extends CommentsContainer implements Data {
      * Get the mapping between a CCSDS frame and a {@link Frame}.
      *
      * @return the frame mapper.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CcsdsFrameMapper getFrameMapper() {
         return frameMapper;
@@ -156,7 +156,7 @@ public class CartesianCovariance extends CommentsContainer implements Data {
      * @return Orekit frame for this covariance matrix.
      * @see #getReferenceFrame()
      * @see #getFrameMapper()
-     * @since 14.0
+     * @since 13.1.5
      */
     public Frame getFrame() {
         // OEM, OMM, and OPM don't allow a COV_FRAME_EPOCH, but OCM does.

@@ -465,7 +465,7 @@ class StateCovarianceBlenderTest {
 
         // THEN
         Assertions.assertEquals(1, actualSubInterpolators.size());
-        Assertions.assertEquals(orbitInterpolator, actualSubInterpolators.get(0));
+        Assertions.assertEquals(orbitInterpolator, actualSubInterpolators.getFirst());
     }
 
 }

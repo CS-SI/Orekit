@@ -54,8 +54,8 @@ public class CustomType implements ObservationType {
 
     @Override
     public boolean equals(final Object type) {
-        if (type instanceof CustomType) {
-            return name.equals(((CustomType) type).name);
+        if (type instanceof CustomType customType) {
+            return name.equals(customType.name);
         }
         return false;
     }

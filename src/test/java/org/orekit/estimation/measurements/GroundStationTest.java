@@ -197,14 +197,14 @@ class GroundStationTest {
                                                                1.0, 3.0, 300.0);
 
         // change one station clock
-        final TopocentricFrame base  = context.stations.get(0).getBaseFrame();
+        final TopocentricFrame base  = context.stations.getFirst().getBaseFrame();
         final BodyShape parent       = base.getParentShape();
         final double deltaClock      = 0.00084532;
         final String changedSuffix   = "-changed";
         final QuadraticClockModel blankClock = new QuadraticClockModel(context.initialOrbit.getDate(), 0.0, 0.0, 0.0);
         final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
                                                                               base.getName() + changedSuffix), context.ut1.getEOPHistory(),
-                                                         blankClock, context.stations.get(0).getDisplacements());
+                                                         blankClock, context.stations.getFirst().getDisplacements());
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -218,7 +218,7 @@ class GroundStationTest {
                                                        range.getObservedValue()[0],
                                                        range.getTheoreticalStandardDeviation()[0],
                                                        range.getBaseWeight()[0],
-                                                       range.getSatellites().get(0)));
+                                                       range.getSatellites().getFirst()));
                 } else {
                     estimator.addMeasurement(range);
                 }
@@ -257,13 +257,13 @@ class GroundStationTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // change one station clock
-        final TopocentricFrame base  = context.stations.get(0).getBaseFrame();
+        final TopocentricFrame base  = context.stations.getFirst().getBaseFrame();
         final BodyShape parent       = base.getParentShape();
         final String changedSuffix   = "-changed";
         final QuadraticClockModel quadraticClock = new QuadraticClockModel(context.initialOrbit.getDate(), 3.0e-9, 2.0e-9, 1.0e-9);
         final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
                                                                               base.getName() + changedSuffix), context.ut1.getEOPHistory(),
-                                                         quadraticClock, context.stations.get(0).getDisplacements());
+                                                         quadraticClock, context.stations.getFirst().getDisplacements());
 
         final AbsoluteDate shiftedDate = context.initialOrbit.getDate().shiftedBy(60.0); // one minute
         final double bias  = changed.getOffsetValue(shiftedDate);
@@ -293,7 +293,7 @@ class GroundStationTest {
 
         // move one station
         final RandomGenerator random = new Well19937a(0x4adbecfc743bda60L);
-        final TopocentricFrame base = context.stations.get(0).getBaseFrame();
+        final TopocentricFrame base = context.stations.getFirst().getBaseFrame();
         final BodyShape parent = base.getParentShape();
         final Vector3D baseOrigin = parent.transform(base.getPoint());
         final Vector3D deltaTopo = new Vector3D(2 * random.nextDouble() - 1,
@@ -307,7 +307,7 @@ class GroundStationTest {
                                                                                             parent.getBodyFrame(),
                                                                                             null),
                                                                            base.getName() + movedSuffix), context.ut1.getEOPHistory(),
-                                                      context.stations.get(0).getDisplacements());
+                                                      context.stations.getFirst().getDisplacements());
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -320,7 +320,7 @@ class GroundStationTest {
                                                        range.getObservedValue()[0],
                                                        range.getTheoreticalStandardDeviation()[0],
                                                        range.getBaseWeight()[0],
-                                                       range.getSatellites().get(0)));
+                                                       range.getSatellites().getFirst()));
                 } else {
                     estimator.addMeasurement(range);
                 }
@@ -346,7 +346,7 @@ class GroundStationTest {
 
         GeodeticPoint result = moved.getOffsetGeodeticPoint((AbsoluteDate) null);
 
-        GeodeticPoint reference = context.stations.get(0).getBaseFrame().getPoint();
+        GeodeticPoint reference = context.stations.getFirst().getBaseFrame().getPoint();
         Assertions.assertEquals(reference.getLatitude(),  result.getLatitude(),  1e-12);
         Assertions.assertEquals(reference.getLongitude(), result.getLongitude(), 1e-12);
         Assertions.assertEquals(reference.getAltitude(),  result.getAltitude(),  2.7e-7);
@@ -434,7 +434,7 @@ class GroundStationTest {
                                                 linearRange.getObservedValue()[0],
                                                 linearRange.getTheoreticalStandardDeviation()[0],
                                                 linearRange.getBaseWeight()[0],
-                                                linearRange.getSatellites().get(0));
+                                                linearRange.getSatellites().getFirst());
                     estimator.addMeasurement(zeroRange);
                 }
             }
@@ -444,7 +444,7 @@ class GroundStationTest {
         estimator.setMaxEvaluations(200);
 
         // we want to estimate pole and prime meridian
-        GroundStation station = zeroEOPContext.stations.get(0);
+        GroundStation station = zeroEOPContext.stations.getFirst();
         station.getPrimeMeridianOffsetDriver().setReferenceDate(refDate);
         station.getPrimeMeridianOffsetDriver().setSelected(true);
         station.getPrimeMeridianDriftDriver().setSelected(true);

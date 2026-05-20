@@ -65,7 +65,7 @@ class FieldSecondaryEventLoggerTest {
         // THEN
         final List<Pair<FieldAbsolutePVCoordinates<Binary64>, FieldPVCoordinates<Binary64>>> logs = secondaryEventLogger.copyLogs();
         Assertions.assertEquals(1, logs.size());
-        final Pair<FieldAbsolutePVCoordinates<Binary64>, FieldPVCoordinates<Binary64>> log = logs.get(0);
+        final Pair<FieldAbsolutePVCoordinates<Binary64>, FieldPVCoordinates<Binary64>> log = logs.getFirst();
         Assertions.assertEquals(state.getDate(), log.getKey().getDate());
     }
 
@@ -84,7 +84,7 @@ class FieldSecondaryEventLoggerTest {
         // WHEN
         secondaryEventLogger.eventOccurred(primaryState, null, true);
         // THEN
-        final Pair<FieldAbsolutePVCoordinates<Binary64>, FieldPVCoordinates<Binary64>> log = secondaryEventLogger.copyLogs().get(0);
+        final Pair<FieldAbsolutePVCoordinates<Binary64>, FieldPVCoordinates<Binary64>> log = secondaryEventLogger.copyLogs().getFirst();
         final FieldAbsolutePVCoordinates<Binary64> primaryPVCoordinates = log.getKey();
         final FieldPVCoordinates<Binary64> secondaryPVCoordinates = log.getValue();
         Assertions.assertEquals(primaryState.getDate(), primaryPVCoordinates.getDate());
@@ -143,7 +143,7 @@ class FieldSecondaryEventLoggerTest {
         // THEN
         final List<Pair<FieldAbsolutePVCoordinates<Binary64>, FieldPVCoordinates<Binary64>>> logs = secondaryEventLogger.copyLogs();
         Assertions.assertEquals(1, logs.size());
-        final Pair<FieldAbsolutePVCoordinates<Binary64>, FieldPVCoordinates<Binary64>> log = logs.get(0);
+        final Pair<FieldAbsolutePVCoordinates<Binary64>, FieldPVCoordinates<Binary64>> log = logs.getFirst();
         Assertions.assertEquals(state.getDate(), log.getKey().getDate());
     }
 

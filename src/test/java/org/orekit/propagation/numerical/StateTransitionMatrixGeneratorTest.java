@@ -481,7 +481,7 @@ class StateTransitionMatrixGeneratorTest {
         p1.setupMatricesComputation("stm1", null, null);
         final List<SpacecraftState> results = new PropagatorsParallelizer(Arrays.asList(p0, p1), interpolators -> {}).
                 propagate(startDate, endDate);
-        Assertions.assertEquals(-0.07953750951271785, results.get(0).getAdditionalState("stm0")[0], 1.0e-10);
+        Assertions.assertEquals(-0.07953750951271785, results.getFirst().getAdditionalState("stm0")[0], 1.0e-10);
         Assertions.assertEquals(-0.07953750951271785, results.get(1).getAdditionalState("stm1")[0], 1.0e-10);
     }
 

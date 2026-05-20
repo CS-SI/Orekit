@@ -29,7 +29,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class DataSourceTest {
 
@@ -52,7 +51,7 @@ public class DataSourceTest {
     @Test
     public void testFileName() throws IOException, URISyntaxException {
         URL url = DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
-        Path nameWithPath = Paths.get(url.toURI());
+        Path nameWithPath = Path.of(url.toURI());
         Assertions.assertTrue(nameWithPath.endsWith("regular-data/UTC-TAI.history"));
         DataSource ds = new DataSource(nameWithPath.toString());
         Assertions.assertEquals("UTC-TAI.history", ds.getName());

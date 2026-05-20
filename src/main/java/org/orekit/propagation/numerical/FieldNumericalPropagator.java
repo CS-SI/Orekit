@@ -263,7 +263,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
             try {
                 // ensure we are notified of any mu change
-                model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
+                model.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
@@ -537,7 +537,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 if (numberOfForces > 1) {
                     recomputingJacobian = true;
                 } else {
-                    recomputingJacobian = !(forceModels.get(0) instanceof NewtonianAttraction);
+                    recomputingJacobian = !(forceModels.getFirst() instanceof NewtonianAttraction);
                 }
             } else {
                 recomputingJacobian = false;

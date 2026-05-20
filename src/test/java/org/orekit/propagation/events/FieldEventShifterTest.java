@@ -122,6 +122,6 @@ class FieldEventShifterTest {
         assertEquals(1, recordAndContinue.getEvents().size());
         final double shift = useShiftedStates ? increasingTimeShift.getReal() : 0.;
         assertEquals(dateDetector.getDate().shiftedBy(shift),
-                recordAndContinue.getEvents().get(0).getState().getDate());
+                recordAndContinue.getEvents().getFirst().getState().getDate());
     }
 }

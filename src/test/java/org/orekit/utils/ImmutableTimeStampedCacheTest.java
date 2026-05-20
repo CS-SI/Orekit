@@ -130,7 +130,7 @@ public class ImmutableTimeStampedCacheTest {
 
         // before fist data
         try {
-            cache.getNeighbors(data.get(0).shiftedBy(-1));
+            cache.getNeighbors(data.getFirst().shiftedBy(-1));
             Assertions.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
             // expected
@@ -138,10 +138,10 @@ public class ImmutableTimeStampedCacheTest {
         }
 
         // on fist date
-        Assertions.assertArrayEquals(cache.getNeighbors(data.get(0)).toArray(), data
+        Assertions.assertArrayEquals(cache.getNeighbors(data.getFirst()).toArray(), data
             .subList(0, 3).toArray());
         // between fist and second date
-        Assertions.assertArrayEquals(cache.getNeighbors(data.get(0).shiftedBy(0.5))
+        Assertions.assertArrayEquals(cache.getNeighbors(data.getFirst().shiftedBy(0.5))
             .toArray(), data.subList(0, 3).toArray());
         // in the middle on a date
         Assertions.assertArrayEquals(cache.getNeighbors(data.get(2)).toArray(), data
@@ -178,11 +178,11 @@ public class ImmutableTimeStampedCacheTest {
         // actions + verify
         // on fist date
         Assertions.assertArrayEquals(
-                cache.getNeighbors(data.get(0)).toArray(),
+                cache.getNeighbors(data.getFirst()).toArray(),
                 data.subList(0, 1).toArray());
         // between fist and second date
         Assertions.assertArrayEquals(
-                cache.getNeighbors(data.get(0).shiftedBy(0.5)).toArray(),
+                cache.getNeighbors(data.getFirst().shiftedBy(0.5)).toArray(),
                 data.subList(0, 1).toArray());
         // in the middle on a date
         Assertions.assertArrayEquals(
@@ -215,7 +215,7 @@ public class ImmutableTimeStampedCacheTest {
      */
     @Test
     public void testGetEarliest() {
-        Assertions.assertEquals(cache.getEarliest(), data.get(0));
+        Assertions.assertEquals(cache.getEarliest(), data.getFirst());
     }
 
     /**
@@ -223,7 +223,7 @@ public class ImmutableTimeStampedCacheTest {
      */
     @Test
     public void testGetLatest() {
-        Assertions.assertEquals(cache.getLatest(), data.get(data.size() - 1));
+        Assertions.assertEquals(cache.getLatest(), data.getLast());
     }
 
     /**
@@ -322,7 +322,7 @@ public class ImmutableTimeStampedCacheTest {
                                 final double offset) {
         List<AbsoluteDate> s = nonLinearCache.getNeighbors(date.shiftedBy(offset)).collect(Collectors.toList());
         Assertions.assertEquals(2, s.size());
-        Assertions.assertTrue(s.get(0).durationFrom(date) <= offset);
+        Assertions.assertTrue(s.getFirst().durationFrom(date) <= offset);
         Assertions.assertTrue(s.get(1).durationFrom(date) >  offset);
     }
 

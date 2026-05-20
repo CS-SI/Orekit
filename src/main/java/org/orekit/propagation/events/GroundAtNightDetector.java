@@ -137,8 +137,8 @@ public class GroundAtNightDetector extends AbstractTopocentricDetector<GroundAtN
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date,
                                                                                 final Frame frame) {
-            if (provider instanceof ExtendedPositionProvider) {
-                return ((ExtendedPositionProvider) provider).getPosition(date, frame);
+            if (provider instanceof ExtendedPositionProvider positionProvider) {
+                return positionProvider.getPosition(date, frame);
             } else {
                 throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED);
             }

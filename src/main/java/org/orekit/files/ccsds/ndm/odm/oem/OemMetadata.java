@@ -18,7 +18,6 @@
 package org.orekit.files.ccsds.ndm.odm.oem;
 
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -49,21 +48,12 @@ public class OemMetadata extends OdmCommonMetadata {
     /** The interpolation degree. */
     private int interpolationDegree;
 
-    /** Simple constructor.
-     * @param defaultInterpolationDegree default interpolation degree
-     * @deprecated in favor of {@link #OemMetadata(int, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OemMetadata(final int defaultInterpolationDegree) {
-        this(defaultInterpolationDegree, new OrekitCcsdsFrameMapper());
-    }
-
     /**
      * Simple constructor.
      *
      * @param defaultInterpolationDegree default interpolation degree
      * @param frameMapper                for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public OemMetadata(final int defaultInterpolationDegree,
                        final CcsdsFrameMapper frameMapper) {

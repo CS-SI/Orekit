@@ -93,7 +93,7 @@ public abstract class AbstractConstituentParser<H extends Header, T extends NdmC
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
      * @param frameMapper for creating an Orekit {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     protected AbstractConstituentParser(final String root,
                                         final String formatVersionKey,
@@ -143,7 +143,7 @@ public abstract class AbstractConstituentParser<H extends Header, T extends NdmC
      * Get the mapping between a CCSDS frame and a {@link Frame}.
      *
      * @return the frame mapper.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CcsdsFrameMapper getFrameMapper() {
         return frameMapper;

@@ -26,7 +26,6 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
@@ -129,20 +128,9 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /**
      * Used to create a {@link Frame} from the CCSDS specification.
      *
-     * @since 14.0
+     * @since 13.1.5
      */
     private final CcsdsFrameMapper frameMapper;
-
-    /** Simple constructor.
-     * @param epochT0 T0 epoch from file metadata
-     * @param dataContext data context
-     * @deprecated in favor of {@link #TrajectoryStateHistoryMetadata(AbsoluteDate,
-     * DataContext, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
-        this(epochT0, dataContext, new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.
@@ -150,7 +138,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * @param epochT0     T0 epoch from file metadata
      * @param dataContext data context
      * @param frameMapper for building an Orekit {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0,
                                           final DataContext dataContext,
@@ -181,7 +169,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      *
      * @return the frame mapper.
      * @see #getFrame()
-     * @since 14.0
+     * @since 13.1.5
      */
     public CcsdsFrameMapper getFrameMapper() {
         return frameMapper;
@@ -193,7 +181,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * {@link #getTrajFrameEpoch()}.
      *
      * @return the frame for this trajectory state history.
-     * @since 14.0
+     * @since 13.1.5
      */
     public Frame getFrame() {
         return getFrameMapper().buildCcsdsFrame(
@@ -267,8 +255,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         final int    index    = end < original.length() ? Integer.parseInt(original.substring(end)) : 0;
 
         // build offset index, taking care to use at least the same number of digits
-        final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
-                                              index + 1);
+        final String newIndex = "%%0%dd".formatted(original.length() - end).formatted(
+                index + 1);
 
         return prefix + newIndex;
 

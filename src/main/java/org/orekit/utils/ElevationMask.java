@@ -16,6 +16,7 @@
  */
 package org.orekit.utils;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -34,6 +35,7 @@ import org.orekit.errors.OrekitMessages;
 public class ElevationMask implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20131118L;
 
     /** Azimuth-elevation mask. */

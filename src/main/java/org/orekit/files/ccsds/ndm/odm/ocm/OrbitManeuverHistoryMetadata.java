@@ -157,7 +157,7 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
      *
      * @param epochT0     T0 epoch from file metadata
      * @param frameMapper for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public OrbitManeuverHistoryMetadata(final AbsoluteDate epochT0,
                                         final CcsdsFrameMapper frameMapper) {
@@ -402,7 +402,7 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
      * Get the mapping between a CCSDS frame and a {@link Frame}.
      *
      * @return the frame mapper.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CcsdsFrameMapper getFrameMapper() {
         return frameMapper;
@@ -417,7 +417,7 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
      * @see #getManReferenceFrame()
      * @see #getManFrameEpoch()
      * @see #getFrameMapper()
-     * @since 14.0
+     * @since 13.1.5
      */
     public Frame getManFrame() {
         return getFrameMapper()

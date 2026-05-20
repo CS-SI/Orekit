@@ -16,6 +16,7 @@
  */
 package org.orekit.utils.units;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.orekit.errors.OrekitMessages;
 class PrefixedUnit extends Unit {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20210407L;
 
     /** Allowed units with SI prefixes, with various aliases for angles, year, sfu, and tecu. */

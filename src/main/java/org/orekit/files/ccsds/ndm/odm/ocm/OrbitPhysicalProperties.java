@@ -115,7 +115,7 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
      *
      * @param epochT0     T0 epoch from file metadata
      * @param frameMapper for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public OrbitPhysicalProperties(final AbsoluteDate epochT0,
                                    final CcsdsFrameMapper frameMapper) {

@@ -66,14 +66,14 @@ public class Opm extends NdmConstituent<OdmHeader, Segment<OdmCommonMetadata, Op
      * @return file metadata
      */
     public OdmCommonMetadata getMetadata() {
-        return getSegments().get(0).getMetadata();
+        return getSegments().getFirst().getMetadata();
     }
 
     /** Get the file data.
      * @return file data
      */
     public OpmData getData() {
-        return getSegments().get(0).getData();
+        return getSegments().getFirst().getData();
     }
 
     /** {@inheritDoc} */

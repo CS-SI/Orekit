@@ -160,4 +160,25 @@ class FieldAdjustableReceiverSignalTimerTest {
         assertEquals(emissionDate, date);
     }
 
+    @Test
+    void testComputeReceptionCondition() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(orbit);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAdjustableReceiverSignalTimer<Binary64> fieldComputer = new FieldAdjustableReceiverSignalTimer<>(positionProvider.toFieldPVCoordinatesProvider(field));
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final Vector3D receiver = new Vector3D(-1e3, 2e2, 1e4);
+        final FieldVector3D<Binary64> fieldReceiver = new FieldVector3D<>(field, receiver);
+        final FieldSignalEmissionCondition<Binary64> fieldEmissionCondition = new FieldSignalEmissionCondition<>(fieldDate,
+                fieldReceiver, orbit.getFrame());
+        // WHEN
+        final FieldSignalReceptionCondition<Binary64> receptionCondition = fieldComputer.computeReceptionCondition(fieldEmissionCondition,
+                fieldDate);
+        // THEN
+        final FieldAbsoluteDate<Binary64> receptionDate = receptionCondition.receptionDate();
+        final Binary64 delay = fieldComputer.computeDelay(fieldEmissionCondition, fieldDate);
+        assertEquals(delay, receptionDate.durationFrom(fieldDate));
+        assertEquals(positionProvider.getPosition(receptionDate, orbit.getFrame()), receptionCondition.receiverPosition());
+    }
 }

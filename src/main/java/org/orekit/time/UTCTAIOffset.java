@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
@@ -37,6 +38,7 @@ import org.hipparchus.CalculusFieldElement;
 public class UTCTAIOffset implements TimeStamped, Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20240720L;
 
     /** Nanoseconds in one second. */

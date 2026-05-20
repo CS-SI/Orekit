@@ -17,6 +17,7 @@
 package org.orekit.time;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 
 import java.util.concurrent.TimeUnit;
@@ -54,6 +55,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20240720L;
 
     /** Date component. */

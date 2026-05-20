@@ -307,7 +307,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
                                                              final boolean orbitInterpolatorIsPresent,
                                                              final boolean absPVInterpolatorIsPresent) {
         // Get first state definition
-        final SpacecraftState earliestState = sample.get(0);
+        final SpacecraftState earliestState = sample.getFirst();
 
         if (earliestState.isOrbitDefined() && !orbitInterpolatorIsPresent ||
                 !earliestState.isOrbitDefined() && !absPVInterpolatorIsPresent) {
@@ -322,7 +322,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      */
     public static void checkStatesDefinitionsConsistency(final List<SpacecraftState> states) {
         // Check all states handle the same additional states and are defined the same way (orbit or absolute PVA)
-        final SpacecraftState s0               = states.get(0);
+        final SpacecraftState s0               = states.getFirst();
         final boolean         s0IsOrbitDefined = s0.isOrbitDefined();
         for (final SpacecraftState state : states) {
             s0.ensureCompatibleAdditionalStates(state);
@@ -392,7 +392,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
         // Get first state definition
         final List<SpacecraftState> samples   = interpolationData.getNeighborList();
-        final SpacecraftState earliestState   = samples.get(0);
+        final SpacecraftState earliestState   = samples.getFirst();
         final boolean         areOrbitDefined = earliestState.isOrbitDefined();
 
         // Prepare samples
@@ -627,7 +627,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
                 // Get current entry
                 final List<Pair<AbsoluteDate, T>> currentAdditionalSamples = entry.getValue();
                 final T currentInterpolatedAdditional;
-                if (currentAdditionalSamples.get(0).getValue() instanceof double[]) {
+                if (currentAdditionalSamples.getFirst().getValue() instanceof double[]) {
                     currentInterpolatedAdditional = (T) interpolateAdditionalSamples(interpolationDate, currentAdditionalSamples);
                 } else {
                     currentInterpolatedAdditional = currentAdditionalSamples.stream()
@@ -644,7 +644,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
     private <T> double[] interpolateAdditionalSamples(final AbsoluteDate interpolationDate, final List<Pair<AbsoluteDate, T>> currentAdditionalSamples) {
         // Extract number of values for this specific entry
-        final int nbOfValues = ((double[]) currentAdditionalSamples.get(0).getValue()).length;
+        final int nbOfValues = ((double[]) currentAdditionalSamples.getFirst().getValue()).length;
 
         // For each value of current additional state entry
         final double[] currentInterpolatedAdditional = new double[nbOfValues];

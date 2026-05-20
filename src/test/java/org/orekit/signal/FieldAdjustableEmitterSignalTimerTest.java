@@ -41,6 +41,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -148,6 +149,28 @@ class FieldAdjustableEmitterSignalTimerTest {
         final double expected = new AdjustableEmitterSignalTimer(positionProvider).computeDelay(receptionCondition,
                 guessDate.toAbsoluteDate());
         assertEquals(expected, actual.getReal());
+    }
+
+    @Test
+    void testComputeEmissionCondition() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(orbit);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldPVCoordinatesProvider<Binary64> fieldProvider = positionProvider.toFieldPVCoordinatesProvider(field);
+        final FieldAdjustableEmitterSignalTimer<Binary64> fieldComputer = new FieldAdjustableEmitterSignalTimer<>(fieldProvider);
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final Vector3D receiver = new Vector3D(-1e3, 2e2, 2e4);
+        final FieldVector3D<Binary64> fieldReceiver = new FieldVector3D<>(field, receiver);
+        final FieldSignalReceptionCondition<Binary64> fieldCondition = new FieldSignalReceptionCondition<>(fieldDate, fieldReceiver, orbit.getFrame());
+        // WHEN
+        final FieldSignalEmissionCondition<Binary64> emissionCondition = fieldComputer.computeEmissionCondition(fieldCondition,
+                fieldDate);
+        // THEN
+        final FieldAbsoluteDate<Binary64> emissionDate = emissionCondition.emissionDate();
+        final Binary64 delay = fieldComputer.computeDelay(fieldCondition, fieldDate);
+        assertEquals(delay, fieldDate.durationFrom(emissionDate));
+        assertEquals(fieldProvider.getPosition(emissionDate, orbit.getFrame()), emissionCondition.emitterPosition());
     }
 
 }

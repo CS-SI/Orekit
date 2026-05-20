@@ -104,7 +104,7 @@ class LambertSolverTest {
                 orbit1.getPosition(), orbit2.getDate(), orbit2.getPosition(), orbit2.getFrame());
         final List<LambertSolution> solution = solver.solve(posigrade, nRev, boundaryConditions);
         // THEN
-        final Orbit lambertOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(orbit1.getDate(), orbit1.getPosition(), solution.get(0).getBoundaryVelocities().getInitialVelocity()),
+        final Orbit lambertOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(orbit1.getDate(), orbit1.getPosition(), solution.getFirst().getBoundaryVelocities().getInitialVelocity()),
                 orbit1.getFrame(), orbit1.getMu());
         final KeplerianPropagator propagator = new  KeplerianPropagator(lambertOrbit);
         final Orbit propagatedOrbit = propagator.propagateOrbit(orbit2.getDate());
@@ -139,7 +139,7 @@ class LambertSolverTest {
         // WHEN
         final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(orbit1.getDate(),
                 orbit1.getPosition(), orbit2.getDate(), orbit2.getPosition(), orbit2.getFrame());
-        final LambertSolution solution = solver.solve(posigrade, nRev, boundaryConditions).get(0);
+        final LambertSolution solution = solver.solve(posigrade, nRev, boundaryConditions).getFirst();
         final LambertBoundaryVelocities velocities = solution.getBoundaryVelocities();
         final RealMatrix jacobian = solver.computeJacobian(boundaryConditions, velocities);
         // THEN
@@ -170,7 +170,7 @@ class LambertSolverTest {
         Assertions.assertEquals(1, solutions.size());
 
         // Check the solution
-        final LambertSolution solution = solutions.get(0);
+        final LambertSolution solution = solutions.getFirst();
         final Vector3D expectedVelocity1 = new Vector3D(2058.9497203633254685, 2915.9389575906252503, 0.0);
         final Vector3D expectedVelocity2 = new Vector3D(-3451.5763801709435938, 910.2714190993910961, 0.0);
         checkLambertSolution(solution, expectedVelocity1, expectedVelocity2, 0.1, 1e-3);
@@ -360,7 +360,7 @@ class LambertSolverTest {
         final Vector3D solutionPosigrade1ExpectedVelocity1 = new Vector3D(2.058913, 2.915965, 0.0).scalarMultiply(1000.0);
         final Vector3D solutionPosigrade1ExpectedVelocity2 = new Vector3D(-3.451565, 0.910315, 0.0).scalarMultiply(1000.0);
 
-        checkLambertSolution(solutionsPosigrade.get(0), solutionPosigrade1ExpectedVelocity1, solutionPosigrade1ExpectedVelocity2, 0.1, 1e-3);
+        checkLambertSolution(solutionsPosigrade.getFirst(), solutionPosigrade1ExpectedVelocity1, solutionPosigrade1ExpectedVelocity2, 0.1, 1e-3);
     }
 
     // Example 5.2 (page 621) from Orbital Mechanics for Engineering Students by Howard Curtis
@@ -391,7 +391,7 @@ class LambertSolverTest {
         final Vector3D solutionPosigrade1ExpectedVelocity1 = new Vector3D(-5.99249, 1.92536, 3.24564).scalarMultiply(1000.0);
         final Vector3D solutionPosigrade1ExpectedVelocity2 = new Vector3D(-3.31246, -4.19662, -0.385288).scalarMultiply(1000.0);
 
-        checkLambertSolution(solutionsPosigrade.get(0), solutionPosigrade1ExpectedVelocity1, solutionPosigrade1ExpectedVelocity2, 0.1, 1e-3);
+        checkLambertSolution(solutionsPosigrade.getFirst(), solutionPosigrade1ExpectedVelocity1, solutionPosigrade1ExpectedVelocity2, 0.1, 1e-3);
     }
 
     // Example 7-12 (page 341) from An Introduction to the Mathematics and Methods of Astrodynamics (Revised Edition) by Richard H. Battin
@@ -423,7 +423,7 @@ class LambertSolverTest {
         // since Battin does not give expected v2, match it against results with other implementations
         final Vector3D solutionPosigrade1ExpectedVelocity2 = new Vector3D(-45087.49723745, 8953.99053394, 6738.00090557);
 
-        checkLambertSolution(solutionsPosigrade.get(0), solutionPosigrade1ExpectedVelocity1, solutionPosigrade1ExpectedVelocity2, 1, 1e-3);
+        checkLambertSolution(solutionsPosigrade.getFirst(), solutionPosigrade1ExpectedVelocity1, solutionPosigrade1ExpectedVelocity2, 1, 1e-3);
     }
 
     // Test case from issue 1950
@@ -471,17 +471,17 @@ class LambertSolverTest {
         for (int i = 1; i < 4; i++) {
             final double[] shift = new double[8];
             shift[i] = -dV/2.;
-            final LambertBoundaryVelocities solutionBefore = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift)).get(0).getBoundaryVelocities();
+            final LambertBoundaryVelocities solutionBefore = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift)).getFirst().getBoundaryVelocities();
             shift[i] = dV/2.;
-            final LambertBoundaryVelocities solutionAfter = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift)).get(0).getBoundaryVelocities();
+            final LambertBoundaryVelocities solutionAfter = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift)).getFirst().getBoundaryVelocities();
             checkColumn(solutionBefore, solutionAfter, dV, actualJacobian.getColumn(i), toleranceForVelocity);
         }
         for (int i = 5; i < 8; i++) {
             final double[] shift = new double[8];
             shift[i] = -dV/2.;
-            final LambertBoundaryVelocities solutionBefore = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift)).get(0).getBoundaryVelocities();
+            final LambertBoundaryVelocities solutionBefore = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift)).getFirst().getBoundaryVelocities();
             shift[i] = dV/2.;
-            final LambertBoundaryVelocities solutionAfter = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift)).get(0).getBoundaryVelocities();
+            final LambertBoundaryVelocities solutionAfter = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift)).getFirst().getBoundaryVelocities();
             checkColumn(solutionBefore, solutionAfter, dV, actualJacobian.getColumn(i), toleranceForVelocity);
         }
     }
@@ -493,14 +493,14 @@ class LambertSolverTest {
         final double dt = 1.;
         final double toleranceForTime = 1e-6;
         final LambertBoundaryVelocities solution0Before = solver.solve(posigrade, nRev,
-                perturbConditions(boundaryConditions, new double[] {-dt/2., 0., 0., 0., 0., 0., 0., 0.})).get(0).getBoundaryVelocities();
+                perturbConditions(boundaryConditions, new double[] {-dt/2., 0., 0., 0., 0., 0., 0., 0.})).getFirst().getBoundaryVelocities();
         final LambertBoundaryVelocities solution0After = solver.solve(posigrade, nRev,
-                perturbConditions(boundaryConditions, new double[] {dt/2., 0., 0., 0., 0., 0., 0., 0.})).get(0).getBoundaryVelocities();
+                perturbConditions(boundaryConditions, new double[] {dt/2., 0., 0., 0., 0., 0., 0., 0.})).getFirst().getBoundaryVelocities();
         checkColumn(solution0Before, solution0After, dt, actualJacobian.getColumn(0), toleranceForTime);
         final LambertBoundaryVelocities solution7Before = solver.solve(posigrade, nRev,
-                perturbConditions(boundaryConditions, new double[] {0., 0., 0., 0., -dt/2., 0., 0., 0.})).get(0).getBoundaryVelocities();
+                perturbConditions(boundaryConditions, new double[] {0., 0., 0., 0., -dt/2., 0., 0., 0.})).getFirst().getBoundaryVelocities();
         final LambertBoundaryVelocities solution7After = solver.solve(posigrade, nRev,
-                perturbConditions(boundaryConditions, new double[] {0., 0., 0., 0., dt/2.,0., 0., 0.})).get(0).getBoundaryVelocities();
+                perturbConditions(boundaryConditions, new double[] {0., 0., 0., 0., dt/2.,0., 0., 0.})).getFirst().getBoundaryVelocities();
         checkColumn(solution7Before, solution7After, dt, actualJacobian.getColumn(4), toleranceForTime);
     }
 

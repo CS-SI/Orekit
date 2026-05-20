@@ -253,13 +253,13 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
-            return coordinates.get(0).getDate();
+            return coordinates.getFirst().getDate();
         }
 
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStop() {
-            return coordinates.get(coordinates.size() - 1).getDate();
+            return coordinates.getLast().getDate();
         }
 
         /** {@inheritDoc} */

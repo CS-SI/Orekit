@@ -156,7 +156,7 @@ public class SP3Header {
             // in SP3 versions a, b, and c, there are exactly 4 comments with max length 57
             // (60 minus first three characters)
             if (comments.size() != 4 ||
-                comments.get(0).length() > 57 ||
+                comments.getFirst().length() > 57 ||
                 comments.get(1).length() > 57 ||
                 comments.get(2).length() > 57 ||
                 comments.get(3).length() > 57) {

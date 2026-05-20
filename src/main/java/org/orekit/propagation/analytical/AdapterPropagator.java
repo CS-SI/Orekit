@@ -123,8 +123,8 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
-        if (reference instanceof AbstractAnalyticalPropagator) {
-            ((AbstractAnalyticalPropagator) reference).resetIntermediateState(state, forward);
+        if (reference instanceof AbstractAnalyticalPropagator propagator) {
+            propagator.resetIntermediateState(state, forward);
         } else {
             throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
         }

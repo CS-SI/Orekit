@@ -229,7 +229,7 @@ public class IonoModifierTest {
 
 
         final IonosphericModel mockModel = new MockIonosphericModel(earthBodyShape, 12.0);
-        mockModel.getParametersDrivers().get(0).setSelected(true);
+        mockModel.getParametersDrivers().getFirst().setSelected(true);
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(mockModel, frequency);
 
         for (final ObservedMeasurement<?> measurement : measurements) {

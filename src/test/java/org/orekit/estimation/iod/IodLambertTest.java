@@ -25,9 +25,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.control.heuristics.lambert.LambertBoundaryConditions;
-import org.orekit.control.heuristics.lambert.LambertSolution;
-import org.orekit.control.heuristics.lambert.LambertSolver;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -65,34 +62,6 @@ import org.orekit.utils.PVCoordinates;
  */
 public class IodLambertTest {
 
-    @Deprecated
-    @Test
-    void testSolveLambertPb() {
-        // GIVEN
-        final IodLambert iodLambert = new IodLambert(1.);
-        final double r1 = 1.;
-        final double r2 = 1.;
-        final double tof = 0.1;
-        final double theta = 2.;
-        final double[] v = new double[2];
-        // WHEN
-        iodLambert.solveLambertPb(r1, r2, theta, tof, 0, v);
-        // THEN
-        final Vector3D P1 = new Vector3D(r1, 0.0, 0.0);
-        final Vector3D P2 = new Vector3D(r2 * FastMath.cos(theta), r2 * Math.sin(theta), 0.0);
-        final AbsoluteDate date1 = AbsoluteDate.ARBITRARY_EPOCH;
-        final AbsoluteDate date2 = date1.shiftedBy(tof);
-        final double thetaNormalized = ((theta % (2 * FastMath.PI)) + 2 * FastMath.PI) % (2 * FastMath.PI);
-        final boolean posigrade = thetaNormalized <= FastMath.PI;
-        final Frame frame = FramesFactory.getGCRF();
-        final LambertBoundaryConditions lambertBoundaryConditions = new LambertBoundaryConditions(date1, P1, date2, P2, frame);
-        final LambertSolver lambertSolver = new LambertSolver(1.0);
-        final LambertSolution lambertSolution = lambertSolver.solve(posigrade, 0, lambertBoundaryConditions).get(0);
-        final Vector3D initialVelocity = lambertSolution.getBoundaryVelocities().getInitialVelocity();
-        Assertions.assertEquals(initialVelocity.getX(), v[0]);
-        Assertions.assertEquals(initialVelocity.getY(), v[1]);
-    }
-
     @Test
     public void testLambert() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -115,15 +84,15 @@ public class IodLambertTest {
 
         // measurement data 1
         final int idMeasure1 = 0;
-        final AbsoluteDate date1 = measurements.get(idMeasure1).getDate();
+        final AbsoluteDate date1 = measurements.getFirst().getDate();
         /*final Vector3D stapos1 = context.stations.get(0)  // FIXME we need to access the station of the measurement
                                     .getBaseFrame()
                                     .getPVCoordinates(date1, frame)
                                     .getPosition();*/
         final Vector3D position1 = new Vector3D(
-                                                measurements.get(idMeasure1).getObservedValue()[0],
-                                                measurements.get(idMeasure1).getObservedValue()[1],
-                                                measurements.get(idMeasure1).getObservedValue()[2]);
+                                                measurements.getFirst().getObservedValue()[0],
+                                                measurements.getFirst().getObservedValue()[1],
+                                                measurements.getFirst().getObservedValue()[2]);
 
         // measurement data 2
         final int idMeasure2 = 10;

@@ -324,8 +324,8 @@ public class ElevationDetectorTest {
 
         kProp.propagate(finalDate);
         Assertions.assertEquals(2, logger.getLoggedEvents().size());
-        Assertions.assertTrue(logger.getLoggedEvents().get(0).isIncreasing());
-        Assertions.assertEquals(478.945, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(initDate), 1.0e-3);
+        Assertions.assertTrue(logger.getLoggedEvents().getFirst().isIncreasing());
+        Assertions.assertEquals(478.945, logger.getLoggedEvents().getFirst().getState().getDate().durationFrom(initDate), 1.0e-3);
         Assertions.assertFalse(logger.getLoggedEvents().get(1).isIncreasing());
         Assertions.assertEquals(665.721, logger.getLoggedEvents().get(1).getState().getDate().durationFrom(initDate), 1.0e-3);
 

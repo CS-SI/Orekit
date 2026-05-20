@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 public class NtripClientTest {
@@ -375,7 +375,7 @@ public class NtripClientTest {
         try {
             final String[] fileNames = new String[names.length];
             for (int i = 0; i < names.length; ++i) {
-                fileNames[i] = Paths.get(getClass().getResource(names[i]).toURI()).toString();
+                fileNames[i] = Path.of(getClass().getResource(names[i]).toURI()).toString();
             }
             server = new DummyServer(fileNames);
         } catch (URISyntaxException | IOException e) {

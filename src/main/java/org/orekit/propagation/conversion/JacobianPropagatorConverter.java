@@ -72,7 +72,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
             final ValuesHandler handler = new ValuesHandler();
             propagator.getMultiplexer().add(handler);
             final List<SpacecraftState> sample = getSample();
-            propagator.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+            propagator.propagate(sample.getLast().getDate().shiftedBy(10.0));
             return handler.value;
         };
     }
@@ -84,7 +84,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
             final JacobianHandler handler = new JacobianHandler(propagator, point.getDimension());
             propagator.getMultiplexer().add(handler);
             final List<SpacecraftState> sample = getSample();
-            propagator.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+            propagator.propagate(sample.getLast().getDate().shiftedBy(10.0));
             return new Pair<>(handler.value, handler.jacobian);
         };
     }

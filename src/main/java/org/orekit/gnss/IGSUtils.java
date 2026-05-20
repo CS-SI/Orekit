@@ -159,8 +159,8 @@ public class IGSUtils {
      * @since 12.1
      */
     public static String frameName(final Frame frame) {
-        if (frame instanceof VersionedITRF) {
-            final int yy = ((VersionedITRF) frame).getITRFVersion().getYear() % 100;
+        if (frame instanceof VersionedITRF rF) {
+            final int yy = rF.getITRFVersion().getYear() % 100;
             return String.format(Locale.US, "IGS%02d", yy);
         } else if (Predefined.GCRF.getName().equals(frame.getName())) {
             return "GCRF";

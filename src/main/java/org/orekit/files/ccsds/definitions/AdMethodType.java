@@ -40,6 +40,6 @@ public enum AdMethodType {
     Q_METHOD,
 
     /** Method smoothing noisy processes. */
-    FILTER_SMOOTHER;
+    FILTER_SMOOTHER
 
 }

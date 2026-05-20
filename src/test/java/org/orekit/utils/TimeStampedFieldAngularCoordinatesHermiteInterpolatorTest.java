@@ -249,7 +249,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
                                                                                            AngularDerivativesFilter.USE_RR);
 
         for (double dt = 0; dt < 29000; dt += 120) {
-            TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted = sample.get(0).shiftedBy(dt);
+            TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted = sample.getFirst().shiftedBy(dt);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
                     interpolator.interpolate(t0.shiftedBy(dt), sample);
             Assertions.assertEquals(0.0, FieldRotation.distance(shifted.getRotation(), interpolated.getRotation()).getReal(),

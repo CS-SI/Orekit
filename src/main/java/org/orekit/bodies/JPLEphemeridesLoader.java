@@ -970,8 +970,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 return true;
             } else {
                 // if the requested range is already filled, we do not need to look further
-                return !(entries.first().getDate().compareTo(start) < 0 &&
-                         entries.last().getDate().compareTo(end)    > 0);
+                return !(entries.getFirst().getDate().compareTo(start) < 0 &&
+                         entries.getLast().getDate().compareTo(end)    > 0);
             }
 
         }

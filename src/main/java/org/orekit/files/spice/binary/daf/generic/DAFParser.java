@@ -419,7 +419,7 @@ public class DAFParser {
         // the final two integers in the summaryInts are the initial and final double word addresses of the array elements
         // note we convert them to byte addresses here
         final int initialArrayAddressBytes = (summaryInts.get(summaryInts.size() - 2) - 1) * DAFConstants.DOUBLE_SIZE_BYTES + 1;
-        final int finalArrayAddressBytes = summaryInts.get(summaryInts.size() - 1) * DAFConstants.DOUBLE_SIZE_BYTES + 1;
+        final int finalArrayAddressBytes = summaryInts.getLast() * DAFConstants.DOUBLE_SIZE_BYTES + 1;
         // with these, we can initialize a DAFArraySummary object
         return new DAFArraySummary(summaryDoubles, summaryInts, initialArrayAddressBytes, finalArrayAddressBytes);
     }

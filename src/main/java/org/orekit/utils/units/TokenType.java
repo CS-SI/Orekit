@@ -47,6 +47,6 @@ enum TokenType {
     INTEGER,
 
     /** Fraction. */
-    FRACTION;
+    FRACTION
 
 }

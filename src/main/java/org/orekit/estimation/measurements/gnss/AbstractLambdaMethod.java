@@ -185,7 +185,7 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
     /** Remove spurious solution.
      */
     protected void removeSolution() {
-        solutions.remove(solutions.last());
+        solutions.remove(solutions.getLast());
     }
 
     /** Get the number of solutions found.
@@ -201,7 +201,7 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
      * @since 10.2
      */
     protected double getMaxDistance() {
-        return solutions.last().getSquaredDistance();
+        return solutions.getLast().getSquaredDistance();
     }
 
     /** Get a reference to the Z  inverse transformation matrix.

@@ -144,7 +144,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * @return a propagator for all the data in this ephemeris file.
          */
         default BoundedPropagator getPropagator() {
-            return getPropagator(new FrameAlignedProvider(getSegments().get(0).getInertialFrame()));
+            return getPropagator(new FrameAlignedProvider(getSegments().getFirst().getInertialFrame()));
         }
 
         /**

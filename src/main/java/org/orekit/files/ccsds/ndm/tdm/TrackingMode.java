@@ -26,6 +26,6 @@ public enum TrackingMode {
     SEQUENTIAL,
 
     /** Single diff mode, applies to differenced data. */
-    SINGLE_DIFF;
+    SINGLE_DIFF
 
 }

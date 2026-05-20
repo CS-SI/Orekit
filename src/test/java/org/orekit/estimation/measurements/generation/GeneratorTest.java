@@ -44,7 +44,7 @@ class GeneratorTest {
     @Test
     void testIssue557() {
 
-        final EventDetector detector = EstimationTestUtils.getElevationDetector(context.stations.get(0).getBaseFrame(),
+        final EventDetector detector = EstimationTestUtils.getElevationDetector(context.stations.getFirst().getBaseFrame(),
                                                                                 FastMath.toRadians(0.0));
 
         double[] azElError = new double[] {
@@ -59,8 +59,8 @@ class GeneratorTest {
         double rangeSigma = 40.0;
         double rangeBW = 1;
         ObservableSatellite obs = new ObservableSatellite(0);
-        RangeBuilder rB = new RangeBuilder(context.stations.get(0), false, rangeSigma, rangeBW,obs);
-        AngularAzElBuilder aAEB = new AngularAzElBuilder(context.stations.get(0), azElError, baseweight, obs);
+        RangeBuilder rB = new RangeBuilder(context.stations.getFirst(), false, rangeSigma, rangeBW,obs);
+        AngularAzElBuilder aAEB = new AngularAzElBuilder(context.stations.getFirst(), azElError, baseweight, obs);
         double  timeToEnd = Constants.JULIAN_DAY;
 
         AbsoluteDate initialDate = context.initialOrbit.getDate();

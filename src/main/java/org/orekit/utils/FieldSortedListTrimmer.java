@@ -87,12 +87,12 @@ public class FieldSortedListTrimmer {
 
         // Check index in the range of the data
         if (i < 0) {
-            final FieldAbsoluteDate<K> earliest = data.get(0).getDate();
+            final FieldAbsoluteDate<K> earliest = data.getFirst().getDate();
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                 earliest, central, earliest.durationFrom(central).getReal());
         }
         else if (i >= data.size()) {
-            final FieldAbsoluteDate<K> latest = data.get(data.size() - 1).getDate();
+            final FieldAbsoluteDate<K> latest = data.getLast().getDate();
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
                                                 latest, central, central.durationFrom(latest).getReal());
         }
@@ -122,7 +122,7 @@ public class FieldSortedListTrimmer {
         int findIndex(final FieldAbsoluteDate<K> t, final List<T> data) {
         // left bracket of search algorithm
         int iInf  = 0;
-        K   dtInf = t.durationFrom(data.get(0));
+        K   dtInf = t.durationFrom(data.getFirst());
         if (dtInf.getReal() < 0) {
             // before first entry
             return -1;
@@ -130,7 +130,7 @@ public class FieldSortedListTrimmer {
 
         // right bracket of search algorithm
         int iSup  = data.size() - 1;
-        K   dtSup = t.durationFrom(data.get(data.size() - 1));
+        K   dtSup = t.durationFrom(data.getLast());
         if (dtSup.getReal() > 0) {
             // after last entry
             return data.size();

@@ -316,9 +316,9 @@ public class EpochDerivativesEquations
             }
 
             // Add the derivatives of the acceleration w.r.t. the Epoch
-            if (forceModel instanceof ThirdBodyAttractionEpoch) {
+            if (forceModel instanceof ThirdBodyAttractionEpoch epoch) {
                 final double[] parametersValues = new double[] {parameters[0].getValue()};
-                final double[] derivatives = ((ThirdBodyAttractionEpoch) forceModel).getDerivativesToEpoch(s, parametersValues);
+                final double[] derivatives = epoch.getDerivativesToEpoch(s, parametersValues);
                 dAccdParam[0][paramDimEpoch - 1] += derivatives[0];
                 dAccdParam[1][paramDimEpoch - 1] += derivatives[1];
                 dAccdParam[2][paramDimEpoch - 1] += derivatives[2];

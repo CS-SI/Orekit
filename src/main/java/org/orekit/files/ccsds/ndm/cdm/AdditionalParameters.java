@@ -81,7 +81,7 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      * Simple constructor.
      *
      * @param frameMapper for creating an Orekit {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     public AdditionalParameters(final CcsdsFrameMapper frameMapper) {
 
@@ -103,12 +103,6 @@ public class AdditionalParameters extends CommonPhysicalProperties {
         periapsisAltitude = Double.NaN;
         inclination       = Double.NaN;
         covConfidence       = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void validate(final double version) {
-        super.validate(version);
     }
 
     /**

@@ -240,7 +240,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final AbsoluteDate targetDate = epoch.shiftedBy(timeOfFlight);
         final ForceModel force = new ThirdBodyAttraction(new AnalyticalSolarPositionProvider(DataContext.getDefault()),
                 "sun", Constants.JPL_SSD_SUN_GM);
-        force.getParametersDrivers().get(0).setSelected(true);
+        force.getParametersDrivers().getFirst().setSelected(true);
         propagator.addForceModel(force);
         // WHEN
         final SpacecraftState state = propagator.propagate(targetDate);
@@ -306,7 +306,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         // THEN
         final NumericalPropagator otherPropagator = buildPropagator(propagator.getOrbitType(), propagator.getAttitudeProvider());
         otherPropagator.addForceModel(new Maneuver(null, buildDatedBasedTriggers(startDate, duration, 0.), propulsionModel));
-        otherPropagator.getAllForceModels().get(0).getParameterDriver(parameterName).setSelected(true);
+        otherPropagator.getAllForceModels().getFirst().getParameterDriver(parameterName).setSelected(true);
         final MatricesHarvester harvester6x6 = otherPropagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(6), null);
         final SpacecraftState otherState = otherPropagator.propagate(targetDate);
         final RealMatrix expectedJacobian = harvester6x6.getParametersJacobian(otherState);

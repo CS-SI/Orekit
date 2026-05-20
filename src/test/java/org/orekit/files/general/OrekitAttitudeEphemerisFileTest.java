@@ -20,7 +20,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +65,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 public class OrekitAttitudeEphemerisFileTest {
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -120,15 +120,15 @@ public class OrekitAttitudeEphemerisFileTest {
 
         // Test of all getters for OrekitSatelliteAttitudeEphemeris
         Assertions.assertEquals(satId, satellite.getId());
-        Assertions.assertEquals(0.0, states.get(0).getDate().durationFrom(satellite.getStart()), 1.0e-15);
-        Assertions.assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(satellite.getStop()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.getFirst().getDate().durationFrom(satellite.getStart()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.getLast().getDate().durationFrom(satellite.getStop()), 1.0e-15);
 
         // Test of all getters for OrekitAttitudeEphemerisSegment
-        AttitudeEphemerisSegment<TimeStampedAngularCoordinates> segment = satellite.getSegments().get(0);
+        AttitudeEphemerisSegment<TimeStampedAngularCoordinates> segment = satellite.getSegments().getFirst();
         Assertions.assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_METHOD, segment.getInterpolationMethod());
         Assertions.assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_SIZE, segment.getInterpolationSamples());
-        Assertions.assertEquals(0.0, states.get(0).getDate().durationFrom(segment.getStart()), 1.0e-15);
-        Assertions.assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(segment.getStop()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.getFirst().getDate().durationFrom(segment.getStart()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.getLast().getDate().durationFrom(segment.getStop()), 1.0e-15);
         Assertions.assertEquals(AngularDerivativesFilter.USE_RR, segment.getAvailableDerivatives());
 
         // Verify attitude
@@ -140,7 +140,7 @@ public class OrekitAttitudeEphemerisFileTest {
         Assertions.assertEquals(refRot.getQ3(), attitude.getRotation().getQ3(), quaternionTolerance);
 
         String tempAem = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAem), StandardCharsets.UTF_8)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(Path.of(tempAem), StandardCharsets.UTF_8)) {
             final AdmHeader header = new AdmHeader();
             header.setFormatVersion(1.0);
             new AttitudeWriter(new WriterBuilder().buildAemWriter(),
@@ -150,11 +150,11 @@ public class OrekitAttitudeEphemerisFileTest {
 
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFrom =
                         new ParserBuilder().buildAemParser().parseMessage(new DataSource(tempAem));
-        Files.delete(Paths.get(tempAem));
+        Files.delete(Path.of(tempAem));
 
-        segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
-        Assertions.assertEquals(states.get(0).getDate(), segment.getStart());
-        Assertions.assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
+        segment = ephemerisFrom.getSatellites().get(satId).getSegments().getFirst();
+        Assertions.assertEquals(states.getFirst().getDate(), segment.getStart());
+        Assertions.assertEquals(states.getLast().getDate(), segment.getStop());
         Assertions.assertEquals(states.size(), segment.getAngularCoordinates().size());
         for (int i = 0; i < states.size(); i++) {
             TimeStampedAngularCoordinates expected = states.get(i).getAttitude().getOrientation();
@@ -227,7 +227,7 @@ public class OrekitAttitudeEphemerisFileTest {
     }
 
     private AemMetadata dummyMetadata() {
-        AemMetadata metadata = new AemMetadata(4);
+        AemMetadata metadata = new AemMetadata(4, null);
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("SATELLITE1");
         metadata.setObjectName("transgalactic");

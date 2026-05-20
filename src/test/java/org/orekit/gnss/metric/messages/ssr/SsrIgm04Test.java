@@ -76,12 +76,12 @@ public class SsrIgm04Test {
         Assertions.assertEquals(2,                            igm04.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite J204
-        final SsrIgm04Data j204 = igm04.getSsrIgm04Data().get("J204").get(0);
+        final SsrIgm04Data j204 = igm04.getSsrIgm04Data().get("J204").getFirst();
         Assertions.assertEquals(204,                          j204.getSatelliteID());
         Assertions.assertEquals(96.6526,                      j204.getHighRateClockCorrection(), eps);
 
         // Verify data for satellite J193
-        final SsrIgm04Data j193 = igm04.getSsrIgm04Data().get("J193").get(0);
+        final SsrIgm04Data j193 = igm04.getSsrIgm04Data().get("J193").getFirst();
         Assertions.assertEquals(193,                          j193.getSatelliteID());
         Assertions.assertEquals(96.6527,                      j193.getHighRateClockCorrection(), eps);
 
@@ -129,12 +129,12 @@ public class SsrIgm04Test {
         Assertions.assertEquals(2,                            igm04.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
-        final SsrIgm04Data e01 = igm04.getSsrIgm04Data().get("E01").get(0);
+        final SsrIgm04Data e01 = igm04.getSsrIgm04Data().get("E01").getFirst();
         Assertions.assertEquals(1,                            e01.getSatelliteID());
         Assertions.assertEquals(96.6527,                      e01.getHighRateClockCorrection(), eps);
 
         // Verify data for satellite E16
-        final SsrIgm04Data e16 = igm04.getSsrIgm04Data().get("E16").get(0);
+        final SsrIgm04Data e16 = igm04.getSsrIgm04Data().get("E16").getFirst();
         Assertions.assertEquals(16,                           e16.getSatelliteID());
         Assertions.assertEquals(96.6526,                      e16.getHighRateClockCorrection(), eps);
 

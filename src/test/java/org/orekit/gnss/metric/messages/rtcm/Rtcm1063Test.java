@@ -84,7 +84,7 @@ public class Rtcm1063Test {
         Assertions.assertEquals(1,                            rtcm1063.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite R01
-        final RtcmOrbitCorrectionData r01 = rtcm1063.getDataMap().get("R01").get(0);
+        final RtcmOrbitCorrectionData r01 = rtcm1063.getDataMap().get("R01").getFirst();
         Assertions.assertEquals(1,                            r01.getSatelliteID());
         Assertions.assertEquals(132,                          r01.getGnssIod());
         Assertions.assertEquals(18.0095,                      r01.getOrbitCorrection().getDeltaOrbitRadial(),        eps);

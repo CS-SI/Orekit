@@ -83,7 +83,7 @@ public class RinexObservation extends RinexFile<RinexObservationHeader> {
 
         // check interval from previous observation
         if (!observations.isEmpty()) {
-            final AbsoluteDate previous   = observations.get(observations.size() - 1).getDate();
+            final AbsoluteDate previous   = observations.getLast().getDate();
             final double       factor     = current.durationFrom(previous) / header.getInterval();
             final double       acceptable = FastMath.max(0.0, FastMath.rint(factor));
             if (FastMath.abs(factor - acceptable) > 0.01) {

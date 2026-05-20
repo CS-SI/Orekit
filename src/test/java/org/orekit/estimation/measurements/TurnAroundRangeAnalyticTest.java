@@ -308,7 +308,7 @@ public class TurnAroundRangeAnalyticTest {
  
         // Test measurement type
         final TurnAroundRangeAnalytic taRangeAnalytic =
-                        new TurnAroundRangeAnalytic((TurnAroundRange) measurements.get(0));
+                        new TurnAroundRangeAnalytic((TurnAroundRange) measurements.getFirst());
         Assertions.assertEquals(TurnAroundRangeAnalytic.MEASUREMENT_TYPE, taRangeAnalytic.getMeasurementType());
     }
 

@@ -86,7 +86,7 @@ public class SsrIgm06Test {
         Assertions.assertFalse(igm06.getHeader().isConsistencyMaintained());
 
         // Verify data for satellite S120
-        final SsrIgm06Data s120 = igm06.getSsrIgm06Data().get("S120").get(0);
+        final SsrIgm06Data s120 = igm06.getSsrIgm06Data().get("S120").getFirst();
         Assertions.assertEquals(120,                        s120.getSatelliteID());
         Assertions.assertEquals(1,                          s120.getNumberOfBiasesProcessed());
         Assertions.assertEquals(1,                          s120.getPhaseBiases().size());
@@ -151,7 +151,7 @@ public class SsrIgm06Test {
         Assertions.assertTrue(igm06.getHeader().isConsistencyMaintained());
 
         // Verify data for satellite E01
-        final SsrIgm06Data e01 = igm06.getSsrIgm06Data().get("E01").get(0);
+        final SsrIgm06Data e01 = igm06.getSsrIgm06Data().get("E01").getFirst();
         Assertions.assertEquals(1,                          e01.getSatelliteID());
         Assertions.assertEquals(1,                          e01.getNumberOfBiasesProcessed());
         Assertions.assertEquals(1,                          e01.getPhaseBiases().size());

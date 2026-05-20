@@ -207,7 +207,7 @@ class TLEBatchLSEstimatorTest {
             }
         });
 
-        ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
+        ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().getFirst();
         Assertions.assertEquals(OrbitType.POS_X, xDriver.getName());
         xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);

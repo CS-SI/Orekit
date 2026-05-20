@@ -137,8 +137,8 @@ public class StepHandlerMultiplexer implements OrekitStepHandler {
         final Iterator<OrekitStepHandler> iterator = handlers.iterator();
         while (iterator.hasNext()) {
             final OrekitStepHandler current = iterator.next();
-            if (current instanceof OrekitStepNormalizer &&
-                ((OrekitStepNormalizer) current).getFixedStepHandler() == handler) {
+            if (current instanceof OrekitStepNormalizer normalizer &&
+                normalizer.getFixedStepHandler() == handler) {
                 if (last != null) {
                     // propagation is ongoing, we need to call finish now for this handler
                     current.finish(last);

@@ -129,7 +129,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
         this.currentMeasurementNumber        = 0;
-        this.referenceDate                   = propagatorBuilders.get(0).getInitialOrbitDate();
+        this.referenceDate                   = propagatorBuilders.getFirst().getInitialOrbitDate();
         this.currentDate                     = referenceDate;
 
         final Map<String, Integer> orbitalParameterColumns = new HashMap<>(6 * builders.size());

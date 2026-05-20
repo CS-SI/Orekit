@@ -44,7 +44,7 @@ public class RtcmEphemerisMessage<D extends RtcmEphemerisData> extends RtcmMessa
      */
     public D getEphemerisData() {
         // Ephemeris data message contain only one entry
-        return getData().get(0);
+        return getData().getFirst();
     }
 
 }

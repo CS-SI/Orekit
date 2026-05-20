@@ -842,6 +842,6 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // THEN
         Assertions.assertEquals(1, subInterpolators.size());
-        Assertions.assertEquals(orbitInterpolator, subInterpolators.get(0));
+        Assertions.assertEquals(orbitInterpolator, subInterpolators.getFirst());
     }
 }

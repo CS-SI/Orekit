@@ -73,14 +73,14 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(1,  drivers.size());
-        Assertions.assertEquals("driver[0]",  drivers.get(0).getName());
+        Assertions.assertEquals("driver[0]",  drivers.getFirst().getName());
 
         // Extract acceleration model at an arbitrary epoch and check it is the one added
         PolynomialAccelerationModel accModel = (PolynomialAccelerationModel) forceModel.getAccelerationModel(date);
         drivers = accModel.getParametersDrivers();
         Assertions.assertEquals(1, drivers.size());
-        Assertions.assertEquals(0.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals("driver[0]",  drivers.get(0).getName());
+        Assertions.assertEquals(0.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals("driver[0]",  drivers.getFirst().getName());
 
         // 3 AccelerationModel added, with one default
         // ----------------------------------------------
@@ -98,8 +98,8 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         // Extract the drivers and check their values and names
         drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(3,  drivers.size());
-        Assertions.assertEquals(0.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals("C2[0]", drivers.get(0).getName());
+        Assertions.assertEquals(0.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals("C2[0]", drivers.getFirst().getName());
         Assertions.assertEquals(0.0,  drivers.get(1).getValue(), 0.);
         Assertions.assertEquals("C[0]",  drivers.get(1).getName());
         Assertions.assertEquals(0.0,  drivers.get(2).getValue(), 0.);
@@ -145,21 +145,21 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
 
         // AccelerationModel
         final PolynomialAccelerationModel accelerationModel = new PolynomialAccelerationModel("C1", null, 0);
-        accelerationModel.getParametersDrivers().get(0).setValue(1.4);
+        accelerationModel.getParametersDrivers().getFirst().setValue(1.4);
         final TimeSpanParametricAcceleration forceModel = new TimeSpanParametricAcceleration(Vector3D.PLUS_I, true, accelerationModel);
 
         // After t2 = t + 4h
         final double dt2 = 4 * 3600.;
         final AbsoluteDate date2 = date.shiftedBy(dt2);
         final PolynomialAccelerationModel accelerationModel2 = new PolynomialAccelerationModel("C2", null, 0);
-        accelerationModel2.getParametersDrivers().get(0).setValue(0.7);
+        accelerationModel2.getParametersDrivers().getFirst().setValue(0.7);
         forceModel.addAccelerationModelValidAfter(accelerationModel2, date2);
 
         // Before t3 = t - 1day
         final double dt3 = -86400.;
         final AbsoluteDate date3 = date.shiftedBy(dt3);
         final PolynomialAccelerationModel accelerationModel3 = new PolynomialAccelerationModel("C3", null, 0);
-        accelerationModel3.getParametersDrivers().get(0).setValue(2.7);
+        accelerationModel3.getParametersDrivers().getFirst().setValue(2.7);
         forceModel.addAccelerationModelValidBefore(accelerationModel3, date3);
 
         // Initialize model
@@ -203,11 +203,11 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         double dt = 1. * 3600.;
         // Build the force model
         PolynomialAccelerationModel polyAcc0 = new PolynomialAccelerationModel("C0", null, 0);
-        polyAcc0.getParametersDrivers().get(0).setValue(2.7);
+        polyAcc0.getParametersDrivers().getFirst().setValue(2.7);
         PolynomialAccelerationModel polyAcc1 = new PolynomialAccelerationModel("C1", null, 0);
-        polyAcc1.getParametersDrivers().get(0).setValue(0.9);
+        polyAcc1.getParametersDrivers().getFirst().setValue(0.9);
         PolynomialAccelerationModel polyAcc2 = new PolynomialAccelerationModel("C2", null, 0);
-        polyAcc2.getParametersDrivers().get(0).setValue(1.4);
+        polyAcc2.getParametersDrivers().getFirst().setValue(1.4);
         TimeSpanParametricAcceleration forceModel = new TimeSpanParametricAcceleration(Vector3D.PLUS_J, null, polyAcc0);
         forceModel.addAccelerationModelValidAfter(polyAcc1, date.shiftedBy(dt));
         forceModel.addAccelerationModelValidBefore(polyAcc2, date.shiftedBy(-dt));
@@ -266,11 +266,11 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         double dt = 1. * 3600.;
         // Build the force model
         PolynomialAccelerationModel polyAcc0 = new PolynomialAccelerationModel("C0", null, 0);
-        polyAcc0.getParametersDrivers().get(0).setValue(2.7);
+        polyAcc0.getParametersDrivers().getFirst().setValue(2.7);
         PolynomialAccelerationModel polyAcc1 = new PolynomialAccelerationModel("C1", null, 0);
-        polyAcc1.getParametersDrivers().get(0).setValue(0.9);
+        polyAcc1.getParametersDrivers().getFirst().setValue(0.9);
         PolynomialAccelerationModel polyAcc2 = new PolynomialAccelerationModel("C2", null, 0);
-        polyAcc2.getParametersDrivers().get(0).setValue(1.4);
+        polyAcc2.getParametersDrivers().getFirst().setValue(1.4);
         TimeSpanParametricAcceleration forceModel = new TimeSpanParametricAcceleration(Vector3D.PLUS_J, attitudeOverride, polyAcc0);
         forceModel.addAccelerationModelValidAfter(polyAcc1, date.shiftedBy(dt));
         forceModel.addAccelerationModelValidBefore(polyAcc2, date.shiftedBy(-dt));
@@ -362,11 +362,11 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         double dt = 1000.;
         // Build the force model
         PolynomialAccelerationModel polyAcc0 = new PolynomialAccelerationModel("C0", null, 0);
-        polyAcc0.getParametersDrivers().get(0).setValue(2.7);
+        polyAcc0.getParametersDrivers().getFirst().setValue(2.7);
         PolynomialAccelerationModel polyAcc1 = new PolynomialAccelerationModel("C1", null, 0);
-        polyAcc1.getParametersDrivers().get(0).setValue(0.9);
+        polyAcc1.getParametersDrivers().getFirst().setValue(0.9);
         PolynomialAccelerationModel polyAcc2 = new PolynomialAccelerationModel("C2", null, 0);
-        polyAcc2.getParametersDrivers().get(0).setValue(1.4);
+        polyAcc2.getParametersDrivers().getFirst().setValue(1.4);
         TimeSpanParametricAcceleration forceModel = new TimeSpanParametricAcceleration(Vector3D.PLUS_J, null, polyAcc0);
         forceModel.addAccelerationModelValidAfter(polyAcc1, J2000.toAbsoluteDate().shiftedBy(dt));
         forceModel.addAccelerationModelValidBefore(polyAcc2, J2000.toAbsoluteDate().shiftedBy(-dt));

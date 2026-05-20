@@ -53,19 +53,19 @@ public class AntexLoaderTest {
 
         Assertions.assertEquals(16, loader.getSatellitesAntennas().size());
 
-        checkSatellite(loader.getSatellitesAntennas().get( 0), 1992, 11, 22, 2008, 10, 16,
+        checkSatellite(loader.getSatellitesAntennas().getFirst(), 1992, 11, 22, 2008, 10, 16,
                        SatelliteSystem.GPS,     "BLOCK IIA",   SatelliteType.BLOCK_IIA, 32, 1,
                        "1992-079A", PredefinedGnssSignal.G01, 45.0, 7.0, 1.30);
-        checkSatellite(loader.getSatellitesAntennas().get( 0), 2008, 10, 23, 2009,  1,  6,
+        checkSatellite(loader.getSatellitesAntennas().getFirst(), 2008, 10, 23, 2009,  1,  6,
                        SatelliteSystem.GPS,     "BLOCK IIA",   SatelliteType.BLOCK_IIA, 37, 1,
                        "1993-032A", PredefinedGnssSignal.G02, 120.0, 4.0, -0.4);
-        checkSatellite(loader.getSatellitesAntennas().get( 0), 2009,  3, 24, 2011,  5,  6,
+        checkSatellite(loader.getSatellitesAntennas().getFirst(), 2009,  3, 24, 2011,  5,  6,
                        SatelliteSystem.GPS,     "BLOCK IIR-M", SatelliteType.BLOCK_IIR_M, 49, 1,
                        "2009-014A", PredefinedGnssSignal.G01, 57.0, 3.0, 4.60);
-        checkSatellite(loader.getSatellitesAntennas().get( 0), 2011,  6,  2, 2011,  7, 12,
+        checkSatellite(loader.getSatellitesAntennas().getFirst(), 2011,  6,  2, 2011,  7, 12,
                        SatelliteSystem.GPS,     "BLOCK IIA",   SatelliteType.BLOCK_IIA, 35, 1,
                        "1993-054A", PredefinedGnssSignal.G02, 25.0, 9.0, 1.20);
-        checkSatellite(loader.getSatellitesAntennas().get( 0), 2011,  7, 16, 9999, 12, 31,
+        checkSatellite(loader.getSatellitesAntennas().getFirst(), 2011,  7, 16, 9999, 12, 31,
                        SatelliteSystem.GPS,     "BLOCK IIF",   SatelliteType.BLOCK_IIF, 63, 1,
                        "2011-036A", PredefinedGnssSignal.G01, 17.0, 2.0, 2.80);
 
@@ -175,15 +175,15 @@ public class AntexLoaderTest {
                        "2015-018A", PredefinedGnssSignal.I05, 321.0, 13.0, 0.0);
 
         Assertions.assertEquals( 3, loader.getReceiversAntennas().size());
-        Assertions.assertEquals("3S-02-TSADM     NONE",  loader.getReceiversAntennas().get(0).getType());
-        Assertions.assertEquals("",                      loader.getReceiversAntennas().get(0).getSerialNumber());
+        Assertions.assertEquals("3S-02-TSADM     NONE",  loader.getReceiversAntennas().getFirst().getType());
+        Assertions.assertEquals("",                      loader.getReceiversAntennas().getFirst().getSerialNumber());
         Assertions.assertEquals("3S-02-TSATE     NONE",  loader.getReceiversAntennas().get(1).getType());
         Assertions.assertEquals("",                      loader.getReceiversAntennas().get(1).getSerialNumber());
         Assertions.assertEquals("AERAT1675_120   SPKE",  loader.getReceiversAntennas().get(2).getType());
         Assertions.assertEquals("",                      loader.getReceiversAntennas().get(2).getSerialNumber());
         Assertions.assertEquals("IGS14_1972",            loader.getReceiversAntennas().get(2).getSinexCode());
         Assertions.assertEquals(1, loader.getReceiversAntennas().get(2).getRadioWaves().size());
-        Assertions.assertTrue(loader.getReceiversAntennas().get(2).getRadioWaves().get(0).closeTo(PredefinedGnssSignal.G01));
+        Assertions.assertTrue(loader.getReceiversAntennas().get(2).getRadioWaves().getFirst().closeTo(PredefinedGnssSignal.G01));
         try {
             loader.getReceiversAntennas().get(2).getEccentricities(PredefinedGnssSignal.E06);
             Assertions.fail("an exception should have been thrown");

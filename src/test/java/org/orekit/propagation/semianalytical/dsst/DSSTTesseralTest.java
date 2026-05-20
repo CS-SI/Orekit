@@ -396,7 +396,7 @@ public class DSSTTesseralTest {
     public void testGetMaxEccPow()
                     throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final UnnormalizedSphericalHarmonicsProvider provider =
-                        GravityFieldFactory.getUnnormalizedProvider(4, 4);;
+                        GravityFieldFactory.getUnnormalizedProvider(4, 4);
                         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
                         final DSSTTesseral force = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
                         Method getMaxEccPow = DSSTTesseral.class.getDeclaredMethod("getMaxEccPow", Double.TYPE);

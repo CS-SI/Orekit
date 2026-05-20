@@ -87,7 +87,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
 
         // compute state Jacobian using PartialDerivatives
         ParameterDriversList bound = new ParameterDriversList();
-        final ParameterDriver M2 = propagator.getParametersDrivers().get(0);
+        final ParameterDriver M2 = propagator.getParametersDrivers().getFirst();
         M2.setSelected(true);
         bound.add(M2);
 
@@ -106,7 +106,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
         BrouwerLyddanePropagator propagator2;
         double[][] dYdPRef = new double[6][1];
 
-        ParameterDriver selected = bound.getDrivers().get(0);
+        ParameterDriver selected = bound.getDrivers().getFirst();
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
         selected.setValue(p0 - 4 * h);

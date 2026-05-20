@@ -147,7 +147,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                         }
                     }
                 }
-                ParameterDriver selected2 = bound.getDrivers().get(0);
+                ParameterDriver selected2 = bound.getDrivers().getFirst();
                 double p0 = selected2.getReferenceValue();
                 double h  = selected2.getScale();
                 selected2.setValue(p0 - 4 * h);

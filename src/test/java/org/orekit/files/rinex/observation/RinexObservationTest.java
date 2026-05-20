@@ -55,7 +55,7 @@ public class RinexObservationTest {
                                                      AbsoluteDate.ARBITRARY_EPOCH.shiftedBy((n - 1) * interval),
                                                      interval, n - 10);
         final List<ObservationDataSet> ods = rinexObservation.getObservationDataSets();
-        final AbsoluteDate lastGenerated = ods.get(ods.size() - 1).getDate();
+        final AbsoluteDate lastGenerated = ods.getLast().getDate();
         try {
             rinexObservation.addObservationDataSet(dummyMeasurement(lastGenerated.shiftedBy(0.75 * interval)));
             Assertions.fail("an exception should have been thrown");
@@ -72,7 +72,7 @@ public class RinexObservationTest {
                                                      AbsoluteDate.ARBITRARY_EPOCH.shiftedBy((n - 1) * interval),
                                                      interval, n);
         final List<ObservationDataSet> ods = rinexObservation.getObservationDataSets();
-        final AbsoluteDate lastGenerated = ods.get(ods.size() - 1).getDate();
+        final AbsoluteDate lastGenerated = ods.getLast().getDate();
         try {
             rinexObservation.addObservationDataSet(dummyMeasurement(lastGenerated.shiftedBy(interval)));
             Assertions.fail("an exception should have been thrown");

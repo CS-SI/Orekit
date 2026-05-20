@@ -57,10 +57,10 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
        generator.addPropagator(buildPropagator()); // dummy propagator 2
        final ObservableSatellite satellite = generator.addPropagator(buildPropagator()); // relevant propagator 3
        generator.addPropagator(buildPropagator()); // dummy propagator 4
-       generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.get(0), satellite),
+       generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.getFirst(), satellite),
                                                         new FixedStepSelector(step, TimeScalesFactory.getUTC()),
                                                         generator.getPropagator(satellite),
-                                                        EstimationTestUtils.getElevationDetector(context.stations.get(0).getBaseFrame(),
+                                                        EstimationTestUtils.getElevationDetector(context.stations.getFirst().getBaseFrame(),
                                                                                                  FastMath.toRadians(5.0)).
                                                         withHandler(new ContinueOnEvent()),
                                                         SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));

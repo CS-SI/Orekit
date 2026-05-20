@@ -143,7 +143,7 @@ public class DataProvidersManagerTest {
         for (DataProvider provider : providers) {
             Assertions.assertTrue(manager.isSupported(provider));
         }
-        Assertions.assertNotNull(manager.removeProvider(providers.get(0)));
+        Assertions.assertNotNull(manager.removeProvider(providers.getFirst()));
         Assertions.assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
             public boolean feed(Pattern supported, DataLoader visitor, DataProvidersManager manager) {
@@ -162,7 +162,7 @@ public class DataProvidersManagerTest {
             }
         }));
         Assertions.assertEquals(1, manager.getProviders().size());
-        Assertions.assertNotNull(manager.removeProvider(manager.getProviders().get(0)));
+        Assertions.assertNotNull(manager.removeProvider(manager.getProviders().getFirst()));
         Assertions.assertEquals(0, manager.getProviders().size());
     }
 

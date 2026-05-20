@@ -153,8 +153,8 @@ public class PropagatorsParallelizer {
 
         if (propagators.size() == 1) {
             // special handling when only one propagator is used
-            propagators.get(0).getMultiplexer().add(new SinglePropagatorHandler(globalHandler));
-            return Collections.singletonList(propagators.get(0).propagate(start, target));
+            propagators.getFirst().getMultiplexer().add(new SinglePropagatorHandler(globalHandler));
+            return Collections.singletonList(propagators.getFirst().propagate(start, target));
         }
 
         final double sign = FastMath.copySign(1.0, target.durationFrom(start));

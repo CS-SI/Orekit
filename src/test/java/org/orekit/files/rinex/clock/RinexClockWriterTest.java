@@ -111,7 +111,7 @@ public class RinexClockWriterTest {
         final CharArrayWriter  caw  = new CharArrayWriter();
         try {
             RinexClockWriter writer = new RinexClockWriter(caw, "dummy");
-            writer.writeClockDataLine(rclock.getClockData().get("AREQ00USA").get(0));
+            writer.writeClockDataLine(rclock.getClockData().get("AREQ00USA").getFirst());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.HEADER_NOT_WRITTEN, oe.getSpecifier());

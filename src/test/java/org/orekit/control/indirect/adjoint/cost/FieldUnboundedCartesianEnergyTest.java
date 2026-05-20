@@ -108,7 +108,7 @@ class FieldUnboundedCartesianEnergyTest {
         // THEN
         final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.collect(Collectors.toList());
         Assertions.assertEquals(1, eventDetectors.size());
-        final FieldEventDetector<Complex> eventDetector = eventDetectors.get(0);
+        final FieldEventDetector<Complex> eventDetector = eventDetectors.getFirst();
         Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, eventDetector.getEventFunction());
         Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, eventDetector.getHandler());
     }
@@ -128,13 +128,13 @@ class FieldUnboundedCartesianEnergyTest {
         // THEN
         final List<FieldEventDetector<Complex>> fieldEventDetectors = fieldEventDetectorStream.collect(Collectors.toList());
         Assertions.assertEquals(1, fieldEventDetectors.size());
-        Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, fieldEventDetectors.get(0).getEventFunction());
+        Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, fieldEventDetectors.getFirst().getEventFunction());
         final FieldAbstractCartesianCost.FieldSwitchFunction fieldSingularityFunction =
-                (FieldAbstractCartesianCost.FieldSwitchFunction) fieldEventDetectors.get(0).getEventFunction();
+                (FieldAbstractCartesianCost.FieldSwitchFunction) fieldEventDetectors.getFirst().getEventFunction();
         final Complex gValue = fieldSingularityFunction.value(new FieldSpacecraftState<>(field, state));
         final List<EventDetector> eventDetectors = unboundedCartesianEnergy.toCartesianCost().getEventDetectors().collect(Collectors.toList());
         final CartesianEnergyConsideringMass.SingularitySwitchFunction singularitySwitchFunction =
-                (CartesianEnergyConsideringMass.SingularitySwitchFunction) eventDetectors.get(0).getEventFunction();
+                (CartesianEnergyConsideringMass.SingularitySwitchFunction) eventDetectors.getFirst().getEventFunction();
         Assertions.assertFalse(singularitySwitchFunction.dependsOnMainVariablesOnly());
         final double expectedG = singularitySwitchFunction.value(state);
         Assertions.assertEquals(expectedG, gValue.getReal());

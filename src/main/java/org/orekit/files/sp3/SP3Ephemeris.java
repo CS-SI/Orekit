@@ -91,13 +91,13 @@ public class SP3Ephemeris implements EphemerisFile.SatelliteEphemeris<SP3Coordin
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return segments.isEmpty() ? null : segments.get(0).getStart();
+        return segments.isEmpty() ? null : segments.getFirst().getStart();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return segments.isEmpty() ? null : segments.get(segments.size() - 1).getStop();
+        return segments.isEmpty() ? null : segments.getLast().getStop();
     }
 
     /** Get the reference frame.
@@ -133,7 +133,7 @@ public class SP3Ephemeris implements EphemerisFile.SatelliteEphemeris<SP3Coordin
             segment = new SP3Segment(mu, frame,  interpolationSamples, filter);
             segments.add(segment);
         } else {
-            segment = segments.get(segments.size() - 1);
+            segment = segments.getLast();
         }
         segment.addCoordinate(coord);
     }

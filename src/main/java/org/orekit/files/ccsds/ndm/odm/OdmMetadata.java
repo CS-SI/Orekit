@@ -36,7 +36,7 @@ public class OdmMetadata extends Metadata {
      *
      * @param defaultTimeSystem default time system (may be null)
      * @param frameMapper       for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     protected OdmMetadata(final TimeSystem defaultTimeSystem,
                           final CcsdsFrameMapper frameMapper) {

@@ -48,8 +48,8 @@ class UnboundedCartesianEnergyTest {
         // THEN
         final List<EventDetector> eventDetectors = eventDetectorStream.collect(Collectors.toList());
         Assertions.assertEquals(1, eventDetectors.size());
-        Assertions.assertInstanceOf(CartesianEnergyConsideringMass.SingularitySwitchFunction.class, eventDetectors.get(0).getEventFunction());
-        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, eventDetectors.get(0).getHandler());
+        Assertions.assertInstanceOf(CartesianEnergyConsideringMass.SingularitySwitchFunction.class, eventDetectors.getFirst().getEventFunction());
+        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, eventDetectors.getFirst().getHandler());
     }
 
 }

@@ -28,5 +28,5 @@ public enum LambertOrbitType {
     /** parabolic orbit type. */
     PARABOLIC,
     /** hyperbolic orbit type. */
-    HYPERBOLIC;
+    HYPERBOLIC
 }

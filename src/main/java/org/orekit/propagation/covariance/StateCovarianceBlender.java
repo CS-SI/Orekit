@@ -106,7 +106,7 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
             final Orbit interpolatedOrbit) {
 
         // Necessarily only two sample for blending
-        final TimeStampedPair<Orbit, StateCovariance> previousUncertainState = uncertainStates.get(0);
+        final TimeStampedPair<Orbit, StateCovariance> previousUncertainState = uncertainStates.getFirst();
         final TimeStampedPair<Orbit, StateCovariance> nextUncertainState     = uncertainStates.get(1);
 
         // Get the interpolation date

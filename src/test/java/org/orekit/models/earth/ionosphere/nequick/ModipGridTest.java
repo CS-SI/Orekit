@@ -238,9 +238,11 @@ public class ModipGridTest {
     public void testParsingError() {
         try {
             new ModipGrid(4, 2,
-                          new DataSource("dummy", () -> new StringReader("-90 -90 -90 -90 -90\n" +
-                                                                         "  0   0  ##   0   0\n" +
-                                                                         " 90  90  90  90  90\n")),
+                          new DataSource("dummy", () -> new StringReader("""
+                                                                         -90 -90 -90 -90 -90
+                                                                           0   0  ##   0   0
+                                                                          90  90  90  90  90
+                                                                         """)),
                           false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

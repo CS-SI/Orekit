@@ -76,7 +76,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     /**
      * Maps CCSDS center and frame to a {@link Frame}.
      *
-     * @since 14.0
+     * @since 13.1.5
      */
     private final CcsdsFrameMapper frameMapper;
 
@@ -144,7 +144,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
      * @param frameMapper for creating a {@link Frame}.
-     * @since 14.0
+     * @since 13.1.5
      */
     private ParserBuilder(final IERSConventions conventions,
                           final double equatorialRadius, final double flattening,
@@ -381,7 +381,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * Get the mapping between CCSDS NDM center and frame and a {@link Frame}.
      *
      * @return the frame mapper.
-     * @since 14.0
+     * @since 13.1.5
      */
     public CcsdsFrameMapper getFrameMapper() {
         return frameMapper;
@@ -393,7 +393,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @param newFrameMapper the frame mapper.
      * @return a new builder with updated configuration (the instance is not
      * changed)
-     * @since 14.0
+     * @since 13.1.5
      */
     public ParserBuilder withFrameMapper(final CcsdsFrameMapper newFrameMapper) {
         return new ParserBuilder(getConventions(), getEquatorialRadius(),

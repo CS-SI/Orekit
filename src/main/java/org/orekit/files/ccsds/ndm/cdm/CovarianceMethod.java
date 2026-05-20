@@ -26,6 +26,6 @@ public enum CovarianceMethod {
     CALCULATED,
 
     /** Non-calculated default value was used. */
-    DEFAULT;
+    DEFAULT
 
 }

@@ -127,7 +127,7 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
                                                                                                 final SpacecraftState[] states) {
 
         final CommonParametersWithoutDerivatives common =
-            computeLocalParametersWithout(states, getSatellites().get(0), getDate());
+            computeLocalParametersWithout(states, getSatellites().getFirst(), getDate());
 
         // prepare the evaluation
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedPhase =
@@ -160,7 +160,7 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
                                                                           final SpacecraftState[] states) {
 
         final CommonParametersWithDerivatives common =
-            computeLocalParametersWith(states, getSatellites().get(0), getDate());
+            computeLocalParametersWith(states, getSatellites().getFirst(), getDate());
 
         // prepare the evaluation
         final EstimatedMeasurement<OneWayGNSSPhase> estimatedPhase =

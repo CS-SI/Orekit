@@ -16,6 +16,7 @@
  */
 package org.orekit.bodies;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.text.NumberFormat;
 
@@ -44,6 +45,7 @@ public class GeodeticPoint implements Serializable {
     public static final GeodeticPoint SOUTH_POLE = new GeodeticPoint(-0.5 * FastMath.PI, 0.0, 0.0);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 7862466825590075399L;
 
     /** Latitude of the point (rad). */
@@ -196,8 +198,7 @@ public class GeodeticPoint implements Serializable {
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof GeodeticPoint) {
-            final GeodeticPoint other = (GeodeticPoint) object;
+        if (object instanceof GeodeticPoint other) {
             return this.getLatitude() == other.getLatitude() &&
                    this.getLongitude() == other.getLongitude() &&
                    this.getAltitude() == other.getAltitude();

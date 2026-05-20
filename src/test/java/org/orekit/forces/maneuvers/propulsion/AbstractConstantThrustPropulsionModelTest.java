@@ -172,9 +172,9 @@ public class AbstractConstantThrustPropulsionModelTest {
 
         // Drivers
         Assertions.assertEquals(2, drivers.size());
-        Assertions.assertEquals(name + BasicConstantThrustPropulsionModel.THRUST, drivers.get(0).getName());
+        Assertions.assertEquals(name + BasicConstantThrustPropulsionModel.THRUST, drivers.getFirst().getName());
         Assertions.assertEquals(name + BasicConstantThrustPropulsionModel.FLOW_RATE, drivers.get(1).getName());
-        Assertions.assertEquals(thrust, drivers.get(0).getValue(), 0.);
+        Assertions.assertEquals(thrust, drivers.getFirst().getValue(), 0.);
         Assertions.assertEquals(refFlowRate, drivers.get(1).getValue(), 0.);
 
         // Thrust DS
@@ -233,12 +233,12 @@ public class AbstractConstantThrustPropulsionModelTest {
       // Drivers
       Assertions.assertEquals(3, drivers.size());
       Assertions.assertEquals(name + ScaledConstantThrustPropulsionModel.THRUSTX_SCALE_FACTOR,
-              drivers.get(0).getName());
+              drivers.getFirst().getName());
       Assertions.assertEquals(name + ScaledConstantThrustPropulsionModel.THRUSTY_SCALE_FACTOR,
               drivers.get(1).getName());
       Assertions.assertEquals(name + ScaledConstantThrustPropulsionModel.THRUSTZ_SCALE_FACTOR,
               drivers.get(2).getName());
-      Assertions.assertEquals(1., drivers.get(0).getValue(), 0.);
+      Assertions.assertEquals(1., drivers.getFirst().getValue(), 0.);
       Assertions.assertEquals(1., drivers.get(1).getValue(), 0.);
       Assertions.assertEquals(1., drivers.get(2).getValue(), 0.);
 

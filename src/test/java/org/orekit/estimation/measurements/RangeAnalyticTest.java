@@ -284,7 +284,7 @@ public class RangeAnalyticTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -314,7 +314,7 @@ public class RangeAnalyticTest {
         Assertions.assertEquals(0.0, relErrorsMax,    2.5e-14);
 
         // Test measurement type
-        final RangeAnalytic rangeAnalytic = new RangeAnalytic((Range) measurements.get(0));
+        final RangeAnalytic rangeAnalytic = new RangeAnalytic((Range) measurements.getFirst());
         Assertions.assertEquals(RangeAnalytic.MEASUREMENT_TYPE, rangeAnalytic.getMeasurementType());
     }
 
@@ -459,7 +459,7 @@ public class RangeAnalyticTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -611,7 +611,7 @@ public class RangeAnalyticTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();

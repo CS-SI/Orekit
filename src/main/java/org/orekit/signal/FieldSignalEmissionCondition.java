@@ -24,63 +24,37 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * Data container describing signal emission conditions.
- * @since 14.0
+ *
+ * @param emissionDate    Signal emission date.
+ * @param emitterPosition Receiver position's vector at signal emission.
+ * @param referenceFrame  Frame where position is given.
  * @author Romain Serra
  * @see SignalEmissionCondition
+ * @since 14.0
  */
-public class FieldSignalEmissionCondition<T extends CalculusFieldElement<T>> {
-
-    /** Signal emission date. */
-    private final FieldAbsoluteDate<T> emissionDate;
-
-    /** Receiver position's vector at signal emission. */
-    private final FieldVector3D<T> emitterPosition;
-
-    /** Frame where position is given. */
-    private final Frame referenceFrame;
-
-    /**
-     * Constructor.
-     * @param emissionDate emission date
-     * @param emitterPosition emitter position
-     * @param referenceFrame frame where position is given
-     */
-    public FieldSignalEmissionCondition(final FieldAbsoluteDate<T> emissionDate, final FieldVector3D<T> emitterPosition,
-                                        final Frame referenceFrame) {
-        this.emissionDate = emissionDate;
-        this.emitterPosition = emitterPosition;
-        this.referenceFrame = referenceFrame;
-    }
+public record FieldSignalEmissionCondition<T extends CalculusFieldElement<T>>(FieldAbsoluteDate<T> emissionDate,
+                                                                              FieldVector3D<T> emitterPosition,
+                                                                              Frame referenceFrame) {
 
     /**
      * Constructor from non-Field values.
-     * @param field field
+     *
+     * @param field                   field
      * @param signalEmissionCondition non-field emission condition
      */
     public FieldSignalEmissionCondition(final Field<T> field, final SignalEmissionCondition signalEmissionCondition) {
-        this(new FieldAbsoluteDate<>(field, signalEmissionCondition.getEmissionDate()),
-                new FieldVector3D<>(field, signalEmissionCondition.getEmitterPosition()),
-                signalEmissionCondition.getReferenceFrame());
+        this(new FieldAbsoluteDate<>(field, signalEmissionCondition.emissionDate()),
+                new FieldVector3D<>(field, signalEmissionCondition.emitterPosition()),
+                signalEmissionCondition.referenceFrame());
     }
 
     /**
      * Method returning a non-field emission condition.
+     *
      * @return non-field version
      */
     public SignalEmissionCondition toEmissionCondition() {
-        return new SignalEmissionCondition(getEmissionDate().toAbsoluteDate(), getEmitterPosition().toVector3D(),
-                getReferenceFrame());
-    }
-
-    public FieldVector3D<T> getEmitterPosition() {
-        return emitterPosition;
-    }
-
-    public FieldAbsoluteDate<T> getEmissionDate() {
-        return emissionDate;
-    }
-
-    public Frame getReferenceFrame() {
-        return referenceFrame;
+        return new SignalEmissionCondition(emissionDate().toAbsoluteDate(), emitterPosition().toVector3D(),
+                referenceFrame());
     }
 }

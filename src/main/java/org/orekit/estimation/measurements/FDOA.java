@@ -106,7 +106,7 @@ public class FDOA extends DualReceiverMeasurement<FDOA> {
                                                                                      final SpacecraftState[] states) {
         // Evaluate the TDOA value
         final TDOA tdoa = new TDOA(getPrimeObserver(), getSecondObserver(), getDate(), 0., new MeasurementQuality(1),
-                getSignalTravelTimeModel(), getSatellites().get(0));
+                getSignalTravelTimeModel(), getSatellites().getFirst());
         final EstimatedMeasurementBase<TDOA> estimatedTdoa = tdoa.theoreticalEvaluationWithoutDerivatives(iteration,
                 evaluation, states);
 

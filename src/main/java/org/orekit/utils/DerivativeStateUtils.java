@@ -212,8 +212,7 @@ public class DerivativeStateUtils {
      * @return angle type
      */
     private static PositionAngleType extractPositionAngleType(final Orbit orbit) {
-        if (orbit instanceof PositionAngleBased<?>) {
-            final PositionAngleBased<?> positionAngleBased = (PositionAngleBased<?>) orbit;
+        if (orbit instanceof PositionAngleBased<?> positionAngleBased) {
             return positionAngleBased.getCachedPositionAngleType();
         }
         return null;

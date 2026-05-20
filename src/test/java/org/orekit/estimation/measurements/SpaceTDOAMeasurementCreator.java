@@ -38,7 +38,7 @@ public class SpaceTDOAMeasurementCreator extends MeasurementCreator {
 
     public SpaceTDOAMeasurementCreator(final Context context) {
         this.context = context;
-        this.primary = context.satellites.get(0);
+        this.primary = context.satellites.getFirst();
         this.secondary = context.satellites.get(1);
         this.satellite = new ObservableSatellite(0);
     }
@@ -46,7 +46,7 @@ public class SpaceTDOAMeasurementCreator extends MeasurementCreator {
     public SpaceTDOAMeasurementCreator(final Context context, final double primaryBias, final double primaryDrift,
             final double secondaryBias, final double secondaryDrift) {
         this.context = context;
-        this.primary = context.satellites.get(0);
+        this.primary = context.satellites.getFirst();
         this.secondary = context.satellites.get(1);
         this.satellite = new ObservableSatellite(0);
 

@@ -82,7 +82,7 @@ public class AggregateBoundedAttitudeProviderTest {
         // Verify dates
         Assertions.assertEquals(0.0, provider.getMinDate().durationFrom(ephemeris.getStart()), 1.0e-10);
         Assertions.assertEquals(0.0, provider.getMaxDate().durationFrom(ephemeris.getStop()),  1.0e-10);
-        Assertions.assertEquals(0.0, provider.getMinDate().durationFrom(ephemeris.getSegments().get(0).getStart()), 1.0e-10);
+        Assertions.assertEquals(0.0, provider.getMinDate().durationFrom(ephemeris.getSegments().getFirst().getStart()), 1.0e-10);
         Assertions.assertEquals(0.0, provider.getMaxDate().durationFrom(ephemeris.getSegments().get(1).getStop()), 1.0e-10);
 
         // Verify computation with data in first segment
@@ -114,7 +114,7 @@ public class AggregateBoundedAttitudeProviderTest {
         // Verify dates
         Assertions.assertEquals(0.0, provider.getMinDate().durationFrom(ephemeris.getStart()), 1.0e-10);
         Assertions.assertEquals(0.0, provider.getMaxDate().durationFrom(ephemeris.getStop()),  1.0e-10);
-        Assertions.assertEquals(0.0, provider.getMinDate().durationFrom(ephemeris.getSegments().get(0).getStart()), 1.0e-10);
+        Assertions.assertEquals(0.0, provider.getMinDate().durationFrom(ephemeris.getSegments().getFirst().getStart()), 1.0e-10);
         Assertions.assertEquals(0.0, provider.getMaxDate().durationFrom(ephemeris.getSegments().get(1).getStop()), 1.0e-10);
 
         // Verify computation with data in first segment
@@ -233,10 +233,10 @@ public class AggregateBoundedAttitudeProviderTest {
         // THEN
         final List<EventDetector> eventDetectorList = eventDetectorStream.collect(Collectors.toList());
         Assertions.assertEquals(1, eventDetectorList.size());
-        Assertions.assertInstanceOf(DateDetector.class, eventDetectorList.get(0));
-        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, eventDetectorList.get(0).getHandler());
-        final DateDetector dateDetector = (DateDetector) eventDetectorList.get(0);
-        Assertions.assertEquals(boundedAttitudeProvider.getMinDate(), dateDetector.getDates().get(0).getDate());
+        Assertions.assertInstanceOf(DateDetector.class, eventDetectorList.getFirst());
+        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, eventDetectorList.getFirst().getHandler());
+        final DateDetector dateDetector = (DateDetector) eventDetectorList.getFirst();
+        Assertions.assertEquals(boundedAttitudeProvider.getMinDate(), dateDetector.getDates().getFirst().getDate());
     }
 
     @Test
@@ -255,8 +255,8 @@ public class AggregateBoundedAttitudeProviderTest {
         final Stream<EventDetector> eventDetectorStream = aggregateBoundedAttitudeProvider.getEventDetectors();
         final List<EventDetector> eventDetectorList = eventDetectorStream.collect(Collectors.toList());
         Assertions.assertEquals(eventDetectorList.size(), fieldEventDetectorList.size());
-        Assertions.assertInstanceOf(FieldDateDetector.class, fieldEventDetectorList.get(0));
-        Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, fieldEventDetectorList.get(0).getHandler());
+        Assertions.assertInstanceOf(FieldDateDetector.class, fieldEventDetectorList.getFirst());
+        Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, fieldEventDetectorList.getFirst().getHandler());
     }
 
     @Test

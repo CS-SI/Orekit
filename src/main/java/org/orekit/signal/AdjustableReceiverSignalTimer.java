@@ -53,14 +53,27 @@ public class AdjustableReceiverSignalTimer extends AbstractSignalTravelTime {
         this.adjustableReceiverPVProvider = adjustableReceiverPVProvider;
     }
 
+    /** Compute signal reception condition on a link leg (typically downlink or uplink).
+     * @param emissionCondition signal emission conditions
+     * @param approxReceptionDate approximate reception date
+     * @return reception condition
+     */
+    public SignalReceptionCondition computeReceptionCondition(final SignalEmissionCondition emissionCondition,
+                                                              final AbsoluteDate approxReceptionDate) {
+        final double delay = computeDelay(emissionCondition, approxReceptionDate);
+        final AbsoluteDate receptionDate = approxReceptionDate.shiftedBy(delay);
+        final Frame frame = emissionCondition.referenceFrame();
+        return new SignalReceptionCondition(receptionDate, adjustableReceiverPVProvider.getPosition(receptionDate, frame), frame);
+    }
+
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
      * @param emissionCondition signal emission conditions
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
     public double computeDelay(final SignalEmissionCondition emissionCondition) {
-        final AbsoluteDate emissionDate = emissionCondition.getEmissionDate();
-        final Vector3D emitterPosition = emissionCondition.getEmitterPosition();
-        final Frame frame = emissionCondition.getReferenceFrame();
+        final AbsoluteDate emissionDate = emissionCondition.emissionDate();
+        final Vector3D emitterPosition = emissionCondition.emitterPosition();
+        final Frame frame = emissionCondition.referenceFrame();
         final Vector3D receiverPosition = adjustableReceiverPVProvider.getPosition(emissionDate, frame);
         final double distance = receiverPosition.subtract(emitterPosition).getNorm2();
         final AbsoluteDate approxReceptionDate = emissionDate.shiftedBy(distance * C_RECIPROCAL);
@@ -75,10 +88,10 @@ public class AdjustableReceiverSignalTimer extends AbstractSignalTravelTime {
     public double computeDelay(final SignalEmissionCondition emissionCondition,
                                final AbsoluteDate approxReceptionDate) {
         // initialize reception date search loop assuming the state is already correct
-        final double offset = approxReceptionDate.durationFrom(emissionCondition.getEmissionDate());
+        final double offset = approxReceptionDate.durationFrom(emissionCondition.emissionDate());
 
-        return compute(adjustableReceiverPVProvider, offset, emissionCondition.getEmitterPosition(), approxReceptionDate,
-                emissionCondition.getReferenceFrame());
+        return compute(adjustableReceiverPVProvider, offset, emissionCondition.emitterPosition(), approxReceptionDate,
+                emissionCondition.referenceFrame());
     }
 
     @Override

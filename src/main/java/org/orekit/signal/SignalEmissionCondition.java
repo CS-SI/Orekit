@@ -22,42 +22,12 @@ import org.orekit.time.AbsoluteDate;
 
 /**
  * Data container describing signal emission conditions.
- * @since 14.0
+ *
+ * @param emissionDate    Signal emission date.
+ * @param emitterPosition Receiver position's vector at signal emission.
+ * @param referenceFrame  Frame where position is given.
  * @author Romain Serra
+ * @since 14.0
  */
-public class SignalEmissionCondition {
-
-    /** Signal emission date. */
-    private final AbsoluteDate emissionDate;
-
-    /** Receiver position's vector at signal emission. */
-    private final Vector3D emitterPosition;
-
-    /** Frame where position is given. */
-    private final Frame referenceFrame;
-
-    /**
-     * Constructor.
-     * @param emissionDate emission date
-     * @param emitterPosition emitter position
-     * @param referenceFrame frame where position is given
-     */
-    public SignalEmissionCondition(final AbsoluteDate emissionDate, final Vector3D emitterPosition,
-                                   final Frame referenceFrame) {
-        this.emissionDate = emissionDate;
-        this.emitterPosition = emitterPosition;
-        this.referenceFrame = referenceFrame;
-    }
-
-    public Vector3D getEmitterPosition() {
-        return emitterPosition;
-    }
-
-    public AbsoluteDate getEmissionDate() {
-        return emissionDate;
-    }
-
-    public Frame getReferenceFrame() {
-        return referenceFrame;
-    }
+public record SignalEmissionCondition(AbsoluteDate emissionDate, Vector3D emitterPosition, Frame referenceFrame) {
 }

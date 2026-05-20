@@ -40,14 +40,14 @@ public class DivertedSingularityAimingTest {
     @Test
     public void testSingularityOutside() {
         Assertions.assertEquals(1, aiming.getSingularPoints().size());
-        final GeodeticPoint singularity = aiming.getSingularPoints().get(0);
+        final GeodeticPoint singularity = aiming.getSingularPoints().getFirst();
         Assertions.assertEquals(Location.OUTSIDE, aoi.checkPoint(toS2Point(singularity)));
     }
 
     @Test
     public void testAroundSingularity() throws IOException {
 
-        GeodeticPoint singularityGP = aiming.getSingularPoints().get(0);
+        GeodeticPoint singularityGP = aiming.getSingularPoints().getFirst();
         Vector3D singularity = earth.transform(singularityGP);
         Assertions.assertEquals(GeodeticPoint.SOUTH_POLE.getLatitude(), singularityGP.getLatitude(), 1.0e-10);
 
@@ -68,7 +68,7 @@ public class DivertedSingularityAimingTest {
     @Test
     public void testOppositeSingularity() throws IOException {
 
-        GeodeticPoint singularityGP = aiming.getSingularPoints().get(0);
+        GeodeticPoint singularityGP = aiming.getSingularPoints().getFirst();
         Vector3D singularity = earth.transform(singularityGP);
         Vector3D opposite    = singularity.negate();
         GeodeticPoint oppositeGP = earth.transform(opposite, earth.getBodyFrame(), null);
@@ -122,7 +122,7 @@ public class DivertedSingularityAimingTest {
 
         // Get singularity point (there should be just one)
         List<GeodeticPoint> singularGPs = tileAiming.getSingularPoints();
-        final GeodeticPoint singularGP = singularGPs.get(0);
+        final GeodeticPoint singularGP = singularGPs.getFirst();
 
         // Singular list size
         Assertions.assertEquals(1, singularGPs.size());

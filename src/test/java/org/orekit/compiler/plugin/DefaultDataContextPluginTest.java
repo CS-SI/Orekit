@@ -27,7 +27,6 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +49,7 @@ public class DefaultDataContextPluginTest {
         // setup
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        Path output = Paths.get("target/example/classes");
+        Path output = Path.of("target/example/classes");
         rmTree(output);
         Files.createDirectories(output);
         List<String> arguments = new ArrayList<>(Arrays.asList(
@@ -59,7 +58,7 @@ public class DefaultDataContextPluginTest {
                 "-d", output.toAbsolutePath().toString(),
                 "-Xmaxwarns", "9999",
                 "-Xplugin:dataContextPlugin"));
-        Files.list(Paths.get("src/test/resources/compiler-plugin"))
+        Files.list(Path.of("src/test/resources/compiler-plugin"))
                 .forEach(a -> arguments.add(a.toAbsolutePath().toString()));
 
         // action

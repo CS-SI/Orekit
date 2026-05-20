@@ -486,27 +486,7 @@ public class GeoMagneticField {
     }
 
     /** Utility class to hold spherical coordinates. */
-    private static class SphericalCoordinates {
-
-        /** the radius (m). */
-        private double r;
-
-        /** the azimuth angle (radians). */
-        private double lambda;
-
-        /** the polar angle (radians). */
-        private double phi;
-
-        /** Create a new spherical coordinate object.
-         * @param r the radius, meters
-         * @param lambda the lambda angle, radians
-         * @param phi the phi angle, radians
-         */
-        private SphericalCoordinates(final double r, final double lambda, final double phi) {
-            this.r = r;
-            this.lambda = lambda;
-            this.phi = phi;
-        }
+    private record SphericalCoordinates(double r, double lambda, double phi) {
     }
 
     /** Utility class to compute certain variables for magnetic field summation. */

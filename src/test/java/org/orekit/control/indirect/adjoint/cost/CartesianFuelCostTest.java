@@ -106,8 +106,8 @@ class CartesianFuelCostTest {
         // THEN
         final List<EventDetector> detectorList = detectorStream.collect(Collectors.toList());
         Assertions.assertEquals(1, detectorList.size());
-        Assertions.assertEquals(mockedDetectionSettings, detectorList.get(0).getDetectionSettings());
-        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, detectorList.get(0).getHandler());
+        Assertions.assertEquals(mockedDetectionSettings, detectorList.getFirst().getDetectionSettings());
+        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, detectorList.getFirst().getHandler());
     }
 
 }

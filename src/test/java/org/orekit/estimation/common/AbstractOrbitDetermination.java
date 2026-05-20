@@ -533,8 +533,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         if (print) {
-            final String headerBLS = "\nBatch Least Square Estimator :\n"
-                            + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
+            final String headerBLS = """
+                            
+                            Batch Least Square Estimator :
+                            iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n""";
             estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerBLS, print));
         }
 
@@ -575,8 +577,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         if (print) {
-            final String headerSBLS = "\nSequentiel Batch Least Square Estimator :\n"
-                            + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
+            final String headerSBLS = """
+                            
+                            Sequentiel Batch Least Square Estimator :
+                            iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n""";
 
             estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerSBLS, print));
         }
@@ -721,7 +725,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         // We want to test with all propagations in the same direction.
         // Propagate to just before first measurement.
         SpacecraftState initialState = propagatorBuilder.buildPropagator()
-                .propagate(multiplexed.get(0).getDate().shiftedBy(-10.0 * 60.0));
+                .propagate(multiplexed.getFirst().getDate().shiftedBy(-10.0 * 60.0));
         propagatorBuilder.resetOrbit(initialState.getOrbit());
 
         // Ensure all measurements are in time-order
@@ -869,7 +873,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                 rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
                                 azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
                                 positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
-                                covarianceMatrix, smoothedStates.get(0));
+                                covarianceMatrix, smoothedStates.getFirst());
 
     }
 
@@ -1305,7 +1309,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                 new double[] { 1.0 },
                                                 new double[] { transponderDelayBiasMin },
                                                 new double[] { transponderDelayBiasMax });
-            bias.getParametersDrivers().get(0).setSelected(transponderDelayBiasEstimated);
+            bias.getParametersDrivers().getFirst().setSelected(transponderDelayBiasEstimated);
             return bias;
         } else {
             // fixed zero bias, we don't need any modifier
@@ -1517,7 +1521,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                        new double[] { rangeSigma },
                                        new double[] { stationRangeBiasMin[i] },
                                        new double[] { stationRangeBiasMax[i] });
-                rangeBias.getParametersDrivers().get(0).setSelected(stationRangeBiasEstimated[i]);
+                rangeBias.getParametersDrivers().getFirst().setSelected(stationRangeBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 rangeBias = null;
@@ -1534,7 +1538,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                            new double[] {
                                                stationRangeRateBiasMax[i]
                                            });
-                rangeRateBias.getParametersDrivers().get(0).setSelected(stationRangeRateBiasEstimated[i]);
+                rangeRateBias.getParametersDrivers().getFirst().setSelected(stationRangeRateBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 rangeRateBias = null;
@@ -1554,7 +1558,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                       azELSigma,
                                       new double[] { stationAzimuthBiasMin[i], stationElevationBiasMin[i] },
                                       new double[] { stationAzimuthBiasMax[i], stationElevationBiasMax[i] });
-                azELBias.getParametersDrivers().get(0).setSelected(stationAzElBiasesEstimated[i]);
+                azELBias.getParametersDrivers().getFirst().setSelected(stationAzElBiasesEstimated[i]);
                 azELBias.getParametersDrivers().get(1).setSelected(stationAzElBiasesEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
@@ -1606,7 +1610,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         final EstimatedModel modelBefore = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
                                                                               mappingModel,
                                                                               stationTroposphericZenithDelay[i]);
-                        final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
+                        final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().getFirst();
                         totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
                         totalDelayBefore.setName(subName + TimeSpanEstimatedModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedModel.TOTAL_ZENITH_DELAY);
 
@@ -1614,7 +1618,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         final EstimatedModel modelAfter = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
                                                                              mappingModel,
                                                                              stationTroposphericZenithDelay[i]);
-                        final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
+                        final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().getFirst();
                         totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
                         totalDelayAfter.setName(subName + TimeSpanEstimatedModel.DATE_AFTER +
                                                 epoch.toString(TimeScalesFactory.getUTC()) + " " +
@@ -1644,7 +1648,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                         model = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
                                                    mappingModel, stationTroposphericZenithDelay[i]);
-                        final ParameterDriver driver = model.getParametersDrivers().get(0);
+                        final ParameterDriver driver = model.getParametersDrivers().getFirst();
                         driver.setName(stationNames[i].substring(0, 4) + "/ " + EstimatedModel.TOTAL_ZENITH_DELAY);
                         driver.setSelected(stationZenithDelayEstimated[i]);
 
@@ -1667,7 +1671,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                     // Estimated ionospheric model
                     final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(stationIonosphericHIon[i]);
                     ionosphericModel  = new EstimatedIonosphericModel(body, mapping, stationIonosphericVTEC[i]);
-                    final ParameterDriver  ionosphericDriver = ionosphericModel.getParametersDrivers().get(0);
+                    final ParameterDriver  ionosphericDriver = ionosphericModel.getParametersDrivers().getFirst();
                     ionosphericDriver.setSelected(stationVTECEstimated[i]);
                     ionosphericDriver.setName(stationNames[i].substring(0, 5) + EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT);
                 } else {
@@ -2081,19 +2085,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final String notConfigured = " not configured";
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(satId);
-        final int prnNumber;
-        switch (system) {
+        final int prnNumber = switch (system) {
             case GPS:
             case GLONASS:
-            case GALILEO:
-                prnNumber = Integer.parseInt(satId.substring(1));
-                break;
-            case SBAS:
-                prnNumber = Integer.parseInt(satId.substring(1)) + 100;
-                break;
-            default:
-                prnNumber = -1;
-        }
+            case GALILEO: yield Integer.parseInt(satId.substring(1));
+            case SBAS: yield Integer.parseInt(satId.substring(1)) + 100;
+            default: yield -1;
+        };
         final RinexObservation rinexObs = new RinexObservationParser().parse(source);
         for (final ObservationDataSet observationDataSet : rinexObs.getObservationDataSets()) {
             if (observationDataSet.getSatellite().getSystem() == system    &&
@@ -2339,11 +2337,11 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         independentMeasurements.sort(new ChronologicalComparator());
         List<ObservedMeasurement<?>> clump = new ArrayList<>();
         for (final ObservedMeasurement<?> measurement : independentMeasurements) {
-            if (!clump.isEmpty() && measurement.getDate().durationFrom(clump.get(0).getDate()) > tol) {
+            if (!clump.isEmpty() && measurement.getDate().durationFrom(clump.getFirst().getDate()) > tol) {
 
                 // previous clump is finished
                 if (clump.size() == 1) {
-                    multiplexed.add(clump.get(0));
+                    multiplexed.add(clump.getFirst());
                 } else {
                     multiplexed.add(new MultiplexedMeasurement(clump));
                 }
@@ -2356,7 +2354,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
         // final clump is finished
         if (clump.size() == 1) {
-            multiplexed.add(clump.get(0));
+            multiplexed.add(clump.getFirst());
         } else {
             multiplexed.add(new MultiplexedMeasurement(clump));
         }
@@ -2512,13 +2510,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                          kalman.getCurrentDate().toString(TimeScalesFactory.getUTC()));
 
         // Covariances
-        String strFormat = String.format("%%%2ds  ", paramSize);
+        String strFormat = "%%%2ds  ".formatted(paramSize);
         logStream.format(strFormat, "Covariances:");
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
         }
         logStream.println();
-        String numFormat = String.format("%%%2d.6f  ", paramSize);
+        String numFormat = "%%%2d.6f  ".formatted(paramSize);
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
             for (int j = 0; j <= i; j++) {

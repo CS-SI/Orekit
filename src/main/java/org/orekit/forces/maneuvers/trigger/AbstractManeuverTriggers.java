@@ -250,17 +250,14 @@ public abstract class AbstractManeuverTriggers implements ResettableManeuverTrig
      */
     protected <T extends CalculusFieldElement<T>> FieldEventDetector<T> convertDetector(final Field<T> field,
                                                                                         final EventDetector detector) {
-        if (detector instanceof EventEnablingPredicateFilter) {
-            final EventEnablingPredicateFilter predicateFilter = (EventEnablingPredicateFilter) detector;
+        if (detector instanceof EventEnablingPredicateFilter predicateFilter) {
             final FieldEventDetector<T> fieldDetector = convertDetector(field, predicateFilter.getDetector());
             return new FieldEventEnablingPredicateFilter<>(fieldDetector, (state, fieldEventDetector, g) -> predicateFilter
                     .getPredicate().eventIsEnabled(state.toSpacecraftState(), null, g.getReal()));
-        } else if (detector instanceof EventSlopeFilter) {
-            final EventSlopeFilter<?> eventSlopeFilter = (EventSlopeFilter<?>) detector;
+        } else if (detector instanceof EventSlopeFilter<?> eventSlopeFilter) {
             final FieldEventDetector<T> fieldDetector = convertDetector(field, eventSlopeFilter.getDetector());
             return new FieldEventSlopeFilter<>(fieldDetector, eventSlopeFilter.getFilterType());
-        } else if (detector instanceof EventShifter) {
-            final EventShifter eventShifter = (EventShifter) detector;
+        } else if (detector instanceof EventShifter eventShifter) {
             final FieldEventDetector<T> fieldDetector = convertDetector(field, eventShifter.getDetector());
             final T zero = field.getZero();
             return new FieldEventShifter<>(fieldDetector, eventShifter.isUseShiftedStates(),

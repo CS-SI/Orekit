@@ -78,7 +78,7 @@ public class SsrIgm05Test {
         Assertions.assertEquals(1,                            igm05.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite C01
-        final SsrIgm05Data c01 = igm05.getSsrIgm05Data().get("C01").get(0);
+        final SsrIgm05Data c01 = igm05.getSsrIgm05Data().get("C01").getFirst();
         Assertions.assertEquals(1,                          c01.getSatelliteID());
         Assertions.assertEquals(2,                          c01.getNumberOfBiasesProcessed());
         Assertions.assertEquals(2,                          c01.getCodeBiases().size());
@@ -133,7 +133,7 @@ public class SsrIgm05Test {
         Assertions.assertEquals(1,                            igm05.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E12
-        final SsrIgm05Data e12 = igm05.getSsrIgm05Data().get("E12").get(0);
+        final SsrIgm05Data e12 = igm05.getSsrIgm05Data().get("E12").getFirst();
         Assertions.assertEquals(12,                         e12.getSatelliteID());
         Assertions.assertEquals(2,                          e12.getNumberOfBiasesProcessed());
         Assertions.assertEquals(2,                          e12.getCodeBiases().size());

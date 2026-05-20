@@ -69,7 +69,7 @@ public class LinearKeplerianCovarianceHandler implements OrekitFixedStepHandler 
 
     @Override
     public void handleStep(final SpacecraftState currentState) {
-        final Pair<SpacecraftState, StateCovariance> lastPair = statesWithCovariances.get(statesWithCovariances.size() - 1);
+        final Pair<SpacecraftState, StateCovariance> lastPair = statesWithCovariances.getLast();
         final Orbit lastOrbit = lastPair.getKey().getOrbit();
         final LinearKeplerianCovarianceMapper covarianceHandler = new LinearKeplerianCovarianceMapper(lastOrbit,
                 lastPair.getValue());
