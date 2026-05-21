@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1.6" date="TBD" description="Orekit 13.1.6 is a patch release">
+      <action dev="luc" type="fix" issue="1961">
+          Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
+      </action>
       <action dev="bryan" type="fix" issue="1513">
           Fixed OPM parser silently skipping maneuvers with missing optional fields (duration and delta mass).
       </action>
