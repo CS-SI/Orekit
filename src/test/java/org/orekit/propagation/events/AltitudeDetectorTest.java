@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,10 +34,10 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class AltitudeDetectorTest {
+class AltitudeDetectorTest {
 
     @Test
-    public void testBackAndForth() {
+    void testBackAndForth() {
 
         final Frame EME2000 = FramesFactory.getEME2000();
         final AbsoluteDate initialDate = new AbsoluteDate(2009, 1, 1, TimeScalesFactory.getUTC());

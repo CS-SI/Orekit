@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,60 @@
  */
 package org.orekit.files.rinex.section;
 
+import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.files.rinex.utils.RinexFileType;
+import org.orekit.gnss.PredefinedTimeSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.time.Month;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Base container for Rinex headers.
  * @since 12.0
  */
-public class RinexBaseHeader {
+public abstract class RinexBaseHeader {
+
+    /** Pattern for splitting date, time and time zone. */
+    private static final Pattern SPLITTING_PATTERN = Pattern.compile("([0-9]+[/ -]?[0-9A-Za-z]+[/ -]?[0-9]+) +([0-9:]+) *([A-Z]+)?");
+
+    /** Pattern for dates with month abbrevation. */
+    private static final Pattern DATE_DD_MMM_YY_PATTERN = Pattern.compile("([0-9]{1,2})-([A-Za-z]{3})-([0-9]{2,4})");
+
+    /** Pattern for dates with month abbrevation.
+     * @since 14.0
+     */
+    private static final Pattern DATE_YYYY_MMM_DD_PATTERN = Pattern.compile("([0-9]{4})[- ]([A-Za-z]{3})[- ]([0-9]{1,2})");
+
+    /** Pattern for dates in ISO-8601 complete representation (basic or extended). */
+    private static final Pattern DATE_ISO_8601_PATTERN = Pattern.compile("([0-9]{4})-?([0-9]{2})-?([0-9]{2})");
+
+    /** Pattern for dates in european format. */
+    private static final Pattern DATE_EUROPEAN_PATTERN = Pattern.compile("([0-9]{2})/([0-9]{2})/([0-9]{2})");
+
+    /** Pattern for time. */
+    private static final Pattern TIME_PATTERN = Pattern.compile("([0-9]{2}):?([0-9]{2})(?::?([0-9]{2}))?");
+
+    /** Orekit program name.
+     * @since 14.0
+     */
+    private static final String OREKIT = "Orekit";
+
+    /** User name property.
+     * @since 14.0
+     */
+    private static final String USER_NAME = "user.name";
 
     /** File type . */
     private final RinexFileType fileType;
@@ -50,6 +95,48 @@ public class RinexBaseHeader {
     /** Creation date as absolute date. */
     private AbsoluteDate creationDate;
 
+    /** Receiver Number.
+     * @since 14.0
+     */
+    private String receiverNumber;
+
+    /** Receiver Type.
+     * @since 14.0
+     */
+    private String receiverType;
+
+    /** Receiver version.
+     * @since 14.0
+     */
+    private String receiverVersion;
+
+    /** Number of leap seconds separating UTC and GNSS time systems.
+     * <p>
+     * This is really the number of leap seconds since GPS epoch
+     * on 1980-01-06.
+     * </p>
+     * @since 14.0
+     */
+    private int leapSecondsGNSS;
+
+    /** Future or past leap seconds ΔtLSF (BNK).
+     * i.e. future leap second if the week and day number are in the future.
+     * @since 14.0
+     */
+    private int leapSecondsFuture;
+
+    /** Respective leap second week number.
+     * For GPS, GAL, QZS and IRN, weeks since 6-Jan-1980.
+     * When BDS only file leap seconds specified, weeks since 1-Jan-2006
+     * @since 14.0
+     */
+    private int leapSecondsWeekNum;
+
+    /** Respective leap second day number.
+     * @since 14.0
+     */
+    private int leapSecondsDayNum;
+
     /** Digital Object Identifier.
      * @since 12.0
      */
@@ -69,8 +156,25 @@ public class RinexBaseHeader {
      * @param fileType file type
      */
     protected RinexBaseHeader(final RinexFileType fileType) {
+
         this.fileType      = fileType;
         this.formatVersion = Double.NaN;
+
+        // set default creation date to now
+        final ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
+        setCreationDateComponents(new DateTimeComponents(new DateComponents(now.getYear(),
+                                                                            now.getMonthValue(),
+                                                                            now.getDayOfMonth()),
+                                                         new TimeComponents(now.getHour(),
+                                                                            now.getMinute(),
+                                                                            now.getSecond())));
+
+        // set default program name to Orekit
+        setProgramName(OREKIT);
+
+        // set default run-by name to user
+        setRunByName(System.getProperty(USER_NAME));
+
     }
 
     /**
@@ -115,6 +219,15 @@ public class RinexBaseHeader {
     public void setSatelliteSystem(final SatelliteSystem satelliteSystem) {
         this.satelliteSystem = satelliteSystem;
     }
+
+    /**
+     * Parse satellite system.
+     * @param line header line
+     * @param defaultSatelliteSystem satellite system to use if string is null or empty
+     * @return parsed satellite system
+     * @since 14.0
+     */
+    public abstract SatelliteSystem parseSatelliteSystem(String line, SatelliteSystem defaultSatelliteSystem);
 
     /**
      * Getter for the program name.
@@ -182,6 +295,12 @@ public class RinexBaseHeader {
 
     /**
      * Getter for the creation date.
+     * <p>
+     * The creation date seems to be mandatory, but we have seen several files
+     * missing it, even files created by IGS itself (in clock files, essentially).
+     * We accept these null dates to at least allow parsing the files
+     * as this header information does not really seem essential
+     * </p>
      * @return the creation date
      */
     public AbsoluteDate getCreationDate() {
@@ -194,6 +313,112 @@ public class RinexBaseHeader {
      */
     public void setCreationDate(final AbsoluteDate creationDate) {
         this.creationDate = creationDate;
+    }
+
+    /** Set the number of the receiver.
+     * @param receiverNumber number of the receiver
+     */
+    public void setReceiverNumber(final String receiverNumber) {
+        this.receiverNumber = receiverNumber;
+    }
+
+    /** Get the number of the receiver.
+     * @return number of the receiver
+     */
+    public String getReceiverNumber() {
+        return receiverNumber;
+    }
+
+    /** Set the type of the receiver.
+     * @param receiverType type of the receiver
+     */
+    public void setReceiverType(final String receiverType) {
+        this.receiverType = receiverType;
+    }
+
+    /** Get the type of the receiver.
+     * @return type of the receiver
+     */
+    public String getReceiverType() {
+        return receiverType;
+    }
+
+    /** Set the version of the receiver.
+     * @param receiverVersion version of the receiver
+     */
+    public void setReceiverVersion(final String receiverVersion) {
+        this.receiverVersion = receiverVersion;
+    }
+
+    /** Get the version of the receiver.
+     * @return version of the receiver
+     */
+    public String getReceiverVersion() {
+        return receiverVersion;
+    }
+
+    /** Getter for the number of leap second for GNSS time scales.
+     * @return the number of leap seconds for GNSS time scales
+     * @since 14.0
+     */
+    public int getLeapSecondsGNSS() {
+        return leapSecondsGNSS;
+    }
+
+    /** Setter for the number of leap seconds for GNSS time scales.
+     * @param leapSecondsGNSS the number of leap seconds for GNSS time scales to set
+     * @since 14.0
+     */
+    public void setLeapSecondsGNSS(final int leapSecondsGNSS) {
+        this.leapSecondsGNSS = leapSecondsGNSS;
+    }
+
+    /** Set the future or past leap seconds.
+     * @param leapSecondsFuture Future or past leap seconds
+     * @since 14.0
+     */
+    public void setLeapSecondsFuture(final int leapSecondsFuture) {
+        this.leapSecondsFuture = leapSecondsFuture;
+    }
+
+    /** Get the future or past leap seconds.
+     * @return Future or past leap seconds
+     * @since 14.0
+     */
+    public int getLeapSecondsFuture() {
+        return leapSecondsFuture;
+    }
+
+    /** Set the respective leap second week number.
+     * @param leapSecondsWeekNum Respective leap second week number
+     * @since 14.0
+     */
+    public void setLeapSecondsWeekNum(final int leapSecondsWeekNum) {
+        this.leapSecondsWeekNum = leapSecondsWeekNum;
+    }
+
+    /** Get the respective leap second week number.
+     * @return Respective leap second week number
+     * @since 14.0
+     */
+    public int getLeapSecondsWeekNum() {
+        return leapSecondsWeekNum;
+    }
+
+    /** Set the respective leap second day number.
+     * @param leapSecondsDayNum Respective leap second day number
+     * @since 14.0
+     */
+    public void setLeapSecondsDayNum(final int leapSecondsDayNum) {
+        this.leapSecondsDayNum = leapSecondsDayNum;
+    }
+
+    /** Get the respective leap second day number.
+     * @return Respective leap second day number
+     * @since 14.0
+     */
+    public int getLeapSecondsDayNum() {
+        return leapSecondsDayNum;
     }
 
     /**
@@ -249,5 +474,197 @@ public class RinexBaseHeader {
     public void setStationInformation(final String stationInformation) {
         this.stationInformation = stationInformation;
     }
+
+    /** Parse version, file type and satellite system.
+     * @param line line to parse
+     * @param defaultSatelliteSystem satellite system to use if string is null or empty
+     * @param name file name (for error message generation)
+     * @param supportedVersions supported versions
+     * @since 14.0
+     */
+    public void parseVersionFileTypeSatelliteSystem(final String line, final SatelliteSystem defaultSatelliteSystem,
+                                                    final String name, final double... supportedVersions) {
+
+        // Rinex version
+        final double parsedVersion = ParsingUtils.parseDouble(line, 0, 9);
+
+        boolean found = false;
+        for (final double supported : supportedVersions) {
+            if (FastMath.abs(parsedVersion - supported) < 1.0e-4) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            final StringBuilder builder = new StringBuilder();
+            for (final double supported : supportedVersions) {
+                if (builder.length() > 0) {
+                    builder.append(", ");
+                }
+                builder.append(supported);
+            }
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION,
+                                      parsedVersion, name, builder.toString());
+        }
+        setFormatVersion(parsedVersion);
+
+        // file type
+        checkType(line, name);
+
+        // Satellite system
+        setSatelliteSystem(parseSatelliteSystem(line, defaultSatelliteSystem));
+
+    }
+
+    /** Parse program, run/by and date.
+     * @param line line to parse
+     * @param timeScales the set of time scales used for parsing dates
+     * @since 14.0
+     */
+    public abstract void parseProgramRunByDate(String line, TimeScales timeScales);
+
+    /** Parse program, run/by and date.
+     * @param prgm  PGM field
+     * @param run  RUN BY field
+     * @param date  date field
+     * @param timeScales the set of time scales used for parsing dates
+     * @since 14.0
+     */
+    protected void parseProgramRunByDate(final String prgm, final String run, final String date,
+                                         final TimeScales timeScales) {
+
+        // Name of the generating program
+        setProgramName(prgm);
+
+        // Name of the run/by name
+        setRunByName(run);
+
+        // there are several variations for date formatting in the PGM / RUN BY / DATE line
+
+        // in versions 2.x, the pattern is expected to be:
+        // XXRINEXO V9.9       AIUB                24-MAR-01 14:43     PGM / RUN BY / DATE
+        // however, we have also found this:
+        // teqc  2016Nov7      root                20180130 10:38:06UTCPGM / RUN BY / DATE
+        // BJFMTLcsr           UTCSR               2007-09-30 05:30:06 PGM / RUN BY / DATE
+        // NEODIS              TAS                 27/05/22 10:28      PGM / RUN BY / DATE
+
+        // in versions 3.x, the pattern is expected to be:
+        // sbf2rin-11.3.3                          20180130 002558 LCL PGM / RUN BY / DATE
+        // however, we have also found:
+        // NetR9 5.03          Receiver Operator   11-JAN-16 00:00:00  PGM / RUN BY / DATE
+
+        // in clock files, we have found patterns like:
+        // CLKRINEX V1.0       NRCan               1-Mar-2000 20:36    PGM / RUN BY / DATE
+        // tdp2clk v1.13       JPL                 2002 Jan 3 13:36:17 PGM / RUN BY / DATE
+
+        // so we cannot rely on the format version, we have to check several variations
+        final Matcher splittingMatcher = SPLITTING_PATTERN.matcher(date);
+        if (splittingMatcher.matches()) {
+
+            // date part
+            final DateComponents dc;
+            final Matcher abbrev1Matcher = DATE_DD_MMM_YY_PATTERN.matcher(splittingMatcher.group(1));
+            if (abbrev1Matcher.matches()) {
+                final int rawYear = Integer.parseInt(abbrev1Matcher.group(3));
+                // hoping this obsolete format will not be used past year 2079…
+                dc = new DateComponents(rawYear < 100 ? ParsingUtils.convert2DigitsYear(rawYear) : rawYear,
+                                        Month.parseMonth(abbrev1Matcher.group(2)).getNumber(),
+                                        Integer.parseInt(abbrev1Matcher.group(1)));
+            } else {
+                final Matcher abbrev2Matcher = DATE_YYYY_MMM_DD_PATTERN.matcher(splittingMatcher.group(1));
+                if (abbrev2Matcher.matches()) {
+                    dc = new DateComponents(Integer.parseInt(abbrev2Matcher.group(1)),
+                                            Month.parseMonth(abbrev2Matcher.group(2)).getNumber(),
+                                            Integer.parseInt(abbrev2Matcher.group(3)));
+                } else {
+                    final Matcher isoMatcher = DATE_ISO_8601_PATTERN.matcher(splittingMatcher.group(1));
+                    if (isoMatcher.matches()) {
+                        dc = new DateComponents(Integer.parseInt(isoMatcher.group(1)),
+                                               Integer.parseInt(isoMatcher.group(2)),
+                                               Integer.parseInt(isoMatcher.group(3)));
+                    } else {
+                        final Matcher europeanMatcher = DATE_EUROPEAN_PATTERN.matcher(splittingMatcher.group(1));
+                        if (europeanMatcher.matches()) {
+                            dc = new DateComponents(
+                                ParsingUtils.convert2DigitsYear(Integer.parseInt(europeanMatcher.group(3))),
+                                Integer.parseInt(europeanMatcher.group(2)),
+                                Integer.parseInt(europeanMatcher.group(1)));
+                        } else {
+                            dc = null;
+                        }
+                    }
+                }
+            }
+
+            // time part
+            final TimeComponents tc;
+            final Matcher timeMatcher = TIME_PATTERN.matcher(splittingMatcher.group(2));
+            if (timeMatcher.matches()) {
+                tc = new TimeComponents(Integer.parseInt(timeMatcher.group(1)),
+                                        Integer.parseInt(timeMatcher.group(2)),
+                                        timeMatcher.group(3) != null ? Integer.parseInt(timeMatcher.group(3)) : 0);
+            } else {
+                tc = TimeComponents.H00;
+            }
+
+            // zone part
+            final String zone = splittingMatcher.group(3);
+            setCreationTimeZone(zone == null ? "" : zone);
+
+            if (dc == null) {
+                // despite the creation date seems to be mandatory, we have seen several files
+                // missing it, even files created by IGS itself (in clock files, essentially).
+                // We accept these null dates to at least allow parsing the files
+                // as this header information does not really seem essential
+                setCreationDate(null);
+            } else {
+                // we successfully parsed everything
+                final DateTimeComponents dtc = new DateTimeComponents(dc, tc);
+                setCreationDateComponents(dtc);
+                final TimeScale timeScale = zone == null ?
+                                            timeScales.getUTC() :
+                                            PredefinedTimeSystem.parseTimeSystem(zone).getTimeScale(timeScales);
+                setCreationDate(new AbsoluteDate(dtc, timeScale));
+            }
+
+        } else {
+            setCreationDate(null);
+            setCreationTimeZone("");
+        }
+
+    }
+
+    /** Check file type.
+     * @param line header line
+     * @param name file name (for error message)
+     * @since 14.0
+     */
+    public abstract void checkType(String line, String name);
+
+    /** Check file type.
+     * @param line header line
+     * @param typeIndex index of the file type in the line
+     * @param name file name (for error message)
+     * @since 14.0
+     */
+    protected void checkType(final String line, final int typeIndex, final String name) {
+        if (fileType != RinexFileType.parseRinexFileType(line.substring(typeIndex, typeIndex + 1))) {
+            throw new OrekitException(OrekitMessages.WRONG_PARSING_TYPE, name);
+        }
+    }
+
+    /** Get the index of the header label.
+     * @return index of the header label
+     * @since 14.0
+     */
+    public abstract int getLabelIndex();
+
+    /** Check if a label is found in a line.
+     * @param label label to check
+     * @param line header line
+     * @return true if label is found in the header line
+     * @since 14.0
+     */
+    public abstract boolean matchFound(Label label, String line);
 
 }

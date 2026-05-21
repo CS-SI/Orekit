@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ public class RtcmEphemerisMessage<D extends RtcmEphemerisData> extends RtcmMessa
      */
     public D getEphemerisData() {
         // Ephemeris data message contain only one entry
-        return getData().get(0);
+        return getData().getFirst();
     }
 
 }

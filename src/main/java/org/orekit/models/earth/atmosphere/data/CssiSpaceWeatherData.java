@@ -1,4 +1,4 @@
-/* Copyright 2020-2025 Clément Jonglez
+/* Copyright 2020-2026 Clément Jonglez
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 
 package org.orekit.models.earth.atmosphere.data;
+
+import java.io.Serial;
+
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -51,6 +54,7 @@ public class CssiSpaceWeatherData extends AbstractSolarActivityData<LineParamete
     public static final String DEFAULT_SUPPORTED_NAMES = "^S(?:pace)?W(?:eather)?-(?:All)?.*\\.txt$";
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 4249411710645968978L;
 
     /** Date of last data before the prediction starts. */

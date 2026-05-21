@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,21 @@
 package org.orekit.forces.maneuvers.trigger;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectorsProvider;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 /** Generic interface for the maneuver triggers used in a {@link Maneuver}.
  * @author Maxime Journot
@@ -76,5 +84,27 @@ public interface ManeuverTriggers extends ParameterDriversProvider, EventDetecto
      */
     default String getName() {
         return "";
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return getEventDetectors(getParametersDrivers());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        return getFieldEventDetectors(field, getParametersDrivers());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * By default, no drivers is defined.
+     */
+    @Override
+    default List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 }

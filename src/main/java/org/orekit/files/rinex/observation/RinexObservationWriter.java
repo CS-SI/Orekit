@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.files.rinex.observation;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -27,23 +26,21 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
-import org.orekit.files.rinex.section.RinexComment;
-import org.orekit.files.rinex.section.RinexLabels;
-import org.orekit.gnss.ObservationTimeScale;
-import org.orekit.gnss.ObservationType;
+import org.orekit.files.rinex.section.CommonLabel;
+import org.orekit.files.rinex.section.Label;
+import org.orekit.files.rinex.utils.BaseRinexWriter;
 import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ClockModel;
+import org.orekit.time.clocks.ClockModel;
 import org.orekit.time.ClockTimeScale;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.formatting.FastDecimalFormatter;
 import org.orekit.utils.formatting.FastDoubleFormatter;
 import org.orekit.utils.formatting.FastLongFormatter;
 
@@ -61,106 +58,60 @@ import org.orekit.utils.formatting.FastLongFormatter;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class RinexObservationWriter implements AutoCloseable {
-
-    /** Index of label in header lines. */
-    private static final int LABEL_INDEX = 60;
+public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHeader> implements AutoCloseable {
 
     /** Format for one 1 digit integer field. */
     private static final FastLongFormatter ONE_DIGIT_INTEGER = new FastLongFormatter(1, false);
 
-    /** Format for one 2 digits integer field. */
-    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
-
-    /** Format for one 2 digits integer field. */
-    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
-
-    /** Format for one 4 digits integer field. */
-    private static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true);
-
-    /** Format for one 3 digits integer field. */
-    private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
-
-    /** Format for one 4 digits integer field. */
-    private static final FastLongFormatter FOUR_DIGITS_INTEGER = new FastLongFormatter(4, false);
-
-    /** Format for one 6 digits integer field. */
-    private static final FastLongFormatter SIX_DIGITS_INTEGER = new FastLongFormatter(6, false);
-
     /** Format for one 8.3 digits float field. */
-    private static final FastDoubleFormatter EIGHT_THREE_DIGITS_FLOAT = new FastDoubleFormatter(8, 3);
+    private static final FastDoubleFormatter EIGHT_THREE_DIGITS_FLOAT = new FastDecimalFormatter(8, 3);
 
     /** Format for one 8.5 digits float field. */
-    private static final FastDoubleFormatter EIGHT_FIVE_DIGITS_FLOAT = new FastDoubleFormatter(8, 5);
-
-    /** Format for one 9.2 digits float field. */
-    private static final FastDoubleFormatter NINE_TWO_DIGITS_FLOAT = new FastDoubleFormatter(9, 2);
+    private static final FastDoubleFormatter EIGHT_FIVE_DIGITS_FLOAT = new FastDecimalFormatter(8, 5);
 
     /** Format for one 9.4 digits float field. */
-    private static final FastDoubleFormatter NINE_FOUR_DIGITS_FLOAT = new FastDoubleFormatter(9, 4);
+    private static final FastDoubleFormatter NINE_FOUR_DIGITS_FLOAT = new FastDecimalFormatter(9, 4);
 
     /** Format for one 10.3 digits float field. */
-    private static final FastDoubleFormatter TEN_THREE_DIGITS_FLOAT = new FastDoubleFormatter(10, 3);
+    private static final FastDoubleFormatter TEN_THREE_DIGITS_FLOAT = new FastDecimalFormatter(10, 3);
 
     /** Format for one 11.7 digits float field. */
-    private static final FastDoubleFormatter ELEVEN_SEVEN_DIGITS_FLOAT = new FastDoubleFormatter(11, 7);
+    private static final FastDoubleFormatter ELEVEN_SEVEN_DIGITS_FLOAT = new FastDecimalFormatter(11, 7);
 
     /** Format for one 12.9 digits float field. */
-    private static final FastDoubleFormatter TWELVE_NINE_DIGITS_FLOAT = new FastDoubleFormatter(12, 9);
+    private static final FastDoubleFormatter TWELVE_NINE_DIGITS_FLOAT = new FastDecimalFormatter(12, 9);
 
     /** Format for one 13.7 digits float field. */
-    private static final FastDoubleFormatter THIRTEEN_SEVEN_DIGITS_FLOAT = new FastDoubleFormatter(13, 7);
+    private static final FastDoubleFormatter THIRTEEN_SEVEN_DIGITS_FLOAT = new FastDecimalFormatter(13, 7);
 
     /** Format for one 14.3 digits float field. */
-    private static final FastDoubleFormatter FOURTEEN_THREE_DIGITS_FLOAT = new FastDoubleFormatter(14, 3);
+    private static final FastDoubleFormatter FOURTEEN_THREE_DIGITS_FLOAT = new FastDecimalFormatter(14, 3);
 
     /** Format for one 14.4 digits float field. */
-    private static final FastDoubleFormatter FOURTEEN_FOUR_DIGITS_FLOAT = new FastDoubleFormatter(14, 4);
+    private static final FastDoubleFormatter FOURTEEN_FOUR_DIGITS_FLOAT = new FastDecimalFormatter(14, 4);
 
     /** Format for one 15.12 digits float field. */
-    private static final FastDoubleFormatter FIFTEEN_TWELVE_DIGITS_FLOAT = new FastDoubleFormatter(15, 12);
+    private static final FastDoubleFormatter FIFTEEN_TWELVE_DIGITS_FLOAT = new FastDecimalFormatter(15, 12);
 
-    /** Threshold for considering measurements are at the sate time.
+    /** Threshold for considering measurements that occur at the same time.
      * (we know the RINEX files encode dates with a resolution of 0.1µs)
      */
     private static final double EPS_DATE = 1.0e-8;
 
-    /** Destination of generated output. */
-    private final Appendable output;
-
-    /** Output name for error messages. */
-    private final String outputName;
-
     /** Receiver clock offset model. */
     private ClockModel receiverClockModel;
+
+    /** Mapper from satellite system to time scales. */
+    private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
+
+    /** Set of time scales. */
+    private final TimeScales timeScales;
 
     /** Time scale for writing dates. */
     private TimeScale timeScale;
 
-    /** Saved header. */
-    private RinexObservationHeader savedHeader;
-
-    /** Saved comments. */
-    private List<RinexComment> savedComments;
-
     /** Pending observations. */
     private final List<ObservationDataSet> pending;
-
-    /** Line number. */
-    private int lineNumber;
-
-    /** Column number. */
-    private int column;
-
-    /** Set of time scales.
-     * @since 13.0
-     */
-    private final TimeScales timeScales;
-
-    /** Mapper from satellite system to time scales.
-     * @since 13.0
-     */
-    private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
 
     /** Simple constructor.
      * <p>
@@ -191,21 +142,17 @@ public class RinexObservationWriter implements AutoCloseable {
     public RinexObservationWriter(final Appendable output, final String outputName,
                                   final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
                                   final TimeScales timeScales) {
-        this.output           = output;
-        this.outputName       = outputName;
-        this.savedHeader      = null;
-        this.savedComments    = Collections.emptyList();
-        this.pending          = new ArrayList<>();
-        this.lineNumber       = 0;
-        this.column           = 0;
+        super(output, outputName);
         this.timeScaleBuilder = timeScaleBuilder;
         this.timeScales       = timeScales;
+        this.pending = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
     @Override
     public void close() throws IOException {
         processPending();
+        super.close();
     }
 
     /** Set receiver clock model.
@@ -229,20 +176,12 @@ public class RinexObservationWriter implements AutoCloseable {
      * @exception IOException if an I/O error occurs.
      */
     @DefaultDataContext
-    public void writeCompleteFile(final RinexObservation rinexObservation)
-        throws IOException {
+    public void writeCompleteFile(final RinexObservation rinexObservation) throws IOException {
         prepareComments(rinexObservation.getComments());
         writeHeader(rinexObservation.getHeader());
         for (final ObservationDataSet observationDataSet : rinexObservation.getObservationDataSets()) {
             writeObservationDataSet(observationDataSet);
         }
-    }
-
-    /** Prepare comments to be emitted at specified lines.
-     * @param comments comments to be emitted
-     */
-    public void prepareComments(final List<RinexComment> comments) {
-        savedComments = comments;
     }
 
     /** Write header.
@@ -254,22 +193,17 @@ public class RinexObservationWriter implements AutoCloseable {
      * @exception IOException if an I/O error occurs.
      */
     @DefaultDataContext
-    public void writeHeader(final RinexObservationHeader header)
-        throws IOException {
+    public void writeHeader(final RinexObservationHeader header) throws IOException {
 
-        // check header is written exactly once
-        if (savedHeader != null) {
-            throw new OrekitException(OrekitMessages.HEADER_ALREADY_WRITTEN, outputName);
-        }
-        savedHeader = header;
-        lineNumber  = 1;
+        super.writeHeader(header, RinexObservationHeader.LABEL_INDEX);
 
         final String timeScaleName;
-        if (timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales) != null) {
-            timeScale     = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales);
+        final TimeScale built = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales);
+        if (built != null) {
+            timeScale     = built;
             timeScaleName = "   ";
         } else {
-            timeScale     = ObservationTimeScale.GPS.getTimeScale(timeScales);
+            timeScale     = timeScaleBuilder.apply(SatelliteSystem.GPS, timeScales);
             timeScaleName = timeScale.getName();
         }
         if (!header.getClockOffsetApplied() && receiverClockModel != null) {
@@ -285,78 +219,56 @@ public class RinexObservationWriter implements AutoCloseable {
         outputField("",                 20, true);
         outputField("OBSERVATION DATA", 40, true);
         outputField(header.getSatelliteSystem().getKey(), 41);
-        finishHeaderLine(RinexLabels.VERSION);
+        finishHeaderLine(CommonLabel.VERSION);
 
         // PGM / RUN BY / DATE
-        outputField(header.getProgramName(), 20, true);
-        outputField(header.getRunByName(),   40, true);
-        final DateTimeComponents dtc = header.getCreationDateComponents();
-        if (header.getFormatVersion() < 3.0 && dtc.getTime().getSecond() < 0.5) {
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 42);
-            outputField('-', 43);
-            outputField(dtc.getDate().getMonthEnum().getUpperCaseAbbreviation(), 46,  true);
-            outputField('-', 47);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 49);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 52);
-            outputField(':', 53);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 55);
-            outputField(header.getCreationTimeZone(), 58, true);
-        } else {
-            outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 53);
-            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 55);
-            outputField(header.getCreationTimeZone(), 59, false);
-        }
-        finishHeaderLine(RinexLabels.PROGRAM);
+        writeProgramRunByDate(header);
 
         // MARKER NAME
         outputField(header.getMarkerName(), 60, true);
-        finishHeaderLine(RinexLabels.MARKER_NAME);
+        finishHeaderLine(ObservationLabel.MARKER_NAME);
 
         // MARKER NUMBER
         if (header.getMarkerNumber() != null) {
             outputField(header.getMarkerNumber(), 20, true);
-            finishHeaderLine(RinexLabels.MARKER_NUMBER);
+            finishHeaderLine(ObservationLabel.MARKER_NUMBER);
         }
 
         // MARKER TYPE
         if (header.getFormatVersion() >= 2.20) {
             outputField(header.getMarkerType(), 20, true);
-            finishHeaderLine(RinexLabels.MARKER_TYPE);
+            finishHeaderLine(ObservationLabel.MARKER_TYPE);
         }
 
         // OBSERVER / AGENCY
         outputField(header.getObserverName(), 20, true);
         outputField(header.getAgencyName(),   60, true);
-        finishHeaderLine(RinexLabels.OBSERVER_AGENCY);
+        finishHeaderLine(ObservationLabel.OBSERVER_AGENCY);
 
         // REC # / TYPE / VERS
         outputField(header.getReceiverNumber(),  20, true);
         outputField(header.getReceiverType(),    40, true);
         outputField(header.getReceiverVersion(), 60, true);
-        finishHeaderLine(RinexLabels.REC_NB_TYPE_VERS);
+        finishHeaderLine(ObservationLabel.REC_NB_TYPE_VERS);
 
         // ANT # / TYPE
         outputField(header.getAntennaNumber(), 20, true);
         outputField(header.getAntennaType(),   40, true);
-        finishHeaderLine(RinexLabels.ANT_NB_TYPE);
+        finishHeaderLine(ObservationLabel.ANT_NB_TYPE);
 
         // APPROX POSITION XYZ
-        writeHeaderLine(header.getApproxPos(), RinexLabels.APPROX_POSITION_XYZ);
+        writeHeaderLine(header.getApproxPos(), ObservationLabel.APPROX_POSITION_XYZ);
 
         // ANTENNA: DELTA H/E/N
         if (!Double.isNaN(header.getAntennaHeight())) {
             outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getAntennaHeight(),         14);
             outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getEccentricities().getX(), 28);
             outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getEccentricities().getY(), 42);
-            finishHeaderLine(RinexLabels.ANTENNA_DELTA_H_E_N);
+            finishHeaderLine(ObservationLabel.ANTENNA_DELTA_H_E_N);
         }
 
         // ANTENNA: DELTA X/Y/Z
-        writeHeaderLine(header.getAntennaReferencePoint(), RinexLabels.ANTENNA_DELTA_X_Y_Z);
+        writeHeaderLine(header.getAntennaReferencePoint(), ObservationLabel.ANTENNA_DELTA_X_Y_Z);
 
         // ANTENNA: PHASECENTER
         if (header.getAntennaPhaseCenter() != null) {
@@ -366,20 +278,20 @@ public class RinexObservationWriter implements AutoCloseable {
             outputField(NINE_FOUR_DIGITS_FLOAT,     header.getAntennaPhaseCenter().getX(), 14);
             outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getAntennaPhaseCenter().getY(), 28);
             outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getAntennaPhaseCenter().getZ(), 42);
-            finishHeaderLine(RinexLabels.ANTENNA_PHASE_CENTER);
+            finishHeaderLine(ObservationLabel.ANTENNA_PHASE_CENTER);
         }
 
         // ANTENNA: B.SIGHT XY
-        writeHeaderLine(header.getAntennaBSight(), RinexLabels.ANTENNA_B_SIGHT_XYZ);
+        writeHeaderLine(header.getAntennaBSight(), ObservationLabel.ANTENNA_B_SIGHT_XYZ);
 
         // ANTENNA: ZERODIR AZI
         if (!Double.isNaN(header.getAntennaAzimuth())) {
             outputField(FOURTEEN_FOUR_DIGITS_FLOAT, FastMath.toDegrees(header.getAntennaAzimuth()), 14);
-            finishHeaderLine(RinexLabels.ANTENNA_ZERODIR_AZI);
+            finishHeaderLine(ObservationLabel.ANTENNA_ZERODIR_AZI);
         }
 
         // ANTENNA: ZERODIR XYZ
-        writeHeaderLine(header.getAntennaZeroDirection(), RinexLabels.ANTENNA_ZERODIR_XYZ);
+        writeHeaderLine(header.getAntennaZeroDirection(), ObservationLabel.ANTENNA_ZERODIR_XYZ);
 
         // OBS SCALE FACTOR
         if (FastMath.abs(header.getFormatVersion() - 2.20) < 0.001) {
@@ -389,58 +301,58 @@ public class RinexObservationWriter implements AutoCloseable {
                         outputField(SIX_DIGITS_INTEGER, (int) FastMath.round(sfc.getCorrection()), 6);
                         outputField(SIX_DIGITS_INTEGER, sfc.getTypesObsScaled().size(), 12);
                         for (int i = 0; i < sfc.getTypesObsScaled().size(); ++i) {
-                            outputField(sfc.getTypesObsScaled().get(i).getName(), 18 + 6 * i, false);
+                            outputField(sfc.getTypesObsScaled().get(i), 18 + 6 * i, false);
                         }
-                        finishHeaderLine(RinexLabels.OBS_SCALE_FACTOR);
+                        finishHeaderLine(ObservationLabel.OBS_SCALE_FACTOR);
                     }
                 }
             }
         }
 
         // CENTER OF MASS: XYZ
-        writeHeaderLine(header.getCenterMass(), RinexLabels.CENTER_OF_MASS_XYZ);
+        writeHeaderLine(header.getCenterMass(), ObservationLabel.CENTER_OF_MASS_XYZ);
 
         // DOI
-        writeHeaderLine(header.getDoi(), RinexLabels.DOI);
+        writeHeaderLine(header.getDoi(), CommonLabel.DOI);
 
         // LICENSE OF USE
-        writeHeaderLine(header.getLicense(), RinexLabels.LICENSE);
+        writeHeaderLine(header.getLicense(), CommonLabel.LICENSE);
 
         // STATION INFORMATION
-        writeHeaderLine(header.getStationInformation(), RinexLabels.STATION_INFORMATION);
+        writeHeaderLine(header.getStationInformation(), CommonLabel.STATION_INFORMATION);
 
         // SYS / # / OBS TYPES
-        for (Map.Entry<SatelliteSystem, List<ObservationType>> entry : header.getTypeObs().entrySet()) {
+        for (Map.Entry<SatelliteSystem, List<String>> entry : header.getTypeObs().entrySet()) {
             if (header.getFormatVersion() < 3.0) {
                 outputField(SIX_DIGITS_INTEGER, entry.getValue().size(), 6);
             } else {
                 outputField(entry.getKey().getKey(), 1);
                 outputField(THREE_DIGITS_INTEGER, entry.getValue().size(), 6);
             }
-            for (final ObservationType observationType : entry.getValue()) {
-                int next = column + (header.getFormatVersion() < 3.0 ? 6 : 4);
-                if (next > LABEL_INDEX) {
+            for (final String observationType : entry.getValue()) {
+                int next = getColumn() + (header.getFormatVersion() < 3.0 ? 6 : 4);
+                if (exceedsHeaderLength(next)) {
                     // we need to set up a continuation line
                     finishHeaderLine(header.getFormatVersion() < 3.0 ?
-                                     RinexLabels.NB_TYPES_OF_OBSERV :
-                                     RinexLabels.SYS_NB_TYPES_OF_OBSERV);
+                                     ObservationLabel.NB_TYPES_OF_OBSERV :
+                                     CommonLabel.SYS_NB_TYPES_OF_OBSERV);
                     outputField("", 6, true);
-                    next = column + (header.getFormatVersion() < 3.0 ? 6 : 4);
+                    next = getColumn() + (header.getFormatVersion() < 3.0 ? 6 : 4);
                 }
-                outputField(observationType.getName(), next, false);
+                outputField(observationType, next, false);
             }
             finishHeaderLine(header.getFormatVersion() < 3.0 ?
-                             RinexLabels.NB_TYPES_OF_OBSERV :
-                             RinexLabels.SYS_NB_TYPES_OF_OBSERV);
+                             ObservationLabel.NB_TYPES_OF_OBSERV :
+                             CommonLabel.SYS_NB_TYPES_OF_OBSERV);
         }
 
         // SIGNAL STRENGTH UNIT
-        writeHeaderLine(header.getSignalStrengthUnit(), RinexLabels.SIGNAL_STRENGTH_UNIT);
+        writeHeaderLine(header.getSignalStrengthUnit(), ObservationLabel.SIGNAL_STRENGTH_UNIT);
 
         // INTERVAL
         if (!Double.isNaN(header.getInterval())) {
             outputField(TEN_THREE_DIGITS_FLOAT, header.getInterval(), 10);
-            finishHeaderLine(RinexLabels.INTERVAL);
+            finishHeaderLine(ObservationLabel.INTERVAL);
         }
 
         // TIME OF FIRST OBS
@@ -452,7 +364,7 @@ public class RinexObservationWriter implements AutoCloseable {
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getTime().getMinute(), 30);
         outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcFirst.getTime().getSecond(), 43);
         outputField(timeScaleName, 51, false);
-        finishHeaderLine(RinexLabels.TIME_OF_FIRST_OBS);
+        finishHeaderLine(ObservationLabel.TIME_OF_FIRST_OBS);
 
         // TIME OF LAST OBS
         if (!header.getTLastObs().equals(AbsoluteDate.FUTURE_INFINITY)) {
@@ -464,12 +376,12 @@ public class RinexObservationWriter implements AutoCloseable {
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getTime().getMinute(), 30);
             outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcLast.getTime().getSecond(), 43);
             outputField(timeScaleName, 51, false);
-            finishHeaderLine(RinexLabels.TIME_OF_LAST_OBS);
+            finishHeaderLine(ObservationLabel.TIME_OF_LAST_OBS);
         }
 
         // RCV CLOCK OFFS APPL
         outputField(SIX_DIGITS_INTEGER, header.getClockOffsetApplied() ? 1 : 0, 6);
-        finishHeaderLine(RinexLabels.RCV_CLOCK_OFFS_APPL);
+        finishHeaderLine(ObservationLabel.RCV_CLOCK_OFFS_APPL);
 
         // SYS / DCBS APPLIED
         for (final AppliedDCBS appliedDCBS : header.getListAppliedDCBS()) {
@@ -477,7 +389,7 @@ public class RinexObservationWriter implements AutoCloseable {
             outputField("",                                         2, true);
             outputField(appliedDCBS.getProgDCBS(),                 20, true);
             outputField(appliedDCBS.getSourceDCBS(),               60, true);
-            finishHeaderLine(RinexLabels.SYS_DCBS_APPLIED);
+            finishHeaderLine(CommonLabel.SYS_DCBS_APPLIED);
         }
 
         // SYS / PCVS APPLIED
@@ -486,7 +398,7 @@ public class RinexObservationWriter implements AutoCloseable {
             outputField("",                                         2, true);
             outputField(appliedPCVS.getProgPCVS(),                 20, true);
             outputField(appliedPCVS.getSourcePCVS(),               60, true);
-            finishHeaderLine(RinexLabels.SYS_PCVS_APPLIED);
+            finishHeaderLine(CommonLabel.SYS_PCVS_APPLIED);
         }
 
         // SYS / SCALE FACTOR
@@ -500,19 +412,19 @@ public class RinexObservationWriter implements AutoCloseable {
                         if (sfc.getTypesObsScaled().size() < header.getTypeObs().get(system).size()) {
                             outputField("", 8, true);
                             outputField(TWO_DIGITS_INTEGER,  sfc.getTypesObsScaled().size(), 10);
-                            for (ObservationType observationType : sfc.getTypesObsScaled()) {
-                                int next = column + 4;
-                                if (next > LABEL_INDEX) {
+                            for (String observationType : sfc.getTypesObsScaled()) {
+                                int next = getColumn() + 4;
+                                if (exceedsHeaderLength(next)) {
                                     // we need to set up a continuation line
-                                    finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
+                                    finishHeaderLine(ObservationLabel.SYS_SCALE_FACTOR);
                                     outputField("", 10, true);
-                                    next = column + 4;
+                                    next = getColumn() + 4;
                                 }
                                 outputField("", next - 3, true);
-                                outputField(observationType.getName(), next, true);
+                                outputField(observationType, next, true);
                             }
                         }
-                        finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
+                        finishHeaderLine(ObservationLabel.SYS_SCALE_FACTOR);
                     }
                 }
             }
@@ -526,17 +438,17 @@ public class RinexObservationWriter implements AutoCloseable {
             if (!psc.getSatsCorrected().isEmpty()) {
                 outputField(TWO_DIGITS_INTEGER, psc.getSatsCorrected().size(), 18);
                 for (final SatInSystem sis : psc.getSatsCorrected()) {
-                    int next = column + 4;
-                    if (next > LABEL_INDEX) {
+                    int next = getColumn() + 4;
+                    if (exceedsHeaderLength(next)) {
                         // we need to set up a continuation line
-                        finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
+                        finishHeaderLine(ObservationLabel.SYS_PHASE_SHIFT);
                         outputField("", 18, true);
-                        next = column + 4;
+                        next = getColumn() + 4;
                     }
                     outputField(sis.toString(), next, false);
                 }
             }
-            finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
+            finishHeaderLine(ObservationLabel.SYS_PHASE_SHIFT);
         }
 
         if (header.getFormatVersion() >= 3.01) {
@@ -545,12 +457,12 @@ public class RinexObservationWriter implements AutoCloseable {
                 outputField(THREE_DIGITS_INTEGER, header.getGlonassChannels().size(), 3);
                 outputField("", 4, true);
                 for (final GlonassSatelliteChannel channel : header.getGlonassChannels()) {
-                    int next = column + 7;
-                    if (next > LABEL_INDEX) {
+                    int next = getColumn() + 7;
+                    if (exceedsHeaderLength(next)) {
                         // we need to set up a continuation line
-                        finishHeaderLine(RinexLabels.GLONASS_SLOT_FRQ_NB);
+                        finishHeaderLine(ObservationLabel.GLONASS_SLOT_FRQ_NB);
                         outputField("", 4, true);
-                        next = column + 7;
+                        next = getColumn() + 7;
                     }
                     outputField(channel.getSatellite().getSystem().getKey(), next - 6);
                     outputField(PADDED_TWO_DIGITS_INTEGER, channel.getSatellite().getPRN(), next - 4);
@@ -558,7 +470,7 @@ public class RinexObservationWriter implements AutoCloseable {
                     outputField("", next, true);
                 }
             }
-            finishHeaderLine(RinexLabels.GLONASS_SLOT_FRQ_NB);
+            finishHeaderLine(ObservationLabel.GLONASS_SLOT_FRQ_NB);
         }
 
         if (header.getFormatVersion() >= 3.0) {
@@ -591,67 +503,65 @@ public class RinexObservationWriter implements AutoCloseable {
                 outputField("", 44, true);
                 outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC2pCodePhaseBias(), 52);
             }
-            finishHeaderLine(RinexLabels.GLONASS_COD_PHS_BIS);
+            finishHeaderLine(ObservationLabel.GLONASS_COD_PHS_BIS);
         }
 
         // LEAP SECONDS
-        if (header.getLeapSeconds() > 0) {
-            outputField(SIX_DIGITS_INTEGER, header.getLeapSeconds(), 6);
-            if (header.getFormatVersion() >= 3.0) {
+        if (header.getLeapSecondsGNSS() > 0) {
+            outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsGNSS(), 6);
+            if (header.getFormatVersion() > 3.0) {
+                // extra fields introduced in 3.01
                 outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsFuture(),  12);
                 outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsWeekNum(), 18);
                 outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsDayNum(),  24);
             }
-            finishHeaderLine(RinexLabels.LEAP_SECONDS);
+            finishHeaderLine(CommonLabel.LEAP_SECONDS);
         }
 
         // # OF SATELLITES
         if (header.getNbSat() >= 0) {
             outputField(SIX_DIGITS_INTEGER, header.getNbSat(), 6);
-            finishHeaderLine(RinexLabels.NB_OF_SATELLITES);
+            finishHeaderLine(ObservationLabel.NB_OF_SATELLITES);
         }
 
         // PRN / # OF OBS
-        for (final Map.Entry<SatInSystem, Map<ObservationType, Integer>> entry1 : header.getNbObsPerSat().entrySet()) {
+        for (final Map.Entry<SatInSystem, Map<String, Integer>> entry1 : header.getNbObsPerSat().entrySet()) {
             final SatInSystem sis = entry1.getKey();
             outputField(sis.toString(), 6, false);
             // list the entries in the order specified in SYS / # / OBS TYPES
-            for (final ObservationType obsType : header.getTypeObs().get(sis.getSystem())) {
+            for (final String obsType : header.getTypeObs().get(sis.getSystem())) {
                 final Integer nbObs = entry1.getValue().get(obsType);
-                int next = column + 6;
-                if (next > LABEL_INDEX) {
+                int next = getColumn() + 6;
+                if (exceedsHeaderLength(next)) {
                     // we need to set up a continuation line
-                    finishHeaderLine(RinexLabels.PRN_NB_OF_OBS);
+                    finishHeaderLine(ObservationLabel.PRN_NB_OF_OBS);
                     outputField("", 6, true);
-                    next = column + 6;
+                    next = getColumn() + 6;
                 }
                 outputField(SIX_DIGITS_INTEGER, nbObs == null ? 0 : nbObs, next);
             }
-            finishHeaderLine(RinexLabels.PRN_NB_OF_OBS);
+            finishHeaderLine(ObservationLabel.PRN_NB_OF_OBS);
         }
 
         // END OF HEADER
-        writeHeaderLine("", RinexLabels.END);
+        writeHeaderLine("", CommonLabel.END);
 
     }
 
     /** Write one observation data set.
      * <p>
-     * Note that this writers output only regular observations, so
+     * Note that this writer outputs only regular observations, so
      * the event flag is always set to 0
      * </p>
      * @param observationDataSet observation data set to write
      * @exception IOException if an I/O error occurs.
      */
-    public void writeObservationDataSet(final ObservationDataSet observationDataSet)
-        throws IOException {
+    public void writeObservationDataSet(final ObservationDataSet observationDataSet) throws IOException {
 
         // check header has already been written
-        if (savedHeader == null) {
-            throw new OrekitException(OrekitMessages.HEADER_NOT_WRITTEN, outputName);
-        }
+        checkHeaderWritten();
 
-        if (!pending.isEmpty() && observationDataSet.durationFrom(pending.get(0).getDate()) > EPS_DATE) {
+        if (!pending.isEmpty() && observationDataSet.durationFrom(pending.getFirst().getDate()) > EPS_DATE) {
             // the specified observation belongs to the next batch
             // we must process the current batch of pending observations
             processPending();
@@ -670,7 +580,7 @@ public class RinexObservationWriter implements AutoCloseable {
         if (!pending.isEmpty()) {
 
             // write the batch of pending observations
-            if (savedHeader.getFormatVersion() < 3.0) {
+            if (getHeader().getFormatVersion() < 3.0) {
                 writePendingRinex2Observations();
             } else {
                 writePendingRinex34Observations();
@@ -688,12 +598,12 @@ public class RinexObservationWriter implements AutoCloseable {
      */
     public void writePendingRinex2Observations() throws IOException {
 
-        final ObservationDataSet first = pending.get(0);
+        final ObservationDataSet first = pending.getFirst();
 
         // EPOCH/SAT
         final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);
         outputField("",  1, true);
-        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getDate().getYear() % 100,    3);
+        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 3);
         outputField("",  4, true);
         outputField(TWO_DIGITS_INTEGER,          dtc.getDate().getMonth(),         6);
         outputField("",  7, true);
@@ -713,7 +623,7 @@ public class RinexObservationWriter implements AutoCloseable {
         boolean offsetWritten = false;
         final double  clockOffset   = first.getRcvrClkOffset();
         for (final ObservationDataSet ods : pending) {
-            int next = column + 3;
+            int next = getColumn() + 3;
             if (next > 68) {
                 // we need to set up a continuation line
                 if (clockOffset != 0.0) {
@@ -722,7 +632,7 @@ public class RinexObservationWriter implements AutoCloseable {
                 offsetWritten = true;
                 finishLine();
                 outputField("", 32, true);
-                next = column + 3;
+                next = getColumn() + 3;
             }
             outputField(ods.getSatellite().toString(), next, false);
         }
@@ -735,13 +645,13 @@ public class RinexObservationWriter implements AutoCloseable {
         // observations per se
         for (final ObservationDataSet ods : pending) {
             for (final ObservationData od : ods.getObservationData()) {
-                int next = column + 16;
+                int next = getColumn() + 16;
                 if (next > 80) {
                     // we need to set up a continuation line
                     finishLine();
-                    next = column + 16;
+                    next = getColumn() + 16;
                 }
-                final double scaling = getScaling(od.getObservationType(), ods.getSatellite().getSystem());
+                final double scaling = getScaling(od.getObservationType().getName(), ods.getSatellite().getSystem());
                 outputField(FOURTEEN_THREE_DIGITS_FLOAT, scaling * od.getValue(), next - 2);
                 if (od.getLossOfLockIndicator() == 0) {
                     outputField("", next - 1, true);
@@ -762,23 +672,22 @@ public class RinexObservationWriter implements AutoCloseable {
     /** Write one observation data set in RINEX 3/4 format.
      * @exception IOException if an I/O error occurs.
      */
-    public void writePendingRinex34Observations()
-        throws IOException {
+    public void writePendingRinex34Observations() throws IOException {
 
-        final ObservationDataSet first = pending.get(0);
+        final ObservationDataSet first = pending.getFirst();
 
         // EPOCH/SAT
         final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);
         outputField(">",  2, true);
         outputField(FOUR_DIGITS_INTEGER,         dtc.getDate().getYear(),    6);
         outputField("",   7, true);
-        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getDate().getMonth(),   9);
+        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 9);
         outputField("",  10, true);
-        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getDate().getDay(),    12);
+        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 12);
         outputField("", 13, true);
-        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getTime().getHour(),   15);
+        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 15);
         outputField("", 16, true);
-        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getTime().getMinute(), 18);
+        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 18);
         outputField(ELEVEN_SEVEN_DIGITS_FLOAT,   dtc.getTime().getSecond(), 29);
 
         // event flag
@@ -797,8 +706,8 @@ public class RinexObservationWriter implements AutoCloseable {
         for (final ObservationDataSet ods : pending) {
             outputField(ods.getSatellite().toString(), 3, false);
             for (final ObservationData od : ods.getObservationData()) {
-                final int next = column + 16;
-                final double scaling = getScaling(od.getObservationType(), ods.getSatellite().getSystem());
+                final int next = getColumn() + 16;
+                final double scaling = getScaling(od.getObservationType().getName(), ods.getSatellite().getSystem());
                 outputField(FOURTEEN_THREE_DIGITS_FLOAT, scaling * od.getValue(), next - 2);
                 if (od.getLossOfLockIndicator() == 0) {
                     outputField("", next - 1, true);
@@ -816,24 +725,12 @@ public class RinexObservationWriter implements AutoCloseable {
 
     }
 
-    /** Write one header string.
-     * @param s string data (may be null)
-     * @param label line label
-     * @throws IOException if an I/O error occurs.
-     */
-    private void writeHeaderLine(final String s, final RinexLabels label) throws IOException {
-        if (s != null) {
-            outputField(s, s.length(), true);
-            finishHeaderLine(label);
-        }
-    }
-
     /** Write one header vector.
      * @param vector vector data (may be null)
      * @param label line label
      * @throws IOException if an I/O error occurs.
      */
-    private void writeHeaderLine(final Vector3D vector, final RinexLabels label) throws IOException {
+    private void writeHeaderLine(final Vector3D vector, final Label label) throws IOException {
         if (vector != null) {
             outputField(FOURTEEN_FOUR_DIGITS_FLOAT, vector.getX(), 14);
             outputField(FOURTEEN_FOUR_DIGITS_FLOAT, vector.getY(), 28);
@@ -842,108 +739,14 @@ public class RinexObservationWriter implements AutoCloseable {
         }
     }
 
-    /** Finish one header line.
-     * @param label line label
-     * @throws IOException if an I/O error occurs.
-     */
-    private void finishHeaderLine(final RinexLabels label) throws IOException {
-        for (int i = column; i < LABEL_INDEX; ++i) {
-            output.append(' ');
-        }
-        output.append(label.getLabel());
-        finishLine();
-    }
-
-    /** Finish one line.
-     * @throws IOException if an I/O error occurs.
-     */
-    private void finishLine() throws IOException {
-
-        // pending line
-        output.append(System.lineSeparator());
-        lineNumber++;
-        column = 0;
-
-        // emit comments that should be placed at next lines
-        for (final RinexComment comment : savedComments) {
-            if (comment.getLineNumber() == lineNumber) {
-                outputField(comment.getText(), LABEL_INDEX, true);
-                output.append(RinexLabels.COMMENT.getLabel());
-                output.append(System.lineSeparator());
-                lineNumber++;
-                column = 0;
-            } else if (comment.getLineNumber() > lineNumber) {
-                break;
-            }
-        }
-
-    }
-
-    /** Output one single character field.
-     * @param c field value
-     * @param next target column for next field
-     * @throws IOException if an I/O error occurs.
-     */
-    private void outputField(final char c, final int next) throws IOException {
-        outputField(Character.toString(c), next, false);
-    }
-
-    /** Output one integer field.
-     * @param formatter formatter to use
-     * @param value field value
-     * @param next target column for next field
-     * @throws IOException if an I/O error occurs.
-     */
-    private void outputField(final FastLongFormatter formatter, final int value, final int next) throws IOException {
-        outputField(formatter.toString(value), next, false);
-    }
-
-    /** Output one double field.
-     * @param formatter formatter to use
-     * @param value field value
-     * @param next target column for next field
-     * @throws IOException if an I/O error occurs.
-     */
-    private void outputField(final FastDoubleFormatter formatter, final double value, final int next) throws IOException {
-        if (Double.isNaN(value)) {
-            // NaN values are replaced by blank fields
-            outputField("", next, true);
-        } else {
-            outputField(formatter.toString(value), next, false);
-        }
-    }
-
-    /** Output one field.
-     * @param field field to output
-     * @param next target column for next field
-     * @param leftJustified if true, field is left-justified
-     * @throws IOException if an I/O error occurs.
-     */
-    private void outputField(final String field, final int next, final boolean leftJustified) throws IOException {
-        final int padding = next - (field == null ? 0 : field.length()) - column;
-        if (padding < 0) {
-            throw new OrekitException(OrekitMessages.FIELD_TOO_LONG, field, next - column);
-        }
-        if (leftJustified && field != null) {
-            output.append(field);
-        }
-        for (int i = 0; i < padding; ++i) {
-            output.append(' ');
-        }
-        if (!leftJustified && field != null) {
-            output.append(field);
-        }
-        column = next;
-    }
-
     /** Get the scaling factor for an observation.
      * @param type type of observation
      * @param system satellite system for the observation
      * @return scaling factor
      */
-    private double getScaling(final ObservationType type, final SatelliteSystem system) {
+    private double getScaling(final String type, final SatelliteSystem system) {
 
-        for (final ScaleFactorCorrection scaleFactorCorrection : savedHeader.getScaleFactorCorrections(system)) {
+        for (final ScaleFactorCorrection scaleFactorCorrection : getHeader().getScaleFactorCorrections(system)) {
             // check if the next Observation Type to read needs to be scaled
             if (scaleFactorCorrection.getTypesObsScaled().contains(type)) {
                 return scaleFactorCorrection.getCorrection();

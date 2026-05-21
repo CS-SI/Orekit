@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -105,7 +105,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
             final Field<DerivativeStructure> field = position.getX().getField();
             final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPosition(date, state.getFrame()));
-            final DerivativeStructure r2  = sunSatVector.getNormSq();
+            final DerivativeStructure r2  = sunSatVector.getNorm2Sq();
 
             // compute flux
             final DerivativeStructure ratio = ((SolarRadiationPressure) forceModel).getLightingRatio(state);
@@ -137,7 +137,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
             final Field<Gradient> field = position.getX().getField();
             final FieldVector3D<Gradient> sunSatVector = position.subtract(sun.getPosition(date, state.getFrame()));
-            final Gradient r2  = sunSatVector.getNormSq();
+            final Gradient r2  = sunSatVector.getNorm2Sq();
 
             // compute flux
             final Gradient ratio = ((SolarRadiationPressure) forceModel).getLightingRatio(state);
@@ -663,7 +663,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         RIntegrator.setInitialStepSize(60);
 
         // Field and classical numerical propagators
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -731,7 +731,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -827,13 +827,13 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         @Override
         public void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
             currentMax = 0.0;
-            nextSample = states0.get(0).getDate().shiftedBy(samplingStep);
+            nextSample = states0.getFirst().getDate().shiftedBy(samplingStep);
         }
 
         public void handleStep(List<OrekitStepInterpolator> interpolators) {
-            while (interpolators.get(0).getPreviousState().getDate().isBefore(nextSample) &&
-                   interpolators.get(0).getCurrentState().getDate().isAfterOrEqualTo(nextSample)) {
-                final SpacecraftState state0 = interpolators.get(0).getInterpolatedState(nextSample);
+            while (interpolators.getFirst().getPreviousState().getDate().isBefore(nextSample) &&
+                   interpolators.getFirst().getCurrentState().getDate().isAfterOrEqualTo(nextSample)) {
+                final SpacecraftState state0 = interpolators.getFirst().getInterpolatedState(nextSample);
                 final SpacecraftState state1 = interpolators.get(1).getInterpolatedState(nextSample);
                 final double distance = Vector3D.distance(state0.getPosition(),
                                                           state1.getPosition());
@@ -1002,7 +1002,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             }
 
             // Earth umbra and penumbra conditions
-            final OccultationEngine.OccultationAngles angles = srp.getOccultingBodies().get(0).angles(currentState);
+            final OccultationEngine.OccultationAngles angles = srp.getOccultingBodies().getFirst().angles(currentState);
 
             final double earthUmbra = angles.getSeparation() - angles.getLimbRadius() + angles.getOccultedApparentRadius();
             final boolean isInEarthUmbra = (earthUmbra < 1.0e-10);
@@ -1109,8 +1109,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(orbit, type);
         final FieldNumericalPropagator<T> propagatorWithFlattening =
-                        new FieldNumericalPropagator<>(field,
-                                        new DormandPrince853FieldIntegrator<>(field, 1.0e-9, 300, tol[0], tol[1]));
+                        new FieldNumericalPropagator<>(new DormandPrince853FieldIntegrator<>(field, 1.0e-9, 300, tol[0], tol[1]));
         propagatorWithFlattening.setOrbitType(type);
         propagatorWithFlattening.setInitialState(initialState);
         propagatorWithFlattening.addForceModel(srpWithFlattening);
@@ -1123,8 +1122,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals(expectedMoonPenumbraSteps,  handler.moonPenumbraSteps);
 
         final FieldNumericalPropagator<T> propagatorWithoutFlattening =
-                        new FieldNumericalPropagator<>(field,
-                                        new DormandPrince853FieldIntegrator<>(field, 1.0e-9, 300, tol[0], tol[1]));
+                        new FieldNumericalPropagator<>(new DormandPrince853FieldIntegrator<>(field, 1.0e-9, 300, tol[0], tol[1]));
         propagatorWithoutFlattening.setOrbitType(type);
         propagatorWithoutFlattening.setInitialState(initialState);
         propagatorWithoutFlattening.addForceModel(srpWithoutFlattening);
@@ -1198,7 +1196,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             }
 
             // Earth umbra and penumbra conditions
-            final OccultationEngine.FieldOccultationAngles<T> angles = srp.getOccultingBodies().get(0).angles(currentState);
+            final OccultationEngine.FieldOccultationAngles<T> angles = srp.getOccultingBodies().getFirst().angles(currentState);
 
             final T earthUmbra = angles.getSeparation().subtract(angles.getLimbRadius()).add(angles.getOccultedApparentRadius());
             final boolean isInEarthUmbra = (earthUmbra.getReal() < 1.0e-10);

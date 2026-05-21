@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,64 +44,6 @@ class ToleranceProviderTest {
         Assertions.assertEquals(2, actualTolerances.length);
         for (int i = 0; i < 6; i++) {
             Assertions.assertEquals(dP, actualTolerances[0][i]);
-        }
-    }
-
-    @Test
-    void testOfConstantsCartesian() {
-        // GIVEN
-        final double expectedAbsolute = 1.;
-        final double expectedRelative = 2.;
-        // WHEN
-        final ToleranceProvider toleranceProvider = ToleranceProvider.of(expectedAbsolute, expectedRelative);
-        final double[][] actualTolerances = toleranceProvider.getTolerances(Vector3D.ZERO, Vector3D.ZERO);
-        // THEN
-        Assertions.assertEquals(2, actualTolerances.length);
-        Assertions.assertEquals(7, actualTolerances[0].length);
-        Assertions.assertEquals(actualTolerances[1].length, actualTolerances[0].length);
-        for (int i = 0; i < 7; i++) {
-            Assertions.assertEquals(expectedAbsolute, actualTolerances[0][i]);
-            Assertions.assertEquals(expectedRelative, actualTolerances[1][i]);
-        }
-    }
-
-    @ParameterizedTest
-    @EnumSource(OrbitType.class)
-    void testOfConstantsOrbit(final OrbitType orbitType) {
-        // GIVEN
-        final double expectedAbsolute = 1.;
-        final double expectedRelative = 2.;
-        // WHEN
-        final ToleranceProvider toleranceProvider = ToleranceProvider.of(expectedAbsolute, expectedRelative);
-        final double[][] actualTolerances = toleranceProvider.getTolerances(Mockito.mock(Orbit.class), orbitType,
-                PositionAngleType.MEAN);
-        // THEN
-        Assertions.assertEquals(2, actualTolerances.length);
-        Assertions.assertEquals(7, actualTolerances[0].length);
-        Assertions.assertEquals(actualTolerances[1].length, actualTolerances[0].length);
-        for (int i = 0; i < 7; i++) {
-            Assertions.assertEquals(expectedAbsolute, actualTolerances[0][i]);
-            Assertions.assertEquals(expectedRelative, actualTolerances[1][i]);
-        }
-    }
-
-    @ParameterizedTest
-    @EnumSource(PositionAngleType.class)
-    void testOfConstantsOrbit(final PositionAngleType positionAngleType) {
-        // GIVEN
-        final double expectedAbsolute = 1.;
-        final double expectedRelative = 2.;
-        // WHEN
-        final ToleranceProvider toleranceProvider = ToleranceProvider.of(expectedAbsolute, expectedRelative);
-        final double[][] actualTolerances = toleranceProvider.getTolerances(Mockito.mock(Orbit.class), OrbitType.EQUINOCTIAL,
-                positionAngleType);
-        // THEN
-        Assertions.assertEquals(2, actualTolerances.length);
-        Assertions.assertEquals(7, actualTolerances[0].length);
-        Assertions.assertEquals(actualTolerances[1].length, actualTolerances[0].length);
-        for (int i = 0; i < 7; i++) {
-            Assertions.assertEquals(expectedAbsolute, actualTolerances[0][i]);
-            Assertions.assertEquals(expectedRelative, actualTolerances[1][i]);
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -131,7 +131,7 @@ public class JacobianPropagatorConverterTest {
         // retrieve a state slightly different from the initial state,
         // using normalized values different from 0.0 for the sake of generality
         RandomGenerator random = new Well19937a(0xe67f19c1a678d037l);
-        List<ParameterDriver> all = new ArrayList<ParameterDriver>();
+        List<ParameterDriver> all = new ArrayList<>();
         for (final ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             all.add(driver);
         }
@@ -139,7 +139,7 @@ public class JacobianPropagatorConverterTest {
             all.add(driver);
         }
         double[] normalized = new double[names.length];
-        List<ParameterDriver> selected = new ArrayList<ParameterDriver>(names.length);
+        List<ParameterDriver> selected = new ArrayList<>(names.length);
         int index = 0;
         for (final ParameterDriver driver : all) {
             boolean found = false;
@@ -155,7 +155,7 @@ public class JacobianPropagatorConverterTest {
 
         // create a one hour sample that starts 10 minutes after initial state
         // the 10 minutes offset implies even the first point is influenced by model parameters
-        final List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
+        final List<SpacecraftState> sample = new ArrayList<>();
         Propagator propagator = builder.buildPropagator(normalized);
         propagator.setStepHandler(60.0, currentState -> sample.add(currentState));
         propagator.propagate(orbit.getDate().shiftedBy(600.0), orbit.getDate().shiftedBy(4200.0));

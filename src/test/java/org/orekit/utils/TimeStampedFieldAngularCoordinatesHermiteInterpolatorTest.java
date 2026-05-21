@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,7 @@ import java.util.List;
 
 class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
     @Test
-    public void testInterpolationNeedOffsetWrongRate() {
+    void testInterpolationNeedOffsetWrongRate() {
         AbsoluteDate date  = AbsoluteDate.GALILEO_EPOCH;
         double       omega = 2.0 * FastMath.PI;
         TimeStampedFieldAngularCoordinates<DerivativeStructure> reference =
@@ -80,7 +80,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolationRotationOnly() {
+    void testInterpolationRotationOnly() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.5 * FastMath.PI;
@@ -127,7 +127,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolationAroundPI() {
+    void testInterpolationAroundPI() {
 
         DSFactory                                                     factory = new DSFactory(4, 1);
         List<TimeStampedFieldAngularCoordinates<DerivativeStructure>> sample  = new ArrayList<>();
@@ -179,7 +179,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
      * thrown. Now after changing USE_R to USE_RR it produces a valid result.
      */
     @Test
-    public void testInterpolationSmallSample() {
+    void testInterpolationSmallSample() {
         DSFactory    factory = new DSFactory(4, 1);
         AbsoluteDate date    = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0  = 0.5 * FastMath.PI;
@@ -223,7 +223,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolationGTODIssue() {
+    void testInterpolationGTODIssue() {
         AbsoluteDate t0 = new AbsoluteDate("2004-04-06T19:59:28.000", TimeScalesFactory.getTAI());
         double[][] params = new double[][] {
                 { 0.0, -0.3802356750911964, -0.9248896320037013, 7.292115030462892e-5 },
@@ -231,7 +231,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
                 { 8.0, -0.613127541102373, 0.7899839354960061, 7.292115037371062e-5 }
         };
         List<TimeStampedFieldAngularCoordinates<DerivativeStructure>> sample =
-                new ArrayList<TimeStampedFieldAngularCoordinates<DerivativeStructure>>();
+                new ArrayList<>();
         for (double[] row : params) {
             AbsoluteDate t = t0.shiftedBy(row[0] * 3600.0);
             FieldRotation<DerivativeStructure> r =
@@ -249,7 +249,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
                                                                                            AngularDerivativesFilter.USE_RR);
 
         for (double dt = 0; dt < 29000; dt += 120) {
-            TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted = sample.get(0).shiftedBy(dt);
+            TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted = sample.getFirst().shiftedBy(dt);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
                     interpolator.interpolate(t0.shiftedBy(dt), sample);
             Assertions.assertEquals(0.0, FieldRotation.distance(shifted.getRotation(), interpolated.getRotation()).getReal(),

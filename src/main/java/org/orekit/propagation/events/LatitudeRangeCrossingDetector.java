@@ -1,4 +1,4 @@
-/* Copyright 2023-2025 Alberto Ferrero
+/* Copyright 2023-2026 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,9 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.bodies.BodyShape;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.AbstractGeodeticEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
@@ -30,21 +30,13 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
  * @author Alberto Ferrero
  * @since 12.0
  */
-public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRangeCrossingDetector> {
-
-    /** Body on which the latitude is defined. */
-    private final OneAxisEllipsoid body;
+public class LatitudeRangeCrossingDetector extends AbstractGeographicalDetector<LatitudeRangeCrossingDetector> {
 
     /** Fixed latitude to be crossed, lower boundary in radians. */
     private final double fromLatitude;
 
     /** Fixed latitude to be crossed, upper boundary in radians. */
     private final double toLatitude;
-
-    /**
-     * Sign, to get reversed inclusion latitude range (lower > upper).
-     */
-    private final double sign;
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
@@ -54,7 +46,7 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
      * @param fromLatitude latitude to be crossed, lower range boundary
      * @param toLatitude latitude to be crossed, upper range boundary
      */
-    public LatitudeRangeCrossingDetector(final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
+    public LatitudeRangeCrossingDetector(final BodyShape body, final double fromLatitude, final double toLatitude) {
         this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body, fromLatitude, toLatitude);
     }
 
@@ -66,7 +58,7 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
      * @param toLatitude latitude to be crossed, upper range boundary
      */
     public LatitudeRangeCrossingDetector(final double maxCheck, final double threshold,
-                                         final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
+                                         final BodyShape body, final double fromLatitude, final double toLatitude) {
         this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnDecreasing(),
              body, fromLatitude, toLatitude);
     }
@@ -86,26 +78,18 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
      */
     protected LatitudeRangeCrossingDetector(final EventDetectionSettings detectionSettings,
                                             final EventHandler handler,
-                                            final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
-        super(detectionSettings, handler);
-        this.body     = body;
+                                            final BodyShape body, final double fromLatitude, final double toLatitude) {
+        super(new LocalEventFunction(body, FastMath.min(fromLatitude, toLatitude), FastMath.max(fromLatitude, toLatitude)),
+                detectionSettings, handler, body);
         this.fromLatitude = fromLatitude;
         this.toLatitude = toLatitude;
-        this.sign = FastMath.signum(toLatitude - fromLatitude);
     }
 
     /** {@inheritDoc} */
     @Override
     protected LatitudeRangeCrossingDetector create(final EventDetectionSettings detectionSettings,
                                                    final EventHandler newHandler) {
-        return new LatitudeRangeCrossingDetector(detectionSettings, newHandler, body, fromLatitude, toLatitude);
-    }
-
-    /** Get the body on which the geographic zone is defined.
-     * @return body on which the geographic zone is defined
-     */
-    public OneAxisEllipsoid getBody() {
-        return body;
+        return new LatitudeRangeCrossingDetector(detectionSettings, newHandler, getBodyShape(), fromLatitude, toLatitude);
     }
 
     /** Get the fixed latitude range to be crossed (radians), lower boundary.
@@ -132,17 +116,30 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
      * @return positive if spacecraft inside the range
      */
     public double g(final SpacecraftState s) {
-
-        // convert state to geodetic coordinates
-        final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
-            s.getFrame(), s.getDate());
-
-        // point latitude
-        final double latitude = gp.getLatitude();
-
-        // inside or outside latitude range
-        return sign * (latitude - fromLatitude) * (toLatitude - latitude);
-
+        return getEventFunction().value(s);
     }
 
+    /**
+     * Local event function.
+     * @since 14.0
+     */
+    private static class LocalEventFunction extends AbstractGeodeticEventFunction {
+
+        /** Lower bound latitude. */
+        private final double minLatitude;
+        /** Upper bound latitude. */
+        private final double maxLatitude;
+
+        LocalEventFunction(final BodyShape body, final double minLatitude, final double maxLatitude) {
+            super(body);
+            this.minLatitude = minLatitude;
+            this.maxLatitude = maxLatitude;
+        }
+
+        @Override
+        public double value(final SpacecraftState state) {
+            final double latitude = transformToGeodeticPoint(state).getLatitude();
+            return (latitude - minLatitude) * (maxLatitude - latitude);
+        }
+    }
 }

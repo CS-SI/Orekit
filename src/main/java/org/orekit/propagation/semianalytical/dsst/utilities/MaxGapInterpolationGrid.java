@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.hipparchus.util.FastMath;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class MaxGapInterpolationGrid implements InterpolationGrid {
+public class MaxGapInterpolationGrid extends AbstractInterpolationGrid {
 
     /** Maximum time gap. */
     private final double maxGap;
@@ -39,17 +39,8 @@ public class MaxGapInterpolationGrid implements InterpolationGrid {
         this.maxGap = maxGap;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public double[] getGridPoints(final double stepStart, final double stepEnd) {
-        final int pointsPerStep = FastMath.max(2, (int) FastMath.ceil(FastMath.abs(stepEnd - stepStart) / maxGap));
-        final double[] grid = new double[pointsPerStep];
-
-        final double stepSize = (stepEnd - stepStart) / (pointsPerStep - 1);
-        for (int i = 0; i < pointsPerStep; i++) {
-            grid[i] = stepSize * i + stepStart;
-        }
-
-        return grid;
+    protected int getPointsPerStep(final double stepStart, final double stepEnd) {
+        return FastMath.max(2, (int) FastMath.ceil(FastMath.abs(stepEnd - stepStart) / maxGap));
     }
 }

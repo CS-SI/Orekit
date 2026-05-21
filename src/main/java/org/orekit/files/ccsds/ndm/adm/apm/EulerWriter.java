@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,10 +32,10 @@ import org.orekit.utils.units.Unit;
 class EulerWriter extends AbstractWriter {
 
     /** Suffix for angles. */
-    private static String ANGLE = "_ANGLE";
+    private static final String ANGLE = "_ANGLE";
 
     /** Suffix for rates. */
-    private static String RATE = "_RATE";
+    private static final String RATE = "_RATE";
 
     /** Format version.
      * @since 12.0

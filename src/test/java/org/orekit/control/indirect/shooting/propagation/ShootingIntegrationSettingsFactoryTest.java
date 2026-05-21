@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.ToleranceProvider;
+import org.orekit.propagation.SimpleToleranceProvider;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaFieldIntegratorBuilder;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
 import org.orekit.propagation.conversion.FieldODEIntegratorBuilder;
@@ -121,7 +121,7 @@ class ShootingIntegrationSettingsFactoryTest {
         // WHEN
         final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory
                 .getDormandPrince54IntegratorSettings(1., 10.,
-                        ToleranceProvider.of(1, 2));
+                        new SimpleToleranceProvider(1, 2));
         final FieldODEIntegratorBuilder<Complex> builder = integrationSettings.getFieldIntegratorBuilder(field);
         // THEN
         final FieldODEIntegrator<Complex> fieldIntegrator = builder.buildIntegrator(new FieldAbsolutePVCoordinates<>(FramesFactory.getGCRF(),
@@ -137,7 +137,7 @@ class ShootingIntegrationSettingsFactoryTest {
         // WHEN
         final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory
                 .getDormandPrince853IntegratorSettings(1., 10.,
-                        ToleranceProvider.of(1, 2));
+                        new SimpleToleranceProvider(1, 2));
         final FieldODEIntegratorBuilder<Complex> builder = integrationSettings.getFieldIntegratorBuilder(field);
         // THEN
         final FieldODEIntegrator<Complex> fieldIntegrator = builder.buildIntegrator(new FieldAbsolutePVCoordinates<>(FramesFactory.getGCRF(),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.gnss.metric.ntrip.Record;
 
 /** Data stream record in source table.
  * @author Luc Maisonobe
@@ -68,7 +69,7 @@ public class DataStreamRecord extends Record {
     private final boolean fees;
 
     /** Bit rate. */
-    private int bitRate;
+    private final int bitRate;
 
     /** Build a data stream record by parsing a source table line.
      * @param line source table line

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,16 +55,16 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
     private static final int I = 1;
 
     /** Central body rotation angle θ. */
-    private T theta;
+    private final T theta;
 
     /** ecc². */
-    private T e2;
+    private final T e2;
 
     /** Keplerian period. */
-    private T period;
+    private final T period;
 
     /** Ratio of satellite period to central body rotation period. */
-    private T ratio;
+    private final T ratio;
 
     /**
      * Simple constructor.
@@ -122,15 +122,6 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
      */
     public T getTheta() {
         return theta;
-    }
-
-    /** Get μ / a .
-     * @return moa
-     * @deprecated since 12.2 Use getMuoa() instead
-     */
-    @Deprecated
-    public T getMoa() {
-        return getMuoa();
     }
 
     /** Get the Keplerian period.

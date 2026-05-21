@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.orbits;
 
 
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Derivative;
@@ -27,20 +26,18 @@ import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeShiftable;
-import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.ShiftableFieldPVCoordinatesHolder;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -71,7 +68,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @param <T> type of the field elements
  */
 public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
-    implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T> {
+    implements ShiftableFieldPVCoordinatesHolder<FieldOrbit<T>, T> {
 
     /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
     protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;
@@ -175,10 +172,10 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         this.one = this.field.getOne();
         this.date = fieldPVCoordinates.getDate();
         this.mu = mu;
-        if (fieldPVCoordinates.getAcceleration().getNormSq().getReal() == 0.0) {
+        if (fieldPVCoordinates.getAcceleration().getNorm2Sq().getReal() == 0.0) {
             // the acceleration was not provided,
             // compute it from Newtonian attraction
-            final T r2 = fieldPVCoordinates.getPosition().getNormSq();
+            final T r2 = fieldPVCoordinates.getPosition().getNorm2Sq();
             final T r3 = r2.multiply(r2.sqrt());
             this.pvCoordinates = new TimeStampedFieldPVCoordinates<>(fieldPVCoordinates.getDate(),
                                                                      fieldPVCoordinates.getPosition(),
@@ -231,7 +228,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
             }
 
             final FieldVector3D<T> p = pva.getPosition();
-            final T r2 = p.getNormSq();
+            final T r2 = p.getNorm2Sq();
 
             // Check if acceleration is relatively close to 0 compared to the Keplerian acceleration
             final double tolerance = mu.getReal() * 1e-9;
@@ -249,6 +246,29 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
             }
         }
 
+    }
+
+
+    /**
+     * Compute corrected shift from non-Keplerian part.
+     * @param keplerianShifted Keplerian shift
+     * @param dt time shift
+     * @return corrected position-velocity-acceleration vector
+     * @since 14.0
+     */
+    protected FieldPVCoordinates<T> shiftNonKeplerian(final FieldPVCoordinates<T> keplerianShifted, final T dt) {
+        // extract non-Keplerian acceleration from first time derivatives
+        final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
+
+        // add second order effect of non-Keplerian acceleration to Keplerian-only shift
+        final FieldVector3D<T> fixedV = nonKeplerianAcceleration.scalarMultiply(dt).add(keplerianShifted.getVelocity());
+        final FieldVector3D<T> fixedP   = nonKeplerianAcceleration.scalarMultiply(dt.square().divide(2.))
+                .add(keplerianShifted.getPosition());
+        final T   fixedR2 = fixedP.getNorm2Sq();
+        final T   fixedR  = FastMath.sqrt(fixedR2);
+        final FieldVector3D<T> fixedA  = nonKeplerianAcceleration.add(new FieldVector3D<>(getMu().negate().divide(fixedR.multiply(fixedR2)),
+                keplerianShifted.getPosition()));
+        return new FieldPVCoordinates<>(fixedP, fixedV, fixedA);
     }
 
     /** Returns true if and only if the orbit is elliptical i.e. has a non-negative semi-major axis.
@@ -555,20 +575,12 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @see #getPVCoordinates()
      * @since 12.0
      */
+    @Override
     public FieldVector3D<T> getPosition() {
         if (position == null) {
             position = initPosition();
         }
         return position;
-    }
-
-    /** Get the velocity in definition frame.
-     * @return velocity in the definition frame
-     * @see #getPVCoordinates()
-     * @since 13.1
-     */
-    public FieldVector3D<T> getVelocity() {
-        return getPVCoordinates().getVelocity();
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
@@ -637,6 +649,30 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public abstract FieldOrbit<T> shiftedBy(T dt);
 
+    /** Get a time-shifted orbit.
+     * <p>
+     * The orbit can be slightly shifted to close dates. This shift is based on
+     * a simple Keplerian model. It is <em>not</em> intended as a replacement
+     * for proper orbit and attitude propagation but should be sufficient for
+     * small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new orbit, shifted with respect to the instance (which is immutable)
+     */
+    public abstract FieldOrbit<T> shiftedBy(double dt);
+
+    /** Get a time-shifted orbit.
+     * <p>
+     * The orbit can be slightly shifted to close dates. This shift is based on
+     * a simple Keplerian model. It is <em>not</em> intended as a replacement
+     * for proper orbit and attitude propagation but should be sufficient for
+     * small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new orbit, shifted with respect to the instance (which is immutable)
+     */
+    public abstract FieldOrbit<T> shiftedBy(TimeOffset dt);
+
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
@@ -651,31 +687,29 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
 
         final T[][] cachedJacobian;
         synchronized (this) {
-            switch (type) {
-                case MEAN :
+            cachedJacobian = switch (type) {
+                case MEAN -> {
                     if (jacobianMeanWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianMeanWrtCartesian = computeJacobianMeanWrtCartesian();
                     }
-                    cachedJacobian = jacobianMeanWrtCartesian;
-                    break;
-                case ECCENTRIC :
+                    yield jacobianMeanWrtCartesian;
+                }
+                case ECCENTRIC -> {
                     if (jacobianEccentricWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianEccentricWrtCartesian = computeJacobianEccentricWrtCartesian();
                     }
-                    cachedJacobian = jacobianEccentricWrtCartesian;
-                    break;
-                case TRUE :
+                    yield jacobianEccentricWrtCartesian;
+                }
+                case TRUE -> {
                     if (jacobianTrueWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianTrueWrtCartesian = computeJacobianTrueWrtCartesian();
                     }
-                    cachedJacobian = jacobianTrueWrtCartesian;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
+                    yield jacobianTrueWrtCartesian;
+                }
+            };
         }
 
         // fill the user provided array
@@ -699,31 +733,29 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
 
         final T[][] cachedJacobian;
         synchronized (this) {
-            switch (type) {
-                case MEAN :
+            cachedJacobian = switch (type) {
+                case MEAN -> {
                     if (jacobianWrtParametersMean == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersMean = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersMean;
-                    break;
-                case ECCENTRIC :
+                    yield jacobianWrtParametersMean;
+                }
+                case ECCENTRIC -> {
                     if (jacobianWrtParametersEccentric == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersEccentric = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersEccentric;
-                    break;
-                case TRUE :
+                    yield jacobianWrtParametersEccentric;
+                }
+                case TRUE -> {
                     if (jacobianWrtParametersTrue == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersTrue = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersTrue;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
+                    yield jacobianWrtParametersTrue;
+                }
+            };
         }
 
         // fill the user-provided array

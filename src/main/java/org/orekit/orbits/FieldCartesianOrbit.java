@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -210,7 +210,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         // lazy evaluation of semi-major axis
         final FieldPVCoordinates<T> pva = getPVCoordinates();
         final T r  = pva.getPosition().getNorm();
-        final T V2 = pva.getVelocity().getNormSq();
+        final T V2 = pva.getVelocity().getNorm2Sq();
         return r.divide(r.negate().multiply(V2).divide(getMu()).add(2));
     }
 
@@ -219,7 +219,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         if (hasNonKeplerianAcceleration()) {
             final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
             final FieldUnivariateDerivative2<T> r  = pv.getPosition().getNorm();
-            final FieldUnivariateDerivative2<T> V2 = pv.getVelocity().getNormSq();
+            final FieldUnivariateDerivative2<T> V2 = pv.getVelocity().getNorm2Sq();
             final FieldUnivariateDerivative2<T> a  = r.divide(r.multiply(V2).divide(getMu()).subtract(2).negate());
             return a.getDerivative(1);
         } else {
@@ -235,14 +235,14 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final FieldPVCoordinates<T> pva = getPVCoordinates();
             final FieldVector3D<T> pvP      = pva.getPosition();
             final FieldVector3D<T> pvV      = pva.getVelocity();
-            final T rV2OnMu = pvP.getNorm().multiply(pvV.getNormSq()).divide(getMu());
+            final T rV2OnMu = pvP.getNorm().multiply(pvV.getNorm2Sq()).divide(getMu());
             final T eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
             final T eCE     = rV2OnMu.subtract(1);
             return (eCE.square().add(eSE.square())).sqrt();
         } else {
             // hyperbolic orbit
             final FieldVector3D<T> pvM = getPVCoordinates().getMomentum();
-            return pvM.getNormSq().divide(muA).negate().add(1).sqrt();
+            return pvM.getNorm2Sq().divide(muA).negate().add(1).sqrt();
         }
     }
 
@@ -251,7 +251,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         if (hasNonKeplerianAcceleration()) {
             final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
             final FieldUnivariateDerivative2<T> r       = pv.getPosition().getNorm();
-            final FieldUnivariateDerivative2<T> V2      = pv.getVelocity().getNormSq();
+            final FieldUnivariateDerivative2<T> V2      = pv.getVelocity().getNorm2Sq();
             final FieldUnivariateDerivative2<T> rV2OnMu = r.multiply(V2).divide(getMu());
             final FieldUnivariateDerivative2<T> a       = r.divide(rV2OnMu.negate().add(2));
             final FieldUnivariateDerivative2<T> eSE     = FieldVector3D.dotProduct(pv.getPosition(), pv.getVelocity()).divide(a.multiply(getMu()).sqrt());
@@ -473,26 +473,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         if (!dt.isZero() && hasNonKeplerianAcceleration) {
 
-            final FieldVector3D<T> pvP = getPosition();
-            final T r2 = pvP.getNormSq();
-            final T r = r2.sqrt();
-            // extract non-Keplerian part of the initial acceleration
-            final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(getOne(), getPVCoordinates().getAcceleration(),
-                                                                                  r.multiply(r2).reciprocal().multiply(getMu()), pvP);
-
-            // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
-            final FieldVector3D<T> shiftedP = shiftedPV.getPosition();
-            final FieldVector3D<T> shiftedV = shiftedPV.getVelocity();
-            final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), shiftedP,
-                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
-            final T                fixedR2 = fixedP.getNormSq();
-            final T                fixedR  = fixedR2.sqrt();
-            final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), shiftedV,
-                                                                 dt, nonKeplerianAcceleration);
-            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR.multiply(fixedR2).reciprocal().multiply(getMu().negate()), shiftedP,
-                                                                 getOne(), nonKeplerianAcceleration);
-
-            return new FieldPVCoordinates<>(fixedP, fixedV, fixedA);
+            return shiftNonKeplerian(shiftedPV, dt);
 
         } else {
             // don't include acceleration,
@@ -543,7 +524,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // velocity derivative is Newtonian acceleration
         final FieldVector3D<T> position = pv.getPosition();
-        final T r2         = position.getNormSq();
+        final T r2         = position.getNorm2Sq();
         final T coeff      = r2.multiply(r2.sqrt()).reciprocal().negate().multiply(gm);
         pDot[3] = pDot[3].add(coeff.multiply(position.getX()));
         pDot[4] = pDot[4].add(coeff.multiply(position.getY()));

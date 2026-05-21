@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,7 +61,7 @@ public abstract class OceanTidesReader implements DataLoader {
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
      */
-    public OceanTidesReader(final String supportedNames) {
+    protected OceanTidesReader(final String supportedNames) {
         this.supportedNames = supportedNames;
         this.maxParseDegree = Integer.MAX_VALUE;
         this.maxParseOrder  = Integer.MAX_VALUE;

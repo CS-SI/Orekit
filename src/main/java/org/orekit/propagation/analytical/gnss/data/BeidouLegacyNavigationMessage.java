@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,6 +40,11 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     /** Age of Data, Clock. */
     private int aodc;
 
+    /** Health identifier.
+     * @since 14.0
+     */
+    private int satH1;
+
     /** B1/B3 Group Delay Differential (s). */
     private double tgd1;
 
@@ -54,11 +59,13 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param type       message type
      */
     public BeidouLegacyNavigationMessage(final TimeScales timeScales,
-                                         final SatelliteSystem system) {
+                                         final SatelliteSystem system,
+                                         final String type) {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system);
+              timeScales, system, type);
     }
 
     /** Constructor from field instance.
@@ -72,6 +79,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
         setTGD1(original.getTGD1().getReal());
         setTGD2(original.getTGD2().getReal());
         setSvAccuracy(original.getSvAccuracy().getReal());
+        setSatH1(original.getSatH1());
     }
 
     /** {@inheritDoc} */
@@ -162,6 +170,22 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      */
     public void setSvAccuracy(final double svAccuracy) {
         this.svAccuracy = svAccuracy;
+    }
+
+    /** Get the health identifier.
+     * @return health identifier
+     * @since 14.0
+     */
+    public int getSatH1() {
+        return satH1;
+    }
+
+    /** Set the health identifier.
+     * @param satH1 health identifier
+     * @since 14.0
+     */
+    public void setSatH1(final int satH1) {
+        this.satH1 = satH1;
     }
 
 }

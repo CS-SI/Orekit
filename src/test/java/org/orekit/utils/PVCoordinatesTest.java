@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,8 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -41,15 +43,15 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 
 
-public class PVCoordinatesTest {
+class PVCoordinatesTest {
 
     @Test
-    public void testDefaultConstructor() {
+    void testDefaultConstructor() {
         Assertions.assertEquals("{P(0.0, 0.0, 0.0), V(0.0, 0.0, 0.0), A(0.0, 0.0, 0.0)}", new PVCoordinates().toString());
     }
 
     @Test
-    public void testLinearConstructors() {
+    void testLinearConstructors() {
         PVCoordinates pv1 = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                               new Vector3D(-1, -0.1, -10));
         PVCoordinates pv2 = new PVCoordinates(new Vector3D( 2,  0.2,  20),
@@ -67,7 +69,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVectorNeg() {
+    void testToDerivativeStructureVectorNeg() {
         try {
             PVCoordinates.ZERO.toDerivativeStructureVector(-1);
             Assertions.fail("an exception should have been thrown");
@@ -78,23 +80,24 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector3() {
+    void testToDerivativeStructureVector3() {
         try {
-            PVCoordinates.ZERO.toDerivativeStructureVector(3);
+            PVCoordinates.ZERO.toDerivativeStructureVector(-1);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
-            Assertions.assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
+            Assertions.assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
         }
     }
 
-    @Test
-    public void testToDerivativeStructureVector0() {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7})
+    void testToDerivativeStructureVector0(final int totalFreeParameters) {
         FieldVector3D<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
-                                  new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(0);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
+                                  new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(0, totalFreeParameters);
+        Assertions.assertEquals(totalFreeParameters, fv.getX().getFreeParameters());
         Assertions.assertEquals(0, fv.getX().getOrder());
         Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
         Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
@@ -105,28 +108,31 @@ public class PVCoordinatesTest {
                 new PVCoordinates(fv), 1.0e-15);
     }
 
-    @Test
-    public void testToDerivativeStructureVector1() {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7})
+    void testToDerivativeStructureVector1(final int totalFreeParameters) {
         FieldVector3D<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
-                                  new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(1);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
+                                  new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(1, totalFreeParameters);
+        Assertions.assertEquals(totalFreeParameters, fv.getX().getFreeParameters());
         Assertions.assertEquals(1, fv.getX().getOrder());
         Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
         Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
         Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
-        checkPV(new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                  new Vector3D(-1, -0.1, -10),
-                                  Vector3D.ZERO),
-                new PVCoordinates(fv), 1.0e-15);
+        if (totalFreeParameters == 1) {
+            Assertions.assertEquals(-1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+            Assertions.assertEquals(-0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+            Assertions.assertEquals(-10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+            checkPV(new PVCoordinates(new Vector3D(1, 0.1, 10),
+                            new Vector3D(-1, -0.1, -10),
+                            Vector3D.ZERO),
+                    new PVCoordinates(fv), 1.0e-15);
+        }
     }
 
     @Test
-    public void testUnivariateDerivative1Vector() {
+    void testUnivariateDerivative1Vector() {
         FieldVector3D<UnivariateDerivative1> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
@@ -149,52 +155,54 @@ public class PVCoordinatesTest {
 
     }
 
-    @Test
-    public void testToDerivativeStructureVector2() {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7})
+    void testToDerivativeStructureVector2(final int totalFreeParameters) {
         FieldVector3D<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
-                                  new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(2);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
+                                  new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(2, totalFreeParameters);
+        Assertions.assertEquals(totalFreeParameters, fv.getX().getFreeParameters());
         Assertions.assertEquals(2, fv.getX().getOrder());
         Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
         Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
         Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
-        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
-        checkPV(new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                  new Vector3D(-1, -0.1, -10),
-                                  new Vector3D(10, -1.0, -100)),
-                new PVCoordinates(fv), 1.0e-15);
+        if (totalFreeParameters == 1) {
+            Assertions.assertEquals(-1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+            Assertions.assertEquals(-0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+            Assertions.assertEquals(-10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+            Assertions.assertEquals(10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
+            Assertions.assertEquals(-1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
+            Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
+            checkPV(new PVCoordinates(new Vector3D(1, 0.1, 10),
+                            new Vector3D(-1, -0.1, -10),
+                            new Vector3D(10, -1.0, -100)),
+                    new PVCoordinates(fv), 1.0e-15);
 
-        for (double dt = 0; dt < 10; dt += 0.125) {
-            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10),
-                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+            for (double dt = 0; dt < 10; dt += 0.125) {
+                Vector3D p = new PVCoordinates(new Vector3D(1, 0.1, 10),
+                        new Vector3D(-1, -0.1, -10),
+                        new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
+                Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+                Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+                Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+            }
+
+            PVCoordinates pv = new PVCoordinates(fv);
+            Assertions.assertEquals(1.0, pv.getPosition().getX(), 1.0e-10);
+            Assertions.assertEquals(0.1, pv.getPosition().getY(), 1.0e-10);
+            Assertions.assertEquals(10.0, pv.getPosition().getZ(), 1.0e-10);
+            Assertions.assertEquals(-1.0, pv.getVelocity().getX(), 1.0e-15);
+            Assertions.assertEquals(-0.1, pv.getVelocity().getY(), 1.0e-15);
+            Assertions.assertEquals(-10.0, pv.getVelocity().getZ(), 1.0e-15);
+            Assertions.assertEquals(10.0, pv.getAcceleration().getX(), 1.0e-15);
+            Assertions.assertEquals(-1.0, pv.getAcceleration().getY(), 1.0e-15);
+            Assertions.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
         }
-
-        PVCoordinates pv = new PVCoordinates(fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
-        Assertions.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
-        Assertions.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
-
     }
 
     @Test
-    public void testUnivariateDerivative2Vector() {
+    void testUnivariateDerivative2Vector() {
         FieldVector3D<UnivariateDerivative2> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
@@ -233,7 +241,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePVNeg() {
+    void testToDerivativeStructurePVNeg() {
         try {
             PVCoordinates.ZERO.toDerivativeStructurePV(-1);
             Assertions.fail("an exception should have been thrown");
@@ -244,7 +252,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV3() {
+    void testToDerivativeStructurePV3() {
         try {
             PVCoordinates.ZERO.toDerivativeStructurePV(3);
             Assertions.fail("an exception should have been thrown");
@@ -255,7 +263,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV0() {
+    void testToDerivativeStructurePV0() {
         FieldPVCoordinates<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
@@ -274,7 +282,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV1() {
+    void testToDerivativeStructurePV1() {
         FieldPVCoordinates<DerivativeStructure> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
@@ -301,7 +309,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToUnivariateDerivative1PV() {
+    void testToUnivariateDerivative1PV() {
         FieldPVCoordinates<UnivariateDerivative1> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
@@ -327,7 +335,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV2() {
+    void testToDerivativeStructurePV2() {
         FieldPVCoordinates<DerivativeStructure> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
@@ -369,7 +377,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToUnivariateDerivative2PV() {
+    void testToUnivariateDerivative2PV() {
         FieldPVCoordinates<UnivariateDerivative2> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
@@ -409,7 +417,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testJerkIsVelocitySecondDerivative() {
+    void testJerkIsVelocitySecondDerivative() {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(),
@@ -430,7 +438,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testJerkIsAccelerationDerivative() {
+    void testJerkIsAccelerationDerivative() {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(),
@@ -463,7 +471,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testJounceIsAccelerationSecondDerivative() {
+    void testJounceIsAccelerationSecondDerivative() {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(),
@@ -489,14 +497,14 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testMomentumDerivative() {
+    void testMomentumDerivative() {
         final PVCoordinates pva =
                         new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                           new Vector3D(-2079., 5291., -7842.));
         final Vector3D p  = pva.getPosition();
         final Vector3D v  = pva.getVelocity();
         final Vector3D a  = pva.getAcceleration();
-        final double   r2 = p.getNormSq();
+        final double   r2 = p.getNorm2Sq();
         final double   r  = FastMath.sqrt(r2);
         final Vector3D keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
         final PVCoordinates velocity = new PVCoordinates(v, a, keplerianJerk);
@@ -514,7 +522,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testShift() {
+    void testShift() {
         Vector3D p1 = new Vector3D( 1,  0.1,  10);
         Vector3D p2 = new Vector3D( 2,  0.2,  20);
         Vector3D v  = new Vector3D(-1, -0.1, -10);
@@ -526,14 +534,14 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         PVCoordinates pv =
             new PVCoordinates(new Vector3D( 1,  0.1,  10), new Vector3D(-1, -0.1, -10));
         Assertions.assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(0.0, 0.0, 0.0)}", pv.toString());
     }
 
     @Test
-    public void testGetMomentum() {
+    void testGetMomentum() {
         //setup
         Vector3D p = new Vector3D(1, -2, 3);
         Vector3D v = new Vector3D(-9, 8, -7);
@@ -550,7 +558,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testGetAngularVelocity() {
+    void testGetAngularVelocity() {
         //setup
         Vector3D p = new Vector3D(1, -2, 3);
         Vector3D v = new Vector3D(-9, 8, -7);
@@ -558,7 +566,7 @@ public class PVCoordinatesTest {
         //action + verify
         Assertions.assertEquals(
                 new PVCoordinates(p, v).getAngularVelocity(),
-                p.crossProduct(v).scalarMultiply(1.0 / p.getNormSq()));
+                p.crossProduct(v).scalarMultiply(1.0 / p.getNorm2Sq()));
         //check extra simple cases
         Assertions.assertEquals(
                 new PVCoordinates(Vector3D.PLUS_I, Vector3D.MINUS_I).getAngularVelocity(),
@@ -569,7 +577,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testNormalize() {
+    void testNormalize() {
         DSFactory factory = new DSFactory(1, 2);
         RandomGenerator generator = new Well19937a(0xb2011ffd25412067l);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
@@ -607,7 +615,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testCrossProduct() {
+    void testCrossProduct() {
         DSFactory factory = new DSFactory(1, 2);
         RandomGenerator generator = new Well19937a(0x85c592b3be733d23l);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
@@ -692,7 +700,7 @@ public class PVCoordinatesTest {
      }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

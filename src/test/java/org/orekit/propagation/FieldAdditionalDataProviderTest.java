@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,7 +84,7 @@ public class FieldAdditionalDataProviderTest {
         // Create propagator
         final FieldSpacecraftState<T> state = createState(field);
         final AdaptiveStepsizeFieldIntegrator<T> integrator = createIntegrator(field, state);
-        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setInitialState(state);
 
         // Create state modifier
@@ -115,7 +115,7 @@ public class FieldAdditionalDataProviderTest {
         // Create propagator
         final FieldSpacecraftState<T> state = createState(field);
         final AdaptiveStepsizeFieldIntegrator<T> integrator = createIntegrator(field, state);
-        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setInitialState(state);
 
         // Create additional state provider
@@ -206,7 +206,7 @@ public class FieldAdditionalDataProviderTest {
 
         final FieldSpacecraftState<T> state = createState(field);
         final AdaptiveStepsizeFieldIntegrator<T> integrator = createIntegrator(field, state);
-        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setInitialState(state);
 
         final MainStringDataModifier<T> modifier = new MainStringDataModifier<>();
@@ -224,7 +224,7 @@ public class FieldAdditionalDataProviderTest {
     private <T extends CalculusFieldElement<T>> void doTestInterpolationAdditionalStringData(Field<T> field) {
         final FieldSpacecraftState<T> state = createState(field);
         final AdaptiveStepsizeFieldIntegrator<T> integrator = createIntegrator(field, state);
-        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setInitialState(state);
 
         final MainStringDataModifier<T> modifier = new MainStringDataModifier<>();

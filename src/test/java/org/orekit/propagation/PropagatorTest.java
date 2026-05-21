@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,6 +27,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -168,6 +170,13 @@ class PropagatorTest {
         public SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target) {
             return null;
         }
+
+        @Override
+        public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
+                                                          final DoubleArrayDictionary initialJacobianColumns) {
+            throw new UnsupportedOperationException();
+        }
+
     }
 
 }

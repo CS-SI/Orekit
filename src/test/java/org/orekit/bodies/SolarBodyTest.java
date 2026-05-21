@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -210,55 +210,34 @@ public class SolarBodyTest {
     }
 
     private CelestialBody getBody(final int number) {
-        switch (number) {
-            case 1 :
-                return CelestialBodyFactory.getMercury();
-            case 2 :
-                return CelestialBodyFactory.getVenus();
-            case 3 :
-                return CelestialBodyFactory.getEarth();
-            case 4 :
-                return CelestialBodyFactory.getMars();
-            case 5 :
-                return CelestialBodyFactory.getJupiter();
-            case 6 :
-                return CelestialBodyFactory.getSaturn();
-            case 7 :
-                return CelestialBodyFactory.getUranus();
-            case 8 :
-                return CelestialBodyFactory.getNeptune();
-            case 9 :
-                return CelestialBodyFactory.getPluto();
-            case 10 :
-                return CelestialBodyFactory.getMoon();
-            case 11 :
-                return CelestialBodyFactory.getSun();
-            case 12 :
-                return CelestialBodyFactory.getSolarSystemBarycenter();
-            case 13 :
-                return CelestialBodyFactory.getEarthMoonBarycenter();
-            default :
-                return null;
-        }
+        return switch (number) {
+            case 1  -> CelestialBodyFactory.getMercury();
+            case 2  -> CelestialBodyFactory.getVenus();
+            case 3  -> CelestialBodyFactory.getEarth();
+            case 4  -> CelestialBodyFactory.getMars();
+            case 5  -> CelestialBodyFactory.getJupiter();
+            case 6  -> CelestialBodyFactory.getSaturn();
+            case 7  -> CelestialBodyFactory.getUranus();
+            case 8  -> CelestialBodyFactory.getNeptune();
+            case 9  -> CelestialBodyFactory.getPluto();
+            case 10  -> CelestialBodyFactory.getMoon();
+            case 11  -> CelestialBodyFactory.getSun();
+            case 12  -> CelestialBodyFactory.getSolarSystemBarycenter();
+            case 13  -> CelestialBodyFactory.getEarthMoonBarycenter();
+            default  -> null;
+        };
     }
 
     public double getCoordinate(final int number, final PVCoordinates pv) {
-        switch (number) {
-            case 1 :
-                return pv.getPosition().getX() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
-            case 2 :
-                return pv.getPosition().getY() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
-            case 3 :
-                return pv.getPosition().getZ() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
-            case 4 :
-                return pv.getVelocity().getX() * Constants.JULIAN_DAY / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
-            case 5 :
-                return pv.getVelocity().getY() * Constants.JULIAN_DAY / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
-            case 6 :
-                return pv.getVelocity().getZ() * Constants.JULIAN_DAY / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
-            default :
-                return Double.NaN;
-        }
+        return switch (number) {
+            case 1  -> pv.getPosition().getX() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 2  -> pv.getPosition().getY() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 3  -> pv.getPosition().getZ() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 4  -> pv.getVelocity().getX() * Constants.JULIAN_DAY / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 5  -> pv.getVelocity().getY() * Constants.JULIAN_DAY / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 6  -> pv.getVelocity().getZ() * Constants.JULIAN_DAY / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            default  -> Double.NaN;
+        };
     }
 
     @Test
@@ -468,7 +447,7 @@ public class SolarBodyTest {
             // compute bodies separation vectors and squared norm
             final Vector3D centralToBody = body.getPosition(s.getDate(), s.getFrame());
             final Vector3D satToBody     = centralToBody.subtract(s.getPosition());
-            final double   r2Sat         = satToBody.getNormSq();
+            final double   r2Sat         = satToBody.getNorm2Sq();
 
             // compute relative acceleration
             return new Vector3D(gm / (r2Sat * FastMath.sqrt(r2Sat)), satToBody);
@@ -486,7 +465,7 @@ public class SolarBodyTest {
             // compute bodies separation vectors and squared norm
             final FieldVector3D<T> centralToBody = body.getPosition(s.getDate(), s.getFrame());
             final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
-            final T                r2Sat         = satToBody.getNormSq();
+            final T                r2Sat         = satToBody.getNorm2Sq();
 
             // compute absolute acceleration
             return new FieldVector3D<>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody);

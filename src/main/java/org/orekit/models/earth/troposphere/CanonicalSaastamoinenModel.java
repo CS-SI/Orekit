@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ import org.orekit.utils.TrackingCoordinates;
  * Estimates the path delay imposed to
  * electro-magnetic signals by the troposphere according to the formula:
  * \[
- * \delta = \frac{0.002277}{\cos z} \left[P+(\frac{1255}{T}+0.005)e - B(h) \tan^2 z\right]
+ * \delta = \frac{0.002277}{\cos z} \left[P+(\frac{1255}{T}+0.05)e - B(h) \tan^2 z\right]
  * \]
  * with the following input data provided to the model:
  * <ul>

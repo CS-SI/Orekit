@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.files.rinex.observation;
-import java.util.List;
 
-import org.orekit.gnss.ObservationType;
+import java.util.List;
 
 /** Scale Factor to be applied.
  * Contains the scale factors of 10 applied to the data before
@@ -27,7 +26,7 @@ import org.orekit.gnss.ObservationType;
 public class ScaleFactorCorrection {
 
     /** List of Observations types that have been scaled. */
-    private final List<ObservationType> typesObsScaleFactor;
+    private final List<String> typesObsScaleFactor;
 
     /** Factor to divide stored observations with before use. */
     private final double scaleFactor;
@@ -37,7 +36,7 @@ public class ScaleFactorCorrection {
      * @param typesObsScaleFactor List of Observations types that have been scaled
      */
     public ScaleFactorCorrection(final double scaleFactor,
-                                 final List<ObservationType> typesObsScaleFactor) {
+                                 final List<String> typesObsScaleFactor) {
         this.scaleFactor = scaleFactor;
         this.typesObsScaleFactor = typesObsScaleFactor;
     }
@@ -52,7 +51,7 @@ public class ScaleFactorCorrection {
     /** Get the list of Observation Types scaled.
      * @return List of Observation types scaled
      */
-    public List<ObservationType> getTypesObsScaled() {
+    public List<String> getTypesObsScaled() {
         return typesObsScaleFactor;
     }
 

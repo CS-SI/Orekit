@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,11 @@
 
 package org.orekit.estimation;
 
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObserverSatellite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,5 +30,11 @@ import java.util.List;
 public interface StationDataProvider {
 
     List<GroundStation> getStations();
+
+    default List<ObserverSatellite> getSatellites() {
+        return new ArrayList<>();
+    }
+
+    OneAxisEllipsoid getEarth();
 
 }

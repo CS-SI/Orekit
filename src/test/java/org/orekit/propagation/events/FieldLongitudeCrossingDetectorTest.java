@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,6 @@
 
 package org.orekit.propagation.events;
 
-import static org.orekit.orbits.PositionAngleType.MEAN;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
@@ -28,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
@@ -38,6 +37,8 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -46,6 +47,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.orekit.orbits.PositionAngleType.MEAN;
 
 /** Unit tests for {@link FieldLongitudeCrossingDetector}. */
 public class FieldLongitudeCrossingDetectorTest {
@@ -83,7 +88,7 @@ public class FieldLongitudeCrossingDetectorTest {
         Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(10.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
-        Assertions.assertSame(earth, d.getBody());
+        Assertions.assertSame(earth, d.getBodyShape());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -177,6 +182,20 @@ public class FieldLongitudeCrossingDetectorTest {
      */
     private static Binary64 v(double value) {
         return new Binary64(value);
+    }
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldLongitudeCrossingDetector<Binary64> fieldDetector = new FieldLongitudeCrossingDetector<>(Binary64Field.getInstance(),
+                mock(BodyShape.class), 0.);
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final LongitudeCrossingDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getBodyShape(), detector.getBodyShape());
+        assertEquals(fieldDetector.getLongitude(), detector.getLongitude());
     }
 
     @BeforeEach

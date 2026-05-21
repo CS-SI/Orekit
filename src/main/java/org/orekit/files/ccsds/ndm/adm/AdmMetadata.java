@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
 
@@ -38,14 +37,6 @@ public class AdmMetadata extends Metadata {
 
     /** Body at origin of reference frame. */
     private BodyFacade center;
-
-    /** Simple constructor.
-     * @deprecated in favor of {@link #AdmMetadata(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AdmMetadata() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

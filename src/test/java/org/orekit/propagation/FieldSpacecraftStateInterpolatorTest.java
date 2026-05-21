@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -342,7 +342,7 @@ class FieldSpacecraftStateInterpolatorTest {
         // Create propagator
         final FieldODEIntegrator<Binary64> integrator = setUpDefaultIntegrator();
 
-        final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(field, integrator);
+        final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(integrator);
 
         // Configure propagator
         propagator.setOrbitType(null);

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,7 +54,7 @@ public class CartesianAdjointThirdBodyTerm extends AbstractCartesianAdjointNonCe
         final double y = stateVariables[1] - bodyPosition.getY();
         final double z = stateVariables[2] - bodyPosition.getZ();
         final Vector3D newtonianAcceleration = getNewtonianAcceleration(new double[] {x, y, z});
-        final double rBody2 = bodyPosition.getNormSq();
+        final double rBody2 = bodyPosition.getNorm2Sq();
         final Vector3D bodyCentralAcceleration = bodyPosition.scalarMultiply(getMu() / (rBody2 * FastMath.sqrt(rBody2)));
         return newtonianAcceleration.subtract(bodyCentralAcceleration);
     }
@@ -73,7 +73,7 @@ public class CartesianAdjointThirdBodyTerm extends AbstractCartesianAdjointNonCe
         relativePosition[1] = y;
         relativePosition[2] = z;
         final FieldVector3D<T> newtonianAcceleration = getFieldNewtonianAcceleration(relativePosition);
-        final T rBody2 = bodyPosition.getNormSq();
+        final T rBody2 = bodyPosition.getNorm2Sq();
         final T factor = rBody2.multiply(rBody2.sqrt()).reciprocal().multiply(getMu());
         final FieldVector3D<T> bodyCentralAcceleration = bodyPosition.scalarMultiply(factor);
         return newtonianAcceleration.subtract(bodyCentralAcceleration);

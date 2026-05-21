@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,16 @@
  */
 package org.orekit.control.indirect.shooting;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.ODEIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,13 +48,22 @@ import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionC
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
 import org.orekit.control.indirect.shooting.boundary.NormBasedCartesianConditionChecker;
-import org.orekit.control.indirect.shooting.propagation.*;
+import org.orekit.control.indirect.shooting.propagation.AdjointDynamicsProvider;
+import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProvider;
+import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProviderFactory;
+import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettings;
+import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettingsFactory;
+import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.J2OnlyPerturbation;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.*;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -64,11 +76,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 class NewtonFixedBoundaryCartesianSingleShootingTest {
 
@@ -76,7 +89,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
     private static final String ADJOINT_NAME = "adjoint";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -582,22 +595,12 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final ShootingBoundaryOutput output = shooting.solve(mass, new double[6]);
         // THEN
         Assertions.assertTrue(output.isConverged());
-        final SpacecraftState repropagatedState = repropagate(shooting.getPropagationSettings(), output.getInitialState(),
-                boundaryOrbits.getTerminalOrbit().getDate());
+        final SpacecraftState initialState = output.getInitialState();
+        final NumericalPropagator propagator = shooting.buildPropagator(initialState.getAdditionalState(ADJOINT_NAME),
+                initialState.getMass());
+        final SpacecraftState repropagatedState = propagator.propagate(boundaryOrbits.getTerminalOrbit().getDate());
         final Vector3D relativePosition = repropagatedState.getPosition().subtract(boundaryOrbits.getTerminalOrbit().getPosition());
         Assertions.assertEquals(0, relativePosition.getNorm(), 1e2);
-    }
-
-    private SpacecraftState repropagate(final ShootingPropagationSettings propagationSettings,
-                                        final SpacecraftState initialState, final AbsoluteDate terminalDate) {
-        final OrbitType orbitType = OrbitType.CARTESIAN;
-        final ODEIntegrator integrator = propagationSettings.getIntegrationSettings().getIntegratorBuilder()
-                .buildIntegrator(initialState.getOrbit(), orbitType);
-        final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setInitialState(initialState);
-        propagator.setOrbitType(orbitType);
-        propagator.addAdditionalDerivativesProvider(propagationSettings.getAdjointDynamicsProvider().buildAdditionalDerivativesProvider());
-        return propagator.propagate(terminalDate);
     }
 
     @Test

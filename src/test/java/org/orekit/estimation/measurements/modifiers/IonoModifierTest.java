@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -50,22 +57,32 @@ import org.orekit.estimation.measurements.TDOAMeasurementCreator;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
+import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
+import org.orekit.estimation.measurements.gnss.OneWayGNSSRangeCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.PredefinedGnssSignal;
-import org.orekit.models.earth.ionosphere.IonosphericDelayModel;
+import org.orekit.models.earth.ionosphere.AbstractIonosphericModel;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.PVCoordinatesProvider;
 
 public class IonoModifierTest {
 
@@ -75,16 +92,33 @@ public class IonoModifierTest {
     /** frequency [Hz]. */
     private double frequency;
 
+    private OneAxisEllipsoid earthBodyShape;
+
     @BeforeEach
+    @DefaultDataContext
     public void setUp() throws Exception {
+
+        Utils.setDataRoot("regular-data");
+        earthBodyShape  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                               Constants.WGS84_EARTH_FLATTENING,
+                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
         // Navigation message data
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
         // .1430D+06   .0000D+00  -.3280D+06   .1130D+06          ION BETA
-        model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
-                                       new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+        model = new KlobucharIonoModel(earthBodyShape, new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
+                                                       new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+
         // GPS L1 in HZ
         frequency = PredefinedGnssSignal.G01.getFrequency();
     }
+
+    @AfterEach
+    public void tearDown() {
+        earthBodyShape = null;
+        model = null;
+    }
+
 
     @Test
     public void testPhaseIonoModifier() {
@@ -92,12 +126,12 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -106,7 +140,7 @@ public class IonoModifierTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
@@ -168,12 +202,12 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -182,7 +216,7 @@ public class IonoModifierTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
@@ -194,8 +228,8 @@ public class IonoModifierTest {
         propagator.clearStepHandlers();
 
 
-        final IonosphericModel mockModel = new MockIonosphericModel(12.0);
-        mockModel.getParametersDrivers().get(0).setSelected(true);
+        final IonosphericModel mockModel = new MockIonosphericModel(earthBodyShape, 12.0);
+        mockModel.getParametersDrivers().getFirst().setSelected(true);
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(mockModel, frequency);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -241,12 +275,12 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -300,18 +334,102 @@ public class IonoModifierTest {
         }
     }
 
+
+    @Test
+    public void testOneWayGNSSRangeIonoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // This orbit setup will specifically check the new "solve two distances between the minimum altitude"
+        final Orbit measuredOrbit = new KeplerianOrbit(6728000.0, 0.001, Math.toRadians(23.0), 
+                                                   Math.toRadians(0.0), Math.toRadians(0.0), 
+                                                   Math.toRadians(0.0), PositionAngleType.TRUE,
+                                                   context.initialOrbit.getFrame(),
+                                                   context.initialOrbit.getDate(),
+                                                   context.initialOrbit.getMu());
+
+        final Propagator propagator = EstimationTestUtils.createPropagator(measuredOrbit,
+                                                                           propagatorBuilder);
+
+        final Orbit gnssOrbit = new KeplerianOrbit(6728000.0, 0.001, Math.toRadians(23.0), 
+                                                   Math.toRadians(0.0), Math.toRadians(0.0), 
+                                                   Math.toRadians(10.0), PositionAngleType.TRUE,
+                                                   context.initialOrbit.getFrame(),
+                                                   context.initialOrbit.getDate(),
+                                                   context.initialOrbit.getMu());
+        
+        final Propagator gnssPropagator = EstimationTestUtils.createPropagator(gnssOrbit, propagatorBuilder);
+
+        final EphemerisGenerator gnssGenerator = gnssPropagator.getEphemerisGenerator();
+        gnssPropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * gnssOrbit.getKeplerianPeriod()));
+        final BoundedPropagator gnssEphemeris = gnssGenerator.getGeneratedEphemeris();
+
+        final double localClockOffset  = 137.0e-9;
+        final double remoteClockOffset = 469.0e-9;
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new OneWayGNSSRangeCreator(gnssEphemeris, localClockOffset, remoteClockOffset),
+                                                               1.0, 3.0, 300.0);
+        propagator.clearStepHandlers();
+
+        final OneWayGNSSRangeIonosphericDelayModifier modifier = new OneWayGNSSRangeIonosphericDelayModifier(model, frequency);
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+
+            final AbsoluteDate date = measurement.getDate();
+            final SpacecraftState refstate = propagator.propagate(date);
+
+            OneWayGNSSRange gnssRange = (OneWayGNSSRange) measurement;
+            EstimatedMeasurementBase<OneWayGNSSRange> evalNoMod = gnssRange.estimateWithoutDerivatives(12, 17, new SpacecraftState[] { refstate });
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
+
+            // add modifier
+            gnssRange.addModifier(modifier);
+            boolean found = false;
+            for (final EstimationModifier<OneWayGNSSRange> existing : gnssRange.getModifiers()) {
+                found = found || existing == modifier;
+            }
+            Assertions.assertTrue(found);
+            //
+            EstimatedMeasurement<OneWayGNSSRange> eval = gnssRange.estimate(0, 0,  new SpacecraftState[] { refstate });
+            Assertions.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            eval.setStatus(EstimatedMeasurement.Status.REJECTED);
+            Assertions.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            eval.setStatus(evalNoMod.getStatus());
+
+            try {
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
+                Assertions.fail("an exception should have been thrown");
+            } catch (OrekitIllegalArgumentException oiae) {
+                Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            }
+
+            final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+
+            // Turns out that the Klobuchar model someteimes gives *really* high delays 
+            // when your elevation entry is zero
+            Assertions.assertEquals(0.0, diffMeters, 90.0);
+
+        }
+    }
+
     @Test
     public void testRangeRateIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -354,18 +472,18 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect turn-around measurements
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    primaryStation = entry.getKey();
             final GroundStation    secondaryStation  = entry.getValue();
-            primaryStation.getClockOffsetDriver().setSelected(true);
+            primaryStation.getClockBiasDriver().setSelected(true);
             primaryStation.getEastOffsetDriver().setSelected(true);
             primaryStation.getNorthOffsetDriver().setSelected(true);
             primaryStation.getZenithOffsetDriver().setSelected(true);
-            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getClockBiasDriver().setSelected(false);
             secondaryStation.getEastOffsetDriver().setSelected(true);
             secondaryStation.getNorthOffsetDriver().setSelected(true);
             secondaryStation.getZenithOffsetDriver().setSelected(true);
@@ -425,18 +543,18 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         // create perfect range measurements
         final GroundStation emitter = context.BRRstations.getKey();
-        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getClockBiasDriver().setSelected(true);
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -475,7 +593,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -485,7 +603,7 @@ public class IonoModifierTest {
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -526,18 +644,18 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         // create perfect range measurements
         final GroundStation emitter = context.TDOAstations.getKey();
-        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getClockBiasDriver().setSelected(true);
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.TDOAstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -578,12 +696,12 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -625,12 +743,12 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -645,11 +763,11 @@ public class IonoModifierTest {
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             // parameter corresponding to station position offset
-            final GroundStation   station = ((Range) measurement).getStation();
-            final AbsoluteDate    date    = measurement.getDate();
-            final SpacecraftState state   = propagator.propagate(date);
+            final PVCoordinatesProvider coordsProvider = ((Range) measurement).getObserver().getPVCoordinatesProvider();
+            final AbsoluteDate          date           = measurement.getDate();
+            final SpacecraftState       state          = propagator.propagate(date);
 
-            double delayMeters = model.pathDelay(state, station.getBaseFrame(), frequency, model.getParameters());
+            double delayMeters = model.pathDelay(state, coordsProvider, frequency, model.getParameters());
 
             final double epsilon = 1e-6;
             Assertions.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);
@@ -658,7 +776,7 @@ public class IonoModifierTest {
 
     }
 
-    private static class MockIonosphericModel implements IonosphericModel, IonosphericDelayModel {
+    private static class MockIonosphericModel extends AbstractIonosphericModel {
 
         /** Driver for the ionospheric delay.*/
         private final ParameterDriver ionoDelay;
@@ -666,35 +784,36 @@ public class IonoModifierTest {
         /** Constructor.
          * @param delay initial ionospheric delay
          */
-        public MockIonosphericModel(final double delay) {
+        public MockIonosphericModel(final OneAxisEllipsoid body, final double delay) {
+            super(body);
             ionoDelay = new ParameterDriver("ionospheric delay",
                                             delay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY);
         }
 
         @Override
-        public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
+        public double pathDelay(final SpacecraftState state, final PVCoordinatesProvider coordsProvider,
                                 final double frequency, double[] parameters) {
             return parameters[0];
         }
 
         @Override
-        public double pathDelay(final SpacecraftState state,
-                                final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
-                                final double frequency, double[] parameters) {
+        public double pathDelay(final Vector3D localP1, final Vector3D localP2, 
+                            final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
+                            final double frequency, final double[] parameters) {
             return parameters[0];
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
-                                                           final double frequency, final  T[] parameters) {
-            return parameters[0];
-        }
-
-        @Override
-        public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
-                                                               final TopocentricFrame baseFrame,
-                                                               final FieldAbsoluteDate<T> receptionDate,
+        public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, 
+                                                               final PVCoordinatesProvider coordsProvider,
                                                                final double frequency, final  T[] parameters) {
+            return parameters[0];
+        }
+
+        @Override
+    public <T extends CalculusFieldElement<T>> T pathDelay(FieldVector3D<T> localP1, FieldVector3D<T> localP2, 
+                                                           TopocentricFrame baseFrame, FieldAbsoluteDate<T> receptionDate,
+                                                           double frequency, T[] parameters) {
             return parameters[0];
         }
 

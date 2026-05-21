@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -210,18 +211,31 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     void testInpopvsJPL() {
-        Utils.setDataRoot("regular-data:inpop");
+        // EMW 2026-03-31 Modified to separate data contexts to prevent one
+        // file's ICRF from being used as the basis for another file's Mars
+        final LazyLoadedDataContext jpl = Utils.newDataContext("regular-data");
+        jpl.getCelestialBodies().addDefaultCelestialBodyLoader("^unxp(\\d\\d\\d\\d)\\.405$");
+        final LazyLoadedDataContext inpopTdb = Utils.newDataContext("inpop");
+        inpopTdb.getCelestialBodies().addDefaultCelestialBodyLoader("^inpop.*_TDB_.*_bigendian\\.dat$");
+        final LazyLoadedDataContext inpopTcb = Utils.newDataContext("inpop");
+        inpopTcb.getCelestialBodies().addDefaultCelestialBodyLoader("^inpop.*_TCB_.*_bigendian\\.dat$");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
-        JPLEphemeridesLoader loaderDE405 =
-                new JPLEphemeridesLoader("^unxp(\\d\\d\\d\\d)\\.405$", type);
-        CelestialBody bodysDE405 = loaderDE405.loadCelestialBody(CelestialBodyFactory.MARS);
+        CelestialBody bodysDE405 = jpl.getCelestialBodies().getMars();
         JPLEphemeridesLoader loaderInpopTDBBig =
-                new JPLEphemeridesLoader("^inpop.*_TDB_.*_bigendian\\.dat$", type);
-        CelestialBody bodysInpopTDBBig = loaderInpopTDBBig.loadCelestialBody(CelestialBodyFactory.MARS);
+                new JPLEphemeridesLoader("^inpop.*_TDB_.*_bigendian\\.dat$", type,
+                        inpopTdb.getDataProvidersManager(),
+                        inpopTdb.getTimeScales(),
+                        inpopTdb.getFrames().getGCRF(),
+                        inpopTdb.getCelestialBodies());
+        CelestialBody bodysInpopTDBBig = inpopTdb.getCelestialBodies().getMars();
         Assertions.assertEquals(0.0, loaderInpopTDBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         JPLEphemeridesLoader loaderInpopTCBBig =
-                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type);
-        CelestialBody bodysInpopTCBBig = loaderInpopTCBBig.loadCelestialBody(CelestialBodyFactory.MARS);
+                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type,
+                        inpopTcb.getDataProvidersManager(),
+                        inpopTcb.getTimeScales(),
+                        inpopTcb.getFrames().getGCRF(),
+                        inpopTcb.getCelestialBodies());
+        CelestialBody bodysInpopTCBBig = inpopTcb.getCelestialBodies().getMars();
         Assertions.assertEquals(1.0, loaderInpopTCBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         AbsoluteDate t0 = new AbsoluteDate(1969, 7, 17, 10, 43, 23.4, TimeScalesFactory.getTT());
         Frame eme2000   = FramesFactory.getEME2000();
@@ -331,6 +345,20 @@ public class JPLEphemeridesLoaderTest {
         // THEN
         Assertions.assertThrows(OrekitException.class, loaderWithout2021Format::getLoadedAstronomicalUnit);
         Assertions.assertDoesNotThrow(loaderWith2021Format::getLoadedAstronomicalUnit);
+    }
+
+    @Test
+    void testJPLLoadLibration() {
+        Utils.setDataRoot("regular-data/de431-ephemerides");
+
+        JPLEphemeridesLoader loader =
+            new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                                     JPLEphemeridesLoader.EphemerisType.LIBRATION);
+        JPLLibration libration = loader.loadLibration();
+        AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 1, 4.184, TimeScalesFactory.getTDB());
+        Assertions.assertEquals(-0.05408383637, libration.getPhi(date), 1.0e-11);
+        Assertions.assertEquals(0.42483375049, libration.getTheta(date), 1.0e-11);
+        Assertions.assertEquals(2564.14339017, libration.getPsi(date), 1.0e-8);
     }
 
     private int testPo(String name) throws IOException {
@@ -451,37 +479,22 @@ public class JPLEphemeridesLoaderTest {
                        12-Solar System Barycenter, 13-Earth-Moon Barycenter
                        14-Nutations, 15-Librations)
          */
-        switch (body) {
-            case 1:
-                return CelestialBodyFactory.MERCURY;
-            case 2:
-                return CelestialBodyFactory.VENUS;
-            case 3:
-                return CelestialBodyFactory.EARTH;
-            case 4:
-                return CelestialBodyFactory.MARS;
-            case 5:
-                return CelestialBodyFactory.JUPITER;
-            case 6:
-                return CelestialBodyFactory.SATURN;
-            case 7:
-                return CelestialBodyFactory.URANUS;
-            case 8:
-                return CelestialBodyFactory.NEPTUNE;
-            case 9:
-                return CelestialBodyFactory.PLUTO;
-            case 10:
-                return CelestialBodyFactory.MOON;
-            case 11:
-                return CelestialBodyFactory.SUN;
-            case 12:
-                return CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER;
-            case 13:
-                return CelestialBodyFactory.EARTH_MOON;
-            default:
-                // nutations and librations not implemented
-                return null;
-        }
+        return switch (body) {
+            case 1 -> CelestialBodyFactory.MERCURY;
+            case 2 -> CelestialBodyFactory.VENUS;
+            case 3 -> CelestialBodyFactory.EARTH;
+            case 4 -> CelestialBodyFactory.MARS;
+            case 5 -> CelestialBodyFactory.JUPITER;
+            case 6 -> CelestialBodyFactory.SATURN;
+            case 7 -> CelestialBodyFactory.URANUS;
+            case 8 -> CelestialBodyFactory.NEPTUNE;
+            case 9 -> CelestialBodyFactory.PLUTO;
+            case 10 -> CelestialBodyFactory.MOON;
+            case 11 -> CelestialBodyFactory.SUN;
+            case 12 -> CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER;
+            case 13 -> CelestialBodyFactory.EARTH_MOON;
+            default -> null;
+        };
     }
 
     private void checkDerivative(String supportedNames, AbsoluteDate date, double maxChunkDuration)

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,7 +57,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
      * @param interpolationPoints number of interpolation points
      * @param extrapolationThreshold extrapolation threshold beyond which the propagation will fail
      */
-    public AbstractTimeInterpolator(final int interpolationPoints, final double extrapolationThreshold) {
+    protected AbstractTimeInterpolator(final int interpolationPoints, final double extrapolationThreshold) {
         this.interpolationPoints    = interpolationPoints;
         this.extrapolationThreshold = extrapolationThreshold;
     }
@@ -152,7 +152,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     public int getNbInterpolationPoints() {
         final List<TimeInterpolator<? extends TimeStamped>> subInterpolators = getSubInterpolators();
         // In case the interpolator does not have sub interpolators
-        if (subInterpolators.size() == 1 && subInterpolators.get(0) == this) {
+        if (subInterpolators.size() == 1 && subInterpolators.getFirst() == this) {
             return interpolationPoints;
         }
         // Otherwise find maximum number of interpolation points among sub interpolators

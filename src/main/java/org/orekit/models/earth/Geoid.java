@@ -146,7 +146,7 @@ public class Geoid implements EarthShape {
      * the geo-potential combined with an algorithm for evaluating the spherical
      * harmonics. The Holmes and Featherstone method is very robust.
      */
-    private final transient HolmesFeatherstoneAttractionModel harmonics;
+    private final HolmesFeatherstoneAttractionModel harmonics;
 
     /**
      * Creates a geoid from the given geopotential, reference ellipsoid and the
@@ -392,7 +392,7 @@ public class Geoid implements EarthShape {
         final ReferenceEllipsoid ellipsoid = this.getEllipsoid();
         // calculate end points
         // distance from line to center of earth, squared
-        final double d2 = line.pointAt(0.0).getNormSq();
+        final double d2 = line.pointAt(0.0).getNorm2Sq();
         // the minimum abscissa, squared
         final double n = ellipsoid.getPolarRadius() + MIN_UNDULATION;
         final double minAbscissa2 = n * n - d2;
@@ -480,7 +480,7 @@ public class Geoid implements EarthShape {
         final ReferenceEllipsoid ellipsoid = this.getEllipsoid();
         // calculate end points
         // distance from line to center of earth, squared
-        final T d2 = line.pointAt(0.0).getNormSq();
+        final T d2 = line.pointAt(0.0).getNorm2Sq();
         // the minimum abscissa, squared
         final double n = ellipsoid.getPolarRadius() + MIN_UNDULATION;
         final T minAbscissa2 = d2.negate().add(n * n);

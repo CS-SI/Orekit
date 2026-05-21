@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -172,7 +172,7 @@ public class FieldDSSTTesseralTest {
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(orbit, 1);
 
-        final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
+        final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
 
         force.registerAttitudeProvider(null);
         shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field, orbit.getDate())));
@@ -346,7 +346,7 @@ public class FieldDSSTTesseralTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute state Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
         shortPeriodTerms.addAll(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
                                 converter.getParametersAtStateDate(dsState, tesseral)));
         tesseral.updateShortPeriodTerms(converter.getParameters(dsState, tesseral), dsState);
@@ -469,7 +469,7 @@ public class FieldDSSTTesseralTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
         shortPeriodTerms.addAll(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
                                 converter.getParametersAtStateDate(dsState, tesseral)));
         tesseral.updateShortPeriodTerms(converter.getParameters(dsState, tesseral), dsState);
@@ -516,7 +516,7 @@ public class FieldDSSTTesseralTest {
             }
         }
 
-        ParameterDriver selected = bound.getDrivers().get(0);
+        ParameterDriver selected = bound.getDrivers().getFirst();
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
 
@@ -561,7 +561,7 @@ public class FieldDSSTTesseralTest {
 
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
-        List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
         shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
         force.updateShortPeriodTerms(force.getParametersAllValues(), state);
         

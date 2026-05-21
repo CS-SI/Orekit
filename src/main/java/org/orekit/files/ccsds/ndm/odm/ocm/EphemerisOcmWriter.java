@@ -229,8 +229,8 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
             }
 
             // write single segment metadata
-            metadata.setStartTime(blocks.get(0).getStart());
-            metadata.setStopTime(blocks.get(blocks.size() - 1).getStop());
+            metadata.setStartTime(blocks.getFirst().getStart());
+            metadata.setStopTime(blocks.getLast().getStop());
             new OcmMetadataWriter(metadata, writer.getTimeConverter()).write(generator);
 
             if (generator.getFormat() == FileFormat.XML) {

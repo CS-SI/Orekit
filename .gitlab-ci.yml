@@ -6,7 +6,7 @@ stages:
 
 default:
   # Default image
-  image: registry.orekit.org/orekit/ci-utils/maven:3.9.6-eclipse-temurin-11
+  image: registry.orekit.org/orekit/ci-utils/maven:3.9.11-eclipse-temurin-21
   # Cache downloaded dependencies and plugins between builds.
   # To keep cache across branches add 'key: "$CI_JOB_REF_NAME"'
   cache:
@@ -169,11 +169,12 @@ deploy:site:
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "develop"
 
-# trigger performance tests after artifacts are deployed to Nexus
+
+# Trigger performance tests after artifacts are deployed to Nexus
 # similar to Jenkins' "build after a snapshot dependency is built"
 performance:
   stage: deploy
-  # don't fail the build if this doesn't work
+  # Don't fail the build if this doesn't work
   allow_failure: true
   needs:
     - job: deploy:artifacts
@@ -181,6 +182,24 @@ performance:
   trigger: orekit/orekit-performance
   rules:
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "develop"
+
+
+# Trigger the Orekit tutorials CI/CD pipeline after a successful CI/CD
+# pipeline on the Orekit "develop" branch in order to detect necessary updates
+# in the tutorials.
+tutorials:
+  stage: deploy
+  # Don't fail the build if this doesn't work
+  allow_failure: true
+  needs:
+    - job: deploy:site
+      artifacts: false
+  inherit:
+    variables: false
+  trigger: orekit/orekit-tutorials
+  rules:
+    - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "develop"
+
 
 release:
   stage: release

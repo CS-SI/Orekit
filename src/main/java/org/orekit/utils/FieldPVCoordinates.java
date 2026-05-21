@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,10 +64,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      * @param velocity the velocity vector (m/s)
      */
     public FieldPVCoordinates(final FieldVector3D<T> position, final FieldVector3D<T> velocity) {
-        this.position     = position;
-        this.velocity     = velocity;
-        final T zero      = position.getX().getField().getZero();
-        this.acceleration = new FieldVector3D<>(zero, zero, zero);
+        this(position, velocity, FieldVector3D.getZero(position.getX().getField()));
     }
 
     /** Builds a FieldPVCoordinates triplet.
@@ -469,7 +466,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
                 break;
             case 1 : {
                 factory = new FDSFactory<>(getPosition().getX().getField(), 1, order);
-                final T                r2            = position.getNormSq();
+                final T                r2            = position.getNorm2Sq();
                 final T                r             = r2.sqrt();
                 final T                pvOr2         = FieldVector3D.dotProduct(position, velocity).divide(r2);
                 final T                a             = acceleration.getNorm();
@@ -489,14 +486,14 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
             }
             case 2 : {
                 factory = new FDSFactory<>(getPosition().getX().getField(), 1, order);
-                final T                r2              = position.getNormSq();
+                final T                r2              = position.getNorm2Sq();
                 final T                r               = r2.sqrt();
                 final T                pvOr2           = FieldVector3D.dotProduct(position, velocity).divide(r2);
                 final T                a               = acceleration.getNorm();
                 final T                aOr             = a.divide(r);
                 final FieldVector3D<T> keplerianJerk   = new FieldVector3D<>(pvOr2.multiply(-3), acceleration,
                                                                              aOr.negate(), velocity);
-                final T                v2              = velocity.getNormSq();
+                final T                v2              = velocity.getNorm2Sq();
                 final T                pa              = FieldVector3D.dotProduct(position, acceleration);
                 final T                aj              = FieldVector3D.dotProduct(acceleration, keplerianJerk);
                 final FieldVector3D<T> keplerianJounce = new FieldVector3D<>(v2.add(pa).multiply(-3).divide(r2).add(pvOr2.multiply(pvOr2).multiply(15)).subtract(aOr), acceleration,
@@ -534,7 +531,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public FieldPVCoordinates<FieldUnivariateDerivative1<T>> toUnivariateDerivative1PV() {
 
-        final T   r2            = position.getNormSq();
+        final T   r2            = position.getNorm2Sq();
         final T   r             = FastMath.sqrt(r2);
         final T   pvOr2         = FieldVector3D.dotProduct(position, velocity).divide(r2);
         final T   a             = acceleration.getNorm();
@@ -571,14 +568,14 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public FieldPVCoordinates<FieldUnivariateDerivative2<T>> toUnivariateDerivative2PV() {
 
-        final T                r2              = position.getNormSq();
+        final T                r2              = position.getNorm2Sq();
         final T                r               = r2.sqrt();
         final T                pvOr2           = FieldVector3D.dotProduct(position, velocity).divide(r2);
         final T                a               = acceleration.getNorm();
         final T                aOr             = a.divide(r);
         final FieldVector3D<T> keplerianJerk   = new FieldVector3D<>(pvOr2.multiply(-3), acceleration,
                                                                      aOr.negate(), velocity);
-        final T                v2              = velocity.getNormSq();
+        final T                v2              = velocity.getNorm2Sq();
         final T                pa              = FieldVector3D.dotProduct(position, acceleration);
         final T                aj              = FieldVector3D.dotProduct(acceleration, keplerianJerk);
         final FieldVector3D<T> keplerianJounce = new FieldVector3D<>(v2.add(pa).multiply(-3).divide(r2).add(pvOr2.multiply(pvOr2).multiply(15)).subtract(aOr), acceleration,
@@ -716,7 +713,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public FieldVector3D<T> getAngularVelocity() {
         return this.getMomentum().scalarMultiply(
-                this.getPosition().getNormSq().reciprocal());
+                this.getPosition().getNorm2Sq().reciprocal());
     }
 
     /** Get the opposite of the instance.

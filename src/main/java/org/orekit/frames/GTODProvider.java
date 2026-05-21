@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,7 @@ public class GTODProvider implements EOPBasedTransformProvider {
     private final EOPHistory eopHistory;
 
     /** GAST function. */
-    private final transient TimeScalarFunction gastFunction;
+    private final TimeScalarFunction gastFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to use

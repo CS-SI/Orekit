@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -96,10 +96,8 @@ public class OceanTidesFieldTest {
         double[][][] triangular = new double[degree + 1][][];
         for (int i = 0; i <= degree; ++i) {
             triangular[i] = new double[FastMath.min(i, order) + 1][4];
-        };
-
-        // filter waves
-        List<OceanTidesWave> filtered = new ArrayList<OceanTidesWave>(doodson.length);
+        }// filter waves
+        List<OceanTidesWave> filtered = new ArrayList<>(doodson.length);
         for (final int d : doodson) {
             for (final OceanTidesWave wave : complete) {
                 if (wave.getDoodson() == d) {

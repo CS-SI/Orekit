@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Andrew Goetz
+/* Copyright 2002-2026 Andrew Goetz
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -145,12 +145,12 @@ public class STKEphemerisFile implements EphemerisFile<TimeStampedPVCoordinates,
 
         @Override
         public AbsoluteDate getStart() {
-            return timeStampedPVCoordinates.get(0).getDate();
+            return timeStampedPVCoordinates.getFirst().getDate();
         }
 
         @Override
         public AbsoluteDate getStop() {
-            return timeStampedPVCoordinates.get(timeStampedPVCoordinates.size() - 1).getDate();
+            return timeStampedPVCoordinates.getLast().getDate();
         }
 
     }
@@ -198,12 +198,12 @@ public class STKEphemerisFile implements EphemerisFile<TimeStampedPVCoordinates,
 
         @Override
         public AbsoluteDate getStart() {
-            return segments.get(0).getStart();
+            return segments.getFirst().getStart();
         }
 
         @Override
         public AbsoluteDate getStop() {
-            return segments.get(segments.size() - 1).getStop();
+            return segments.getLast().getStop();
         }
 
     }

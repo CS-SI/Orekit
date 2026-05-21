@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.time;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 
 import java.util.concurrent.TimeUnit;
@@ -54,6 +55,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20240720L;
 
     /** Date component. */

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,20 +35,6 @@ public class TimeStampedDoubleAndDerivative extends TimeStampedDouble {
      * @param derivative time derivative
      */
     public TimeStampedDoubleAndDerivative(final AbsoluteDate date, final double value, final double derivative) {
-        super(date, value);
-        this.derivative = derivative;
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param value value
-     * @param derivative time derivative
-     * @param date date associated to value
-     */
-    @Deprecated
-    public TimeStampedDoubleAndDerivative(final double value, final double derivative,
-                                          final AbsoluteDate date) {
         super(date, value);
         this.derivative = derivative;
     }

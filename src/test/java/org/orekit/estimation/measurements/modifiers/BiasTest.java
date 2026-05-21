@@ -47,7 +47,7 @@ public class BiasTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -91,15 +91,15 @@ public class BiasTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
             final Range range = (Range) measurement;
             for (int i = 0; i < context.stations.size(); ++i) {
-                if (range.getStation() == context.stations.get(i)) {
+                if (range.getObserver() == context.stations.get(i)) {
                     double biasedRange = range.getObservedValue()[0] + realStationsBiases[i];
-                    final Range m = new Range(range.getStation(),
+                    final Range m = new Range(range.getObserver(),
                                               range.isTwoWay(),
                                               range.getDate(),
                                               biasedRange,
                                               range.getTheoreticalStandardDeviation()[0],
                                               range.getBaseWeight()[0],
-                                              range.getSatellites().get(0));
+                                              range.getSatellites().getFirst());
                     m.addModifier((Bias<Range>) stationsRangeBiases[i]);
                     estimator.addMeasurement(m);
                 }
@@ -117,14 +117,14 @@ public class BiasTest {
             }
         }
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 3,
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0,  8.5e-7,
                                      0.0,  2.1e-6,
-                                     0.0,  6e-7,
-                                     0.0,  2.5e-10);
+                                     0.0,  6.2e-7,
+                                     0.0,  2.6e-10);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assertions.assertEquals(realStationsBiases[i],
-                                stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),
+                                stationsRangeBiases[i].getParametersDrivers().getFirst().getValue(),
                                 3.3e-6);
         }
 

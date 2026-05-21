@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
@@ -74,6 +73,7 @@ import org.orekit.propagation.*;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.events.*;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.*;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -270,62 +270,6 @@ class NumericalPropagatorTest {
                 CoreMatchers.is(0.0));
         MatcherAssert.assertThat(actualState[0].getPVCoordinates(),
                 OrekitMatchers.pvIs(initialState.getPVCoordinates()));
-    }
-
-    @Test
-    @Deprecated
-    void testTolerancesOrbitdV() {
-        // GIVEN
-        final double dP = 1e-3;
-        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
-        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position,
-                velocity, Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
-        // WHEN
-        final double[][] tolerancesWithDv = NumericalPropagator.tolerances(dP, 1e-6, orbit, OrbitType.CARTESIAN);
-        // THEN
-        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.CARTESIAN);
-        for (int i = 0; i < 3; i++) {
-            Assertions.assertEquals(tolerances[0][i], tolerancesWithDv[0][i]);
-        }
-    }
-
-    @Deprecated
-    @ParameterizedTest
-    @EnumSource(OrbitType.class)
-    void testTolerancesOrbit(final OrbitType orbitType) {
-        // GIVEN
-        final double dP = 1e-3;
-        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
-        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position,
-                velocity, Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
-        // WHEN
-        final double[][] actualTolerances = NumericalPropagator.tolerances(dP, orbit, orbitType);
-        // THEN
-        final double[][] expectedTolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
-        Assertions.assertArrayEquals(expectedTolerances[0], actualTolerances[0]);
-        Assertions.assertArrayEquals(expectedTolerances[1], actualTolerances[1]);
-    }
-
-    @Deprecated
-    @Test
-    void testTolerances() {
-        // GIVEN
-        final double dP = 1e-3;
-        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
-        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position,
-                velocity, Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
-        // WHEN
-        final double[][] orbitTolerances = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
-        // THEN
-        final double[][] pvTolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(new AbsolutePVCoordinates(orbit.getFrame(),
-                new TimeStampedPVCoordinates(orbit.getDate(), position, velocity)));
-        for (int i = 0; i < 3; i++) {
-            Assertions.assertEquals(pvTolerances[0][i], orbitTolerances[0][i]);
-            Assertions.assertEquals(pvTolerances[1][i], orbitTolerances[1][i]);
-        }
     }
 
     @Test
@@ -625,7 +569,7 @@ class NumericalPropagatorTest {
         final PVCoordinates pv = initialState.getPVCoordinates();
         final double dP = 0.001;
         final double dV = initialState.getOrbit().getMu() * dP /
-                          (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
+                          (pv.getPosition().getNorm2Sq() * pv.getVelocity().getNorm());
 
         final PVCoordinates pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.MEAN);
         final PVCoordinates pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.MEAN);
@@ -687,7 +631,7 @@ class NumericalPropagatorTest {
         final PVCoordinates pv = state.getPVCoordinates();
         final double dP = 0.001;
         final double dV = state.getOrbit().getMu() * dP /
-                          (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
+                          (pv.getPosition().getNorm2Sq() * pv.getVelocity().getNorm());
 
         final PVCoordinates pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final PVCoordinates pvkM = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.MEAN);
@@ -742,6 +686,8 @@ class NumericalPropagatorTest {
             propagator.setStepHandler(new OrekitStepHandler() {
                 private int countDown = 3;
                 private AbsoluteDate previousCall = null;
+
+                @Override
                 public void init(SpacecraftState s0, AbsoluteDate t) {
                 }
                 public void handleStep(OrekitStepInterpolator interpolator) {
@@ -928,8 +874,24 @@ class NumericalPropagatorTest {
             this.eventHandler = eventHandler;
         }
 
+        @Override
+        public EventFunction getEventFunction() {
+            return new EventFunction() {
+                @Override
+                public double value(SpacecraftState state) {
+                    return state.getAdditionalState("linear")[0] - 3.0;
+                }
+
+                @Override
+                public boolean dependsOnMainVariablesOnly() {
+                    return false;
+                }
+            };
+        }
+
+        @Override
         public double g(SpacecraftState s) {
-            return s.getAdditionalState("linear")[0] - 3.0;
+            return getEventFunction().value(s);
         }
 
         @Override
@@ -963,6 +925,7 @@ class NumericalPropagatorTest {
         propagator.setInitialState(propagator.getInitialState().addAdditionalData("linear", 1.5));
 
         CheckingHandler checking = new CheckingHandler(Action.RESET_STATE) {
+            @Override
             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState)
                 {
                 return oldState.addAdditionalData("linear", oldState.getAdditionalState("linear")[0] * 2);
@@ -1227,7 +1190,7 @@ class NumericalPropagatorTest {
         final SpacecraftState initialState = new SpacecraftState(initialOrbit).withMass( 1000);
 
         // initialize the testing points
-        final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        final List<SpacecraftState> states = new ArrayList<>();
         final NumericalPropagator propagator = createPropagator(initialState, OrbitType.CARTESIAN, PositionAngleType.TRUE);
         final double samplingStep = 10000.0;
         propagator.setStepHandler(samplingStep, state -> states.add(state));
@@ -2063,7 +2026,7 @@ class NumericalPropagatorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
         mu  = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();
@@ -2083,7 +2046,7 @@ class NumericalPropagatorTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         initDate = null;
         initialState = null;
         propagator = null;

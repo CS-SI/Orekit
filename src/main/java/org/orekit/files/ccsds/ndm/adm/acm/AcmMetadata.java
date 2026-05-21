@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.acm;
 
 import java.util.List;
 
-import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -78,15 +76,6 @@ public class AcmMetadata extends AdmMetadata {
 
     /** Difference (TAI – UTC) in seconds incorporated at {@link #nextLeapEpoch}. */
     private double nextLeapTaimutc;
-
-    /** Create a new meta-data.
-     * @param dataContext data context
-     * @deprecated in favor of {@link #AcmMetadata(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AcmMetadata(final DataContext dataContext) {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Create a new meta-data.

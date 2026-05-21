@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,8 @@ import java.util.Map;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -37,6 +39,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.SpaceTwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.TDOA;
 import org.orekit.estimation.measurements.TDOAMeasurementCreator;
 import org.orekit.estimation.measurements.TurnAroundRange;
@@ -44,7 +47,6 @@ import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.ITURP834AtmosphericRefraction;
@@ -68,12 +70,12 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -125,7 +127,7 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -145,15 +147,14 @@ public class TropoModifierTest {
             EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
-            final GroundStation                  stationParameter = ((Range) measurement).getStation();
-            final TopocentricFrame               baseFrame        = stationParameter.getBaseFrame();
+            final String                         observerName     = ((Range) measurement).getObserver().getName();
             final NiellMappingFunctionModel      mappingFunction  = new NiellMappingFunctionModel();
             final EstimatedModel                 tropoModel       = new EstimatedModel(mappingFunction, 5.0);
             final RangeTroposphericDelayModifier modifier         = new RangeTroposphericDelayModifier(tropoModel);
 
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName(observerName + EstimatedModel.TOTAL_ZENITH_DELAY);
             range.addModifier(modifier);
             EstimatedMeasurementBase<Range> eval = range.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
@@ -166,17 +167,63 @@ public class TropoModifierTest {
     }
 
     @Test
+    public void testSpaceRangeEstimatedTropoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new SpaceTwoWayRangeMeasurementCreator(context),
+                                                               1.0, 1.1, 300.0);
+        propagator.clearStepHandlers();
+
+        final ObservedMeasurement<?> measurement = measurements.getFirst();
+        final AbsoluteDate           date        = measurement.getDate();
+        final SpacecraftState        refState    = propagator.propagate(date);
+        final Range                  range       = (Range) measurement;
+
+        // add modifier
+        final String                         observerName     = ((Range) measurement).getObserver().getName();
+        final NiellMappingFunctionModel      mappingFunction  = new NiellMappingFunctionModel();
+        final EstimatedModel                 tropoModel       = new EstimatedModel(mappingFunction, 5.0);
+        final RangeTroposphericDelayModifier modifier         = new RangeTroposphericDelayModifier(tropoModel);
+
+        final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
+        parameterDriver.setSelected(true);
+        parameterDriver.setName(observerName + EstimatedModel.TOTAL_ZENITH_DELAY);
+        range.addModifier(modifier);
+
+        // This attempt should not work because the Observer is space-based
+        Assertions.assertThrows(OrekitException.class, () -> {
+            try {
+                range.estimateWithoutDerivatives(new SpacecraftState[] { refState });
+            } catch (OrekitException oe) {
+                // expected behavior
+                Assertions.assertEquals(OrekitMessages.WRONG_OBSERVER_TYPE, oe.getSpecifier());
+                throw oe;
+            }
+        });
+
+    }
+
+    @Test
     public void testPhaseTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -186,7 +233,7 @@ public class TropoModifierTest {
         final int    ambiguity         = 1234;
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
@@ -228,7 +275,7 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -236,7 +283,7 @@ public class TropoModifierTest {
         final int    ambiguity         = 1234;
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
@@ -256,17 +303,15 @@ public class TropoModifierTest {
             Phase phase = (Phase) measurement;
             EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
-
             // add modifier
-            final GroundStation                  stationParameter = phase.getStation();
-            final TopocentricFrame               baseFrame        = stationParameter.getBaseFrame();
+            final String                         observerName     = phase.getObserver().getName();
             final NiellMappingFunctionModel      mappingFunction  = new NiellMappingFunctionModel();
             final EstimatedModel                 tropoModel       = new EstimatedModel(mappingFunction, 5.0);
             final PhaseTroposphericDelayModifier modifier         = new PhaseTroposphericDelayModifier(tropoModel);
 
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName(observerName + EstimatedModel.TOTAL_ZENITH_DELAY);
             phase.addModifier(modifier);
             EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
@@ -284,18 +329,18 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect turn-around measurements
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    primaryStation = entry.getKey();
             final GroundStation    secondaryStation  = entry.getValue();
-            primaryStation.getClockOffsetDriver().setSelected(true);
+            primaryStation.getClockBiasDriver().setSelected(true);
             primaryStation.getEastOffsetDriver().setSelected(true);
             primaryStation.getNorthOffsetDriver().setSelected(true);
             primaryStation.getZenithOffsetDriver().setSelected(true);
-            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getClockBiasDriver().setSelected(false);
             secondaryStation.getEastOffsetDriver().setSelected(true);
             secondaryStation.getNorthOffsetDriver().setSelected(true);
             secondaryStation.getZenithOffsetDriver().setSelected(true);
@@ -338,18 +383,18 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         // create perfect range measurements
         final GroundStation emitter = context.BRRstations.getKey();
-        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getClockBiasDriver().setSelected(true);
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -388,7 +433,7 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -398,7 +443,7 @@ public class TropoModifierTest {
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -438,7 +483,7 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -448,7 +493,7 @@ public class TropoModifierTest {
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -471,10 +516,9 @@ public class TropoModifierTest {
             final BistaticRangeRateTroposphericDelayModifier modifier =
                             new BistaticRangeRateTroposphericDelayModifier(tropoModel);
 
-            final TopocentricFrame baseFrame = biRangeRate.getReceiverStation().getBaseFrame();
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName(biRangeRate.getReceiver().getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
 
             biRangeRate.addModifier(modifier);
 
@@ -495,18 +539,18 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         // create perfect range measurements
         final GroundStation emitter = context.TDOAstations.getKey();
-        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getClockBiasDriver().setSelected(true);
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.TDOAstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -546,18 +590,18 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         // create perfect range measurements
         final GroundStation emitter = context.TDOAstations.getKey();
-        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getClockBiasDriver().setSelected(true);
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
         emitter.getZenithOffsetDriver().setSelected(true);
         final GroundStation receiver = context.TDOAstations.getValue();
-        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getClockBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -579,10 +623,9 @@ public class TropoModifierTest {
             final EstimatedModel                tropoModel   = new EstimatedModel(mappingFunct, 5.0);
             final TDOATroposphericDelayModifier modifier     = new TDOATroposphericDelayModifier(tropoModel);
 
-            final TopocentricFrame baseFrame      = tdoa.getPrimeStation().getBaseFrame();
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName(tdoa.getPrimeObserver().getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
 
             tdoa.addModifier(modifier);
 
@@ -603,12 +646,12 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -653,7 +696,7 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -674,15 +717,14 @@ public class TropoModifierTest {
             EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
-            final GroundStation                      stationParameter = ((RangeRate) measurement).getStation();
-            final TopocentricFrame                   baseFrame        = stationParameter.getBaseFrame();
+            final String                             stationName      = ((RangeRate) measurement).getObserver().getName();
             final NiellMappingFunctionModel          mappingFunction  = new NiellMappingFunctionModel();
             final EstimatedModel                     tropoModel       = new EstimatedModel(mappingFunction, 5.0);
             final RangeRateTroposphericDelayModifier modifier         = new RangeRateTroposphericDelayModifier(tropoModel, false);
 
-            final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+            final ParameterDriver parameterDriver = modifier.getParametersDrivers().getFirst();
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName( stationName + EstimatedModel.TOTAL_ZENITH_DELAY);
             rangeRate.addModifier(modifier);
 
             //
@@ -702,12 +744,12 @@ public class TropoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect angular measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);

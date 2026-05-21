@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -72,7 +72,7 @@ public abstract class AbstractForceModelTest {
 
         final DSFactory factory11 = new DSFactory(1, 1);
         final Field<DerivativeStructure> field = factory11.getDerivativeField();
-        final FieldSpacecraftState<DerivativeStructure> stateF = new FieldSpacecraftState<DerivativeStructure>(field, state);
+        final FieldSpacecraftState<DerivativeStructure> stateF = new FieldSpacecraftState<>(field, state);
         final List<ParameterDriver> drivers = forceModel.getParametersDrivers();
         final DerivativeStructure[] parametersDS = new DerivativeStructure[drivers.size()];
         for (int i = 0; i < parametersDS.length; ++i) {

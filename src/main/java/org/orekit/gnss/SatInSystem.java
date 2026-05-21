@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,8 +121,7 @@ public class SatInSystem {
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof SatInSystem) {
-            final SatInSystem other = (SatInSystem) object;
+        if (object instanceof SatInSystem other) {
             return getSystem().equals(other.getSystem()) && getPRN() == other.getPRN();
         }
         return false;

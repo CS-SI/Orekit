@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,18 +27,17 @@ import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
-import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.DataDictionary;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
@@ -59,7 +58,6 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
     /** Constructor for an initially empty sequence.
      */
     public AttitudesSequence() {
-        super();
         switches = new ArrayList<>();
     }
 
@@ -181,6 +179,9 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
     /** Switch specification. Handles the transition. */
     public class Switch extends AbstractAttitudeSwitch {
 
+        /** Event function. */
+        private final SwitchEventFunction switchEventFunction;
+
         /** Duration of the transition between the past and future attitude laws. */
         private final double transitionTime;
 
@@ -210,6 +211,7 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
             super(event, switchOnIncrease, switchOnDecrease, past, future, switchHandler);
             this.transitionTime   = transitionTime;
             this.transitionFilter = transitionFilter;
+            this.switchEventFunction = new SwitchEventFunction(event.getEventFunction());
         }
 
         /** {@inheritDoc} */
@@ -231,10 +233,15 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
 
         }
 
+        @Override
+        public EventFunction getEventFunction() {
+            return switchEventFunction;
+        }
+
         /** {@inheritDoc} */
         @Override
         public double g(final SpacecraftState s) {
-            return getDetector().g(forward ? s : s.shiftedBy(-transitionTime));
+            return getEventFunction().value(forward ? s : s.shiftedBy(-transitionTime));
         }
 
         /** {@inheritDoc} */
@@ -265,22 +272,17 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
                     // estimate state at transition start, according to the past attitude law
                     final double dt = -transitionTime;
                     final AbsoluteDate shiftedDate = date.shiftedBy(dt);
-                    SpacecraftState sState;
+                    final SpacecraftState shiftedState = s.shiftedBy(dt);
+                    final Attitude sAttitude;
                     if (s.isOrbitDefined()) {
-                        final Orbit     sOrbit    = s.getOrbit().shiftedBy(dt);
-                        final Attitude  sAttitude = getPast().getAttitude(sOrbit, shiftedDate, s.getFrame());
-                        sState    = new SpacecraftState(sOrbit, sAttitude).withMass(s.getMass());
+                        sAttitude = getPast().getAttitude(shiftedState.getOrbit(), shiftedDate, s.getFrame());
                     } else {
-                        final AbsolutePVCoordinates sAPV    = s.getAbsPVA().shiftedBy(dt);
-                        final Attitude  sAttitude = getPast().getAttitude(sAPV, shiftedDate, s.getFrame());
-                        sState    = new SpacecraftState(sAPV, sAttitude).withMass(s.getMass());
+                        sAttitude = getPast().getAttitude(shiftedState.getAbsPVA(), shiftedDate, s.getFrame());
                     }
-                    for (final DataDictionary.Entry entry : s.getAdditionalDataValues().getData()) {
-                        sState = sState.addAdditionalData(entry.getKey(), entry.getValue());
-                    }
+                    final SpacecraftState sState    = shiftedState.withAttitude(sAttitude).withMass(s.getMass());
 
                     // prepare transition
-                    getActivated().addValidBefore(new TransitionProvider(sState.getAttitude(), date), date, false);
+                    getActivated().addValidBefore(new TransitionProvider(sAttitude, date), date, false);
 
                     // prepare past law before transition
                     getActivated().addValidBefore(getPast(), shiftedDate, false);
@@ -299,6 +301,29 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
                 return getDetector().getHandler().eventOccurred(s, getDetector(), increasing);
             }
 
+        }
+
+        /** Local switch event function.
+         * @since 14.0
+         * */
+        private class SwitchEventFunction implements EventFunctionModifier {
+
+            /** Wrapped event function. */
+            private final EventFunction function;
+
+            SwitchEventFunction(final EventFunction function) {
+                this.function = function;
+            }
+
+            @Override
+            public EventFunction getBaseFunction() {
+                return function;
+            }
+
+            @Override
+            public boolean dependsOnMainVariablesOnly() {
+                return false;
+            }
         }
 
         /** Provider for transition phases.

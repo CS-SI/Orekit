@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -127,7 +127,7 @@ public class OneWayGNSSRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range measurements
@@ -217,7 +217,7 @@ public class OneWayGNSSRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -247,7 +247,7 @@ public class OneWayGNSSRangeTest {
         Assertions.assertEquals(0.0, relErrorsMax,    7.2e-11);
 
         // Test measurement type
-        Assertions.assertEquals(OneWayGNSSRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(OneWayGNSSRange.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -257,7 +257,7 @@ public class OneWayGNSSRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect one-way GNSS range measurements
@@ -373,7 +373,7 @@ public class OneWayGNSSRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -409,7 +409,7 @@ public class OneWayGNSSRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect one-way GNSS range measurements
@@ -428,7 +428,7 @@ public class OneWayGNSSRangeTest {
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
         final OneWayGNSSRangeCreator creator = new OneWayGNSSRangeCreator(ephemeris, localClockOffset, remoteClockOffset);
-        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -461,7 +461,7 @@ public class OneWayGNSSRangeTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockOffsetDriver(),
+                        measurement.getSatellites().getFirst().getClockBiasDriver(),
                     };
 
                     for (int i = 0; i < drivers.length; ++i) {
@@ -519,7 +519,7 @@ public class OneWayGNSSRangeTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();

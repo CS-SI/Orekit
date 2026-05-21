@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,10 +22,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
@@ -33,7 +34,6 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ElevationMask;
 import org.orekit.utils.IERSConventions;
@@ -44,21 +44,24 @@ import java.util.List;
 
 public class DOPComputerTest {
 
+    private DataContext      context;
     private OneAxisEllipsoid earth;
-    private GeodeticPoint location;
-    private TimeScale     utc;
+    private GeodeticPoint    location;
+    private TimeScale        utc;
 
+    @DefaultDataContext
     @BeforeEach
     public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss");
+        context = DataContext.getDefault();
         // Defines the Earth shape
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
-                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+                                     context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         // Defines the location where to compute the DOP
         location = new GeodeticPoint(FastMath.toRadians(43.6), FastMath.toRadians(1.45), 0.);
-        utc = TimeScalesFactory.getUTC();
+        utc = context.getTimeScales().getUTC();
     }
 
     @AfterEach
@@ -199,7 +202,7 @@ public class DOPComputerTest {
         Assertions.assertThrows(OrekitException.class, () -> {
 
             // Get the TLEs for 3 SV from the GPS constellation ...
-            List<Propagator> gps = new ArrayList<Propagator>();
+            List<Propagator> gps = new ArrayList<>();
             gps.add(TLEPropagator.selectExtrapolator(new TLE("1 24876U 97035A   16084.84459975 -.00000010  00000-0  00000-0 0  9993",
                     "2 24876  55.6874 244.8168 0043829 115.0986 245.3138  2.00562757137015")));
             gps.add(TLEPropagator.selectExtrapolator(new TLE("1 25933U 99055A   16085.52437157 -.00000002  00000-0  00000+0 0  9996",
@@ -224,16 +227,19 @@ public class DOPComputerTest {
         final List<GPSAlmanac> almanacs = reader.getAlmanacs();
 
         // Creates the GPS propagators from the almanacs
-        final List<Propagator> propagators = new ArrayList<Propagator>();
+        final List<Propagator> propagators = new ArrayList<>();
         for (GPSAlmanac almanac: almanacs) {
-            propagators.add(new GNSSPropagatorBuilder(almanac).build());
+            propagators.add(new GNSSPropagatorBuilder(almanac,
+                                                      context.getFrames().getEME2000(),
+                                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+                            buildPropagator());
         }
         return propagators;
     }
 
     private List<Propagator> getTlePropagators() {
 
-        List<Propagator> propagators = new ArrayList<Propagator>();
+        List<Propagator> propagators = new ArrayList<>();
 
         // the following map corresponds to the GPS constellation status in early 2016
         propagators.add(TLEPropagator.selectExtrapolator(new TLE("1 37753U 11036A   16059.51505483 -.00000016  00000-0  00000+0 0  9995",

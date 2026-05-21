@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+import java.util.Map;
+
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -26,14 +29,15 @@ import org.orekit.estimation.Context;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.Arrays;
-import java.util.Map;
 /**
  * Class creating a list of turn-around range measurement
  * @author Maxime Journot
@@ -58,16 +62,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             for (final GroundStation station : Arrays.asList(entry.getKey(), entry.getValue())) {
-                for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                            station.getEastOffsetDriver(),
-                                                            station.getNorthOffsetDriver(),
-                                                            station.getZenithOffsetDriver(),
-                                                            station.getPrimeMeridianOffsetDriver(),
-                                                            station.getPrimeMeridianDriftDriver(),
-                                                            station.getPolarOffsetXDriver(),
-                                                            station.getPolarDriftXDriver(),
-                                                            station.getPolarOffsetYDriver(),
-                                                            station.getPolarDriftYDriver())) {
+                for (ParameterDriver driver : station.getParametersDrivers()) {
                     if (driver.getReferenceDate() == null) {
                         driver.setReferenceDate(s0.getDate());
                     }
@@ -120,7 +115,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // Spacecraft date t = date of arrival/departure of the signal to/from from the secondary station
                     // secondary station position in inertial frame at t
                     final Vector3D secondaryStationPosition =
-                                    secondaryStation.getOffsetToInertial(inertial, date, false).transformPosition(Vector3D.ZERO);
+                                    secondaryStation.getOffsetToInertial(inertial, date, true).transformPosition(Vector3D.ZERO);
 
                     // Downlink time of flight to secondary station
                     // The date of arrival/departure of the signal to/from the secondary station is known and
@@ -165,9 +160,11 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // Primary station downlink delay - from P2 to primary station
                     // We use a solver to know where the primary station is when it receives
                     // the signal back from the satellite on the 2nd leg of the path
+
+                    // Note: can't use the solver function in the parent class.  Timing isn't quite right.
                     final double primaryTauD  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) {
-                            final Transform t = primaryStation.getOffsetToInertial(inertial, T2.shiftedBy(+x), false);
+                            final Transform t = primaryStation.getOffsetToInertial(inertial, T2.shiftedBy(+x), true);
                             final double d = Vector3D.distance(P2, t.transformPosition(Vector3D.ZERO));
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
@@ -175,19 +172,21 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
                     final AbsoluteDate primaryReceptionDate  = T2.shiftedBy(+primaryTauD);
                     final TimeStampedPVCoordinates primaryStationAtReception =
-                                    primaryStation.getOffsetToInertial(inertial, primaryReceptionDate, false).
+                                    primaryStation.getOffsetToInertial(inertial, primaryReceptionDate, true).
                                     transformPVCoordinates(new TimeStampedPVCoordinates(primaryReceptionDate, PVCoordinates.ZERO));
 
 
                     // Primary station uplink delay - from primary station to P1
                     // Here the state date is known. Thus we can use the function "signalTimeOfFlight"
                     // of the AbstractMeasurement class
-                    final double primaryTauU = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(primaryStationAtReception, P1, T1, inertial);
+                    final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(new AbsolutePVCoordinates(inertial, primaryStationAtReception));
+                    final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(T1, P1, inertial);
+                    final double primaryTauU = signalTimeOfFlight.computeDelay(receptionCondition, primaryStationAtReception.getDate());
 
                     final AbsoluteDate primaryEmissionDate   = T1.shiftedBy(-primaryTauU);
 
                     final Vector3D primaryStationAtEmission  =
-                                    primaryStation.getOffsetToInertial(inertial, primaryEmissionDate, false).transformPosition(Vector3D.ZERO);
+                                    primaryStation.getOffsetToInertial(inertial, primaryEmissionDate, true).transformPosition(Vector3D.ZERO);
 
 
                     // Uplink/downlink distance from/to secondary station
@@ -198,7 +197,8 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final double primaryUpLinkDistance   = Vector3D.distance(P1, primaryStationAtEmission);
                     final double primaryDownLinkDistance = Vector3D.distance(P2, primaryStationAtReception.getPosition());
 
-                    addMeasurement(new TurnAroundRange(primaryStation, secondaryStation, primaryReceptionDate,
+                    final double clockOffset = primaryStation.getOffsetValue(primaryReceptionDate);
+                    addMeasurement(new TurnAroundRange(primaryStation, secondaryStation, primaryReceptionDate.shiftedBy(clockOffset),
                                              0.5 * (primaryUpLinkDistance + secondaryDownLinkDistance +
                                                     secondaryUpLinkDistance  + primaryDownLinkDistance), 1.0, 10, satellite));
                 }

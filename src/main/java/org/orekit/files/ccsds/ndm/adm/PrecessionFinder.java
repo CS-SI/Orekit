@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -103,7 +103,7 @@ class PrecessionFinder {
                                              s.getY().getSecondDerivative(),
                                              s.getZ().getSecondDerivative());
 
-            final double nV2 = s1.getNormSq();
+            final double nV2 = s1.getNorm2Sq();
             if (nV2 == 0.0) {
                 // special case: we have a fixed spin vector
                 axis            = s0;
@@ -116,7 +116,7 @@ class PrecessionFinder {
                 // the derivatives and what we really want to check are missing derivatives
                 if (new Vector3D(spin.getX().getSecondDerivative(),
                                  spin.getY().getSecondDerivative(),
-                                 spin.getZ().getSecondDerivative()).getNormSq() == 0) {
+                                 spin.getZ().getSecondDerivative()).getNorm2Sq() == 0) {
                     throw new OrekitException(OrekitMessages.CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES);
                 }
 

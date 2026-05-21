@@ -49,9 +49,7 @@ public class FieldCloseEventsNumericalDP853Test extends FieldCloseEventsAbstract
      */
     public FieldPropagator<Binary64> getPropagator(double stepSize) {
         double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialOrbit, OrbitType.CARTESIAN);
-        final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(
-                field,
-                new DormandPrince853FieldIntegrator<>(field, stepSize, stepSize, tol[0], tol[1]));
+        final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(new DormandPrince853FieldIntegrator<>(field, stepSize, stepSize, tol[0], tol[1]));
         propagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
         return propagator;

@@ -74,21 +74,9 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
         final String centerName = body.getName();
         final boolean isCenterEarth = CelestialBodyFactory.EARTH.equals(centerName);
         final boolean isCenterMars = CelestialBodyFactory.MARS.equals(centerName);
-        final boolean isCenterSsb = CelestialBodyFactory
-                .SOLAR_SYSTEM_BARYCENTER.equals(centerName);
-        if (isIcrf && isCenterSsb) {
-            // Orekit ICRF is centered on the SSB
-            return frame;
-        }
-        if (isIcrf && isCenterEarth) {
+        if (isIcrf) {
             // special case so Earth-centered ICRF is GCRF, #1914
-            // hack that uses assumption that GCRF is root frame
-            // full fix in Orekit 14.0
-            Frame f = frame;
-            while (f.getDepth() != 0) {
-                f = f.getParent();
-            }
-            return f;
+            return body.getIcrfAlignedFrame();
         }
         if (!isMci && isCenterEarth || isMci && isCenterMars) {
             // ICRF and MCI are the only two frames in CelestialBodyFrame

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,7 +121,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
         //  is constrained in the pointing-phasing plane)
         final Vector3D v1    = Vector3D.crossProduct(rotAxisCel, phasingCel);
         final Vector3D v2    = Vector3D.crossProduct(pointingP,  phasingCel);
-        final double   compensation = -Vector3D.dotProduct(v1, v2) / v2.getNormSq();
+        final double   compensation = -Vector3D.dotProduct(v1, v2) / v2.getNorm2Sq();
         final Vector3D phasedRotAxisCel = new Vector3D(1.0, rotAxisCel, compensation, pointingP);
 
         // compute transform from celestial frame to satellite frame
@@ -186,7 +186,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
         //  is constrained in the pointing-phasing plane)
         final FieldVector3D<T> v1           = FieldVector3D.crossProduct(rotAxisCel, phasingCel);
         final FieldVector3D<T> v2           = FieldVector3D.crossProduct(pointingP,  phasingCel);
-        final T                compensation = FieldVector3D.dotProduct(v1, v2).negate().divide(v2.getNormSq());
+        final T                compensation = FieldVector3D.dotProduct(v1, v2).negate().divide(v2.getNorm2Sq());
         final FieldVector3D<T> phasedRotAxisCel = new FieldVector3D<>(field.getOne(), rotAxisCel, compensation, pointingP);
 
         // compute transform from celestial frame to satellite frame

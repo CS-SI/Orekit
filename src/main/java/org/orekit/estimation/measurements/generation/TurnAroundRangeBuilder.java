@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,52 +16,64 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.GroundStation;
+import java.util.Map;
+
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link TurnAroundRange} measurements.
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroundRange> {
+public class TurnAroundRangeBuilder extends AbstractSignalBasedBuilder<TurnAroundRange> {
 
-    /** Primary ground station from which measurement is performed. */
-    private final GroundStation primaryStation;
+    /** Primary observer from which measurement is performed. */
+    private final Observer primaryObserver;
 
-    /** Secondary ground station reflecting the signal. */
-    private final GroundStation secondaryStation;
+    /** Secondary observer reflecting the signal. */
+    private final Observer secondaryObserver;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param primaryStation ground station from which measurement is performed
-     * @param secondaryStation ground station reflecting the signal
+     * @param primaryObserver observer from which measurement is performed
+     * @param secondaryObserver observer reflecting the signal
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
-    public TurnAroundRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                  final GroundStation primaryStation, final GroundStation secondaryStation,
+    public TurnAroundRangeBuilder(final Observer primaryObserver, final Observer secondaryObserver,
                                   final double sigma, final double baseWeight,
                                   final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, satellite);
-        this.primaryStation   = primaryStation;
-        this.secondaryStation = secondaryStation;
+        this(primaryObserver, secondaryObserver, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Simple constructor.
+     * @param primaryObserver observer from which measurement is performed
+     * @param secondaryObserver observer reflecting the signal
+     * @param measurementQuality measurement quality as used in estimation
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public TurnAroundRangeBuilder(final Observer primaryObserver, final Observer secondaryObserver,
+                                  final MeasurementQuality measurementQuality,
+                                  final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(measurementQuality, signalTravelTimeModel, new ObservableSatellite[] {satellite});
+        this.primaryObserver   = primaryObserver;
+        this.secondaryObserver = secondaryObserver;
     }
 
     /** {@inheritDoc} */
     @Override
     protected TurnAroundRange buildObserved(final AbsoluteDate date,
                                             final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new TurnAroundRange(primaryStation, secondaryStation,
-                                   date, Double.NaN,
-                                   getTheoreticalStandardDeviation()[0],
-                                   getBaseWeight()[0], getSatellites()[0]);
+        return new TurnAroundRange(primaryObserver, secondaryObserver, date, Double.NaN, getTheoreticalStandardDeviation()[0],
+                                   getBaseWeight()[0], getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

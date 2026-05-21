@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,14 +57,14 @@ public class Apm extends NdmConstituent<AdmHeader, Segment<AdmMetadata, ApmData>
      * @return file metadata
      */
     public AdmMetadata getMetadata() {
-        return getSegments().get(0).getMetadata();
+        return getSegments().getFirst().getMetadata();
     }
 
     /** Get the file data.
      * @return file data
      */
     public ApmData getData() {
-        return getSegments().get(0).getData();
+        return getSegments().getFirst().getData();
     }
 
     /** Get the attitude.

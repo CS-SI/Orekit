@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,24 +16,18 @@
  */
 package org.orekit.files.sinex;
 
-import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.TimeScales;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 /** Parse information for Solution INdependent EXchange (SINEX) bias files.
  * @author Luc Maisonobe
  * @since 13.0
  */
 public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
-
-    /** Mapper from satellite system and string to observation type. */
-    private final BiFunction<? super SatelliteSystem, ? super String, ? extends ObservationType> typeBuilder;
 
     /** DSB description. */
     private final BiasDescription description;
@@ -50,19 +44,18 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     /** OSB data. */
     private final Map<SatInSystem, SatelliteObservableSpecificSignalBias> satellitesOsb;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
      * @param timeScales time scales
-     * @param typeBuilder mapper from string to observation type
      */
-    SinexBiasParseInfo(final TimeScales timeScales,
-                       final BiFunction<? super SatelliteSystem, ? super String, ? extends ObservationType> typeBuilder) {
+    SinexBiasParseInfo(final TimeScales timeScales) {
         super(timeScales);
         this.description   = new BiasDescription();
         this.stationsDsb   = new HashMap<>();
         this.satellitesDsb = new HashMap<>();
         this.stationsOsb   = new HashMap<>();
         this.satellitesOsb = new HashMap<>();
-        this.typeBuilder   = typeBuilder;
     }
 
     /** Get description.
@@ -110,17 +103,6 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     void setTimeSystem(final TimeSystem timeSystem) {
         getDescription().setTimeSystem(timeSystem);
         setTimeScale(timeSystem.getTimeScale(getTimeScales()));
-    }
-
-    /** Extract an observation type from current line.
-     * @param system satellite system
-     * @param start  start index of the string
-     * @param length length of the string
-     * @return parsed observation type (null if field is empty)
-     */
-    protected ObservationType parseObservationType(final SatelliteSystem system, final int start, final int length) {
-        final String type = parseString(start, length);
-        return type.isEmpty() ? null : typeBuilder.apply(system, type);
     }
 
     /** {@inheritDoc} */

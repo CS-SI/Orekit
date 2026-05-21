@@ -127,14 +127,14 @@ public class GeoMagneticField {
 
             // for m = 0
             schmidtQuasiNorm[index] =
-                schmidtQuasiNorm[index1] * (double) (2 * n - 1) / (double) n;
+                    schmidtQuasiNorm[index1] * (double) (2 * n - 1) / (double) n;
 
             for (int m = 1; m <= n; m++) {
                 index = n * (n + 1) / 2 + m;
                 index1 = n * (n + 1) / 2 + m - 1;
                 schmidtQuasiNorm[index] =
-                    schmidtQuasiNorm[index1] *
-                    FastMath.sqrt((double) ((n - m + 1) * (m == 1 ? 2 : 1)) / (double) (n + m));
+                        schmidtQuasiNorm[index1] *
+                                FastMath.sqrt((double) ((n - m + 1) * (m == 1 ? 2 : 1)) / (double) (n + m));
             }
         }
     }
@@ -240,14 +240,14 @@ public class GeoMagneticField {
         // the model can only be transformed within its validity period
         if (year < validityStart || year > validityEnd) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_TIME_TRANSFORM,
-                                      modelName, String.valueOf(epoch), year, validityStart, validityEnd);
+                    modelName, String.valueOf(epoch), year, validityStart, validityEnd);
         }
 
         final double dt = year - epoch;
         final int maxSecIndex = maxNSec * (maxNSec + 1) / 2 + maxNSec;
 
         final GeoMagneticField transformed = new GeoMagneticField(modelName, year, maxN, maxNSec,
-                                                                  validityStart, validityEnd);
+                validityStart, validityEnd);
 
         for (int n = 1; n <= maxN; n++) {
             for (int m = 0; m <= n; m++) {
@@ -281,7 +281,7 @@ public class GeoMagneticField {
         // the model can only be transformed within its validity period
         if (year < validityStart || year > validityEnd) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_TIME_TRANSFORM,
-                                      modelName, String.valueOf(epoch), year, validityStart, validityEnd);
+                    modelName, String.valueOf(epoch), year, validityStart, validityEnd);
         }
 
         final double factor = (year - epoch) / (otherModel.epoch - epoch);
@@ -291,7 +291,7 @@ public class GeoMagneticField {
         final int newMaxN = FastMath.max(maxN, otherModel.maxN);
 
         final GeoMagneticField transformed = new GeoMagneticField(modelName, year, newMaxN, 0,
-                                                                  validityStart, validityEnd);
+                validityStart, validityEnd);
 
         for (int n = 1; n <= newMaxN; n++) {
             for (int m = 0; m <= n; m++) {
@@ -410,7 +410,7 @@ public class GeoMagneticField {
                  * Equation 12 in the WMM Technical report. Derivative with respect to radius.
                  */
                 Bz -= vars.relativeRadiusPower[n] *
-                      (g[index] * vars.cmLambda[m] + h[index] * vars.smLambda[m]) * (1d + n) * legendre.mP[index];
+                        (g[index] * vars.cmLambda[m] + h[index] * vars.smLambda[m]) * (1d + n) * legendre.mP[index];
 
                 /**
                  * <pre>
@@ -421,7 +421,7 @@ public class GeoMagneticField {
                  * Equation 11 in the WMM Technical report. Derivative with respect to longitude, divided by radius.
                  */
                 By += vars.relativeRadiusPower[n] *
-                      (g[index] * vars.smLambda[m] - h[index] * vars.cmLambda[m]) * (double) m * legendre.mP[index];
+                        (g[index] * vars.smLambda[m] - h[index] * vars.cmLambda[m]) * (double) m * legendre.mP[index];
                 /**
                  * <pre>
                  *        nMax     (n+2)   n    m            m            m
@@ -431,7 +431,7 @@ public class GeoMagneticField {
                  * Equation 10 in the WMM Technical report. Derivative with respect to latitude, divided by radius.
                  */
                 Bx -= vars.relativeRadiusPower[n] *
-                      (g[index] * vars.cmLambda[m] + h[index] * vars.smLambda[m]) * legendre.mPDeriv[index];
+                        (g[index] * vars.cmLambda[m] + h[index] * vars.smLambda[m]) * legendre.mPDeriv[index];
             }
         }
 
@@ -479,34 +479,14 @@ public class GeoMagneticField {
              * Equation 11 in the WMM Technical report. Derivative with respect to longitude, divided by radius.
              */
             By += vars.relativeRadiusPower[n] *
-                  (g[index] * vars.smLambda[1] - h[index] * vars.cmLambda[1]) * mPcupS[n] * schmidtQuasiNorm[index];
+                    (g[index] * vars.smLambda[1] - h[index] * vars.cmLambda[1]) * mPcupS[n] * schmidtQuasiNorm[index];
         }
 
         return By;
     }
 
     /** Utility class to hold spherical coordinates. */
-    private static class SphericalCoordinates {
-
-        /** the radius (m). */
-        private double r;
-
-        /** the azimuth angle (radians). */
-        private double lambda;
-
-        /** the polar angle (radians). */
-        private double phi;
-
-        /** Create a new spherical coordinate object.
-         * @param r the radius, meters
-         * @param lambda the lambda angle, radians
-         * @param phi the phi angle, radians
-         */
-        private SphericalCoordinates(final double r, final double lambda, final double phi) {
-            this.r = r;
-            this.lambda = lambda;
-            this.phi = phi;
-        }
+    private record SphericalCoordinates(double r, double lambda, double phi) {
     }
 
     /** Utility class to compute certain variables for magnetic field summation. */
@@ -612,7 +592,7 @@ public class GeoMagneticField {
                             mPDeriv[index] = x * mPDeriv[index2] - z * mP[index2];
                         } else {
                             final double k = (double) ((n - 1) * (n - 1) - (m * m)) /
-                                             (double) ((2 * n - 1) * (2 * n - 3));
+                                    (double) ((2 * n - 1) * (2 * n - 3));
 
                             mP[index] = x * mP[index2] - k * mP[index1];
                             mPDeriv[index] = x * mPDeriv[index2] - z * mP[index2] - k * mPDeriv[index1];

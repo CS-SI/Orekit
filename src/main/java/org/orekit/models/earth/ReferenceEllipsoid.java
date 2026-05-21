@@ -55,9 +55,6 @@ import org.orekit.utils.Constants;
  */
 public class ReferenceEllipsoid extends OneAxisEllipsoid implements EarthShape {
 
-    /** uid is date of last modification. */
-    private static final long serialVersionUID = 20150311L;
-
     /** the gravitational parameter of the ellipsoid, in m<sup>3</sup>/s<sup>2</sup>. */
     private final double GM;
     /** the rotation rate of the ellipsoid, in rad/s. */

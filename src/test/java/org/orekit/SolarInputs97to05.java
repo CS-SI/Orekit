@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,11 +26,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.SortedSet;
@@ -48,6 +44,7 @@ import java.util.TreeSet;
 public class SolarInputs97to05 implements DTM2000InputParameters {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = -3687601846334870069L;
 
     private static final double third = 1.0/3.0;
@@ -76,7 +73,7 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
      */
     private SolarInputs97to05() {
 
-        data = new TreeSet<TimeStamped>(new ChronologicalComparator());
+        data = new TreeSet<>(new ChronologicalComparator());
         InputStream in = SolarInputs97to05.class.getResourceAsStream("/atmosphere/JB_All_97-05.txt");
         BufferedReader rFlux = new BufferedReader(new InputStreamReader(in));
 
@@ -191,9 +188,9 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
         // search starting from entries a few steps before the target date
         SortedSet<TimeStamped> tailSet = data.tailSet(before);
         if (tailSet != null) {
-            currentParam = (LineParameters) tailSet.first();
+            currentParam = (LineParameters) tailSet.getFirst();
             if (currentParam.date.durationFrom(date) == -Constants.JULIAN_DAY) {
-                currentParam = (LineParameters) data.tailSet(date).first();
+                currentParam = (LineParameters) data.tailSet(date).getFirst();
             }
         } else {
             throw new OrekitException(new DummyLocalizable("unable to find data for date {0}"), date);
@@ -204,6 +201,7 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
     private static class LineParameters implements TimeStamped, Serializable {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = -1127762834954768272L;
 
         /** Entries */

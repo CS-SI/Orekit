@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeBuilder;
 import org.orekit.attitudes.FieldAttitude;
@@ -28,7 +27,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.frames.Frame;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
@@ -72,19 +70,6 @@ public class AttitudeEndpoints implements AttitudeBuilder {
 
     /** Flag for frames direction. */
     private Boolean a2b;
-
-    /** Empty constructor.
-     * <p>
-     * This constructor is not strictly necessary, but it prevents spurious
-     * javadoc warnings with JDK 18 and later.
-     * </p>
-     * @since 12.0
-     * @deprecated in favor of {@link #AttitudeEndpoints(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AttitudeEndpoints() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.
@@ -287,7 +272,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
             final PVCoordinates pv = pvProv.getPVCoordinates(rawAttitude.getDate(), frame);
             final AngularCoordinates frame2Lof =
                             orf.isQuasiInertial() ?
-                            new AngularCoordinates(orf.getLofType().rotationFromInertial(pv), Vector3D.ZERO) :
+                            new AngularCoordinates(orf.getLofType().rotationFromInertial(pv)) :
                             orf.getLofType().transformFromInertial(att.getDate(), pv).getAngular();
 
             // compose with APM

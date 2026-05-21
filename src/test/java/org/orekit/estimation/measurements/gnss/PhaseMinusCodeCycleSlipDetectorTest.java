@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -200,7 +199,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                 if(i == 0) {
                     final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(PredefinedGnssSignal.G02);
                     Assertions.assertEquals(3, computedDateOnL2.size());
-                    Assertions.assertEquals(0.0, computedDateOnL2.get(0).durationFrom(dateL2[i]), 0.0);
+                    Assertions.assertEquals(0.0, computedDateOnL2.getFirst().durationFrom(dateL2[i]), 0.0);
                 } else {
                     final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(PredefinedGnssSignal.G02);
                     Assertions.assertEquals(0, computedDateOnL2.size());

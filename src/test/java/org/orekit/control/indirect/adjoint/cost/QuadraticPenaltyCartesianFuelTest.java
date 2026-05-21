@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,7 +86,7 @@ class QuadraticPenaltyCartesianFuelTest {
         final List<EventDetector> eventDetectorList = actual.collect(Collectors.toList());
         Assertions.assertEquals(2, eventDetectorList.size());
         final SpacecraftState state = buildState(new double[] {0, 0, 0, 1, 2, 3, 4}, 10);
-        final double g1 = eventDetectorList.get(0).g(state);
+        final double g1 = eventDetectorList.getFirst().g(state);
         final double g2 = eventDetectorList.get(1).g(state);
         Assertions.assertEquals(penalizedCartesianFuel.getMaximumThrustMagnitude(), FastMath.abs(g2 - g1));
     }

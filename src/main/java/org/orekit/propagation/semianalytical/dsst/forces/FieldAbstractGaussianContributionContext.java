@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,22 +35,22 @@ public class FieldAbstractGaussianContributionContext<T extends CalculusFieldEle
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** 2 / (n² * a) . */
-    protected T ton2a;
+    protected final T ton2a;
 
     /** 1 / A . */
-    protected T ooA;
+    protected final T ooA;
 
     /** 1 / (A * B) . */
-    protected T ooAB;
+    protected final T ooAB;
 
     /** C / (2 * A * B) . */
-    protected T co2AB;
+    protected final T co2AB;
 
     /** 1 / (1 + B) . */
-    protected T ooBpo;
+    protected final T ooBpo;
 
     /** 1 / μ . */
-    protected T ooMu;
+    protected final T ooMu;
 
     /** A = sqrt(μ * a). */
     private final T A;
@@ -59,7 +59,7 @@ public class FieldAbstractGaussianContributionContext<T extends CalculusFieldEle
     private final T n;
 
     /** Central attraction coefficient. */
-    private T mu;
+    private final T mu;
 
     // CHECKSTYLE: resume VisibilityModifier check
 

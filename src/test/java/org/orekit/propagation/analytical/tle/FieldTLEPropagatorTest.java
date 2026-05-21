@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -163,7 +163,7 @@ public class FieldTLEPropagatorTest {
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             itrf);
-        FieldDistanceChecker<T> checker = new FieldDistanceChecker<T>(itrf);
+        FieldDistanceChecker<T> checker = new FieldDistanceChecker<>(itrf);
 
         // with Earth pointing attitude, distance should be small
         final T[] parameters = tle.getParameters(field);
@@ -225,7 +225,7 @@ public class FieldTLEPropagatorTest {
             FieldVector3D<T> posSatITRF = transform.transformPosition(currentState.getPosition());
 
             // Line containing satellite point and following pointing direction
-            FieldLine<T> pointingLine = new FieldLine<T>(posSatITRF, posSatITRF.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, zSatITRF), 1.0e-10);
+            FieldLine<T> pointingLine = new FieldLine<>(posSatITRF, posSatITRF.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, zSatITRF), 1.0e-10);
 
             double distance = pointingLine.distance(Vector3D.ZERO).getReal();
             minDistance = FastMath.min(minDistance, distance);

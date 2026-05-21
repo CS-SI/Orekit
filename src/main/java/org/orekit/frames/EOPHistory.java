@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,16 +73,16 @@ public class EOPHistory {
     private final boolean hasData;
 
     /** EOP history entries. */
-    private final transient ImmutableTimeStampedCache<EOPEntry> cache;
+    private final ImmutableTimeStampedCache<EOPEntry> cache;
 
     /** IERS conventions to which EOP refers. */
     private final IERSConventions conventions;
 
     /** Correction to apply to EOP (may be null). */
-    private final transient TimeVectorFunction tidalCorrection;
+    private final TimeVectorFunction tidalCorrection;
 
     /** Time scales to use when computing corrections. */
-    private final transient TimeScales timeScales;
+    private final TimeScales timeScales;
 
     /** Simple constructor.
      *
@@ -144,7 +144,7 @@ public class EOPHistory {
         this.interpolationDegree = interpolationDegree;
         this.tidalCorrection     = tidalCorrection;
         this.timeScales          = timeScales;
-        if (data.size() >= 1) {
+        if (!data.isEmpty()) {
             // enough data to interpolate
             if (missSomeDerivatives(data)) {
                 // we need to estimate the missing derivatives
@@ -306,7 +306,7 @@ public class EOPHistory {
         private final HermiteInterpolator interpolator;
 
         /** Interpolation date. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** Simple constructor.
          * @param date interpolation date
@@ -367,10 +367,10 @@ public class EOPHistory {
         private final FieldHermiteInterpolator<T> interpolator;
 
         /** Interpolation date. */
-        private FieldAbsoluteDate<T> date;
+        private final FieldAbsoluteDate<T> date;
 
         /** Interpolation date. */
-        private AbsoluteDate absDate;
+        private final AbsoluteDate absDate;
 
         /** Simple constructor.
          * @param date interpolation date
@@ -592,7 +592,7 @@ public class EOPHistory {
      * @return nutation correction in Celestial Intermediate Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
-    public double[] getNonRotatinOriginNutationCorrection(final AbsoluteDate date) {
+    public double[] getNonRotatingOriginNutationCorrection(final AbsoluteDate date) {
 
         // check if there is data for date
         if (!this.hasDataFor(date)) {
@@ -612,7 +612,7 @@ public class EOPHistory {
      * @return nutation correction in Celestial Intermediate Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
-    public <T extends CalculusFieldElement<T>> T[] getNonRotatinOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T[] getNonRotatingOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -967,7 +967,7 @@ public class EOPHistory {
          * @param tidalCorrection function computing the tidal correction
          */
         CachedCorrection(final TimeVectorFunction tidalCorrection) {
-            this.step            = 60 * 60;
+            this.step            = 60. * 60;
             this.tidalCorrection = tidalCorrection;
             this.cache           =
                     new GenericTimeStampedCache<>(8,
@@ -1052,7 +1052,7 @@ public class EOPHistory {
                     // backward generation
                     do {
                         t = t.shiftedBy(-step);
-                        generated.add(0, new TidalCorrectionEntry(t, tidalCorrection.value(t)));
+                        generated.addFirst(new TidalCorrectionEntry(t, tidalCorrection.value(t)));
                     } while (t.compareTo(date) >= 0);
                 }
             }

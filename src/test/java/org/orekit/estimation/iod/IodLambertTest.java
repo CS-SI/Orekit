@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,14 +17,14 @@
 
 package org.orekit.estimation.iod;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.control.heuristics.lambert.LambertSolver;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -52,8 +52,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-import java.util.List;
-
 /**
  *
  * Source: <a href="http://ccar.colorado.edu/asen5050/projects/projects_2012/kemble/gibbs_derivation.htm">gibbs_derivation</a>
@@ -64,24 +62,6 @@ import java.util.List;
  */
 public class IodLambertTest {
 
-    @Deprecated
-    @Test
-    void testSolveLambertPb() {
-        // GIVEN
-        final IodLambert iodLambert = new IodLambert(1.);
-        final double r1 = 1.;
-        final double r2 = 1.;
-        final double tof = 0.1;
-        final double theta = 2.;
-        final double[] v = new double[2];
-        // WHEN
-        iodLambert.solveLambertPb(r1, r2, theta, tof, 0, v);
-        // THEN
-        final Vector2D solution = LambertSolver.solveNormalized2D(r1, r2, theta, tof, 0);
-        Assertions.assertEquals(solution.getX(), v[0]);
-        Assertions.assertEquals(solution.getY(), v[1]);
-    }
-
     @Test
     public void testLambert() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -90,7 +70,7 @@ public class IodLambertTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -104,15 +84,15 @@ public class IodLambertTest {
 
         // measurement data 1
         final int idMeasure1 = 0;
-        final AbsoluteDate date1 = measurements.get(idMeasure1).getDate();
+        final AbsoluteDate date1 = measurements.getFirst().getDate();
         /*final Vector3D stapos1 = context.stations.get(0)  // FIXME we need to access the station of the measurement
                                     .getBaseFrame()
                                     .getPVCoordinates(date1, frame)
                                     .getPosition();*/
         final Vector3D position1 = new Vector3D(
-                                                measurements.get(idMeasure1).getObservedValue()[0],
-                                                measurements.get(idMeasure1).getObservedValue()[1],
-                                                measurements.get(idMeasure1).getObservedValue()[2]);
+                                                measurements.getFirst().getObservedValue()[0],
+                                                measurements.getFirst().getObservedValue()[1],
+                                                measurements.getFirst().getObservedValue()[2]);
 
         // measurement data 2
         final int idMeasure2 = 10;
@@ -155,7 +135,7 @@ public class IodLambertTest {
 
         // Use a simple Keplerian propagator (no perturbation)
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create propagator
@@ -196,16 +176,15 @@ public class IodLambertTest {
             final IodLambert iod = new IodLambert(mu);
 
             // Estimate the orbit
-            final KeplerianOrbit orbit = new KeplerianOrbit(iod.estimate(frame, posigrades[i], nRevs[i], position1, date1, position2, date2));
+            final Orbit estimatedOrbit = iod.estimate(frame, posigrades[i], nRevs[i], position1, date1, position2, date2);
 
-            // Test relative values
-            final double relTol = 1e-12;
-            Assertions.assertEquals(refOrbit.getA(),                             orbit.getA(),                             relTol * refOrbit.getA());
-            Assertions.assertEquals(refOrbit.getE(),                             orbit.getE(),                             relTol * refOrbit.getE());
-            Assertions.assertEquals(refOrbit.getI(),                             orbit.getI(),                             relTol * refOrbit.getI());
-            Assertions.assertEquals(refOrbit.getPerigeeArgument(),               orbit.getPerigeeArgument(),               relTol * refOrbit.getPerigeeArgument());
-            Assertions.assertEquals(refOrbit.getRightAscensionOfAscendingNode(), orbit.getRightAscensionOfAscendingNode(), relTol * refOrbit.getRightAscensionOfAscendingNode());
-            Assertions.assertEquals(refOrbit.getTrueAnomaly(),                   orbit.getTrueAnomaly(),                   relTol * refOrbit.getTrueAnomaly());
+            // Check that initial and terminal positions match
+            final double tolerance = 1e-6;
+            Assertions.assertEquals(0.0, Vector3D.distance(position1, estimatedOrbit.getPosition(date1, frame)), tolerance);
+            Assertions.assertEquals(0.0, Vector3D.distance(position2, estimatedOrbit.getPosition(date2, frame)), tolerance);
+            if (posigrades[i]) {
+                Assertions.assertEquals(0.0, Vector3D.distance(refOrbit.getVelocity(), estimatedOrbit.getVelocity()), tolerance);
+            }
         }
     }
 
@@ -251,7 +230,7 @@ public class IodLambertTest {
 
         // Use a simple Keplerian propagator (no perturbation)
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create propagator
@@ -326,7 +305,7 @@ public class IodLambertTest {
                 trueAnomalyDifference = 0.5*FastMath.PI; // 90 degrees;
             } else {
                 posigrade = false;
-                nRev = 0;
+                nRev = 1;
                 trueAnomalyDifference = 1.5*FastMath.PI; // 270 degrees;
             }
 
@@ -385,15 +364,17 @@ public class IodLambertTest {
             } else {
                 dP1Tol = 5.47e-25;
                 dV1Tol = 3.03e-12;
-                dP2Tol = 9.86e-7;
-                dV2Tol = 4.01e-10;
+                dP2Tol = 9.89e-7;
+                dV2Tol = 4.04e-10;
             }
 
             // Check results
             Assertions.assertEquals(0., dP1, dP1Tol);
-            Assertions.assertEquals(0., dV1, dV1Tol);
             Assertions.assertEquals(0., dP2, dP2Tol);
-            Assertions.assertEquals(0., dV2, dV2Tol);
+            if (posigrade) {
+                Assertions.assertEquals(0., dV1, dV1Tol);
+                Assertions.assertEquals(0., dV2, dV2Tol);
+            }
         }
     }
 

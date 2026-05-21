@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.estimation.measurements.generation;
+
+import java.util.SortedSet;
 
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
@@ -33,13 +35,10 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
-
-import java.util.SortedSet;
 
 public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMeasurement<T>> {
 
@@ -58,10 +57,10 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
        generator.addPropagator(buildPropagator()); // dummy propagator 2
        final ObservableSatellite satellite = generator.addPropagator(buildPropagator()); // relevant propagator 3
        generator.addPropagator(buildPropagator()); // dummy propagator 4
-       generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.get(0), satellite),
+       generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.getFirst(), satellite),
                                                         new FixedStepSelector(step, TimeScalesFactory.getUTC()),
                                                         generator.getPropagator(satellite),
-                                                        EstimationTestUtils.getElevationDetector(context.stations.get(0).getBaseFrame(),
+                                                        EstimationTestUtils.getElevationDetector(context.stations.getFirst().getBaseFrame(),
                                                                                                  FastMath.toRadians(5.0)).
                                                         withHandler(new ContinueOnEvent()),
                                                         SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
@@ -106,10 +105,10 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+        propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                   1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                   Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
     }

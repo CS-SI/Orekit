@@ -347,6 +347,9 @@ libraries, all released under business friendly FOSS licenses.
 * [Mockito](https://site.mockito.org/), a mocking framework for unit tests,
   released under MIT license.
 
+* [ArchUnit](https://www.archunit.org/), a framework for unit tests on
+  software architecture, released under Apache License, version 2.0.
+
 More detailed information is available in the
 [Maven site](https://www.orekit.org/site-orekit-development/dependencies.html).
 

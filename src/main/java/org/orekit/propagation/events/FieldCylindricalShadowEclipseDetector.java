@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.utils.ExtendedPositionProvider;
 
@@ -102,5 +103,12 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
     protected FieldCylindricalShadowEclipseDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                               final FieldEventHandler<T> newHandler) {
         return new FieldCylindricalShadowEclipseDetector<>(sun, occultingBodyRadius, detectionSettings, newHandler);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CylindricalShadowEclipseDetector toEventDetector(final EventHandler eventHandler) {
+        return new CylindricalShadowEclipseDetector(sun, getOccultingBodyRadius().getReal(),
+                getDetectionSettings().toEventDetectionSettings(), eventHandler);
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -70,7 +70,7 @@ import java.util.Arrays;
  * available into the navigation message, these accelerations are computed.
  * </p>
  * <p>
- * <b>Caution:</b> The Glonass numerical propagator can only be used with {@link GLONASSNavigationMessage}.
+ * <b>Caution:</b> The Glonass numerical propagator can only be used with {@link GLONASSFdmaNavigationMessage}.
  * Using this propagator with a {@link GLONASSAlmanac} is prone to error.
  * </p>
  *
@@ -735,7 +735,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             final double etamY  = eta - y;
             final double psimZ  = psi - z;
             final Vector3D vector = new Vector3D(epsmX, etamY, psimZ);
-            final double d2 = vector.getNormSq();
+            final double d2 = vector.getNorm2Sq();
             final double deltaM = FastMath.sqrt(d2) * d2;
 
             // Accelerations

@@ -1,4 +1,4 @@
-/* Copyright 2023-2025 Alberto Ferrero
+/* Copyright 2023-2026 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,7 +65,7 @@ public class LongitudeRangeCrossingDetectorTest {
         Assertions.assertEquals(10.0, FastMath.toDegrees(d.getFromLongitude()), 1.0e-14);
         Assertions.assertEquals(18.0, FastMath.toDegrees(d.getToLongitude()), 1.0e-14);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
-        Assertions.assertSame(earth, d.getBody());
+        Assertions.assertSame(earth, d.getBodyShape());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,25 +36,25 @@ public class DSSTZonalContext extends DSSTGravityContext {
 
     // Short period terms
     /** h * k. */
-    private double hk;
+    private final double hk;
     /** k² - h². */
-    private double k2mh2;
+    private final double k2mh2;
     /** (k² - h²) / 2. */
-    private double k2mh2o2;
+    private final double k2mh2o2;
     /** 1 / (n² * a²). */
-    private double oon2a2;
+    private final double oon2a2;
     /** 1 / (n² * a) . */
-    private double oon2a;
+    private final double oon2a;
     /** χ³ / (n² * a). */
-    private double x3on2a;
+    private final double x3on2a;
     /** χ / (n² * a²). */
-    private double xon2a2;
+    private final double xon2a2;
     /** (C * χ) / ( 2 * n² * a² ). */
-    private double cxo2n2a2;
+    private final double cxo2n2a2;
     /** (χ²) / (n² * a² * (χ + 1 ) ). */
-    private double x2on2a2xp1;
+    private final double x2on2a2xp1;
     /** B * B. */
-    private double BB;
+    private final double BB;
 
     /**
      * Constructor with central body frame potentially different than orbit frame.

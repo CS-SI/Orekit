@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,17 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.Arrays;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -30,8 +34,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.Arrays;
 
 /** One way range-rate measurement between two satellites.
  * @author Luc Maisonobe
@@ -50,13 +52,31 @@ public class InterSatellitesOneWayRangeRate
      * @param rangeRate observed value (m/s)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @since 14.0
+     */
+    public InterSatellitesOneWayRangeRate(final ObservableSatellite local,
+                                          final ObservableSatellite remote,
+                                          final AbsoluteDate date, final double rangeRate,
+                                          final double sigma, final double baseWeight,
+                                          final SignalTravelTimeModel signalTravelTimeModel) {
+        // Call to super constructor
+        super(date, rangeRate, new MeasurementQuality(sigma, baseWeight), signalTravelTimeModel, local, remote);
+    }
+
+    /** Constructor with default signal travel time model.
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote remote satellite which simply emits the signal
+     * @param date date of the measurement
+     * @param rangeRate observed value (m/s)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
      */
     public InterSatellitesOneWayRangeRate(final ObservableSatellite local,
                                           final ObservableSatellite remote,
                                           final AbsoluteDate date, final double rangeRate,
                                           final double sigma, final double baseWeight) {
-        // Call to super constructor
-        super(date, rangeRate, sigma, baseWeight, local, remote);
+        this(local, remote, date, rangeRate, sigma, baseWeight, new SignalTravelTimeModel());
     }
 
     /** {@inheritDoc} */
@@ -65,7 +85,7 @@ public class InterSatellitesOneWayRangeRate
                                                                                                                final int evaluation,
                                                                                                                final SpacecraftState[] states) {
 
-        final OnBoardCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
+        final CommonParametersWithoutDerivatives common = computeCommonParametersWithout(states);
 
         // prepare the evaluation
         final EstimatedMeasurementBase<InterSatellitesOneWayRangeRate> estimatedPhase =
@@ -81,7 +101,7 @@ public class InterSatellitesOneWayRangeRate
         // Range rate value
         final PVCoordinates delta = new PVCoordinates(common.getRemotePV(), common.getTransitPV());
         final double rangeRate = Vector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize()) +
-                                 Constants.SPEED_OF_LIGHT * (common.getLocalRate() - common.getRemoteRate());
+                                 Constants.SPEED_OF_LIGHT * (common.getLocalOffset().getRate() - common.getRemoteOffset().getRate());
 
         estimatedPhase.setEstimatedValue(rangeRate);
 
@@ -96,7 +116,7 @@ public class InterSatellitesOneWayRangeRate
                                                                                          final int evaluation,
                                                                                          final SpacecraftState[] states) {
 
-        final OnBoardCommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
+        final CommonParametersWithDerivatives common = computeCommonParametersWith(states);
 
         // prepare the evaluation
         final EstimatedMeasurement<InterSatellitesOneWayRangeRate> estimatedPhase =
@@ -112,7 +132,8 @@ public class InterSatellitesOneWayRangeRate
         // Range rate value
         final FieldPVCoordinates<Gradient> delta = new FieldPVCoordinates<>(common.getRemotePV(), common.getTransitPV());
         final Gradient rangeRate = FieldVector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize()).
-                                   add(common.getLocalRate().subtract(common.getRemoteRate()).multiply(Constants.SPEED_OF_LIGHT));
+                                   add(common.getLocalOffset().getRate().subtract(common.getRemoteOffset().getRate()).
+                                   multiply(Constants.SPEED_OF_LIGHT));
 
         estimatedPhase.setEstimatedValue(rangeRate.getValue());
 

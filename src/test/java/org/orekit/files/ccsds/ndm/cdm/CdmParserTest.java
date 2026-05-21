@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.function.Function;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -36,7 +35,6 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.PocMethodType;
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -385,7 +383,7 @@ public class CdmParserTest {
         Assertions.assertEquals("EGM-96", file.getMetadataObject1().getGravityModel());
         Assertions.assertEquals(36, file.getMetadataObject1().getGravityDegree(), 0);
         Assertions.assertEquals(36, file.getMetadataObject1().getGravityOrder(), 0);
-        Assertions.assertEquals("MOON", file.getMetadataObject1().getNBodyPerturbations().get(0).getName());
+        Assertions.assertEquals("MOON", file.getMetadataObject1().getNBodyPerturbations().getFirst().getName());
         Assertions.assertEquals("SUN", file.getMetadataObject1().getNBodyPerturbations().get(1).getName());
         Assertions.assertEquals("NO", file.getMetadataObject1().getSolarRadiationPressure().name());
         Assertions.assertEquals("NO", file.getMetadataObject1().getEarthTides().name());
@@ -1646,7 +1644,7 @@ public class CdmParserTest {
         // OBJECT 2 - Eigenvector covariance block
         Assertions.assertEquals(AltCovarianceType.CSIG3EIGVEC3, file.getMetadataObject2().getAltCovType(), "ALT_COV_TYPE");
         Assertions.assertEquals("Object2 Covariance in the Sigma / eigenvector format",
-                                file.getDataObject2().getSig3EigVec3CovarianceBlock().getComments().get(0));
+                                file.getDataObject2().getSig3EigVec3CovarianceBlock().getComments().getFirst());
         Assertions.assertEquals(12,  file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3().length);
         for (int i=0; i<12; i++) {
             Assertions.assertEquals(i+1, file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3()[i],
@@ -1676,7 +1674,7 @@ public class CdmParserTest {
         // User defined parameters
 
         Assertions.assertEquals(1, file.getUserDefinedParameters().getComments().size());
-        Assertions.assertEquals("User Parameters", file.getUserDefinedParameters().getComments().get(0));
+        Assertions.assertEquals("User Parameters", file.getUserDefinedParameters().getComments().getFirst());
         Assertions.assertEquals(1, file.getUserDefinedParameters().getParameters().size());
         Assertions.assertEquals("2020-01-29T13:30:00", file.getUserDefinedParameters().getParameters().get("OBJ1_TIME_LASTOB_START"));
 
@@ -2023,18 +2021,4 @@ public class CdmParserTest {
                 cdm.getDataObject1().getAdditionalParametersBlock().getOebParent(),
                 Matchers.sameInstance(myItrf));
     }
-
-    /** Test deprecated constructor. Can be removed in 14.0. */
-    @Test
-    @Deprecated
-    public void testDeprecatedConstructor() {
-        // action
-        CdmParser actual = new CdmParser(
-                null, true, null, null, new Function[0]);
-
-        // verify
-        MatcherAssert.assertThat(actual.getFrameMapper(),
-                Matchers.is(new OrekitCcsdsFrameMapper()));
-    }
-
 }

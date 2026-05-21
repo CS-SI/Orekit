@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -96,7 +96,7 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(getBuilders().get(0).getInitialOrbitDate());
+                driver.setReferenceDate(getBuilders().getFirst().getInitialOrbitDate());
             }
         }
 

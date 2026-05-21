@@ -1,0 +1,71 @@
+/* Copyright 2024-2026 Rafael Ayala
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.control.heuristics.lambert;
+
+/**
+ * Class holding parameters for a Householder solver.
+ *
+ * @author Rafael Ayala
+ * @since 14.0
+ */
+public class HouseholderParameters {
+
+    /** Maximum number of iterations. */
+    private final int maxIterations;
+
+    /** Absolute tolerance for convergence criterion. */
+    private final double atol;
+
+    /** Relative tolerance for convergence criterion. */
+    private final double rtol;
+
+    /**
+     * Constructor.
+     * @param maxIterations maximum number of iterations
+     * @param atol absolute tolerance for convergence criterion
+     * @param rtol relative tolerance for convergence criterion
+     */
+    public HouseholderParameters(final int maxIterations, final double atol, final double rtol) {
+        this.maxIterations = maxIterations;
+        this.atol = atol;
+        this.rtol = rtol;
+    }
+
+    /**
+     * Get the maximum number of iterations.
+     * @return maximum number of iterations
+     */
+    public int getMaxIterations() {
+        return maxIterations;
+    }
+
+    /**
+     * Get the absolute tolerance.
+     * @return absolute tolerance
+     */
+    public double getAbsoluteTolerance() {
+        return atol;
+    }
+
+    /**
+     * Get the relative tolerance.
+     * @return relative tolerance
+     */
+    public double getRelativeTolerance() {
+        return rtol;
+    }
+}

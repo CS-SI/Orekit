@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.clocks.ClockModel;
 
 /** Time scale with clock offset from another time scale.
  * @author Luc Maisonobe
@@ -31,7 +32,7 @@ public class ClockTimeScale implements TimeScale {
     private final TimeScale reference;
 
     /** Clock offset model. */
-    private final transient ClockModel clockModel;
+    private final ClockModel clockModel;
 
     /** Simple constructor.
      * @param name name of the time scale
@@ -49,13 +50,13 @@ public class ClockTimeScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public TimeOffset offsetFromTAI(final AbsoluteDate date) {
-        return reference.offsetFromTAI(date).add(new TimeOffset(clockModel.getOffset(date).getOffset()));
+        return reference.offsetFromTAI(date).add(new TimeOffset(clockModel.getOffset(date).getBias()));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return reference.offsetFromTAI(date).add(clockModel.getOffset(date).getOffset());
+        return reference.offsetFromTAI(date).add(clockModel.getOffset(date).getBias());
     }
 
     /** {@inheritDoc} */

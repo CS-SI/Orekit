@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -64,7 +65,7 @@ class FieldEquinoctialOrbitTest {
     private double mu;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         Utils.setDataRoot("regular-data");
 
@@ -268,6 +269,45 @@ class FieldEquinoctialOrbitTest {
     @Test
     void testNormalize() {
         doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testShiftedBy() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final EquinoctialOrbit expectedOrbit = createOrbitTestFromEquinoctialOrbit(true);
+        final FieldEquinoctialOrbit<Complex> fieldOrbit = new FieldEquinoctialOrbit<>(field, expectedOrbit);
+        final double dt = 1;
+        // WHEN
+        final FieldEquinoctialOrbit<Complex> actualFieldOrbit = fieldOrbit.shiftedBy(dt);
+        // THEN
+        final FieldEquinoctialOrbit<Complex> expected = fieldOrbit.shiftedBy(new TimeOffset(dt));
+        Assertions.assertEquals(expected.getMu(), actualFieldOrbit.getMu());
+        Assertions.assertEquals(expected.getDate(), actualFieldOrbit.getDate());
+        Assertions.assertEquals(expected.getFrame(), actualFieldOrbit.getFrame());
+        Assertions.assertEquals(expected.getPosition(), actualFieldOrbit.getPosition());
+        Assertions.assertEquals(expected.getVelocity(), actualFieldOrbit.getVelocity());
+    }
+
+    @Test
+    void testShiftedByVersusNonField() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final EquinoctialOrbit orbit = new EquinoctialOrbit(7e6, 1e-3, 0., 2, 1,1, 1, 0., 0., 0., 0., 0., PositionAngleType.TRUE,
+                FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
+        final FieldEquinoctialOrbit<Complex> fieldOrbit = new FieldEquinoctialOrbit<>(field, orbit);
+        final double dt = 1;
+        // WHEN
+        final FieldEquinoctialOrbit<Complex> actualFieldOrbit = fieldOrbit.shiftedBy(dt);
+        // THEN
+        final EquinoctialOrbit shiftedOrbit = orbit.shiftedBy(dt);
+        Assertions.assertEquals(shiftedOrbit.getMu(), actualFieldOrbit.getMu().getReal());
+        Assertions.assertEquals(shiftedOrbit.getDate(), actualFieldOrbit.getDate().toAbsoluteDate());
+        Assertions.assertEquals(shiftedOrbit.getFrame(), actualFieldOrbit.getFrame());
+        Assertions.assertArrayEquals(shiftedOrbit.getPosition().toArray(), actualFieldOrbit.getPosition().toVector3D().toArray(), 1e-8);
+        Assertions.assertArrayEquals(shiftedOrbit.getVelocity().toArray(), actualFieldOrbit.getVelocity().toVector3D().toArray(), 1e-9);
+        Assertions.assertArrayEquals(shiftedOrbit.getPVCoordinates().getAcceleration().toArray(),
+                actualFieldOrbit.getPVCoordinates().getAcceleration().toVector3D().toArray(), 1e12);
     }
 
     @Test
@@ -595,7 +635,7 @@ class FieldEquinoctialOrbitTest {
 
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r = r2.sqrt();
         final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(zero.add(mu).negate()),
                 position);
@@ -1121,7 +1161,7 @@ class FieldEquinoctialOrbitTest {
         // we use this to compute a velocity step size from the position step size
         FieldVector3D<T> p = orbit.getPosition();
         FieldVector3D<T> v = orbit.getVelocity();
-        T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
+        T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNorm2Sq()));
 
         T h;
         FieldVector3D<T> dP = new FieldVector3D<>(hP.getField().getZero(), hP.getField().getZero(), hP.getField().getZero());
@@ -1309,7 +1349,7 @@ class FieldEquinoctialOrbitTest {
             final T zero = field.getZero();
             FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(10000000.0), field.getZero(), field.getZero());
             FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero(), field.getZero().add(-6500.0), field.getZero());
-            T r2 = position.getNormSq();
+            T r2 = position.getNorm2Sq();
             T r  = r2.sqrt();
             FieldVector3D<T> acceleration = new FieldVector3D<>(r.multiply(r2.reciprocal().multiply(zero.add(mu).negate())), position,
                                                                 field.getOne(), new FieldVector3D<>(field.getZero().add(-0.1),
@@ -1351,7 +1391,7 @@ class FieldEquinoctialOrbitTest {
         FieldEquinoctialOrbit<T> orbit = new FieldEquinoctialOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                      date, zero.add(Constants.EIGEN5C_EARTH_MU));
         Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r  = r2.sqrt();
         FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);

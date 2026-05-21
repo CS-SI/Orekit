@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.errors;
 
+import java.io.Serial;
+
+
 import org.hipparchus.exception.Localizable;
 import org.hipparchus.exception.MathRuntimeException;
 
@@ -27,6 +30,7 @@ import org.hipparchus.exception.MathRuntimeException;
 public class TimeStampedCacheException extends OrekitException {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 9015424948577907926L;
 
     /** Simple constructor.
@@ -76,8 +80,8 @@ public class TimeStampedCacheException extends OrekitException {
     public static TimeStampedCacheException unwrap(final OrekitException oe) {
 
         for (Throwable t = oe; t != null; t = t.getCause()) {
-            if (t instanceof TimeStampedCacheException) {
-                return (TimeStampedCacheException) t;
+            if (t instanceof TimeStampedCacheException exception) {
+                return exception;
             }
         }
 
@@ -96,11 +100,11 @@ public class TimeStampedCacheException extends OrekitException {
     public static TimeStampedCacheException unwrap(final MathRuntimeException exception) {
 
         for (Throwable t = exception; t != null; t = t.getCause()) {
-            if (t instanceof OrekitException) {
-                if (t instanceof TimeStampedCacheException) {
-                    return (TimeStampedCacheException) t;
+            if (t instanceof OrekitException orekitException) {
+                if (t instanceof TimeStampedCacheException cacheException) {
+                    return cacheException;
                 } else {
-                    return new TimeStampedCacheException((OrekitException) t);
+                    return new TimeStampedCacheException(orekitException);
                 }
             }
         }

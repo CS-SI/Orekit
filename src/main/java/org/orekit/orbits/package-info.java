@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,8 @@
  * org.orekit.orbits.EquinoctialOrbit equinoctial} and {@link
  * org.orekit.orbits.CartesianOrbit Cartesian} representations are supported.
  * </p>
+ *
+ * <img src="doc-files/orbits-class-diagram.png" alt="class diagram">
  *
  * <h2>Design History</h2>
  * <p>

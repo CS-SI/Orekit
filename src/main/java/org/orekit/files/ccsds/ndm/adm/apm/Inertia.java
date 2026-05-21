@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,42 +19,24 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
-import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
-import org.orekit.frames.Frame;
+import org.orekit.files.ccsds.section.CommentsContainer;
 
 /** Inertia.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class Inertia extends CommonPhysicalProperties {
+public class Inertia extends CommentsContainer {
 
     /** Inertia reference frame. */
     private FrameFacade frame;
 
     /** Inertia matrix. */
-    private RealMatrix inertiaMatrix;
+    private final RealMatrix inertiaMatrix;
 
-    /**
-     * Simple constructor.
-     *
-     * @deprecated in favor of {@link #Inertia(CcsdsFrameMapper)}.
+    /** Simple constructor.
      */
-    @Deprecated
     public Inertia() {
-        this(new OrekitCcsdsFrameMapper());
-    }
-
-    /**
-     * Simple constructor.
-     *
-     * @param frameMapper for creating a {@link Frame}.
-     * @since 13.1.5
-     */
-    public Inertia(final CcsdsFrameMapper frameMapper) {
-        super(frameMapper);
         inertiaMatrix = MatrixUtils.createRealMatrix(new double[][] {
             { Double.NaN, Double.NaN, Double.NaN },
             { Double.NaN, Double.NaN, Double.NaN },

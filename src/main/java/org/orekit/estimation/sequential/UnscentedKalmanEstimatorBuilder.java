@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,13 +45,13 @@ public class UnscentedKalmanEstimatorBuilder {
     private MatrixDecomposer decomposer;
 
     /** Builders for propagators. */
-    private List<PropagatorBuilder> propagatorBuilders;
+    private final List<PropagatorBuilder> propagatorBuilders;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
 
     /** Process noise matrix providers. */
-    private List<CovarianceMatrixProvider> processNoiseMatrixProviders;
+    private final List<CovarianceMatrixProvider> processNoiseMatrixProviders;
 
     /** Process noise matrix provider for measurement parameters. */
     private CovarianceMatrixProvider measurementProcessNoiseMatrix;

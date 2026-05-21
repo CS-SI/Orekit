@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2025 CS GROUP
+<!--- Copyright 2002-2026 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -34,7 +34,7 @@ The first goal, validation, implies tests must be as extensive as possible.
 They should include realistic operational cases but also contingency cases.
 The [jacoco](https://www.eclemma.org/jacoco/) tool must be used to monitor
 test coverage. A very high level of coverage is desired. We do not set up
-mandatory objective figures, but only guidelines here. However,a 60% line
+mandatory objective figures, but only guidelines here. However, a 60% line
 coverage would clearly not be acceptable at all and 80% would be considered
 deceptive.
 
@@ -60,22 +60,22 @@ well documented. Part of this goal is enforced by the stylistic rules explained
 in the next section, but this is only for the _automatic_ and simple checks. It
 is important to keep a clean and extensible design. Achieving simplicity is
 really hard, so this goal should not be taken too lightly. Good designs are a
-matter of balance between two few objects that do too many things internally
-an ignore each other and too many objects that do nothing alone and always need
+matter of balance between too few objects that do too many things internally
+and ignore each other, and too many objects that do nothing alone and always need
 a bunch of other objects to work. Always think in terms of balance, and check
 what happens if you remove something from the design. Quite often, removing something
 improves the design and should be done.
 
 The fourth goal, efficiency, should be handled with care to not conflict with the
 second and third goals (robustness and maintainability). Efficiency is necessary but
-trying too much too achieve it can lead to overly complex unmaintainable code, to too
+trying too much to achieve it can lead to overly complex unmaintainable code, to too
 specific fragile code, and unfortunately too often without any gain after all because
-of premature optimization and unfounded second-guess.
+of premature optimization and unfounded second-guessing.
 
 One surprising trick, that at first sight might seem strange and inappropriate has
-been used in many part for Orekit and should be considered a core guideline. It
+been used in many parts of Orekit and should be considered a core guideline. It
 is the use of _immutable_ objects. This trick improves efficiency because many costly
-copying operation are avoided, even unneeded one added for defensive programming. It
+copying operation are avoided, even unneeded ones added for defensive programming. It
 improves maintainability because both the classes themselves and the classes that use
 them are much simpler. It also improves robustness because many (really many ...)
 difficult to catch bugs are caused by mutable objects that are changed in some deeply

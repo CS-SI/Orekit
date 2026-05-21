@@ -37,8 +37,8 @@ public abstract class AbstractSelfFeedingLoader {
      *                       DataLoader)}.
      * @param manager        the source of auxiliary data files.
      */
-    public AbstractSelfFeedingLoader(final String supportedNames,
-                                     final DataProvidersManager manager) {
+    protected AbstractSelfFeedingLoader(final String supportedNames,
+                                        final DataProvidersManager manager) {
         this.supportedNames = supportedNames;
         this.manager = manager;
     }

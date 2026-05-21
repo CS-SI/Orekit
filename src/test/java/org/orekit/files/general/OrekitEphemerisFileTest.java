@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 package org.orekit.files.general;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -62,16 +68,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
 public class OrekitEphemerisFileTest {
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -124,7 +124,7 @@ public class OrekitEphemerisFileTest {
 
         final double propagationDurationSeconds = 86400.0;
         final double stepSizeSeconds = 60.0;
-        List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        List<SpacecraftState> states = new ArrayList<>();
 
         for (double dt = 0.0; dt < propagationDurationSeconds; dt += stepSizeSeconds) {
             states.add(propagator.propagate(date.shiftedBy(dt)));
@@ -135,17 +135,17 @@ public class OrekitEphemerisFileTest {
         satellite.addNewSegment(states);
         Assertions.assertEquals(satId, satellite.getId());
         Assertions.assertEquals(body.getGM(), satellite.getMu(), muTolerance);
-        Assertions.assertEquals(0.0, states.get(0).getDate().durationFrom(satellite.getStart()), 1.0e-15);
-        Assertions.assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(satellite.getStop()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.getFirst().getDate().durationFrom(satellite.getStart()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.getLast().getDate().durationFrom(satellite.getStop()), 1.0e-15);
         Assertions.assertEquals(CartesianDerivativesFilter.USE_PV,
-                     satellite.getSegments().get(0).getAvailableDerivatives());
+                     satellite.getSegments().getFirst().getAvailableDerivatives());
         Assertions.assertEquals("GCRF",
-                     satellite.getSegments().get(0).getFrame().getName());
+                     satellite.getSegments().getFirst().getFrame().getName());
         Assertions.assertEquals(body.getGM(),
-                     satellite.getSegments().get(0).getMu(), muTolerance);
+                     satellite.getSegments().getFirst().getMu(), muTolerance);
 
         String tempOem = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
-        OemMetadata template = new OemMetadata(2);
+        OemMetadata template = new OemMetadata(2, null);
         template.setTimeSystem(TimeSystem.UTC);
         template.setObjectID(satId);
         template.setObjectName(satId);
@@ -158,11 +158,11 @@ public class OrekitEphemerisFileTest {
 
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
         EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFrom = parser.parse(new DataSource(tempOem));
-        Files.delete(Paths.get(tempOem));
+        Files.delete(Path.of(tempOem));
 
-        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
-        Assertions.assertEquals(states.get(0).getDate(), segment.getStart());
-        Assertions.assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
+        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().getFirst();
+        Assertions.assertEquals(states.getFirst().getDate(), segment.getStart());
+        Assertions.assertEquals(states.getLast().getDate(), segment.getStop());
         Assertions.assertEquals(states.size(), segment.getCoordinates().size());
         Assertions.assertEquals(frame, segment.getFrame());
         Assertions.assertEquals(body.getGM(), segment.getMu(), muTolerance);
@@ -222,7 +222,7 @@ public class OrekitEphemerisFileTest {
 
         }
 
-        final List<SpacecraftState> readInStates = new ArrayList<SpacecraftState>();
+        final List<SpacecraftState> readInStates = new ArrayList<>();
         segment.getCoordinates().forEach(c -> {
             try {
                 readInStates.add(new SpacecraftState(new CartesianOrbit(c, frame, mu)));

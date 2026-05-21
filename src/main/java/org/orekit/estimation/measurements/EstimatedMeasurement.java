@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ import org.orekit.utils.TimeSpanMap.Span;
 public class EstimatedMeasurement<T extends ObservedMeasurement<T>> extends EstimatedMeasurementBase<T> {
 
     /** Partial derivatives with respect to states. */
-    private double[][][] stateDerivatives;
+    private final double[][][] stateDerivatives;
 
     /** Partial derivatives with respect to parameters. */
     private final Map<ParameterDriver, TimeSpanMap<double[]>> parametersDerivatives;

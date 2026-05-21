@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 
 package org.orekit.files.sinex;
 
-import org.orekit.gnss.ObservationType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
@@ -39,12 +38,12 @@ import java.util.HashSet;
 public class ObservableSpecificSignalBias {
 
     /** Set of observation types available for the satellite. */
-    private final HashSet<ObservationType> observationSets;
+    private final HashSet<String> observationSets;
 
     /** Set of biases, identifiable by observation types,
      * each containing the corresponding TimeSpanMap of biases.
      */
-    private final HashMap<ObservationType, TimeSpanMap<Double>> biases;
+    private final HashMap<String, TimeSpanMap<Double>> biases;
 
     /** Simple constructor.
      */
@@ -59,7 +58,7 @@ public class ObservableSpecificSignalBias {
      * @param spanEnd end of the validity span for this bias value
      * @param biasValue Observable-specific Signal Bias value (meters for code and cycle for phase)
      */
-    public void addBias(final ObservationType obs,
+    public void addBias(final String obs,
                         final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
                         final double biasValue) {
 
@@ -77,14 +76,14 @@ public class ObservableSpecificSignalBias {
      * @param date date at which to obtain the Observable-specific Signal Bias
      * @return the value of the Observable-specific Signal Bias (meters for code and cycle for phase)
      */
-    public double getBias(final ObservationType obs, final AbsoluteDate date) {
+    public double getBias(final String obs, final AbsoluteDate date) {
         return getTimeSpanMap(obs).get(date);
     }
 
     /** Get all available observation types for the satellite.
      * @return Observation types obtained.
      */
-    public HashSet<ObservationType> getAvailableObservations() {
+    public HashSet<String> getAvailableObservations() {
         return observationSets;
     }
 
@@ -92,7 +91,7 @@ public class ObservableSpecificSignalBias {
      * @param obs observation type
      * @return minimum valid date for the observation pair
      */
-    public AbsoluteDate getMinimumValidDateForObservation(final ObservationType obs) {
+    public AbsoluteDate getMinimumValidDateForObservation(final String obs) {
         final TimeSpanMap.Transition<Double> transition = getTimeSpanMap(obs).getFirstTransition();
         return transition == null ? AbsoluteDate.PAST_INFINITY : transition.getDate();
     }
@@ -101,7 +100,7 @@ public class ObservableSpecificSignalBias {
      * @param obs observation type
      * @return maximum valid date for the observation pair
      */
-    public AbsoluteDate getMaximumValidDateForObservation(final ObservationType obs) {
+    public AbsoluteDate getMaximumValidDateForObservation(final String obs) {
         final TimeSpanMap.Transition<Double> transition = getTimeSpanMap(obs).getLastTransition();
         return transition == null ? AbsoluteDate.FUTURE_INFINITY : transition.getDate();
     }
@@ -112,7 +111,7 @@ public class ObservableSpecificSignalBias {
      * @param obs observation type
      * @return the time span map for a given observation code pair
      */
-    public TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs) {
+    public TimeSpanMap<Double> getTimeSpanMap(final String obs) {
         return biases.get(obs);
     }
 

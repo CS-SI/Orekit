@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 import java.util.regex.Pattern;
 
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.frames.Frame;
 
@@ -47,17 +46,6 @@ public class OmmMetadata extends OdmCommonMetadata {
     /** Description of the Mean Element Theory. Indicates the proper method to employ
      * to propagate the state. */
     private String meanElementTheory;
-
-    /**
-     * Empty constructor.
-     *
-     * @since 12.0
-     * @deprecated in favor of {@link #OmmMetadata(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OmmMetadata() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Constructor.

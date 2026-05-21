@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,10 +33,10 @@ import org.orekit.time.AbsoluteDate;
 public class TectonicsDisplacement implements StationDisplacement {
 
     /** Coordinates reference epoch. */
-    private AbsoluteDate epoch;
+    private final AbsoluteDate epoch;
 
     /** Station velocity. */
-    private Vector3D velocity;
+    private final Vector3D velocity;
 
     /** Simple constructor.
      * @param velocity station velocity in Earth frame (m/s)

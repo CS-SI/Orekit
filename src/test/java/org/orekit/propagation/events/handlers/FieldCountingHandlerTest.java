@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,11 @@ class FieldCountingHandlerTest {
 
         @Override
         protected boolean doesCount(FieldSpacecraftState<Binary64> state, FieldEventDetector<Binary64> detector, boolean increasing) {
-            return countAll;
+            if (countAll) {
+                return super.doesCount(state, detector, increasing);
+            } else {
+                return false;
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045Data;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
@@ -88,7 +88,7 @@ public enum RtcmMessageType implements MessageType {
             // Initialize data container and navigation message
             final Rtcm1019Data         rtcm1019Data  = new Rtcm1019Data();
             final GPSLegacyNavigationMessage gpsNavMessage =
-                new GPSLegacyNavigationMessage(timeScales, SatelliteSystem.GPS);
+                new GPSLegacyNavigationMessage(timeScales, SatelliteSystem.GPS, GPSLegacyNavigationMessage.LNAV);
 
             // Set the satellite ID
             final int gpsId = RtcmDataField.DF009.intValue(encodedMessage);
@@ -158,7 +158,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1020Data             rtcm1020Data      = new Rtcm1020Data();
-            final GLONASSNavigationMessage glonassNavMessage = new GLONASSNavigationMessage();
+            final GLONASSFdmaNavigationMessage glonassNavMessage = new GLONASSFdmaNavigationMessage();
 
             // Set the satellite ID
             final int glonassId = RtcmDataField.DF038.intValue(encodedMessage);
@@ -229,7 +229,8 @@ public enum RtcmMessageType implements MessageType {
             // Initialize data container and navigation message
             final Rtcm1042Data            rtcm1042Data  = new Rtcm1042Data();
             final BeidouLegacyNavigationMessage beidouNavMessage =
-                new BeidouLegacyNavigationMessage(timeScales, SatelliteSystem.BEIDOU);
+                new BeidouLegacyNavigationMessage(timeScales, SatelliteSystem.BEIDOU,
+                                                  BeidouLegacyNavigationMessage.D1);
 
             // Set the satellite ID
             final int beidouId = RtcmDataField.DF488.intValue(encodedMessage);
@@ -293,7 +294,8 @@ public enum RtcmMessageType implements MessageType {
             // Initialize data container and navigation message
             final Rtcm1044Data          rtcm1044Data   = new Rtcm1044Data();
             final QZSSLegacyNavigationMessage qzssNavMessage =
-                new QZSSLegacyNavigationMessage(timeScales, SatelliteSystem.QZSS);
+                new QZSSLegacyNavigationMessage(timeScales, SatelliteSystem.QZSS,
+                                                QZSSLegacyNavigationMessage.LNAV);
 
             // Set the satellite ID
             final int qzssId = RtcmDataField.DF429.intValue(encodedMessage);
@@ -364,7 +366,8 @@ public enum RtcmMessageType implements MessageType {
             // Initialize data container and navigation message
             final Rtcm1045Data             rtcm1045Data      = new Rtcm1045Data();
             final GalileoNavigationMessage galileoNavMessage =
-                new GalileoNavigationMessage(timeScales, SatelliteSystem.GALILEO);
+                new GalileoNavigationMessage(timeScales, SatelliteSystem.GALILEO,
+                                             GalileoNavigationMessage.FNAV);
 
             // Set the satellite ID
             final int galileoId = RtcmDataField.DF252.intValue(encodedMessage);

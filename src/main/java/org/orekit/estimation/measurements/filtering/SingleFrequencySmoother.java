@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,7 +52,7 @@ public class SingleFrequencySmoother {
      * Map storing the filters for each observation type.
      * Observation types should not overlap for a single RINEX file.
      */
-    private final HashMap<ObservationType, SingleFrequencyHatchFilter> mapFilters;
+    private final HashMap<String, SingleFrequencyHatchFilter> mapFilters;
 
     /**
      * Map storing the filtered data for each pseudo range.
@@ -60,7 +60,7 @@ public class SingleFrequencySmoother {
      * stores a pseudo-range ObservationData object with the filtered value, and the initial ObservationDataSet,
      * needed for further processing.
      */
-    private final HashMap<ObservationType, List<SmoothedObservationDataSet>> mapFilteredData;
+    private final HashMap<String, List<SmoothedObservationDataSet>> mapFilteredData;
 
     /**
      * Simple constructor.
@@ -102,7 +102,7 @@ public class SingleFrequencySmoother {
      * Get the map of the filtered data.
      * @return a map containing the filtered data.
      */
-    public Map<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
+    public Map<String, List<SmoothedObservationDataSet>> getFilteredDataMap() {
         return mapFilteredData;
     }
 
@@ -110,7 +110,7 @@ public class SingleFrequencySmoother {
      * Get the map storing the filters for each observation type.
      * @return the map storing the filters for each observation type
      */
-    public final Map<ObservationType, SingleFrequencyHatchFilter> getMapFilters() {
+    public final Map<String, SingleFrequencyHatchFilter> getMapFilters() {
         return mapFilters;
     }
 
@@ -132,7 +132,7 @@ public class SingleFrequencySmoother {
      * @param obsType   observation type to use for filtering
      */
     public void filterDataSet(final List<ObservationDataSet> listODS, final SatelliteSystem satSystem,
-                              final int prnNumber, final ObservationType obsType) {
+                              final int prnNumber, final String obsType) {
 
         // Sort the list in chronological way to ensure the filter work on time ordered data.
         final List<ObservationDataSet> sortedListODS = new ArrayList<>(listODS);
@@ -160,31 +160,35 @@ public class SingleFrequencySmoother {
                                 // Then copy the observation data to store them.
                                 final ObservationType obsTypeSmoothingCurr = obsDataSmoothingCurr.getObservationType();
 
-                                if (!Double.isNaN(obsDataSmoothingCurr.getValue()) && obsTypeSmoothingCurr == obsType) {
+                                if (!Double.isNaN(obsDataSmoothingCurr.getValue()) &&
+                                    obsTypeSmoothingCurr.getName().equals(obsType)) {
                                     obsDataSmoothing = copyObservationData(obsDataSmoothingCurr);
                                 }
 
                             }
 
                             // Check if the filter exist in the filter map
-                            SingleFrequencyHatchFilter filterObject = mapFilters.get(obsTypeData);
+                            SingleFrequencyHatchFilter filterObject = mapFilters.get(obsTypeData.getName());
 
                             // If the filter does not exist and the phase object are not null, initialize a new filter and
                             // store it in the map, initialize a new list of observationDataSetUpdate, and store it in the map.
                             if (filterObject == null && obsDataSmoothing != null) {
                                 filterObject = createFilter(obsData, obsDataSmoothing, satSystem);
-                                mapFilters.put(obsTypeData, filterObject);
+                                mapFilters.put(obsTypeData.getName(), filterObject);
                                 final List<SmoothedObservationDataSet> odList = new ArrayList<>();
                                 odList.add(new SmoothedObservationDataSet(obsData, obsSet));
-                                mapFilteredData.put(obsTypeData, odList);
+                                mapFilteredData.put(obsTypeData.getName(), odList);
                             // If filter exist, check if a phase object is null, then reset the filter at the next step,
                             // else, filter the data.
                             } else if (filterObject != null) {
                                 if (obsDataSmoothing == null ) {
                                     filterObject.resetFilterNext(obsData.getValue());
                                 } else {
-                                    final ObservationData filteredRange = filterObject.filterData(obsData, obsDataSmoothing);
-                                    mapFilteredData.get(obsTypeData).add(new SmoothedObservationDataSet(filteredRange, obsSet));
+                                    final ObservationData filteredRange =
+                                        filterObject.filterData(obsData, obsDataSmoothing);
+                                    mapFilteredData.
+                                        get(obsTypeData.getName()).
+                                        add(new SmoothedObservationDataSet(filteredRange, obsSet));
                                 }
                             } else {
                                 // If the filter does not exist and one of the phase is equal to NaN or absent

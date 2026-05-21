@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -24,19 +28,21 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldSignalReceptionCondition;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 /** Class modeling a range measurement from a ground station.
  * <p>
@@ -69,7 +75,7 @@ public class RangeAnalytic extends Range {
      * @param range parent class
      */
     public RangeAnalytic(final Range range) {
-        super(range.getStation(), true, range.getDate(), range.getObservedValue()[0],
+        super(range.getObserver(), true, range.getDate(), range.getObservedValue()[0],
               range.getTheoreticalStandardDeviation()[0],
               range.getBaseWeight()[0],
               new ObservableSatellite(0));
@@ -87,7 +93,7 @@ public class RangeAnalytic extends Range {
                                                                         final SpacecraftState state) {
 
         // Station attribute from parent Range class
-        final GroundStation groundStation = this.getStation();
+        final GroundStation groundStation = (GroundStation) this.getObserver();
 
         // Station position at signal arrival
         final AbsoluteDate downlinkDate = getDate();
@@ -102,10 +108,9 @@ public class RangeAnalytic extends Range {
         //  we will have offset == downlinkDelay and transitState will be
         //  the same as state)
         // Downlink time of flight
-        final double          tauD         = signalTimeOfFlightAdjustableEmitter(state.getPVCoordinates(),
-                                                                                 stationDownlink.getPosition(),
-                                                                                 downlinkDate,
-                                                                                 state.getFrame());
+        final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(state.getOrbit());
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(downlinkDate, stationDownlink.getPosition(), state.getFrame());
+        final double          tauD         = signalTimeOfFlight.computeDelay(receptionCondition, state.getDate());
         final double          delta        = downlinkDate.durationFrom(state.getDate());
         final double          dt           = delta - tauD;
 
@@ -121,7 +126,9 @@ public class RangeAnalytic extends Range {
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDate, PVCoordinates.ZERO));
 
         // Uplink time of flight
-        final double          tauU         = signalTimeOfFlightAdjustableEmitter(stationAtTransitDate, transitP, transitDate, state.getFrame());
+        final AdjustableEmitterSignalTimer signalTimeOfFlightUplink = new AdjustableEmitterSignalTimer(new AbsolutePVCoordinates(state.getFrame(), stationAtTransitDate));
+        final SignalReceptionCondition firstCondition = new SignalReceptionCondition(transitDate, transitP, state.getFrame());
+        final double          tauU         = signalTimeOfFlightUplink.computeDelay(firstCondition, stationAtTransitDate.getDate());
         final double          tau          = tauD + tauU;
 
         // Real date and position of station at signal departure
@@ -131,14 +138,14 @@ public class RangeAnalytic extends Range {
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation,
-                                                        new SpacecraftState[] {
-                                                            transitState
-                                                        }, new TimeStampedPVCoordinates[] {
-                                                            stationUplink,
-                                                            transitState.getPVCoordinates(),
-                                                            stationDownlink
-                                                        });
+                new EstimatedMeasurement<>(this, iteration, evaluation,
+                        new SpacecraftState[]{
+                                transitState
+                        }, new TimeStampedPVCoordinates[]{
+                        stationUplink,
+                        transitState.getPVCoordinates(),
+                        stationDownlink
+                });
 
         // Set range value
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
@@ -194,7 +201,7 @@ public class RangeAnalytic extends Range {
                                                     dRdPx * dt, dRdPy * dt, dRdPz * dt
         });
 
-        if (groundStation.getClockOffsetDriver().isSelected() ||
+        if (groundStation.getClockBiasDriver().isSelected() ||
             groundStation.getEastOffsetDriver().isSelected()  ||
             groundStation.getNorthOffsetDriver().isSelected() ||
             groundStation.getZenithOffsetDriver().isSelected()) {
@@ -264,7 +271,7 @@ public class RangeAnalytic extends Range {
                                                                           final SpacecraftState state) {
 
         // Station & DSFactory attributes from parent Range class
-        final GroundStation groundStation             =  getStation();
+        final GroundStation groundStation = (GroundStation) getObserver();
 
         // get the number of parameters used for derivation
         int nbParams = 6;
@@ -310,8 +317,10 @@ public class RangeAnalytic extends Range {
         //  the same as state)
 
         // Downlink delay
-        final Gradient tauD = signalTimeOfFlightAdjustableEmitter(pvaDS, stationDownlink.getPosition(),
-                                                                  downlinkDateDS, state.getFrame());
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldComputerD = new FieldAdjustableEmitterSignalTimer<>(new FieldAbsolutePVCoordinates<>(state.getFrame(), pvaDS));
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(downlinkDateDS,
+                stationDownlink.getPosition(), state.getFrame());
+        final Gradient tauD = fieldComputerD.computeDelay(receptionCondition, pvaDS.getDate());
 
         // Transit state
         final double                delta        = downlinkDate.durationFrom(state.getDate());
@@ -325,16 +334,18 @@ public class RangeAnalytic extends Range {
         final TimeStampedFieldPVCoordinates<Gradient> stationAtTransitDate =
                         stationDownlink.shiftedBy(tauD.negate());
         // Uplink delay
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldComputerU = new FieldAdjustableEmitterSignalTimer<>(new FieldAbsolutePVCoordinates<>(state.getFrame(), stationAtTransitDate));
+        final FieldSignalReceptionCondition<Gradient> transitCondition = new FieldSignalReceptionCondition<>(transitStateDS.getDate(),
+                transitStateDS.getPosition(), state.getFrame());
         final Gradient tauU =
-                        signalTimeOfFlightAdjustableEmitter(stationAtTransitDate, transitStateDS.getPosition(),
-                                                            transitStateDS.getDate(), state.getFrame());
+                        fieldComputerU.computeDelay(transitCondition, stationAtTransitDate.getDate());
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation,
-                                                        new SpacecraftState[] {
-                                                            transitState
-                                                        }, null);
+                new EstimatedMeasurement<>(this, iteration, evaluation,
+                        new SpacecraftState[]{
+                                transitState
+                        }, null);
 
         // Range value
         final Gradient tau    = tauD.add(tauU);
@@ -374,8 +385,9 @@ public class RangeAnalytic extends Range {
                         transformPVCoordinates(PVCoordinates.ZERO);
 
         // Downlink time of flight from spacecraft to station
-        final double td = signalTimeOfFlightAdjustableEmitter(state.getPVCoordinates(), QDownlink.getPosition(), downlinkDate,
-                                                              state.getFrame());
+        final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(state.getOrbit());
+        final SignalReceptionCondition downlinkCondition = new SignalReceptionCondition(downlinkDate, QDownlink.getPosition(), state.getFrame());
+        final double td = signalTimeOfFlight.computeDelay(downlinkCondition, state.getDate());
         final double dt = delta - td;
 
         // Transit state position
@@ -398,7 +410,9 @@ public class RangeAnalytic extends Range {
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitT, PVCoordinates.ZERO));
 
         // Uplink time of flight
-        final double tu = signalTimeOfFlightAdjustableEmitter(QAtTransitDate, transitP, transitT, state.getFrame());
+        final AdjustableEmitterSignalTimer signalTimeOfFlightUplink = new AdjustableEmitterSignalTimer(new AbsolutePVCoordinates(state.getFrame(), QAtTransitDate));
+        final SignalReceptionCondition uplinkCondition = new SignalReceptionCondition(transitT, transitP, state.getFrame());
+        final double tu = signalTimeOfFlightUplink.computeDelay(uplinkCondition, QAtTransitDate.getDate());
 
         // Total time of flight
         final double t = td + tu;

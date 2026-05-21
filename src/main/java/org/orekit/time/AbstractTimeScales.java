@@ -40,7 +40,7 @@ public abstract class AbstractTimeScales implements TimeScales {
     private final ConcurrentMap<Pair<IERSConventions, Boolean>, UT1Scale> ut1Map;
 
     /** Simple constructor. */
-    public AbstractTimeScales() {
+    protected AbstractTimeScales() {
         final int n = IERSConventions.values().length;
         gmstMap = new ConcurrentHashMap<>(n * 2);
         ut1Map = new ConcurrentHashMap<>(n * 2);

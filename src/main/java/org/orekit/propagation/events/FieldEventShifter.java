@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,20 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.BooleanEventFunction;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.ShiftedEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.utils.ExtendedStateScalarFunction;
 
 /** Wrapper shifting events occurrences times.
  * <p>This class wraps an {@link FieldEventDetector event detector} to slightly
@@ -61,6 +68,9 @@ public class FieldEventShifter<T extends CalculusFieldElement<T>> implements Fie
 
     /** Event detection settings. */
     private final FieldEventDetectionSettings<T> detectionSettings;
+
+    /** Event function. */
+    private final EventFunction eventFunction;
 
     /** Build a new instance.
      * <p>The {@link #getMaxCheckInterval() max check interval}, the
@@ -103,6 +113,15 @@ public class FieldEventShifter<T extends CalculusFieldElement<T>> implements Fie
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = increasingTimeShift.negate();
         this.decreasingOffset = decreasingTimeShift.negate();
+        final EventFunction increasingShifted = new ShiftedEventFunction(detector.getEventFunction(),
+                new LocalStateScalarFunction(increasingOffset));
+        final EventFunction decreasingShifted = new ShiftedEventFunction(detector.getEventFunction(),
+                new LocalStateScalarFunction(decreasingOffset));
+        final List<EventFunction> eventFunctionList = new ArrayList<>();
+        eventFunctionList.add(increasingShifted);
+        eventFunctionList.add(decreasingShifted);
+        this.eventFunction = (increasingOffset.getReal() >= decreasingOffset.getReal()) ? BooleanEventFunction.orCombine(eventFunctionList) :
+                BooleanEventFunction.andCombine(eventFunctionList);
     }
 
     @Override
@@ -138,6 +157,20 @@ public class FieldEventShifter<T extends CalculusFieldElement<T>> implements Fie
     }
 
     /**
+     * Getter for shifted states in handler flag.
+     * @return flag
+     * @since 14.0
+     */
+    public boolean isUseShiftedStates() {
+        return useShiftedStates;
+    }
+
+    @Override
+    public EventFunction getEventFunction() {
+        return eventFunction;
+    }
+
+    /**
      * Builds a new instance from the input detection settings.
      * @param settings event detection settings to be used
      * @return a new detector
@@ -146,13 +179,31 @@ public class FieldEventShifter<T extends CalculusFieldElement<T>> implements Fie
         return new FieldEventShifter<>(settings, detector, useShiftedStates, getIncreasingTimeShift(), getDecreasingTimeShift());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public T g(final FieldSpacecraftState<T> s) {
-        final T incShiftedG = detector.g(s.shiftedBy(increasingOffset));
-        final T decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
-        return (increasingOffset.getReal() >= decreasingOffset.getReal()) ?
-               FastMath.max(incShiftedG, decShiftedG) : FastMath.min(incShiftedG, decShiftedG);
+    /** Local class for function event. */
+    private class LocalStateScalarFunction implements ExtendedStateScalarFunction {
+
+        /** Field shift. */
+        private final T shift;
+
+        LocalStateScalarFunction(final T shift) {
+            this.shift = shift;
+        }
+
+        @Override
+        public double value(final SpacecraftState state) {
+            return shift.getReal();
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <S extends CalculusFieldElement<S>> S value(final FieldSpacecraftState<S> fieldState) {
+            final Field<S> field = fieldState.getDate().getField();
+            if (field.equals(shift.getField())) {
+                return (S) shift;
+            } else {
+                return field.getZero().newInstance(shift.getReal());
+            }
+        }
     }
 
     /** Local class for handling events. */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Thales Alenia Space
+/* Copyright 2002-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -161,8 +161,7 @@ public class AntennaKey {
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof AntennaKey) {
-            final AntennaKey other = (AntennaKey) object;
+        if (object instanceof AntennaKey other) {
             return this.getName().equals(other.getName()) &&
                    this.getRadomeCode().equals(other.getRadomeCode()) &&
                    this.getSerialNumber().equals(other.getSerialNumber());

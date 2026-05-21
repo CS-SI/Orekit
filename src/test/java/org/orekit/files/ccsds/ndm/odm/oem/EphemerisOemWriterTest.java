@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,19 @@
  * limitations under the License.
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
@@ -44,19 +57,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class EphemerisOemWriterTest {
 
     // As the default format for position is 3 digits after decimal point in km the max precision in m is 1
@@ -65,24 +65,24 @@ public class EphemerisOemWriterTest {
     private static final double VELOCITY_PRECISION = 1e-2; //in m/s
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testOEMWriter() {
+    void testOEMWriter() {
         Assertions.assertNotNull(new WriterBuilder().buildOemWriter());
     }
 
     @Test
-    public void testWriteOEM1Kvn() throws IOException {
+    void testWriteOEM1Kvn() throws IOException {
         final CharArrayWriter caw = new CharArrayWriter();
         final Generator generator = new KvnGenerator(caw, 0, "", Constants.JULIAN_DAY, 60);
         doTestWriteOEM1(caw, generator);
     }
 
     @Test
-    public void testWriteOEM1Xml() throws IOException {
+    void testWriteOEM1Xml() throws IOException {
         final CharArrayWriter caw = new CharArrayWriter();
         final Generator generator = new XmlGenerator(caw, 2, "", Constants.JULIAN_DAY, true, XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION);
         doTestWriteOEM1(caw, generator);
@@ -113,7 +113,7 @@ public class EphemerisOemWriterTest {
     }
 
     @Test
-    public void testUnfoundSpaceId() throws IOException {
+    void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
@@ -133,14 +133,14 @@ public class EphemerisOemWriterTest {
     }
 
     @Test
-    public void testNullFile() throws IOException {
+    void testNullFile() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final Oem oem = parser.parseMessage(source);
         EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      oem.getHeader(),
-                                                     oem.getSegments().get(0).getMetadata(),
+                                                     oem.getSegments().getFirst().getMetadata(),
                                                      FileFormat.KVN, "dummy",
                                                      Constants.JULIAN_DAY, 0);
         try {
@@ -153,7 +153,7 @@ public class EphemerisOemWriterTest {
     }
 
     @Test
-    public void testNullEphemeris() throws IOException {
+    void testNullEphemeris() throws IOException {
         EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      null, dummyMetadata(), FileFormat.KVN, "nullEphemeris",
                                                      Constants.JULIAN_DAY, 60);
@@ -163,7 +163,7 @@ public class EphemerisOemWriterTest {
     }
 
     @Test
-    public void testUnisatelliteFileWithDefault() throws IOException {
+    void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
@@ -178,12 +178,12 @@ public class EphemerisOemWriterTest {
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
                                          parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        Assertions.assertEquals(oem.getSegments().get(0).getMetadata().getObjectID(),
-                generatedOem.getSegments().get(0).getMetadata().getObjectID());
+        Assertions.assertEquals(oem.getSegments().getFirst().getMetadata().getObjectID(),
+                generatedOem.getSegments().getFirst().getMetadata().getObjectID());
     }
 
     @Test
-    public void testIssue723() throws IOException {
+    void testIssue723() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExampleWithHeaderComment.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
@@ -191,7 +191,7 @@ public class EphemerisOemWriterTest {
 
         EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      oem.getHeader(),
-                                                     oem.getSegments().get(0).getMetadata(),
+                                                     oem.getSegments().getFirst().getMetadata(),
                                                      FileFormat.KVN, "TestOEMIssue723.aem",
                                                      Constants.JULIAN_DAY, 0);
         final CharArrayWriter caw = new CharArrayWriter();
@@ -202,7 +202,7 @@ public class EphemerisOemWriterTest {
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
                                          parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        Assertions.assertEquals(oem.getHeader().getComments().get(0), generatedOem.getHeader().getComments().get(0));
+        Assertions.assertEquals(oem.getHeader().getComments().getFirst(), generatedOem.getHeader().getComments().getFirst());
     }
 
     /**
@@ -211,7 +211,7 @@ public class EphemerisOemWriterTest {
      * @throws IOException on error
      */
     @Test
-    public void testWriteOemFormat() throws IOException {
+    void testWriteOemFormat() throws IOException {
         // setup
         String exampleFile = "/ccsds/odm/oem/OEMExample4.txt";
         final DataSource source =  new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
@@ -230,7 +230,7 @@ public class EphemerisOemWriterTest {
     }
 
     @Test
-    public void testMultisatelliteFile() throws IOException {
+    void testMultisatelliteFile() throws IOException {
 
         final DataContext context = DataContext.getDefault();
         final String id1 = "1999-012A";
@@ -324,7 +324,7 @@ public class EphemerisOemWriterTest {
         /** Simple constructor.
          */
         public StandAloneEphemerisFile() {
-            this.satEphem    = new HashMap<String, OemSatelliteEphemeris>();
+            this.satEphem    = new HashMap<>();
         }
 
         private void generate(final String objectID, final String objectName,
@@ -368,7 +368,7 @@ public class EphemerisOemWriterTest {
     }
 
     private OemMetadata dummyMetadata() {
-        OemMetadata metadata = new OemMetadata(4);
+        OemMetadata metadata = new OemMetadata(4, null);
         metadata.addComment("dummy comment");
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");

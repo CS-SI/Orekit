@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.ForceModelModifier;
@@ -23,10 +25,13 @@ import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsPro
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
-import org.orekit.time.TimeScales;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.LoveNumbers;
 import org.orekit.utils.OrekitConfiguration;
 
 /** Solid tides force model.
@@ -46,9 +51,36 @@ public class SolidTides implements ForceModelModifier {
     public static final int DEFAULT_POINTS = 12;
 
     /**
+     * Zero frequency-dependent corrections function for bodies without
+     * frequency-dependent tidal data.
+     *
+     * @author Rafael Ayala
+     * @since 14.0
+     */
+    private static final TimeVectorFunction ZERO_FREQUENCY_FUNCTION = new TimeVectorFunction() {
+        @Override
+        public double[] value(final AbsoluteDate date) {
+            return new double[5];
+        }
+        @Override
+        public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+            return MathArrays.buildArray(date.getField(), 5);
+        }
+    };
+
+    /**
      * Underlying attraction model.
      */
     private final ForceModel attractionModel;
+
+    /**
+     * Private constructor with the force model only.
+     * @param attractionModel underlying attraction model
+     * @since 14.0
+     */
+    private SolidTides(final ForceModel attractionModel) {
+        this.attractionModel = attractionModel;
+    }
 
     /**
      * Simple constructor.
@@ -96,24 +128,94 @@ public class SolidTides implements ForceModelModifier {
                       final double step, final int nbPoints,
                       final IERSConventions conventions, final UT1Scale ut1,
                       final CelestialBody... bodies) {
-        final TimeScales timeScales = ut1.getEOPHistory().getTimeScales();
-        final SolidTidesField raw =
+        this(buildAttractionModel(centralBodyFrame,
                 new SolidTidesField(conventions.getLoveNumbers(),
-                        conventions.getTideFrequencyDependenceFunction(ut1, timeScales),
+                        conventions.getTideFrequencyDependenceFunction(ut1, ut1.getEOPHistory().getTimeScales()),
                         conventions.getPermanentTide(),
                         poleTide ? conventions.getSolidPoleTide(ut1.getEOPHistory()) : null,
-                        centralBodyFrame, ae, mu, centralTideSystem, bodies);
+                        centralBodyFrame, ae, mu, centralTideSystem, bodies),
+                step, nbPoints));
+    }
+
+    /**
+     * Constructor with custom Love numbers for any central body.
+     * This constructor allows using body-specific Love numbers (e.g. for the Moon)
+     * instead of IERS Earth conventions. Note that frequency-dependent corrections and pole
+     * tide are not applied, and only the frequency-independent tidal deformation
+     * (IERS 2010 equations 6.6 and 6.7) is computed.
+     *
+     * @param centralBodyFrame  rotating body frame
+     * @param ae                central body reference radius
+     * @param mu                central body attraction coefficient
+     * @param centralTideSystem tide system used in the central attraction model
+     * @param loveNumbers       body-specific Love numbers
+     * @param step              time step between sample points for interpolation
+     * @param nbPoints          number of points to use for interpolation, if less than 2
+     *                          then no interpolation is performed (thus greatly increasing computation cost)
+     * @param bodies            tide generating bodies (typically Sun and Moon)
+     * @author Rafael Ayala
+     * @since 14.0
+     */
+    public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
+                      final TideSystem centralTideSystem,
+                      final LoveNumbers loveNumbers,
+                      final double step, final int nbPoints,
+                      final CelestialBody... bodies) {
+        this(buildAttractionModel(centralBodyFrame,
+                new SolidTidesField(loveNumbers, ZERO_FREQUENCY_FUNCTION,
+                        0.0, null,
+                        centralBodyFrame, ae, mu, centralTideSystem, bodies),
+                step, nbPoints));
+    }
+
+    /**
+     * Constructor with custom Love numbers using default interpolation settings.
+     * <p>
+     * This constructor uses the default {@link #DEFAULT_STEP step} and default
+     * {@link #DEFAULT_POINTS number of points} for the tides field interpolation.
+     * </p>
+     *
+     * @param centralBodyFrame  rotating body frame
+     * @param ae                central body reference radius
+     * @param mu                central body attraction coefficient
+     * @param centralTideSystem tide system used in the central attraction model
+     * @param loveNumbers       body-specific Love numbers
+     * @param bodies            tide generating bodies (typically Sun and Moon)
+     * @see #DEFAULT_STEP
+     * @see #DEFAULT_POINTS
+     * @see #SolidTides(Frame, double, double, TideSystem, LoveNumbers, double, int, CelestialBody...)
+     * @author Rafael Ayala
+     * @since 14.0
+     */
+    public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
+                      final TideSystem centralTideSystem,
+                      final LoveNumbers loveNumbers,
+                      final CelestialBody... bodies) {
+        this(centralBodyFrame, ae, mu, centralTideSystem, loveNumbers,
+                DEFAULT_STEP, DEFAULT_POINTS, bodies);
+    }
+
+    /** Build the attraction model from a raw provider.
+     * @param centralBodyFrame rotating body frame
+     * @param rawProvider      raw spherical harmonics provider
+     * @param step             time step between sample points for interpolation
+     * @param nbPoints         number of points to use for interpolation
+     * @return the attraction model
+     */
+    private static ForceModel buildAttractionModel(final Frame centralBodyFrame,
+                                                   final NormalizedSphericalHarmonicsProvider rawProvider,
+                                                   final double step, final int nbPoints) {
         final NormalizedSphericalHarmonicsProvider provider;
         if (nbPoints < 2) {
-            provider = raw;
+            provider = rawProvider;
         } else {
             provider =
-                    new CachedNormalizedSphericalHarmonicsProvider(raw, step, nbPoints,
+                    new CachedNormalizedSphericalHarmonicsProvider(rawProvider, step, nbPoints,
                             OrekitConfiguration.getCacheSlotsNumber(),
                             7 * Constants.JULIAN_DAY,
                             0.5 * Constants.JULIAN_DAY);
         }
-        attractionModel = new HolmesFeatherstoneAttractionModel(centralBodyFrame, provider);
+        return new HolmesFeatherstoneAttractionModel(centralBodyFrame, provider);
     }
 
     @Override

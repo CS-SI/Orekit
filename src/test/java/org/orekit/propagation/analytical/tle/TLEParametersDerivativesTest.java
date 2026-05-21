@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -97,7 +97,7 @@ public class TLEParametersDerivativesTest {
         TLEPropagator propagator2 = TLEPropagator.selectExtrapolator(tle);
         double[][] dYdPRef = new double[6][1];
 
-        ParameterDriver selected = bound.getDrivers().get(0);
+        ParameterDriver selected = bound.getDrivers().getFirst();
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
         selected.setValue(p0 - 4 * h);

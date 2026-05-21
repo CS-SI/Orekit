@@ -1,0 +1,126 @@
+' Copyright 2002-2026 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit #ECEBD8 {
+
+    package frames #DDEBD8 {
+      class Frame
+    }
+
+    package time #DDEBD8 {
+      interface TimeStamped
+      interface "TimeShiftable<T>" as TimeShiftable_T_
+      interface "TimeInterpolable<T>" as TimeInterpolable_T_
+    }
+
+    package attitude #DDEBD8 {
+
+      class Attitude {
+        +Attitude withReferenceFrame
+        +Frame getReferenceFrame
+        +Rotation getRotation
+        +Vector3D getSpin
+      }
+
+      class AttitudesSequence {
+        +void resetActiveProvider
+        +void registerSwitchEvents
+        +void addSwitchingCondition
+      }
+
+      interface AttitudeProvider {
+        + Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame)
+      }
+
+      class FixedRate {
+        +Attitude getReferenceAttitude()
+      }
+
+      interface AttitudeProviderModifier {
+        +AttitudeProvider getUnderlyingAttitudeProvider()
+      }
+
+      abstract class GroundPointing {
+        #Vector3D getTargetPoint
+        #PVCoordinates getTargetPV
+      }
+
+      interface TargetProvider {
+        +getTargetDirection()
+      }
+
+      enum PredefinedTarget {
+        +SUN,
+        +EARTH,
+        +NADIR,
+        +NORTH,
+        +EAST,
+        +VELOCITY,
+        +MOMENTUM
+      }
+
+      class GroundPointTarget
+
+      Frame            <-up- "1" Attitude
+      Attitude         <-up- AttitudeProvider : create
+      TimeStamped      <|.. Attitude
+      TimeShiftable_T_ <|.. Attitude
+      TimeInterpolable_T_ <|.. Attitude
+      AttitudeProvider             <|-- FixedRate
+      AttitudeProvider <|-- AttitudeProviderModifier
+      AttitudesSequence ..|> AttitudeProvider
+      AttitudesSequence "*" o--> AttitudeProvider
+      AttitudeProvider <--* "1" LofOffsetPointing
+      AttitudeProvider <|.. GroundPointing
+      LofOffsetPointing            --|> GroundPointing
+      PredefinedTarget ..|> TargetProvider
+      GroundPointTarget ..|> TargetProvider
+
+      AttitudeProviderModifier     <|-- SpinStabilized
+      AttitudeProviderModifier     <|-- GroundPointingWrapper
+      GroundPointing               <|-- BodyCenterPointing
+      GroundPointing               <|-- NadirPointing
+      GroundPointing               <|-- TargetPointing
+      GroundPointing               <|-- YawCompensation
+      AttitudeProviderModifier     <|-- YawCompensation
+      GroundPointing               <|-- YawSteering
+      AttitudeProviderModifier     <|-- YawSteering
+      AttitudeProvider             <|-- CelestialBodyPointed
+      AttitudeProvider             <|-- FrameAlignedProvider
+      AttitudeProvider             <|-- LofOffset
+      AttitudeProvider             <|-- TabulatedProvider
+      AttitudeProvider             <|-- TorqueFree
+      AlignedAndConstrained          --|> AttitudeProvider
+      TargetProvider             "2" <--* AlignedAndConstrained
+
+    }
+
+  }
+
+@enduml

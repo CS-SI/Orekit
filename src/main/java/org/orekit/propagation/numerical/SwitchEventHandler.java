@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -36,6 +35,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.DataDictionary;
 import org.orekit.utils.DerivativeStateUtils;
@@ -44,8 +44,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Class handling the State Transition Matrix update in the presence of dynamics discontinuities.
@@ -70,6 +68,9 @@ class SwitchEventHandler implements EventHandler {
     /** Attitude provider. */
     private final AttitudeProvider attitudeProvider;
 
+    /** Event detectors in Taylor differential algebra. */
+    private final List<FieldEventDetector<Gradient>> fieldDetectors;
+
     /** Flag on propagation direction. */
     private boolean isForward;
 
@@ -82,19 +83,22 @@ class SwitchEventHandler implements EventHandler {
      * @param matricesHarvester matrices harvester
      * @param timeDerivativesEquations differential equations
      * @param attitudeProvider attitude provider
+     * @param fieldDetectors non-empty event detectors in Taylor differential algebra
      */
     SwitchEventHandler(final EventHandler wrappedHandler, final NumericalPropagationHarvester matricesHarvester,
                        final NumericalTimeDerivativesEquations timeDerivativesEquations,
-                       final AttitudeProvider attitudeProvider) {
+                       final AttitudeProvider attitudeProvider, final List<FieldEventDetector<Gradient>> fieldDetectors) {
         this.wrappedHandler = wrappedHandler;
         this.matricesHarvester = matricesHarvester;
         this.timeDerivativesEquations = timeDerivativesEquations;
         this.attitudeProvider = attitudeProvider;
+        this.fieldDetectors = fieldDetectors;
     }
 
     @Override
     public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
         if (switchFieldDetector == null) {
+            // failed to find corresponding Field detector
             return wrappedHandler.resetState(detector, oldState);
         } else {
             final SpacecraftState newState = updateState(oldState);
@@ -107,6 +111,10 @@ class SwitchEventHandler implements EventHandler {
     public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
         isForward = initialState.getDate().isBeforeOrEqualTo(target);
         switchFieldDetector = null;
+        final GradientField field = fieldDetectors.getFirst().getThreshold().getField();
+        final FieldAbsoluteDate<Gradient> fieldTarget = new FieldAbsoluteDate<>(field, target);
+        final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(field, initialState);
+        fieldDetectors.forEach(fieldEventDetector -> fieldEventDetector.init(fieldState, fieldTarget));
         EventHandler.super.init(initialState, target, detector);
     }
 
@@ -129,29 +137,21 @@ class SwitchEventHandler implements EventHandler {
      * @return Field detector
      */
     private FieldEventDetector<Gradient> findSwitchDetector(final EventDetector detector, final SpacecraftState state) {
-        final int variablesNumber = matricesHarvester.getStateDimension() + 1;
-        final GradientField field = GradientField.getField(variablesNumber);
-        Stream<FieldEventDetector<Gradient>> fieldDetectorsStream = attitudeProvider.getFieldEventDetectors(field);
-        for (final ForceModel forceModel : timeDerivativesEquations.getForceModels()) {
-            fieldDetectorsStream = Stream.concat(fieldDetectorsStream, forceModel.getFieldEventDetectors(field));
-        }
-        final List<FieldEventDetector<Gradient>> fieldDetectors = fieldDetectorsStream
-                .filter(fieldDetector -> !fieldDetector.dependsOnTimeOnly()).collect(Collectors.toList());
+        final GradientField field = fieldDetectors.getFirst().getThreshold().getField();
         final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(field, state);
-        fieldDetectors.forEach(fieldDetector -> fieldDetector.init(fieldState, fieldState.getDate()));
+        fieldDetectors.forEach(fieldDetector -> fieldDetector.reset(fieldState, fieldState.getDate()));
         final double g = detector.g(state);
-        return findSwitchDetector(g, fieldState, fieldDetectors);
+        return findSwitchDetector(g, fieldState);
     }
 
     /**
      * Method finding the Field detector corresponding to a non-Field, triggered one.
      * @param g value of triggered detector
      * @param fieldState Field state
-     * @param fieldDetectors candidate Field detectors
      * @return Field detector
      */
-    private FieldEventDetector<Gradient> findSwitchDetector(final double g, final FieldSpacecraftState<Gradient> fieldState,
-                                                            final List<FieldEventDetector<Gradient>> fieldDetectors) {
+    private FieldEventDetector<Gradient> findSwitchDetector(final double g,
+                                                            final FieldSpacecraftState<Gradient> fieldState) {
         for (final FieldEventDetector<Gradient> fieldDetector : fieldDetectors) {
             final Gradient fieldG = fieldDetector.g(fieldState);
             if (FastMath.abs(fieldG.getValue() - g) < 1e-11) {
@@ -197,14 +197,15 @@ class SwitchEventHandler implements EventHandler {
         final double[] derivativesBefore = timeDerivativesEquations.computeTimeDerivatives(stateBefore);
         final SpacecraftState stateAfter = shift(state, -dt);
         final double[] derivativesAfter = timeDerivativesEquations.computeTimeDerivatives(stateAfter);
-        final double[] deltaDerivatives = new double[7];
-        for (int i = 3; i < 7; i++) {
+        final int stateDimension = matricesHarvester.getStateDimension();
+        final double[] deltaDerivatives = new double[stateDimension];
+        for (int i = 3; i < deltaDerivatives.length; i++) {
             deltaDerivatives[i] = derivativesAfter[i] - derivativesBefore[i];
         }
-        final Gradient g = evaluateG(buildCartesianState(state, state.getPVCoordinates()), derivativesBefore[6]);
-        final double gLastDerivative = g.getPartialDerivative(7);
+        final Gradient g = evaluateG(buildCartesianState(state, state.getPVCoordinates()));
+        final double gLastDerivative = g.getPartialDerivative(stateDimension);
         final double gDot = isForward ? gLastDerivative : -gLastDerivative;
-        final double[] gGradientState = Arrays.copyOfRange(g.getGradient(), 0, 7);
+        final double[] gGradientState = Arrays.copyOfRange(g.getGradient(), 0, stateDimension);
         final RealVector lhs = MatrixUtils.createRealVector(deltaDerivatives);
         final RealVector rhs = MatrixUtils.createRealVector(gGradientState).mapMultiply(1. / gDot);
         return lhs.outerProduct(rhs);
@@ -253,21 +254,18 @@ class SwitchEventHandler implements EventHandler {
     /**
      * Evaluate event function in Taylor algebra.
      * @param state state
-     * @param massRate mass rate
      * @return g in Taylor algebra
      */
-    private Gradient evaluateG(final SpacecraftState state, final double massRate) {
-        Gradient time = Gradient.variable(8, 7, 0);
+    private Gradient evaluateG(final SpacecraftState state) {
+        final int stateDimension = matricesHarvester.getStateDimension();
+        Gradient time = Gradient.variable(stateDimension + 1, stateDimension, 0);
         if (!isForward) {
             time = time.negate();
         }
         final GradientField field = time.getField();
-        FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateGradient(field,
+        final FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateGradient(field,
                 state, attitudeProvider);
-        fieldState = fieldState.shiftedBy(time);
-        final Gradient shiftedMass = time.multiply(massRate).add(state.getMass());
-        fieldState = fieldState.withMass(shiftedMass);  // necessary because shiftedBy does not consider mass
-        return switchFieldDetector.g(fieldState);
+        return switchFieldDetector.g(fieldState.shiftedBy(time));
     }
 
 }

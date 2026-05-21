@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -168,8 +168,8 @@ public class OrekitAttitudeEphemerisFile
                         interpolationSamples);
             }
 
-            final AbsoluteDate start = states.get(0).getDate();
-            final AbsoluteDate stop = states.get(states.size() - 1).getDate();
+            final AbsoluteDate start = states.getFirst().getDate();
+            final AbsoluteDate stop = states.getLast().getDate();
 
             if (this.startDate == null || start.compareTo(this.startDate) < 0) {
                 this.startDate = start;
@@ -186,7 +186,7 @@ public class OrekitAttitudeEphemerisFile
 
             final OrekitAttitudeEphemerisSegment newSeg =
                             new OrekitAttitudeEphemerisSegment(attitudeDataLines, interpolationMethod, interpolationSamples,
-                                                               states.get(0).getFrame(), availableDerivatives);
+                                                               states.getFirst().getFrame(), availableDerivatives);
             this.segments.add(newSeg);
             return newSeg;
         }
@@ -197,19 +197,19 @@ public class OrekitAttitudeEphemerisFile
         implements AttitudeEphemerisFile.AttitudeEphemerisSegment<TimeStampedAngularCoordinates> {
 
         /** List of attitude data lines. */
-        private List<TimeStampedAngularCoordinates> attitudeDataLines;
+        private final List<TimeStampedAngularCoordinates> attitudeDataLines;
 
         /** The interpolation method to be used. */
-        private String interpolationMethod;
+        private final String interpolationMethod;
 
         /** The number of interpolation samples. */
-        private int interpolationSamples;
+        private final int interpolationSamples;
 
         /** Enumerate for selecting which derivatives to use in {@link #attitudeDataLines} interpolation. */
-        private AngularDerivativesFilter availableDerivatives;
+        private final AngularDerivativesFilter availableDerivatives;
 
         /** Reference frame from which attitude is defined. */
-        private Frame referenceFrame;
+        private final Frame referenceFrame;
 
         /**
          * Constructor for OrekitAttitudeEphemerisSegment.
@@ -251,13 +251,13 @@ public class OrekitAttitudeEphemerisFile
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
-            return attitudeDataLines.get(0).getDate();
+            return attitudeDataLines.getFirst().getDate();
         }
 
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStop() {
-            return attitudeDataLines.get(attitudeDataLines.size() - 1).getDate();
+            return attitudeDataLines.getLast().getDate();
         }
 
         /** {@inheritDoc} */

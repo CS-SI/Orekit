@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
@@ -107,31 +106,6 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
 
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
-
-    /** Complete constructor.
-     * <p>
-     * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildApmParser()
-     * parserBuilder.buildApmParser()}.
-     * </p>
-     * @param conventions IERS Conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * (may be null if time system is absolute)
-     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
-     * @param filters filters to apply to parse tokens
-     * @since 12.0
-     * @deprecated in favor of {@link #ApmParser(IERSConventions, boolean, DataContext,
-     * AbsoluteDate, ParsedUnitsBehavior, Function[], CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public ApmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
-        this(conventions, simpleEOP, dataContext, missionReferenceDate,
-                parsedUnitsBehavior, filters, new OrekitCcsdsFrameMapper());
-    }
 
     /** Complete constructor.
      * <p>
@@ -538,7 +512,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processInertiaToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (inertiaBlock == null) {
-            inertiaBlock = new Inertia(getFrameMapper());
+            inertiaBlock = new Inertia();
             if (moveCommentsIfEmpty(spinStabilizedBlock, inertiaBlock)) {
                 // get rid of the empty logical block
                 spinStabilizedBlock = null;

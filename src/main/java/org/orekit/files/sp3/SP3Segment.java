@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,9 +25,9 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ClockModel;
-import org.orekit.time.ClockOffset;
-import org.orekit.time.SampledClockModel;
+import org.orekit.time.clocks.ClockModel;
+import org.orekit.time.clocks.ClockOffset;
+import org.orekit.time.clocks.SampledClockModel;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.SortedListTrimmer;
 
@@ -105,13 +105,13 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return coordinates.get(0).getDate();
+        return coordinates.getFirst().getDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return coordinates.get(coordinates.size() - 1).getDate();
+        return coordinates.getLast().getDate();
     }
 
     /** {@inheritDoc} */

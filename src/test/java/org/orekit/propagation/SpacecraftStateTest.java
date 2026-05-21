@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,12 +29,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -53,6 +56,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.*;
 
@@ -91,6 +95,22 @@ class SpacecraftStateTest {
         Assertions.assertEquals(expectedMass, stateWithMass.getMass());
         Assertions.assertEquals(state.getAttitude(), stateWithMass.getAttitude());
         Assertions.assertEquals(state.getAbsPVA(), stateWithMass.getAbsPVA());
+    }
+
+    @Test
+    void testWithMassRateAbsolutePV() {
+        // GIVEN
+        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new PVCoordinates());
+        final SpacecraftState state = new SpacecraftState(absolutePVCoordinates);
+        final double expectedMassRate = 123;
+        // WHEN
+        final SpacecraftState stateWithMassRate = state.withMassRate(expectedMassRate);
+        // THEN
+        Assertions.assertEquals(expectedMassRate, stateWithMassRate.getMassRate());
+        Assertions.assertEquals(state.getMass(), stateWithMassRate.getMass());
+        Assertions.assertEquals(state.getAttitude(), stateWithMassRate.getAttitude());
+        Assertions.assertEquals(state.getAbsPVA(), stateWithMassRate.getAbsPVA());
     }
 
     @Test
@@ -154,6 +174,20 @@ class SpacecraftStateTest {
     }
 
     @Test
+    void testWithMassRateAndOrbit() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final double expectedMassRate = 123;
+        // WHEN
+        final SpacecraftState stateWithMassRate = state.withMassRate(expectedMassRate);
+        // THEN
+        Assertions.assertEquals(expectedMassRate, stateWithMassRate.getMassRate());
+        Assertions.assertEquals(state.getMass(), stateWithMassRate.getMass());
+        Assertions.assertEquals(state.getAttitude(), stateWithMassRate.getAttitude());
+        Assertions.assertEquals(state.getOrbit(), stateWithMassRate.getOrbit());
+    }
+
+    @Test
     void testWithAdditionalDataAndOrbit() {
         // GIVEN
         final SpacecraftState state = new SpacecraftState(orbit);
@@ -179,6 +213,66 @@ class SpacecraftStateTest {
         Assertions.assertEquals(state.getOrbit(), stateWithDerivatives.getOrbit());
         Assertions.assertEquals(state.getAttitude(), stateWithDerivatives.getAttitude());
         Assertions.assertEquals(state.getMass(), stateWithDerivatives.getMass());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testShiftedByOrbit(final boolean useTimeOffset) {
+        // GIVEN
+        final Attitude attitude = new FrameAlignedProvider(orbit.getFrame()).getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        final SpacecraftState state = new SpacecraftState(orbit, attitude).withMassRate(1e-3);
+        final double dt = 1.;
+        // WHEN
+        final SpacecraftState shiftedState;
+        if (useTimeOffset) {
+            shiftedState = state.shiftedBy(new TimeOffset(dt));
+        } else {
+            shiftedState = state.shiftedBy(dt);
+        }
+        // THEN
+        Assertions.assertEquals(state.getDate().shiftedBy(dt), shiftedState.getDate());
+        Assertions.assertEquals(state.getOrbit().shiftedBy(dt).getPosition(), shiftedState.getOrbit().getPosition());
+        Assertions.assertEquals(state.getAttitude().shiftedBy(dt).getSpin(), shiftedState.getAttitude().getSpin());
+        Assertions.assertEquals(state.getMass() + dt * state.getMassRate(), shiftedState.getMass());
+        Assertions.assertEquals(state.getMassRate(), shiftedState.getMassRate());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testShiftedByAbsPV(final boolean useTimeOffset) {
+        // GIVEN
+        final AbsolutePVCoordinates absPva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getDate(),
+                orbit.getPVCoordinates());
+        final Attitude attitude = new FrameAlignedProvider(absPva.getFrame()).getAttitude(absPva, absPva.getDate(), absPva.getFrame());
+        final SpacecraftState state = new SpacecraftState(absPva, attitude).withMassRate(1e-3);
+        final double dt = 1.;
+        // WHEN
+        final SpacecraftState shiftedState;
+        if (useTimeOffset) {
+            shiftedState = state.shiftedBy(new TimeOffset(dt));
+        } else {
+            shiftedState = state.shiftedBy(dt);
+        }
+        // THEN
+        Assertions.assertEquals(state.getDate().shiftedBy(dt), shiftedState.getDate());
+        Assertions.assertEquals(state.getAbsPVA().shiftedBy(dt).getPosition(), shiftedState.getAbsPVA().getPosition());
+        Assertions.assertEquals(state.getAttitude().shiftedBy(dt).getSpin(), shiftedState.getAttitude().getSpin());
+        Assertions.assertEquals(state.getMass() + dt * state.getMassRate(), shiftedState.getMass());
+        Assertions.assertEquals(state.getMassRate(), shiftedState.getMassRate());
+    }
+
+    @Test
+    void testToString() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(orbit);
+        // WHEN
+        final String string = state.toString();
+        // THEN
+        Assertions.assertTrue(string.contains("orbit"));
+        Assertions.assertTrue(string.contains("mass"));
+        Assertions.assertTrue(string.contains("massRate"));
+        Assertions.assertTrue(string.contains("attitude"));
+        Assertions.assertTrue(string.contains("additional"));
     }
 
     @Test
@@ -458,17 +552,6 @@ class SpacecraftStateTest {
         SpacecraftState finalState = propagator.propagate(date0, date0.shiftedBy(5));
         Assertions.assertEquals(+1, finalState.getAdditionalState(name)[0], 1.0e-15);
 
-    }
-
-    @Test
-    @Deprecated
-    void testConstructor() {
-        final AbsolutePVCoordinates absPV = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getDate(),
-                orbit.getPVCoordinates());
-        final Attitude attitude = attitudeLaw.getAttitude(absPV, absPV.getDate(), absPV.getFrame());
-        final double expectedMass = 1;
-        final SpacecraftState state = new SpacecraftState(absPV, attitude, expectedMass);
-        Assertions.assertEquals(expectedMass, state.getMass());
     }
 
     @Test
@@ -783,15 +866,6 @@ class SpacecraftStateTest {
         } catch (OrekitException oe) {
             Assertions.fail(oe.getLocalizedMessage());
         }
-    }
-
-    @Deprecated
-    @Test
-    void testDeprecated() {
-        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getDate(),
-                orbit.getPVCoordinates());
-        Assertions.assertEquals(mass, new SpacecraftState(orbit, mass).getMass());
-        Assertions.assertEquals(mass, new SpacecraftState(absolutePVCoordinates, mass).getMass());
     }
 
     @AfterEach

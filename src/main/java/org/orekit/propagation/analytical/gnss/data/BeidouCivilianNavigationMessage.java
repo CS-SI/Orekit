@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,12 +40,6 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
 
     /** Radio wave on which navigation signal is sent. */
     private final RadioWave radioWave;
-
-    /** Change rate in semi-major axis (m/s). */
-    private double aDot;
-
-    /** Change rate in Δn₀. */
-    private double deltaN0Dot;
 
     /** Issue of Data, Ephemeris. */
     private int iode;
@@ -102,11 +96,13 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param type       message type
      */
     public BeidouCivilianNavigationMessage(final RadioWave radioWave,
-                                           final TimeScales timeScales, final SatelliteSystem system) {
+                                           final TimeScales timeScales, final SatelliteSystem system,
+                                           final String type) {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system);
+              timeScales, system, type);
         this.radioWave = radioWave;
     }
 
@@ -117,8 +113,6 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     public <T extends CalculusFieldElement<T>> BeidouCivilianNavigationMessage(final FieldBeidouCivilianNavigationMessage<T> original) {
         super(original);
         this.radioWave = original.getRadioWave();
-        setADot(original.getADot().getReal());
-        setDeltaN0Dot(original.getDeltaN0Dot().getReal());
         setIODE(original.getIODE());
         setIODC(original.getIODC());
         setIscB1CD(original.getIscB1CD().getReal());
@@ -138,6 +132,12 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     }
 
     /** {@inheritDoc} */
+    @Override
+    public boolean isCivilianMessage() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouCivilianNavigationMessage>>
@@ -151,38 +151,6 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      */
     public RadioWave getRadioWave() {
         return radioWave;
-    }
-
-    /**
-     * Getter for the change rate in semi-major axis.
-     * @return the change rate in semi-major axis
-     */
-    public double getADot() {
-        return aDot;
-    }
-
-    /**
-     * Setter for the change rate in semi-major axis.
-     * @param value the change rate in semi-major axis
-     */
-    public void setADot(final double value) {
-        this.aDot = value;
-    }
-
-    /**
-     * Getter for change rate in Δn₀.
-     * @return change rate in Δn₀
-     */
-    public double getDeltaN0Dot() {
-        return deltaN0Dot;
-    }
-
-    /**
-     * Setter for change rate in Δn₀.
-     * @param deltaN0Dot change rate in Δn₀
-     */
-    public void setDeltaN0Dot(final double deltaN0Dot) {
-        this.deltaN0Dot = deltaN0Dot;
     }
 
     /**

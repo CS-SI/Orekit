@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -138,7 +138,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         // Extrapolation at the initial date
         // ---------------------------------
         FieldBrouwerLyddanePropagator<T> extrapolator =
-                new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
+                new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
         FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
         // positions  velocity and semi major axis match perfectly
@@ -173,7 +173,7 @@ public class FieldBrouwerLyddanePropagatorTest {
                                                                FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
 
         FieldBrouwerLyddanePropagator<T> extrapolator =
-                new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
+                new FieldBrouwerLyddanePropagator<>(initialOrbit, DEFAULT_LAW, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
@@ -329,7 +329,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         //_______________________________________________________________________________________________
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator =
-                new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
+                new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         FieldSpacecraftState<T> BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
         final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit().toOrbit());
@@ -612,7 +612,7 @@ public class FieldBrouwerLyddanePropagatorTest {
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
 
-        FieldBrouwerLyddanePropagator<T> BLPropagator1 = new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW,
+        FieldBrouwerLyddanePropagator<T> BLPropagator1 = new FieldBrouwerLyddanePropagator<>(initialOrbit, DEFAULT_LAW,
                 provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
         FieldBrouwerLyddanePropagator<T> BLPropagator2 = new FieldBrouwerLyddanePropagator<>(initialOrbit,
                 provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
@@ -664,7 +664,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(800.0), zero.add(100.0));
 
-        FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<T>(position, velocity),
+        FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                   FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
         // Extrapolator definition
         // -----------------------
@@ -922,7 +922,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.KEPLERIAN);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> num = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> num = new FieldNumericalPropagator<>(integrator);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, provider));
         num.setInitialState(new FieldSpacecraftState<>(initialOsculating));

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
@@ -79,6 +80,9 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
     /** Specialized event handler. */
     private final LocalHandler handler;
 
+    /** Specialized event function. */
+    private final EventFunction eventFunction;
+
     /** Indicator for forward integration. */
     private boolean forward;
 
@@ -109,6 +113,7 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
         this.handler = new LocalHandler();
         this.rawDetector  = rawDetector;
         this.predicate = enabler;
+        this.eventFunction = new LocalEventFunction();
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
     }
@@ -155,8 +160,8 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
 
     /**  {@inheritDoc} */
     @Override
-    public boolean dependsOnTimeOnly() {
-        return false;  // cannot know what predicate needs
+    public EventFunction getEventFunction() {
+        return eventFunction;
     }
 
     /**  {@inheritDoc} */
@@ -290,29 +295,21 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
         if (isEnabled) {
             // we need to select a transformer that can produce zero crossings,
             // so it is either Transformer.PLUS or Transformer.MINUS
-            switch (previous) {
-                case UNINITIALIZED :
-                    return Transformer.PLUS; // this initial choice is arbitrary, it could have been Transformer.MINUS
-                case MIN :
-                    return previousG >= 0 ? Transformer.MINUS : Transformer.PLUS;
-                case MAX :
-                    return previousG >= 0 ? Transformer.PLUS : Transformer.MINUS;
-                default :
-                    return previous;
-            }
+            return switch (previous) {
+                case UNINITIALIZED  -> Transformer.PLUS; // this initial choice is arbitrary, it could have been Transformer.MINUS
+                case MIN  -> previousG >= 0 ? Transformer.MINUS : Transformer.PLUS;
+                case MAX  -> previousG >= 0 ? Transformer.PLUS : Transformer.MINUS;
+                default  -> previous;
+            };
         } else {
             // we need to select a transformer that cannot produce any zero crossings,
             // so it is either Transformer.MAX or Transformer.MIN
-            switch (previous) {
-                case UNINITIALIZED :
-                    return Transformer.MAX; // this initial choice is arbitrary, it could have been Transformer.MIN
-                case PLUS :
-                    return previousG >= 0 ? Transformer.MAX : Transformer.MIN;
-                case MINUS :
-                    return previousG >= 0 ? Transformer.MIN : Transformer.MAX;
-                default :
-                    return previous;
-            }
+            return switch (previous) {
+                case UNINITIALIZED  -> Transformer.MAX; // this initial choice is arbitrary, it could have been Transformer.MIN
+                case PLUS  -> previousG >= 0 ? Transformer.MAX : Transformer.MIN;
+                case MINUS  -> previousG >= 0 ? Transformer.MIN : Transformer.MAX;
+                default  -> previous;
+            };
         }
     }
 
@@ -321,6 +318,21 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
      */
     public boolean isForward() {
         return forward;
+    }
+
+    /** Local event function.
+     * @since 14.0
+     */
+    private class LocalEventFunction implements EventFunction {
+        @Override
+        public double value(final SpacecraftState state) {
+            return g(state);
+        }
+
+        @Override
+        public boolean dependsOnMainVariablesOnly() {
+            return getDetector().getEventFunction().dependsOnMainVariablesOnly() && getPredicate().dependsOnMainVariablesOnly();
+        }
     }
 
     /** Local handler. */

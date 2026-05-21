@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042;
@@ -32,18 +33,18 @@ import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
+import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
 
 public class Rtcm1042Test {
-
-    private final double eps = 1.0e-15;
 
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("gnss");
     }
 
+    @DefaultDataContext
     @Test
     public void testParseMessage() {
 
@@ -84,16 +85,23 @@ public class Rtcm1042Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1042);
 
-        final Rtcm1042                rtcm1042      = (Rtcm1042) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final DataContext             context       = DataContext.getDefault();
+        final Rtcm1042                rtcm1042      = (Rtcm1042) new RtcmMessagesParser(messages, context.getTimeScales()).
                                                       parse(message, false);
         final Rtcm1042Data            ephemerisData = rtcm1042.getEphemerisData();
         final BeidouLegacyNavigationMessage beidouMessage = ephemerisData.getBeidouNavigationMessage();
 
         // Verify propagator initialization
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(beidouMessage).build();
+        final GNSSPropagator propagator =
+            new GNSSPropagatorBuilder(beidouMessage,
+                                      context.getFrames().getEME2000(),
+                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+                buildPropagator();
         Assertions.assertNotNull(propagator);
+        final double eps = 1.0e-15;
         Assertions.assertEquals(0.0, beidouMessage.getDate().
-                            durationFrom(new GNSSDate(beidouMessage.getWeek(), beidouMessage.getTime(), SatelliteSystem.BEIDOU).getDate()), eps);
+                            durationFrom(new GNSSDate(beidouMessage.getWeek(), beidouMessage.getTime(), SatelliteSystem.BEIDOU).getDate()),
+                                eps);
 
         // Verify message number
         Assertions.assertEquals(1042,                   rtcm1042.getTypeCode());
@@ -102,39 +110,40 @@ public class Rtcm1042Test {
         // Verify navigation message
         Assertions.assertEquals(12,                     beidouMessage.getPRN());
         Assertions.assertEquals(8157,                   beidouMessage.getWeek());
-        Assertions.assertEquals(2.1475894557210572E-9,  beidouMessage.getIDot(),               eps);
-        Assertions.assertEquals(20,                     beidouMessage.getAODE(),               eps);
-        Assertions.assertEquals(1.3769368E-17,          beidouMessage.getAf2(),                eps);
-        Assertions.assertEquals(1.5994495E-10,          beidouMessage.getAf1(),                eps);
-        Assertions.assertEquals(5.721448687836528E-4,   beidouMessage.getAf0(),                eps);
+        Assertions.assertEquals(2.1475894557210572E-9, beidouMessage.getIDot(), eps);
+        Assertions.assertEquals(20, beidouMessage.getAODE(), eps);
+        Assertions.assertEquals(1.3769368E-17, beidouMessage.getAf2(), eps);
+        Assertions.assertEquals(1.5994495E-10, beidouMessage.getAf1(), eps);
+        Assertions.assertEquals(5.721448687836528E-4, beidouMessage.getAf0(), eps);
         Assertions.assertEquals(20,                     beidouMessage.getAODC());
-        Assertions.assertEquals(0.0,                    beidouMessage.getCrs(),                eps);
-        Assertions.assertEquals(1.458633710547623E-4,   beidouMessage.getMeanMotion0(),        eps);
-        Assertions.assertEquals(1.4587496546628753E-4,  beidouMessage.getMeanMotion0() + beidouMessage.getDeltaN0(),        eps);
-        Assertions.assertEquals(0.1671775426328288,     beidouMessage.getM0(),                 eps);
-        Assertions.assertEquals(0.0,                    beidouMessage.getCuc(),                eps);
-        Assertions.assertEquals(0.03899807028938085,    beidouMessage.getE(),                  eps);
-        Assertions.assertEquals(0.0,                    beidouMessage.getCus(),                eps);
-        Assertions.assertEquals(5153.562498092651,      FastMath.sqrt(beidouMessage.getSma()), eps);
-        Assertions.assertEquals(560696.0,               beidouMessage.getTime(),               eps);
-        Assertions.assertEquals(0.0,                    beidouMessage.getCic(),                eps);
-        Assertions.assertEquals(0.0,                    beidouMessage.getCis(),                eps);
-        Assertions.assertEquals(0.987714701321906,      beidouMessage.getI0(),                 eps);
-        Assertions.assertEquals(0.0,                    beidouMessage.getCrc(),                eps);
-        Assertions.assertEquals(0.30049130834913723,    beidouMessage.getPa(),                 eps);
-        Assertions.assertEquals(-5.855958209879004E-9,  beidouMessage.getOmegaDot(),           eps);
-        Assertions.assertEquals(0.6980085385373721,     beidouMessage.getOmega0(),             eps);
-        Assertions.assertEquals(7.9E-9,                 beidouMessage.getTGD1(),               eps);
-        Assertions.assertEquals(4.63E-8,                beidouMessage.getTGD2(),               eps);
+        Assertions.assertEquals(0.0, beidouMessage.getCrs(), eps);
+        Assertions.assertEquals(1.458633710547623E-4, beidouMessage.getMeanMotion0(), eps);
+        Assertions.assertEquals(1.4587496546628753E-4, beidouMessage.getMeanMotion0() + beidouMessage.getDeltaN0(), eps);
+        Assertions.assertEquals(0.1671775426328288, beidouMessage.getM0(), eps);
+        Assertions.assertEquals(0.0, beidouMessage.getCuc(), eps);
+        Assertions.assertEquals(0.03899807028938085, beidouMessage.getE(), eps);
+        Assertions.assertEquals(0.0, beidouMessage.getCus(), eps);
+        Assertions.assertEquals(5153.562498092651, FastMath.sqrt(beidouMessage.getSma()), eps);
+        Assertions.assertEquals(560696.0, beidouMessage.getTime(), eps);
+        Assertions.assertEquals(0.0, beidouMessage.getCic(), eps);
+        Assertions.assertEquals(0.0, beidouMessage.getCis(), eps);
+        Assertions.assertEquals(0.987714701321906, beidouMessage.getI0(), eps);
+        Assertions.assertEquals(0.0, beidouMessage.getCrc(), eps);
+        Assertions.assertEquals(0.30049130834913723, beidouMessage.getPa(), eps);
+        Assertions.assertEquals(-5.855958209879004E-9, beidouMessage.getOmegaDot(), eps);
+        Assertions.assertEquals(0.6980085385373721, beidouMessage.getOmega0(), eps);
+        Assertions.assertEquals(7.9E-9, beidouMessage.getTGD1(), eps);
+        Assertions.assertEquals(4.63E-8, beidouMessage.getTGD2(), eps);
 
         // Verify other data
         Assertions.assertEquals(12,                     ephemerisData.getSatelliteID());
-        Assertions.assertEquals(0.0,                    ephemerisData.getSvHealth(),        eps);
-        Assertions.assertEquals(63224,                  ephemerisData.getBeidouToc(),       eps);
+        Assertions.assertEquals(0.0, ephemerisData.getSvHealth(), eps);
+        Assertions.assertEquals(63224, ephemerisData.getBeidouToc(), eps);
         Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), beidouMessage.getSvAccuracy(), eps);
 
     }
 
+    @DefaultDataContext
     @Test
     public void testNullMessage() {
 

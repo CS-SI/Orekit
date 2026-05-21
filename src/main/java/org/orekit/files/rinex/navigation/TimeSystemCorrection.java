@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,32 +25,45 @@ import org.orekit.time.AbsoluteDate;
 public class TimeSystemCorrection {
 
     /** Time system correction type. */
-    private String timeSystemCorrectionType;
+    private final String timeSystemCorrectionType;
 
     /** A0 coefficient of linear polynomial for time system correction. */
-    private double timeSystemCorrectionA0;
+    private final double timeSystemCorrectionA0;
 
     /** A1 coefficient of linear polynomial for time system correction. */
-    private double timeSystemCorrectionA1;
+    private final double timeSystemCorrectionA1;
 
     /** Reference date for time system correction. */
-    private AbsoluteDate referenceDate;
+    private final AbsoluteDate referenceDate;
+
+    /** Satellite ID.
+     * @since 14.0
+     */
+    private final String satId;
+
+    /** UTC ID.
+     * @since 14.0
+     */
+    private final int utcId;
 
     /**
      * Constructor.
-     * @param timeSystemCorrectionType       time system correction type
-     * @param referenceDate                  reference date for time system correction
-     * @param timeSystemCorrectionA0         A0 coefficient of linear polynomial for time system correction
-     * @param timeSystemCorrectionA1         A1 coefficient of linear polynomial for time system correction
+     * @param timeSystemCorrectionType time system correction type
+     * @param referenceDate            reference date for time system correction
+     * @param timeSystemCorrectionA0   A0 coefficient of linear polynomial for time system correction
+     * @param timeSystemCorrectionA1   A1 coefficient of linear polynomial for time system correction
+     * @param satId                    satellite ID
+     * @param utcId                    UTC id
      */
-    public TimeSystemCorrection(final String timeSystemCorrectionType,
-                                final AbsoluteDate referenceDate,
-                                final double timeSystemCorrectionA0,
-                                final double timeSystemCorrectionA1) {
+    public TimeSystemCorrection(final String timeSystemCorrectionType, final AbsoluteDate referenceDate,
+                                final double timeSystemCorrectionA0, final double timeSystemCorrectionA1,
+                                final String satId, final int utcId) {
         this.timeSystemCorrectionType = timeSystemCorrectionType;
         this.referenceDate            = referenceDate;
         this.timeSystemCorrectionA0   = timeSystemCorrectionA0;
         this.timeSystemCorrectionA1   = timeSystemCorrectionA1;
+        this.satId                    = satId;
+        this.utcId                    = utcId;
     }
 
     /**
@@ -64,8 +77,7 @@ public class TimeSystemCorrection {
     /**
      * Getter for the A0 coefficient of the time system correction.
      * <p>
-     * deltaT = {@link #getTimeSystemCorrectionA0() A0} +
-     *          {@link #getTimeSystemCorrectionA1() A1} * (t - tref)
+     * deltaT = {@code A0 + A1 * (t - tref)}
      * </p>
      * @return the A0 coefficient of the time system correction
      */
@@ -76,8 +88,7 @@ public class TimeSystemCorrection {
     /**
      * Getter for the A1 coefficient of the time system correction.
      * <p>
-     * deltaT = {@link #getTimeSystemCorrectionA0() A0} +
-     *          {@link #getTimeSystemCorrectionA1() A1} * (t - tref)
+     * deltaT = {@code A0 + A1 * (t - tref)}
      * </p>
      * @return the A1 coefficient of the time system correction
      */
@@ -92,6 +103,24 @@ public class TimeSystemCorrection {
      */
     public AbsoluteDate getReferenceDate() {
         return referenceDate;
+    }
+
+    /**
+     * Getter for the satellite ID.
+     * @return satellite ID
+     * @since 14.0
+     */
+    public String getSatId() {
+        return satId;
+    }
+
+    /**
+     * Getter for the UTC ID.
+     * @return UTC ID
+     * @since 14.0
+     */
+    public int getUtcId() {
+        return utcId;
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -466,7 +466,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
         // recover eccentricity and anomaly
         final double mu = initialState.getOrbit().getMu();
-        final double rV2OMu           = rk * v.getNormSq() / mu;
+        final double rV2OMu           = rk * v.getNorm2Sq() / mu;
         final double sma              = rk / (2 - rV2OMu);
         final double eCosE            = rV2OMu - 1;
         final double eSinE            = Vector3D.dotProduct(p, v) / FastMath.sqrt(mu * sma);

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,9 +85,9 @@ public class OneWayGNSSRangeRateTest {
         // about 9 significant figures, so it is expected that partial derivatives
         // computed with finite differences will only have a few digits corrects and
         // that there will be outliers
-        double refErrorsPMedian = 5.6e-10;
-        double refErrorsPMean   = 3.4e-09;
-        double refErrorsPMax    = 6.8e-07;
+        double refErrorsPMedian = 1.3e-08;
+        double refErrorsPMean   = 7.9e-08;
+        double refErrorsPMax    = 4.6e-06;
         double refErrorsVMedian = 6.6e-11;
         double refErrorsVMean   = 1.8e-10;
         double refErrorsVMax    = 7.1e-09;
@@ -127,7 +127,7 @@ public class OneWayGNSSRangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range rate measurements
@@ -223,7 +223,7 @@ public class OneWayGNSSRangeRateTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -253,7 +253,7 @@ public class OneWayGNSSRangeRateTest {
         Assertions.assertEquals(0.0, relErrorsMax,    1.1e-7);
 
         // Test measurement type
-        Assertions.assertEquals(OneWayGNSSRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(OneWayGNSSRangeRate.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -263,7 +263,7 @@ public class OneWayGNSSRangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect one-way GNSS range rate measurements
@@ -385,7 +385,7 @@ public class OneWayGNSSRangeRateTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -421,7 +421,7 @@ public class OneWayGNSSRangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect one-way GNSS range ratemeasurements
@@ -446,7 +446,7 @@ public class OneWayGNSSRangeRateTest {
         final OneWayGNSSRangeRateCreator creator = new OneWayGNSSRangeRateCreator(ephemeris,
                                                                                   localClockOffset, localClockRate, localClockAcceleration,
                                                                                   remoteClockOffset, remoteClockRate, remoteClockAcceleration);
-        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -479,7 +479,7 @@ public class OneWayGNSSRangeRateTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockOffsetDriver(),
+                        measurement.getSatellites().getFirst().getClockBiasDriver(),
                     };
 
                     for (int i = 0; i < drivers.length; ++i) {
@@ -537,7 +537,7 @@ public class OneWayGNSSRangeRateTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();

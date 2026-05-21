@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -179,7 +179,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
 
         // Verify the last estimated position
         final RealVector estimatedState = estimation.getPhysicalEstimatedState();
-        final Vector3D ref       = ((Position) measurements.get(measurements.size() - 1)).getPosition();
+        final Vector3D ref       = ((Position) measurements.getLast()).getPosition();
         final Vector3D estimated = new Vector3D(estimatedState.getEntry(0),
                                                 estimatedState.getEntry(1),
                                                 estimatedState.getEntry(2));

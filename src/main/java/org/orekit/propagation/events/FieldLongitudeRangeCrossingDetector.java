@@ -1,4 +1,4 @@
-/* Copyright 2023-2025 Alberto Ferrero
+/* Copyright 2023-2026 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,10 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
 import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
@@ -35,12 +36,7 @@ import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
  * @param <T> type of the field elements
  */
 public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement<T>>
-        extends FieldAbstractDetector<FieldLongitudeRangeCrossingDetector<T>, T> {
-
-    /**
-     * Body on which the longitude is defined.
-     */
-    private final OneAxisEllipsoid body;
+        extends FieldAbstractGeographicalDetector<FieldLongitudeRangeCrossingDetector<T>, T> {
 
     /**
      * Fixed longitude to be crossed, lower boundary in radians.
@@ -67,7 +63,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      * @param fromLongitude longitude to be crossed, lower range boundary
      * @param toLongitude   longitude to be crossed, upper range boundary
      */
-    public FieldLongitudeRangeCrossingDetector(final Field<T> field, final OneAxisEllipsoid body,
+    public FieldLongitudeRangeCrossingDetector(final Field<T> field, final BodyShape body,
                                                final double fromLongitude, final double toLongitude) {
         this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
             new FieldStopOnIncreasing<>(), body, fromLongitude, toLongitude);
@@ -83,7 +79,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      * @param toLongitude   longitude to be crossed, upper range boundary
      */
     public FieldLongitudeRangeCrossingDetector(final T maxCheck, final T threshold,
-                                               final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
+                                               final BodyShape body, final double fromLongitude, final double toLongitude) {
         this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER),
             new FieldStopOnIncreasing<>(),
             body,
@@ -108,11 +104,10 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      */
     protected FieldLongitudeRangeCrossingDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                                   final FieldEventHandler<T> handler,
-                                                  final OneAxisEllipsoid body,
+                                                  final BodyShape body,
                                                   final double fromLongitude,
                                                   final double toLongitude) {
-        super(detectionSettings, handler);
-        this.body = body;
+        super(detectionSettings, handler, body);
         this.fromLongitude = ensureLongitudePositiveContinuity(fromLongitude);
         this.toLongitude = ensureLongitudePositiveContinuity(toLongitude);
         this.sign = FastMath.signum(this.toLongitude - this.fromLongitude);
@@ -125,16 +120,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
     protected FieldLongitudeRangeCrossingDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                             final FieldEventHandler<T> newHandler) {
         return new FieldLongitudeRangeCrossingDetector<>(detectionSettings, newHandler,
-            body, fromLongitude, toLongitude);
-    }
-
-    /**
-     * Get the body on which the geographic zone is defined.
-     *
-     * @return body on which the geographic zone is defined
-     */
-    public OneAxisEllipsoid getBody() {
-        return body;
+            getBodyShape(), fromLongitude, toLongitude);
     }
 
     /** Get the fixed longitude range to be crossed (radians), lower boundary.
@@ -195,7 +181,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
     public T g(final FieldSpacecraftState<T> s) {
 
         // convert state to geodetic coordinates
-        final FieldGeodeticPoint<T> gp = body.transform(s.getPVCoordinates().getPosition(),
+        final FieldGeodeticPoint<T> gp = getBodyShape().transform(s.getPVCoordinates().getPosition(),
             s.getFrame(), s.getDate());
 
         // point longitude
@@ -206,4 +192,10 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public LongitudeRangeCrossingDetector toEventDetector(final EventHandler eventHandler) {
+        return new LongitudeRangeCrossingDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler, getBodyShape(),
+                getFromLongitude(), getToLongitude());
+    }
 }

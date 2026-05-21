@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -189,7 +189,7 @@ public class J2OnlyPerturbation implements ForceModel {
      */
     public static Vector3D computeAccelerationInJ2Frame(final Vector3D positionInJ2Frame, final double mu,
                                                         final double rEq, final double j2) {
-        final double squaredRadius = positionInJ2Frame.getNormSq();
+        final double squaredRadius = positionInJ2Frame.getNorm2Sq();
         final double squaredZ = positionInJ2Frame.getZ() * positionInJ2Frame.getZ();
         final double ratioTimesFive = 5. * squaredZ / squaredRadius;
         final double ratioTimesFiveMinusOne = ratioTimesFive - 1.;
@@ -226,7 +226,7 @@ public class J2OnlyPerturbation implements ForceModel {
      */
     public static <T extends CalculusFieldElement<T>> FieldVector3D<T> computeAccelerationInJ2Frame(final FieldVector3D<T> positionInJ2Frame,
                                                                                                     final double mu, final double rEq, final T j2) {
-        final T squaredRadius = positionInJ2Frame.getNormSq();
+        final T squaredRadius = positionInJ2Frame.getNorm2Sq();
         final T squaredZ = positionInJ2Frame.getZ().square();
         final T ratioTimesFive = squaredZ.multiply(5.).divide(squaredRadius);
         final T ratioTimesFiveMinusOne = ratioTimesFive.subtract(1.);

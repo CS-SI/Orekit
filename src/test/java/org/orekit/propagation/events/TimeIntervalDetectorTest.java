@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.orekit.time.TimeInterval;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +51,7 @@ class TimeIntervalDetectorTest {
         final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
         final TimeIntervalDetector detector = new TimeIntervalDetector(mock(EventHandler.class), interval);
         // WHEN
-        final boolean value = detector.dependsOnTimeOnly();
+        final boolean value = detector.getEventFunction().dependsOnTimeOnly();
         // THEN
         Assertions.assertTrue(value);
     }
@@ -63,8 +64,9 @@ class TimeIntervalDetectorTest {
         final TimeIntervalDetector detector = new TimeIntervalDetector(mock(EventHandler.class), interval);
         // WHEN & THEN
         final double expectedG = 0.;
-        assertEquals(expectedG, detector.g(mockState(interval.getStartDate())));
-        assertEquals(expectedG, detector.g(mockState(interval.getEndDate())));
+        final double delta = 1e-15;
+        assertEquals(expectedG, detector.g(mockState(interval.getStartDate())), delta);
+        assertEquals(expectedG, detector.g(mockState(interval.getEndDate())), delta);
     }
 
     @Test
@@ -99,6 +101,7 @@ class TimeIntervalDetectorTest {
     private static SpacecraftState mockState(final AbsoluteDate date) {
         final SpacecraftState state = mock();
         when(state.getDate()).thenReturn(date);
+        when(state.durationFrom(any(AbsoluteDate.class))).thenCallRealMethod();
         return state;
     }
 }

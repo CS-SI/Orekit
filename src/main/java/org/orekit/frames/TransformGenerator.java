@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.orekit.utils.TimeStampedGenerator;
 public class TransformGenerator implements TimeStampedGenerator<Transform> {
 
     /** Number of neighbors. */
-    private int neighborsSize;
+    private final int neighborsSize;
 
     /** Underlying provider. */
     private final TransformProvider provider;
@@ -80,7 +80,7 @@ public class TransformGenerator implements TimeStampedGenerator<Transform> {
                 // backward generation
                 do {
                     t = t.shiftedBy(-step);
-                    generated.add(0, provider.getTransform(t));
+                    generated.addFirst(provider.getTransform(t));
                 } while (t.compareTo(date) >= 0);
             }
 

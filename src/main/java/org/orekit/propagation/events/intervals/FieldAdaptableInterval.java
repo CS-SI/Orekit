@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 /** This interface represents an event checking interval that depends on state.
 *
 * @see FieldEventDetector
+* @see AdaptableInterval
 * @author Luc Maisonobe
 * @since 12.0
 * @param <T> the type of the field elements

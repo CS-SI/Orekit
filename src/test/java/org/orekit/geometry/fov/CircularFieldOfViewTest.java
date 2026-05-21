@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,6 +78,15 @@ public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
                                              FastMath.toRadians(-39),
                                              FastMath.toRadians(-5)),
                                Vector3D.MINUS_K);
+    }
+
+    @Test
+    public void testFOVAwayFromEarthWithExtendedFootprint() {
+        doTestFootprintExistence(new CircularFieldOfView(Vector3D.MINUS_K, FastMath.toRadians(3.0), 0.0),
+                               new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
+                                             FastMath.toRadians(-10),
+                                             FastMath.toRadians(-39),
+                                             FastMath.toRadians(-5)));
     }
 
     @Test

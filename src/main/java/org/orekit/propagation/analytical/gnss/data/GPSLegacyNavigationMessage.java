@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,15 +28,22 @@ import org.orekit.time.TimeScales;
  */
 public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegacyNavigationMessage> {
 
+    /** Message type.
+     * @since 14.0
+     */
+    public static final String LNAV = "LNAV";
+
     /** Constructor.
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param type       message type
      */
-    public GPSLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+    public GPSLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system,
+                                      final String type) {
         super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
-              timeScales, system);
+              timeScales, system, type);
     }
 
     /** Constructor from field instance.

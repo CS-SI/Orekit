@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,6 +43,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
@@ -77,8 +78,7 @@ public class BoxAndSolarArraySpacecraftTest {
         final double tol = 1.0e-15;
 
         // build box
-        List<Panel> box = BoxAndSolarArraySpacecraft.buildBox(1.5, 3.5, 2.5,
-            drag, lift, abso, refl);
+        List<Panel> box = BoxAndSolarArraySpacecraft.buildBox(1.5, 3.5, 2.5, drag, lift, abso, refl);
 
         // check
         for (Panel panel : box) {
@@ -120,92 +120,92 @@ public class BoxAndSolarArraySpacecraftTest {
         BoxAndSolarArraySpacecraft s1 =
                         new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.0, 0.8, 0.1);
         Assertions.assertEquals(1, s1.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s1.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s1.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s1.getDragParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s1.getDragParametersDrivers().getFirst().getValue(), 1.0e-15);
         Assertions.assertEquals(1, s1.getRadiationParametersDrivers().size());
         Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
-                                s1.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1, s1.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+                                s1.getRadiationParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1, s1.getRadiationParametersDrivers().getFirst().getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s2 =
                         new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.4, 0.8, 0.1);
         Assertions.assertEquals(1, s2.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s2.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s2.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s2.getDragParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s2.getDragParametersDrivers().getFirst().getValue(), 1.0e-15);
         Assertions.assertEquals(1, s2.getRadiationParametersDrivers().size());
         Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
-                                s2.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s2.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+                                s2.getRadiationParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s2.getRadiationParametersDrivers().getFirst().getValue(), 1.0e-15);
 
         PointingPanel pointingNoLift = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 2.0, 0.0, 0.8, 0.1);
         BoxAndSolarArraySpacecraft s3 =
                         new BoxAndSolarArraySpacecraft(Stream.concat(cube.stream(), Stream.of(pointingNoLift)).
                                                        collect(Collectors.toList()));
         Assertions.assertEquals(1, s3.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s3.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s3.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s3.getDragParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s3.getDragParametersDrivers().getFirst().getValue(), 1.0e-15);
         Assertions.assertEquals(1, s3.getRadiationParametersDrivers().size());
         Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
-                                s3.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s3.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+                                s3.getRadiationParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s3.getRadiationParametersDrivers().getFirst().getValue(), 1.0e-15);
 
         PointingPanel pointingLift = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 2.0, 0.4, 0.8, 0.1);
         BoxAndSolarArraySpacecraft s4 =
                         new BoxAndSolarArraySpacecraft(Stream.concat(cube.stream(), Stream.of(pointingLift)).
                                                        collect(Collectors.toList()));
         Assertions.assertEquals(1, s4.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s4.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s4.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s4.getDragParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s4.getDragParametersDrivers().getFirst().getValue(), 1.0e-15);
         Assertions.assertEquals(1, s4.getRadiationParametersDrivers().size());
         Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
-                                s4.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s4.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+                                s4.getRadiationParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s4.getRadiationParametersDrivers().getFirst().getValue(), 1.0e-15);
 
         SlewingPanel slewingNoLift = new SlewingPanel(Vector3D.PLUS_J, 7.292e-5, AbsoluteDate.J2000_EPOCH,
                                                       Vector3D.PLUS_I, 20.0, 2.0, 0.0, 0.8, 0.1);
         BoxAndSolarArraySpacecraft s5 = new BoxAndSolarArraySpacecraft(Stream.concat(boxNoLift.stream(), Stream.of(slewingNoLift)).
                                                                        collect(Collectors.toList()));
         Assertions.assertEquals(1, s5.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s5.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s5.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s5.getDragParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s5.getDragParametersDrivers().getFirst().getValue(), 1.0e-15);
         Assertions.assertEquals(1, s5.getRadiationParametersDrivers().size());
         Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
-                s5.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s5.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+                s5.getRadiationParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s5.getRadiationParametersDrivers().getFirst().getValue(), 1.0e-15);
 
         SlewingPanel slewingLift = new SlewingPanel(Vector3D.PLUS_J, 7.292e-5, AbsoluteDate.J2000_EPOCH,
                                                     Vector3D.PLUS_I, 20.0, 2.0, 0.4, 0.8, 0.1);
         BoxAndSolarArraySpacecraft s6 = new BoxAndSolarArraySpacecraft(Stream.concat(boxLift.stream(), Stream.of(slewingLift)).
                                                                        collect(Collectors.toList()));
         Assertions.assertEquals(1, s6.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s6.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s6.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s6.getDragParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s6.getDragParametersDrivers().getFirst().getValue(), 1.0e-15);
         Assertions.assertEquals(1, s6.getRadiationParametersDrivers().size());
         Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
-                s6.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s6.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+                s6.getRadiationParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s6.getRadiationParametersDrivers().getFirst().getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s7 =
                         new BoxAndSolarArraySpacecraft(Stream.concat(cube.stream(), Stream.of(slewingNoLift)).
                                                        collect(Collectors.toList()));
         Assertions.assertEquals(1, s7.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s7.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s7.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s7.getDragParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s7.getDragParametersDrivers().getFirst().getValue(), 1.0e-15);
         Assertions.assertEquals(1, s7.getRadiationParametersDrivers().size());
         Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
-                                s7.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s7.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+                                s7.getRadiationParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s7.getRadiationParametersDrivers().getFirst().getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s8 =
                         new BoxAndSolarArraySpacecraft(Stream.concat(cube.stream(), Stream.of(slewingLift)).
                                                        collect(Collectors.toList()));
         Assertions.assertEquals(1, s8.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s8.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s8.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s8.getDragParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s8.getDragParametersDrivers().getFirst().getValue(), 1.0e-15);
         Assertions.assertEquals(1, s8.getRadiationParametersDrivers().size());
         Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
-                s8.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(1.0, s8.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+                s8.getRadiationParametersDrivers().getFirst().getName());
+        Assertions.assertEquals(1.0, s8.getRadiationParametersDrivers().getFirst().getValue(), 1.0e-15);
 
     }
 
@@ -275,9 +275,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    void testLiftVsNoLift()
-        throws NoSuchFieldException, SecurityException,
-               IllegalArgumentException, IllegalAccessException {
+    void testLiftVsNoLift() throws SecurityException, IllegalArgumentException {
 
         // older implementation did not consider lift, so it really worked
         // only for symmetrical shapes. For testing purposes, we will use a
@@ -330,10 +328,9 @@ public class BoxAndSolarArraySpacecraftTest {
     private Vector3D oldDragAcceleration(final BoxAndSolarArraySpacecraft boxWithoutSolarArray,
                                          final SpacecraftState state,
                                          final double density, final Vector3D relativeVelocity)
-         throws IllegalArgumentException, IllegalAccessException,
-                NoSuchFieldException, SecurityException {
+         throws IllegalArgumentException, SecurityException {
 
-        final double dragCoeff = boxWithoutSolarArray.getDragParametersDrivers().get(0).getValue();
+        final double dragCoeff = boxWithoutSolarArray.getDragParametersDrivers().getFirst().getValue();
 
         // relative velocity in spacecraft frame
         final Vector3D v = state.getAttitude().getRotation().applyTo(relativeVelocity);
@@ -421,8 +418,8 @@ public class BoxAndSolarArraySpacecraftTest {
         Binary64[] srpParam = getRadiationParameters(s, field);
 
         FieldSpacecraftState<Binary64> fState = new FieldSpacecraftState<>(field, state);
-        FieldVector3D<Binary64> flux = new FieldVector3D<Binary64>(field.getOne(),
-                        new Vector3D(Precision.SAFE_MIN / 2, Vector3D.PLUS_I));
+        FieldVector3D<Binary64> flux = new FieldVector3D<>(field.getOne(),
+                new Vector3D(Precision.SAFE_MIN / 2, Vector3D.PLUS_I));
 
 
         FieldVector3D<Binary64> a = s.radiationPressureAcceleration(fState, flux, srpParam);
@@ -495,9 +492,9 @@ public class BoxAndSolarArraySpacecraftTest {
             Field<Binary64> field = Binary64Field.getInstance();
             FieldSpacecraftState<Binary64> fState = new FieldSpacecraftState<>(field, state);
 
-            FieldVector3D<Binary64> fluxF = new FieldVector3D<Binary64>(field.getOne(), flux);
+            FieldVector3D<Binary64> fluxF = new FieldVector3D<>(field.getOne(), flux);
             Binary64 densityF = new Binary64(density);
-            FieldVector3D<Binary64> relativeVelocityF = new FieldVector3D<Binary64>(field.getOne(), relativeVelocity);
+            FieldVector3D<Binary64> relativeVelocityF = new FieldVector3D<>(field.getOne(), relativeVelocity);
 
 
             // Acceleration in Binary64
@@ -507,6 +504,64 @@ public class BoxAndSolarArraySpacecraftTest {
             Assertions.assertEquals(0.0, Vector3D.distance(aDrag, aDragF.toVector3D()), Precision.EPSILON);
             Assertions.assertEquals(0.0, Vector3D.distance(aSrp,  aSrpF.toVector3D()), Precision.EPSILON);
         }
+    }
+
+    @Test
+    void testWrongEvenFacets() {
+        try {
+            new BoxAndSolarArraySpacecraft(12, 2.0, 0.5, 0.5, 0.4, 0.6);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NUMBER_OF_FACETS_NOT_ODD, oe.getSpecifier());
+            Assertions.assertEquals(12, (Integer) oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    void testNegativeNumberOfFacets() {
+        try {
+            new BoxAndSolarArraySpacecraft(-1, 2.0, 0.5, 0.5, 0.4, 0.6);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NUMBER_OF_FACETS_NOT_ODD, oe.getSpecifier());
+            Assertions.assertEquals(-1, (Integer) oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    void testDiscoBallSmall() {
+        doTestDiscoBallN(7, 1.1703, 1.1718);
+    }
+
+    @Test
+    void testDiscoBallMedium() {
+        doTestDiscoBallN(99, 0.3106, 0.3447);
+    }
+
+    @Test
+    void testDiscoBallLarge() {
+        // 6765 is Fibonacci number F₂₀
+        doTestDiscoBallN(6765, 0.0376, 0.0428);
+    }
+
+    private void doTestDiscoBallN(final int n, final double closestMin, final double closestMax) {
+        final SpacecraftState state = propagator.getInitialState();
+        final BoxAndSolarArraySpacecraft shape = new BoxAndSolarArraySpacecraft(n, 1.0, 0.5, 0.5, 0.4, 0.6);
+        Assertions.assertEquals(n, shape.getPanels().size());
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (final Panel pA : shape.getPanels()) {
+            double close = Double.POSITIVE_INFINITY;
+            for (final Panel pB : shape.getPanels()) {
+                if (pB != pA) {
+                    close = FastMath.min(close, Vector3D.distance(pA.getNormal(state), pB.getNormal(state)));
+                }
+            }
+            min = FastMath.min(min, close);
+            max = FastMath.max(max, close);
+        }
+        Assertions.assertEquals(closestMin, min, 1.0e-4);
+        Assertions.assertEquals(closestMax, max, 1.0e-4);
     }
 
     /** Get drag parameters as double[]. */
@@ -555,20 +610,20 @@ public class BoxAndSolarArraySpacecraftTest {
     public void setUp() {
         try {
         Utils.setDataRoot("regular-data");
-        mu  = 3.9860047e14;
-        double ae  = 6.378137e6;
-        double c20 = -1.08263e-3;
-        double c30 = 2.54e-6;
-        double c40 = 1.62e-6;
-        double c50 = 2.3e-7;
-        double c60 = -5.5e-7;
+        final double mu  = 3.9860047e14;
+        final double ae  = 6.378137e6;
+        final double c20 = -1.08263e-3;
+        final double c30 = 2.54e-6;
+        final double c40 = 1.62e-6;
+        final double c50 = 2.3e-7;
+        final double c60 = -5.5e-7;
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
 
         // Satellite position as circular parameters, raan chosen to have sun elevation with
-        // respect to orbit plane roughly evolving roughly from 15 to 15.2 degrees in the test range
+        // respect to orbit plane roughly evolving from 15 to 15.2 degrees in the test range
         Orbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(280),
                                    FastMath.toRadians(10.0), PositionAngleType.MEAN,
@@ -582,7 +637,6 @@ public class BoxAndSolarArraySpacecraftTest {
         }
     }
 
-    private double mu;
     private Propagator propagator;
 
 }

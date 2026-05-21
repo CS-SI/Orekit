@@ -32,10 +32,10 @@ import org.orekit.time.AbsoluteDate;
 public class OrekitStepNormalizer implements OrekitStepHandler {
 
     /** Fixed time step. */
-    private double h;
+    private final double h;
 
     /** Underlying fixed step handler. */
-    private OrekitFixedStepHandler handler;
+    private final OrekitFixedStepHandler handler;
 
     /** Last State vector. */
     private SpacecraftState lastState;

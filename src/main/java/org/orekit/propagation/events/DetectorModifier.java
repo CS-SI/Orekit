@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
@@ -54,14 +55,14 @@ public interface DetectorModifier extends EventDetector {
 
     /** {@inheritDoc} */
     @Override
-    default boolean dependsOnTimeOnly() {
-        return getDetector().dependsOnTimeOnly();
+    default EventFunction getEventFunction() {
+        return getDetector().getEventFunction();
     }
 
     /** {@inheritDoc} */
     @Override
     default double g(final SpacecraftState s) {
-        return getDetector().g(s);
+        return getEventFunction().value(s);
     }
 
     /** {@inheritDoc} */

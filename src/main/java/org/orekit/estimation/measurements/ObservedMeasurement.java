@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,7 +68,17 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * </p>
      * @return dimension of the measurement
      */
-    int getDimension();
+    default int getDimension() {
+        return getMeasurementQuality().getDimension();
+    }
+
+    /**
+     * Getter for the measurement quality data as used in estimation.
+     * Note that in Orekit the crossed-terms of the covariance matrix are only used by Kalman filters, not least squares.
+     * @return measurement quality
+     * @since 14.0
+     */
+    MeasurementQuality getMeasurementQuality();
 
     /** Get the theoretical standard deviation.
      * <p>
@@ -82,7 +92,9 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * @return expected standard deviation
      * @see #getBaseWeight()
      */
-    double[] getTheoreticalStandardDeviation();
+    default double[] getTheoreticalStandardDeviation() {
+        return getMeasurementQuality().getStandardDeviations();
+    }
 
     /** Get the base weight associated with the measurement
      * <p>
@@ -95,7 +107,9 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * @return base weight
      * @see #getTheoreticalStandardDeviation()
      */
-    double[] getBaseWeight();
+    default double[] getBaseWeight() {
+        return getMeasurementQuality().getWeights();
+    }
 
     /** Add a modifier.
      * <p>

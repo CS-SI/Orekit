@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,7 +49,7 @@ public class GroundPointTarget implements TargetProvider
     private final PVCoordinates location;
 
     /** Cached field-based locations. */
-    private final transient Map<Field<? extends CalculusFieldElement<?>>, FieldPVCoordinates<?>>
+    private final Map<Field<? extends CalculusFieldElement<?>>, FieldPVCoordinates<?>>
         cachedLocations;
 
     /** Simple constructor.
@@ -57,7 +57,7 @@ public class GroundPointTarget implements TargetProvider
      */
     public GroundPointTarget(final Vector3D location)
     {
-        this.location        = new PVCoordinates(location, Vector3D.ZERO, Vector3D.ZERO);
+        this.location        = new PVCoordinates(location);
         this.cachedLocations = new HashMap<>();
     }
 

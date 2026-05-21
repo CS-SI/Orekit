@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Joseph Reed
+/* Copyright 2002-2026 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -182,7 +182,7 @@ public class WaypointPVBuilder {
         }
         // add the point so we're valid at the final waypoint
         builder.addPVProviderAfter(previousEntry.getKey(),
-                                   new ConstantPVCoordinatesProvider(previousEntry.getValue(), body),
+                                   new GeodeticExtendedPositionProvider(body, previousEntry.getValue()),
                                    true);
         // add the final provider after the final waypoint
         builder.addPVProviderAfter(previousEntry.getKey().shiftedBy(TimeOffset.ATTOSECOND),
@@ -206,7 +206,7 @@ public class WaypointPVBuilder {
         if (invalidBefore) {
             return new AggregatedPVCoordinatesProvider.InvalidPVProvider();
         } else {
-            return new ConstantPVCoordinatesProvider(firstPoint, body);
+            return new GeodeticExtendedPositionProvider(body, firstPoint);
         }
     }
 
@@ -224,7 +224,7 @@ public class WaypointPVBuilder {
         if (invalidAfter) {
             return new AggregatedPVCoordinatesProvider.InvalidPVProvider();
         } else {
-            return new ConstantPVCoordinatesProvider(lastPoint, body);
+            return new GeodeticExtendedPositionProvider(body, lastPoint);
         }
     }
 

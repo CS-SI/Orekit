@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,8 +70,8 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      */
     public KeyValueFileParser(Class<Key> enumType) {
         this.enumType  = enumType;
-        this.scalarMap = new HashMap<Key, String>();
-        this.arrayMap  = new HashMap<Key, List<String>>();
+        this.scalarMap = new HashMap<>();
+        this.arrayMap  = new HashMap<>();
     }
 
     /** Parse an input file.
@@ -123,7 +123,7 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
                     Integer index = Integer.valueOf(matcher.group(2));
                     List<String> list = arrayMap.get(key);
                     if (list == null) {
-                        list = new ArrayList<String>();
+                        list = new ArrayList<>();
                         arrayMap.put(key, list);
                     }
                     while (index >= list.size()) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,8 @@ package org.orekit.utils;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.Orbit;
@@ -35,9 +34,6 @@ import org.orekit.time.AbsoluteDate;
  * @since 8.0
  */
 public class Differentiation {
-
-    /** Factory for the DerivativeStructure instances. */
-    private static final DSFactory FACTORY = new DSFactory(1, 1);
 
     /** Private constructor for utility class.
      */
@@ -76,9 +72,9 @@ public class Differentiation {
                     }
                 };
 
-                final DerivativeStructure dsParam = FACTORY.variable(0, driver.getValue(date));
-                final DerivativeStructure dsValue = differentiator.differentiate(uf).value(dsParam);
-                return dsValue.getPartialDerivative(1);
+                final UnivariateDerivative1 dsParam = new UnivariateDerivative1(driver.getValue(date), 1.);
+                final UnivariateDerivative1 dsValue = differentiator.differentiate(uf).value(dsParam);
+                return dsValue.getFirstDerivative();
 
             }
         };
@@ -100,8 +96,8 @@ public class Differentiation {
                                               final OrbitType orbitType, final PositionAngleType positionAngleType,
                                               final double dP, final int nbPoints) {
         return state -> {
-            final double[] tolerances =
-                    ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(state.getOrbit(), orbitType)[0];
+            final double[] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(state.getOrbit(),
+                    orbitType, positionAngleType)[0];
             final double[][] jacobian = new double[dimension][6];
             for (int j = 0; j < 6; ++j) {
 
@@ -114,11 +110,11 @@ public class Differentiation {
                 final UnivariateDifferentiableVectorFunction differentiatedJ =
                         differentiator.differentiate(componentJ);
 
-                final DerivativeStructure[] c = differentiatedJ.value(FACTORY.variable(0, 0.0));
+                final UnivariateDerivative1[] c = differentiatedJ.value(new UnivariateDerivative1(0.0, 1.0));
 
                 // populate the j-th column of the Jacobian
                 for (int i = 0; i < dimension; ++i) {
-                    jacobian[i][j] = c[i].getPartialDerivative(1);
+                    jacobian[i][j] = c[i].getFirstDerivative();
                 }
 
             }
@@ -173,11 +169,10 @@ public class Differentiation {
         @Override
         public double[] value(final double x) {
             final double[] array = new double[6];
-            final double[] arrayDot = new double[6];
+            final double[] arrayDot = baseState.getOrbit().hasNonKeplerianAcceleration() ? new double[array.length] : null;
             orbitType.mapOrbitToArray(baseState.getOrbit(), positionAngleType, array, arrayDot);
             array[index] += x;
-            final Orbit orbit = orbitType.mapArrayToOrbit(array, arrayDot,
-                    positionAngleType,
+            final Orbit orbit = orbitType.mapArrayToOrbit(array, arrayDot, positionAngleType,
                                                           baseState.getDate(),
                                                           baseState.getOrbit().getMu(),
                                                           baseState.getFrame());

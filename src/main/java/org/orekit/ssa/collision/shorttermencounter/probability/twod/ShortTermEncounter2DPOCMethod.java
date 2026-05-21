@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.files.ccsds.ndm.cdm.Cdm;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.FieldStateCovariance;
-import org.orekit.propagation.StateCovariance;
+import org.orekit.propagation.covariance.FieldStateCovariance;
+import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.ssa.metrics.FieldProbabilityOfCollision;
 import org.orekit.ssa.metrics.ProbabilityOfCollision;
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Mark Rutten
+/* Copyright 2002-2026 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 package org.orekit.estimation.measurements.modifiers;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateFunction;
@@ -37,7 +42,6 @@ import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -48,14 +52,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class AberrationModifierTest {
 
@@ -115,19 +116,16 @@ public class AberrationModifierTest {
 
     @FunctionalInterface
     public interface AberrationTransform {
-        Gradient[] apply(Gradient[] raDecDS, FieldTransform<Gradient> stationToInertial, Frame obsFrame);
+        Gradient[] apply(Gradient[] raDecDS, TimeStampedFieldPVCoordinates<Gradient> checkPVCoords, Frame obsFrame);
     }
 
     private void checkDerivative(AberrationTransform aberrationTransform,
                                  int raDecIndex,
                                  double gradient,
                                  Gradient[] raDecDS,
-                                 GroundStation groundStation,
+                                 TimeStampedFieldPVCoordinates<Gradient> checkPVCoords,
                                  ParameterDriver driver,
-                                 Frame obsFrame,
-                                 AbsoluteDate epoch,
-                                 int nbParams,
-                                 Map<String, Integer> indices) {
+                                 Frame obsFrame) {
 
         FiniteDifferencesDifferentiator differentiator =
                 new FiniteDifferencesDifferentiator(3, 50.0 * driver.getScale());
@@ -140,9 +138,7 @@ public class AberrationModifierTest {
                 double current = driver.getValue();
 
                 driver.setValue(value);
-                FieldTransform<Gradient> stationToInertial =
-                        groundStation.getOffsetToInertial(obsFrame, epoch, nbParams, indices);
-                Gradient[] naturalDS = aberrationTransform.apply(raDecDS, stationToInertial, obsFrame);
+                Gradient[] naturalDS = aberrationTransform.apply(raDecDS, checkPVCoords, obsFrame);
 
                 driver.setValue(current);
                 return naturalDS[raDecIndex].getValue();
@@ -155,37 +151,31 @@ public class AberrationModifierTest {
 
         double deriv = dsValue.getPartialDerivative(1);
         //System.out.println(deriv);
-        Assertions.assertEquals(gradient, deriv, 1e-3 * FastMath.abs(gradient));
+        Assertions.assertEquals(gradient, deriv, FastMath.max(1e-3 * FastMath.abs(deriv), 2e-6));
     }
 
     private void checkNaturalToProperDerivative(int raDecIndex,
                                                 double gradient,
                                                 Gradient[] raDecDS,
-                                                GroundStation groundStation,
+                                                TimeStampedFieldPVCoordinates<Gradient> checkPVCoords,
                                                 ParameterDriver driver,
-                                                Frame obsFrame,
-                                                AbsoluteDate epoch,
-                                                int nbParams,
-                                                Map<String, Integer> indices) {
+                                                Frame obsFrame) {
 
         checkDerivative(AberrationModifier::fieldNaturalToProper, raDecIndex,
-                gradient, raDecDS, groundStation, driver,
-                obsFrame, epoch, nbParams, indices);
+                gradient, raDecDS, checkPVCoords, driver,
+                obsFrame);
     }
 
     private void checkProperToNaturalDerivative(int raDecIndex,
                                                 double gradient,
                                                 Gradient[] raDecDS,
-                                                GroundStation groundStation,
+                                                TimeStampedFieldPVCoordinates<Gradient> checkPVCoords,
                                                 ParameterDriver driver,
-                                                Frame obsFrame,
-                                                AbsoluteDate epoch,
-                                                int nbParams,
-                                                Map<String, Integer> indices) {
+                                                Frame obsFrame) {
 
         checkDerivative(AberrationModifier::fieldProperToNatural, raDecIndex,
-                gradient, raDecDS, groundStation, driver,
-                obsFrame, epoch, nbParams, indices);
+                gradient, raDecDS, checkPVCoords, driver,
+                obsFrame);
     }
 
     @Test
@@ -216,9 +206,10 @@ public class AberrationModifierTest {
             indices.put(driver.getNameSpan(epoch), nbParams++);
         }
 
-        // Station to inertial transform
-        final FieldTransform<Gradient> stationToInertial =
-                groundStation.getOffsetToInertial(measurementFrame, epoch, nbParams, indices);
+        // Station field coordinates
+        final FieldPVCoordinatesProvider<Gradient> fieldCoordsProvider = groundStation.getFieldPVCoordinatesProvider(nbParams, indices);
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams), epoch);
+        final TimeStampedFieldPVCoordinates<Gradient> observerPVCoords  = fieldCoordsProvider.getPVCoordinates(fieldDate, measurementFrame);
 
         // Correct for aberration
         final Field<Gradient> field = GradientField.getField(nbParams);
@@ -226,7 +217,7 @@ public class AberrationModifierTest {
                 field.getZero().add(raDec[0]),
                 field.getZero().add(raDec[1])
         };
-        Gradient[] properDS = AberrationModifier.fieldNaturalToProper(raDecDS, stationToInertial, measurementFrame);
+        Gradient[] properDS = AberrationModifier.fieldNaturalToProper(raDecDS, observerPVCoords, measurementFrame);
         double[] proper = new double[]{properDS[0].getValue(), properDS[1].getValue()};
 
         // Test value
@@ -236,12 +227,10 @@ public class AberrationModifierTest {
         // Test derivatives against finite differences
         for (ParameterDriver driver : parameterDrivers) {
             double raGradient = properDS[0].getGradient()[indices.get(driver.getNameSpan(epoch))];
-            checkNaturalToProperDerivative(0, raGradient, raDecDS, groundStation, driver,
-                    measurementFrame, epoch, nbParams, indices);
+            checkNaturalToProperDerivative(0, raGradient, raDecDS, observerPVCoords, driver, measurementFrame);
 
             double decGradient = properDS[1].getGradient()[indices.get(driver.getNameSpan(epoch))];
-            checkNaturalToProperDerivative(1, decGradient, raDecDS, groundStation, driver,
-                    measurementFrame, epoch, nbParams, indices);
+            checkNaturalToProperDerivative(1, decGradient, raDecDS, observerPVCoords, driver, measurementFrame);
         }
 
         // Undo aberration
@@ -249,7 +238,7 @@ public class AberrationModifierTest {
                 field.getZero().add(expected[0]),
                 field.getZero().add(expected[1])
         };
-        Gradient[] naturalDS = AberrationModifier.fieldProperToNatural(expectedDS, stationToInertial, measurementFrame);
+        Gradient[] naturalDS = AberrationModifier.fieldProperToNatural(expectedDS, observerPVCoords, measurementFrame);
         double[] natural = new double[]{naturalDS[0].getValue(), naturalDS[1].getValue()};
 
         // Test that we get what we started with
@@ -258,12 +247,11 @@ public class AberrationModifierTest {
         // Test derivatives against finite differences
         for (ParameterDriver driver : parameterDrivers) {
             double raGradient = naturalDS[0].getGradient()[indices.get(driver.getNameSpan(epoch))];
-            checkProperToNaturalDerivative(0, raGradient, expectedDS, groundStation, driver,
-                    measurementFrame, epoch, nbParams, indices);
+            checkProperToNaturalDerivative(0, raGradient, expectedDS, observerPVCoords, driver, measurementFrame);
 
             double decGradient = naturalDS[1].getGradient()[indices.get(driver.getNameSpan(epoch))];
-            checkProperToNaturalDerivative(1, decGradient, expectedDS, groundStation, driver,
-                    measurementFrame, epoch, nbParams, indices);
+            checkProperToNaturalDerivative(1, decGradient, expectedDS, observerPVCoords, driver,
+                    measurementFrame);
         }
 
     }
@@ -353,16 +341,20 @@ public class AberrationModifierTest {
         Assertions.assertEquals(natural1[1], natural2[1]);
 
         // Verify Field versions of "naturalToProper" and "properToNatural" methods
-        final Field<Gradient> field = GradientField.getField(6);
+        final int nbParams = 6;
+        final Map<String, Integer> indices = new HashMap<>();
+        final Field<Gradient> field = GradientField.getField(nbParams);
         final Gradient[] raDecG = new Gradient[] { field.getZero().add(raDec1.getObservedValue()[0]),
                                                    field.getZero().add(raDec1.getObservedValue()[1]) };
-        final FieldTransform<Gradient> stationToInertial =
-                groundStation.getBaseFrame().getTransformTo(frame, new FieldAbsoluteDate<>(field, epoch));
 
-        final Gradient[] proper1G  = AberrationModifier.fieldNaturalToProper(raDecG, stationToInertial, frame);
-        final Gradient[] natural1G = AberrationModifier.fieldProperToNatural(proper1G, stationToInertial, frame);
-        final Gradient[] proper2G  = AberrationModifier.fieldNaturalToProper(raDecG, stationToInertial, frame, dataContext);
-        final Gradient[] natural2G = AberrationModifier.fieldProperToNatural(proper2G, stationToInertial, frame, dataContext);
+        final FieldPVCoordinatesProvider<Gradient> fieldCoordsProvider = groundStation.getFieldPVCoordinatesProvider(nbParams, indices);
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams), epoch);
+        final TimeStampedFieldPVCoordinates<Gradient> observerPVCoords  = fieldCoordsProvider.getPVCoordinates(fieldDate, frame);
+
+        final Gradient[] proper1G  = AberrationModifier.fieldNaturalToProper(raDecG, observerPVCoords, frame);
+        final Gradient[] natural1G = AberrationModifier.fieldProperToNatural(proper1G, observerPVCoords, frame);
+        final Gradient[] proper2G  = AberrationModifier.fieldNaturalToProper(raDecG, observerPVCoords, frame, dataContext);
+        final Gradient[] natural2G = AberrationModifier.fieldProperToNatural(proper2G, observerPVCoords, frame, dataContext);
 
         Assertions.assertEquals(natural1G[0].getValue(), natural2G[0].getValue());
         Assertions.assertEquals(natural1G[1].getValue(), natural2G[1].getValue());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,7 +61,7 @@ public class ShapiroInterSatelliteRangeModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
 
@@ -94,7 +94,7 @@ public class ShapiroInterSatelliteRangeModifierTest {
             final List<ObservedMeasurement<?>> converted = new ArrayList<>();
             for (final ObservedMeasurement<?> m : measurements) {
                 final InterSatellitesRange sr = (InterSatellitesRange) m;
-                converted.add(new InterSatellitesRange(sr.getSatellites().get(0), sr.getSatellites().get(1),
+                converted.add(new InterSatellitesRange(sr.getSatellites().getFirst(), sr.getSatellites().get(1),
                                                        false, sr.getDate(),
                                                        sr.getObservedValue()[0],
                                                        sr.getTheoreticalStandardDeviation()[0],

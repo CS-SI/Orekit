@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -123,7 +123,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(31, reader.getPRNNumbers().size());
 
         // Checks the first almanac read
-        final GPSAlmanac alm = reader.getAlmanacs().get(0);
+        final GPSAlmanac alm = reader.getAlmanacs().getFirst();
         Assertions.assertEquals(1, alm.getPRN());
         Assertions.assertEquals(-1, alm.getSVN());
         Assertions.assertEquals(866, alm.getWeek());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -79,55 +79,55 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
     private static final String  REAL_FIELD                   = "\\p{Blank}*(-?\\p{Digit}*\\.\\p{Digit}*)";
 
     /** Start index of the date part of the line. */
-    private static int DATE_START = 0;
+    private static final int DATE_START = 0;
 
     /** end index of the date part of the line. */
-    private static int DATE_END   = 15;
+    private static final int DATE_END   = 15;
 
     /** Pattern to match the date part of the line (always present). */
     private static final Pattern DATE_PATTERN = Pattern.compile(INTEGER2_FIELD + INTEGER2_FIELD + INTEGER2_FIELD + MJD_FIELD);
 
     /** Start index of the pole part of the line (from bulletin A). */
-    private static int POLE_START_A = 16;
+    private static final int POLE_START_A = 16;
 
     /** end index of the pole part of the line (from bulletin A). */
-    private static int POLE_END_A   = 55;
+    private static final int POLE_END_A   = 55;
 
     /** Pattern to match the pole part of the line (from bulletin A). */
     private static final Pattern POLE_PATTERN_A = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD + REAL_FIELD + REAL_FIELD);
 
     /** Start index of the pole part of the line (from bulletin B). */
-    private static int POLE_START_B = 134;
+    private static final int POLE_START_B = 134;
 
     /** end index of the pole part of the line (from bulletin B). */
-    private static int POLE_END_B   = 154;
+    private static final int POLE_END_B   = 154;
 
     /** Pattern to match the pole part of the line (from bulletin B). */
     private static final Pattern POLE_PATTERN_B = Pattern.compile(REAL_FIELD + REAL_FIELD);
 
     /** Start index of the UT1-UTC part of the line (from bulletin A). */
-    private static int UT1_UTC_START_A = 57;
+    private static final int UT1_UTC_START_A = 57;
 
     /** end index of the UT1-UTC part of the line (from bulletin A). */
-    private static int UT1_UTC_END_A   = 78;
+    private static final int UT1_UTC_END_A   = 78;
 
     /** Pattern to match the UT1-UTC part of the line (from bulletin A). */
     private static final Pattern UT1_UTC_PATTERN_A = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD);
 
     /** Start index of the UT1-UTC part of the line (from bulletin B). */
-    private static int UT1_UTC_START_B = 154;
+    private static final int UT1_UTC_START_B = 154;
 
     /** end index of the UT1-UTC part of the line (from bulletin B). */
-    private static int UT1_UTC_END_B   = 165;
+    private static final int UT1_UTC_END_B   = 165;
 
     /** Pattern to match the UT1-UTC part of the line (from bulletin B). */
     private static final Pattern UT1_UTC_PATTERN_B = Pattern.compile(REAL_FIELD);
 
     /** Start index of the LOD part of the line (from bulletin A). */
-    private static int LOD_START_A = 79;
+    private static final int LOD_START_A = 79;
 
     /** end index of the LOD part of the line (from bulletin A). */
-    private static int LOD_END_A   = 93;
+    private static final int LOD_END_A   = 93;
 
     /** Pattern to match the LOD part of the line (from bulletin A). */
     private static final Pattern LOD_PATTERN_A = Pattern.compile(REAL_FIELD + REAL_FIELD);
@@ -135,19 +135,19 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
     // there are no LOD part from bulletin B
 
     /** Start index of the nutation part of the line (from bulletin A). */
-    private static int NUTATION_START_A = 95;
+    private static final int NUTATION_START_A = 95;
 
     /** end index of the nutation part of the line (from bulletin A). */
-    private static int NUTATION_END_A   = 134;
+    private static final int NUTATION_END_A   = 134;
 
     /** Pattern to match the nutation part of the line (from bulletin A). */
     private static final Pattern NUTATION_PATTERN_A = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD + REAL_FIELD + REAL_FIELD);
 
     /** Start index of the nutation part of the line (from bulletin B). */
-    private static int NUTATION_START_B = 165;
+    private static final int NUTATION_START_B = 165;
 
     /** end index of the nutation part of the line (from bulletin B). */
-    private static int NUTATION_END_B   = 185;
+    private static final int NUTATION_END_B   = 185;
 
     /** Pattern to match the nutation part of the line (from bulletin B). */
     private static final Pattern NUTATION_PATTERN_B = Pattern.compile(REAL_FIELD + REAL_FIELD);

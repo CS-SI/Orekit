@@ -56,7 +56,7 @@ public class FieldCloseEventsNumericalABTest extends FieldCloseEventsAbstractTes
         starter.setInitialStepSize(stepSize / 20);
         integrator.setStarterIntegrator(starter);
         final FieldNumericalPropagator<Binary64> propagator =
-                new FieldNumericalPropagator<>(field, integrator);
+                new FieldNumericalPropagator<>(integrator);
         propagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
         return propagator;

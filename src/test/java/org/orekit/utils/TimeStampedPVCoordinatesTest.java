@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,13 +24,15 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 
-public class TimeStampedPVCoordinatesTest {
+class TimeStampedPVCoordinatesTest {
 
     @Test
-    public void testPVOnlyConstructor() {
+    void testPVOnlyConstructor() {
         //setup
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Vector3D p = new Vector3D(1, 2, 3);
@@ -51,7 +53,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
-    public void testPVCoordinatesCopyConstructor() {
+    void testPVCoordinatesCopyConstructor() {
         //setup
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         PVCoordinates pv = new PVCoordinates(new Vector3D(1, 2, 3), new Vector3D(4, 5, 6));
@@ -71,7 +73,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
-    public void testLinearConstructors() {
+    void testLinearConstructors() {
         TimeStampedPVCoordinates pv1 = new TimeStampedPVCoordinates(AbsoluteDate.CCSDS_EPOCH,
                                                                     new Vector3D( 1,  0.1,   10),
                                                                     new Vector3D(-1, -0.1,  -10),
@@ -103,7 +105,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector1() {
+    void testToDerivativeStructureVector1() {
         FieldVector3D<DerivativeStructure> fv =
                 new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                              new Vector3D( 1,  0.1,  10),
@@ -142,7 +144,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector2() {
+    void testToDerivativeStructureVector2() {
         FieldVector3D<DerivativeStructure> fv =
                 new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                              new Vector3D( 1,  0.1,  10),
@@ -188,7 +190,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
-    public void testToUnivariateDerivative1Vector() {
+    void testToUnivariateDerivative1Vector() {
         FieldVector3D<UnivariateDerivative1> fv =
                         new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                      new Vector3D( 1,  0.1,  10),
@@ -227,7 +229,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
-    public void testToUnivariateDerivative2Vector() {
+    void testToUnivariateDerivative2Vector() {
         FieldVector3D<UnivariateDerivative2> fv =
                         new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                      new Vector3D( 1,  0.1,  10),
@@ -273,7 +275,59 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
-    public void testShift() {
+    void testToUnivariateDerivative2PV() {
+        // GIVEN
+        final TimeStampedPVCoordinates pvCoordinate =
+                new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                        new Vector3D(1, 0.1, 10),
+                        new Vector3D(-1, -0.1, -10),
+                        new Vector3D(10, -1.0, -100));
+        // WHEN
+        final TimeStampedFieldPVCoordinates<UnivariateDerivative2> fieldPV = pvCoordinate.toUnivariateDerivative2PV();
+        // THEN
+        Assertions.assertEquals(new UnivariateDerivative2(0., 1., 0.), fieldPV.getDate().durationFrom(pvCoordinate.getDate()));
+        Assertions.assertEquals(pvCoordinate.getPosition(), fieldPV.getPosition().toVector3D());
+        Assertions.assertEquals(pvCoordinate.getVelocity(), fieldPV.getVelocity().toVector3D());
+        Assertions.assertEquals(pvCoordinate.getAcceleration(), fieldPV.getAcceleration().toVector3D());
+    }
+
+    @Test
+    void testToUnivariateDerivative1PV() {
+        // GIVEN
+        final TimeStampedPVCoordinates pvCoordinate =
+                new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                        new Vector3D(1, 0.1, 10),
+                        new Vector3D(-1, -0.1, -10),
+                        new Vector3D(10, -1.0, -100));
+        // WHEN
+        final TimeStampedFieldPVCoordinates<UnivariateDerivative1> fieldPV = pvCoordinate.toUnivariateDerivative1PV();
+        // THEN
+        Assertions.assertEquals(new UnivariateDerivative1(0., 1.), fieldPV.getDate().durationFrom(pvCoordinate.getDate()));
+        Assertions.assertEquals(pvCoordinate.getPosition(), fieldPV.getPosition().toVector3D());
+        Assertions.assertEquals(pvCoordinate.getVelocity(), fieldPV.getVelocity().toVector3D());
+        Assertions.assertEquals(pvCoordinate.getAcceleration(), fieldPV.getAcceleration().toVector3D());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2})
+    void testToUnivariateDerivativeStructurePV(final int order) {
+        // GIVEN
+        final TimeStampedPVCoordinates pvCoordinate =
+                new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                        new Vector3D(1, 0.1, 10),
+                        new Vector3D(-1, -0.1, -10),
+                        new Vector3D(10, -1.0, -100));
+        // WHEN
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> fieldPV = pvCoordinate.toDerivativeStructurePV(order);
+        // THEN
+        Assertions.assertEquals(1.,fieldPV.getDate().durationFrom(pvCoordinate.getDate()).getPartialDerivative(1));
+        Assertions.assertEquals(pvCoordinate.getPosition(), fieldPV.getPosition().toVector3D());
+        Assertions.assertEquals(pvCoordinate.getVelocity(), fieldPV.getVelocity().toVector3D());
+        Assertions.assertEquals(pvCoordinate.getAcceleration(), fieldPV.getAcceleration().toVector3D());
+    }
+
+    @Test
+    void testShift() {
         Vector3D p1 = new Vector3D(  1,  0.1,   10);
         Vector3D v1 = new Vector3D( -1, -0.1,  -10);
         Vector3D a1 = new Vector3D( 10,  1.0,  100);
@@ -286,7 +340,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         Utils.setDataRoot("regular-data");
         TimeStampedPVCoordinates pv =
             new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH,
@@ -310,7 +364,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

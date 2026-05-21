@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -32,6 +33,8 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -42,14 +45,17 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+
 /** Unit tests for {@link FieldLatitudeCrossingDetector}. */
-public class FieldLatitudeCrossingDetectorTest {
+class FieldLatitudeCrossingDetectorTest {
 
     /** Arbitrary Field. */
     private static final Binary64Field field = Binary64Field.getInstance();
 
     @Test
-    public void testRegularCrossing() {
+    void testRegularCrossing() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -111,7 +117,7 @@ public class FieldLatitudeCrossingDetectorTest {
     }
 
     @Test
-    public void testNoCrossing() {
+    void testNoCrossing() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -145,7 +151,7 @@ public class FieldLatitudeCrossingDetectorTest {
                                           Constants.EIGEN5C_EARTH_C50,
                                           Constants.EIGEN5C_EARTH_C60);
 
-        FieldEventsLogger<Binary64> logger = new FieldEventsLogger<Binary64>();
+        FieldEventsLogger<Binary64> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(d));
 
         propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
@@ -163,8 +169,22 @@ public class FieldLatitudeCrossingDetectorTest {
         return new Binary64(value);
     }
 
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldLatitudeCrossingDetector<Binary64> fieldDetector = new FieldLatitudeCrossingDetector<>(Binary64Field.getInstance(),
+                mock(BodyShape.class), 0.);
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final LatitudeCrossingDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getBodyShape(), detector.getBodyShape());
+        assertEquals(fieldDetector.getLatitude(), detector.getLatitude());
+    }
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

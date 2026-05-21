@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,13 +53,13 @@ abstract class HatchFilter {
     private double previousSmoothingValue;
 
     /** History of the pseudo-range value, appended at each filter iteration. */
-    private ArrayList<Double> codeHistory;
+    private final ArrayList<Double> codeHistory;
 
     /** History of the smoothed pseudo-range value, appended at each filter iteration. */
-    private ArrayList<Double> smoothedCodeHistory;
+    private final ArrayList<Double> smoothedCodeHistory;
 
     /** Threshold for the difference between smoothed and measured values. */
-    private double threshold;
+    private final double threshold;
 
     /** Window size of the Hatch Filter. */
     private final int N;

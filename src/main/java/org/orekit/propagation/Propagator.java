@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -255,9 +255,6 @@ public interface Propagator extends PVCoordinatesProvider {
      * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType
      * orbit type} and {@link PositionAngleType position angle} that will be used by the propagator.
      * </p>
-     * <p>
-     * The default implementation throws an exception as the method is not supported by all propagators.
-     * </p>
      * @param stmName State Transition Matrix state name
      * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
      * if null (which is the most frequent case), assumed to be 6x6 identity
@@ -267,10 +264,8 @@ public interface Propagator extends PVCoordinatesProvider {
      * @return harvester to retrieve computed matrices during and after propagation
      * @since 11.1
      */
-    default MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
-                                                       final DoubleArrayDictionary initialJacobianColumns) {
-        throw new UnsupportedOperationException();
-    }
+    MatricesHarvester setupMatricesComputation(String stmName, RealMatrix initialStm,
+                                               DoubleArrayDictionary initialJacobianColumns);
 
     /** Propagate towards a target date.
      * <p>Simple propagators use only the target date as the specification for

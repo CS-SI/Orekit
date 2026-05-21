@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -99,7 +99,7 @@ public class SP3Header {
     private double clockBase;
 
     /** Satellite identifiers. */
-    private List<String> satIds;
+    private final List<String> satIds;
 
     /** Satellite accuracies. */
     private double[] accuracies;
@@ -156,7 +156,7 @@ public class SP3Header {
             // in SP3 versions a, b, and c, there are exactly 4 comments with max length 57
             // (60 minus first three characters)
             if (comments.size() != 4 ||
-                comments.get(0).length() > 57 ||
+                comments.getFirst().length() > 57 ||
                 comments.get(1).length() > 57 ||
                 comments.get(2).length() > 57 ||
                 comments.get(3).length() > 57) {

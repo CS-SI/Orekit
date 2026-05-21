@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 package org.orekit.propagation.numerical;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -41,13 +47,14 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.DetectorModifier;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldDetectorModifier;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldSingleDateDetector;
+import org.orekit.propagation.events.SingleDateDetector;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
@@ -62,13 +69,8 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -78,15 +80,21 @@ class SwitchEventHandlerTest {
 
     @ParameterizedTest
     @EnumSource(value = Action.class)
+    @SuppressWarnings("unchecked")
     void testEventOccurred(final Action action) {
         // GIVEN
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final NumericalPropagationHarvester harvester = mockHarvester();
         final EventHandler handler = (s, e, i) -> action;
-        final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(mock(ForceModel.class), harvester, handler);
+        final ForceModel mockedForce = mock(ForceModel.class);
+        final List<FieldEventDetector<?>> fieldEventDetectors = new ArrayList<>();
+        fieldEventDetectors.add(new FieldDateDetector<>(GradientField.getField(0)));
+        when(mockedForce.getFieldEventDetectors(Mockito.any(Field.class))).thenReturn(fieldEventDetectors.stream());
+        final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(mockedForce, harvester, handler);
         final SpacecraftState stateAtSwitch = buildAbsoluteState(date, new double[0]);
+        final EventDetector detector = new DateDetector(AbsoluteDate.ARBITRARY_EPOCH);
         // WHEN
-        final Action wrappedAction = switchEventHandler.eventOccurred(stateAtSwitch, new DateDetector(), true);
+        final Action wrappedAction = switchEventHandler.eventOccurred(stateAtSwitch, detector, true);
         // THEN
         assertEquals(action, wrappedAction);
     }
@@ -152,7 +160,7 @@ class SwitchEventHandlerTest {
         final SpacecraftState stateAtSwitch = buildAbsoluteState(date, harvester.toArray(stm.getData()))
                 .addAdditionalData(jacobianName, transposedJacobian[0]);
         when(harvester.getParametersJacobian(stateAtSwitch)).thenReturn(MatrixUtils.createRealMatrix(transposedJacobian).transpose());
-        final EventDetector eventDetector = forceWithDetectors.getEventDetectors().collect(Collectors.toList()).get(0);
+        final EventDetector eventDetector = forceWithDetectors.getEventDetectors().collect(Collectors.toList()).getFirst();
         // WHEN
         preprocessSwitchHandler(switchEventHandler, stateAtSwitch, eventDetector);
         final SpacecraftState resetState = switchEventHandler.resetState(eventDetector, stateAtSwitch);
@@ -171,7 +179,7 @@ class SwitchEventHandlerTest {
         final ForceModel forceWithDetectors = getForceModelWithoutSwitch(stateAtSwitch.getPVCoordinates());
         final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(forceWithDetectors, harvester,
                 new ResetDerivativesOnEvent());
-        final EventDetector eventDetector = forceWithDetectors.getEventDetectors().collect(Collectors.toList()).get(0);
+        final EventDetector eventDetector = forceWithDetectors.getEventDetectors().collect(Collectors.toList()).getFirst();
         // WHEN
         preprocessSwitchHandler(switchEventHandler, stateAtSwitch, eventDetector);
         final SpacecraftState resetState = switchEventHandler.resetState(mock(EventDetector.class), stateAtSwitch);
@@ -304,7 +312,9 @@ class SwitchEventHandlerTest {
         final NumericalTimeDerivativesEquations equations = new NumericalTimeDerivativesEquations(null,
                 null, Collections.singletonList(forceModel));
         final AttitudeProvider attitudeProvider = new FrameAlignedProvider(Rotation.IDENTITY);
-        return new SwitchEventHandler(handler, harvester, equations, attitudeProvider);
+        final GradientField field = GradientField.getField(8);
+        return new SwitchEventHandler(handler, harvester, equations, attitudeProvider,
+                forceModel.getFieldEventDetectors(field).collect(Collectors.toList()));
     }
 
     private static SpacecraftState buildAbsoluteState(final AbsoluteDate date, final double[] stmArray) {
@@ -362,6 +372,28 @@ class SwitchEventHandlerTest {
         }
 
         @Override
+        public EventFunction getEventFunction() {
+            return new EventFunction() {
+                @Override
+                public double value(SpacecraftState s) {
+                    final PVCoordinates relativePV = new PVCoordinates(s.getPosition().subtract(pvCoordinates.getPosition()),
+                            s.getPVCoordinates().getVelocity().subtract(pvCoordinates.getVelocity()));
+                    final Vector3D relativePosition = relativePV.getPosition();
+                    final Vector3D relativeVelocity = relativePV.getVelocity();
+                    return s.durationFrom(pvCoordinates.getDate())
+                            + relativePosition.getX() + (relativePosition.getY() + relativePosition.getZ())
+                            + relativeVelocity.getX() + (relativeVelocity.getY()) + (relativeVelocity.getZ());
+                }
+
+                @Override
+                @SuppressWarnings("unchecked")
+                public <S extends CalculusFieldElement<S>> S value(FieldSpacecraftState<S> fieldState) {
+                    return (S) g((FieldSpacecraftState<T>) fieldState);
+                }
+            };
+        }
+
+        @Override
         public T g(FieldSpacecraftState<T> s) {
             final FieldPVCoordinates<T> relativePV = new FieldPVCoordinates<>(s.getPosition().subtract(pvCoordinates.getPosition()),
                     s.getPVCoordinates().getVelocity().subtract(pvCoordinates.getVelocity()));
@@ -392,32 +424,12 @@ class SwitchEventHandlerTest {
 
             @Override
             public Stream<EventDetector> getEventDetectors() {
-                return Stream.of(new DetectorModifier() {
-                    @Override
-                    public boolean dependsOnTimeOnly() {
-                        return false;
-                    }
-
-                    @Override
-                    public EventDetector getDetector() {
-                        return new DateDetector(date);
-                    }
-                });
+                return Stream.of(new SingleDateDetector(date));
             }
 
             @Override
             public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
-                return Stream.of(new FieldDetectorModifier<T>() {
-                    @Override
-                    public boolean dependsOnTimeOnly() {
-                        return false;
-                    }
-
-                    @Override
-                    public FieldEventDetector<T> getDetector() {
-                        return new FieldDateDetector<>(new FieldAbsoluteDate<>(field, date));
-                    }
-                });
+                return Stream.of(new FieldSingleDateDetector<>(field, date));
             }
         };
     }

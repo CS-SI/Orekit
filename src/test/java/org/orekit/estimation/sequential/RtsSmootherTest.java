@@ -31,7 +31,7 @@ public class RtsSmootherTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                context.createBuilder(orbitType, positionAngleType, perfectStart,
+                context.createNumerical(orbitType, positionAngleType, perfectStart,
                         minStep, maxStep, dP);
 
         // Create perfect PV measurements
@@ -65,7 +65,7 @@ public class RtsSmootherTest {
         Assertions.assertThrows(MathIllegalStateException.class, rtsSmoother::backwardsSmooth);
 
         // Single measurement processed - should be OK
-        kalman.estimationStep(measurements.get(0));
+        kalman.estimationStep(measurements.getFirst());
         Assertions.assertDoesNotThrow(rtsSmoother::backwardsSmooth);
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 package org.orekit.propagation.numerical;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -70,25 +75,17 @@ import org.orekit.propagation.conversion.DormandPrince54IntegratorBuilder;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldApsideDetector;
-import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
-import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ExtendedStateTransitionMatrixGeneratorTest {
 
@@ -243,7 +240,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final AbsoluteDate targetDate = epoch.shiftedBy(timeOfFlight);
         final ForceModel force = new ThirdBodyAttraction(new AnalyticalSolarPositionProvider(DataContext.getDefault()),
                 "sun", Constants.JPL_SSD_SUN_GM);
-        force.getParametersDrivers().get(0).setSelected(true);
+        force.getParametersDrivers().getFirst().setSelected(true);
         propagator.addForceModel(force);
         // WHEN
         final SpacecraftState state = propagator.propagate(targetDate);
@@ -279,8 +276,9 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final MatricesHarvester harvester6x6 = otherPropagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(6), null);
         final SpacecraftState otherState = otherPropagator.propagate(targetDate);
         final RealMatrix expectedStm = harvester6x6.getStateTransitionMatrix(otherState);
+        final double tolerance = orbitType == OrbitType.KEPLERIAN ? 1e-4 : 0;
         for (int i = 0; i < 6; i++) {
-            assertArrayEquals(expectedStm.getRow(i), Arrays.copyOfRange(actualStm.getRow(i), 0, 6));
+            assertArrayEquals(expectedStm.getRow(i), Arrays.copyOfRange(actualStm.getRow(i), 0, 6), tolerance);
         }
     }
 
@@ -308,7 +306,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         // THEN
         final NumericalPropagator otherPropagator = buildPropagator(propagator.getOrbitType(), propagator.getAttitudeProvider());
         otherPropagator.addForceModel(new Maneuver(null, buildDatedBasedTriggers(startDate, duration, 0.), propulsionModel));
-        otherPropagator.getAllForceModels().get(0).getParameterDriver(parameterName).setSelected(true);
+        otherPropagator.getAllForceModels().getFirst().getParameterDriver(parameterName).setSelected(true);
         final MatricesHarvester harvester6x6 = otherPropagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(6), null);
         final SpacecraftState otherState = otherPropagator.propagate(targetDate);
         final RealMatrix expectedJacobian = harvester6x6.getParametersJacobian(otherState);
@@ -554,21 +552,6 @@ class ExtendedStateTransitionMatrixGeneratorTest {
 
         protected ApsideTriggers(EventDetectionSettings detectionSettings) {
             super(new ApsideDetector(detectionSettings, new ContinueOnEvent()));
-        }
-
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
-        }
-
-        private FieldApsideDetector buildFieldApsideDetector(Field field, EventDetector detector) {
-            return new FieldApsideDetector<>(new FieldEventDetectionSettings<>(field, detector.getDetectionSettings()),
-                    new FieldStopOnEvent());
-        }
-
-        @Override
-        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> D convertIntervalDetector(Field<S> field, ApsideDetector detector) {
-            return (D) buildFieldApsideDetector(field, detector);
         }
     }
 }

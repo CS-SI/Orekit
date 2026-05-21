@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadata;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -192,15 +191,6 @@ public class OcmMetadata extends OdmMetadata {
      * @since 12.0
      */
     private final DataContext dataContext;
-
-    /** Create a new meta-data.
-     * @param dataContext data context
-     * @deprecated in favor of {@link #OcmMetadata(DataContext, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OcmMetadata(final DataContext dataContext) {
-        this(dataContext, new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Create a new meta-data.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,6 +59,7 @@ import org.orekit.utils.TrackingCoordinates;
  *   <li>Z axis towards Zenith direction</li>
  * </ul>
  * @author V&eacute;ronique Pommier-Maurussane
+ * @see org.orekit.utils.GeodeticExtendedPositionProvider
  */
 public class TopocentricFrame extends Frame implements ExtendedPositionProvider {
 
@@ -127,10 +128,7 @@ public class TopocentricFrame extends Frame implements ExtendedPositionProvider 
      * @since 9.3
      */
     public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getPoint(final Field<T> field) {
-        final T zero = field.getZero();
-        return new FieldGeodeticPoint<>(zero.newInstance(point.getLatitude()),
-                zero.newInstance(point.getLongitude()),
-                zero.newInstance(point.getAltitude()));
+        return new FieldGeodeticPoint<>(field, point);
     }
 
     /** Get the zenith direction of topocentric frame, expressed in parent shape frame.
@@ -455,19 +453,21 @@ public class TopocentricFrame extends Frame implements ExtendedPositionProvider 
 
     /** {@inheritDoc} */
     @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return getKinematicTransformTo(frame, date).transformOnlyPV(FieldPVCoordinates.getZero(date.getField())).getVelocity();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date,
-                Vector3D.ZERO,
-                Vector3D.ZERO,
-                Vector3D.ZERO));
+        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date, PVCoordinates.ZERO));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
                                                                                                  final Frame frame) {
-        final FieldVector3D<T> zero = FieldVector3D.getZero(date.getField());
-        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(date, zero, zero, zero));
+        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(date, FieldPVCoordinates.getZero(date.getField())));
     }
 
     /** Get the topocentric position from {@link TrackingCoordinates}.

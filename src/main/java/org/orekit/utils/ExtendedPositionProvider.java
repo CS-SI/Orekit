@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,8 @@ package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
@@ -72,6 +74,25 @@ public interface ExtendedPositionProvider extends PVCoordinatesProvider {
         return new TimeStampedPVCoordinates(date, new PVCoordinates(position, velocity, acceleration));
     }
 
+    /** Get the velocity vector in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the velocity
+     * @param <T> field type
+     * @return velocity
+     */
+    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date,
+                                                                             final Frame frame) {
+        final Field<T> field = date.getField();
+        final AbsoluteDate absoluteDate = date.toAbsoluteDate();
+        final FieldAbsoluteDate<FieldUnivariateDerivative1<T>> fud1Date = new FieldAbsoluteDate<>(FieldUnivariateDerivative1Field.getUnivariateDerivative1Field(field),
+                absoluteDate);
+        final FieldUnivariateDerivative1<T> shift = new FieldUnivariateDerivative1<>(field.getZero(), field.getOne())
+                .add(date.durationFrom(absoluteDate));
+        final FieldVector3D<FieldUnivariateDerivative1<T>> fud1Position = getPosition(fud1Date.shiftedBy(shift), frame);
+        return new FieldVector3D<>(fud1Position.getX().getFirstDerivative(), fud1Position.getY().getFirstDerivative(),
+                fud1Position.getZ().getFirstDerivative());
+    }
+
     /** Get the position-velocity-acceleration in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
@@ -112,14 +133,4 @@ public interface ExtendedPositionProvider extends PVCoordinatesProvider {
         };
     }
 
-    /**
-     * Method to convert as {@link ExtendedPVCoordinatesProvider}.
-     * @return converted object
-     * @since 13.0
-     * @deprecated since 13.0. Only there to help transition out.
-     */
-    @Deprecated
-    default ExtendedPVCoordinatesProvider toExtendedPVCoordinatesProvider() {
-        return ExtendedPositionProvider.this::getPVCoordinates;
-    }
 }

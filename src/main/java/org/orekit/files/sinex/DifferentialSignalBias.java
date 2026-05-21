@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.hipparchus.util.Pair;
-import org.orekit.gnss.ObservationType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
@@ -39,12 +38,12 @@ import org.orekit.utils.TimeSpanMap;
 public class DifferentialSignalBias {
 
     /** Set of observation type pairs available for the satellite. */
-    private final HashSet<Pair<ObservationType, ObservationType>> observationSets;
+    private final HashSet<Pair<String, String>> observationSets;
 
     /** Set of biases, identifiable by observation type pairs,
      * each containing the corresponding TimeSpanMap of biases (DSB).
      */
-    private final HashMap<Pair<ObservationType, ObservationType>, TimeSpanMap<Double>> biases;
+    private final HashMap<Pair<String, String>, TimeSpanMap<Double>> biases;
 
     /** Simple constructor.
      */
@@ -60,12 +59,12 @@ public class DifferentialSignalBias {
      * @param spanEnd end of the validity span for this bias value
      * @param biasValue DSB bias value (meters for code and cycle for phase)
      */
-    public void addBias(final ObservationType obs1, final ObservationType obs2,
+    public void addBias(final String obs1, final String obs2,
                         final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
                         final double biasValue) {
 
         // Setting a pair of observation type.
-        final Pair<ObservationType, ObservationType> observationPair = new Pair<>(obs1, obs2);
+        final Pair<String, String> observationPair = new Pair<>(obs1, obs2);
 
         // If not present add a new bias to the map, identified by the Observation Pair.
         // Then add the bias value and validity period.
@@ -83,14 +82,14 @@ public class DifferentialSignalBias {
      * @param date date at which to obtain the DSB
      * @return the value of the DSB (meters for code and cycle for phase)
      */
-    public double getBias(final ObservationType obs1, final ObservationType obs2, final AbsoluteDate date) {
+    public double getBias(final String obs1, final String obs2, final AbsoluteDate date) {
         return getTimeSpanMap(obs1, obs2).get(date);
     }
 
     /** Get all available observation type pairs for the satellite.
      * @return observation type pairs obtained.
      */
-    public HashSet<Pair<ObservationType, ObservationType>> getAvailableObservationPairs() {
+    public HashSet<Pair<String, String>> getAvailableObservationPairs() {
         return observationSets;
     }
 
@@ -99,7 +98,7 @@ public class DifferentialSignalBias {
      * @param obs2 second observation type
      * @return minimum valid date for the observation pair
      */
-    public AbsoluteDate getMinimumValidDateForObservationPair(final ObservationType obs1, final ObservationType obs2) {
+    public AbsoluteDate getMinimumValidDateForObservationPair(final String obs1, final String obs2) {
         final TimeSpanMap.Transition<Double> transition = getTimeSpanMap(obs1, obs2).getFirstTransition();
         return transition == null ? AbsoluteDate.PAST_INFINITY : transition.getDate();
     }
@@ -109,7 +108,7 @@ public class DifferentialSignalBias {
      * @param obs2 second observation type
      * @return maximum valid date for the observation pair
      */
-    public AbsoluteDate getMaximumValidDateForObservationPair(final ObservationType obs1, final ObservationType obs2) {
+    public AbsoluteDate getMaximumValidDateForObservationPair(final String obs1, final String obs2) {
         final TimeSpanMap.Transition<Double> transition = getTimeSpanMap(obs1, obs2).getLastTransition();
         return transition == null ? AbsoluteDate.FUTURE_INFINITY : transition.getDate();
     }
@@ -121,7 +120,7 @@ public class DifferentialSignalBias {
      * @param obs2 second observation type
      * @return the time span map for a given observation type pair
      */
-    public TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs1, final ObservationType obs2) {
+    public TimeSpanMap<Double> getTimeSpanMap(final String obs1, final String obs2) {
         return biases.get(new Pair<>(obs1, obs2));
     }
 

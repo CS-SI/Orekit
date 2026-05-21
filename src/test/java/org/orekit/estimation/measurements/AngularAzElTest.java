@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,17 +24,37 @@ import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class AngularAzElTest {
 
@@ -47,7 +67,7 @@ class AngularAzElTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect right-ascension/declination measurements
@@ -73,6 +93,11 @@ class AngularAzElTest {
             // Estimate the AZEL value
             final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
+            // Check dates
+            Assertions.assertNotEquals(state, estimated.getStates()[0]);
+            Assertions.assertTrue(state.getDate().isAfter(estimated.getParticipants()[0].getDate()));
+            Assertions.assertEquals(state.getDate(), estimated.getParticipants()[1].getDate());
+
             // Store the difference between estimated and observed values in the stats
             azDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
             elDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[1] - measurement.getObservedValue()[1]));
@@ -85,7 +110,7 @@ class AngularAzElTest {
         Assertions.assertEquals(0.0, elDiffStat.getStandardDeviation(), 3.3e-9);
 
         // Test measurement type
-        Assertions.assertEquals(AngularAzEl.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(AngularAzEl.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.
@@ -97,7 +122,7 @@ class AngularAzElTest {
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect azimuth-elevation measurements
@@ -135,8 +160,9 @@ class AngularAzElTest {
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
             final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double       meanDelay = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(state.getPVCoordinates(), stationP,
-                                                                                                   datemeas, state.getFrame());
+            final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(state.getOrbit());
+            final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(datemeas, stationP, state.getFrame());
+            final double       meanDelay = signalTimeOfFlight.computeDelay(receptionCondition, state.getDate());
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -159,7 +185,7 @@ class AngularAzElTest {
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
-            final double smallest = FastMath.ulp((double) 1.0);
+            final double smallest = FastMath.ulp(1.0);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -205,12 +231,12 @@ class AngularAzElTest {
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect azimuth-elevation measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -238,8 +264,9 @@ class AngularAzElTest {
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double          meanDelay = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(stateini.getPVCoordinates(), stationP,
-                                                                                                      datemeas, stateini.getFrame());
+            final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(stateini.getOrbit());
+            final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(datemeas, stationP, stateini.getFrame());
+            final double          meanDelay = signalTimeOfFlight.computeDelay(receptionCondition, stateini.getDate());
 
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
@@ -272,6 +299,83 @@ class AngularAzElTest {
                 }
             }
         }
+    }
+
+    @Test
+    void testClockOffset() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = new AbsoluteDate(new DateComponents(2000, 1, 1), TimeScalesFactory.getUTC());
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2010_EARTH_FLATTENING,
+                FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
+        final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
+        final GroundStation stationWithOffset = new GroundStation(baseFrame, new QuadraticClockModel(epoch.shiftedBy(1), 1., 0., 0.));
+        activateStation(stationWithOffset);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN
+        final AngularAzEl angularAzEl = new AngularAzEl(stationWithOffset, epoch, new double[2],
+                new double[]{1., 1.}, new double[]{1., 1.}, satellite);
+        final EstimatedMeasurementBase<AngularAzEl> estimated = angularAzEl.estimateWithoutDerivatives(state);
+        // THEN
+        final GroundStation stationWithoutOffset = new GroundStation(baseFrame);
+        activateStation(stationWithoutOffset);
+        final AngularAzEl otherAngularRaDec = new AngularAzEl(stationWithoutOffset, epoch, new double[2],
+                new double[]{1., 1.}, new double[]{1., 1.}, satellite);
+        final EstimatedMeasurementBase<AngularAzEl> unexpected = otherAngularRaDec.estimateWithoutDerivatives(state);
+        assertNotEquals(unexpected.getEstimatedValue()[0], estimated.getEstimatedValue()[0]);
+        assertNotEquals(unexpected.getEstimatedValue()[1], estimated.getEstimatedValue()[1]);
+    }
+
+    private void activateStation(final GroundStation station) {
+        for (final ParameterDriver driver: station.getParametersDrivers()) {
+            driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
+        }
+    }
+
+    @Test
+    void testParticipants() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = new AbsoluteDate(new DateComponents(2000, 1, 1), TimeScalesFactory.getUTC());
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2010_EARTH_FLATTENING,
+                FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
+        final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
+        final GroundStation station = new GroundStation(baseFrame);
+        activateStation(station);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN
+        final AngularAzEl angularAzEl = new AngularAzEl(station, epoch, new double[2],
+                new double[]{1., 1.}, new double[]{1., 1.}, satellite);
+        final EstimatedMeasurementBase<AngularAzEl> estimatedWithoutDerivatives = angularAzEl.estimateWithoutDerivatives(state);
+        // THEN
+        final EstimatedMeasurement<AngularAzEl> estimated = angularAzEl.estimate(0, 0, state);
+        assertArrayEquals(estimated.getEstimatedValue(), estimatedWithoutDerivatives.getEstimatedValue());
+        final TimeStampedPVCoordinates firstParticipant = estimatedWithoutDerivatives.getParticipants()[0];
+        final TimeStampedPVCoordinates secondParticipant = estimatedWithoutDerivatives.getParticipants()[1];
+        final TimeStampedPVCoordinates expectedFirstParticipant = estimated.getParticipants()[0];
+        final TimeStampedPVCoordinates expectedSecondParticipant = estimated.getParticipants()[1];
+        assertEquals(0., expectedFirstParticipant.getDate().durationFrom(firstParticipant.getDate()), 1e-12);
+        assertEquals(expectedFirstParticipant.getPosition(), firstParticipant.getPosition());
+        assertEquals(expectedSecondParticipant.getDate(), secondParticipant.getDate());
+        assertEquals(expectedSecondParticipant.getPosition(), secondParticipant.getPosition());
     }
 }
 

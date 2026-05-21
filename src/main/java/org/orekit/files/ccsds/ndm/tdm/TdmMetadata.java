@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -218,14 +217,6 @@ public class TdmMetadata extends Metadata {
      *  applied to the tracking data.
      */
     private CorrectionApplied correctionsApplied;
-
-    /** Create a new TDM meta-data.
-     * @deprecated in favor of {@link #TdmMetadata(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public TdmMetadata() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Create a new TDM meta-data.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
     private static final String STM_NAME = DSSTBatchLSModel.class.getName() + "-derivatives";
 
     /** Type of the orbit used for the propagation.*/
-    private PropagationType propagationType;
+    private final PropagationType propagationType;
 
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation

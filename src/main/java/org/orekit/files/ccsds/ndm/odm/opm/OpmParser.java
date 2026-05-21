@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
@@ -110,34 +109,6 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
 
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
-
-    /** Complete constructor.
-     * <p>
-     * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildOpmParser()
-     * parserBuilder.buildOpmParser()}.
-     * </p>
-     * @param conventions IERS Conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
-     * @param defaultMass default mass to use if there are no spacecraft parameters block logical block in the file
-     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
-     * @param filters filters to apply to parse tokens
-     * @since 12.0
-     * @deprecated in favor of {@link #OpmParser(IERSConventions, boolean, DataContext,
-     * AbsoluteDate, double, double, ParsedUnitsBehavior, Function[], CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OpmParser(final IERSConventions conventions, final boolean simpleEOP,
-                     final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate, final double mu,
-                     final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
-        this(conventions, simpleEOP, dataContext, missionReferenceDate, mu, defaultMass,
-                parsedUnitsBehavior, filters, new OrekitCcsdsFrameMapper());
-    }
 
     /** Complete constructor.
      * <p>

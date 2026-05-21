@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ public class GHmsjPolynomials {
     /** Is the orbit represented as a retrograde orbit.
      *  I = -1 if yes, +1 otherwise.
      */
-    private int                   I;
+    private final int                   I;
 
     /** Create a set of G<sub>ms</sub><sup>j</sup> and H<sub>ms</sub><sup>j</sup> polynomials.
      *  @param k X component of the eccentricity vector

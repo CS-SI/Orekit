@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -273,9 +273,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
         final Vector3D pvP   = pvCoordinates.getPosition();
         final Vector3D pvV   = pvCoordinates.getVelocity();
         final Vector3D pvA   = pvCoordinates.getAcceleration();
-        final double r2      = pvP.getNormSq();
+        final double r2      = pvP.getNorm2Sq();
         final double r       = FastMath.sqrt(r2);
-        final double V2      = pvV.getNormSq();
+        final double V2      = pvV.getNorm2Sq();
         final double rV2OnMu = r * V2 / mu;
 
         // compute semi-major axis
@@ -469,19 +469,11 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public double getLv() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return cachedL;
-
-            case ECCENTRIC:
-                return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
-
-            case MEAN:
-                return EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> cachedL;
+            case ECCENTRIC -> EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
+            case MEAN -> EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -515,19 +507,11 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public double getLE() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
-
-            case ECCENTRIC:
-                return cachedL;
-
-            case MEAN:
-                return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
+            case ECCENTRIC -> cachedL;
+            case MEAN -> EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -561,19 +545,11 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public double getLM() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
-
-            case MEAN:
-                return cachedL;
-
-            case ECCENTRIC:
-                return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
+            case MEAN -> cachedL;
+            case ECCENTRIC -> EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -810,7 +786,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
         computePVWithoutA();
 
         // acceleration
-        final double r2 = partialPV.getPosition().getNormSq();
+        final double r2 = partialPV.getPosition().getNorm2Sq();
         final Vector3D keplerianAcceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), partialPV.getPosition());
         final Vector3D acceleration = hasNonKeplerianRates() ?
                                       keplerianAcceleration.add(nonKeplerianAcceleration()) :
@@ -865,24 +841,10 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
                                                                        getDate().shiftedBy(dt), getMu());
 
         if (dtS != 0. && hasNonKeplerianRates()) {
-
-            // extract non-Keplerian acceleration from first time derivatives
-            final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
-
-            // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
-            keplerianShifted.computePVWithoutA();
-            final Vector3D fixedP   = new Vector3D(1, keplerianShifted.partialPV.getPosition(),
-                                                   0.5 * dtS * dtS, nonKeplerianAcceleration);
-            final double   fixedR2 = fixedP.getNormSq();
-            final double   fixedR  = FastMath.sqrt(fixedR2);
-            final Vector3D fixedV  = new Vector3D(1, keplerianShifted.partialPV.getVelocity(),
-                                                  dtS, nonKeplerianAcceleration);
-            final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), keplerianShifted.partialPV.getPosition(),
-                                                  1, nonKeplerianAcceleration);
+            final PVCoordinates pvCoordinates = shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dtS);
 
             // build a new orbit, taking non-Keplerian acceleration into account
-            return new EquinoctialOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(),
-                                                                     fixedP, fixedV, fixedA),
+            return new EquinoctialOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(), pvCoordinates),
                                         keplerianShifted.getFrame(), keplerianShifted.getMu());
 
         } else {
@@ -902,7 +864,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
         computePVWithoutA();
         final Vector3D position = partialPV.getPosition();
         final Vector3D velocity = partialPV.getVelocity();
-        final double r2         = position.getNormSq();
+        final double r2         = position.getNorm2Sq();
         final double r          = FastMath.sqrt(r2);
         final double r3         = r * r2;
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -104,7 +104,7 @@ import org.orekit.time.AbsoluteDate;
 public class PropagatorsParallelizer {
 
     /** Waiting time to avoid getting stuck waiting for interrupted threads (ms). */
-    private static long MAX_WAIT = 10;
+    private static final long MAX_WAIT = 10;
 
     /** Underlying propagators. */
     private final List<Propagator> propagators;
@@ -153,8 +153,8 @@ public class PropagatorsParallelizer {
 
         if (propagators.size() == 1) {
             // special handling when only one propagator is used
-            propagators.get(0).getMultiplexer().add(new SinglePropagatorHandler(globalHandler));
-            return Collections.singletonList(propagators.get(0).propagate(start, target));
+            propagators.getFirst().getMultiplexer().add(new SinglePropagatorHandler(globalHandler));
+            return Collections.singletonList(propagators.getFirst().propagate(start, target));
         }
 
         final double sign = FastMath.copySign(1.0, target.durationFrom(start));

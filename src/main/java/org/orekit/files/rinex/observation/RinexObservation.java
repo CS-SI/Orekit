@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,8 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.RinexFile;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ClockOffset;
-import org.orekit.time.SampledClockModel;
+import org.orekit.time.clocks.ClockOffset;
+import org.orekit.time.clocks.SampledClockModel;
 
 /** Container for Rinex observation file.
  * @author Luc Maisonobe
@@ -83,7 +83,7 @@ public class RinexObservation extends RinexFile<RinexObservationHeader> {
 
         // check interval from previous observation
         if (!observations.isEmpty()) {
-            final AbsoluteDate previous   = observations.get(observations.size() - 1).getDate();
+            final AbsoluteDate previous   = observations.getLast().getDate();
             final double       factor     = current.durationFrom(previous) / header.getInterval();
             final double       acceptable = FastMath.max(0.0, FastMath.rint(factor));
             if (FastMath.abs(factor - acceptable) > 0.01) {

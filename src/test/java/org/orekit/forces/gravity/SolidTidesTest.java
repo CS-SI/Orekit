@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,6 +65,7 @@ import org.orekit.time.TimeStamped;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.LoveNumbers;
 import org.orekit.utils.ParameterDriver;
 
 
@@ -466,25 +467,140 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         }
         
         detectors      = solidTidesModel.getEventDetectors().collect(Collectors.toList());
-        DateDetector dateDetector = (DateDetector) detectors.get(0);
+        DateDetector dateDetector = (DateDetector) detectors.getFirst();
         List<TimeStamped> dates = dateDetector.getDates();
         
         fieldDetectors = solidTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
-        FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.get(0);
+        FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.getFirst();
         FieldAbsoluteDate<Binary64> fieldDate = fieldDateDetector.getDate();
         
         // Then
         Assertions.assertFalse(detectors.isEmpty());
         Assertions.assertEquals(1, detectors.size());
-        Assertions.assertInstanceOf(DateDetector.class, detectors.get(0));
+        Assertions.assertInstanceOf(DateDetector.class, detectors.getFirst());
         
         Assertions.assertEquals(1, dates.size());
-        Assertions.assertEquals(0., dates.get(0).durationFrom(t0), 0.);
+        Assertions.assertEquals(0., dates.getFirst().durationFrom(t0), 0.);
         
         Assertions.assertFalse(fieldDetectors.isEmpty());
         Assertions.assertEquals(1, fieldDetectors.size());
-        Assertions.assertInstanceOf(FieldDateDetector.class, fieldDetectors.get(0));
+        Assertions.assertInstanceOf(FieldDateDetector.class, fieldDetectors.getFirst());
         Assertions.assertEquals(0., fieldDate.durationFrom(t0).getReal(), 0.);
+    }
+
+    @Test
+    void testCustomLoveNumbersTideEffect() {
+
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final NormalizedSphericalHarmonicsProvider gravityField =
+                GravityFieldFactory.getNormalizedProvider(5, 5);
+
+        final AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        final Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                               FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                               0, PositionAngleType.MEAN, eme2000, date,
+                                               gravityField.getMu());
+
+        // Earth Love numbers from IERS 2010 table 6.3
+        final double[][] real = {
+            {0.0},
+            {0.0, 0.0},
+            {0.30190, 0.29830, 0.30102}
+        };
+        final double[][] imag = {
+            {0.0},
+            {0.0, 0.0},
+            {0.00000, -0.00144, -0.00130}
+        };
+        final double[][] plus = {
+            {0.0},
+            {0.0, 0.0},
+            {-0.00089, -0.00080, -0.00057}
+        };
+        final LoveNumbers earthLove = new LoveNumbers(real, imag, plus);
+
+        final AbsoluteDate target = date.shiftedBy(7 * Constants.JULIAN_DAY);
+        final ForceModel hf = new HolmesFeatherstoneAttractionModel(itrf, gravityField);
+
+        // propagate with custom Love numbers
+        final SpacecraftState customTides = propagate(orbit, target, hf,
+                new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                               gravityField.getTideSystem(),
+                               earthLove,
+                               CelestialBodyFactory.getSun(),
+                               CelestialBodyFactory.getMoon()));
+
+        // propagate with IERS conventions (no pole tide)
+        final UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        final SpacecraftState iersTides = propagate(orbit, target, hf,
+                new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                               gravityField.getTideSystem(), false,
+                               SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
+                               IERSConventions.IERS_2010, ut1,
+                               CelestialBodyFactory.getSun(),
+                               CelestialBodyFactory.getMoon()));
+
+        // check the custom numbers constructor (no frequency-dependent corrections) give a result
+        // close to the IERS result (includes frequency-dependent corrections)
+        final double difference = Vector3D.distance(customTides.getPosition(), iersTides.getPosition());
+        Assertions.assertTrue(difference < 5.0);
+    }
+
+    @Test
+    void testCustomLoveNumbersFieldComparison() {
+
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final NormalizedSphericalHarmonicsProvider gravityField =
+                GravityFieldFactory.getNormalizedProvider(5, 5);
+
+        final AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        final Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                               FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                               0, PositionAngleType.MEAN, eme2000, date,
+                                               gravityField.getMu());
+
+        // Earth Love numbers from IERS 2010 table 6.3
+        final double[][] real = {
+            {0.0},
+            {0.0, 0.0},
+            {0.30190, 0.29830, 0.30102}
+        };
+        final double[][] imag = {
+            {0.0},
+            {0.0, 0.0},
+            {0.00000, -0.00144, -0.00130}
+        };
+        final double[][] plus = {
+            {0.0},
+            {0.0, 0.0},
+            {-0.00089, -0.00080, -0.00057}
+        };
+        final LoveNumbers earthLove = new LoveNumbers(real, imag, plus);
+
+        final ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                                                     gravityField.getTideSystem(),
+                                                     earthLove,
+                                                     CelestialBodyFactory.getSun(),
+                                                     CelestialBodyFactory.getMoon());
+
+        final SpacecraftState state = new SpacecraftState(orbit);
+
+        // acceleration without Field
+        final Vector3D acceleration = forceModel.acceleration(state, forceModel.getParameters(date));
+
+        // acceleration with Field
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(Binary64Field.getInstance(), state);
+        final FieldVector3D<Binary64> fieldAcceleration = forceModel.acceleration(fieldState,
+                forceModel.getParameters(Binary64Field.getInstance(), fieldState.getDate()));
+
+        // verify that Field and non-Field accelerations match
+        Assertions.assertEquals(acceleration.getX(), fieldAcceleration.getX().getReal(), 0);
+        Assertions.assertEquals(acceleration.getY(), fieldAcceleration.getY().getReal(), 0);
+        Assertions.assertEquals(acceleration.getZ(), fieldAcceleration.getZ().getReal(), 0);
     }
 
     private void doTestTideEffect(Orbit orbit, IERSConventions conventions, double delta1, double delta2) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@
 package org.orekit.files.ccsds.ndm.odm.oem;
 
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -48,15 +47,6 @@ public class OemMetadata extends OdmCommonMetadata {
 
     /** The interpolation degree. */
     private int interpolationDegree;
-
-    /** Simple constructor.
-     * @param defaultInterpolationDegree default interpolation degree
-     * @deprecated in favor of {@link #OemMetadata(int, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OemMetadata(final int defaultInterpolationDegree) {
-        this(defaultInterpolationDegree, new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

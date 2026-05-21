@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,25 +17,12 @@
 package org.orekit.files.rinex.navigation;
 
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
-import org.orekit.utils.units.Unit;
 
 /** Container for data contained in a ionosphere Klobuchar message.
  * @author Luc Maisonobe
  * @since 12.0
  */
 public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
-
-    /** Converters for Klobuchar parameters. */
-    static final Unit[] S_PER_SC_N;
-    static {
-        final Unit sc = Unit.RADIAN.scale("sc", GNSSConstants.GNSS_PI);
-        S_PER_SC_N = new Unit[4];
-        S_PER_SC_N[0] = Unit.SECOND;
-        S_PER_SC_N[1] = S_PER_SC_N[0].divide("s/sc",  sc);
-        S_PER_SC_N[2] = S_PER_SC_N[1].divide("s/sc²", sc);
-        S_PER_SC_N[3] = S_PER_SC_N[2].divide("s/sc³", sc);
-    }
 
     /** α (s/radⁿ). */
     private final double[] alpha;
@@ -50,9 +37,11 @@ public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
      * @param system satellite system
      * @param prn satellite number
      * @param navigationMessageType navigation message type
+     * @param subType message subtype
      */
-    public IonosphereKlobucharMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
-        super(system, prn, navigationMessageType);
+    public IonosphereKlobucharMessage(final SatelliteSystem system, final int prn,
+                                      final String navigationMessageType, final String subType) {
+        super(system, prn, navigationMessageType, subType);
         alpha = new double[4];
         beta  = new double[4];
     }
@@ -64,7 +53,6 @@ public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
      * {@code IonosphereKlobucharMessage.S_PER_SC_N[i].fromSI(alpha[i])}
      * </p>
      * @return α coefficients (s/radⁿ)
-     * @see #S_PER_SC_N
      */
     public double[] getAlpha() {
         return alpha.clone();
@@ -78,7 +66,6 @@ public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
      * </p>
      * @param i index of the coefficient
      * @param alphaI α coefficient to set (s/radⁿ)
-     * @see #S_PER_SC_N
      */
     public void setAlphaI(final int i, final double alphaI) {
         alpha[i] = alphaI;
@@ -91,7 +78,6 @@ public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
      * {@code IonosphereKlobucharMessage.S_PER_SC_N[i].fromSI(beta[i])}
      * </p>
      * @return β coefficients (s/radⁿ)
-     * @see #S_PER_SC_N
      */
     public double[] getBeta() {
         return beta.clone();
@@ -105,7 +91,6 @@ public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
      * </p>
      * @param i index of the coefficient
      * @param betaI β coefficient to set (s/radⁿ)
-     * @see #S_PER_SC_N
      */
     public void setBetaI(final int i, final double betaI) {
         beta[i] = betaI;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,16 +17,17 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /**
  * Base class for ephemeris-based navigation messages.
  * @author Bryan Cazabonne
  * @since 11.0
  *
- * @see GLONASSNavigationMessage
+ * @see GLONASSFdmaNavigationMessage
  * @see SBASNavigationMessage
  */
-public abstract class AbstractEphemerisMessage {
+public abstract class AbstractEphemerisMessage implements TimeStamped, NavigationMessage {
 
     /** Ephemeris reference epoch. */
     private AbsoluteDate date;
@@ -68,7 +69,7 @@ public abstract class AbstractEphemerisMessage {
     private double health;
 
     /** Constructor. */
-    public AbstractEphemerisMessage() {
+    protected AbstractEphemerisMessage() {
         // Nothing to do ...
     }
 

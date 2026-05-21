@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,8 +36,9 @@ import org.orekit.utils.PVCoordinates;
  * <p>This class implements an impulse maneuver as a discrete event
  * that can be provided to any {@link org.orekit.propagation.Propagator
  * Propagator}.</p>
- * <p>The maneuver is executed when an underlying is triggered, in which case this class will generate a {@link
- * Action#RESET_STATE RESET_STATE} event. By default, the detection settings are those of the trigger.
+ * <p>The maneuver is executed when an underlying event is triggered and the handler returns anything but {@link Action#CONTINUE CONTINUE},
+ * in which case this class will generate a {@link Action#RESET_STATE RESET_STATE} event.
+ * By default, the detection settings are those of the trigger.
  * In the simple cases, the underlying event detector may be a basic
  * {@link org.orekit.propagation.events.DateDetector date event}, but it
  * can also be a more elaborate {@link
@@ -108,20 +109,6 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements Detector
     public ImpulseManeuver(final EventDetector trigger, final AttitudeProvider attitudeOverride,
                            final Vector3D deltaVSat, final double isp) {
         this(trigger, attitudeOverride, ImpulseProvider.of(deltaVSat), isp, Control3DVectorCostType.TWO_NORM);
-    }
-
-    /** Build a new instance.
-     * @param trigger triggering event
-     * @param attitudeOverride the attitude provider to use for the maneuver
-     * @param deltaVSat velocity increment in satellite frame
-     * @param isp engine specific impulse (s)
-     * @param control3DVectorCostType increment's norm for mass consumption
-     * @deprecated since 13.0
-     */
-    @Deprecated
-    public ImpulseManeuver(final EventDetector trigger, final AttitudeProvider attitudeOverride,
-                           final Vector3D deltaVSat, final double isp, final Control3DVectorCostType control3DVectorCostType) {
-        this(trigger, trigger.getDetectionSettings(), attitudeOverride, ImpulseProvider.of(deltaVSat), isp, control3DVectorCostType);
     }
 
     /** Build a new instance.
@@ -225,14 +212,23 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements Detector
     }
 
     /** Local handler. */
-    private static class Handler implements EventHandler {
+    private class Handler implements EventHandler {
+
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
+            getDetector().getHandler().init(initialState, target, getDetector());
+        }
+
+        @Override
+        public void finish(final SpacecraftState finalState, final EventDetector detector) {
+            getDetector().getHandler().finish(finalState, getDetector());
+        }
 
         /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing) {
-            final ImpulseManeuver im = (ImpulseManeuver) detector;
-            im.trigger.getHandler().eventOccurred(s, im.trigger, increasing); // Action is ignored but method still called
-            return Action.RESET_STATE;
+            final Action action = getDetector().getHandler().eventOccurred(s, getDetector(), increasing);
+            return action == Action.CONTINUE ? action : Action.RESET_STATE;
         }
 
         /** {@inheritDoc} */

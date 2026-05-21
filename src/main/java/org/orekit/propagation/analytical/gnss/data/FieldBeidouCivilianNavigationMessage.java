@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,12 +33,6 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
 
     /** Radio wave on which navigation signal is sent. */
     private final RadioWave radioWave;
-
-    /** Change rate in semi-major axis (m/s). */
-    private T aDot;
-
-    /** Change rate in Δn₀. */
-    private T deltaN0Dot;
 
     /** Issue of Data, Ephemeris. */
     private int iode;
@@ -95,8 +89,6 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     public FieldBeidouCivilianNavigationMessage(final Field<T> field, final BeidouCivilianNavigationMessage original) {
         super(field, original);
         this.radioWave = original.getRadioWave();
-        setADot(field.getZero().newInstance(original.getADot()));
-        setDeltaN0Dot(field.getZero().newInstance(original.getDeltaN0Dot()));
         setIODE(original.getIODE());
         setIODC(original.getIODC());
         setIscB1CD(field.getZero().newInstance(original.getIscB1CD()));
@@ -124,8 +116,6 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
                                                                                     final FieldBeidouCivilianNavigationMessage<V> original) {
         super(converter, original);
         this.radioWave = original.getRadioWave();
-        setADot(converter.apply(original.getADot()));
-        setDeltaN0Dot(converter.apply(original.getDeltaN0Dot()));
         setIODE(original.getIODE());
         setIODC(original.getIODC());
         setIscB1CD(converter.apply(original.getIscB1CD()));
@@ -142,6 +132,12 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
         setTgdB2ap(converter.apply(original.getTgdB2ap()));
         setTgdB2bI(converter.apply(original.getTgdB2bI()));
         setSatelliteType(original.getSatelliteType());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isCivilianMessage() {
+        return true;
     }
 
     /** {@inheritDoc} */
@@ -164,38 +160,6 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
      */
     public RadioWave getRadioWave() {
         return radioWave;
-    }
-
-    /**
-     * Getter for the change rate in semi-major axis.
-     * @return the change rate in semi-major axis
-     */
-    public T getADot() {
-        return aDot;
-    }
-
-    /**
-     * Setter for the change rate in semi-major axis.
-     * @param value the change rate in semi-major axis
-     */
-    public void setADot(final T value) {
-        this.aDot = value;
-    }
-
-    /**
-     * Getter for change rate in Δn₀.
-     * @return change rate in Δn₀
-     */
-    public T getDeltaN0Dot() {
-        return deltaN0Dot;
-    }
-
-    /**
-     * Setter for change rate in Δn₀.
-     * @param deltaN0Dot change rate in Δn₀
-     */
-    public void setDeltaN0Dot(final T deltaN0Dot) {
-        this.deltaN0Dot = deltaN0Dot;
     }
 
     /**

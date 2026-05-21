@@ -57,10 +57,10 @@ import org.orekit.time.FieldAbsoluteDate;
 public class FieldEventState<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> {
 
     /** Event detector. */
-    private D detector;
+    private final D detector;
 
     /** Event handler. */
-    private FieldEventHandler<T> handler;
+    private final FieldEventHandler<T> handler;
 
     /** Time of the previous call to g. */
     private FieldAbsoluteDate<T> lastT;

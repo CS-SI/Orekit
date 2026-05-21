@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,7 @@ public class AccurateFormatter implements Formatter {
      */
     @Override
     public String toString(final double value) {
-        return format(value);
+        return RyuDouble.doubleToString(value);
     }
 
     /** Formats the seconds variable with maximum precision needed.
@@ -60,23 +60,6 @@ public class AccurateFormatter implements Formatter {
     @Override
     public String toString(final int year, final int month, final int day,
                            final int hour, final int minute, final double seconds) {
-        return format(year, month, day, hour, minute, seconds);
-    }
-
-    /** Format a date.
-     * @param year year
-     * @param month month
-     * @param day day
-     * @param hour hour
-     * @param minute minute
-     * @param seconds seconds
-     * @return date formatted to full accuracy
-     * @deprecated As of 13.0, because static method does not utilize inheritance benefits from {@link Formatter} and
-     * does not check format standards of date time. Use {@link #toString(int, int, int, int, int, double)} instead.
-     */
-    @Deprecated
-    public static String format(final int year, final int month, final int day,
-                                final int hour, final int minute, final double seconds) {
         final double truncated = seconds < LOW_TRUNCATION ? 0.0 : seconds;
         final String s = RyuDouble.doubleToString(truncated, LOW_EXP, RyuDouble.DEFAULT_HIGH_EXP);
         return String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
@@ -84,14 +67,4 @@ public class AccurateFormatter implements Formatter {
                              hour, minute, s.charAt(1) == '.' ? "0" + s : s);
     }
 
-    /** Format a double number.
-     * @param value number to format
-     * @return number formatted to full accuracy
-     * @deprecated As of 13.0, because Static method does not utilize inheritance benefits from {@link Formatter}.
-     * Use {@link #toString(double)} instead.
-     */
-    @Deprecated
-    public static String format(final double value) {
-        return RyuDouble.doubleToString(value);
-    }
 }

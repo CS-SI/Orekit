@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
@@ -38,14 +38,25 @@ import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
+import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.UT1Scale;
+import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.FieldAngularCoordinates;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a ground station that can perform some measurements.
  * <p>
@@ -78,33 +89,14 @@ import org.orekit.utils.ParameterDriver;
  *   <li>additional body rotation, controlled by {@link #getPrimeMeridianOffsetDriver()} and {@link #getPrimeMeridianDriftDriver()}</li>
  *   <li>additional polar motion, controlled by {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()},
  *   {@link #getPolarOffsetYDriver()} and {@link #getPolarDriftYDriver()}</li>
- *   <li>station clock offset, controlled by {@link #getClockOffsetDriver()}</li>
+ *   <li>station clock offset, controlled by {@link #getClockBiasDriver()}</li>
  *   <li>station position offset, controlled by {@link #getEastOffsetDriver()},
  *   {@link #getNorthOffsetDriver()} and {@link #getZenithOffsetDriver()}</li>
  * </ol>
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class GroundStation {
-
-    /** Suffix for ground station position and clock offset parameters names. */
-    public static final String OFFSET_SUFFIX = "-offset";
-
-    /** Suffix for ground clock drift parameters name. */
-    public static final String DRIFT_SUFFIX = "-drift-clock";
-
-    /** Suffix for ground clock drift parameters name.
-     * @since 12.1
-     */
-    public static final String ACCELERATION_SUFFIX = "-acceleration-clock";
-
-    /** Clock offset scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double CLOCK_OFFSET_SCALE = FastMath.scalb(1.0, -10);
+public class GroundStation extends AbstractParticipant implements Observer {
 
     /** Position offsets scaling factor.
      * <p>
@@ -129,17 +121,6 @@ public class GroundStation {
     /** Displacement models. */
     private final StationDisplacement[] displacements;
 
-    /** Driver for clock offset. */
-    private final ParameterDriver clockOffsetDriver;
-
-    /** Driver for clock drift. */
-    private final ParameterDriver clockDriftDriver;
-
-    /** Driver for clock acceleration.
-     * @since 12.1
-     */
-    private final ParameterDriver clockAccelerationDriver;
-
     /** Driver for position offset along the East axis. */
     private final ParameterDriver eastOffsetDriver;
 
@@ -156,7 +137,7 @@ public class GroundStation {
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
      * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getClockOffsetDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
      * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as these values are not changed, the
      * offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as some of these models are changed,
      * the offset frame moves away from the {@link #getBaseFrame() base frame}.
@@ -172,14 +153,37 @@ public class GroundStation {
     }
 
     /**
+     * Build a ground station ignoring {@link StationDisplacement station displacements}.
+     * <p>
+     * The initial values for the pole and prime meridian parametric linear models
+     * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
+     * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
+     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as these values are not changed, the
+     * offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as some of these models are changed,
+     * the offset frame moves away from the {@link #getBaseFrame() base frame}.
+     * </p>
+     *
+     * @param baseFrame base frame associated with the station, without *any* parametric model
+     *                  (no station offset, no polar motion, no meridian shift)
+     * @param clock         new quadratic clock model with user-supplied displacements
+     * @see #GroundStation(TopocentricFrame, EOPHistory, StationDisplacement...)
+     * @since 13.0
+     */
+    public GroundStation(final TopocentricFrame baseFrame, final QuadraticClockModel clock) {
+        this(baseFrame, FramesFactory.findEOP(baseFrame), clock);
+    }
+
+    /**
      * Simple constructor.
      * <p>
      * The initial values for the pole and prime meridian parametric linear models
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
      * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getClockOffsetDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
-     * {@link #getZenithOffsetDriver()}, {@link #getClockOffsetDriver()}) are set to 0. This implies that as long as
+     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * {@link #getZenithOffsetDriver()}, {@link #getClockBiasDriver()}) are set to 0. This implies that as long as
      * these values are not changed, the offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as
      * some of these models are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
      * </p>
@@ -193,7 +197,33 @@ public class GroundStation {
      */
     public GroundStation(final TopocentricFrame baseFrame, final EOPHistory eopHistory,
                          final StationDisplacement... displacements) {
+        this(baseFrame, eopHistory, createEmptyQuadraticClock(baseFrame.getName()), displacements);
+    }
 
+     /**
+     * Simple constructor.
+     * <p>
+     * The initial values for the pole and prime meridian parametric linear models
+     * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
+     * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
+     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * {@link #getZenithOffsetDriver()}, {@link #getClockBiasDriver()}) are set to 0. This implies that as long as
+     * these values are not changed, the offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as
+     * some of these models are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
+     * </p>
+     *
+     * @param baseFrame     base frame associated with the station, without *any* parametric model (no station offset,
+     *                      no polar motion, no meridian shift)
+     * @param eopHistory    EOP history associated with Earth frames
+     * @param clock         new quadratic clock model with user-supplied displacements
+     * @param displacements ground station displacement model (tides, ocean loading, atmospheric loading, thermal
+     *                      effects...)
+     * @since 12.1
+     */
+    public GroundStation(final TopocentricFrame baseFrame, final EOPHistory eopHistory,
+                         final QuadraticClockModel clock, final StationDisplacement... displacements) {
+        super(baseFrame.getName(), clock);
         this.baseFrame = baseFrame;
 
         if (eopHistory == null) {
@@ -216,18 +246,6 @@ public class GroundStation {
 
         this.displacements = displacements.clone();
 
-        this.clockOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-clock",
-                                                     0.0, CLOCK_OFFSET_SCALE,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-
-        this.clockDriftDriver = new ParameterDriver(baseFrame.getName() + DRIFT_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-
-        this.clockAccelerationDriver = new ParameterDriver(baseFrame.getName() + ACCELERATION_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, POSITION_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -240,6 +258,23 @@ public class GroundStation {
                                                       0.0, POSITION_OFFSET_SCALE,
                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
+        // Add the ground station parameters to the master list.
+        addParameterDriver(this.eastOffsetDriver);
+        addParameterDriver(this.northOffsetDriver);
+        addParameterDriver(this.zenithOffsetDriver);
+        addParameterDriver(this.estimatedEarthFrameProvider.getPrimeMeridianOffsetDriver());
+        addParameterDriver(this.estimatedEarthFrameProvider.getPrimeMeridianDriftDriver());
+        addParameterDriver(this.estimatedEarthFrameProvider.getPolarOffsetXDriver());
+        addParameterDriver(this.estimatedEarthFrameProvider.getPolarDriftXDriver());
+        addParameterDriver(this.estimatedEarthFrameProvider.getPolarOffsetYDriver());
+        addParameterDriver(this.estimatedEarthFrameProvider.getPolarDriftYDriver());
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public final boolean isSpaceBased() {
+        return false;
     }
 
     /** Get the displacement models.
@@ -248,30 +283,6 @@ public class GroundStation {
      */
     public StationDisplacement[] getDisplacements() {
         return displacements.clone();
-    }
-
-    /** Get a driver allowing to change station clock (which is related to measurement date).
-     * @return driver for station clock offset
-     * @since 9.3
-     */
-    public ParameterDriver getClockOffsetDriver() {
-        return clockOffsetDriver;
-    }
-
-    /** Get a driver allowing to change station clock drift (which is related to measurement date).
-     * @return driver for station clock drift
-     * @since 10.3
-     */
-    public ParameterDriver getClockDriftDriver() {
-        return clockDriftDriver;
-    }
-
-    /** Get a driver allowing to change station clock acceleration (which is related to measurement date).
-     * @return driver for station clock acceleration
-     * @since 12.1
-     */
-    public ParameterDriver getClockAccelerationDriver() {
-        return clockAccelerationDriver;
     }
 
     /** Get a driver allowing to change station position along East axis.
@@ -467,143 +478,171 @@ public class GroundStation {
 
     }
 
-    /** Get the transform between offset frame and inertial frame.
-     * <p>
-     * The offset frame takes the <em>current</em> position offset,
-     * polar motion and the meridian shift into account. The frame
-     * returned is disconnected from later changes in the parameters.
-     * When the {@link ParameterDriver parameters} managing these
-     * offsets are changed, the method must be called again to retrieve
-     * a new offset frame.
-     * </p>
-     * @param inertial inertial frame to transform to
-     * @param date date of the transform
-     * @param clockOffsetAlreadyApplied if true, the specified {@code date} is as read
-     * by the ground station clock (i.e. clock offset <em>not</em> compensated), if false,
-     * the specified {@code date} was already compensated and is a physical absolute date
-     * @return transform between offset frame and inertial frame, at <em>real</em> measurement
-     * date (i.e. with clock, Earth and station offsets applied)
+    /**
+     * Get the transform provider associated with the station.
+     * @param frame target frame for the transform provider
+     * @return transform provider
+     * @since 14.0
      */
-    public Transform getOffsetToInertial(final Frame inertial,
-                                         final AbsoluteDate date, final boolean clockOffsetAlreadyApplied) {
+    public TransformProvider getTransformProvider(final Frame frame) {
+        return new GroundStationTransformProvider(frame, baseFrame, eastOffsetDriver, northOffsetDriver,
+                zenithOffsetDriver, estimatedEarthFrameProvider, arguments, displacements);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public final PVCoordinatesProvider getPVCoordinatesProvider() {
+        return new PVCoordinatesProvider() {
+            @Override
+            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
+                final TransformProvider transformProvider = getTransformProvider(frame);
+                return transformProvider.getTransform(date)
+                        .transformPVCoordinates(new TimeStampedPVCoordinates(date, PVCoordinates.ZERO));
+            }
+
+            @Override
+            public Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
+                final TransformProvider transformProvider = getTransformProvider(frame);
+                return transformProvider.getKinematicTransform(date).transformOnlyPV(PVCoordinates.ZERO).getVelocity();
+            }
+
+            @Override
+            public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+                final TransformProvider transformProvider = getTransformProvider(frame);
+                return transformProvider.getStaticTransform(date).transformPosition(Vector3D.ZERO);
+            }
+        };
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldPVCoordinatesProvider<Gradient> getFieldPVCoordinatesProvider(final int freeParameters,
+                                                                              final Map<String, Integer> parameterIndices) {
+        return new FieldPVCoordinatesProvider<Gradient>() {
+            @Override
+            public TimeStampedFieldPVCoordinates<Gradient> getPVCoordinates(final FieldAbsoluteDate<Gradient> date,
+                                                                            final Frame frame) {
+                // take Earth offsets into account
+                final FieldTransform<Gradient> intermediateToBody = estimatedEarthFrameProvider.getTransform(date,
+                        freeParameters, parameterIndices).getInverse();
+
+                // take station offsets into account
+                final FieldVector3D<Gradient> origin = getOrigin(date, parameterIndices);
+
+                // Earth-fixed Earth-centered to target (with linear approximation for performance)
+                final Transform bodyToInertNonField = baseFrame.getParent().getTransformTo(frame, date.toAbsoluteDate());
+                final FieldTransform<Gradient> bodyToInert = new FieldTransform<>(date.getField(),
+                        bodyToInertNonField).shiftedBy(date.durationFrom(date.toAbsoluteDate()));
+
+                final TimeStampedFieldPVCoordinates<Gradient> zeroPV = new TimeStampedFieldPVCoordinates<>(date,
+                        new FieldPVCoordinates<>(origin, FieldVector3D.getZero(date.getField())));
+                return new FieldTransform<>(date, intermediateToBody, bodyToInert).transformPVCoordinates(zeroPV);
+            }
+
+            @Override
+            public FieldVector3D<Gradient> getPosition(final FieldAbsoluteDate<Gradient> date, final Frame frame) {
+                // take Earth offsets into account
+                final FieldRotation<Gradient> bodyToIntermediateRotation = estimatedEarthFrameProvider.getStaticTransform(date,
+                        freeParameters, parameterIndices).getRotation();
+
+                // take station offsets into account
+                final FieldVector3D<Gradient> origin = getOrigin(date, parameterIndices);
+
+                // Earth-fixed Earth-centered to target (with linear approximation for performance)
+                final KinematicTransform bodyToInertNonField = baseFrame.getParent().getKinematicTransformTo(frame,
+                        date.toAbsoluteDate());
+                final FieldStaticTransform<Gradient> bodyToInert = shiftKinematicTransform(bodyToInertNonField,
+                        date.durationFrom(date.toAbsoluteDate()));
+
+                // combine by hand for performance reasons
+                final FieldRotation<Gradient> rotation = bodyToIntermediateRotation.composeInverse(bodyToInert.getRotation(),
+                        RotationConvention.FRAME_TRANSFORM);
+                return rotation.applyTo(bodyToInert.getTranslation().add(origin));
+            }
+        };
+    }
+
+    /**
+     * Shift a kinematic transform by a Gradient time into a FieldStaticTransform<Gradient>.
+     * @param kinematicTransform kinematic transform to shift
+     * @param dt time to shift by
+     * @return Field static transform shifted by dt
+     * @since 14.0
+     */
+    private FieldStaticTransform<Gradient> shiftKinematicTransform(final KinematicTransform kinematicTransform,
+                                                                   final Gradient dt) {
+        // shift translation
+        final Field<Gradient> field = dt.getField();
+        final AbsoluteDate date = kinematicTransform.getDate();
+        final FieldVector3D<Gradient> fieldVelocity = new FieldVector3D<>(field, kinematicTransform.getVelocity());
+        final FieldVector3D<Gradient> shiftedTranslation = fieldVelocity.scalarMultiply(dt).add(kinematicTransform.getTranslation());
+        // shift rotation
+        final FieldAngularCoordinates<Gradient> fieldAngularCoordinates = new FieldAngularCoordinates<>(field,
+                new AngularCoordinates(kinematicTransform.getRotation(), kinematicTransform.getRotationRate()));
+        final FieldVector3D<Gradient> rotationRate = fieldAngularCoordinates.getRotationRate();
+        final Gradient rate = rotationRate.getNorm();
+        final FieldRotation<Gradient> shiftedRotation = (rate.getReal() == 0.0) ?
+                fieldAngularCoordinates.getRotation() :
+                new FieldRotation<>(rotationRate, rate.multiply(dt), RotationConvention.FRAME_TRANSFORM)
+                .compose(fieldAngularCoordinates.getRotation(), RotationConvention.VECTOR_OPERATOR);
+        return FieldStaticTransform.of(new FieldAbsoluteDate<>(field, date).shiftedBy(dt), shiftedTranslation,
+                shiftedRotation);
+    }
+
+    /**
+     * Retrieve station's position in body shape frame.
+     * @param date date
+     * @param indices mapping from parameters' name to derivatives' index.
+     * @return origin position
+     */
+    private FieldVector3D<Gradient> getOrigin(final FieldAbsoluteDate<Gradient> date,
+                                              final Map<String, Integer> indices) {
+        // compute position in topocentric frame
+        final int freeParameters = date.getField().getZero().getFreeParameters();
+        final AbsoluteDate absoluteDate = date.toAbsoluteDate();
+        final Gradient x          = eastOffsetDriver.getValue(freeParameters, indices, absoluteDate);
+        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices, absoluteDate);
+        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices, absoluteDate);
+        final FieldVector3D<Gradient> position = new FieldVector3D<>(x, y, z);
+        // approximate linearly (for performance) static transform from topocentric to body shape frame
+        final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
+        final KinematicTransform kinematicTopoToBody = baseFrame.getKinematicTransformTo(bodyFrame, absoluteDate);
+        final FieldStaticTransform<Gradient> staticTopoToBody = shiftKinematicTransform(kinematicTopoToBody,
+                date.durationFrom(absoluteDate));
+        // apply transform and displacement
+        final FieldVector3D<Gradient>        originBeforeDisplacement     = staticTopoToBody.transformPosition(position);
+        return originBeforeDisplacement.add(computeDisplacement(absoluteDate, originBeforeDisplacement.toVector3D()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate date, final boolean clockOffsetAlreadyApplied) {
 
         // take clock offset into account
         final AbsoluteDate offsetCompensatedDate = clockOffsetAlreadyApplied ?
                                                    date :
-                                                   new AbsoluteDate(date, -clockOffsetDriver.getValue());
+                                                   new AbsoluteDate(date, -getOffsetValue(date));
 
-        // take Earth offsets into account
-        final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(offsetCompensatedDate).getInverse();
-
-        // take station offsets into account
-        final double    x          = eastOffsetDriver.getValue();
-        final double    y          = northOffsetDriver.getValue();
-        final double    z          = zenithOffsetDriver.getValue();
-        final BodyShape baseShape  = baseFrame.getParentShape();
-        final StaticTransform baseToBody = baseFrame
-                .getStaticTransformTo(baseShape.getBodyFrame(), offsetCompensatedDate);
-        Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
-        origin = origin.add(computeDisplacement(offsetCompensatedDate, origin));
-
-        final GeodeticPoint originGP = baseShape.transform(origin, baseShape.getBodyFrame(), offsetCompensatedDate);
-        final Transform offsetToIntermediate =
-                        new Transform(offsetCompensatedDate,
-                                      new Transform(offsetCompensatedDate,
-                                                    new Rotation(Vector3D.PLUS_I, Vector3D.PLUS_K,
-                                                                 originGP.getEast(), originGP.getZenith()),
-                                                    Vector3D.ZERO),
-                                      new Transform(offsetCompensatedDate, origin));
-
-        // combine all transforms together
-        final Transform bodyToInert        = baseFrame.getParent().getTransformTo(inertial, offsetCompensatedDate);
-
-        return new Transform(offsetCompensatedDate, offsetToIntermediate, new Transform(offsetCompensatedDate, intermediateToBody, bodyToInert));
-
+        final TransformProvider transformProvider = getTransformProvider(inertial);
+        return transformProvider.getTransform(offsetCompensatedDate);
     }
 
-    /** Get the transform between offset frame and inertial frame with derivatives.
-     * <p>
-     * As the East and North vectors are not well defined at pole, the derivatives
-     * of these two vectors diverge to infinity as we get closer to the pole.
-     * So this method should not be used for stations less than 0.0001 degree from
-     * either poles.
-     * </p>
-     * @param inertial inertial frame to transform to
-     * @param clockDate date of the transform as read by the ground station clock (i.e. clock offset <em>not</em> compensated)
-     * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations, must be driver
-     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
-     * @return transform between offset frame and inertial frame, at <em>real</em> measurement
-     * date (i.e. with clock, Earth and station offsets applied)
-     * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, int, Map)
-     * @since 10.2
-     */
-    public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
-                                                        final AbsoluteDate clockDate,
-                                                        final int freeParameters,
-                                                        final Map<String, Integer> indices) {
-        // take clock offset into account
-        final Gradient offset = clockOffsetDriver.getValue(freeParameters, indices, clockDate);
-        final FieldAbsoluteDate<Gradient> offsetCompensatedDate =
-                        new FieldAbsoluteDate<>(clockDate, offset.negate());
-
-        return getOffsetToInertial(inertial, offsetCompensatedDate, freeParameters, indices);
-    }
-
-    /** Get the transform between offset frame and inertial frame with derivatives.
-     * <p>
-     * As the East and North vectors are not well defined at pole, the derivatives
-     * of these two vectors diverge to infinity as we get closer to the pole.
-     * So this method should not be used for stations less than 0.0001 degree from
-     * either poles.
-     * </p>
-     * @param inertial inertial frame to transform to
-     * @param offsetCompensatedDate date of the transform, clock offset and its derivatives already compensated
-     * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations, must be driver
-     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
-     * @return transform between offset frame and inertial frame, at specified date
-     * @since 10.2
-     */
+    /** {@inheritDoc} */
+    @Override
     public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
                                                         final FieldAbsoluteDate<Gradient> offsetCompensatedDate,
                                                         final int freeParameters,
                                                         final Map<String, Integer> indices) {
-
-        final Field<Gradient>         field = offsetCompensatedDate.getField();
-        final FieldVector3D<Gradient> zero  = FieldVector3D.getZero(field);
-        final FieldVector3D<Gradient> plusI = FieldVector3D.getPlusI(field);
-        final FieldVector3D<Gradient> plusK = FieldVector3D.getPlusK(field);
-
         // take Earth offsets into account
         final FieldTransform<Gradient> intermediateToBody =
-                        estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
+                estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
 
         // take station offsets into account
-        final Gradient                       x          = eastOffsetDriver.getValue(freeParameters, indices);
-        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices);
-        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices);
-        final BodyShape                      baseShape  = baseFrame.getParentShape();
-        final FieldStaticTransform<Gradient> baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), offsetCompensatedDate);
+        final FieldVector3D<Gradient> origin = getOrigin(offsetCompensatedDate, indices);
 
-        FieldVector3D<Gradient> origin = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
-        origin = origin.add(computeDisplacement(offsetCompensatedDate.toAbsoluteDate(), origin.toVector3D()));
-        final FieldGeodeticPoint<Gradient> originGP = baseShape.transform(origin, baseShape.getBodyFrame(), offsetCompensatedDate);
-        final FieldTransform<Gradient> offsetToIntermediate =
-                        new FieldTransform<>(offsetCompensatedDate,
-                                             new FieldTransform<>(offsetCompensatedDate,
-                                                                  new FieldRotation<>(plusI, plusK,
-                                                                                      originGP.getEast(), originGP.getZenith()),
-                                                                  zero),
-                                             new FieldTransform<>(offsetCompensatedDate, origin));
-
-        // combine all transforms together
-        final FieldTransform<Gradient> bodyToInert = baseFrame.getParent().getTransformTo(inertial, offsetCompensatedDate);
-
-        return new FieldTransform<>(offsetCompensatedDate,
-                                    offsetToIntermediate,
-                                    new FieldTransform<>(offsetCompensatedDate, intermediateToBody, bodyToInert));
-
+        final GroundStationTransformProvider transformProvider = new GroundStationTransformProvider(inertial, baseFrame,
+                eastOffsetDriver, northOffsetDriver, zenithOffsetDriver, estimatedEarthFrameProvider, arguments, displacements);
+        return transformProvider.getTransform(offsetCompensatedDate, origin, intermediateToBody);
     }
 
 }

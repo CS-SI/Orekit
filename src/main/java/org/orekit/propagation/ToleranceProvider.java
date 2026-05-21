@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,40 +91,6 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
     }
 
     /**
-     * Build a provider using a single value for absolute and respective tolerance respectively.
-     * @param absoluteTolerance absolute tolerance value to be used
-     * @param relativeTolerance relative tolerance value to be used
-     * @return tolerance provider
-     */
-    static ToleranceProvider of(final double absoluteTolerance, final double relativeTolerance) {
-
-        return new ToleranceProvider() {
-            @Override
-            public double[][] getTolerances(final Orbit referenceOrbit, final OrbitType propagationOrbitType,
-                                            final PositionAngleType positionAngleType) {
-                return getTolerances();
-            }
-
-            @Override
-            public double[][] getTolerances(final Vector3D position, final Vector3D velocity) {
-                return getTolerances();
-            }
-
-            /**
-             * Retrieve constant absolute and respective tolerances.
-             * @return tolerances
-             */
-            double[][] getTolerances() {
-                final double[] absTol = new double[7];
-                Arrays.fill(absTol, absoluteTolerance);
-                final double[] relTol = new double[absTol.length];
-                Arrays.fill(relTol, relativeTolerance);
-                return new double[][] { absTol, relTol };
-            }
-        };
-    }
-
-    /**
      * Build a provider based on a tolerance provider for Cartesian coordinates.
      * <p> Orbits Jacobian matrices are used to get consistent errors on orbital parameters.
      *
@@ -208,7 +174,7 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
                 Arrays.fill(cartAbsTol, 0, 3, dP);
                 // estimate the scalar velocity error
                 final PVCoordinates pv = referenceOrbit.getPVCoordinates();
-                final double r2 = pv.getPosition().getNormSq();
+                final double r2 = pv.getPosition().getNorm2Sq();
                 final double v  = pv.getVelocity().getNorm();
                 final double dV = referenceOrbit.getMu() * dP / (v * r2);
                 Arrays.fill(cartAbsTol, 3, 6, dV);

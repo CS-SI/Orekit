@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,18 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolver;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.orekit.utils.Constants;
 
 public abstract class MeasurementCreator implements OrekitFixedStepHandler {
 
@@ -35,8 +41,42 @@ public abstract class MeasurementCreator implements OrekitFixedStepHandler {
         return measurements;
     }
 
+    @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
         measurements.clear();
+    }
+
+    protected double solveDownlinkDelay(final Observer observer, final SpacecraftState currentState, final Vector3D meanPosition) {
+                
+        final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
+        final AbsoluteDate date = currentState.getDate();
+        final Frame frame = currentState.getFrame();
+        final Vector3D position = currentState.getPosition();
+
+        final double delay  = solver.solve(1000, x -> {
+                final Transform t = observer.getOffsetToInertial(frame, date.shiftedBy(x), true);
+                final double d = Vector3D.distance(position, t.transformPosition(meanPosition));
+                return d - x * Constants.SPEED_OF_LIGHT;
+            }, -1.0, 1.0);
+
+        return delay;
+    }
+
+
+    protected double solveUplinkDelay(final Observer observer, final SpacecraftState currentState, final Vector3D meanPosition) {
+                
+        final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
+        final AbsoluteDate date = currentState.getDate();
+        final Frame frame = currentState.getFrame();
+        final Vector3D position = currentState.getPosition();
+
+        final double delay  = solver.solve(1000, x -> {
+                final Transform t = observer.getOffsetToInertial(frame, date.shiftedBy(-x), true);
+                final double d = Vector3D.distance(position, t.transformPosition(meanPosition));
+                return d - x * Constants.SPEED_OF_LIGHT;
+            }, -1.0, 1.0);
+
+        return delay;
     }
 
     protected void addMeasurement(final ObservedMeasurement<?> measurement) {

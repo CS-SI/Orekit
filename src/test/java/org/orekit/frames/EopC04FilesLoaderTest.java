@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,21 +32,21 @@ import java.util.TreeSet;
 public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
-    public void testMissingMonths() {
+    void testMissingMonths() {
         setRoot("missing-months");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
         Assertions.assertTrue(getMaxGap(history) > 5);
     }
 
     @Test
-    public void testStartDate() {
+    void testStartDate() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2003, 1, 1, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
@@ -54,11 +54,11 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testEndDate() {
+    void testEndDate() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2005, 12, 31, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
@@ -66,11 +66,11 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testContent() {
+    void testContent() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                             data, true);
@@ -84,11 +84,11 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testMixedItrf() {
+    void testMixedItrf() {
         setRoot("eopc04");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                             data, true);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,9 @@
  *
  * This independent package provides classes to handle epochs, time scales,
  * and to compare instants together.
+ *
+ * <img src="doc-files/time-class-diagram.png" alt="class diagram">
+ *
  *
  * <p>
  * The principal class is {@link org.orekit.time.AbsoluteDate}

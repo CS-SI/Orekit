@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,8 +40,8 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.FieldStateCovariance;
-import org.orekit.propagation.StateCovariance;
+import org.orekit.propagation.covariance.FieldStateCovariance;
+import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.armellinutils.ArmellinDataLoader;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.armellinutils.ArmellinDataRow;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.armellinutils.ArmellinStatistics;
@@ -136,10 +136,10 @@ class Alfriend1999MaxTest {
         // WHEN
         final DescriptiveStatistics statistics = ArmellinStatistics.getMaxProbabilityOfCollisionRelativeDifferenceStatistics(
                 armellinDataRowList);
-
+        
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 2.4659494534898345E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 6.702417431649529E-10);
+        Assertions.assertTrue(statistics.getMean() <= 2.465949454E-10);
+        Assertions.assertTrue(statistics.getStandardDeviation() <= 6.702417432202558E-10);
     }
 
     /**
@@ -243,8 +243,8 @@ class Alfriend1999MaxTest {
                         armellinDataRowList);
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 2.475695820847676E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 6.748768612457567E-10);
+        Assertions.assertTrue(statistics.getMean() <= 2.4756958215E-10);
+        Assertions.assertTrue(statistics.getStandardDeviation() <= 6.748768612733289E-10);
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ public class CdmRelativeMetadata {
     private TimeSystem timeSystem;
 
     /** Comment. */
-    private List<String> comment;
+    private final List<String> comment;
 
     /** Date and time in UTC of the closest approach. */
     private AbsoluteDate tca;
@@ -737,7 +737,7 @@ public class CdmRelativeMetadata {
      * @param collisionPercentile the collisionPercentile to set
      */
     public void setCollisionPercentile(final int[] collisionPercentile) {
-        this.collisionPercentile = collisionPercentile == null ? null : collisionPercentile.clone();;
+        this.collisionPercentile = collisionPercentile == null ? null : collisionPercentile.clone();
     }
 
     /** Get the ID of previous CDM issued for event identified by CONJUNCTION_ID.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,8 +29,8 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeInterpolator;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -217,7 +217,7 @@ public class Transform implements TimeShiftable<Transform>, KinematicTransform {
     public Transform(final AbsoluteDate date, final Rotation rotation, final Vector3D rotationRate) {
         this(date,
              PVCoordinates.ZERO,
-             new AngularCoordinates(rotation, rotationRate, Vector3D.ZERO));
+             new AngularCoordinates(rotation, rotationRate));
     }
 
     /** Build a rotation transform.
@@ -406,7 +406,7 @@ public class Transform implements TimeShiftable<Transform>, KinematicTransform {
         final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<>(sample.size());
         for (final Transform t : sample) {
             datedPV.add(new TimeStampedPVCoordinates(t.getDate(), t.getTranslation(), t.getVelocity(), t.getAcceleration()));
-            datedAC.add(new TimeStampedAngularCoordinates(t.getDate(), t.getRotation(), t.getRotationRate(), t.getRotationAcceleration()));
+            datedAC.add(new TimeStampedAngularCoordinates(t.getDate(), t.getAngular()));
         }
 
         // Create interpolators
@@ -459,8 +459,8 @@ public class Transform implements TimeShiftable<Transform>, KinematicTransform {
      */
     public Transform freeze() {
         return new Transform(date,
-                             new PVCoordinates(cartesian.getPosition(), Vector3D.ZERO, Vector3D.ZERO),
-                             new AngularCoordinates(angular.getRotation(), Vector3D.ZERO, Vector3D.ZERO));
+                             new PVCoordinates(cartesian.getPosition()),
+                             new AngularCoordinates(angular.getRotation()));
     }
 
     /** Transform {@link PVCoordinates} including kinematic effects.

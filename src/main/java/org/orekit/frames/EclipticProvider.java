@@ -51,7 +51,7 @@ public class EclipticProvider implements TransformProvider {
     private final IERSConventions conventions;
 
     /** the obliquity of the ecliptic, in radians as a function of time. */
-    private final transient TimeScalarFunction obliquity;
+    private final TimeScalarFunction obliquity;
 
     /**
      * Create a transform provider from MOD to an ecliptically aligned frame.

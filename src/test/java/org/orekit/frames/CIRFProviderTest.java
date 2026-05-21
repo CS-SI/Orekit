@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.util.ArrayList;
+
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,12 +31,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
 
-import java.util.ArrayList;
-
-public class CIRFProviderTest {
+class CIRFProviderTest {
 
     @Test
-    public void testRotationRate() {
+    void testRotationRate() {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         TransformProvider provider =
                 new InterpolatingTransformProvider(new CIRFProvider(eopHistory),
@@ -50,7 +50,7 @@ public class CIRFProviderTest {
     }
 
     @Test
-    public void testShiftingAccuracyWithEOP() {
+    void testShiftingAccuracyWithEOP() {
 
         // max shift error observed on a 2 months period with 60 seconds step
         // the shifting step after the interpolation step induces that mainly the
@@ -75,9 +75,9 @@ public class CIRFProviderTest {
         //        12                         86400s / 24 = 1h00    3.42e-12 rad
         //        12                         86400s / 48 = 0h30    1.68e-12 rad
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
-        TransformProvider nonShitfing = new CIRFProvider(eopHistory);
+        TransformProvider nonShifting = new CIRFProvider(eopHistory);
         final TransformProvider shifting =
-                new ShiftingTransformProvider(nonShitfing,
+                new ShiftingTransformProvider(nonShifting,
                                               CartesianDerivativesFilter.USE_PVA,
                                               AngularDerivativesFilter.USE_R,
                                               6, Constants.JULIAN_DAY / 24,
@@ -91,8 +91,8 @@ public class CIRFProviderTest {
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
             final Transform transform =
                     new Transform(date,
-                                  shifting.getTransform(date),
-                                  nonShitfing.getTransform(date).getInverse());
+                            shifting.getTransform(date),
+                            nonShifting.getTransform(date).getInverse());
             final double error = transform.getRotation().getAngle();
             maxError = FastMath.max(maxError, error);
         }
@@ -101,7 +101,7 @@ public class CIRFProviderTest {
     }
 
     @Test
-    public void testShiftingAccuracyWithoutEOP() {
+    void testShiftingAccuracyWithoutEOP() {
 
         // max shift error observed on a 2 months period with 60 seconds step
         // the shifting step after the interpolation step induces that only the
@@ -125,7 +125,7 @@ public class CIRFProviderTest {
         //        12                         86400s / 24 = 1h00    1.25e-13 rad
         //        12                         86400s / 48 = 0h30    1.56e-14 rad
         EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
-                                               new ArrayList<EOPEntry>(), true);
+                new ArrayList<>(), true);
         TransformProvider nonShifting = new CIRFProvider(eopHistory);
         final TransformProvider shifting =
                 new ShiftingTransformProvider(nonShifting,
@@ -152,7 +152,7 @@ public class CIRFProviderTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 

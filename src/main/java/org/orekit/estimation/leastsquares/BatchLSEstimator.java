@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,7 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.ParameterValidator;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
+import org.orekit.estimation.ParameterEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationsProvider;
@@ -56,7 +57,6 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 
 
@@ -71,7 +71,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class BatchLSEstimator {
+public class BatchLSEstimator implements ParameterEstimator {
 
     /** Builders for propagator. */
     private final PropagatorBuilder[] builders;
@@ -200,58 +200,9 @@ public class BatchLSEstimator {
         lsBuilder.maxEvaluations(maxEvaluations);
     }
 
-    /** Get the orbital parameters supported by this estimator.
-     * <p>
-     * If there are more than one propagator builder, then the names
-     * of the drivers have an index marker in square brackets appended
-     * to them in order to distinguish the various orbits. So for example
-     * with one builder generating Keplerian orbits the names would be
-     * simply "a", "e", "i"... but if there are several builders the
-     * names would be "a[0]", "e[0]", "i[0]"..."a[1]", "e[1]", "i[1]"...
-     * </p>
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return orbital parameters supported by this estimator
-     */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (int i = 0; i < builders.length; ++i) {
-            final String suffix = builders.length > 1 ? "[" + i + "]" : null;
-            for (final DelegatingDriver delegating : builders[i].getOrbitalParametersDrivers().getDrivers()) {
-                if (delegating.isSelected() || !estimatedOnly) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        if (suffix != null && !driver.getName().endsWith(suffix)) {
-                            // we add suffix only conditionally because the method may already have been called
-                            // and suffixes may have already been appended
-                            driver.setName(driver.getName() + suffix);
-                        }
-                        estimated.add(driver);
-                    }
-                }
-            }
-        }
-        return estimated;
-
-    }
-
-    /** Get the propagator parameters supported by this estimator.
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return propagator parameters supported by this estimator
-     */
-    public ParameterDriversList getPropagatorParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (PropagatorBuilder builder : builders) {
-            for (final DelegatingDriver delegating : builder.getPropagationParametersDrivers().getDrivers()) {
-                if (delegating.isSelected() || !estimatedOnly) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        estimated.add(driver);
-                    }
-                }
-            }
-        }
-        return estimated;
-
+    @Override
+    public PropagatorBuilder[] getPropagatorBuilders() {
+        return builders.clone();
     }
 
     /** Get the measurements parameters supported by this estimator (including measurements and modifiers).
@@ -331,7 +282,7 @@ public class BatchLSEstimator {
     /** Estimate the orbital, propagation and measurements parameters.
      * <p>
      * The initial guess for all parameters must have been set before calling this method
-     * using {@link #getOrbitalParametersDrivers(boolean)}, {@link #getPropagatorParametersDrivers(boolean)},
+     * using {@link #getOrbitalParametersDrivers(boolean)}, {@link #getPropagationParametersDrivers(boolean)} (boolean)},
      * and {@link #getMeasurementsParametersDrivers(boolean)} and then {@link ParameterDriver#setValue(double)
      * setting the values} of the parameters.
      * </p>
@@ -345,7 +296,7 @@ public class BatchLSEstimator {
      * </p>
      * <p>
      * After this method returns, the estimated parameters can be retrieved using
-     * {@link #getOrbitalParametersDrivers(boolean)}, {@link #getPropagatorParametersDrivers(boolean)},
+     * {@link #getOrbitalParametersDrivers(boolean)}, {@link #getPropagationParametersDrivers(boolean)} (boolean)},
      * and {@link #getMeasurementsParametersDrivers(boolean)} and then {@link ParameterDriver#getValue()
      * getting the values} of the parameters.
      * </p>
@@ -369,7 +320,7 @@ public class BatchLSEstimator {
                 driver.setReferenceDate(builders[0].getInitialOrbitDate());
             }
         }
-        for (final ParameterDriver driver : getPropagatorParametersDrivers(false).getDrivers()) {
+        for (final ParameterDriver driver : getPropagationParametersDrivers(false).getDrivers()) {
             if (driver.getReferenceDate() == null) {
                 driver.setReferenceDate(builders[0].getInitialOrbitDate());
             }
@@ -382,7 +333,7 @@ public class BatchLSEstimator {
 
         // get all estimated parameters
         final ParameterDriversList estimatedOrbitalParameters      = getOrbitalParametersDrivers(true);
-        final ParameterDriversList estimatedPropagatorParameters   = getPropagatorParametersDrivers(true);
+        final ParameterDriversList estimatedPropagatorParameters   = getPropagationParametersDrivers(true);
         final ParameterDriversList estimatedMeasurementsParameters = getMeasurementsParametersDrivers(true);
 
         // create start point
@@ -390,31 +341,9 @@ public class BatchLSEstimator {
                                           estimatedPropagatorParameters.getNbValuesToEstimate() +
                                           estimatedMeasurementsParameters.getNbValuesToEstimate()];
 
-        int iStart = 0;
-        for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
-            Span<Double> span = driver.getValueSpanMap().getFirstSpan();
-            start[iStart++] = driver.getNormalizedValue(span.getStart());
-            for (int spanNumber = 0; spanNumber < driver.getNbOfValues() - 1; ++spanNumber) {
-                span = driver.getValueSpanMap().getSpan(span.getEnd());
-                start[iStart++] = driver.getNormalizedValue(span.getStart());
-            }
-        }
-        for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
-            Span<Double> span = driver.getValueSpanMap().getFirstSpan();
-            start[iStart++] = driver.getNormalizedValue(span.getStart());
-            for (int spanNumber = 0; spanNumber < driver.getNbOfValues() - 1; ++spanNumber) {
-                span = driver.getValueSpanMap().getSpan(span.getEnd());
-                start[iStart++] = driver.getNormalizedValue(span.getStart());
-            }
-        }
-        for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            Span<Double> span = driver.getValueSpanMap().getFirstSpan();
-            start[iStart++] = driver.getNormalizedValue(span.getStart());
-            for (int spanNumber = 0; spanNumber < driver.getNbOfValues() - 1; ++spanNumber) {
-                span = driver.getValueSpanMap().getSpan(span.getEnd());
-                start[iStart++] = driver.getNormalizedValue(span.getStart());
-            }
-        }
+        int iStart = fillStartArray(start, estimatedOrbitalParameters, 0);
+        iStart = fillStartArray(start, estimatedPropagatorParameters, iStart);
+        fillStartArray(start, estimatedMeasurementsParameters, iStart);
         lsBuilder.start(start);
 
         // create target (which is an array set to 0, as we compute weighted residuals ourselves)
@@ -428,14 +357,9 @@ public class BatchLSEstimator {
         lsBuilder.target(target);
 
         // set up the model
-        final ModelObserver modelObserver = new ModelObserver() {
-            /** {@inheritDoc} */
-            @Override
-            public void modelCalled(final Orbit[] newOrbits,
-                                    final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEstimations) {
-                BatchLSEstimator.this.orbits      = newOrbits;
-                BatchLSEstimator.this.estimations = newEstimations;
-            }
+        final ModelObserver modelObserver = (newOrbits,  newEstimations) -> {
+            BatchLSEstimator.this.orbits      = newOrbits;
+            BatchLSEstimator.this.estimations = newEstimations;
         };
         final AbstractBatchLSModel model = builders[0].buildLeastSquaresModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
 
@@ -472,6 +396,27 @@ public class BatchLSEstimator {
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
         }
+    }
+
+    /**
+     * Method filling start array.
+     * @param start array
+     * @param parameterDriversList parameter drivers
+     * @param iStart array index where to start
+     * @return index where filling stopped
+     * @since 14.0
+     */
+    private int fillStartArray(final double[] start, final ParameterDriversList parameterDriversList, final int iStart) {
+        int i = iStart;
+        for (final ParameterDriver driver : parameterDriversList.getDrivers()) {
+            Span<Double> span = driver.getValueSpanMap().getFirstSpan();
+            start[i++] = driver.getNormalizedValue(span.getStart());
+            for (int spanNumber = 0; spanNumber < driver.getNbOfValues() - 1; ++spanNumber) {
+                span = driver.getValueSpanMap().getSpan(span.getEnd());
+                start[i++] = driver.getNormalizedValue(span.getStart());
+            }
+        }
+        return i;
     }
 
     /** Get the last estimations performed.
@@ -528,7 +473,7 @@ public class BatchLSEstimator {
                 scale[index++] = driver.getScale();
             }
         }
-        for (final ParameterDriver driver : getPropagatorParametersDrivers(true).getDrivers()) {
+        for (final ParameterDriver driver : getPropagationParametersDrivers(true).getDrivers()) {
             for (int i = 0; i < driver.getNbOfValues(); ++i) {
                 scale[index++] = driver.getScale();
             }
@@ -712,104 +657,64 @@ public class BatchLSEstimator {
 
     }
 
-    /** Validator for estimated parameters. */
-    private static class Validator implements ParameterValidator {
+    /**
+     * Validator for estimated parameters.
+     *
+     * @param estimatedOrbitalParameters      Estimated orbital parameters.
+     * @param estimatedPropagatorParameters   Estimated propagator parameters.
+     * @param estimatedMeasurementsParameters Estimated measurements parameters.
+     */
+    private record Validator(ParameterDriversList estimatedOrbitalParameters,
+                             ParameterDriversList estimatedPropagatorParameters,
+                             ParameterDriversList estimatedMeasurementsParameters) implements ParameterValidator {
 
-        /** Estimated orbital parameters. */
-        private final ParameterDriversList estimatedOrbitalParameters;
-
-        /** Estimated propagator parameters. */
-        private final ParameterDriversList estimatedPropagatorParameters;
-
-        /** Estimated measurements parameters. */
-        private final ParameterDriversList estimatedMeasurementsParameters;
-
-        /** Simple constructor.
-         * @param estimatedOrbitalParameters estimated orbital parameters
-         * @param estimatedPropagatorParameters estimated propagator parameters
-         * @param estimatedMeasurementsParameters estimated measurements parameters
+        /**
+         * {@inheritDoc}
          */
-        Validator(final ParameterDriversList estimatedOrbitalParameters,
-                  final ParameterDriversList estimatedPropagatorParameters,
-                  final ParameterDriversList estimatedMeasurementsParameters) {
-            this.estimatedOrbitalParameters      = estimatedOrbitalParameters;
-            this.estimatedPropagatorParameters   = estimatedPropagatorParameters;
-            this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
-        }
-
-        /** {@inheritDoc} */
         @Override
         public RealVector validate(final RealVector params) {
-
-            int i = 0;
-            for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
-                // let the parameter handle min/max clipping
-                if (driver.getNbOfValues() == 1) {
-                    driver.setNormalizedValue(params.getEntry(i), null);
-                    params.setEntry(i++, driver.getNormalizedValue(null));
-
-                // If the parameter driver contains only 1 value to estimate over the all time range
-                } else {
-                    // initialization getting the value of the first Span
-                    Span<Double> span = driver.getValueSpanMap().getFirstSpan();
-                    driver.setNormalizedValue(params.getEntry(i), span.getStart());
-                    params.setEntry(i++, driver.getNormalizedValue(span.getStart()));
-
-                    for (int spanNumber = 0; spanNumber < driver.getNbOfValues() - 1; ++spanNumber) {
-                        final AbsoluteDate modificationDate = span.getEnd();
-                        // get next span, previousSpan.getEnd = span.getStart
-                        span = driver.getValueSpanMap().getSpan(modificationDate);
-                        driver.setNormalizedValue(params.getEntry(i), modificationDate);
-                        params.setEntry(i++, driver.getNormalizedValue(modificationDate));
-                    }
-                }
-
-            }
-            for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
-                // let the parameter handle min/max clipping
-                if (driver.getNbOfValues() == 1) {
-                    driver.setNormalizedValue(params.getEntry(i), null);
-                    params.setEntry(i++, driver.getNormalizedValue(null));
-
-                // If the parameter driver contains only 1 value to estimate over the all time range
-                } else {
-                    // initialization getting the value of the first Span
-                    Span<Double> span = driver.getValueSpanMap().getFirstSpan();
-                    driver.setNormalizedValue(params.getEntry(i), span.getStart());
-                    params.setEntry(i++, driver.getNormalizedValue(span.getStart()));
-
-                    for (int spanNumber = 0; spanNumber < driver.getNbOfValues() - 1; ++spanNumber) {
-                        final AbsoluteDate modificationDate = span.getEnd();
-                        // get next span, previousSpan.getEnd = span.getStart
-                        span = driver.getValueSpanMap().getSpan(modificationDate);
-                        driver.setNormalizedValue(params.getEntry(i), modificationDate);
-                        params.setEntry(i++, driver.getNormalizedValue(modificationDate));
-                    }
-                }
-            }
-            for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-                // let the parameter handle min/max clipping
-                if (driver.getNbOfValues() == 1) {
-                    driver.setNormalizedValue(params.getEntry(i), null);
-                    params.setEntry(i++, driver.getNormalizedValue(null));
-
-                // If the parameter driver contains only 1 value to estimate over the all time range
-                } else {
-                    // initialization getting the value of the first Span
-                    Span<Double> span = driver.getValueSpanMap().getFirstSpan();
-                    driver.setNormalizedValue(params.getEntry(i), span.getStart());
-                    params.setEntry(i++, driver.getNormalizedValue(span.getStart()));
-
-                    for (int spanNumber = 0; spanNumber < driver.getNbOfValues() - 1; ++spanNumber) {
-                        final AbsoluteDate modificationDate = span.getEnd();
-                        // get next span, previousSpan.getEnd = span.getStart
-                        span = driver.getValueSpanMap().getSpan(modificationDate);
-                        driver.setNormalizedValue(params.getEntry(i), modificationDate);
-                        params.setEntry(i++, driver.getNormalizedValue(modificationDate));
-                    }
-                }
-            }
+            int i = updateParameterValuesAndDrivers(params, estimatedOrbitalParameters, 0);
+            i = updateParameterValuesAndDrivers(params, estimatedPropagatorParameters, i);
+            updateParameterValuesAndDrivers(params, estimatedMeasurementsParameters, i);
             return params;
+        }
+
+        /**
+         * Method updating the parameters' drivers and values, whilst keeping track of their index.
+         *
+         * @param params               parameters value
+         * @param parameterDriversList drivers
+         * @param startIndex           index of first component to consider
+         * @return index of last considered component
+         * @since 14.0
+         */
+        private static int updateParameterValuesAndDrivers(final RealVector params,
+                                                           final ParameterDriversList parameterDriversList,
+                                                           final int startIndex) {
+            int i = startIndex;
+            for (final ParameterDriver driver : parameterDriversList.getDrivers()) {
+                // let the parameter handle min/max clipping
+                if (driver.getNbOfValues() == 1) {
+                    driver.setNormalizedValue(params.getEntry(i), null);
+                    params.setEntry(i++, driver.getNormalizedValue(null));
+
+                    // If the parameter driver contains only 1 value to estimate over the all time range
+                } else {
+                    // initialization getting the value of the first Span
+                    Span<Double> span = driver.getValueSpanMap().getFirstSpan();
+                    driver.setNormalizedValue(params.getEntry(i), span.getStart());
+                    params.setEntry(i++, driver.getNormalizedValue(span.getStart()));
+
+                    for (int spanNumber = 0; spanNumber < driver.getNbOfValues() - 1; ++spanNumber) {
+                        final AbsoluteDate modificationDate = span.getEnd();
+                        // get next span, previousSpan.getEnd = span.getStart
+                        span = driver.getValueSpanMap().getSpan(modificationDate);
+                        driver.setNormalizedValue(params.getEntry(i), modificationDate);
+                        params.setEntry(i++, driver.getNormalizedValue(modificationDate));
+                    }
+                }
+            }
+            return i;
         }
     }
 

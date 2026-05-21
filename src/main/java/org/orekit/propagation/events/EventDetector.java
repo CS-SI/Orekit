@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
@@ -64,6 +66,61 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface EventDetector {
 
+    /**
+     * Builds instance from event function only. Uses default handler and detection settings.
+     * @param eventFunction event function
+     * @return event detector
+     * @since 14.0
+     */
+    static EventDetector of(final EventFunction eventFunction) {
+        return of(eventFunction, new ContinueOnEvent());
+    }
+
+    /**
+     * Builds instance from event function and handler. Uses default detection settings.
+     * @param eventFunction event function
+     * @param eventHandler handler
+     * @return event detector
+     * @since 14.0
+     */
+    static EventDetector of(final EventFunction eventFunction, final EventHandler eventHandler) {
+        return of(eventFunction, eventHandler, EventDetectionSettings.getDefaultEventDetectionSettings());
+    }
+
+    /**
+     * Builds instance from event function, handler and detection settings.
+     * @param eventFunction event function
+     * @param eventHandler handler
+     * @param eventDetectionSettings detection settings
+     * @return event detector
+     * @since 14.0
+     */
+    static EventDetector of(final EventFunction eventFunction, final EventHandler eventHandler,
+                            final EventDetectionSettings eventDetectionSettings) {
+        return new EventDetector() {
+
+            @Override
+            public double g(final SpacecraftState s) {
+                return eventFunction.value(s);
+            }
+
+            @Override
+            public EventFunction getEventFunction() {
+                return eventFunction;
+            }
+
+            @Override
+            public EventDetectionSettings getDetectionSettings() {
+                return eventDetectionSettings;
+            }
+
+            @Override
+            public EventHandler getHandler() {
+                return eventHandler;
+            }
+        };
+    }
+
     /** Initialize event detector at the start of a propagation.
      * <p>
      * This method is called once at the start of the propagation. It
@@ -93,16 +150,6 @@ public interface EventDetector {
         // nothing by default
     }
 
-    /**
-     * Method returning true if and only if the detection function g does not depend on dependent variables,
-     * just the independent one i.e. time. This information is used for performance in propagation.
-     * @return flag
-     * @since 13.1
-     */
-    default boolean dependsOnTimeOnly() {
-        return false;
-    }
-
     /** Compute the value of the switching function.
      * This function must be continuous (at least in its roots neighborhood),
      * as the integrator will need to find its roots to locate the events.
@@ -110,6 +157,15 @@ public interface EventDetector {
      * @return value of the switching function
      */
     double g(SpacecraftState s);
+
+    /**
+     * Get the event function. It defines g both for double and Field.
+     * @return event function
+     * @since 14.0
+     */
+    default EventFunction getEventFunction() {
+        return this::g;
+    }
 
     /** Get the convergence threshold in the event time search.
      * @return convergence threshold (s)

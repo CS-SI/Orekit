@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,10 +66,10 @@ public class FundamentalNutationArguments {
     private final TimeScale timeScale;
 
     /** Function computing Greenwich Mean Sidereal Time. */
-    private final transient TimeScalarFunction gmstFunction;
+    private final TimeScalarFunction gmstFunction;
 
     /** Function computing Greenwich Mean Sidereal Time rate. */
-    private final transient TimeScalarFunction gmstRateFunction;
+    private final TimeScalarFunction gmstRateFunction;
 
     // luni-solar Delaunay arguments
 
@@ -118,7 +118,7 @@ public class FundamentalNutationArguments {
     private final double[] paCoefficients;
 
     /** Set of time scales to use in computations. */
-    private final transient TimeScales timeScales;
+    private final TimeScales timeScales;
 
     /** Build a model of fundamental arguments from an IERS table file.
      *
@@ -566,7 +566,7 @@ public class FundamentalNutationArguments {
         private final Pattern pattern;
 
         /** Parser for polynomials. */
-        private PolynomialParser polynomialParser;
+        private final PolynomialParser polynomialParser;
 
         /** Last parsed fundamental name. */
         private FundamentalName parsedName;

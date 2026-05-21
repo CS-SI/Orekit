@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,18 +18,16 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.List;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.definitions.BodyFacade;
-import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
@@ -132,25 +130,6 @@ public class CdmMetadata extends Metadata {
 
     /** Reference frame in which the alternate covariance data are given. */
     private FrameFacade altCovRefFrame;
-
-    /** Simple constructor.
-     * @deprecated in favor of {@link #CdmMetadata(DataContext, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    @DefaultDataContext
-    public CdmMetadata() {
-        this(DataContext.getDefault());
-    }
-
-    /** Simple constructor.
-     *
-     * @param dataContext data context
-     * @deprecated in favor of {@link #CdmMetadata(DataContext, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public CdmMetadata(final DataContext dataContext) {
-        this(dataContext, new OrekitCcsdsFrameMapper());
-    }
 
     /** Simple constructor.
      *

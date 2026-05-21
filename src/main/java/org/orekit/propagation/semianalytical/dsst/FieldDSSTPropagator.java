@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,12 +43,10 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.conversion.osc2mean.DSSTTheory;
 import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
 import org.orekit.propagation.conversion.osc2mean.MeanTheory;
@@ -59,13 +57,12 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
-import org.orekit.propagation.semianalytical.dsst.utilities.FieldFixedNumberInterpolationGrid;
-import org.orekit.propagation.semianalytical.dsst.utilities.FieldInterpolationGrid;
-import org.orekit.propagation.semianalytical.dsst.utilities.FieldMaxGapInterpolationGrid;
+import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpolationGrid;
+import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
+import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldDataDictionary;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
@@ -158,9 +155,6 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** Flag specifying whether the initial orbital state is given with osculating elements. */
     private boolean initialIsOsculating;
 
-    /** Field used by this class.*/
-    private final Field<T> field;
-
     /** Force models used to compute short periodic terms. */
     private final List<DSSTForceModel> forceModels;
 
@@ -168,51 +162,48 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     private FieldMeanPlusShortPeriodicMapper mapper;
 
     /** Generator for the interpolation grid. */
-    private FieldInterpolationGrid<T> interpolationgrid;
+    private InterpolationGrid interpolationgrid;
 
-    /** Create a new instance of DSSTPropagator.
-     *  <p>
-     *  After creation, there are no perturbing forces at all.
-     *  This means that if {@link #addForceModel addForceModel}
-     *  is not called after creation, the integrated orbit will
-     *  follow a Keplerian evolution only.
-     *  </p>
+    /**
+     * Create a new instance of DSSTPropagator.
+     * <p>
+     * After creation, there are no perturbing forces at all.
+     * This means that if {@link #addForceModel addForceModel}
+     * is not called after creation, the integrated orbit will
+     * follow a Keplerian evolution only.
+     * </p>
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
-     *  @param field field used by default
-     *  @param integrator numerical integrator to use for propagation.
-     *  @param propagationType type of orbit to output (mean or osculating).
-     * @see #FieldDSSTPropagator(Field, FieldODEIntegrator, PropagationType,
-     * AttitudeProvider)
+     * @param integrator      numerical integrator to use for propagation.
+     * @param propagationType type of orbit to output (mean or osculating).
+     * @see #FieldDSSTPropagator(FieldODEIntegrator, PropagationType, AttitudeProvider)
      */
     @DefaultDataContext
-    public FieldDSSTPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator, final PropagationType propagationType) {
-        this(field, integrator, propagationType,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    public FieldDSSTPropagator(final FieldODEIntegrator<T> integrator, final PropagationType propagationType) {
+        this(integrator, propagationType, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
     }
 
-    /** Create a new instance of DSSTPropagator.
-     *  <p>
-     *  After creation, there are no perturbing forces at all.
-     *  This means that if {@link #addForceModel addForceModel}
-     *  is not called after creation, the integrated orbit will
-     *  follow a Keplerian evolution only.
-     *  </p>
-     * @param field field used by default
-     *  @param integrator numerical integrator to use for propagation.
-     * @param propagationType type of orbit to output (mean or osculating).
+    /**
+     * Create a new instance of DSSTPropagator.
+     * <p>
+     * After creation, there are no perturbing forces at all.
+     * This means that if {@link #addForceModel addForceModel}
+     * is not called after creation, the integrated orbit will
+     * follow a Keplerian evolution only.
+     * </p>
+     *
+     * @param integrator       numerical integrator to use for propagation.
+     * @param propagationType  type of orbit to output (mean or osculating).
      * @param attitudeProvider attitude law to use.
      * @since 10.1
      */
-    public FieldDSSTPropagator(final Field<T> field,
-                               final FieldODEIntegrator<T> integrator,
+    public FieldDSSTPropagator(final FieldODEIntegrator<T> integrator,
                                final PropagationType propagationType,
                                final AttitudeProvider attitudeProvider) {
-        super(field, integrator, propagationType);
-        this.field  = field;
+        super(integrator.getCurrentSignedStepsize().getField(), integrator, propagationType);
         forceModels = new ArrayList<>();
-        initMapper(field);
+        initMapper(getField());
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngleType.MEAN);
@@ -258,7 +249,6 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
                                final FieldODEIntegrator<T> integrator,
                                final AttitudeProvider attitudeProvider) {
         super(field, integrator, PropagationType.MEAN);
-        this.field  = field;
         forceModels = new ArrayList<>();
         initMapper(field);
         // DSST uses only equinoctial orbits and mean longitude argument
@@ -386,7 +376,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @since 7.1
      */
     public void setInterpolationGridToFixedNumberOfPoints(final int interpolationPoints) {
-        interpolationgrid = new FieldFixedNumberInterpolationGrid<>(field, interpolationPoints);
+        interpolationgrid = new FixedNumberInterpolationGrid(interpolationPoints);
     }
 
     /** Set the interpolation grid generator.
@@ -404,7 +394,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @since 7.1
      */
     public void setInterpolationGridToMaxTimeGap(final T maxGap) {
-        interpolationgrid = new FieldMaxGapInterpolationGrid<>(field, maxGap);
+        interpolationgrid = new MaxGapInterpolationGrid(maxGap.getReal());
     }
 
     /** Add a force model to the global perturbation model.
@@ -423,18 +413,18 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
             try {
                 // ensure we are notified of any mu change
-                force.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
+                force.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().newInstance(driver.getValue()));
+                        superSetMu(getField().getZero().newInstance(driver.getValue()));
                     }
                     /** {@inheritDoc} */
                     @Override
                     public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().newInstance(driver.getValue()));
+                        superSetMu(getField().getZero().newInstance(driver.getValue()));
                     }
                 });
             } catch (OrekitException oe) {
@@ -528,7 +518,6 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param <T> type of the elements
      * @return osculating state in a DSST sense
      */
-    @SuppressWarnings("unchecked")
     public static <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> computeOsculatingState(final FieldSpacecraftState<T> mean,
                                                                                                      final AttitudeProvider attitudeProvider,
                                                                                                      final Collection<DSSTForceModel> forces) {
@@ -681,7 +670,6 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param initialState initial state
      * @param tEnd target date at which state should be propagated
      */
-    @SuppressWarnings("unchecked")
     @Override
     protected void beforeIntegration(final FieldSpacecraftState<T> initialState,
                                      final FieldAbsoluteDate<T> tEnd) {
@@ -695,7 +683,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         // initialize all perturbing forces
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(field, initialState.getDate())));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(getField(), initialState.getDate())));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -704,7 +692,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             final FieldShortPeriodicsHandler spHandler = new FieldShortPeriodicsHandler(forceModels);
             // Compute short periodic coefficients for this point
             for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(field), initialState);
+                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(getField()), initialState);
 
             }
             final Collection<FieldODEStepHandler<T>> stepHandlers = new ArrayList<>();
@@ -963,11 +951,11 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
          * @param integrator numerical integrator to use for propagation.
          */
         Main(final FieldODEIntegrator<T> integrator) {
-            yDot = MathArrays.buildArray(field, 7);
+            yDot = MathArrays.buildArray(getField(), 7);
 
             // Setup event detectors from attitude provider and each force model
-            getAttitudeProvider().getFieldEventDetectors(field).forEach(eventDetector -> setUpEventDetector(integrator, eventDetector));
-            forceModels.forEach(dsstForceModel -> dsstForceModel.getFieldEventDetectors(field).
+            getAttitudeProvider().getFieldEventDetectors(getField()).forEach(eventDetector -> setUpEventDetector(integrator, eventDetector));
+            forceModels.forEach(dsstForceModel -> dsstForceModel.getFieldEventDetectors(getField()).
                                 forEach(eventDetector -> setUpEventDetector(integrator, eventDetector)));
         }
 
@@ -989,7 +977,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
             // compute the contributions of all perturbing forces
             for (final DSSTForceModel forceModel : forceModels) {
-                final T[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParametersAllValues(field));
+                final T[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParametersAllValues(getField()));
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] = yDot[i].add(daidt[i]);
                 }
@@ -1015,72 +1003,6 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
     }
 
-    /** Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
-     *  <p>
-     *  The errors are estimated from partial derivatives properties of orbits,
-     *  starting from a scalar position error specified by the user.
-     *  Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
-     *  we get at constant energy (i.e. on a Keplerian trajectory):
-     *
-     *  <pre>
-     *  V r² |dV| = mu |dr|
-     *  </pre>
-     *
-     *  <p> So we deduce a scalar velocity error consistent with the position error. From here, we apply
-     *  orbits Jacobians matrices to get consistent errors on orbital parameters.
-     *
-     *  <p>
-     *  The tolerances are only <em>orders of magnitude</em>, and integrator tolerances are only
-     *  local estimates, not global ones. So some care must be taken when using these tolerances.
-     *  Setting 1mm as a position error does NOT mean the tolerances will guarantee a 1mm error
-     *  position after several orbits integration.
-     *  </p>
-     * @param <T> elements type
-     * @param dP user specified position error (m)
-     * @param orbit reference orbit
-     * @return a two rows array, row 0 being the absolute tolerance error
-     *                       and row 1 being the relative tolerance error
-     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit) {
-        // estimate the scalar velocity error
-        final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
-        final T r2 = pv.getPosition().getNormSq();
-        final T v  = pv.getVelocity().getNorm();
-        final T dV = orbit.getMu().multiply(dP).divide(v.multiply(r2));
-
-        return tolerances(dP, dV, orbit);
-    }
-
-    /** Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
-     *  <p>
-     *  The errors are estimated from partial derivatives properties of orbits,
-     *  starting from scalar position and velocity errors specified by the user.
-     *  <p>
-     *  The tolerances are only <em>orders of magnitude</em>, and integrator tolerances are only
-     *  local estimates, not global ones. So some care must be taken when using these tolerances.
-     *  Setting 1mm as a position error does NOT mean the tolerances will guarantee a 1mm error
-     *  position after several orbits integration.
-     *  </p>
-     *
-     * @param <T> elements type
-     * @param dP user specified position error (m)
-     * @param dV user specified velocity error (m/s)
-     * @param orbit reference orbit
-     * @return a two rows array, row 0 being the absolute tolerance error
-     *                       and row 1 being the relative tolerance error
-     * @since 10.3
-     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
-                                                                            final FieldOrbit<T> orbit) {
-        return ToleranceProvider.of(CartesianToleranceProvider.of(dP.getReal(), dV.getReal(),
-                        CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))
-                .getTolerances(orbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN);
-    }
-
     /** Step handler used to compute the parameters for the short periodic contributions.
      * @author Lucian Barbulescu
      */
@@ -1097,8 +1019,8 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         }
 
         /** {@inheritDoc} */
-        @SuppressWarnings("unchecked")
         @Override
+        @SuppressWarnings("unchecked")
         public void updateOnStep(final FieldODEStateInterpolator<T> interpolator) {
 
             // Get the grid points to compute
@@ -1121,7 +1043,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
             // Compute short periodic coefficients for this step
             for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(field), meanStates);
+                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(getField()), meanStates);
             }
 
         }

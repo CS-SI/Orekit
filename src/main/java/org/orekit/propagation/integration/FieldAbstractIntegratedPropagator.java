@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1009,10 +1009,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
          * @return Orekit state
          */
         private FieldSpacecraftState<T> convertToOrekitForEventFunction(final FieldODEStateAndDerivative<T> s) {
-            if (!this.detector.dependsOnTimeOnly()) {
+            if (!this.detector.getEventFunction().dependsOnMainVariablesOnly()) {
                 return convertToOrekit(s);
             } else {
-                // event function only needs time
+                // event function does not require secondary states or attitude rates
                 stateMapper.setAttitudeProvider(getFrozenAttitudeProvider());
                 final FieldSpacecraftState<T> converted = convertToOrekitWithoutAdditional(s);
                 stateMapper.setAttitudeProvider(getAttitudeProvider());
@@ -1321,7 +1321,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
      * when leaving the block, so the integrator only keep its own handlers
-     * between calls to {@link FieldAbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate).
+     * between calls to {@link FieldAbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate)}.
      * </p>
      * @param <T> the type of the field elements
      * @since 11.0

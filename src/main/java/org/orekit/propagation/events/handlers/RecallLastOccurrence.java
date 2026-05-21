@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.orekit.time.AbsoluteDate;
  * @see RecordAndContinue
  * @since 12.1
  */
-public class RecallLastOccurrence implements EventHandler {
+public class RecallLastOccurrence implements EventHandlerModifier {
 
     /** Wrapped event handler. */
     private final EventHandler wrappedHandler;
@@ -51,6 +51,11 @@ public class RecallLastOccurrence implements EventHandler {
         return lastOccurrence;
     }
 
+    @Override
+    public EventHandler getOriginalHandler() {
+        return wrappedHandler;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
@@ -66,15 +71,4 @@ public class RecallLastOccurrence implements EventHandler {
         return wrappedHandler.eventOccurred(s, detector, increasing);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
-        return wrappedHandler.resetState(detector, oldState);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void finish(final SpacecraftState finalState, final EventDetector detector) {
-        wrappedHandler.finish(finalState, detector);
-    }
 }

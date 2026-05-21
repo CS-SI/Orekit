@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -288,6 +288,9 @@ public enum OrekitMessages implements Localizable {
     /** NO_DATA_LOADED_FOR_CELESTIAL_BODY. */
     NO_DATA_LOADED_FOR_CELESTIAL_BODY("no data loaded for celestial body {0}"),
 
+    /** UNKNOWN_CELESTIAL_BODY. */
+    UNKNOWN_CELESTIAL_BODY("unknown celestial body: {0}"),
+
     /** NOT_A_JPL_EPHEMERIDES_BINARY_FILE. */
     NOT_A_JPL_EPHEMERIDES_BINARY_FILE("file {0} is not a JPL ephemerides binary file"),
 
@@ -520,9 +523,6 @@ public enum OrekitMessages implements Localizable {
     /** STK_UNEXPECTED_END_OF_FILE. */
     STK_UNEXPECTED_END_OF_FILE("unexpected end of STK file (after line {0})"),
 
-    /** CLOCK_FILE_UNSUPPORTED_VERSION. */
-    CLOCK_FILE_UNSUPPORTED_VERSION("unsupported clock file version {0}"),
-
     /** UNSUPPORTED_FILE_FORMAT_VERSION. */
     UNSUPPORTED_FILE_FORMAT_VERSION("version {0} from file {1} is not supported, supported version: {2}"),
 
@@ -558,6 +558,9 @@ public enum OrekitMessages implements Localizable {
 
     /** UNABLE_TO_GENERATE_NEW_DATA_AFTER. */
     UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after"),
+
+    /** UNABLE_TO_COMPUTE_ELLIPTIC_ECCENTRIC_ANOMALY. */
+    UNABLE_TO_COMPUTE_ELLIPTIC_ECCENTRIC_ANOMALY("unable to compute elliptic eccentric anomaly from the mean anomaly after {0} iterations"),
 
     /** UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY. */
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
@@ -919,6 +922,9 @@ public enum OrekitMessages implements Localizable {
     /** DATES_MISMATCH. */
     DATES_MISMATCH("first date {0} does not match second date {1}"),
 
+    /** WRONG OBSERVER TYPE. */
+    WRONG_OBSERVER_TYPE("not a valid Observer type for this calculation"),
+
     /** WRONG ELEMENTS FOR AVERAGING THEORY. */
     WRONG_ELEMENTS_FOR_AVERAGING_THEORY("unexpected type of orbital elements for required averaging theory"),
 
@@ -992,7 +998,142 @@ public enum OrekitMessages implements Localizable {
     LINE_NEVER_CROSSES_ALTITUDE("line never crosses altitude {0}"),
 
     /** BODY_SHAPE_MUST_BE_A_ONE_AXIS_ELLIPSOID. */
-    BODY_SHAPE_MUST_BE_A_ONE_AXIS_ELLIPSOID("body shape must be a one-axis ellipsoid");
+    BODY_SHAPE_MUST_BE_A_ONE_AXIS_ELLIPSOID("body shape must be a one-axis ellipsoid"),
+
+    /** MISSING_TIME_SYSTEM_DEFINITION. */
+    MISSING_TIME_SYSTEM_DEFINITION("missing time system definition in file {0}"),
+
+    /** WRONG_STATIONS_NUMBER. */
+    WRONG_STATIONS_NUMBER("wrong stations numbers in file {0}, expected {1}, got {2}"),
+
+    /** WRONG_SATELLITES_NUMBER. */
+    WRONG_SATELLITES_NUMBER("wrong satellites numbers in file {0}, expected {1}, got {2}"),
+
+    /** INVALID_FORMAT. */
+    INVALID_FORMAT("invalid format: width = {0}, precision = {1}"),
+
+    /** OUTPUT_ALREADY_CLOSED. */
+    OUTPUT_ALREADY_CLOSED("output {0} has already been closed"),
+
+    /** LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE. */
+    LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE("Householder solver failed to converge after {0} iterations"),
+
+    /** LAMBERT_CORRECTION_DID_NOT_CONVERGE. */
+    LAMBERT_CORRECTION_DID_NOT_CONVERGE("correction of perturbed Lambert solution failed to converge after {0} iterations"),
+
+    /** LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS. */
+    LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS("invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight"),
+
+    /** NUMBER_OF_FACETS_NOT_ODD. */
+    NUMBER_OF_FACETS_NOT_ODD("invalid number of facets: {0}, it must be an odd number"),
+
+    /** INVALID_DAF_FTPSTR. */
+    INVALID_DAF_FTPSTR("Invalid DAF FTP string found in DAF file {0}"),
+
+    /** INCOMPLETE_DAF_COMMENT_RECORD. */
+    INCOMPLETE_DAF_COMMENT_RECORD("Incomplete DAF comment record found"),
+
+    /** INCOMPLETE_DAF_SUMMARY_RECORD. */
+    INCOMPLETE_DAF_SUMMARY_RECORD("Incomplete DAF summary record found"),
+
+    /** INCOMPLETE_DAF_SUMMARY_RECORD. */
+    INVALID_DAF_ENDIANNESS("DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}"),
+
+    /** INVALID_DAF_FILETYPE_STRING. */
+    INVALID_DAF_FILETYPE_STRING("DAF file type string must be of the format DAF/XXXX, got {0}"),
+
+    /** INCOMPLETE_DAF_SUMMARY_RECORD. */
+    INCOMPLETE_DAF_NAME_RECORD("Incomplete DAF name record found"),
+
+    /** NULL_DAF. */
+    NULL_DAF("DAF object cannot be null"),
+
+    /** TWOBODY_ZERO_INITIAL_DISTANCE. */
+    TWOBODY_ZERO_INITIAL_DISTANCE("Initial position for two-body propagator is zero"),
+
+    /** TWOBODY_ZERO_INITIAL_VELOCITY. */
+    TWOBODY_ZERO_INITIAL_VELOCITY("Initial velocity for two-body propagator is zero"),
+
+    /** TWOBODY_RECTILINEAR_MOTION. */
+    TWOBODY_RECTILINEAR_MOTION("Rectilinear motion detected in two-body propagator"),
+
+    /** TWOBODY_UNSTABLE_PROPAGATION. */
+    TWOBODY_UNSTABLE_PROPAGATION("Two-body propagation numerically unstable"),
+
+    /** NEGATIVE_GM. */
+    NEGATIVE_GM("GM value cannot be negative"),
+
+    /** STUMPFF_NEGATIVE_ORDER. */
+    STUMPFF_NEGATIVE_ORDER("Stumpff function order cannot be negative"),
+
+    /** NEGATIVE_SEMILATUS_RECTUM. */
+    NEGATIVE_SEMILATUS_RECTUM("Semilatus rectum cannot be negative"),
+
+    /** NEGATIVE_ECCENTRICITY. */
+    NEGATIVE_ECCENTRICITY("Eccentricity cannot be negative"),
+
+    /** NEGATIVE_CENTRAL_BODY_RADIUS. */
+    NEGATIVE_CENTRAL_BODY_RADIUS("Central body radius cannot be negative"),
+
+    /** ZERO_NORM_TRAJECTORY_POLE_VECTOR. */
+    ZERO_NORM_TRAJECTORY_POLE_VECTOR("Norm of trajectory pole vector is zero"),
+
+    /** ZERO_NORM_PERIAPSIS_VECTOR. */
+    ZERO_NORM_PERIAPSIS_VECTOR("Norm of periapsis vector is zero"),
+
+    /** ZERO_NORM_CENTRAL_BODY_POLE_VECTOR. */
+    ZERO_NORM_CENTRAL_BODY_POLE_VECTOR("Norm of central body pole vector is zero"),
+
+    /** NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS. */
+    NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS("Trajectory pole and periapsis vectors are not orthogonal"),
+
+    /** NEGATIVE_SEMIMAJOR_AXIS. */
+    NEGATIVE_SEMIMAJOR_AXIS("Semimajor axis cannot be negative"),
+
+    /** UNKNOWN_SPK_TYPE. */
+    UNKNOWN_SPK_TYPE("Unknown SPK segment type {0}"),
+
+    /** UNKNOWN_SPK_SUBTYPE. */
+    UNKNOWN_SPK_SUBTYPE("Unknown SPK subtype code found for SPK segment of type {0}"),
+
+    /** SPK_UNEXPECTED_NUMBER_METADATA. */
+    SPK_UNEXPECTED_NUMBER_METADATA("Unexpected number of metadata items in type {0} SPK segment"),
+
+    /** SPK_UNEXPECTED_NUMBER_CONSTANTS. */
+    SPK_UNEXPECTED_NUMBER_CONSTANTS("Unexpected number of constants in type {0} SPK segment"),
+
+    /** SPK_UNEXPECTED_DATA_PACKET_SIZE. */
+    SPK_UNEXPECTED_DATA_PACKET_SIZE("Unexpected data packet size in type {0} SPK segment"),
+
+    /** SPK_TARGET_DATE_OUTSIDE_INTERVAL. */
+    SPK_TARGET_DATE_OUTSIDE_INTERVAL("Target date {0} is outside the interval covered by the SPK segment"),
+
+    /** SPK_INTERPOLATION_SEGMENT_TOO_SHORT. */
+    SPK_INTERPOLATION_SEGMENT_TOO_SHORT("SPK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)"),
+
+    /** UNKNOWN_PCK_TYPE. */
+    UNKNOWN_PCK_TYPE("Unknown PCK segment type {0}"),
+
+    /** PCK_UNEXPECTED_NUMBER_METADATA. */
+    PCK_UNEXPECTED_NUMBER_METADATA("Unexpected number of metadata items in type {0} PCK segment"),
+
+    /** PCK_UNEXPECTED_NUMBER_CONSTANTS. */
+    PCK_UNEXPECTED_NUMBER_CONSTANTS("Unexpected number of constants in type {0} PCK segment"),
+
+    /** PCK_UNEXPECTED_DATA_PACKET_SIZE. */
+    PCK_UNEXPECTED_DATA_PACKET_SIZE("Unexpected data packet size in type {0} PCK segment"),
+
+    /** PCK_TARGET_DATE_OUTSIDE_INTERVAL. */
+    PCK_TARGET_DATE_OUTSIDE_INTERVAL("Target date {0} is outside the interval covered by the PCK segment"),
+
+    /** PCK_INTERPOLATION_SEGMENT_TOO_SHORT. */
+    PCK_INTERPOLATION_SEGMENT_TOO_SHORT("PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)"),
+
+    /** DAF_INSUFFICIENT_COMMENT_RECORDS. */
+    DAF_INSUFFICIENT_COMMENT_RECORDS("Comments require {0} records but DAF file record specifies only {1} reserved records"),
+
+    /** DAF_TOO_LONG_FILEDESCRIPTION_STRING. */
+    DAF_TOO_LONG_FILEDESCRIPTION_STRING("File description string is {0} characters long but should be at most 60 characters");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";
@@ -1018,5 +1159,4 @@ public enum OrekitMessages implements Localizable {
     public String getLocalizedString(final Locale locale) {
         return getLocalizedString(RESOURCE_BASE_NAME, name(), locale);
     }
-
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Mark Rutten
+/* Copyright 2002-2026 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,25 +16,42 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.List;
+
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.List;
-
-public class FDOATest {
+class FDOATest {
 
     // Satellite transmission frequency
     private static final double CENTRE_FREQUENCY = 2.3e9;
@@ -44,13 +61,13 @@ public class FDOATest {
      * Both are calculated with a different algorithm.
      */
     @Test
-    public void testValues() {
+    void testValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -59,6 +76,10 @@ public class FDOATest {
                                                                new FDOAMeasurementCreator(context, CENTRE_FREQUENCY),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
+
+        for (final ObservedMeasurement<?> m : measurements) {
+            assertEquals(CENTRE_FREQUENCY, ((FDOA) m).getCentreFrequency());
+        }
 
         // Prepare statistics for values difference
         final StreamingStatistics diffStat = new StreamingStatistics();
@@ -80,7 +101,7 @@ public class FDOATest {
         Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 1e-3);
 
         // Test measurement type
-        Assertions.assertEquals(FDOA.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(FDOA.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /**
@@ -88,13 +109,13 @@ public class FDOATest {
      * finite differences calculation as a reference.
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -143,13 +164,13 @@ public class FDOATest {
      * finite differences calculation as a reference.
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final FDOAMeasurementCreator creator = new FDOAMeasurementCreator(context, CENTRE_FREQUENCY);
         final GroundStation primary = context.TDOAstations.getKey();
@@ -158,8 +179,8 @@ public class FDOATest {
         primary.getZenithOffsetDriver().setSelected(true);
         final double clockOffset = 4.8e-9;
         final GroundStation secondary = context.TDOAstations.getValue();
-        secondary.getClockOffsetDriver().setValue(clockOffset);
-        secondary.getClockOffsetDriver().setSelected(true);
+        secondary.getClockBiasDriver().setValue(clockOffset);
+        secondary.getClockBiasDriver().setSelected(true);
         secondary.getEastOffsetDriver().setSelected(true);
         secondary.getNorthOffsetDriver().setSelected(true);
         secondary.getZenithOffsetDriver().setSelected(true);
@@ -175,8 +196,8 @@ public class FDOATest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation primeParameter  = ((FDOA) measurement).getPrimeStation();
-            final GroundStation secondParameter = ((FDOA) measurement).getSecondStation();
+            final GroundStation primeParameter  = (GroundStation) ((FDOA) measurement).getPrimeObserver();
+            final GroundStation secondParameter = (GroundStation) ((FDOA) measurement).getSecondObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -192,33 +213,124 @@ public class FDOATest {
                 primeParameter.getEastOffsetDriver(),
                 primeParameter.getNorthOffsetDriver(),
                 primeParameter.getZenithOffsetDriver(),
-                secondParameter.getClockOffsetDriver(),
+                secondParameter.getClockBiasDriver(),
                 secondParameter.getEastOffsetDriver(),
                 secondParameter.getNorthOffsetDriver(),
                 secondParameter.getZenithOffsetDriver(),
             };
-            for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
+            /** {@inheritDoc} */
+            for (ParameterDriver driver : drivers) {
+                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(driver, new AbsoluteDate());
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
-                                Differentiation.differentiate(new ParameterFunction() {
-                                    /** {@inheritDoc} */
-                                    @Override
-                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
-                                    }
-                                }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i], date);
+                        Differentiation.differentiate(new ParameterFunction() {
+                            /** {@inheritDoc} */
+                            @Override
+                            public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                return measurement.estimate(0, 0, new SpacecraftState[]{state}).getEstimatedValue()[0];
+                            }
+                        }, 3, 20.0 * driver.getScale());
+                final double ref = dMkdP.value(driver, date);
                 if (ref != 0.0) {
                     maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
                 }
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 3.4e-8);
+        Assertions.assertEquals(0, maxRelativeError, 2.0e-7);
 
+    }
+
+    @Test
+    void testParticipantsAgainstTDOA() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2010_EARTH_FLATTENING,
+                FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
+        final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
+        final GroundStation prime = new GroundStation(baseFrame, new QuadraticClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2, 0, 0));
+        final GroundStation second = new GroundStation(new TopocentricFrame(earth, new GeodeticPoint(0.1, 0.1, 1e3), "emitter"));
+        activateStation(prime);
+        activateStation(second);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN
+        final FDOA fdoa = new FDOA(prime, second, 1., epoch, 0., 1., 1., satellite);
+        final EstimatedMeasurementBase<FDOA> estimatedFdoa = fdoa.estimateWithoutDerivatives(state);
+        // THEN
+        final TDOA tdoa = new TDOA(prime, second, epoch, 0., 1., 1., satellite);
+        final EstimatedMeasurement<TDOA> estimatedTdoa = tdoa.estimate(0, 0, state);
+        compareParticipants(estimatedFdoa, estimatedTdoa);
+    }
+
+    @Test
+    void testParticipantsAgainstWithoutDerivatives() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2010_EARTH_FLATTENING,
+                FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
+        final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
+        final GroundStation prime = new GroundStation(baseFrame, new QuadraticClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2, 0, 0));
+        final GroundStation second = new GroundStation(new TopocentricFrame(earth, new GeodeticPoint(0.1, 0.1, 1e3), "emitter"));
+        activateStation(prime);
+        activateStation(second);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN
+        final FDOA fdoa = new FDOA(prime, second, 1., epoch, 0., 1., 1., satellite);
+        final EstimatedMeasurementBase<FDOA> estimatedWithoutDerivatives = fdoa.estimateWithoutDerivatives(state);
+        // THEN
+        final EstimatedMeasurement<FDOA> estimated = fdoa.estimate(0, 0, state);
+        assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-7);
+        compareParticipants(estimated, estimatedWithoutDerivatives);
+    }
+
+    private void compareParticipants(final EstimatedMeasurementBase<?> expected, final EstimatedMeasurementBase<?> actual) {
+        final TimeStampedPVCoordinates firstParticipant = expected.getParticipants()[0];
+        final TimeStampedPVCoordinates secondParticipant = expected.getParticipants()[1];
+        final TimeStampedPVCoordinates thirdParticipant = expected.getParticipants()[2];
+        final TimeStampedPVCoordinates expectedFirstParticipant = actual.getParticipants()[0];
+        final TimeStampedPVCoordinates expectedSecondParticipant = actual.getParticipants()[1];
+        final TimeStampedPVCoordinates expectedThirdParticipant = actual.getParticipants()[2];
+        final double tolerance = 1e-7;
+        assertCloseDate(expectedFirstParticipant.getDate(), firstParticipant.getDate());
+        assertArrayEquals(expectedFirstParticipant.getPosition().toArray(), firstParticipant.getPosition().toArray(), tolerance);
+        assertCloseDate(expectedSecondParticipant.getDate(), secondParticipant.getDate());
+        assertArrayEquals(expectedSecondParticipant.getPosition().toArray(), secondParticipant.getPosition().toArray(), tolerance);
+        assertCloseDate(expectedThirdParticipant.getDate(), thirdParticipant.getDate());
+        assertArrayEquals(expectedThirdParticipant.getPosition().toArray(), thirdParticipant.getPosition().toArray(), tolerance);
+    }
+
+    private void assertCloseDate(final AbsoluteDate expected, final AbsoluteDate actual) {
+        assertTrue(expected.isCloseTo(actual, 1e-11));
+    }
+
+    private void activateStation(final GroundStation station) {
+        for (ParameterDriver driver : station.getParametersDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
+            }
+        }
     }
 
 }

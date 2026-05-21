@@ -33,10 +33,10 @@ import org.orekit.time.FieldAbsoluteDate;
 public class FieldOrekitStepNormalizer <T extends CalculusFieldElement<T>> implements FieldOrekitStepHandler<T> {
 
     /** Fixed time step. */
-    private T h;
+    private final T h;
 
     /** Underlying step handler. */
-    private FieldOrekitFixedStepHandler<T> handler;
+    private final FieldOrekitFixedStepHandler<T> handler;
 
     /** Last State vector. */
     private FieldSpacecraftState<T> lastState;

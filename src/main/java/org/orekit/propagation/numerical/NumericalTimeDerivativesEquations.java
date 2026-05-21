@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -136,7 +136,7 @@ class NumericalTimeDerivativesEquations implements TimeDerivativesEquations {
             if (mu > 0) {
                 // velocity derivative is Newtonian acceleration
                 final Vector3D position = currentState.getPosition();
-                final double r2         = position.getNormSq();
+                final double r2         = position.getNorm2Sq();
                 final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
                 yDot[3] += coeff * position.getX();
                 yDot[4] += coeff * position.getY();

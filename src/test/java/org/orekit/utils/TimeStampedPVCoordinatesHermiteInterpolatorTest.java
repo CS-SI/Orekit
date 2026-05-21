@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -157,7 +157,7 @@ class TimeStampedPVCoordinatesHermiteInterpolatorTest {
             List<TimeStampedPVCoordinates> sample = new ArrayList<>();
             for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
                 Vector3D position = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
-                sample.add(new TimeStampedPVCoordinates(t0.shiftedBy(dt), position, Vector3D.ZERO, Vector3D.ZERO));
+                sample.add(new TimeStampedPVCoordinates(t0.shiftedBy(dt), position, Vector3D.ZERO));
             }
 
             // create interpolator

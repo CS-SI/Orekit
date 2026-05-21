@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.function.Function;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -46,7 +45,6 @@ import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame.BaseEquipment;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -209,7 +207,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("JPL", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
         Assertions.assertEquals("MARS SPIRIT", segment.getMetadata().getObjectName());
@@ -328,7 +326,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
         Assertions.assertEquals("TRMM",       segment.getMetadata().getObjectName());
@@ -405,7 +403,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
         Assertions.assertEquals("TRMM",       segment.getMetadata().getObjectName());
@@ -471,7 +469,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
         Assertions.assertEquals("TRMM",       segment.getMetadata().getObjectName());
@@ -543,7 +541,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
         Assertions.assertEquals("TRMM",       segment.getMetadata().getObjectName());
@@ -615,10 +613,10 @@ public class APMParserTest {
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
         Assertions.assertEquals("A000001", file.getHeader().getMessageId());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
-        Assertions.assertEquals("SPINNING",   segment.getMetadata().getComments().get(0));
+        Assertions.assertEquals("SPINNING",   segment.getMetadata().getComments().getFirst());
         Assertions.assertEquals("MMS1",       segment.getMetadata().getObjectName());
         Assertions.assertEquals("2015-011A",  segment.getMetadata().getObjectID());
         Assertions.assertEquals(2015,         segment.getMetadata().getLaunchYear());
@@ -676,10 +674,10 @@ public class APMParserTest {
         Assertions.assertEquals("GSFC",    file.getHeader().getOriginator());
         Assertions.assertEquals("A000002", file.getHeader().getMessageId());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
-        Assertions.assertEquals("Rotation From Nadir", segment.getMetadata().getComments().get(0));
+        Assertions.assertEquals("Rotation From Nadir", segment.getMetadata().getComments().getFirst());
         Assertions.assertEquals("LRO",        segment.getMetadata().getObjectName());
         Assertions.assertEquals("2009-031A",  segment.getMetadata().getObjectID());
         Assertions.assertEquals(2009,         segment.getMetadata().getLaunchYear());
@@ -742,9 +740,9 @@ public class APMParserTest {
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
         Assertions.assertEquals("A000003", file.getHeader().getMessageId());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
-        Assertions.assertEquals("SPINNING",   segment.getMetadata().getComments().get(0));
+        Assertions.assertEquals("SPINNING",   segment.getMetadata().getComments().getFirst());
         Assertions.assertEquals("MMS1",       segment.getMetadata().getObjectName());
         Assertions.assertEquals("2015-011A",  segment.getMetadata().getObjectID());
         Assertions.assertEquals(2015,         segment.getMetadata().getLaunchYear());
@@ -831,7 +829,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("CS GROUP", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
         Assertions.assertEquals("DUMMY",      segment.getMetadata().getObjectName());
@@ -896,7 +894,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("CS GROUP", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
         Assertions.assertEquals("DUMMY",      segment.getMetadata().getObjectName());
@@ -961,7 +959,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("CS GROUP", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
         Assertions.assertEquals("DUMMY",      segment.getMetadata().getObjectName());
@@ -1025,7 +1023,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("CS GROUP", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().getFirst();
 
         // Check Metadata Block
         Assertions.assertEquals("DUMMY",      segment.getMetadata().getObjectName());
@@ -1512,18 +1510,4 @@ public class APMParserTest {
         MatcherAssert.assertThat(
                 mapper.buildCcsdsFrame(maneuverFrame, null), Matchers.sameInstance(scBodyFrame));
     }
-
-    /** Test deprecated constructor. Can be removed in 14.0. */
-    @Test
-    @Deprecated
-    public void testDeprecatedConstructor() {
-        // action
-        ApmParser actual = new ApmParser(
-                null, true, null, null, null, new Function[0]);
-
-        // verify
-        MatcherAssert.assertThat(actual.getFrameMapper(),
-                Matchers.is(new OrekitCcsdsFrameMapper()));
-    }
-
 }

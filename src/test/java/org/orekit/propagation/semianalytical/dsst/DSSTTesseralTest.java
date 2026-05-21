@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -138,7 +138,7 @@ public class DSSTTesseralTest {
         //Create the auxiliary object
         final AuxiliaryElements aux = new AuxiliaryElements(orbit, 1);
 
-        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
 
         force.registerAttitudeProvider(null);
 
@@ -298,7 +298,7 @@ public class DSSTTesseralTest {
                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
 
         // Initialize short period terms
-        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
         final AuxiliaryElements aux = new AuxiliaryElements(orbit, 1);
         shortPeriodTerms.addAll(dsstTesseral.initializeShortPeriodTerms(aux,
                                                                         PropagationType.OSCULATING,
@@ -396,7 +396,7 @@ public class DSSTTesseralTest {
     public void testGetMaxEccPow()
                     throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final UnnormalizedSphericalHarmonicsProvider provider =
-                        GravityFieldFactory.getUnnormalizedProvider(4, 4);;
+                        GravityFieldFactory.getUnnormalizedProvider(4, 4);
                         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
                         final DSSTTesseral force = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
                         Method getMaxEccPow = DSSTTesseral.class.getDeclaredMethod("getMaxEccPow", Double.TYPE);

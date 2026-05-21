@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,13 +40,14 @@ import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeOffset;
 
 import java.util.Random;
 
 public class TimeStampedFieldAngularCoordinatesTest {
 
     @Test
-    public void testZeroRate() {
+    void testZeroRate() {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new TimeStampedFieldAngularCoordinates<>(AbsoluteDate.J2000_EPOCH,
                                                          createRotation(0.48, 0.64, 0.36, 0.48, false),
@@ -61,7 +62,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testShift() {
+    void testShift() {
         double rate = 2 * FastMath.PI / (12 * 60);
         TimeStampedFieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new TimeStampedFieldAngularCoordinates<>(AbsoluteDate.J2000_EPOCH,
@@ -85,7 +86,27 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testToAC() {
+    void testShiftedBy() {
+        // GIVEN
+        final AngularCoordinates coordinates = new AngularCoordinates(Rotation.IDENTITY, Vector3D.PLUS_K, Vector3D.MINUS_I);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Binary64Field field = Binary64Field.getInstance();
+        final TimeStampedAngularCoordinates timeStampedAngularCoordinates = new TimeStampedAngularCoordinates(date, coordinates);
+        final TimeStampedFieldAngularCoordinates<Binary64> fieldAngularCoordinates = new TimeStampedFieldAngularCoordinates<>(field,
+                timeStampedAngularCoordinates);
+        final double dt = 1.;
+        // WHEN
+        final TimeStampedFieldAngularCoordinates<Binary64> actualShifted = fieldAngularCoordinates.shiftedBy(dt);
+        // THEN
+        final TimeStampedFieldAngularCoordinates<Binary64> expected = fieldAngularCoordinates.shiftedBy(new TimeOffset(dt));
+        Assertions.assertEquals(expected.getDate(), actualShifted.getDate());
+        Assertions.assertEquals(0., Rotation.distance(expected.getRotation().toRotation(), actualShifted.getRotation().toRotation()));
+        Assertions.assertEquals(expected.getRotationRate(), actualShifted.getRotationRate());
+        Assertions.assertEquals(expected.getRotationAcceleration(), actualShifted.getRotationAcceleration());
+    }
+
+    @Test
+    void testToAC() {
         Random random = new Random(0xc9b4cf6c371108e0l);
         for (int i = 0; i < 100; ++i) {
             FieldRotation<DerivativeStructure> r = randomRotation(random);
@@ -101,7 +122,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
         double rate = 2 * FastMath.PI / (12 * 60);
         TimeStampedFieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new TimeStampedFieldAngularCoordinates<>(AbsoluteDate.J2000_EPOCH,
@@ -139,7 +160,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testReverseOffset() {
+    void testReverseOffset() {
         Random random = new Random(0x4ecca9d57a8f1611l);
         for (int i = 0; i < 100; ++i) {
             FieldRotation<DerivativeStructure> r = randomRotation(random);
@@ -155,7 +176,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testNoCommute() {
+    void testNoCommute() {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> ac1 =
                 new TimeStampedFieldAngularCoordinates<>(AbsoluteDate.J2000_EPOCH,
                                                          createRotation(0.48,  0.64, 0.36, 0.48, false),
@@ -176,7 +197,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testRoundTripNoOp() {
+    void testRoundTripNoOp() {
         Random random = new Random(0x1e610cfe89306669l);
         for (int i = 0; i < 100; ++i) {
 
@@ -205,7 +226,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures0() {
+    void testDerivativesStructures0() {
         RandomGenerator random = new Well1024a(0x18a0a08fd63f047al);
 
         FieldRotation<Binary64> r    = randomRotation64(random);
@@ -223,7 +244,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures1() {
+    void testDerivativesStructures1() {
         RandomGenerator random = new Well1024a(0x8f8fc6d27bbdc46dl);
 
         FieldRotation<Binary64> r    = randomRotation64(random);
@@ -241,7 +262,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures2() {
+    void testDerivativesStructures2() {
         RandomGenerator random = new Well1024a(0x1633878dddac047dl);
 
         FieldRotation<Binary64> r    = randomRotation64(random);
@@ -260,7 +281,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testUnivariateDerivative1() {
+    void testUnivariateDerivative1() {
         RandomGenerator random = new Well1024a(0x6de8cce747539904l);
 
         FieldRotation<Binary64> r    = randomRotation64(random);
@@ -289,7 +310,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testUnivariateDerivative2() {
+    void testUnivariateDerivative2() {
         RandomGenerator random = new Well1024a(0x255710c8fa2247ecl);
 
         FieldRotation<Binary64> r    = randomRotation64(random);
@@ -323,7 +344,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testIssue773() {
+    void testIssue773() {
         doTestIssue773(Binary64Field.getInstance());
     }
 

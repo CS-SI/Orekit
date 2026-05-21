@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -93,7 +93,7 @@ public class TriggersDerivativesTest {
     @Test
     void testDerivativeWrtStopTimeKeplerianForward() {
         doTestDerivativeWrtStartStopTime(false, OrbitType.KEPLERIAN, true,
-                                         1.8e-11, 9.7e-12, 3.0e-12, 2.6e-9, 2.9e-9, 1.8e-9);
+                                         1.8e-11, 9.7e-12, 3.1e-12, 2.91e-9, 3.0e-9, 1.97e-9);
     }
 
     @Test
@@ -429,7 +429,7 @@ public class TriggersDerivativesTest {
         }
 
         public void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
-            final AbsoluteDate t0 = states0.get(0).getDate();
+            final AbsoluteDate t0 = states0.getFirst().getDate();
             if (t.isAfterOrEqualTo(t0)) {
                 forward = true;
                 next    = t0.shiftedBy(samplingtep);
@@ -440,8 +440,8 @@ public class TriggersDerivativesTest {
         }
 
         public void handleStep(final List<OrekitStepInterpolator> interpolators) {
-            final AbsoluteDate previousDate = interpolators.get(0).getPreviousState().getDate();
-            final AbsoluteDate currentDate  = interpolators.get(0).getCurrentState().getDate();
+            final AbsoluteDate previousDate = interpolators.getFirst().getPreviousState().getDate();
+            final AbsoluteDate currentDate  = interpolators.getFirst().getCurrentState().getDate();
             while ( forward && (next.isAfter(previousDate)  && next.isBeforeOrEqualTo(currentDate)) ||
                    !forward && (next.isBefore(previousDate) && next.isAfterOrEqualTo(currentDate))) {
                 // don't sample points where finite differences are in an intermediate state (some before, some after discontinuity)

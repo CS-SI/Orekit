@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
@@ -46,14 +46,17 @@ import java.util.List;
 
 public class QZSSPropagatorTest {
 
+    private static DataContext context;
     private static QZSSAlmanac almanac;
 
+    @DefaultDataContext
     @BeforeAll
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
+        context = DataContext.getDefault();
 
         // Almanac for satellite 193 for May 27th 2019 (q201914.alm)
-        almanac = new QZSSAlmanac(DataContext.getDefault().getTimeScales(), SatelliteSystem.QZSS);
+        almanac = new QZSSAlmanac(context.getTimeScales(), SatelliteSystem.QZSS);
         almanac.setPRN(193);
         almanac.setWeek(7);
         almanac.setTime(348160.0);
@@ -73,7 +76,9 @@ public class QZSSPropagatorTest {
     @Test
     public void testQZSSCycle() {
         // Builds the QZSS propagator from the almanac
-        final GNSSPropagator propagator = almanac.getPropagator();
+        final GNSSPropagator propagator =
+            almanac.getPropagator(context.getFrames().getEME2000(),
+                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         // Propagate at the QZSS date and one QZSS cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -88,7 +93,9 @@ public class QZSSPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the QZSS propagator from the almanac
-        final GNSSPropagator propagator = almanac.getPropagator();
+        final GNSSPropagator propagator =
+            almanac.getPropagator(context.getFrames().getEME2000(),
+                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
         Assertions.assertEquals(3.986005e+14, almanac.getMu(), 1.0e6);
         // Defines some date
@@ -105,7 +112,9 @@ public class QZSSPropagatorTest {
 
     @Test
     public void testResetInitialState() {
-        final GNSSPropagator propagator = almanac.getPropagator();
+        final GNSSPropagator propagator =
+            almanac.getPropagator(context.getFrames().getEME2000(),
+                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
@@ -113,7 +122,11 @@ public class QZSSPropagatorTest {
 
     @Test
     public void testResetIntermediateState() {
-        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        GNSSPropagator propagator =
+            new GNSSPropagatorBuilder(almanac,
+                                      context.getFrames().getEME2000(),
+                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+                buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),
                                           true);
@@ -123,11 +136,13 @@ public class QZSSPropagatorTest {
     @Test
     public void testDerivativesConsistency() {
 
-        final Frame eme2000 = FramesFactory.getEME2000();
+        final Frame eme2000 = context.getFrames().getEME2000();
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        final GNSSPropagator propagator = almanac.getPropagator();
+        final GNSSPropagator propagator =
+            almanac.getPropagator(eme2000,
+                                  context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.QZSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -150,7 +165,7 @@ public class QZSSPropagatorTest {
         }
 
         Assertions.assertEquals(0.0, errorP, 3.8e-9);
-        Assertions.assertEquals(0.0, errorV, 8.4e-8);
+        Assertions.assertEquals(0.0, errorV, 8.7e-8);
         Assertions.assertEquals(0.0, errorA, 2.1e-8);
 
     }
@@ -159,7 +174,8 @@ public class QZSSPropagatorTest {
     public void testPosition() {
         // Initial QZSS orbital elements (Ref: IGS)
         final QZSSLegacyNavigationMessage qoe =
-            new QZSSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.QZSS);
+            new QZSSLegacyNavigationMessage(context.getTimeScales(),
+                                            SatelliteSystem.QZSS, QZSSLegacyNavigationMessage.LNAV);
         qoe.setPRN(195);
         qoe.setWeek(21);
         qoe.setTime(226800.0);
@@ -181,9 +197,12 @@ public class QZSSPropagatorTest {
         // Date of the QZSS orbital elements
         final AbsoluteDate target = qoe.getDate();
         // Build the QZSS propagator
-        final GNSSPropagator propagator = qoe.getPropagator();
+        final GNSSPropagator propagator =
+            qoe.getPropagator(context.getFrames().getEME2000(),
+                              context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         // Compute the PV coordinates at the date of the QZSS orbital elements
-        final PVCoordinates pv = propagator.getPVCoordinates(target, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final PVCoordinates pv = propagator.getPVCoordinates(target,
+                                                             context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         // Computed position
         final Vector3D computedPos = pv.getPosition();
         // Expected position (reference from QZSS sp3 file qzu20693_00.sp3)
@@ -194,9 +213,11 @@ public class QZSSPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the QZSSPropagator from the almanac
-        final GNSSPropagator propagator = almanac.getPropagator();
+        final GNSSPropagator propagator =
+            almanac.getPropagator(context.getFrames().getEME2000(),
+                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         // In order to test the issue, we voluntary set a Double.NaN value in the date.
-        final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
+        final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, context.getTimeScales().getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
         Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());

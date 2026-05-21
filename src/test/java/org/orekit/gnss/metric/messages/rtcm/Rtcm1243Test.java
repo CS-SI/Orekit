@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -87,7 +87,7 @@ public class Rtcm1243Test {
         Assertions.assertEquals(1,                            rtcm1243.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
-        final RtcmCombinedCorrectionData e01 = rtcm1243.getDataMap().get("E01").get(0);
+        final RtcmCombinedCorrectionData e01 = rtcm1243.getDataMap().get("E01").getFirst();
         Assertions.assertEquals(1,                            e01.getSatelliteID());
         Assertions.assertEquals(132,                          e01.getGnssIod());
         Assertions.assertEquals(18.0095,                      e01.getOrbitCorrection().getDeltaOrbitRadial(),        eps);

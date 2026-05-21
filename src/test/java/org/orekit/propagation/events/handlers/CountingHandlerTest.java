@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,7 +65,6 @@ class CountingHandlerTest {
             this.countAll = countAll;
         }
 
-        @Override
         protected boolean doesCount(SpacecraftState state, EventDetector detector, boolean increasing) {
             return countAll;
         }

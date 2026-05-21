@@ -40,6 +40,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.IGSUtils;
+import org.orekit.gnss.PredefinedTimeSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -458,9 +459,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final String tsStr = line.substring(9, 12).trim();
                     final TimeSystem ts;
                     if (tsStr.equalsIgnoreCase("ccc")) {
-                        ts = TimeSystem.GPS;
+                        ts = PredefinedTimeSystem.GPS;
                     } else {
-                        ts = TimeSystem.parseTimeSystem(tsStr);
+                        ts = PredefinedTimeSystem.parseTimeSystem(tsStr);
                     }
                     pi.file.getHeader().setTimeSystem(ts);
                     pi.timeScale = ts.getTimeScale(pi.parser.timeScales);

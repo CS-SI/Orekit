@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,7 @@ public class TabulatedEphemerisTest {
                 CartesianOrbit c = (CartesianOrbit) state.getOrbit();
                 Vector3D p    = c.getPosition();
                 Vector3D v    = c.getVelocity();
-                double r2 = p.getNormSq();
+                double r2 = p.getNorm2Sq();
                 double r  = FastMath.sqrt(r2);
                 Vector3D kepA = new Vector3D(-c.getMu() / (r * r2), c.getPosition());
                 return new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(c.getDate(),
@@ -132,7 +132,7 @@ public class TabulatedEphemerisTest {
             Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
                                 oe.getSpecifier());
         }
-        List<SpacecraftState> tab = new ArrayList<SpacecraftState>(nbIntervals + 1);
+        List<SpacecraftState> tab = new ArrayList<>(nbIntervals + 1);
         for (int j = 0; j<= nbIntervals; j++) {
             AbsoluteDate current = initDate.shiftedBy((j * deltaT) / nbIntervals);
             tab.add(f.filter(eck.propagate(current)));

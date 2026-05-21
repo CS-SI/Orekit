@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -30,8 +27,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.Arrays;
 
 public class OneWayRangeMeasurementCreator extends MeasurementCreator {
 
@@ -62,17 +57,7 @@ public class OneWayRangeMeasurementCreator extends MeasurementCreator {
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                        station.getClockDriftDriver(),
-                                                        station.getEastOffsetDriver(),
-                                                        station.getNorthOffsetDriver(),
-                                                        station.getZenithOffsetDriver(),
-                                                        station.getPrimeMeridianOffsetDriver(),
-                                                        station.getPrimeMeridianDriftDriver(),
-                                                        station.getPolarOffsetXDriver(),
-                                                        station.getPolarDriftXDriver(),
-                                                        station.getPolarOffsetYDriver(),
-                                                        station.getPolarDriftYDriver())) {
+            for (ParameterDriver driver : station.getParametersDrivers()) {
                 if (driver.getReferenceDate() == null) {
                     driver.setReferenceDate(s0.getDate());
                 }
@@ -89,15 +74,8 @@ public class OneWayRangeMeasurementCreator extends MeasurementCreator {
                 final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(satelliteMeanPosition);
 
                 if (station.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0)) {
-                    final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
-                    final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) {
-                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), true);
-                            final double d = Vector3D.distance(position, t.transformPosition(stationMeanPosition));
-                            return d - x * Constants.SPEED_OF_LIGHT;
-                        }
-                    }, -1.0, 1.0);
+                    final double       downLinkDelay           = solveDownlinkDelay(station, currentState, stationMeanPosition);
                     final AbsoluteDate receptionDate           = currentState.getDate().shiftedBy(downLinkDelay);
                     final Transform    stationToInertReception = station.getOffsetToInertial(inertial, receptionDate, true);
                     final Vector3D     stationAtReception      = stationToInertReception.transformPosition(stationMeanPosition);
@@ -116,7 +94,7 @@ public class OneWayRangeMeasurementCreator extends MeasurementCreator {
                                                 stationPhaseCenterVariation.value(0.5 * FastMath.PI - staLosDown.getDelta(),
                                                                                   staLosDown.getAlpha());
 
-                    final double clockOffset = station.getClockOffsetDriver().getValue(date);
+                    final double clockOffset = station.getOffsetValue(receptionDate);
 
                     final double correctedDownLinkDistance = downLinkDistance + satPCVDown + staPCVDown +
                                                              clockOffset * Constants.SPEED_OF_LIGHT;

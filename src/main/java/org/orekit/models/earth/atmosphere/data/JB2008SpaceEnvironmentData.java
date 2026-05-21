@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ package org.orekit.models.earth.atmosphere.data;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,6 +66,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     public static final String DEFAULT_SUPPORTED_NAMES_DTC = "DTCFILE.TXT";
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 7735042547323407578L;
 
     /** Size of the list. */
@@ -238,7 +240,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
         }
 
         final List<SOLFSMYDataLoader.LineParameters> neigbors = dataSOL.getNeighbors(date).collect(Collectors.toList());
-        previousParamSOL = neigbors.get(0);
+        previousParamSOL = neigbors.getFirst();
         nextParamSOL = neigbors.get(1);
 
     }
@@ -267,7 +269,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
         }
 
         final List<DtcDataLoader.LineParameters> neigbors = dataDTC.getNeighbors(date).collect(Collectors.toList());
-        previousParamDTC = neigbors.get(0);
+        previousParamDTC = neigbors.getFirst();
         nextParamDTC = neigbors.get(1);
 
     }
@@ -365,7 +367,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     public double getXM10B(final AbsoluteDate date) {
         // The date is shifted by 2 day as described in the JB2008 Model with a 2-day lag.
         final AbsoluteDate workDate = date.shiftedBy(-2.0 * Constants.JULIAN_DAY);
-        bracketDateSOL(workDate);;
+        bracketDateSOL(workDate);
         return getLinearInterpolationSOL(workDate, previousParamSOL.getXM10B(), nextParamSOL.getXM10B());
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.utils.ExtendedPositionProvider;
@@ -144,4 +145,9 @@ public class FieldAngularSeparationDetector<T extends CalculusFieldElement<T>>
         return separation.subtract(proximityAngle);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public AngularSeparationDetector toEventDetector(final EventHandler eventHandler) {
+        return new AngularSeparationDetector(beacon, observer, proximityAngle.getReal()).withHandler(eventHandler);
+    }
 }

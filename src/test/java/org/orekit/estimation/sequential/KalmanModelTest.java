@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -123,7 +123,7 @@ class KalmanModelTest {
         ObservableSatellite sat = new ObservableSatellite(0);
 
         // Create propagator builder
-        this.propagatorBuilder = context.createBuilder(orbitType, positionAngleType, true,
+        this.propagatorBuilder = context.createNumerical(orbitType, positionAngleType, true,
                                                        1.0e-6, 60.0, 10., Force.SOLAR_RADIATION_PRESSURE);
 
         // Create PV at t0
@@ -136,17 +136,17 @@ class KalmanModelTest {
 
         // Create one 0m range measurement at t0 + 10s
         final AbsoluteDate date  = date0.shiftedBy(10.);
-        final GroundStation station = context.stations.get(0);
+        final GroundStation station = context.stations.getFirst();
         this.range = new Range(station, true, date, 18616150., 10., 1., sat);
         // Exact range value is 1.8616150246470984E7 m
 
         // Add sat range bias to PV and select it
-        final Bias<Range> satRangeBias = new Bias<Range>(new String[] {"sat range bias"},
-                                                         new double[] {100.},
-                                                         new double[] {10.},
-                                                         new double[] {0.},
-                                                         new double[] {100.});
-        this.satRangeBiasDriver = satRangeBias.getParametersDrivers().get(0);
+        final Bias<Range> satRangeBias = new Bias<>(new String[]{"sat range bias"},
+                new double[]{100.},
+                new double[]{10.},
+                new double[]{0.},
+                new double[]{100.});
+        this.satRangeBiasDriver = satRangeBias.getParametersDrivers().getFirst();
         satRangeBiasDriver.setSelected(true);
         satRangeBiasDriver.setReferenceDate(date);
         range.addModifier(satRangeBias);

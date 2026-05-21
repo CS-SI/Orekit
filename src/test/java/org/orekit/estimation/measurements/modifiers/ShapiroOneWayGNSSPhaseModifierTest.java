@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
 
@@ -121,7 +121,7 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
                                     filter(e -> e.getKey().getEffectName().equals("Shapiro")).count());
 
         }
-        final double wavelength = ((OneWayGNSSPhase) measurements.get(0)).getWavelength();
+        final double wavelength = ((OneWayGNSSPhase) measurements.getFirst()).getWavelength();
 
         Assertions.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
         Assertions.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);

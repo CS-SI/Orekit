@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,10 +51,10 @@ public class CdmData implements Data {
     private final SigmaEigenvectorsCovariance sig3EigVec3CovarianceBlock;
 
     /** Type of alternate covariance, if present. */
-    private AltCovarianceType altCovarianceType;
+    private final AltCovarianceType altCovarianceType;
 
     /** Additional Covariance Metadata block. */
-    private AdditionalCovarianceMetadata additionalCovMetadata;
+    private final AdditionalCovarianceMetadata additionalCovMetadata;
 
     /** The block containing the user defined parameters. */
     private UserDefined userDefinedBlock;

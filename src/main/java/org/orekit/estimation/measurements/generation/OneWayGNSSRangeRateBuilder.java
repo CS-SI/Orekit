@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,35 +16,47 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import java.util.Map;
+
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRangeRate;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link org.orekit.estimation.measurements.gnss.OneWayGNSSRangeRate} measurements.
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class OneWayGNSSRangeRateBuilder
-    extends AbstractMeasurementBuilder<OneWayGNSSRangeRate> {
+public class OneWayGNSSRangeRateBuilder extends AbstractSignalBasedBuilder<OneWayGNSSRangeRate> {
 
-    /** Satellite which simply emits the signal. */
-    private final ObservableSatellite remote;
+    /** Observer which simply emits the signal. */
+    private final Observer remote;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
-     * @param remote satellite which simply emits the signal
+     * @param remote observer which simply emits the signal
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      */
-    public OneWayGNSSRangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                      final ObservableSatellite local, final ObservableSatellite remote,
+    public OneWayGNSSRangeRateBuilder(final ObservableSatellite local, final Observer remote,
                                       final double sigma, final double baseWeight) {
-        super(noiseSource, sigma, baseWeight, local, remote);
+        this(local, remote, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel());
+    }
+
+    /** Simple constructor.
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote observer which simply emits the signal
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @since 14.0
+     */
+    public OneWayGNSSRangeRateBuilder(final ObservableSatellite local, final Observer remote,
+                                      final MeasurementQuality measurementQuality,
+                                      final SignalTravelTimeModel signalTravelTimeModel) {
+        super(measurementQuality, signalTravelTimeModel, local);
         this.remote = remote;
     }
 
@@ -52,11 +64,8 @@ public class OneWayGNSSRangeRateBuilder
     @Override
     protected OneWayGNSSRangeRate buildObserved(final AbsoluteDate date,
                                                 final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new OneWayGNSSRangeRate(interpolators.get(remote),
-                                       remote.getQuadraticClockModel(),
-                                       date, Double.NaN,
-                                       getTheoreticalStandardDeviation()[0],
-                                       getBaseWeight()[0], getSatellites()[0]);
+        return new OneWayGNSSRangeRate(remote, date, Double.NaN, getMeasurementQuality(), getSignalTravelTimeModel(),
+                getSatellites()[0]);
     }
 
 }

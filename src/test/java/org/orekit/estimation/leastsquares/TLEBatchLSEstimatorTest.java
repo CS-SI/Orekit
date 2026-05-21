@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.TLEContext;
-import org.orekit.estimation.TLEEstimationTestUtils;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -46,7 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class TLEBatchLSEstimatorTest {
+class TLEBatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
@@ -54,17 +54,16 @@ public class TLEBatchLSEstimatorTest {
     @Test
     void testPV() {
 
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(1.0);
 
         // create perfect PV measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
 
@@ -78,11 +77,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 1,
-                                        0.0, 1.0e-15,
-                                        0.0, 1.0e-15,
-                                        0.0, 4.97e-6,
-                                        0.0, 2.32e-9);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 1,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 4.97e-6,
+                                     0.0, 2.32e-9);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -98,17 +97,16 @@ public class TLEBatchLSEstimatorTest {
     @Test
     void testPVBackward() {
 
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(1.0);
 
         // create perfect PV measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, -1.0, 300.0);
 
@@ -122,7 +120,7 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 1,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 1,
                                      0.0, 1.0e-15,
                                      0.0, 1.0e-15,
                                      0.0, 4.97e-6,
@@ -144,19 +142,19 @@ public class TLEBatchLSEstimatorTest {
     @Test
     void testRange() {
 
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(1.0);
+
         // this test based on range measurements seems to have an attitude dependence?
         propagatorBuilder.setAttitudeProvider(new FrameAlignedProvider(FramesFactory.getEME2000()));
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
@@ -209,16 +207,16 @@ public class TLEBatchLSEstimatorTest {
             }
         });
 
-        ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
+        ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().getFirst();
         Assertions.assertEquals(OrbitType.POS_X, xDriver.getName());
         xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                        0.0, 1.67e-5,
-                                        0.0, 5.11e-5,
-                                        0.0, 1.77e-5,
-                                        0.0, 2.96e-9);
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
+                                     0.0, 9e-6,
+                                     0.0, 2.6e-5,
+                                     0.0, 1.2e-5,
+                                     0.0, 2.3e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -236,17 +234,16 @@ public class TLEBatchLSEstimatorTest {
     @Test
     void testWrappedException() {
 
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(1.0);
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                                propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
@@ -273,7 +270,7 @@ public class TLEBatchLSEstimatorTest {
         });
 
         try {
-            TLEEstimationTestUtils.checkFit(context, estimator, 3, 4,
+            EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
                                          0.0, 1.5e-6,
                                          0.0, 3.2e-6,
                                          0.0, 3.8e-7,
@@ -298,27 +295,26 @@ public class TLEBatchLSEstimatorTest {
     @Test
     void testRangeAndRangeRate() {
 
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(1.0);
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                            propagatorBuilder);
-
-        final List<ObservedMeasurement<?>> measurementsRange =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TwoWayRangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
-        final double groundClockDrift =  4.8e-9;
+        final double groundClockDrift = 4.8e-9;
         for (final GroundStation station : context.stations) {
             station.getClockDriftDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
+
+        final List<ObservedMeasurement<?>> measurementsRange =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new TwoWayRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
         final List<ObservedMeasurement<?>> measurementsRangeRate =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
@@ -338,11 +334,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        TLEEstimationTestUtils.checkFit(context, estimator, 4, 5,
-                                        0.0, 6.1e-6,
-                                        0.0, 4.7e-5,
-                                        0.0, 6.1e-6,
-                                        0.0, 4.1e-9);
+        EstimationTestUtils.checkFit(false, context, estimator, 4, 5,
+                                     0.0, 2.1e-6,
+                                     0.0, 8.5e-6,
+                                     0.0, 5.0e-6,
+                                     0.0, 3.1e-9);
     }
 
 }

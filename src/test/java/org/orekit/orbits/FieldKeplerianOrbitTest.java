@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,6 +48,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -58,13 +59,13 @@ import java.util.function.Function;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
-public class FieldKeplerianOrbitTest {
+class FieldKeplerianOrbitTest {
 
      // Body mu
     public double mu;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         Utils.setDataRoot("regular-data");
 
@@ -333,6 +334,24 @@ public class FieldKeplerianOrbitTest {
     @Test
     void testNormalize() {
         doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testShiftedBy() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final KeplerianOrbit expectedOrbit = createOrbitForTestFromKeplerianOrbit(true);
+        final FieldKeplerianOrbit<Complex> fieldOrbit = new FieldKeplerianOrbit<>(field, expectedOrbit);
+        final double dt = 1;
+        // WHEN
+        final FieldKeplerianOrbit<Complex> actualFieldOrbit = fieldOrbit.shiftedBy(dt);
+        // THEN
+        final FieldKeplerianOrbit<Complex> expected = fieldOrbit.shiftedBy(new TimeOffset(dt));
+        Assertions.assertEquals(expected.getMu(), actualFieldOrbit.getMu());
+        Assertions.assertEquals(expected.getDate(), actualFieldOrbit.getDate());
+        Assertions.assertEquals(expected.getFrame(), actualFieldOrbit.getFrame());
+        Assertions.assertEquals(expected.getPosition(), actualFieldOrbit.getPosition());
+        Assertions.assertEquals(expected.getVelocity(), actualFieldOrbit.getVelocity());
     }
 
     @Test
@@ -1038,7 +1057,7 @@ public class FieldKeplerianOrbitTest {
 
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r = r2.sqrt();
         final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(zero.add(mu).negate()),
                 position);
@@ -1456,7 +1475,7 @@ public class FieldKeplerianOrbitTest {
         // we use this to compute a velocity step size from the position step size
         FieldVector3D<T> p = orbit.getPosition();
         FieldVector3D<T> v = orbit.getVelocity();
-        T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
+        T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNorm2Sq()));
         T h;
         FieldVector3D<T> dP = new FieldVector3D<>(p.getX().getField().getZero(), p.getX().getField().getZero(), p.getX().getField().getZero());
         FieldVector3D<T> dV = new FieldVector3D<>(p.getX().getField().getZero(), p.getX().getField().getZero(), p.getX().getField().getZero());
@@ -1598,7 +1617,7 @@ public class FieldKeplerianOrbitTest {
                             6.0e-12 * a.getNorm().getReal());
 
         // check jerk is the derivative of acceleration
-        final T r2 = p.getNormSq();
+        final T r2 = p.getNorm2Sq();
         final T r  = r2.sqrt();
         FieldVector3D<T> keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-3).divide(r2), a,
                                                              a.getNorm().divide(r).multiply(-1), v);
@@ -1874,7 +1893,7 @@ public class FieldKeplerianOrbitTest {
     private <T extends CalculusFieldElement<T>> void doTestEquatorialRetrograde(final Field<T> field) {
         FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(10000000.0), field.getZero(), field.getZero());
         FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero(), field.getZero().add(-6500.0), field.getZero().add(1.0e-10));
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r  = r2.sqrt();
         FieldVector3D<T> acceleration = new FieldVector3D<>(r.multiply(r2.reciprocal().multiply(-mu)), position,
                                                             field.getOne(), new FieldVector3D<>(field.getZero().add(-0.1),
@@ -1911,7 +1930,7 @@ public class FieldKeplerianOrbitTest {
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                  date, zero.add(Constants.EIGEN5C_EARTH_MU));
         Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r  = r2.sqrt();
         FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);
@@ -1948,7 +1967,7 @@ public class FieldKeplerianOrbitTest {
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                  date, zero.add(Constants.EIGEN5C_EARTH_MU));
         Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r  = r2.sqrt();
         FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,7 +67,7 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
                 sample.add(new TimeStampedFieldPVCoordinates<>(t0.shiftedBy(dt), position, velocity, acceleration));
             }
 
-            Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+            Field<DerivativeStructure> field = sample.getFirst().getDate().getField();
 
             // create interpolator
             final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<DerivativeStructure>, DerivativeStructure>
@@ -123,7 +123,7 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
                                                                TimeStampedFieldPVCoordinatesTest.createVector(0, 0, 0, 4)));
             }
 
-            Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+            Field<DerivativeStructure> field = sample.getFirst().getDate().getField();
 
             // create interpolator
             final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<DerivativeStructure>, DerivativeStructure>
@@ -178,7 +178,7 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
                                                                TimeStampedFieldPVCoordinatesTest.createVector(0, 0, 0, 4)));
             }
 
-            Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+            Field<DerivativeStructure> field = sample.getFirst().getDate().getField();
 
             // create interpolator
             final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<DerivativeStructure>, DerivativeStructure>
@@ -221,7 +221,7 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
             sample.add(new TimeStampedFieldPVCoordinates<>(t0.shiftedBy(dt), position, velocity, acceleration));
         }
 
-        Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+        Field<DerivativeStructure> field = sample.getFirst().getDate().getField();
 
         // create interpolator
         final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<DerivativeStructure>, DerivativeStructure> interpolator =

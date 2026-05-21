@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -299,7 +299,7 @@ public class CRD {
 
             if (systemConfigurationId == null) {
                 // default (the first one)
-                return sessionStatisticsData.get(0);
+                return sessionStatisticsData.getFirst();
             }
 
             // Loop to find the appropriate one
@@ -1299,13 +1299,13 @@ public class CRD {
         private final AbsoluteDate lastDate;
 
         /** Previous set of meteorological parameters. */
-        private transient MeteorologicalMeasurement previousParam;
+        private MeteorologicalMeasurement previousParam;
 
         /** Next set of solar meteorological parameters. */
-        private transient MeteorologicalMeasurement nextParam;
+        private MeteorologicalMeasurement nextParam;
 
         /** List of meteo data. */
-        private final transient ImmutableTimeStampedCache<MeteorologicalMeasurement> meteo;
+        private final ImmutableTimeStampedCache<MeteorologicalMeasurement> meteo;
 
         /**
          * Constructor.
@@ -1332,8 +1332,8 @@ public class CRD {
                 this.meteo = new ImmutableTimeStampedCache<>(neighborsSize, meteoData);
 
                 // Initialize first and last available dates
-                this.firstDate = meteoData.first().getDate();
-                this.lastDate  = meteoData.last().getDate();
+                this.firstDate = meteoData.getFirst().getDate();
+                this.lastDate  = meteoData.getLast().getDate();
 
             }
 
@@ -1400,7 +1400,7 @@ public class CRD {
             } else {
                 // Current date is between first and last date
                 final List<MeteorologicalMeasurement> neighbors = meteo.getNeighbors(date).collect(Collectors.toList());
-                previousParam = neighbors.get(0);
+                previousParam = neighbors.getFirst();
                 nextParam     = neighbors.get(1);
             }
 
@@ -1769,8 +1769,7 @@ public class CRD {
                                getTime().
                                getSecondsInLocalDay();
 
-            final String str = String.format(
-                    "%18.12f %1d %4s %8s %8s %8.4f %10.1f %8.1f %6.1f %7.3f %7.3f %6.1f %1d %1d %1d %1d %5.1f",
+            final String str = "%18.12f %1d %4s %8s %8s %8.4f %10.1f %8.1f %6.1f %7.3f %7.3f %6.1f %1d %1d %1d %1d %5.1f".formatted(
                     sod, typeOfData, systemConfigurationId,
                     formatIntegerOrNaN(numberOfPointsRecorded, -1),
                     formatIntegerOrNaN(numberOfPointsUsed, -1), oneWayDistance,
@@ -1829,6 +1828,7 @@ public class CRD {
          * @return a string representation of the instance, in the CRD format.
          */
         @DefaultDataContext
+        @Override
         public String toCrdString() {
             return String.format(Locale.US, "41 %s", toString());
         }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,12 +20,15 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
@@ -86,10 +89,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      * @param pv base (unscaled) PVCoordinates
      */
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date, final FieldPVCoordinates<T> pv) {
-        super(pv.getPosition(),
-              pv.getVelocity(),
-              pv.getAcceleration());
-        this.date = date;
+        this(date, pv.getPosition(), pv.getVelocity(), pv.getAcceleration());
     }
 
     /** Constructor from Field and TimeStampedPVCoordinates.
@@ -122,10 +122,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final double a, final FieldPVCoordinates<T> pv) {
-        super(new FieldVector3D<>(a, pv.getPosition()),
-              new FieldVector3D<>(a, pv.getVelocity()),
-              new FieldVector3D<>(a, pv.getAcceleration()));
-        this.date = date;
+        this(date, new FieldPVCoordinates<>(a, pv));
     }
 
     /** Multiplicative constructor
@@ -149,10 +146,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final T a, final FieldPVCoordinates<T> pv) {
-        super(new FieldVector3D<>(a, pv.getPosition()),
-              new FieldVector3D<>(a, pv.getVelocity()),
-              new FieldVector3D<>(a, pv.getAcceleration()));
-        this.date = date;
+        this(date, new FieldPVCoordinates<>(a, pv));
     }
 
     /** Multiplicative constructor
@@ -176,10 +170,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final T a, final PVCoordinates pv) {
-        super(new FieldVector3D<>(a, pv.getPosition()),
-              new FieldVector3D<>(a, pv.getVelocity()),
-              new FieldVector3D<>(a, pv.getAcceleration()));
-        this.date = date;
+        this(date, new FieldPVCoordinates<>(a, pv));
     }
 
     /** Subtractive constructor
@@ -203,10 +194,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final FieldPVCoordinates<T> start, final FieldPVCoordinates<T> end) {
-        super(end.getPosition().subtract(start.getPosition()),
-              end.getVelocity().subtract(start.getVelocity()),
-              end.getAcceleration().subtract(start.getAcceleration()));
-        this.date = date;
+        this(date, new FieldPVCoordinates<>(start, end));
     }
 
     /** Linear constructor
@@ -221,8 +209,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
     public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
                                          final double a1, final FieldPVCoordinates<T> pv1,
                                          final double a2, final FieldPVCoordinates<T> pv2) {
-        this(new FieldAbsoluteDate<>(pv1.getPosition().getX().getField(), date),
-             a1, pv1, a2, pv2);
+        this(new FieldAbsoluteDate<>(pv1.getPosition().getX().getField(), date), a1, pv1, a2, pv2);
     }
 
     /** Linear constructor
@@ -255,8 +242,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
     public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
                                          final T a1, final FieldPVCoordinates<T> pv1,
                                          final T a2, final FieldPVCoordinates<T> pv2) {
-        this(new FieldAbsoluteDate<>(a1.getField(), date),
-             a1, pv1, a2, pv2);
+        this(new FieldAbsoluteDate<>(a1.getField(), date), a1, pv1, a2, pv2);
     }
 
     /** Linear constructor
@@ -289,8 +275,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
     public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
                                          final T a1, final PVCoordinates pv1,
                                          final T a2, final PVCoordinates pv2) {
-        this(new FieldAbsoluteDate<>(a1.getField(), date),
-             a1, pv1, a2, pv2);
+        this(new FieldAbsoluteDate<>(a1.getField(), date), a1, pv1, a2, pv2);
     }
 
     /** Linear constructor
@@ -305,10 +290,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final T a1, final PVCoordinates pv1,
                                          final T a2, final PVCoordinates pv2) {
-        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition()),
-              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity()),
-              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration()));
-        this.date = date;
+        this(date, new FieldPVCoordinates<>(a1, pv1, a2, pv2));
     }
 
     /** Linear constructor
@@ -345,10 +327,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
                                          final double a1, final FieldPVCoordinates<T> pv1,
                                          final double a2, final FieldPVCoordinates<T> pv2,
                                          final double a3, final FieldPVCoordinates<T> pv3) {
-        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
-              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
-              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
-        this.date = date;
+        this(date, new FieldPVCoordinates<>(a1, pv1, a2, pv2, a3, pv3));
     }
 
     /** Linear constructor
@@ -366,8 +345,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
                                          final T a1, final FieldPVCoordinates<T> pv1,
                                          final T a2, final FieldPVCoordinates<T> pv2,
                                          final T a3, final FieldPVCoordinates<T> pv3) {
-        this(new FieldAbsoluteDate<>(a1.getField(), date),
-             a1, pv1, a2, pv2, a3, pv3);
+        this(new FieldAbsoluteDate<>(a1.getField(), date), a1, pv1, a2, pv2, a3, pv3);
     }
 
     /** Linear constructor
@@ -385,10 +363,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
                                          final T a1, final FieldPVCoordinates<T> pv1,
                                          final T a2, final FieldPVCoordinates<T> pv2,
                                          final T a3, final FieldPVCoordinates<T> pv3) {
-        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
-              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
-              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
-        this.date = date;
+        this(date, new FieldPVCoordinates<>(a1, pv1, a2, pv2, a3, pv3));
     }
 
     /** Linear constructor
@@ -406,8 +381,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
                                          final T a1, final PVCoordinates pv1,
                                          final T a2, final PVCoordinates pv2,
                                          final T a3, final PVCoordinates pv3) {
-        this(new FieldAbsoluteDate<>(a1.getField(), date),
-             a1, pv1, a2, pv2, a3, pv3);
+        this(new FieldAbsoluteDate<>(a1.getField(), date), a1, pv1, a2, pv2, a3, pv3);
     }
 
     /** Linear constructor
@@ -425,10 +399,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
                                          final T a1, final PVCoordinates pv1,
                                          final T a2, final PVCoordinates pv2,
                                          final T a3, final PVCoordinates pv3) {
-        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
-              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
-              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
-        this.date = date;
+        this(date, new FieldPVCoordinates<>(a1, pv1, a2, pv2, a3, pv3));
     }
 
     /** Linear constructor
@@ -609,10 +580,9 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public TimeStampedFieldPVCoordinates<T> shiftedBy(final double dt) {
-        final FieldPVCoordinates<T> spv = super.shiftedBy(dt);
-        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt),
-                                                   spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
+        return shiftedBy(getDate().getField().getZero().newInstance(dt));
     }
 
     /** Get a time-shifted state.
@@ -625,10 +595,50 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
+    public TimeStampedFieldPVCoordinates<T> shiftedBy(final TimeOffset dt) {
+        final FieldPVCoordinates<T> spv = super.shiftedBy(dt);
+        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt), spv);
+    }
+
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple linear model. It is <em>not</em> intended as a replacement for
+     * proper orbit propagation (it is not even Keplerian!) but should be sufficient
+     * for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     */
+    @Override
     public TimeStampedFieldPVCoordinates<T> shiftedBy(final T dt) {
         final FieldPVCoordinates<T> spv = super.shiftedBy(dt);
-        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt),
-                                                   spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
+        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt), spv);
+    }
+
+    @Override
+    public TimeStampedFieldPVCoordinates<FieldUnivariateDerivative1<T>> toUnivariateDerivative1PV() {
+        final FieldPVCoordinates<FieldUnivariateDerivative1<T>> fieldPV = super.toUnivariateDerivative1PV();
+        final FieldAbsoluteDate<FieldUnivariateDerivative1<T>> fieldDate = getDate().toFUD1Field();
+        return new TimeStampedFieldPVCoordinates<>(fieldDate, fieldPV);
+    }
+
+    @Override
+    public TimeStampedFieldPVCoordinates<FieldUnivariateDerivative2<T>> toUnivariateDerivative2PV() {
+        final FieldPVCoordinates<FieldUnivariateDerivative2<T>> fieldPV = super.toUnivariateDerivative2PV();
+        final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> fieldDate = getDate().toFUD2Field();
+        return new TimeStampedFieldPVCoordinates<>(fieldDate, fieldPV);
+    }
+
+    @Override
+    public TimeStampedFieldPVCoordinates<FieldDerivativeStructure<T>> toDerivativeStructurePV(final int order) {
+        final FieldPVCoordinates<FieldDerivativeStructure<T>> fieldPV = super.toDerivativeStructurePV(order);
+        final Field<FieldDerivativeStructure<T>> fdsField = fieldPV.getPosition().getX().getField();
+        final AbsoluteDate nonFieldDate = date.toAbsoluteDate();
+        final FieldDerivativeStructure<T> fdsShift = fdsField.getOne().getFactory().variable(0, 1).add(date.durationFrom(nonFieldDate));
+        final FieldAbsoluteDate<FieldDerivativeStructure<T>> fieldDate = new FieldAbsoluteDate<>(fdsField, nonFieldDate).shiftedBy(fdsShift);
+        return new TimeStampedFieldPVCoordinates<>(fieldDate, fieldPV);
     }
 
     /** Convert to a constant position-velocity.
@@ -636,10 +646,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      * @since 9.0
      */
     public TimeStampedPVCoordinates toTimeStampedPVCoordinates() {
-        return new TimeStampedPVCoordinates(date.toAbsoluteDate(),
-                                            getPosition().toVector3D(),
-                                            getVelocity().toVector3D(),
-                                            getAcceleration().toVector3D());
+        return new TimeStampedPVCoordinates(date.toAbsoluteDate(), toPVCoordinates());
     }
 
     /** Return a string representation of this date, position, velocity, and acceleration.

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Exotrail
+/* Copyright 2022-2026 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@
  * This package provides routines related to Lambert problems.
  *
  * @author Romain Serra
- * @since 12.2
+ * @since 13.1
  *
  */
 package org.orekit.control.heuristics.lambert;

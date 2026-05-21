@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Bryan Cazabonne
+/* Copyright 2022-2026 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -345,7 +345,7 @@ public class DSSTJ2SquaredClosedFormTest {
         // Frame and epoch
         final Frame frame = FramesFactory.getEME2000();
         final AbsoluteDate epoch = new AbsoluteDate(2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
-        final FieldAbsoluteDate<Binary64> fieldEpoch = new FieldAbsoluteDate<Binary64>(field, epoch);
+        final FieldAbsoluteDate<Binary64> fieldEpoch = new FieldAbsoluteDate<>(field, epoch);
 
         // Orbital elements (very LEO orbit)
         final double apogee  = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + apogeeAltitude;
@@ -359,9 +359,9 @@ public class DSSTJ2SquaredClosedFormTest {
         final PositionAngleType angleType = PositionAngleType.MEAN;
 
         // Keplerian
-        final FieldKeplerianOrbit<Binary64> fieldKep = new FieldKeplerianOrbit<Binary64>(zero.add(sma), zero.add(ecc), zero.add(inc),
-                                                                                           zero.add(aop), zero.add(raan), zero.add(anom),
-                                                                                           angleType, frame, fieldEpoch, zero.add(provider.getMu()));
+        final FieldKeplerianOrbit<Binary64> fieldKep = new FieldKeplerianOrbit<>(zero.add(sma), zero.add(ecc), zero.add(inc),
+                zero.add(aop), zero.add(raan), zero.add(anom),
+                angleType, frame, fieldEpoch, zero.add(provider.getMu()));
         
         // Equinoctial
         return OrbitType.EQUINOCTIAL.convertType(fieldKep);

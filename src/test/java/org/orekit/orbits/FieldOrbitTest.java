@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,6 +41,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -110,7 +111,7 @@ class FieldOrbitTest {
 
     private static <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> createFieldTPVWithKeplerianAcceleration(final T mu) {
         final Vector3D position = new Vector3D(1e6, 0, 0);
-        final Vector3D keplerianAcceleration = new Vector3D(-mu.getReal() / position.getNormSq() / position.getNorm(),
+        final Vector3D keplerianAcceleration = new Vector3D(-mu.getReal() / position.getNorm2Sq() / position.getNorm(),
                 position);
         return new FieldPVCoordinates<>(mu.getField(), new PVCoordinates(position, Vector3D.ZERO, keplerianAcceleration));
     }
@@ -401,6 +402,11 @@ class FieldOrbitTest {
         @Override
         public FieldOrbit<Complex> shiftedBy(double dt) {
             return new TestFieldOrbit(a.getReal());
+        }
+
+        @Override
+        public FieldOrbit<Complex> shiftedBy(TimeOffset dt) {
+            return shiftedBy(dt.toDouble());
         }
 
         @Override

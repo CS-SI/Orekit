@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.events.intervals.ApsideDetectionAdaptableIntervalFactory;
@@ -91,7 +93,7 @@ class ApsideDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -116,7 +118,7 @@ class ApsideDetectorTest {
 
         private final ApsideDetector detector;
         private int count;
-        
+
         public CountingApsideDetectorModifier(final AdaptableInterval maxCheck) {
             this.detector = new ApsideDetector(propagator.getInitialState().getOrbit()).
                   withMaxCheck(maxCheck).
@@ -136,11 +138,20 @@ class ApsideDetectorTest {
         }
 
         @Override
-        public double g(final SpacecraftState s) {
-            ++count;
-            return DetectorModifier.super.g(s);
-        }
+        public EventFunction getEventFunction() {
+            return new EventFunctionModifier() {
+                @Override
+                public EventFunction getBaseFunction() {
+                    return detector.getEventFunction();
+                }
 
+                @Override
+                public double value(SpacecraftState state) {
+                    count++;
+                    return EventFunctionModifier.super.value(state);
+                }
+            };
+        }
     }
 
 }

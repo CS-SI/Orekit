@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -83,9 +83,9 @@ public class Range2Test {
         // Run test
         boolean isModifier = false;
         double refErrorsPMedian = 6.3e-10;
-        double refErrorsPMean   = 4.2e-09;
+        double refErrorsPMean   = 4.6e-09;
         double refErrorsPMax    = 2.8e-07;
-        double refErrorsVMedian = 1.4e-04;
+        double refErrorsVMedian = 1.6e-04;
         double refErrorsVMean   = 9.6e-04;
         double refErrorsVMax    = 5.2e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
@@ -106,10 +106,10 @@ public class Range2Test {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsPMedian = 5.5e-10;
+        double refErrorsPMedian = 5.8e-10;
         double refErrorsPMean   = 4.6e-09;
         double refErrorsPMax    = 2.1e-07;
-        double refErrorsVMedian = 1.3e-04;
+        double refErrorsVMedian = 1.6e-04;
         double refErrorsVMean   = 9.4e-04;
         double refErrorsVMax    = 4.8e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
@@ -173,7 +173,7 @@ public class Range2Test {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -233,7 +233,7 @@ public class Range2Test {
                     // Print results on console ?
                     if (printResults) {
                         final AbsoluteDate measurementDate = measurement.getDate();
-                        String stationName = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName = ((Range) measurement).getObserver().getName();
 
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19.6f  %19.6f  %13.6e  %13.6e%n",
                                          stationName, measurementDate, date,
@@ -262,7 +262,7 @@ public class Range2Test {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -301,7 +301,7 @@ public class Range2Test {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -373,7 +373,7 @@ public class Range2Test {
                     }
                     // Print values in console ?
                     if (printResults) {
-                        String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Range) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                                         "%10.3e  %10.3e  %10.3e  " +
                                         "%10.3e  %10.3e  %10.3e  " +
@@ -409,7 +409,7 @@ public class Range2Test {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -445,12 +445,12 @@ public class Range2Test {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -484,7 +484,7 @@ public class Range2Test {
                     }
 
                     // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Range) measurement).getStation();
+                    final GroundStation stationParameter = (GroundStation) ((Range) measurement).getObserver();
 
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
@@ -497,14 +497,14 @@ public class Range2Test {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        stationParameter.getClockOffsetDriver(),
+                        stationParameter.getClockBiasDriver(),
                         stationParameter.getEastOffsetDriver(),
                         stationParameter.getNorthOffsetDriver(),
                         stationParameter.getZenithOffsetDriver()
                     };
 
                     if (printResults) {
-                        String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Range) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
                                           stationName, measurement.getDate(), date);
                     }
@@ -561,7 +561,7 @@ public class Range2Test {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();

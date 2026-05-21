@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.orekit.utils.TimeStampedGenerator;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
     protected static final int N_NEIGHBORS = 2;
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 8804818166227680449L;
 
     /** Weather data thread safe cache. */
@@ -65,7 +67,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
     private final String supportedNames;
 
     /** UTC time scale. */
-    private final TimeScale utc;
+    private final transient TimeScale utc;
 
     /** First available date. */
     private final AbsoluteDate firstDate;
@@ -121,8 +123,8 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
      *
      * @since 12.0
      */
-    public AbstractSolarActivityData(final DataSource source, final D loader, final TimeScale utc, final int maxSlots,
-                                     final double maxSpan, final double maxInterval, final double minimumStep) {
+    protected AbstractSolarActivityData(final DataSource source, final D loader, final TimeScale utc, final int maxSlots,
+                                        final double maxSpan, final double maxInterval, final double minimumStep) {
         try {
             // Load file
             try (InputStream is = source.getOpener().openStreamOnce();
@@ -263,7 +265,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
             final List<L> neighbours = cache.getNeighbors(date).collect(Collectors.toList());
 
             this.currentDate   = date;
-            this.previousParam = neighbours.get(0);
+            this.previousParam = neighbours.getFirst();
             this.nextParam     = neighbours.get(1);
         }
 

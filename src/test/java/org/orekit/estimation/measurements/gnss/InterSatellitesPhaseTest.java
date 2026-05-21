@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,10 +84,10 @@ public class InterSatellitesPhaseTest {
             System.out.println("\nTest inter-satellites Phase State Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 2.0e-10;
-        double refErrorsPMean   = 5.9e-10;
-        double refErrorsPMax    = 3.3e-08;
-        double refErrorsVMedian = 4.4e-04;
+        double refErrorsPMedian = 1.7e-09;
+        double refErrorsPMean   = 4.7e-09;
+        double refErrorsPMax    = 1.6e-07;
+        double refErrorsVMedian = 4.6e-04;
         double refErrorsVMean   = 1.7e-03;
         double refErrorsVMax    = 1.1e-01;
         this.genericTestStateDerivatives(printResults, 0,
@@ -110,7 +110,7 @@ public class InterSatellitesPhaseTest {
         double refErrorsPMedian = 2.0e-10;
         double refErrorsPMean   = 5.7e-10;
         double refErrorsPMax    = 3.3e-08;
-        double refErrorsVMedian = 4.1e-04;
+        double refErrorsVMedian = 4.8e-04;
         double refErrorsVMean   = 1.6e-03;
         double refErrorsVMax    = 7.1e-02;
         this.genericTestStateDerivatives(printResults, 1,
@@ -149,7 +149,7 @@ public class InterSatellitesPhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites phase measurements
@@ -249,7 +249,7 @@ public class InterSatellitesPhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -272,14 +272,14 @@ public class InterSatellitesPhaseTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 6.1e-7);
+        Assertions.assertEquals(0.0, absErrorsMedian, 6.2e-7);
         Assertions.assertEquals(0.0, absErrorsMin,    3.3e-6);
-        Assertions.assertEquals(0.0, absErrorsMax,    7.0e-7);
+        Assertions.assertEquals(0.0, absErrorsMax,    7.2e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.2e-12);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.9e-10);
+        Assertions.assertEquals(0.0, relErrorsMax,    3.0e-10);
 
         // Test measurement type
-        Assertions.assertEquals(InterSatellitesPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(InterSatellitesPhase.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -289,7 +289,7 @@ public class InterSatellitesPhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites phase measurements
@@ -409,7 +409,7 @@ public class InterSatellitesPhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -445,7 +445,7 @@ public class InterSatellitesPhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites phase measurements
@@ -466,8 +466,8 @@ public class InterSatellitesPhaseTest {
         final double remoteClockOffset = 469.0e-6;
         final InterSatellitesPhaseMeasurementCreator creator = new InterSatellitesPhaseMeasurementCreator(ephemeris, PredefinedGnssSignal.E01,
                                                                             ambiguity, localClockOffset, remoteClockOffset);
-        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -500,8 +500,8 @@ public class InterSatellitesPhaseTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockOffsetDriver(),
-                        measurement.getSatellites().get(1).getClockOffsetDriver()
+                        measurement.getSatellites().getFirst().getClockBiasDriver(),
+                        measurement.getSatellites().get(1).getClockBiasDriver()
                     };
 
                     for (final ParameterDriver driver : drivers) {
@@ -559,7 +559,7 @@ public class InterSatellitesPhaseTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();

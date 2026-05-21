@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,12 +57,10 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
 
     /** Constant Y axis. */
-    private static final PVCoordinates PLUS_Y_PV =
-            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates PLUS_Y_PV = new PVCoordinates(Vector3D.PLUS_J);
 
     /** Constant Z axis. */
-    private static final PVCoordinates MINUS_Z_PV =
-            new PVCoordinates(Vector3D.MINUS_K, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates MINUS_Z_PV = new PVCoordinates(Vector3D.MINUS_K);
 
     /** Limit value below which we shoud use replace beta by betaIni. */
     private static final double BETA_SIGN_CHANGE_PROTECTION = FastMath.toRadians(0.07);
@@ -113,7 +111,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
     private final FieldUnivariateDerivative2<T> beta;
 
     /** Spacecraft angular velocity. */
-    private T muRate;
+    private final T muRate;
 
     /** Limit cosine for the midnight turn. */
     private double cNight;
@@ -438,7 +436,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
         final FieldVector3D<T>      p             = svPV.getPosition();
         final FieldVector3D<T>      v             = svPV.getVelocity();
         final FieldVector3D<T>      a             = svPV.getAcceleration();
-        final T                     r2            = p.getNormSq();
+        final T                     r2            = p.getNorm2Sq();
         final T                     r             = FastMath.sqrt(r2);
         final FieldVector3D<T>      keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-3).divide(r2), a,
                                                                         a.getNorm().negate().divide(r), v);

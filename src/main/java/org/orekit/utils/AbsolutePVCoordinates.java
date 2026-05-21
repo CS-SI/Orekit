@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,22 +19,22 @@ package org.orekit.utils;
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.StaticTransform;
-import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
-import org.orekit.time.TimeStamped;
 
 /** Position - Velocity - Acceleration linked to a date and a frame.
  */
-public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements TimeStamped, PVCoordinatesProvider {
+public class AbsolutePVCoordinates implements ShiftablePVCoordinatesHolder<AbsolutePVCoordinates>, PVCoordinatesProvider {
 
     /** Frame in which are defined the coordinates. */
     private final Frame frame;
+
+    /** Position-velocity-acceleration vector. */
+    private final TimeStampedPVCoordinates timeStampedPVCoordinates;
 
     /** Build from position, velocity, acceleration.
      * @param frame the frame in which the coordinates are defined
@@ -45,7 +45,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
      */
     public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
                                  final Vector3D position, final Vector3D velocity, final Vector3D acceleration) {
-        super(date, position, velocity, acceleration);
+        this.timeStampedPVCoordinates = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
         this.frame = frame;
     }
 
@@ -67,8 +67,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
      * @param pva TimeStampedPVCoordinates
      */
     public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date, final PVCoordinates pva) {
-        super(date, pva);
-        this.frame = frame;
+        this(frame, new TimeStampedPVCoordinates(date, pva));
     }
 
     /** Build from frame and TimeStampedPVCoordinates.
@@ -76,7 +75,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
      * @param pva TimeStampedPVCoordinates
      */
     public AbsolutePVCoordinates(final Frame frame, final TimeStampedPVCoordinates pva) {
-        super(pva.getDate(), pva);
+        this.timeStampedPVCoordinates = pva;
         this.frame = frame;
     }
 
@@ -85,12 +84,11 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
      * <p>The TimeStampedPVCoordinates built will be a * AbsPva</p>
      * @param date date of the built coordinates
      * @param a scale factor
-     * @param AbsPva base (unscaled) AbsolutePVCoordinates
+     * @param absPva base (unscaled) AbsolutePVCoordinates
      */
     public AbsolutePVCoordinates(final AbsoluteDate date,
-                                 final double a, final AbsolutePVCoordinates AbsPva) {
-        super(date, a, AbsPva);
-        this.frame = AbsPva.frame;
+                                 final double a, final AbsolutePVCoordinates absPva) {
+        this(absPva.getFrame(), new TimeStampedPVCoordinates(date, a, absPva.getPVCoordinates()));
     }
 
     /** Subtractive constructor
@@ -104,9 +102,8 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
      */
     public AbsolutePVCoordinates(final AbsoluteDate date,
                                  final AbsolutePVCoordinates start, final AbsolutePVCoordinates end) {
-        super(date, start, end);
+        this(start.getFrame(), new TimeStampedPVCoordinates(date, start.getPVCoordinates(), end.getPVCoordinates()));
         ensureIdenticalFrames(start, end);
-        this.frame = start.frame;
     }
 
     /** Linear constructor
@@ -123,9 +120,8 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
     public AbsolutePVCoordinates(final AbsoluteDate date,
                                  final double a1, final AbsolutePVCoordinates absPv1,
                                  final double a2, final AbsolutePVCoordinates absPv2) {
-        super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates());
+        this(absPv1.getFrame(), new TimeStampedPVCoordinates(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates()));
         ensureIdenticalFrames(absPv1, absPv2);
-        this.frame = absPv1.getFrame();
     }
 
     /** Linear constructor
@@ -145,11 +141,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
                                  final double a1, final AbsolutePVCoordinates absPv1,
                                  final double a2, final AbsolutePVCoordinates absPv2,
                                  final double a3, final AbsolutePVCoordinates absPv3) {
-        super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates(),
-                a3, absPv3.getPVCoordinates());
+        this(absPv1.getFrame(), new TimeStampedPVCoordinates(date, a1, absPv1.getPVCoordinates(), a2,
+                absPv2.getPVCoordinates(), a3, absPv3.getPVCoordinates()));
         ensureIdenticalFrames(absPv1, absPv2);
         ensureIdenticalFrames(absPv1, absPv3);
-        this.frame = absPv1.getFrame();
     }
 
     /** Linear constructor
@@ -172,12 +167,11 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
                                  final double a2, final AbsolutePVCoordinates absPv2,
                                  final double a3, final AbsolutePVCoordinates absPv3,
                                  final double a4, final AbsolutePVCoordinates absPv4) {
-        super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates(),
-                a3, absPv3.getPVCoordinates(), a4, absPv4.getPVCoordinates());
+        this(absPv1.getFrame(), new TimeStampedPVCoordinates(date, a1, absPv1.getPVCoordinates(), a2,
+                absPv2.getPVCoordinates(), a3, absPv3.getPVCoordinates(), a4, absPv4.getPVCoordinates()));
         ensureIdenticalFrames(absPv1, absPv2);
         ensureIdenticalFrames(absPv1, absPv3);
         ensureIdenticalFrames(absPv1, absPv4);
-        this.frame = absPv1.getFrame();
     }
 
     /** Builds a AbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link Derivative}&gt;.
@@ -192,8 +186,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
      */
     public <U extends Derivative<U>> AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
                                                            final FieldVector3D<U> p) {
-        super(date, p);
-        this.frame = frame;
+        this(frame, new TimeStampedPVCoordinates(date, p));
     }
 
     /** Ensure that the frames from two AbsolutePVCoordinates are identical.
@@ -220,7 +213,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public AbsolutePVCoordinates shiftedBy(final double dt) {
-        final TimeStampedPVCoordinates spv = super.shiftedBy(dt);
+        final TimeStampedPVCoordinates spv = timeStampedPVCoordinates.shiftedBy(dt);
         return new AbsolutePVCoordinates(frame, spv);
     }
 
@@ -235,8 +228,9 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
      * @return a new state, shifted with respect to the instance (which is immutable)
      * @since 13.0
      */
+    @Override
     public AbsolutePVCoordinates shiftedBy(final TimeOffset dt) {
-        final TimeStampedPVCoordinates spv = super.shiftedBy(dt);
+        final TimeStampedPVCoordinates spv = timeStampedPVCoordinates.shiftedBy(dt);
         return new AbsolutePVCoordinates(frame, spv);
     }
 
@@ -259,47 +253,25 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
         return frame;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return getPVCoordinates().getDate();
+    }
+
     /** Get the TimeStampedPVCoordinates.
      * @return TimeStampedPVCoordinates
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
-        return this;
+        return timeStampedPVCoordinates;
     }
 
-    /** Get the position in a specified frame.
-     * @param outputFrame frame in which the position coordinates shall be computed
-     * @return position
-     * @see #getPVCoordinates(Frame)
-     * @since 12.0
+    /**
+     * Getter for the acceleration vector.
+     * @return acceleration
      */
-    public Vector3D getPosition(final Frame outputFrame) {
-        // If output frame requested is the same as definition frame,
-        // Position vector is returned directly
-        if (outputFrame == frame) {
-            return getPosition();
-        }
-
-        // Else, position vector is transformed to output frame
-        final StaticTransform t = frame.getStaticTransformTo(outputFrame, getDate());
-        return t.transformPosition(getPosition());
-    }
-
-    /** Get the TimeStampedPVCoordinates in a specified frame.
-     * @param outputFrame frame in which the position/velocity coordinates shall be computed
-     * @return TimeStampedPVCoordinates
-     * @exception OrekitException if transformation between frames cannot be computed
-     * @see #getPVCoordinates()
-     */
-    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
-        // If output frame requested is the same as definition frame,
-        // PV coordinates are returned directly
-        if (outputFrame == frame) {
-            return getPVCoordinates();
-        }
-
-        // Else, PV coordinates are transformed to output frame
-        final Transform t = frame.getTransformTo(outputFrame, getDate());
-        return t.transformPVCoordinates(getPVCoordinates());
+    public Vector3D getAcceleration() {
+        return timeStampedPVCoordinates.getAcceleration();
     }
 
     /** {@inheritDoc} */
@@ -316,10 +288,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
 
     /** {@inheritDoc} */
     @Override
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame) {
-        return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
+    @DefaultDataContext
+    public String toString() {
+        return timeStampedPVCoordinates.toString();
     }
-
 }
 
 

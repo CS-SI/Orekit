@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,9 +62,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
      * <p> Set the Coordinates to default : (0 0 0), (0 0 0), (0 0 0).</p>
      */
     public PVCoordinates() {
-        position     = Vector3D.ZERO;
-        velocity     = Vector3D.ZERO;
-        acceleration = Vector3D.ZERO;
+        this(Vector3D.ZERO, Vector3D.ZERO);
     }
 
     /** Builds a PVCoordinates triplet with zero acceleration.
@@ -73,9 +71,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
      * @param velocity the velocity vector (m/s)
      */
     public PVCoordinates(final Vector3D position, final Vector3D velocity) {
-        this.position     = position;
-        this.velocity     = velocity;
-        this.acceleration = Vector3D.ZERO;
+        this(position, velocity, Vector3D.ZERO);
     }
 
     /** Builds a PVCoordinates triplet.
@@ -212,36 +208,60 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
      * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
      * to the user-specified order.
      * </p>
-     * @param order derivation order for the vector components (must be either 0, 1 or 2)
+     * @param order derivation order for the vector components
      * @return vector with time-derivatives embedded within the coordinates
      */
     public FieldVector3D<DerivativeStructure> toDerivativeStructureVector(final int order) {
+        return toDerivativeStructureVector(order, 1);
+    }
 
-        final DSFactory factory;
+    /** Transform the instance to a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+     * <p>
+     * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
+     * to the user-specified order.
+     * </p>
+     * @param order derivation order for the vector components
+     * @param totalFreeParameters total number of independent variables in Taylor differential algebra. Must be at least 1 for time.
+     * @return vector with time-derivatives embedded within the coordinates
+     * @since 14.0
+     */
+    public FieldVector3D<DerivativeStructure> toDerivativeStructureVector(final int order, final int totalFreeParameters) {
+        if (order < 0) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        }
+        final DSFactory factory = new DSFactory(totalFreeParameters, order);
         final DerivativeStructure x;
         final DerivativeStructure y;
         final DerivativeStructure z;
-        switch (order) {
-            case 0 :
-                factory = new DSFactory(1, order);
-                x = factory.build(position.getX());
-                y = factory.build(position.getY());
-                z = factory.build(position.getZ());
-                break;
-            case 1 :
-                factory = new DSFactory(1, order);
-                x = factory.build(position.getX(), velocity.getX());
-                y = factory.build(position.getY(), velocity.getY());
-                z = factory.build(position.getZ(), velocity.getZ());
-                break;
-            case 2 :
-                factory = new DSFactory(1, order);
-                x = factory.build(position.getX(), velocity.getX(), acceleration.getX());
-                y = factory.build(position.getY(), velocity.getY(), acceleration.getY());
-                z = factory.build(position.getZ(), velocity.getZ(), acceleration.getZ());
-                break;
-            default :
-                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        if (order == 0) {
+            x = factory.constant(position.getX());
+            y = factory.constant(position.getY());
+            z = factory.constant(position.getZ());
+        } else if (order == 1) {
+            final double[] derivatives = new double[factory.getCompiler().getSize()];
+            derivatives[0] = position.getX();
+            derivatives[1] = velocity.getX();
+            x = factory.build(derivatives);
+            derivatives[0] = position.getY();
+            derivatives[1] = velocity.getY();
+            y = factory.build(derivatives);
+            derivatives[0] = position.getZ();
+            derivatives[1] = velocity.getZ();
+            z = factory.build(derivatives);
+        } else {
+            final double[] derivatives = new double[factory.getCompiler().getSize()];
+            derivatives[0] = position.getX();
+            derivatives[1] = velocity.getX();
+            derivatives[2] = acceleration.getX();
+            x = factory.build(derivatives);
+            derivatives[0] = position.getY();
+            derivatives[1] = velocity.getY();
+            derivatives[2] = acceleration.getY();
+            y = factory.build(derivatives);
+            derivatives[0] = position.getZ();
+            derivatives[1] = velocity.getZ();
+            derivatives[2] = acceleration.getZ();
+            z = factory.build(derivatives);
         }
 
         return new FieldVector3D<>(x, y, z);
@@ -332,7 +352,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
                 break;
             case 1 : {
                 factory = new DSFactory(1, order);
-                final double   r2            = position.getNormSq();
+                final double   r2            = position.getNorm2Sq();
                 final double   r             = FastMath.sqrt(r2);
                 final double   pvOr2         = Vector3D.dotProduct(position, velocity) / r2;
                 final double   a             = acceleration.getNorm();
@@ -351,13 +371,13 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
             }
             case 2 : {
                 factory = new DSFactory(1, order);
-                final double   r2              = position.getNormSq();
+                final double   r2              = position.getNorm2Sq();
                 final double   r               = FastMath.sqrt(r2);
                 final double   pvOr2           = Vector3D.dotProduct(position, velocity) / r2;
                 final double   a               = acceleration.getNorm();
                 final double   aOr             = a / r;
                 final Vector3D keplerianJerk   = new Vector3D(-3 * pvOr2, acceleration, -aOr, velocity);
-                final double   v2              = velocity.getNormSq();
+                final double   v2              = velocity.getNorm2Sq();
                 final double   pa              = Vector3D.dotProduct(position, acceleration);
                 final double   aj              = Vector3D.dotProduct(acceleration, keplerianJerk);
                 final Vector3D keplerianJounce = new Vector3D(-3 * (v2 + pa) / r2 + 15 * pvOr2 * pvOr2 - aOr, acceleration,
@@ -394,7 +414,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
      */
     public FieldPVCoordinates<UnivariateDerivative1> toUnivariateDerivative1PV() {
 
-        final double   r2            = position.getNormSq();
+        final double   r2            = position.getNorm2Sq();
         final double   r             = FastMath.sqrt(r2);
         final double   pvOr2         = Vector3D.dotProduct(position, velocity) / r2;
         final double   a             = acceleration.getNorm();
@@ -430,13 +450,13 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
      */
     public FieldPVCoordinates<UnivariateDerivative2> toUnivariateDerivative2PV() {
 
-        final double   r2              = position.getNormSq();
+        final double   r2              = position.getNorm2Sq();
         final double   r               = FastMath.sqrt(r2);
         final double   pvOr2           = Vector3D.dotProduct(position, velocity) / r2;
         final double   a               = acceleration.getNorm();
         final double   aOr             = a / r;
         final Vector3D keplerianJerk   = new Vector3D(-3 * pvOr2, acceleration, -aOr, velocity);
-        final double   v2              = velocity.getNormSq();
+        final double   v2              = velocity.getNorm2Sq();
         final double   pa              = Vector3D.dotProduct(position, acceleration);
         final double   aj              = Vector3D.dotProduct(acceleration, keplerianJerk);
         final Vector3D keplerianJounce = new Vector3D(-3 * (v2 + pa) / r2 + 15 * pvOr2 * pvOr2 - aOr, acceleration,
@@ -549,7 +569,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
      *      Wikipedia</a>
      */
     public Vector3D getAngularVelocity() {
-        return this.getMomentum().scalarMultiply(1.0 / this.getPosition().getNormSq());
+        return this.getMomentum().scalarMultiply(1.0 / this.getPosition().getNorm2Sq());
     }
 
     /** Get the opposite of the instance.

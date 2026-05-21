@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +21,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeUtils;
 import org.orekit.utils.ParameterDriver;
 
 /** Base class for {@link MeasurementBuilder measurements builders}.
@@ -38,17 +39,11 @@ import org.orekit.utils.ParameterDriver;
  */
 public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T>> implements MeasurementBuilder<T> {
 
-    /** Noise source (may be null). */
-    private final CorrelatedRandomVectorGenerator noiseSource;
-
     /** Modifiers that apply to the measurement.*/
     private final List<EstimationModifier<T>> modifiers;
 
-    /** Theoretical standard deviation. */
-    private final double[] sigma;
-
-    /** Base weight. */
-    private final double[] baseWeight;
+    /** Measurement quality. */
+    private final MeasurementQuality measurementQuality;
 
     /** Satellites related to this measurement. */
     private final ObservableSatellite[] satellites;
@@ -60,35 +55,15 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
     private AbsoluteDate spanEnd;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
+     * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
+     *                           of the covariance matrix are only used by Kalman filters, not least squares)
      * @param satellites satellites related to this builder
+     * @since 14.0
      */
-    protected AbstractMeasurementBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                         final double sigma, final double baseWeight,
+    protected AbstractMeasurementBuilder(final MeasurementQuality measurementQuality,
                                          final ObservableSatellite... satellites) {
-        this(noiseSource,
-             new double[] {
-                 sigma
-             }, new double[] {
-                 baseWeight
-             }, satellites);
-    }
-
-    /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param satellites satellites related to this builder
-     */
-    protected AbstractMeasurementBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                         final double[] sigma, final double[] baseWeight,
-                                         final ObservableSatellite... satellites) {
-        this.noiseSource = noiseSource;
         this.modifiers   = new ArrayList<>();
-        this.sigma       = sigma.clone();
-        this.baseWeight  = baseWeight.clone();
+        this.measurementQuality = measurementQuality;
         this.satellites  = satellites.clone();
     }
 
@@ -129,11 +104,13 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         return spanEnd;
     }
 
-    /** Generate a noise vector.
-     * @return noise vector (null if we generate perfect measurements)
+    /**
+     * Getter for the measurement quality.
+     * @return measurement quality
+     * @since 14.0
      */
-    protected double[] getNoise() {
-        return noiseSource == null ? null : noiseSource.nextVector();
+    protected MeasurementQuality getMeasurementQuality() {
+        return measurementQuality;
     }
 
     /** Get the theoretical standard deviation.
@@ -149,7 +126,7 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
      * @see #getBaseWeight()
      */
     protected double[] getTheoreticalStandardDeviation() {
-        return sigma.clone();
+        return measurementQuality.getStandardDeviations();
     }
 
     /** Get the base weight associated with the measurement
@@ -164,7 +141,7 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
      * @see #getTheoreticalStandardDeviation()
      */
     protected double[] getBaseWeight() {
-        return baseWeight.clone();
+        return measurementQuality.getWeights();
     }
 
     /** {@inheritDoc} */
@@ -203,26 +180,15 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         // set a reference date for parameters missing one
         for (final ParameterDriver driver : observed.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
+                driver.setReferenceDate(TimeUtils.earliest(getStart(), getEnd()));
             }
         }
 
         // estimate the perfect value of the measurement
         final EstimatedMeasurementBase<T> estimated = observed.estimateWithoutDerivatives(relevant);
-        final double[] value = estimated.getEstimatedValue();
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            for (int i = 0; i < value.length; ++i) {
-                value[i] += noise[i];
-            }
-        }
 
         // update the dummy measurement (which is referenced by the estimated measurement)
-        observed.setObservedValue(value);
+        observed.setObservedValue(estimated.getEstimatedValue());
 
         return estimated;
 

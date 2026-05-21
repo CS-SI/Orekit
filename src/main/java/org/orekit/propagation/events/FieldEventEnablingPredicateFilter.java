@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,8 @@ import java.util.Arrays;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -81,6 +83,9 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
     /** Specialized event handler. */
     private final LocalHandler<T> handler;
 
+    /** Event function. */
+    private final EventFunction eventFunction;
+
     /** Indicator for forward integration. */
     private boolean forward;
 
@@ -115,6 +120,8 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
         this.predicate = enabler;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = (FieldAbsoluteDate<T>[]) Array.newInstance(FieldAbsoluteDate.class, HISTORY_SIZE);
+        this.eventFunction = new LocalEventFunction(EventFunction.of(detectionSettings.getThreshold().getField(), this::g),
+                predicate);
     }
 
     /**
@@ -136,6 +143,12 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
 
     /**  {@inheritDoc} */
     @Override
+    public EventFunction getEventFunction() {
+        return eventFunction;
+    }
+
+    /**  {@inheritDoc} */
+    @Override
     public FieldEventHandler<T> getHandler() {
         return handler;
     }
@@ -153,12 +166,6 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      */
     public FieldEnablingPredicate<T> getPredicate() {
         return predicate;
-    }
-
-    /**  {@inheritDoc} */
-    @Override
-    public boolean dependsOnTimeOnly() {
-        return false;  // cannot know what predicate needs
     }
 
     /**  {@inheritDoc} */
@@ -294,29 +301,21 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
         if (isEnabled) {
             // we need to select a transformer that can produce zero crossings,
             // so it is either Transformer.PLUS or Transformer.MINUS
-            switch (previous) {
-                case UNINITIALIZED :
-                    return Transformer.PLUS; // this initial choice is arbitrary, it could have been Transformer.MINUS
-                case MIN :
-                    return previousG.getReal() >= 0 ? Transformer.MINUS : Transformer.PLUS;
-                case MAX :
-                    return previousG.getReal() >= 0 ? Transformer.PLUS : Transformer.MINUS;
-                default :
-                    return previous;
-            }
+            return switch (previous) {
+                case UNINITIALIZED  -> Transformer.PLUS; // this initial choice is arbitrary, it could have been Transformer.MINUS
+                case MIN  -> previousG.getReal() >= 0 ? Transformer.MINUS : Transformer.PLUS;
+                case MAX  -> previousG.getReal() >= 0 ? Transformer.PLUS : Transformer.MINUS;
+                default  -> previous;
+            };
         } else {
             // we need to select a transformer that cannot produce any zero crossings,
             // so it is either Transformer.MAX or Transformer.MIN
-            switch (previous) {
-                case UNINITIALIZED :
-                    return Transformer.MAX; // this initial choice is arbitrary, it could have been Transformer.MIN
-                case PLUS :
-                    return previousG.getReal() >= 0 ? Transformer.MAX : Transformer.MIN;
-                case MINUS :
-                    return previousG.getReal() >= 0 ? Transformer.MIN : Transformer.MAX;
-                default :
-                    return previous;
-            }
+            return switch (previous) {
+                case UNINITIALIZED  -> Transformer.MAX; // this initial choice is arbitrary, it could have been Transformer.MIN
+                case PLUS  -> previousG.getReal() >= 0 ? Transformer.MAX : Transformer.MIN;
+                case MINUS  -> previousG.getReal() >= 0 ? Transformer.MIN : Transformer.MAX;
+                default  -> previous;
+            };
         }
     }
 
@@ -325,6 +324,34 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      */
     public boolean isForward() {
         return forward;
+    }
+
+    /**
+     * Local event function.
+     * @since 14.0
+     */
+    private static class LocalEventFunction implements EventFunctionModifier {
+
+        /** Wrapped event function. */
+        private final EventFunction baseFunction;
+
+        /** Predicate. */
+        private final FieldEnablingPredicate<?> enablingPredicate;
+
+        LocalEventFunction(final EventFunction baseFunction, final FieldEnablingPredicate<?> enablingPredicate) {
+            this.baseFunction = baseFunction;
+            this.enablingPredicate = enablingPredicate;
+        }
+
+        @Override
+        public EventFunction getBaseFunction() {
+            return baseFunction;
+        }
+
+        @Override
+        public boolean dependsOnMainVariablesOnly() {
+            return baseFunction.dependsOnMainVariablesOnly() && enablingPredicate.dependsOnMainVariablesOnly();
+        }
     }
 
     /** Local handler.

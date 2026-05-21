@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,8 +40,8 @@ public class RinexFile<T extends RinexBaseHeader> {
      * @param header header
      */
     protected RinexFile(final T header) {
-        this.header       = header;
-        this.comments     = new ArrayList<>();
+        this.header   = header;
+        this.comments = new ArrayList<>();
     }
 
     /** Get the header.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.encounter.EncounterLOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.StateCovariance;
+import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.armellinutils.ArmellinStatistics;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -58,7 +58,7 @@ class ShortTermEncounter2DDefinitionTest {
 
     @Test
     @DisplayName("Test the combined radius (sum of each collision object sphere equivalent radius)")
-    public void testGiveTheSumOfEachCollisionObjectRadius() {
+    void testGiveTheSumOfEachCollisionObjectRadius() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -106,7 +106,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the projection matrix from primary inertial to the default collision plane")
-    public void testReturnProjectionMatrixFromPrimaryInertialToDefaultCollisionPlane() {
+    void testReturnProjectionMatrixFromPrimaryInertialToDefaultCollisionPlane() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -172,7 +172,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the projection matrix from primary inertial to the Valsecchi collision plane")
-    public void testReturnProjectionMatrixFromPrimaryInertialToValsecchiCollisionPlane() {
+    void testReturnProjectionMatrixFromPrimaryInertialToValsecchiCollisionPlane() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -240,7 +240,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the relative PVCoordinates of the secondary collision object to the primary collision object")
-    public void testReturnSecondaryRelativeToPrimaryInPrimaryInertial() {
+    void testReturnSecondaryRelativeToPrimaryInPrimaryInertial() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -301,7 +301,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the projection and diagonalizing method of the combined covariance matrix with diagonal input matrices")
-    public void testComputeTheDiagonalizedCombinedCovarianceMatrixProjectedOntoCollisionPlaneWithDiagonalCovarianceAsInput() {
+    void testComputeTheDiagonalizedCombinedCovarianceMatrixProjectedOntoCollisionPlaneWithDiagonalCovarianceAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -384,7 +384,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the projection and diagonalizing method of the combined covariance matrix on non diagonal input matrices")
-    public void testComputeTheDiagonalizedCombinedCovarianceMatrixProjectedOntoCollisionPlaneWithNonDiagonalCovarianceAsInput() {
+    void testComputeTheDiagonalizedCombinedCovarianceMatrixProjectedOntoCollisionPlaneWithNonDiagonalCovarianceAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -463,7 +463,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the computation of the secondary collision object position projected and rotated onto the collision plane with identity covariance matrix as input.")
-    public void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithIdentityCovarianceMatrixAsInput() {
+    void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithIdentityCovarianceMatrixAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -529,7 +529,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the computation of the secondary collision object position projected and rotated onto the collision plane with specific covariance matrix as input")
-    public void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithSpecificCovarianceMatrixAsInput() {
+    void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithSpecificCovarianceMatrixAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -597,7 +597,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the computation of the secondary collision object position projected and rotated onto the collision plane.")
-    public void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithNonDiagonalCovarianceAsInput() {
+    void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithNonDiagonalCovarianceAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -673,7 +673,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the computation of the mahalanobis distance")
-    public void testComputeMahalanobisDistance() {
+    void testComputeMahalanobisDistance() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -729,7 +729,7 @@ class ShortTermEncounter2DDefinitionTest {
 
     @Test
     @DisplayName("Test the computation of the mahalanobis distance on Armellin's paper appendix case")
-    public void testComputeExpectedMahalanobisDistanceFromArmellinPaperAppendixCase() {
+    void testComputeExpectedMahalanobisDistanceFromArmellinPaperAppendixCase() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -790,7 +790,7 @@ class ShortTermEncounter2DDefinitionTest {
 
     @Test
     @DisplayName("Test the computation of the miss distance on Armellin's paper appendix case")
-    public void testComputeExpectedMissDistanceFromArmellinPaperAppendixCase() {
+    void testComputeExpectedMissDistanceFromArmellinPaperAppendixCase() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -838,15 +838,15 @@ class ShortTermEncounter2DDefinitionTest {
 
     @Test
     @DisplayName("Test mahalanobis distance method on Armellin's data and make statistics")
-    public void testCompareStatisticsAboutMahalanobisDistanceWithArmellinData() throws IOException {
+    void testCompareStatisticsAboutMahalanobisDistanceWithArmellinData() throws IOException {
 
         // GIVEN & When
         final DescriptiveStatistics statistics =
                 ArmellinStatistics.getMahalanobisDistanceRelativeDifferenceStatistics();
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 1.655252960031764E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 5.289370450380533E-10);
+        Assertions.assertTrue(statistics.getMean() <= 1.655252961E-10);
+        Assertions.assertTrue(statistics.getStandardDeviation() <= 5.289370450561195E-10);
     }
 
     @Test

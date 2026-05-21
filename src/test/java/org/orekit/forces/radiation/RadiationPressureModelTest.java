@@ -182,7 +182,7 @@ class RadiationPressureModelTest {
               fieldIntegratoBuilder.buildIntegrator(field, initialState.getOrbit(), propagationType);
 
         final FieldNumericalPropagator<T> fieldPropagator =
-              new FieldNumericalPropagator<>(field, fieldIntegrator);
+              new FieldNumericalPropagator<>(fieldIntegrator);
 
         fieldPropagator.addForceModel(forceModel);
         fieldPropagator.setOrbitType(propagationType);

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.OrbitType;
@@ -41,6 +42,7 @@ import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.function.BiConsumer;
@@ -48,12 +50,17 @@ import java.util.function.ToDoubleFunction;
 
 class GnssGradientConverterTest {
 
+    private DataContext context;
     private GNSSPropagator propagator;
 
+    @DefaultDataContext
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        final GalileoNavigationMessage goe = new GalileoNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.GALILEO);
+        context = DataContext.getDefault();
+        final GalileoNavigationMessage goe = new GalileoNavigationMessage(context.getTimeScales(),
+                                                                          SatelliteSystem.GALILEO,
+                                                                          GalileoNavigationMessage.FNAV);
         goe.setPRN(4);
         goe.setWeek(1024);
         goe.setTime(293400.0);
@@ -72,13 +79,16 @@ class GnssGradientConverterTest {
         goe.setCrs(-18.78125);
         goe.setCic(3.166496753692627E-8);
         goe.setCis(-1.862645149230957E-8);
-        propagator = new GNSSPropagatorBuilder(goe, DataContext.getDefault().getFrames()).build();
+        propagator = new GNSSPropagatorBuilder(goe,
+                                               context.getFrames().getEME2000(),
+                                               context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+                     buildPropagator();
     }
 
     @Test
     void testInitialStateStmNoSelectedParameters() {
         final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
-        Assertions.assertEquals(9, gPropagator.getParametersDrivers().size());
+        Assertions.assertEquals(12, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(6, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
         checkUnitaryInitialSTM(gPropagator.getInitialState());
@@ -88,9 +98,9 @@ class GnssGradientConverterTest {
     void testInitialStateStmAllParametersSelected() {
         propagator.getOrbitalElements().getParametersDrivers().forEach(p -> p.setSelected(true));
         final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
-        Assertions.assertEquals(9, gPropagator.getParametersDrivers().size());
-        Assertions.assertEquals( 9, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
-        Assertions.assertEquals(15, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
+        Assertions.assertEquals(12, gPropagator.getParametersDrivers().size());
+        Assertions.assertEquals(12, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
+        Assertions.assertEquals(18, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
         checkUnitaryInitialSTM(gPropagator.getInitialState());
     }
 
@@ -98,7 +108,8 @@ class GnssGradientConverterTest {
     void testStmAndJacobian() {
         // Initial GPS orbital elements (Ref: IGS)
         final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
-                                                                              SatelliteSystem.GPS);
+                                                                              SatelliteSystem.GPS,
+                                                                              GPSLegacyNavigationMessage.LNAV);
         goe.setPRN(7);
         goe.setWeek(0);
         goe.setTime(288000);
@@ -117,10 +128,11 @@ class GnssGradientConverterTest {
         goe.setCrs(87.03125);
         goe.setCic(3.203749656677246E-7);
         goe.setCis(4.0978193283081055E-8);
-        GNSSPropagator propagator = goe.getPropagator();
+        GNSSPropagator propagator = goe.getPropagator(context.getFrames().getEME2000(),
+                                                      context.getFrames().getITRF(IERSConventions.IERS_2010, true));
 
         // we want to compute the partial derivatives with respect to Crs and Crc parameters
-        Assertions.assertEquals(9, propagator.getOrbitalElements().getParameters().length);
+        Assertions.assertEquals(12, propagator.getOrbitalElements().getParameters().length);
         propagator.getOrbitalElements().getParameterDriver(CommonGnssData.RADIUS_SINE).setSelected(true);
         propagator.getOrbitalElements().getParameterDriver(CommonGnssData.RADIUS_COSINE).setSelected(true);
         final DoubleArrayDictionary initialJacobianColumns = new DoubleArrayDictionary();
@@ -130,7 +142,7 @@ class GnssGradientConverterTest {
 
         // harvester sorts the columns lexicographically, and wraps them as SpanXxx##
         Assertions.assertEquals(2, harvester.getJacobiansColumnsNames().size());
-        Assertions.assertEquals("Span" + CommonGnssData.RADIUS_COSINE + "0", harvester.getJacobiansColumnsNames().get(0));
+        Assertions.assertEquals("Span" + CommonGnssData.RADIUS_COSINE + "0", harvester.getJacobiansColumnsNames().getFirst());
         Assertions.assertEquals("Span" + CommonGnssData.RADIUS_SINE   + "0", harvester.getJacobiansColumnsNames().get(1));
 
         // propagate orbit

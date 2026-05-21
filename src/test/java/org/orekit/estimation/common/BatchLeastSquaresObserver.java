@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,11 +75,11 @@ public class BatchLeastSquaresObserver implements BatchLSObserver {
         final PVCoordinates currentPV = orbits[0].getPVCoordinates();
         final String format0 = "    %2d         %2d                                 %16.12f     %s       %s     %s     %s     %s%n";
         final String format  = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s     %s%n";
-        final EvaluationCounter<Range>       rangeCounter     = new EvaluationCounter<Range>();
-        final EvaluationCounter<RangeRate>   rangeRateCounter = new EvaluationCounter<RangeRate>();
-        final EvaluationCounter<AngularAzEl> angularCounter   = new EvaluationCounter<AngularAzEl>();
-        final EvaluationCounter<Position>    positionCounter  = new EvaluationCounter<Position>();
-        final EvaluationCounter<PV>          pvCounter        = new EvaluationCounter<PV>();
+        final EvaluationCounter<Range>       rangeCounter     = new EvaluationCounter<>();
+        final EvaluationCounter<RangeRate>   rangeRateCounter = new EvaluationCounter<>();
+        final EvaluationCounter<AngularAzEl> angularCounter   = new EvaluationCounter<>();
+        final EvaluationCounter<Position>    positionCounter  = new EvaluationCounter<>();
+        final EvaluationCounter<PV>          pvCounter        = new EvaluationCounter<>();
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
             logEvaluation(entry.getValue(),
                           rangeCounter, rangeRateCounter, angularCounter, null, positionCounter, pvCounter, null);

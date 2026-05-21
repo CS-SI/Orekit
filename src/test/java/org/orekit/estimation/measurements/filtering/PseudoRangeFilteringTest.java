@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +71,7 @@ public class PseudoRangeFilteringTest {
         nd = filter.filter(nd);
         final RinexObservationParser parser = new RinexObservationParser();
         List<ObservationDataSet> listObsDataSet = parser.parse(nd).getObservationDataSets();
-        ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
+        ObservationDataSet lastObsDataSet = listObsDataSet.getLast();
 
         // Test reset and null condition on doppler
         ObservationData obsDataRange = new ObservationData(rangeType, 10, 0, 7);
@@ -96,11 +95,11 @@ public class PseudoRangeFilteringTest {
         copiedListObsDataSet.add(obsDataSetNullDoppler);
 
         SingleFrequencySmoother prs = new SingleFrequencySmoother(MeasurementType.DOPPLER, 100.0, 1, 50.0);
-        prs.filterDataSet(copiedListObsDataSet, system, prnNumber, PredefinedObservationType.D1C);
+        prs.filterDataSet(copiedListObsDataSet, system, prnNumber, PredefinedObservationType.D1C.getName());
 
-        List<SmoothedObservationDataSet> listObsDataSetUpdate = prs.getFilteredDataMap().get(rangeType);
+        List<SmoothedObservationDataSet> listObsDataSetUpdate = prs.getFilteredDataMap().get(rangeType.getName());
 
-        double lastUpdatedValue = listObsDataSetUpdate.get(listObsDataSetUpdate.size() - 1).getSmoothedData().getValue();
+        double lastUpdatedValue = listObsDataSetUpdate.getLast().getSmoothedData().getValue();
         Assertions.assertEquals(2.0650729099E7, lastUpdatedValue, 1E-6);
 
     }
@@ -144,7 +143,7 @@ public class PseudoRangeFilteringTest {
 
         // Test SatelliteSystem / SNR
         List<ObservationDataSet> listObsDataSet = parser.parse(nd).getObservationDataSets();
-        ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
+        ObservationDataSet lastObsDataSet = listObsDataSet.getLast();
 
         ObservationData obsDataRange = new ObservationData(rangeType, 0, 0, 0);
         ObservationData obsDataRangeSNR = new ObservationData(rangeType, 0, 0, 1);
@@ -171,12 +170,12 @@ public class PseudoRangeFilteringTest {
 
         //
         DualFrequencySmoother prs = new DualFrequencySmoother(100.0, 60);
-        prs.filterDataSet(copiedListObsDataSet, system, prnNumber, phaseTypeF1, phaseTypeF2);
+        prs.filterDataSet(copiedListObsDataSet, system, prnNumber, phaseTypeF1.getName(), phaseTypeF2.getName());
         SingleFrequencySmoother prsSF = new SingleFrequencySmoother(MeasurementType.CARRIER_PHASE, 100.0, 60, 50.0);
-        prsSF.filterDataSet(copiedListObsDataSet, system, prnNumber, phaseTypeF1);
+        prsSF.filterDataSet(copiedListObsDataSet, system, prnNumber, phaseTypeF1.getName());
 
-        DualFrequencyHatchFilter filter = prs.getMapFilters().get(rangeType);
-        SingleFrequencyHatchFilter filterSF = prsSF.getMapFilters().get(rangeType);
+        DualFrequencyHatchFilter filter = prs.getMapFilters().get(rangeType.getName());
+        SingleFrequencyHatchFilter filterSF = prsSF.getMapFilters().get(rangeType.getName());
 
         ArrayList<Double> filteredSF = filterSF.getSmoothedCodeHistory();
         ArrayList<Double> filteredDF = filter.getSmoothedCodeHistory();
@@ -207,9 +206,9 @@ public class PseudoRangeFilteringTest {
 
     @Test
     public void testHatchCarrierPhase2() {
-        ObservationType rangeType = PredefinedObservationType.C1;
-        ObservationType phaseTypeF1 = PredefinedObservationType.L1;
-        ObservationType phaseTypeF2 = PredefinedObservationType.L2;
+        String rangeType = PredefinedObservationType.C1.getName();
+        String phaseTypeF1 = PredefinedObservationType.L1.getName();
+        String phaseTypeF2 = PredefinedObservationType.L2.getName();
 
         SatelliteSystem system = SatelliteSystem.GPS;
         int prnNumber = 7;
@@ -228,8 +227,8 @@ public class PseudoRangeFilteringTest {
         ArrayList<Double> codeDFArray = filterDF.getCodeHistory();
         ArrayList<Double> smoothedDFArray = filterDF.getSmoothedCodeHistory();
 
-        double lastValueSmoothed = smoothedDFArray.get(smoothedDFArray.size()-1);
-        double lastValueCode = codeDFArray.get(codeDFArray.size()-1);
+        double lastValueSmoothed = smoothedDFArray.getLast();
+        double lastValueCode = codeDFArray.getLast();
 
         // Regression test
         Assertions.assertEquals(2.4715822416833777E7, lastValueSmoothed, 1e-6);
@@ -245,8 +244,8 @@ public class PseudoRangeFilteringTest {
         ArrayList<Double> codeSFArray = filterSF.getCodeHistory();
         ArrayList<Double> smoothedSFArray = filterSF.getSmoothedCodeHistory();
 
-        lastValueSmoothed = smoothedSFArray.get(smoothedSFArray.size()-1);
-        lastValueCode = codeSFArray.get(codeSFArray.size()-1);
+        lastValueSmoothed = smoothedSFArray.getLast();
+        lastValueCode = codeSFArray.getLast();
 
         // Regression test
         Assertions.assertEquals(2.4715820677129257E7, lastValueSmoothed, 1e-6);
@@ -259,10 +258,10 @@ public class PseudoRangeFilteringTest {
         List<SmoothedObservationDataSet> listObsDataSetUpdateDF = prs.getFilteredDataMap().get(rangeType);
         List<SmoothedObservationDataSet> listObsDataSetUpdateSF = prsSF.getFilteredDataMap().get(rangeType);
 
-        double lastUpdatedValueDF = listObsDataSetUpdateDF.get(listObsDataSetUpdateDF.size() - 1).getSmoothedData().getValue();
+        double lastUpdatedValueDF = listObsDataSetUpdateDF.getLast().getSmoothedData().getValue();
         Assertions.assertEquals(2.4715822416833777E7, lastUpdatedValueDF, 1E-6);
 
-        double lastUpdatedValueSF = listObsDataSetUpdateSF.get(listObsDataSetUpdateSF.size() - 1).getSmoothedData().getValue();
+        double lastUpdatedValueSF = listObsDataSetUpdateSF.getLast().getSmoothedData().getValue();
         Assertions.assertEquals(2.4715820677129257E7, lastUpdatedValueSF, 1E-6);
 
     }
@@ -271,7 +270,7 @@ public class PseudoRangeFilteringTest {
 
         final ArrayList<Double> valueArray = new ArrayList<>();
         int cpt = 0;
-        Path pathToFile = Paths.get(fileName);
+        Path pathToFile = Path.of(fileName);
 
         try (BufferedReader br = Files.newBufferedReader(pathToFile, StandardCharsets.UTF_8)) {
             String line = br.readLine();

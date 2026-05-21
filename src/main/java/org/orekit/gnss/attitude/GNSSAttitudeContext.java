@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,12 +53,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 class GNSSAttitudeContext implements TimeStamped {
 
     /** Constant Y axis. */
-    private static final PVCoordinates PLUS_Y_PV =
-            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates PLUS_Y_PV = new PVCoordinates(Vector3D.PLUS_J);
 
     /** Constant Z axis. */
-    private static final PVCoordinates MINUS_Z_PV =
-            new PVCoordinates(Vector3D.MINUS_K, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates MINUS_Z_PV = new PVCoordinates(Vector3D.MINUS_K);
 
     /** Limit value below which we shoud use replace beta by betaIni. */
     private static final double BETA_SIGN_CHANGE_PROTECTION = FastMath.toRadians(0.07);
@@ -94,15 +92,15 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Relative orbit angle to turn center.
      * @since 12.0
      */
-    private UnivariateDerivative2 delta;
+    private final UnivariateDerivative2 delta;
 
     /** Sun elevation at center.
      * @since 12.0
      */
-    private UnivariateDerivative2 beta;
+    private final UnivariateDerivative2 beta;
 
     /** Spacecraft angular velocity. */
-    private double muRate;
+    private final double muRate;
 
     /** Limit cosine for the midnight turn. */
     private double cNight;
@@ -421,7 +419,7 @@ class GNSSAttitudeContext implements TimeStamped {
         final Vector3D      p             = svPV.getPosition();
         final Vector3D      v             = svPV.getVelocity();
         final Vector3D      a             = svPV.getAcceleration();
-        final double        r2            = p.getNormSq();
+        final double        r2            = p.getNorm2Sq();
         final double        r             = FastMath.sqrt(r2);
         final Vector3D      keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
         final PVCoordinates velocity      = new PVCoordinates(v, a, keplerianJerk);
@@ -445,10 +443,7 @@ class GNSSAttitudeContext implements TimeStamped {
      */
     public TimeStampedAngularCoordinates orbitNormalYaw() {
         final Transform t = LOFType.LVLH_CCSDS.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
-        return new TimeStampedAngularCoordinates(date,
-                                                 t.getRotation(),
-                                                 t.getRotationRate(),
-                                                 t.getRotationAcceleration());
+        return new TimeStampedAngularCoordinates(date, t.getAngular());
     }
 
 }

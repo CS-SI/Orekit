@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,15 +24,13 @@ import java.util.Map;
 
 import org.orekit.files.rinex.RinexFile;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
-import org.orekit.models.earth.ionosphere.nequick.NeQuickModel;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.NavICL1NVNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
@@ -45,15 +43,6 @@ import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
  * @since 11.0
  */
 public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
-
-    /** The 4 Klobuchar coefficients of a cubic equation representing the amplitude of the vertical delay. */
-    private double[] klobucharAlpha;
-
-    /** The 4 coefficients of a cubic equation representing the period of the model. */
-    private double[] klobucharBeta;
-
-    /** The three ionospheric coefficients broadcast in the Galileo navigation message. */
-    private double[] neQuickAlpha;
 
     /** A map containing the GPS navigation messages. */
     private final Map<String, List<GPSLegacyNavigationMessage>> gpsLegacyData;
@@ -82,10 +71,10 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
     /** A map containing the NavIC navigation messages.
      * @since 13.0
      */
-    private final Map<String, List<NavICL1NVNavigationMessage>> navicL1NVData;
+    private final Map<String, List<NavICL1NvNavigationMessage>> navicL1NVData;
 
     /** A map containing the GLONASS navigation messages. */
-    private final Map<String, List<GLONASSNavigationMessage>> glonassData;
+    private final Map<String, List<GLONASSFdmaNavigationMessage>> glonassData;
 
     /** A map containing the SBAS navigation messages. */
     private final Map<String, List<SBASNavigationMessage>> sbasData;
@@ -115,82 +104,43 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      */
     private final List<IonosphereBDGIMMessage> bdgimMessages;
 
+    /** Ionosphere NavIC Klobuchar messages.
+     * @since 14.0
+     */
+    private final List<IonosphereNavICKlobucharMessage> navICKlobucharMessages;
+
+    /** Ionosphere NavIC NeQuick N messages.
+     * @since 14.0
+     */
+    private final List<IonosphereNavICNeQuickNMessage> navICNeQuickNMessages;
+
+    /** Ionosphere GLONASS CDMS messages.
+     * @since 14.0
+     */
+    private final List<IonosphereGlonassCdmsMessage> glonassCDMSMessages;
+
     /** Constructor. */
     public RinexNavigation() {
         super(new RinexNavigationHeader());
-        this.gpsLegacyData      = new HashMap<>();
-        this.gpsCivilianData    = new HashMap<>();
-        this.galileoData        = new HashMap<>();
-        this.beidouLegacyData   = new HashMap<>();
-        this.beidouCivilianData = new HashMap<>();
-        this.qzssLegacyData     = new HashMap<>();
-        this.qzssCivilianData   = new HashMap<>();
-        this.navicLegacyData    = new HashMap<>();
-        this.navicL1NVData = new HashMap<>();
-        this.glonassData        = new HashMap<>();
-        this.sbasData           = new HashMap<>();
-        this.systemTimeOffsets  = new ArrayList<>();
-        this.eops               = new ArrayList<>();
-        this.klobucharMessages  = new ArrayList<>();
-        this.nequickGMessages   = new ArrayList<>();
-        this.bdgimMessages      = new ArrayList<>();
-    }
-
-    /**
-     * Get the "alpha" ionospheric parameters.
-     * <p>
-     * They are used to initialize the {@link KlobucharIonoModel}.
-     * </p>
-     * @return the "alpha" ionospheric parameters
-     */
-    public double[] getKlobucharAlpha() {
-        return klobucharAlpha.clone();
-    }
-
-    /**
-     * Set the "alpha" ionspheric parameters.
-     * @param klobucharAlpha the "alpha" ionspheric parameters to set
-     */
-    public void setKlobucharAlpha(final double[] klobucharAlpha) {
-        this.klobucharAlpha = klobucharAlpha.clone();
-    }
-
-    /**
-     * Get the "beta" ionospheric parameters.
-     * <p>
-     * They are used to initialize the {@link KlobucharIonoModel}.
-     * </p>
-     * @return the "beta" ionospheric parameters
-     */
-    public double[] getKlobucharBeta() {
-        return klobucharBeta.clone();
-    }
-
-    /**
-     * Set the "beta" ionospheric parameters.
-     * @param klobucharBeta the "beta" ionospheric parameters to set
-     */
-    public void setKlobucharBeta(final double[] klobucharBeta) {
-        this.klobucharBeta = klobucharBeta.clone();
-    }
-
-    /**
-     * Get the "alpha" ionospheric parameters.
-     * <p>
-     * They are used to initialize the {@link NeQuickModel}.
-     * </p>
-     * @return the "alpha" ionospheric parameters
-     */
-    public double[] getNeQuickAlpha() {
-        return neQuickAlpha.clone();
-    }
-
-    /**
-     * Set the "alpha" ionospheric parameters.
-     * @param neQuickAlpha the "alpha" ionospheric parameters to set
-     */
-    public void setNeQuickAlpha(final double[] neQuickAlpha) {
-        this.neQuickAlpha = neQuickAlpha.clone();
+        this.gpsLegacyData          = new HashMap<>();
+        this.gpsCivilianData        = new HashMap<>();
+        this.galileoData            = new HashMap<>();
+        this.beidouLegacyData       = new HashMap<>();
+        this.beidouCivilianData     = new HashMap<>();
+        this.qzssLegacyData         = new HashMap<>();
+        this.qzssCivilianData       = new HashMap<>();
+        this.navicLegacyData        = new HashMap<>();
+        this.navicL1NVData          = new HashMap<>();
+        this.glonassData            = new HashMap<>();
+        this.sbasData               = new HashMap<>();
+        this.systemTimeOffsets      = new ArrayList<>();
+        this.eops                   = new ArrayList<>();
+        this.klobucharMessages      = new ArrayList<>();
+        this.nequickGMessages       = new ArrayList<>();
+        this.bdgimMessages          = new ArrayList<>();
+        this.navICKlobucharMessages = new ArrayList<>();
+        this.navICNeQuickNMessages  = new ArrayList<>();
+        this.glonassCDMSMessages    = new ArrayList<>();
     }
 
     /**
@@ -447,7 +397,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * Get all the NavIC navigation messages contained in the file.
      * @return an unmodifiable list of NavIC navigation messages
      */
-    public Map<String, List<NavICL1NVNavigationMessage>> getNavICL1NVNavigationMessages() {
+    public Map<String, List<NavICL1NvNavigationMessage>> getNavICL1NVNavigationMessages() {
         return Collections.unmodifiableMap(navicL1NVData);
     }
 
@@ -456,7 +406,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @param satId satellite Id (i.e. Satellite System (e.g. I) + satellite number)
      * @return an unmodifiable list of NavIC navigation messages
      */
-    public List<NavICL1NVNavigationMessage> getNavICL1NVNavigationMessages(final String satId) {
+    public List<NavICL1NvNavigationMessage> getNavICL1NVNavigationMessages(final String satId) {
         return Collections.unmodifiableList(navicL1NVData.get(satId));
     }
 
@@ -464,7 +414,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * Add a NavIC navigation message to the list.
      * @param message message to add
      */
-    public void addNavICL1NVNavigationMessage(final NavICL1NVNavigationMessage message) {
+    public void addNavICL1NVNavigationMessage(final NavICL1NvNavigationMessage message) {
         final int    irsPRN = message.getPRN();
         final String prnString = irsPRN < 10 ? "0" + irsPRN : String.valueOf(irsPRN);
         final String satId = SatelliteSystem.NAVIC.getKey() + prnString;
@@ -476,7 +426,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * Get all the Glonass navigation messages contained in the file.
      * @return an unmodifiable list of Glonass navigation messages
      */
-    public Map<String, List<GLONASSNavigationMessage>> getGlonassNavigationMessages() {
+    public Map<String, List<GLONASSFdmaNavigationMessage>> getGlonassNavigationMessages() {
         return Collections.unmodifiableMap(glonassData);
     }
 
@@ -485,7 +435,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @param satId satellite Id (i.e. Satellite System (e.g. R) + satellite number)
      * @return an unmodifiable list of Glonass navigation messages
      */
-    public List<GLONASSNavigationMessage> getGlonassNavigationMessages(final String satId) {
+    public List<GLONASSFdmaNavigationMessage> getGlonassNavigationMessages(final String satId) {
         return Collections.unmodifiableList(glonassData.get(satId));
     }
 
@@ -493,7 +443,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * Add a Glonass navigation message to the list.
      * @param message message to add
      */
-    public void addGlonassNavigationMessage(final GLONASSNavigationMessage message) {
+    public void addGlonassNavigationMessage(final GLONASSFdmaNavigationMessage message) {
         final int    gloPRN = message.getPRN();
         final String prnString = gloPRN < 10 ? "0" + gloPRN : String.valueOf(gloPRN);
         final String satId = SatelliteSystem.GLONASS.getKey() + prnString;
@@ -618,6 +568,60 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      */
     public void addBDGIMMessage(final IonosphereBDGIMMessage bdgim) {
         bdgimMessages.add(bdgim);
+    }
+
+    /**
+     * Get the ionosphere NavIC Klobuchar messages.
+     * @return an unmodifiable list of ionosphere NavIC Klobuchar messages
+     * @since 14.0
+     */
+    public List<IonosphereNavICKlobucharMessage> getNavICKlobucharMessages() {
+        return Collections.unmodifiableList(navICKlobucharMessages);
+    }
+
+    /**
+     * Add an ionosphere NavIC Klobuchar message.
+     * @param navIcKlobuchar ionosphere NavIC Klobuchar message
+     * @since 14.0
+     */
+    public void addNavICKlobucharMessage(final IonosphereNavICKlobucharMessage navIcKlobuchar) {
+        navICKlobucharMessages.add(navIcKlobuchar);
+    }
+
+    /**
+     * Get the ionosphere NavIC NeQuick N messages.
+     * @return an unmodifiable list of ionosphere NavIC NeQuick N messages
+     * @since 14.0
+     */
+    public List<IonosphereNavICNeQuickNMessage> getNavICNeQuickNMessages() {
+        return Collections.unmodifiableList(navICNeQuickNMessages);
+    }
+
+    /**
+     * Add an ionosphere NavIC NeQuick N message.
+     * @param navIcNeQuickN ionosphere NavIC NeQuick N message
+     * @since 14.0
+     */
+    public void addNavICNeQuickNMessage(final IonosphereNavICNeQuickNMessage navIcNeQuickN) {
+        navICNeQuickNMessages.add(navIcNeQuickN);
+    }
+
+    /**
+     * Get the ionosphere GLONASS CDMS messages.
+     * @return an unmodifiable list of ionosphere GLONASS CDMS messages
+     * @since 14.0
+     */
+    public List<IonosphereGlonassCdmsMessage> getGlonassCDMSMessages() {
+        return Collections.unmodifiableList(glonassCDMSMessages);
+    }
+
+    /**
+     * Add an ionosphere GLONASS CDMS message.
+     * @param glonassCDMS ionosphere GLONASS CDMS message
+     * @since 14.0
+     */
+    public void addGlonassCDMSMessage(final IonosphereGlonassCdmsMessage glonassCDMS) {
+        glonassCDMSMessages.add(glonassCDMS);
     }
 
 }

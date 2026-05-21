@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -77,6 +77,7 @@ public class GNSSDateTest {
         Assertions.assertEquals(1000 * refSeconds, GNSSDate.getMilliInWeek(), 1.0e-15);
         Assertions.assertEquals(refSeconds, GNSSDate.getSecondsInWeek(), 1.0e-15);
         Assertions.assertEquals(0, GNSSDate.getDate().durationFrom(ref), 1.0e-15);
+        Assertions.assertEquals(system, GNSSDate.getSystem());
     }
 
     @Test

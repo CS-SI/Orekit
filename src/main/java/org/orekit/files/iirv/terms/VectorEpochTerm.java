@@ -1,4 +1,4 @@
-/* Copyright 2024-2025 The Johns Hopkins University Applied Physics Laboratory
+/* Copyright 2024-2026 The Johns Hopkins University Applied Physics Laboratory
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -156,10 +156,10 @@ public class VectorEpochTerm extends IIRVVectorTerm<TimeComponents> {
             return toEncodedString(new TimeComponents(nextHour, nextMinute, nextSecond));
         }
 
-        return String.format("%02d%02d%s",
-            value.getHour(),
-            value.getMinute(),
-            ss_sss.replace(".", "")
+        return "%02d%02d%s".formatted(
+                value.getHour(),
+                value.getMinute(),
+                ss_sss.replace(".", "")
         );
     }
 }

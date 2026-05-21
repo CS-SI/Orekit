@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
@@ -132,17 +131,6 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * @since 13.1.5
      */
     private final CcsdsFrameMapper frameMapper;
-
-    /** Simple constructor.
-     * @param epochT0 T0 epoch from file metadata
-     * @param dataContext data context
-     * @deprecated in favor of {@link #TrajectoryStateHistoryMetadata(AbsoluteDate,
-     * DataContext, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
-        this(epochT0, dataContext, new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.
@@ -267,8 +255,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         final int    index    = end < original.length() ? Integer.parseInt(original.substring(end)) : 0;
 
         // build offset index, taking care to use at least the same number of digits
-        final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
-                                              index + 1);
+        final String newIndex = "%%0%dd".formatted(original.length() - end).formatted(
+                index + 1);
 
         return prefix + newIndex;
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,7 @@ public class CoefficientFactoryTest {
     private static final double eps12 = 1e-12;
 
     /** Map of the Qns derivatives, for each (n, s) couple. */
-    private static Map<NSKey, PolynomialFunction> QNS_MAP = new TreeMap<NSKey, PolynomialFunction>();
+    private static Map<NSKey, PolynomialFunction> QNS_MAP = new TreeMap<>();
 
     @Test
     public void testVns() {

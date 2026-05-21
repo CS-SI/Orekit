@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -173,7 +173,7 @@ public class FieldPVCoordinatesTest {
         //action + verify
         Assertions.assertEquals(
                 new FieldPVCoordinates<>(p, v).getAngularVelocity(),
-                p.crossProduct(v).scalarMultiply(p.getNormSq().reciprocal()));
+                p.crossProduct(v).scalarMultiply(p.getNorm2Sq().reciprocal()));
         //check extra simple cases
         Assertions.assertEquals(
                 new FieldPVCoordinates<>(i, i.scalarMultiply(-1)).getAngularVelocity(),
@@ -624,7 +624,7 @@ public class FieldPVCoordinatesTest {
         final FieldVector3D<Binary64> p  = pva.getPosition();
         final FieldVector3D<Binary64>  v  = pva.getVelocity();
         final FieldVector3D<Binary64>  a  = pva.getAcceleration();
-        final Binary64   r2 = p.getNormSq();
+        final Binary64   r2 = p.getNorm2Sq();
         final Binary64   r  = r2.sqrt();
         final FieldVector3D<Binary64>  keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-2).divide(r2), a,
                                                                             a.getNorm().negate().divide(r), v);

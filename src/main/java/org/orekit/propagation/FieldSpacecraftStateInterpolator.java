@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,15 @@
  * limitations under the License.
  */
 package org.orekit.propagation;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -46,15 +55,6 @@ import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 /**
  * Generic class for spacecraft state interpolator.
  * <p>
@@ -66,7 +66,7 @@ import java.util.stream.Collectors;
  *
  * @author Luc Maisonobe
  * @author Vincent Cucchietti
- * @see SpacecraftState
+ * @see FieldSpacecraftState
  */
 public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK>>
         extends AbstractFieldTimeInterpolator<FieldSpacecraftState<KK>, KK> {
@@ -359,7 +359,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
 
         // Get first state definition
-        final FieldSpacecraftState<KK> earliestState   = interpolationData.getNeighborList().get(0);
+        final FieldSpacecraftState<KK> earliestState   = interpolationData.getNeighborList().getFirst();
         final boolean                  areOrbitDefined = earliestState.isOrbitDefined();
 
         // Prepare samples
@@ -595,7 +595,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
                 // Get current entry
                 final List<Pair<FieldAbsoluteDate<KK>, O>> currentAdditionalSamples = entry.getValue();
                 final O currentInterpolatedAdditional;
-                if (currentAdditionalSamples.get(0).getValue() instanceof CalculusFieldElement[]) {
+                if (currentAdditionalSamples.getFirst().getValue() instanceof CalculusFieldElement[]) {
                     //noinspection unchecked
                     currentInterpolatedAdditional = (O) interpolateAdditionalSamples(field, interpolationDate, currentAdditionalSamples);
                 } else {
@@ -623,7 +623,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
     private <O> KK[] interpolateAdditionalSamples(final Field<KK> field, final FieldAbsoluteDate<KK> interpolationDate, final List<Pair<FieldAbsoluteDate<KK>, O>> currentAdditionalSamples) {
 
         // Extract number of values for this specific entry
-        final int nbOfValues = ((KK[]) currentAdditionalSamples.get(0).getValue()).length;
+        final int nbOfValues = ((KK[]) currentAdditionalSamples.getFirst().getValue()).length;
 
         // For each value of current additional state entry
         final KK[] currentInterpolatedAdditional = MathArrays.buildArray(field, nbOfValues);

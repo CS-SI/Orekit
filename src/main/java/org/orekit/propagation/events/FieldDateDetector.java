@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,9 +26,13 @@ import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 
@@ -76,6 +80,9 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
 
     /** List of event dates. */
     private final ArrayList<FieldEventDate<T>> eventDateList;
+
+    /** Event function. */
+    private final EventFunction eventFunction;
 
     /** Current event date. */
     private int currentIndex;
@@ -126,6 +133,18 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
             addEventDate(ts.getDate());
         }
         this.minGap        = minGap;
+        final EventFunction baseFunction = super.getEventFunction();
+        this.eventFunction = new EventFunctionModifier() {
+            @Override
+            public EventFunction getBaseFunction() {
+                return baseFunction;
+            }
+
+            @Override
+            public boolean dependsOnTimeOnly() {
+                return true;
+            }
+        };
     }
 
     /**
@@ -149,10 +168,9 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
         return new FieldDateDetector<>(detectionSettings, newHandler, minGap, dates);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public boolean dependsOnTimeOnly() {
-        return true;
+    public EventFunction getEventFunction() {
+        return eventFunction;
     }
 
     /** Get all event field dates currently managed, in chronological order.
@@ -168,13 +186,14 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
      */
+    @Override
     public T g(final FieldSpacecraftState<T> s) {
         gDate = s.getDate();
         if (currentIndex < 0) {
             return s.getMass().getField().getZero().newInstance(-1);
         } else {
             final FieldEventDate<T> event = getClosest(gDate);
-            return event.isgIncrease() ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);
+            return event.gIncrease ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);
         }
     }
 
@@ -183,6 +202,13 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     public FieldAbsoluteDate<T> getDate() {
         return currentIndex < 0 ? null : eventDateList.get(currentIndex).getDate();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DateDetector toEventDetector(final EventHandler eventHandler) {
+        return new DateDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler, minGap,
+                getDates().stream().map(tFieldTimeStamped -> tFieldTimeStamped.getDate().toAbsoluteDate()).toArray(AbsoluteDate[]::new));
     }
 
     /** Add an event date.
@@ -203,14 +229,14 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
             eventDateList.add(new FieldEventDate<>(target, increasing));
         } else {
             final                      int lastIndex = eventDateList.size() - 1;
-            final FieldAbsoluteDate<T> firstDate     = eventDateList.get(0).getDate();
+            final FieldAbsoluteDate<T> firstDate     = eventDateList.getFirst().getDate();
             final FieldAbsoluteDate<T> lastDate      = eventDateList.get(lastIndex).getDate();
             if (firstDate.durationFrom(target).getReal() > minGap) {
-                increasing = !eventDateList.get(0).isgIncrease();
-                eventDateList.add(0, new FieldEventDate<>(target, increasing));
+                increasing = !eventDateList.getFirst().gIncrease;
+                eventDateList.addFirst(new FieldEventDate<>(target, increasing));
                 currentIndex++;
             } else if (target.durationFrom(lastDate).getReal() > minGap) {
-                increasing = !eventDateList.get(lastIndex).isgIncrease();
+                increasing = !eventDateList.get(lastIndex).gIncrease;
                 eventDateList.add(new FieldEventDate<>(target, increasing));
             } else {
                 throw new OrekitIllegalArgumentException(OrekitMessages.EVENT_DATE_TOO_CLOSE,
@@ -253,38 +279,18 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
         return eventDateList.get(currentIndex);
     }
 
-    /** Event date specification. */
-    private static class FieldEventDate<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
+    /** Event date specification.
+     * @param <T> type of the field elements
+     * @param eventDate event date
+     * @param gIncrease flag for g function way around event date
+     */
+    private record FieldEventDate<T extends CalculusFieldElement<T>>(FieldAbsoluteDate<T> eventDate,
+                                                                     boolean gIncrease) implements FieldTimeStamped<T> {
 
-        /** Event date. */
-        private final FieldAbsoluteDate<T> eventDate;
-
-        /** Flag for g function way around event date. */
-        private final boolean gIncrease;
-
-        /** Simple constructor.
-         * @param date date
-         * @param increase if true, g function increases around event date
-         */
-        FieldEventDate(final FieldAbsoluteDate<T> date, final boolean increase) {
-            this.eventDate = date;
-            this.gIncrease = increase;
-        }
-
-        /** Getter for event date.
-         * @return event date
-         */
+        @Override
         public FieldAbsoluteDate<T> getDate() {
             return eventDate;
         }
 
-        /** Getter for g function way at event date.
-         * @return g function increasing flag
-         */
-        public boolean isgIncrease() {
-            return gIncrease;
-        }
-
     }
-
 }

@@ -104,7 +104,7 @@ public class NewtonianAttraction implements ForceModel {
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
         final double mu = parameters[0];
-        final double r2 = s.getPosition().getNormSq();
+        final double r2 = s.getPosition().getNorm2Sq();
         return new Vector3D(-mu / (FastMath.sqrt(r2) * r2), s.getPosition());
     }
 
@@ -113,7 +113,7 @@ public class NewtonianAttraction implements ForceModel {
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
         final T mu = parameters[0];
-        final T r2 = s.getPosition().getNormSq();
+        final T r2 = s.getPosition().getNorm2Sq();
         return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(mu).negate(), s.getPosition());
     }
 

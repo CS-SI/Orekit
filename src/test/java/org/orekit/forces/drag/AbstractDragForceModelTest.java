@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,34 +18,108 @@ package org.orekit.forces.drag;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.Atmosphere;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.DerivativeStateUtils;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AbstractDragForceModelTest {
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testGetFieldDensityFiniteDifferences() {
+        // GIVEN
+        final double expectedRealDensity = 1.;
+        final GradientField field = GradientField.getField(6);
+        final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field,
+                TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(fieldOrbit);
+        final Atmosphere atmosphere = mock();
+        when(atmosphere.getDensity(any(AbsoluteDate.class), any(Vector3D.class), any(Frame.class))).thenReturn(expectedRealDensity);
+        final Atmosphere fieldAtmosphere = mock();
+        when(fieldAtmosphere.getFrame()).thenReturn(fieldOrbit.getFrame());
+        when(fieldAtmosphere.getDensity(any(FieldAbsoluteDate.class), any(FieldVector3D.class), any(Frame.class)))
+                .thenReturn(Gradient.constant(field.getOne().getFreeParameters(), 2.));
+        final TestDragForceModel dragForceModel = new TestDragForceModel(atmosphere, fieldAtmosphere);
+        // WHEN
+        final Gradient density = dragForceModel.getFieldDensity(fieldState);
+        // THEN
+        assertEquals(expectedRealDensity, density.getReal());
+        verify(atmosphere, times(1)).getDensity(any(AbsoluteDate.class), any(Vector3D.class), any(Frame.class));
+        verify(fieldAtmosphere, times(4)).getDensity(any(AbsoluteDate.class), any(Vector3D.class), any(Frame.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testGetFieldDensity() {
+        // GIVEN
+        final double expectedRealDensity = 1.;
+        final Atmosphere atmosphere = mock();
+        when(atmosphere.getDensity(any(AbsoluteDate.class), any(Vector3D.class), any(Frame.class))).thenReturn(expectedRealDensity);
+        final Atmosphere fieldAtmosphere = mock();
+        when(fieldAtmosphere.getDensity(any(FieldAbsoluteDate.class), any(FieldVector3D.class), any(Frame.class))).thenReturn(Gradient.constant(0, 2.));
+        final TestDragForceModel dragForceModel = new TestDragForceModel(atmosphere, fieldAtmosphere);
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(GradientField.getField(0), state);
+        // WHEN
+        final Gradient density = dragForceModel.getFieldDensity(fieldState);
+        // THEN
+        assertEquals(expectedRealDensity, density.getReal());
+        verify(atmosphere, times(1)).getDensity(any(AbsoluteDate.class), any(Vector3D.class), any(Frame.class));
+        verify(fieldAtmosphere, times(1)).getDensity(eq(fieldState.getDate()), any(FieldVector3D.class), any(Frame.class));
+    }
+
+    @Test
+    void testDependsOnPositionOnly() {
+        // GIVEN
+        final TestAtmosphereModel atmosphereModel = new TestAtmosphereModel();
+        final TestDragForceModel dragForceModel = new TestDragForceModel(atmosphereModel);
+        // WHEN
+        final boolean actual = dragForceModel.dependsOnPositionOnly();
+        // THEN
+        assertFalse(actual);
+    }
+
+    @Test
+    void testGetAtmosphereForField() {
+        // GIVEN
+        final TestAtmosphereModel atmosphereModel = new TestAtmosphereModel();
+        final TestAtmosphereModel otherAtmosphere = new TestAtmosphereModel();
+        final TestDragForceModel dragForceModel = new TestDragForceModel(atmosphereModel, otherAtmosphere);
+        // WHEN
+        final Atmosphere atmosphere = dragForceModel.getAtmosphereForField();
+        // THEN
+        Assertions.assertEquals(otherAtmosphere, atmosphere);
+    }
 
     @Test
     void testGetGradientDensityWrtState() {
@@ -70,32 +144,6 @@ class AbstractDragForceModelTest {
         }
     }
 
-    @Test
-    void testGetDSDensityWrtState() {
-        // GIVEN
-        final TestDragForceModel testDragForceModel = new TestDragForceModel(new TestAtmosphereModel());
-        final Frame frame = FramesFactory.getGCRF();
-        final Vector3D position = new Vector3D(100., 1, 0);
-        final int freeParameters = 3;
-        final DSFactory factory = new DSFactory(freeParameters, 1);
-        final FieldVector3D<DerivativeStructure> fieldPosition = new FieldVector3D<>(
-                factory.variable(0, position.getX()),
-                factory.variable(1, position.getY()),
-                factory.variable(2, position.getZ()));
-        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        // WHEN
-        final DerivativeStructure actualDS = testDragForceModel.getDSDensityWrtState(date, frame, fieldPosition);
-        // THEN
-        final DerivativeStructure expectedDS = testDragForceModel.getDSDensityWrtStateUsingFiniteDifferences(date,
-                frame, fieldPosition);
-        Assertions.assertEquals(expectedDS.getValue(), actualDS.getValue());
-        final double[] actualDerivatives = actualDS.getAllDerivatives();
-        final double[] expectedDerivatives = expectedDS.getAllDerivatives();
-        for (int i = 1; i < expectedDerivatives.length; i++) {
-            Assertions.assertEquals(expectedDerivatives[i], actualDerivatives[i], 1e-10);
-        }
-    }
-
     private static class TestAtmosphereModel implements Atmosphere {
 
         @Override
@@ -105,19 +153,23 @@ class AbstractDragForceModelTest {
 
         @Override
         public double getDensity(AbsoluteDate date, Vector3D position, Frame frame) {
-            return FastMath.exp(-position.getNormSq());
+            return FastMath.exp(-position.getNorm2Sq());
         }
 
         @Override
         public <T extends CalculusFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame) {
-            return FastMath.exp(position.getNormSq().negate());
+            return FastMath.exp(position.getNorm2Sq().negate());
         }
     }
 
     private static class TestDragForceModel extends AbstractDragForceModel {
 
-        protected TestDragForceModel(Atmosphere atmosphere) {
+        TestDragForceModel(Atmosphere atmosphere) {
             super(atmosphere);
+        }
+
+        TestDragForceModel(Atmosphere atmosphere, Atmosphere atmosphereForDerivatives) {
+            super(atmosphere, true, atmosphereForDerivatives);
         }
 
         @Override

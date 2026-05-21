@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,16 +41,16 @@ import org.orekit.utils.Constants;
 public class DualFrequencyHatchFilter extends HatchFilter {
 
     /** First wavelength used for smoothing. */
-    private double wavelengthFreq1;
+    private final double wavelengthFreq1;
 
     /** Second wavelength used for smoothing. */
-    private double wavelengthFreq2;
+    private final double wavelengthFreq2;
 
     /** List used to store the phase value of the first frequency. */
-    private ArrayList<Double> phase1History;
+    private final ArrayList<Double> phase1History;
 
     /** List used to store the phase value of the second frequency.*/
-    private ArrayList<Double> phase2History;
+    private final ArrayList<Double> phase2History;
 
     /**
      * Constructor for the Dual Frequency Hatch Filter.

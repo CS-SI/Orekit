@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.RealMatrix;
@@ -32,18 +36,14 @@ import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.SpacecraftStateInterpolator;
-import org.orekit.propagation.StateCovariance;
+import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ImmutableTimeStampedCache;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.orekit.utils.DataDictionary;
 
 /**
  * This class is designed to accept and handle tabulated orbital entries. Tabulated entries are classified and then
@@ -69,19 +69,19 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     private final String[] additional;
 
     /** List of spacecraft states. */
-    private final transient ImmutableTimeStampedCache<SpacecraftState> statesCache;
+    private final ImmutableTimeStampedCache<SpacecraftState> statesCache;
 
     /** List of covariances. **/
-    private final transient ImmutableTimeStampedCache<StateCovariance> covariancesCache;
+    private final ImmutableTimeStampedCache<StateCovariance> covariancesCache;
 
     /** Spacecraft state interpolator. */
-    private final transient TimeInterpolator<SpacecraftState> stateInterpolator;
+    private final TimeInterpolator<SpacecraftState> stateInterpolator;
 
     /** State covariance interpolator. */
-    private final transient TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator;
+    private final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator;
 
     /** Flag defining if states are defined using an orbit or an absolute position-velocity-acceleration. */
-    private final transient boolean statesAreOrbitDefined;
+    private final boolean statesAreOrbitDefined;
 
     /**
      * Legacy constructor with tabulated states and default Hermite interpolation.
@@ -104,8 +104,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             throws MathIllegalArgumentException {
         // If states is empty an exception will be thrown in the other constructor
         this(states, new SpacecraftStateInterpolator(interpolationPoints,
-                                                     states.get(0).getFrame(),
-                                                     states.get(0).getFrame()),
+                                                     states.getFirst().getFrame(),
+                                                     states.getFirst().getFrame()),
              new ArrayList<>(), null);
     }
 
@@ -169,7 +169,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             throws MathIllegalArgumentException {
         this(states, stateInterpolator, covariances, covarianceInterpolator,
              // if states is empty an exception will be thrown in the other constructor
-             states.isEmpty() ? null : FrameAlignedProvider.of(states.get(0).getFrame()));
+             states.isEmpty() ? null : FrameAlignedProvider.of(states.getFirst().getFrame()));
     }
 
     /**
@@ -205,9 +205,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         checkInputConsistency(states, stateInterpolator, covariances, covarianceInterpolator);
 
         // Initialize variables
-        final SpacecraftState s0 = states.get(0);
+        final SpacecraftState s0 = states.getFirst();
         minDate = s0.getDate();
-        maxDate = states.get(states.size() - 1).getDate();
+        maxDate = states.getLast().getDate();
         frame   = s0.getFrame();
 
         final List<DataDictionary.Entry> as = s0.getAdditionalDataValues().getData();
@@ -403,6 +403,15 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /**
+     * Getter for the interpolated states.
+     * @return copy of states
+     * @since 14.0
+     */
+    public List<SpacecraftState> getStates() {
+        return statesCache.getAll();
+    }
+
+    /**
      * Try (and fail) to reset the initial state.
      * <p>
      * This method always throws an exception, as ephemerides cannot be reset.
@@ -410,6 +419,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      *
      * @param state new initial state to consider
      */
+    @Override
     public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
@@ -420,6 +430,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /** {@inheritDoc} */
+    @Override
     public SpacecraftState getInitialState() {
         return basicPropagate(getMinDate());
     }

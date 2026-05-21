@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -92,13 +92,13 @@ public class Sinex extends AbstractSinex {
             sorted.addAll(eop.values());
 
             // copy first and last entries according to files validity
-            sorted.add(sorted.first().toNewEpoch(getFileEpochStartTime()));
-            sorted.add(sorted.last().toNewEpoch(getFileEpochEndTime()));
+            sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime()));
+            sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime()));
 
             if (sorted.size() < 4) {
                 // insert extra entries after first and before last to allow interpolation
-                sorted.add(sorted.first().toNewEpoch(getFileEpochStartTime().shiftedBy(1.0)));
-                sorted.add(sorted.last().toNewEpoch(getFileEpochEndTime().shiftedBy(-1.0)));
+                sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime().shiftedBy(1.0)));
+                sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime().shiftedBy(-1.0)));
             }
 
             // convert to regular EOP history

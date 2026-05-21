@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,7 +52,7 @@ import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
-import org.orekit.propagation.events.handlers.CountAndContinue;
+import org.orekit.propagation.events.handlers.CountingHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -65,7 +65,7 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AttitudesSequenceTest {
+class AttitudesSequenceTest {
 
     private AbsoluteDate lastChange;
     private boolean inEclipse;
@@ -200,25 +200,24 @@ public class AttitudesSequenceTest {
                                                          0.0,
                                                          FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
                         withMaxCheck(600).
-                withHandler(new CountAndContinue(0) {
+                withHandler(new CountingHandler(0, Action.STOP) {
                     @Override
-                    public Action eventOccurred(final SpacecraftState s,
-                                                             final EventDetector d,
-                                                             final boolean increasing) {
+                    public boolean doesCount(final SpacecraftState s, final EventDetector d,
+                                             final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
                         if (getCount() == 7) {
-                            increment();
-                            return Action.STOP;
+                            setAction(Action.STOP);
                         } else {
                             switch (getCount() % 3) {
-                                case 0 :
-                                    return Action.CONTINUE;
-                                case 1 :
-                                    return Action.RESET_DERIVATIVES;
+                                case 0:
+                                    setAction(Action.CONTINUE);
+                                case 1:
+                                    setAction(Action.RESET_DERIVATIVES);
                                 default :
-                                    return Action.RESET_STATE;
+                                    setAction(Action.RESET_STATE);
                             }
                         }
+                        return false;
                     }
                 });
         final EventDetector monitored = logger.monitorDetector(ed);
@@ -328,7 +327,7 @@ public class AttitudesSequenceTest {
         SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(-10000.0));
         Assertions.assertEquals(42.0, finalState.getAdditionalState("fortyTwo")[0], 1.0e-10);
         Assertions.assertEquals(1, handler.dates.size());
-        Assertions.assertEquals(-500.0, handler.dates.get(0).durationFrom(initialDate), 1.0e-3);
+        Assertions.assertEquals(-500.0, handler.dates.getFirst().durationFrom(initialDate), 1.0e-3);
         Assertions.assertEquals(-490.0, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
     }
@@ -403,16 +402,16 @@ public class AttitudesSequenceTest {
             Attitude targetAttitude = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame());
             Attitude stateAttitude  = state.getAttitude();
 
-            if (nadirToTarget.dates.isEmpty() || state.getDate().durationFrom(nadirToTarget.dates.get(0)) < 0) {
+            if (nadirToTarget.dates.isEmpty() || state.getDate().durationFrom(nadirToTarget.dates.getFirst()) < 0) {
                 // we are stabilized in nadir pointing, before first switch
                 checkEqualAttitudes(nadirAttitude, stateAttitude);
-            } else if (state.getDate().durationFrom(nadirToTarget.dates.get(0)) <= transitionTime) {
+            } else if (state.getDate().durationFrom(nadirToTarget.dates.getFirst()) <= transitionTime) {
                 // we are in transition from nadir to target
                 checkBetweenAttitudes(nadirAttitude, targetAttitude, stateAttitude);
-            } else if (targetToNadir.dates.isEmpty() || state.getDate().durationFrom(targetToNadir.dates.get(0)) < 0) {
+            } else if (targetToNadir.dates.isEmpty() || state.getDate().durationFrom(targetToNadir.dates.getFirst()) < 0) {
                 // we are stabilized in target pointing between the two switches
                 checkEqualAttitudes(targetAttitude, stateAttitude);
-            } else if (state.getDate().durationFrom(targetToNadir.dates.get(0)) <= transitionTime) {
+            } else if (state.getDate().durationFrom(targetToNadir.dates.getFirst()) <= transitionTime) {
                 // we are in transition from target to nadir
                 checkBetweenAttitudes(targetAttitude, nadirAttitude, stateAttitude);
             } else {
@@ -473,7 +472,7 @@ public class AttitudesSequenceTest {
         // check that if we restart a forward propagation from an intermediate state
         // we properly get an interpolated attitude despite we missed the event trigger
 
-        final AbsoluteDate midTransition = nadirToTarget.get(0).shiftedBy(0.5 * transitionTime);
+        final AbsoluteDate midTransition = nadirToTarget.getFirst().shiftedBy(0.5 * transitionTime);
         SpacecraftState state   = propagator.propagate(midTransition.shiftedBy(-60), midTransition);
         Rotation nadirR  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
         Rotation targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
@@ -538,7 +537,7 @@ public class AttitudesSequenceTest {
 
         // check that if we restart a backward propagation from an intermediate state
         // we properly get an interpolated attitude despite we missed the event trigger
-        final AbsoluteDate midTransition = nadirToTarget.get(0).shiftedBy(0.5 * transitionTime);
+        final AbsoluteDate midTransition = nadirToTarget.getFirst().shiftedBy(0.5 * transitionTime);
         SpacecraftState state   = propagator.propagate(midTransition.shiftedBy(+60), midTransition);
         Rotation nadirR  = nadirPointing.getAttitude(state.getAbsPVA(), state.getDate(), state.getFrame()).getRotation();
         Rotation targetR = targetPointing.getAttitude(state.getAbsPVA(), state.getDate(), state.getFrame()).getRotation();
@@ -555,7 +554,7 @@ public class AttitudesSequenceTest {
     @Test
     void testAnalyticalPropagatorTransition() {
         // Define initial state
-        final AbsoluteDate initialDate = new AbsoluteDate(2017, 03, 27, 0, 0, 00.000, TimeScalesFactory.getUTC());
+        final AbsoluteDate initialDate = new AbsoluteDate(2017, 3, 27, 0, 0, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-39098981.4866597, -15784239.3610601, 78908.2289853595);
         final Vector3D velocity  = new Vector3D(1151.00321021175, -2851.14864755189, -2.02133248357321);
         final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
@@ -644,6 +643,7 @@ public class AttitudesSequenceTest {
         // THEN
         Assertions.assertEquals(1, switches1.size());
         Assertions.assertNotSame(switches1, switches2);
+        Assertions.assertFalse(switches1.getFirst().getEventFunction().dependsOnMainVariablesOnly());
     }
 
     private static class Handler implements AttitudeSwitchHandler {

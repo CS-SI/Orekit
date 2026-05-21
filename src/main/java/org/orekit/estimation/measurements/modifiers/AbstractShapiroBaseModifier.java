@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
-import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.utils.Constants;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical range measurement with Shapiro time delay.
  * <p>
@@ -30,17 +30,32 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </p>
  * @author Luc Maisonobe
  * @since 10.0
+ * @param <T> type of the measurements
  */
-public class AbstractShapiroBaseModifier {
+public abstract class AbstractShapiroBaseModifier<T extends ObservedMeasurement<T>> implements EstimationModifier<T> {
 
-    /** Shapiro effect scale factor. */
-    private final double s;
+    /** Shapiro delay computer. */
+    private final ShapiroModel shapiroModel;
 
-    /** Simple constructor.
+    /** Simple constructor from gravitational constant.
      * @param gm gravitational constant for main body in signal path vicinity.
      */
-    public AbstractShapiroBaseModifier(final double gm) {
-        this.s = 2 * gm / (Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT);
+    protected AbstractShapiroBaseModifier(final double gm) {
+        this.shapiroModel = new ShapiroModel(gm);
+    }
+
+    /** Simple constructor from Shapiro delay computer.
+     * @param shapiroModel Shapiro delay computer
+     * @since 14.0
+     */
+    protected AbstractShapiroBaseModifier(final ShapiroModel shapiroModel) {
+        this.shapiroModel = shapiroModel;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Get the name of the effect modifying the measurement.
@@ -51,39 +66,13 @@ public class AbstractShapiroBaseModifier {
         return "Shapiro";
     }
 
-    /** Modify measurement.
-     * @param <T> type of the measurements
-     * @param modifier applied modifier
-     * @param estimated measurement to modify
-     * @since 12.1
-     */
-    protected <T extends ObservedMeasurement<T>> void doModify(final EstimationModifier<T> modifier,
-                                                               final EstimatedMeasurementBase<T> estimated) {
-
-        // compute correction, for one way or two way measurements
-        final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
-        final double correction = pv.length < 3 ?
-                                  shapiroCorrection(pv[0], pv[1]) :
-                                  0.5 * (shapiroCorrection(pv[0], pv[1]) + shapiroCorrection(pv[1], pv[2]));
-
-        // update estimated value taking into account the Shapiro time delay.
-        final double[] newValue = estimated.getEstimatedValue().clone();
-        newValue[0] = newValue[0] + correction;
-        estimated.modifyEstimatedValue(modifier, newValue);
-
-    }
-
     /** Compute Shapiro path dilation between two points in a gravity field.
-     * @param pvEmitter coordinates of emitter in body-centered frame
-     * @param pvReceiver coordinates of receiver in body-centered frame
+     * @param positionEmitter position of emitter in body-centered frame
+     * @param positionReceiver position of receiver in body-centered frame
      * @return path dilation to add to raw measurement
      */
-    protected double shapiroCorrection(final TimeStampedPVCoordinates pvEmitter, final TimeStampedPVCoordinates pvReceiver) {
-        final Vector3D pEmitter  = pvEmitter.getPosition();
-        final Vector3D pReceiver = pvReceiver.getPosition();
-        final double   rEpR      = pEmitter.getNorm() + pReceiver.getNorm();
-        final double   d         = Vector3D.distance(pEmitter, pReceiver);
-        return s * FastMath.log((rEpR + d) / (rEpR - d));
+    protected double shapiroCorrection(final Vector3D positionEmitter, final Vector3D positionReceiver) {
+        return shapiroModel.computeEquivalentRange(positionEmitter, positionReceiver);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,11 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
@@ -45,8 +44,8 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
      */
-    public AbstractAlmanac(final double mu, final double angularVelocity, final int weeksInCycle,
-                           final TimeScales timeScales, final SatelliteSystem system) {
+    protected AbstractAlmanac(final double mu, final double angularVelocity, final int weeksInCycle,
+                              final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
     }
 
@@ -63,70 +62,36 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
     /**
      * Get the propagator corresponding to the navigation message.
      * <p>
-     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
+     * The attitude provider is set by default to be aligned with the inertialframe.<br>
      * The mass is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-     * The ECI frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-     *  context.<br>
-     * The ECEF frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-     *  CIO/2010-based ITRF simple EOP} in the default data context.
-     * </p><p>
-     * This constructor uses the {@link DataContext#getDefault() default data context}
+     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.
      * </p>
+     * @param inertial inertial frame, use to provide the propagated orbit
+     * @param bodyFixed body fixed frame, corresponding to the navigation message
      * @return the propagator corresponding to the navigation message
-     * @see #getPropagator(Frames)
-     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double)
-     * @since 12.0
+     * @see #getPropagator(AttitudeProvider, Frame, Frame, double)
+     * @since 14.0
      */
-    @DefaultDataContext
-    public GNSSPropagator getPropagator() {
-        return new GNSSPropagatorBuilder(this).build();
+    public GNSSPropagator getPropagator(final Frame inertial, final Frame bodyFixed) {
+        return getPropagator(new FrameAlignedProvider(inertial), inertial, bodyFixed, Propagator.DEFAULT_MASS);
     }
 
     /**
      * Get the propagator corresponding to the navigation message.
-     * <p>
-     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
-     * The mass is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-     * The ECI frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-     *  context.<br>
-     * The ECEF frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-     *  CIO/2010-based ITRF simple EOP} in the default data context.
-     * </p>
-     * @param frames set of frames to use
-     * @return the propagator corresponding to the navigation message
-     * @see #getPropagator()
-     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double)
-     * @since 13.0
-     */
-    public GNSSPropagator getPropagator(final Frames frames) {
-        return new GNSSPropagatorBuilder(this, frames).build();
-    }
-
-    /**
-     * Get the propagator corresponding to the navigation message.
-     * @param frames set of frames to use
      * @param provider attitude provider
      * @param inertial inertial frame, use to provide the propagated orbit
      * @param bodyFixed body fixed frame, corresponding to the navigation message
      * @param mass spacecraft mass in kg
      * @return the propagator corresponding to the navigation message
-     * @see #getPropagator()
-     * @see #getPropagator(Frames)
-     * @since 13.0
+     * @see #getPropagator(Frame, Frame)
+     * @since 14.0
      */
-    public GNSSPropagator getPropagator(final Frames frames, final AttitudeProvider provider,
+    public GNSSPropagator getPropagator(final AttitudeProvider provider,
                                         final Frame inertial, final Frame bodyFixed, final double mass) {
-        return new GNSSPropagatorBuilder(this, frames).attitudeProvider(provider)
-                                                      .eci(inertial)
-                                                      .ecef(bodyFixed)
-                                                      .mass(mass)
-                                                      .build();
+        final GNSSPropagatorBuilder builder = new GNSSPropagatorBuilder(this, inertial, bodyFixed);
+        builder.setAttitudeProvider(provider);
+        builder.setMass(mass);
+        return builder.buildPropagator();
     }
 
 }

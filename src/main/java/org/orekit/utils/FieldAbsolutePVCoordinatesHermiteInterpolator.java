@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -155,7 +155,7 @@ public class FieldAbsolutePVCoordinatesHermiteInterpolator<KK extends CalculusFi
         final List<FieldAbsolutePVCoordinates<KK>> sample = interpolationData.getNeighborList();
 
         // Extract input frame from sample
-        final Frame inputFrame = sample.get(0).getFrame();
+        final Frame inputFrame = sample.getFirst().getFrame();
 
         // Set up an interpolator taking derivatives into account
         final FieldHermiteInterpolator<KK> interpolator = new FieldHermiteInterpolator<>();

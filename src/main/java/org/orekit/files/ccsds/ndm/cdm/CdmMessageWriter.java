@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,8 +75,8 @@ public abstract class CdmMessageWriter implements MessageWriter<CdmHeader, CdmSe
      * @param defaultVersion default format version
      * @param context context binding (may be reset for each segment)
      */
-    public CdmMessageWriter(final String root, final String formatVersionKey,
-                                 final double defaultVersion, final ContextBinding context) {
+    protected CdmMessageWriter(final String root, final String formatVersionKey,
+                               final double defaultVersion, final ContextBinding context) {
 
         this.root                      = root;
         this.defaultVersion            = defaultVersion;

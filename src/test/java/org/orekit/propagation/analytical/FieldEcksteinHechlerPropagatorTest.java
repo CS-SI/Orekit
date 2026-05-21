@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -674,7 +674,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         FieldAbsoluteDate<T> target = date.shiftedBy(10000.0);
-        List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<TimeStampedFieldPVCoordinates<T>>();
+        List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<>();
         for (double dt : Arrays.asList(-0.5, 0.0, 0.5)) {
             sample.add(propagator.propagate(target.shiftedBy(dt)).getPVCoordinates());
         }
@@ -775,7 +775,7 @@ public class FieldEcksteinHechlerPropagatorTest {
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         Frame itrf =  FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).
-                                    withHandler(new FieldContinueOnEvent<T>()));
+                                    withHandler(new FieldContinueOnEvent<>()));
         FieldAbsoluteDate<T> farTarget = orbit.getDate().shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);
@@ -1001,7 +1001,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.CIRCULAR);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> num = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> num = new FieldNumericalPropagator<>(integrator);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(provider)));
         num.setInitialState(new FieldSpacecraftState<>(initialOsculating));

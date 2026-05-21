@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
-public class TimeStampedDoubleAndDerivativeTest {
+class TimeStampedDoubleAndDerivativeTest {
+
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         final TimeStampedDoubleAndDerivative tsd = new TimeStampedDoubleAndDerivative(date, 1.68, 3.14);
         Assertions.assertEquals(date, tsd.getDate());
@@ -31,17 +32,7 @@ public class TimeStampedDoubleAndDerivativeTest {
     }
 
     @Test
-    @Deprecated
-    public void testDeprecatedConstructor() {
-        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        final TimeStampedDoubleAndDerivative tsd = new TimeStampedDoubleAndDerivative(1.68, 3.14, date);
-        Assertions.assertEquals(date, tsd.getDate());
-        Assertions.assertEquals(1.68, tsd.getValue());
-        Assertions.assertEquals(3.14, tsd.getDerivative());
-    }
-
-    @Test
-    public void testToString() {
+    void testToString() {
         Utils.setDataRoot("regular-data");
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         final TimeStampedDoubleAndDerivative tsd = new TimeStampedDoubleAndDerivative(date, 1.68, 3.14);

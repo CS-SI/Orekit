@@ -54,10 +54,10 @@ import org.orekit.time.AbsoluteDate;
 public class EventState<T extends EventDetector> {
 
     /** Event detector. */
-    private T detector;
+    private final T detector;
 
     /** Event handler. */
-    private EventHandler handler;
+    private final EventHandler handler;
 
     /** Time of the previous call to g. */
     private AbsoluteDate lastT;

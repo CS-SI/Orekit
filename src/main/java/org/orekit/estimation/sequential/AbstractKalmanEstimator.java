@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,11 +22,10 @@ import org.hipparchus.filtering.kalman.KalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.orekit.estimation.ParameterEstimator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /**
  * Base class for Kalman estimators.
@@ -35,7 +34,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Luc Maisonobe
  * @since 11.3
  */
-public abstract class AbstractKalmanEstimator {
+public abstract class AbstractKalmanEstimator implements ParameterEstimator {
 
     /** List of propagator builder. */
     private final List<? extends PropagatorBuilder> builders;
@@ -57,61 +56,10 @@ public abstract class AbstractKalmanEstimator {
     protected AbstractKalmanEstimator(final MatrixDecomposer decomposer,
                                       final List<? extends PropagatorBuilder> builders) {
         this.builders = builders;
-        this.referenceDate = builders.get(0).getInitialOrbitDate();
+        this.referenceDate = builders.getFirst().getInitialOrbitDate();
         this.decomposer = decomposer;
         this.observer = null;
     }
-
-    /** Get the orbital parameters supported by this estimator.
-     * <p>
-     * If there are more than one propagator builder, then the names
-     * of the drivers have an index marker in square brackets appended
-     * to them in order to distinguish the various orbits. So for example
-     * with one builder generating Keplerian orbits the names would be
-     * simply "a", "e", "i"... but if there are several builders the
-     * names would be "a[0]", "e[0]", "i[0]"..."a[1]", "e[1]", "i[1]"...
-     * </p>
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return orbital parameters supported by this estimator
-     */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (int i = 0; i < builders.size(); ++i) {
-            final String suffix = builders.size() > 1 ? "[" + i + "]" : null;
-            for (final ParameterDriver driver : builders.get(i).getOrbitalParametersDrivers().getDrivers()) {
-                if (driver.isSelected() || !estimatedOnly) {
-                    if (suffix != null && !driver.getName().endsWith(suffix)) {
-                        // we add suffix only conditionally because the method may already have been called
-                        // and suffixes may have already been appended
-                        driver.setName(driver.getName() + suffix);
-                    }
-                    estimated.add(driver);
-                }
-            }
-        }
-        return estimated;
-    }
-
-    /** Get the propagator parameters supported by this estimator.
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return propagator parameters supported by this estimator
-     */
-    public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (PropagatorBuilder builder : builders) {
-            for (final DelegatingDriver delegating : builder.getPropagationParametersDrivers().getDrivers()) {
-                if (delegating.isSelected() || !estimatedOnly) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        estimated.add(driver);
-                    }
-                }
-            }
-        }
-        return estimated;
-    }
-
 
     /** Get the current measurement number.
      * @return current measurement number
@@ -173,6 +121,11 @@ public abstract class AbstractKalmanEstimator {
      */
     protected List<? extends PropagatorBuilder> getBuilders() {
         return builders;
+    }
+
+    @Override
+    public PropagatorBuilder[] getPropagatorBuilders() {
+        return getBuilders().toArray(new PropagatorBuilder[0]);
     }
 
     /** Get the provider for kalman filter estimations.

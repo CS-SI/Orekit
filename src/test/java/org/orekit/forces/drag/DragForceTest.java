@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -572,7 +572,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         OrbitType type = OrbitType.EQUINOCTIAL;
 
         // Field and classical numerical propagators
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -643,7 +643,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         OrbitType type = OrbitType.EQUINOCTIAL;
 
         // Field and classical numerical propagators
-        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -710,7 +710,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -762,7 +762,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         // THEN
         Assertions.assertFalse(value);
     }
-    
+
     /** Test that the getParameterDrivers method is working as expected
      * on an IsotropicDrag-based (ie. spherical) DragForce model with
      * several estimated values.
@@ -778,7 +778,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
 
         // A date
         AbsoluteDate date = new AbsoluteDate("2000-01-01T00:00:00.000", TimeScalesFactory.getUTC());
-        
+
         // One IsotropicDrag added, only one driver should be in the drivers' array
         // its name should be the default name: IsotropicDrag.DRAG_COEFFICIENT
         // -----------------------
@@ -788,20 +788,20 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(2,  drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
         Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
         Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
-        
+
         // Extract drag model at an arbitrary epoch and check it is the one added
         IsotropicDrag isoDrag = (IsotropicDrag) forceModel.getSpacecraft();
         drivers = isoDrag.getDragParametersDrivers();
         Assertions.assertEquals(2, drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(new AbsoluteDate()), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(new AbsoluteDate()), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
         Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(new AbsoluteDate()), 0.);
         Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
-        
+
         // 3 IsotropicDrag models added, with one default
         // ----------------------------------------------
         double dragCd1 = 1.;
@@ -809,37 +809,37 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         double dt = 120.;
         // Build the force model
         isoDrag = new IsotropicDrag(dragArea, dragCd0);
-        isoDrag.getDragParametersDrivers().get(0).addSpans(date.shiftedBy(-3*dt), date.shiftedBy(2.0*dt), 2*dt);
-        isoDrag.getDragParametersDrivers().get(0).setValue(dragCd2, date.shiftedBy(-2*dt));
-        isoDrag.getDragParametersDrivers().get(0).setValue(dragCd0, date.shiftedBy(-dt));
-        isoDrag.getDragParametersDrivers().get(0).setValue(dragCd1, date.shiftedBy(dt));
+        isoDrag.getDragParametersDrivers().getFirst().addSpans(date.shiftedBy(-3*dt), date.shiftedBy(2.0*dt), 2*dt);
+        isoDrag.getDragParametersDrivers().getFirst().setValue(dragCd2, date.shiftedBy(-2*dt));
+        isoDrag.getDragParametersDrivers().getFirst().setValue(dragCd0, date.shiftedBy(-dt));
+        isoDrag.getDragParametersDrivers().getFirst().setValue(dragCd1, date.shiftedBy(dt));
 
         forceModel = new DragForce(atmosphere, isoDrag);
         // Extract the drivers and check their values and names
         drivers = forceModel.getParametersDrivers();
         int nnb = 0;
-        Assertions.assertEquals(3,  drivers.get(0).getNbOfValues());
-        for (Span<String> span = isoDrag.getDragParametersDrivers().get(0).getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assertions.assertEquals("Span" + drivers.get(0).getName() + Integer.toString(nnb++),
+        Assertions.assertEquals(3,  drivers.getFirst().getNbOfValues());
+        for (Span<String> span = isoDrag.getDragParametersDrivers().getFirst().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        	Assertions.assertEquals("Span" + drivers.getFirst().getName() + Integer.toString(nnb++),
                     span.getData());
         }
-        
+
         // Check that proper models are returned at significant test dates
         // Cd0 model
         double eps = 1.e-14;
         // Cd2 model
-        Assertions.assertEquals(dragCd2,  drivers.get(0).getValue(date.shiftedBy(-2 * dt)), 0.);
-        Assertions.assertEquals(dragCd2,  drivers.get(0).getValue(date.shiftedBy(-dt - eps)), 0.);
-        Assertions.assertEquals(dragCd2,  drivers.get(0).getValue(date.shiftedBy(-dt - 86400.)), 0.);
+        Assertions.assertEquals(dragCd2,  drivers.getFirst().getValue(date.shiftedBy(-2 * dt)), 0.);
+        Assertions.assertEquals(dragCd2,  drivers.getFirst().getValue(date.shiftedBy(-dt - eps)), 0.);
+        Assertions.assertEquals(dragCd2,  drivers.getFirst().getValue(date.shiftedBy(-dt - 86400.)), 0.);
         // Cd0 model
-        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(date), 0.);
-        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(date.shiftedBy(dt - eps)), 0.);
-        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(date.shiftedBy(-dt)), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.getFirst().getValue(date), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.getFirst().getValue(date.shiftedBy(dt - eps)), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.getFirst().getValue(date.shiftedBy(-dt)), 0.);
         // Cd1 model
-        Assertions.assertEquals(dragCd1,  drivers.get(0).getValue(date.shiftedBy(2 * dt)), 0.);
-        Assertions.assertEquals(dragCd1,  drivers.get(0).getValue(date.shiftedBy(dt + eps)), 0.);
-        Assertions.assertEquals(dragCd1,  drivers.get(0).getValue(date.shiftedBy(dt + 86400.)), 0.);
-        
+        Assertions.assertEquals(dragCd1,  drivers.getFirst().getValue(date.shiftedBy(2 * dt)), 0.);
+        Assertions.assertEquals(dragCd1,  drivers.getFirst().getValue(date.shiftedBy(dt + eps)), 0.);
+        Assertions.assertEquals(dragCd1,  drivers.getFirst().getValue(date.shiftedBy(dt + 86400.)), 0.);
+
     }
 
     /** Test parameter derivatives for an IsotropicDrag TimeSpanDragForce.
@@ -865,31 +865,31 @@ class DragForceTest extends AbstractLegacyForceModelTest {
                                                          new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                               Constants.WGS84_EARTH_FLATTENING,
                                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
-        
+
         // Constant area for the different tests
         final double dragArea = 2.5;
-        
+
         // Initialize force model (first coef is valid at all epochs)
         final double dragCd  = 1.2;
         final IsotropicDrag isotropicDrag = new IsotropicDrag(dragArea, dragCd);
-        isotropicDrag.getDragParametersDrivers().get(0).setName("Cd");
-        
+        isotropicDrag.getDragParametersDrivers().getFirst().setName("Cd");
+
         // After t2 = t + 4h
         final double dragCd2 = 3.;
         final double dt2 = 4 * 3600.;
         final AbsoluteDate date2 = date.shiftedBy(dt2);
-        isotropicDrag.getDragParametersDrivers().get(0).getValueSpanMap().addValidAfter(dragCd2, date2, false);
-        isotropicDrag.getDragParametersDrivers().get(0).getNamesSpanMap().addValidAfter("Cd2", date2, false);
-        isotropicDrag.getDragParametersDrivers().get(0).getNamesSpanMap().addValidBefore("Cd", date2, false);
+        isotropicDrag.getDragParametersDrivers().getFirst().getValueSpanMap().addValidAfter(dragCd2, date2, false);
+        isotropicDrag.getDragParametersDrivers().getFirst().getNamesSpanMap().addValidAfter("Cd2", date2, false);
+        isotropicDrag.getDragParametersDrivers().getFirst().getNamesSpanMap().addValidBefore("Cd", date2, false);
 
         // Before t3 = t - 1day
         final double dragCd3 = 3.;
         final double dt3 = -86400.;
         final AbsoluteDate date3 = date.shiftedBy(dt3);
-        isotropicDrag.getDragParametersDrivers().get(0).getValueSpanMap().addValidAfter(dragCd3, date3, false);
-        isotropicDrag.getDragParametersDrivers().get(0).getNamesSpanMap().addValidAfter("Cd3", date3, false);
-        
-        
+        isotropicDrag.getDragParametersDrivers().getFirst().getValueSpanMap().addValidAfter(dragCd3, date3, false);
+        isotropicDrag.getDragParametersDrivers().getFirst().getNamesSpanMap().addValidAfter("Cd3", date3, false);
+
+
         final DragForce forceModel = new DragForce(atmosphere, isotropicDrag);
 
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
@@ -898,10 +898,10 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         checkParameterDerivative(state, forceModel, "Cd" , 1.0e-4, 2.0e-12);
 
         // Check parameter derivatives after date3: for "Cd2"
-        checkParameterDerivative(state.shiftedBy(dt2 * 1.1), forceModel, "Cd", 1.0e-4, 2.0e-12);
-        
+        checkParameterDerivative(state.shiftedBy(dt2 * 1.1), forceModel, "Cd", 1.0e-4, 2.7e-12);
+
         // Check parameter derivatives after date3: for "Cd3"
-        checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, "Cd", 1.0e-4, 3.0e-12);
+        checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, "Cd", 1.0e-4, 2.0e-12);
     }
 
     private Atmosphere getAtmosphere() {

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -100,17 +100,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         mu = field.getZero().newInstance(original.getMu());
 
         // non-Keplerian parameters
-        setPRN(original.getPRN());
-        setWeek(original.getWeek());
-        setTime(original.getTime());
-        setIDot(original.getIDot());
-        setOmegaDot(original.getOmegaDot());
-        setCuc(original.getCuc());
-        setCus(original.getCus());
-        setCrc(original.getCrc());
-        setCrs(original.getCrs());
-        setCic(original.getCic());
-        setCis(original.getCis());
+        copyNonKeplerian(original);
 
         // Keplerian orbital elements
         setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
@@ -138,17 +128,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         mu = converter.apply(original.getMu());
 
         // non-Keplerian parameters
-        setPRN(original.getPRN());
-        setWeek(original.getWeek());
-        setTime(original.getTime());
-        setIDot(original.getIDot());
-        setOmegaDot(original.getOmegaDot());
-        setCuc(original.getCuc());
-        setCus(original.getCus());
-        setCrc(original.getCrc());
-        setCrs(original.getCrs());
-        setCic(original.getCic());
-        setCis(original.getCis());
+        copyNonKeplerian(original);
 
         // Keplerian orbital elements
         setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
@@ -213,17 +193,6 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         this.sma = sma;
     }
 
-    /** Getter for the change rate in semi-major axis.
-     * <p>
-     * This value is non-zero only in civilian navigation messages
-     * </p>
-     * @return the change rate in semi-major axis
-     * @since 13.0
-     */
-    public T getADot() {
-        return mu.getField().getZero();
-    }
-
     /** Get the computed mean motion n₀.
      * @return the computed mean motion n₀ (rad/s)
      * @since 13.0
@@ -231,28 +200,6 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     public T getMeanMotion0() {
         final T invA = FastMath.abs(getSma()).reciprocal();
         return FastMath.sqrt(getMu().multiply(invA)).multiply(invA);
-    }
-
-    /** Getter for the delta of satellite mean motion.
-     * <p>
-     * This value is non-zero only in navigation messages
-     * </p>
-     * @return delta of satellite mean motion
-     * @since 13.0
-     */
-    public T getDeltaN0() {
-        return mu.getField().getZero();
-    }
-
-    /** Getter for change rate in Δn₀.
-     * <p>
-     * This value is non-zero only in civilian navigation messages
-     * </p>
-     * @return change rate in Δn₀
-     * @since 13.0
-     */
-    public T getDeltaN0Dot() {
-        return mu.getField().getZero();
     }
 
     /** Get eccentricity.

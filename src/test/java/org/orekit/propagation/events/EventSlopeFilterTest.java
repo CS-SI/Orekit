@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,6 +50,18 @@ class EventSlopeFilterTest {
 
     private double sunRadius = 696000000.;
     private double earthRadius = 6400000.;
+
+    @Test
+    void testDependsOnTimeOnly() {
+        // GIVEN
+        final DateDetector detector = new DateDetector();
+        final EventSlopeFilter<DateDetector> template = new EventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
+        final EventDetectionSettings detectionSettings = Mockito.mock();
+        // WHEN
+        final EventSlopeFilter<DateDetector> eventSlopeFilter = template.withDetectionSettings(detectionSettings);
+        // THEN
+        Assertions.assertTrue(eventSlopeFilter.getEventFunction().dependsOnTimeOnly());
+    }
 
     @ParameterizedTest
     @EnumSource(FilterType.class)
@@ -440,7 +452,7 @@ class EventSlopeFilterTest {
                     }
 
                 });
-        Assertions.assertSame(earth, detector.getBody());
+        Assertions.assertSame(earth, detector.getBodyShape());
         propagator.addEventDetector(new EventSlopeFilter<EventDetector>(detector, filter));
         AbsoluteDate target = propagator.getInitialState().getDate().shiftedBy(dt);
         SpacecraftState finalState = propagator.propagate(target);
@@ -484,7 +496,7 @@ class EventSlopeFilterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
             double mu  = 3.9860047e14;
@@ -504,7 +516,7 @@ class EventSlopeFilterTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         iniDate    = null;
         propagator = null;
         earth      = null;

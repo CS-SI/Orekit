@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,18 +17,17 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.ExtremumAngularSeparationFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPositionProvider;
-import org.orekit.utils.FieldPVCoordinates;
 
 /** Detector of local extrema with angular separation.
  * @param <T> type of the field elements
  * @author Romain Serra
  * @see FieldAngularSeparationDetector
+ * @see ExtremumAngularSeparationFunction
  * @since 13.1
  */
 public class FieldExtremumAngularSeparationDetector<T extends CalculusFieldElement<T>>
@@ -48,10 +47,10 @@ public class FieldExtremumAngularSeparationDetector<T extends CalculusFieldEleme
      * the beacon at the same time if they are too close to each other
      */
     public FieldExtremumAngularSeparationDetector(final FieldEventDetectionSettings<T> detectionSettings,
-                                                     final FieldEventHandler<T> handler,
-                                                     final ExtendedPositionProvider beacon,
-                                                     final ExtendedPositionProvider observer) {
-        super(detectionSettings, handler);
+                                                  final FieldEventHandler<T> handler,
+                                                  final ExtendedPositionProvider beacon,
+                                                  final ExtendedPositionProvider observer) {
+        super(new ExtremumAngularSeparationFunction(beacon, observer), detectionSettings, handler);
         this.beacon         = beacon;
         this.observer       = observer;
     }
@@ -77,14 +76,16 @@ public class FieldExtremumAngularSeparationDetector<T extends CalculusFieldEleme
         return observer;
     }
 
+    /** {@inheritDoc} */
     @Override
     public T g(final FieldSpacecraftState<T> s) {
-        final FieldPVCoordinates<FieldUnivariateDerivative1<T>> pv = s.getPVCoordinates().toUnivariateDerivative1PV();
-        final FieldAbsoluteDate<FieldUnivariateDerivative1<T>> fieldDate = s.getDate().toFUD1Field();
-        final FieldVector3D<FieldUnivariateDerivative1<T>> bP = beacon.getPosition(fieldDate, s.getFrame());
-        final FieldVector3D<FieldUnivariateDerivative1<T>> oP = observer.getPosition(fieldDate, s.getFrame());
-        final FieldUnivariateDerivative1<T> separation = FieldVector3D.angle(pv.getPosition().subtract(oP), bP.subtract(oP));
-        return separation.getFirstDerivative();
+        return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public ExtremumAngularSeparationDetector toEventDetector(final EventHandler eventHandler) {
+        return new ExtremumAngularSeparationDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,
+                beacon, observer);
+    }
 }

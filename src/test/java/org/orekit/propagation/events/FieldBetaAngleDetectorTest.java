@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Joseph Reed
+/* Copyright 2002-2026 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.propagation.events;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -40,8 +38,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FieldBetaAngleDetectorTest {
+class FieldBetaAngleDetectorTest {
     private FieldPropagator<Binary64> propagator;
     private FieldAbsoluteDate<Binary64> date;
 
@@ -50,8 +49,8 @@ public class FieldBetaAngleDetectorTest {
         Utils.setDataRoot("regular-data");
         final FieldVector3D<Binary64> position  = new FieldVector3D<>(
             new Binary64(-6142438.668), new Binary64(3492467.560), new Binary64(-25767.25680));
-        final FieldVector3D<Binary64> velocity  = new FieldVector3D<Binary64>(
-            new Binary64(505.8479685), new Binary64(942.7809215), new Binary64(7435.922231));
+        final FieldVector3D<Binary64> velocity  = new FieldVector3D<>(
+                new Binary64(505.8479685), new Binary64(942.7809215), new Binary64(7435.922231));
         final FieldAbsoluteDate<Binary64> iniDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<Binary64> orbit = 
                 new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
@@ -66,7 +65,7 @@ public class FieldBetaAngleDetectorTest {
         AdaptiveStepsizeFieldIntegrator<Binary64> integrator =
             new DormandPrince853FieldIntegrator<>(Binary64Field.getInstance(), 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
-        propagator = new FieldNumericalPropagator<>(Binary64Field.getInstance(), integrator);
+        propagator = new FieldNumericalPropagator<>(integrator);
         ((FieldNumericalPropagator<Binary64>) propagator).setInitialState(initialState);
         date = iniDate;
     }
@@ -110,7 +109,7 @@ public class FieldBetaAngleDetectorTest {
     }
 
     @Test
-    void record() {
+    void TestRecord() {
         final FieldPVCoordinatesProvider<Binary64> sun = CelestialBodyFactory.getSun().toFieldPVCoordinatesProvider(Binary64Field.getInstance());
         final FieldRecordAndContinue<Binary64> handler = new FieldRecordAndContinue<>();
         final FieldBetaAngleDetector<Binary64> detector = new FieldBetaAngleDetector<>(

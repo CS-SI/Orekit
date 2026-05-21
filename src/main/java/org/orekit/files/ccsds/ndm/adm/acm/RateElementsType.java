@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.units.Unit;
 
@@ -43,6 +44,7 @@ public enum RateElementsType {
     /** Angular velocity. */
     ANGVEL("Angular velocity",
            "°/s", "°/s", "°/s") {
+
         /** {@inheritDoc} */
         @Override
         public TimeStampedAngularCoordinates toAngular(final AbsoluteDate date,
@@ -55,11 +57,24 @@ public enum RateElementsType {
                                                      new Vector3D(elements[first], elements[first + 1], elements[first + 2]),
                                                      Vector3D.ZERO);
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] toRawElements(final TimeStampedAngularCoordinates angularCoordinates,
+                                      final RotationOrder order) {
+            return new double[] {
+                angularCoordinates.getRotationRate().getX(),
+                angularCoordinates.getRotationRate().getY(),
+                angularCoordinates.getRotationRate().getZ()
+            };
+        }
+
     },
 
     /** Quaternion derivatives. */
     Q_DOT("Quaternion derivatives",
           "s⁻¹", "s⁻¹", "s⁻¹", "s⁻¹") {
+
         /** {@inheritDoc} */
         @Override
         public TimeStampedAngularCoordinates toAngular(final AbsoluteDate date,
@@ -73,11 +88,26 @@ public enum RateElementsType {
             final UnivariateDerivative1 q3 = new UnivariateDerivative1(rotation.getQ3(), elements[first + 2]);
             return new TimeStampedAngularCoordinates(date, new FieldRotation<>(q0, q1, q2, q3, false));
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] toRawElements(final TimeStampedAngularCoordinates angularCoordinates,
+                                      final RotationOrder order) {
+            final FieldRotation<UnivariateDerivative1> ac1 = angularCoordinates.toUnivariateDerivative1Rotation();
+            return new double[] {
+                ac1.getQ1().getFirstDerivative(),
+                ac1.getQ2().getFirstDerivative(),
+                ac1.getQ3().getFirstDerivative(),
+                ac1.getQ0().getFirstDerivative()
+            };
+        }
+
     },
 
     /** Euler rates. */
     EULER_RATE("Euler rates",
                "°/s", "°/s", "°/s") {
+
         /** {@inheritDoc} */
         @Override
         public TimeStampedAngularCoordinates toAngular(final AbsoluteDate date,
@@ -92,11 +122,24 @@ public enum RateElementsType {
             return new TimeStampedAngularCoordinates(date, new FieldRotation<>(order, RotationConvention.FRAME_TRANSFORM,
                                                                                alpha0, alpha1, alpha2));
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] toRawElements(final TimeStampedAngularCoordinates angularCoordinates,
+                                      final RotationOrder order) {
+            final FieldRotation<UnivariateDerivative1> ac1 = angularCoordinates.toUnivariateDerivative1Rotation();
+            final UnivariateDerivative1[] euler = ac1.getAngles(order, RotationConvention.FRAME_TRANSFORM);
+            return new double[] {
+                euler[0].getFirstDerivative(), euler[1].getFirstDerivative(), euler[2].getFirstDerivative(),
+            };
+        }
+
     },
 
     /** Correction to gyro rates. */
     GYRO_BIAS("Gyro rate corrections",
               "°/s", "°/s", "°/s") {
+
         /** {@inheritDoc} */
         @Override
         public TimeStampedAngularCoordinates toAngular(final AbsoluteDate date,
@@ -106,7 +149,16 @@ public enum RateElementsType {
                                                        final double[] elements) {
             throw new OrekitException(OrekitMessages.CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE, name(), toString());
         }
-    },
+
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] toRawElements(final TimeStampedAngularCoordinates angularCoordinates,
+                                      final RotationOrder order) {
+            throw new OrekitException(OrekitMessages.CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE, name(), toString());
+        }
+
+   },
 
     /** No rates. */
     NONE("no rates") {
@@ -117,8 +169,16 @@ public enum RateElementsType {
                                                        final Rotation rotation,
                                                        final int first,
                                                        final double[] elements) {
-            return new TimeStampedAngularCoordinates(date, rotation, Vector3D.ZERO, Vector3D.ZERO);
+            return new TimeStampedAngularCoordinates(date, new AngularCoordinates(rotation));
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] toRawElements(final TimeStampedAngularCoordinates angularCoordinates,
+                                      final RotationOrder order) {
+            return new double[0];
+        }
+
     };
 
     // CHECKSTYLE: resume MultipleStringLiterals check
@@ -160,6 +220,14 @@ public enum RateElementsType {
                                                             Rotation rotation,
                                                             int first,
                                                             double[] elements);
+
+    /** Convert to raw elements array.
+     * @param angularCoordinates angular coordinates
+     * @param order rotation order for Euler angles
+     * @return elements elements values in SI units
+     * @since 14.0
+     */
+    public abstract double[] toRawElements(TimeStampedAngularCoordinates angularCoordinates, RotationOrder order);
 
     /** {@inheritDoc} */
     @Override

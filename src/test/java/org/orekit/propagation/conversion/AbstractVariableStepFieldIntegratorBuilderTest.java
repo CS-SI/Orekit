@@ -9,6 +9,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.SimpleToleranceProvider;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -25,7 +26,7 @@ class AbstractVariableStepFieldIntegratorBuilderTest {
         final double expectedAbsoluteTolerance = 1.;
         final double expectedRelativeTolerance = 2;
         final TestIntegratorBuilder integratorBuilder = new TestIntegratorBuilder(0., 1.,
-                ToleranceProvider.of(expectedAbsoluteTolerance, expectedRelativeTolerance));
+                new SimpleToleranceProvider(expectedAbsoluteTolerance, expectedRelativeTolerance));
         // WHEN
         final double[][] actualTolerances = integratorBuilder.getTolerances(orbit, orbit.getType(), PositionAngleType.TRUE);
         // THEN

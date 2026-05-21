@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -153,7 +153,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
     private final double d;
 
     /** Angular semi major axis. */
-    private double a;
+    private final double a;
 
     /** Build a new instance.
      * <p>

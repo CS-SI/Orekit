@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,13 @@
  */
 package org.orekit.estimation.iod;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
+import org.orekit.control.heuristics.lambert.LambertBoundaryConditions;
+import org.orekit.control.heuristics.lambert.LambertBoundaryVelocities;
+import org.orekit.control.heuristics.lambert.LambertSolution;
 import org.orekit.control.heuristics.lambert.LambertSolver;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
@@ -175,8 +179,8 @@ public class IodGooding {
 
         // Now, IOD Gooding can be used
         return estimate(outputFrame, azEl1, azEl2, azEl3,
-                        computeDistance(propagator, azEl1.getDate(), azEl1.getGroundStationPosition(outputFrame)),
-                        computeDistance(propagator, azEl3.getDate(), azEl3.getGroundStationPosition(outputFrame)),
+                        computeDistance(propagator, azEl1.getDate(), azEl1.getStation().getPVCoordinatesProvider().getPosition(azEl1.getDate(), outputFrame)),
+                        computeDistance(propagator, azEl3.getDate(), azEl3.getStation().getPVCoordinatesProvider().getPosition(azEl3.getDate(), outputFrame)),
                         nRev, direction);
     }
 
@@ -219,9 +223,9 @@ public class IodGooding {
                           final double rho1init, final double rho3init,
                           final int nRev, final boolean direction) {
         return estimate(outputFrame,
-                        azEl1.getGroundStationPosition(outputFrame),
-                        azEl2.getGroundStationPosition(outputFrame),
-                        azEl3.getGroundStationPosition(outputFrame),
+                        azEl1.getStation().getPVCoordinatesProvider().getPosition(azEl1.getDate(), outputFrame),
+                        azEl2.getStation().getPVCoordinatesProvider().getPosition(azEl2.getDate(), outputFrame),
+                        azEl3.getStation().getPVCoordinatesProvider().getPosition(azEl3.getDate(), outputFrame),
                         azEl1.getObservedLineOfSight(outputFrame), azEl1.getDate(),
                         azEl2.getObservedLineOfSight(outputFrame), azEl2.getDate(),
                         azEl3.getObservedLineOfSight(outputFrame), azEl3.getDate(),
@@ -272,8 +276,8 @@ public class IodGooding {
 
         // Now, IOD Gooding can be used
         return estimate(outputFrame, raDec1, raDec2, raDec3,
-                        computeDistance(propagator, raDec1.getDate(), raDec1.getGroundStationPosition(outputFrame)),
-                        computeDistance(propagator, raDec3.getDate(), raDec3.getGroundStationPosition(outputFrame)),
+                        computeDistance(propagator, raDec1.getDate(), raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), outputFrame)),
+                        computeDistance(propagator, raDec3.getDate(), raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), outputFrame)),
                         nRev, direction);
     }
 
@@ -316,9 +320,9 @@ public class IodGooding {
                           final double rho1init, final double rho3init,
                           final int nRev, final boolean direction) {
         return estimate(outputFrame,
-                        raDec1.getGroundStationPosition(outputFrame),
-                        raDec2.getGroundStationPosition(outputFrame),
-                        raDec3.getGroundStationPosition(outputFrame),
+                        raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), outputFrame),
+                        raDec2.getStation().getPVCoordinatesProvider().getPosition(raDec2.getDate(), outputFrame),
+                        raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), outputFrame),
                         raDec1.getObservedLineOfSight(outputFrame), raDec1.getDate(),
                         raDec2.getObservedLineOfSight(outputFrame), raDec2.getDate(),
                         raDec3.getObservedLineOfSight(outputFrame), raDec3.getDate(),
@@ -695,64 +699,77 @@ public class IodGooding {
         }
     }
 
-    /** Calculate the position along sight-line.
+    /** Calculate the position along sight-line (forced planar mock-up for debugging).
      * @param frame frame to be used (orbit frame)
-     * @param E1 line of sight 1
-     * @param RO1 distance along E1
-     * @param E3 line of sight 3
-     * @param RO3 distance along E3
-     * @param T12   time of flight
-     * @param T13   time of flight
-     * @param nRev  number of revolutions
+     * @param E1 line of sight 1 (ignored in planar mock-up)
+     * @param RO1 distance along E1 (used for R1)
+     * @param E3 line of sight 3 (ignored in planar mock-up)
+     * @param RO3 distance along E3 (used for R3)
+     * @param T13 time of flight 1->3
+     * @param T12 time of flight 1->2
+     * @param nRev number of revolutions
      * @param posigrade direction of motion
-     * @return (R2-O2)
+     * @return (R2-O2) in normalized units
      */
     private Vector3D getPositionOnLoS2(final Frame frame,
-                                       final Vector3D E1, final double RO1,
-                                       final Vector3D E3, final double RO3,
-                                       final double T13, final double T12,
-                                       final int nRev, final boolean posigrade) {
+                                    final Vector3D E1, final double RO1,
+                                    final Vector3D E3, final double RO3,
+                                    final double T13, final double T12,
+                                    final int nRev, final boolean posigrade) {
+        // Compute radii (same as before)
         final Vector3D P1 = vObserverPosition1.add(E1.scalarMultiply(RO1));
         R1 = P1.getNorm();
 
         final Vector3D P3 = vObserverPosition3.add(E3.scalarMultiply(RO3));
         R3 = P3.getNorm();
 
-        final Vector3D P13 = P1.crossProduct(P3);
-
-        // sweep angle
-        // (Fails only if either R1 or R2 is zero)
-        double TH = FastMath.atan2(P13.getNorm(), P1.dotProduct(P3));
-
-        // compute the number of revolutions
+        // Compute sweep angle (same as before)
+        final Vector3D P1_input = vObserverPosition1.add(E1.scalarMultiply(RO1));
+        final Vector3D P3_input = vObserverPosition3.add(E3.scalarMultiply(RO3));
+        final Vector3D P13 = P1_input.crossProduct(P3_input);
+        double TH = FastMath.atan2(P13.getNorm(), P1_input.dotProduct(P3_input));
         if (!posigrade) {
             TH = 2 * FastMath.PI - TH;
         }
 
-        // Solve the Lambert's problem to get the velocities at endpoints
-        // work with non-dimensional units (MU=1)
-        final Vector2D v1 = LambertSolver.solveNormalized2D(R1, R3, TH, T13, nRev);
-        final double[] V1 = v1.toArray();
+        // Mock-up planar setup (force P1 and P3 in xy-plane, like solveLambertPb)
+        final Vector3D P1_planar = new Vector3D(R1, 0.0, 0.0);  // P1 at (R1, 0, 0)
+        final Vector3D P3_planar = new Vector3D(R3 * FastMath.cos(TH), R3 * FastMath.sin(TH), 0.0);  // P3 at (R3*cos(TH), R3*sin(TH), 0)
 
-        if (v1 != Vector2D.NaN) {
-            // basis vectors
-            final Vector3D Pn = P1.crossProduct(P3);
-            final Vector3D Pt = Pn.crossProduct(P1);
+        // Solve Lambert problem in planar setup
+        final AbsoluteDate date3 = date1.shiftedBy(T13);
+        final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(date1, P1_planar, date3, P3_planar, frame);
+        final LambertSolver lambertSolver = new LambertSolver(1.0);
+        final List<LambertSolution> solutions = lambertSolver.solve(posigrade, nRev, boundaryConditions);
+        final LambertSolution selectedSolution = solutions.getFirst();
+        final LambertBoundaryVelocities velocities = selectedSolution.getBoundaryVelocities();
+        Vector3D vel1 = velocities.getInitialVelocity();
 
-            // tangential velocity norm
+        if (vel1 != null && !vel1.equals(Vector3D.NaN)) {
+            // Hot fix: Extract V1 from planar vel1 using planar basis, then reconstruct with actual 3D basis (matches original)
+            // Planar basis (for extraction)
+            final Vector3D Pn_planar = P1_planar.crossProduct(P3_planar);  // Normal to xy-plane
+            final Vector3D Pt_planar = Pn_planar.crossProduct(P1_planar);  // Tangential in xy-plane
+            final double RT_planar = Pt_planar.getNorm();
+
+            // Extract planar components (like V1[0], V1[1] from solveNormalized2D)
+            final double VR1 = vel1.dotProduct(P1_planar) / R1;
+            final double VT1 = vel1.dotProduct(Pt_planar) / RT_planar;
+
+            // Actual 3D basis (for reconstruction, same as original)
+            final Vector3D Pn = P1.crossProduct(P3);  // Normal to transfer plane
+            final Vector3D Pt = Pn.crossProduct(P1);  // Tangential in transfer plane
             double RT = Pt.getNorm();
             if (!posigrade) {
-                RT = -RT;
+                RT = -RT;  // Flip for retrograde
             }
 
-            // velocity vector at P1
-            final Vector3D Vel1 = new  Vector3D(V1[0] / R1, P1, V1[1] / RT, Pt);
+            // Reconstruct vel1 using actual 3D basis (exact match to original)
+            vel1 = new Vector3D(VR1 / R1, P1, VT1 / RT, Pt);
 
-            // estimate the position at the second observation time
-            // propagate (P1, V1) during TAU + T12 to get (P2, V2)
-            final PVCoordinates pv1   = new PVCoordinates(P1, Vel1);
-            final Orbit         orbit = new CartesianOrbit(pv1, frame, date1, 1.);
-
+            // Propagate to get 3D P2
+            final PVCoordinates pv1 = new PVCoordinates(P1, vel1);
+            final Orbit orbit = new CartesianOrbit(pv1, frame, date1, 1.0);
             return orbit.shiftedBy(T12).getPosition();
         }
 

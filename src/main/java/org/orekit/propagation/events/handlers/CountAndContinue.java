@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,15 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 
 /**
- * Event handler counting event occurrences and always returning {@link Action#CONTINUE}.
+ * Event handler counting event occurrences and always returning {@link Action#CONTINUE}. The count cannot be reset.
  * @see CountingHandler
  * @author Romain Serra
  * @since 13.0
  */
-public class CountAndContinue extends CountingHandler {
+public class CountAndContinue implements EventHandler {
+
+    /** Count. */
+    private int count;
 
     /** Constructor with count initialized at zero.
      */
@@ -38,12 +41,20 @@ public class CountAndContinue extends CountingHandler {
      * @param startingCount value to initialize count
      */
     public CountAndContinue(final int startingCount) {
-        super(startingCount, Action.CONTINUE);
+        this.count = startingCount;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Getter for current count.
+     * @return count
+     */
+    public int getCount() {
+        return count;
+    }
+
     @Override
-    protected boolean doesCount(final SpacecraftState state, final EventDetector detector, final boolean increasing) {
-        return true;
+    public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
+        count++;
+        return Action.CONTINUE;
     }
 }

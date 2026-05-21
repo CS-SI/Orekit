@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,8 +39,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.Arrays;
-
 
 /**
  * Check against prediction in
@@ -76,16 +74,7 @@ public class RelativisticJ2ClockRangeModifierTest {
         final SpacecraftState state = new SpacecraftState(new CartesianOrbit(satPV, FramesFactory.getEME2000(), Constants.WGS84_EARTH_MU));
 
         // Set reference date to station drivers
-        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                    station.getEastOffsetDriver(),
-                                                    station.getNorthOffsetDriver(),
-                                                    station.getZenithOffsetDriver(),
-                                                    station.getPrimeMeridianOffsetDriver(),
-                                                    station.getPrimeMeridianDriftDriver(),
-                                                    station.getPolarOffsetXDriver(),
-                                                    station.getPolarDriftXDriver(),
-                                                    station.getPolarOffsetYDriver(),
-                                                    station.getPolarDriftYDriver())) {
+        for (ParameterDriver driver : station.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
                 driver.setReferenceDate(state.getDate());
             }
@@ -141,16 +130,7 @@ public class RelativisticJ2ClockRangeModifierTest {
         final SpacecraftState state = new SpacecraftState(new CartesianOrbit(satPV, FramesFactory.getEME2000(), Constants.WGS84_EARTH_MU));
 
         // Set reference date to station drivers
-        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                    station.getEastOffsetDriver(),
-                                                    station.getNorthOffsetDriver(),
-                                                    station.getZenithOffsetDriver(),
-                                                    station.getPrimeMeridianOffsetDriver(),
-                                                    station.getPrimeMeridianDriftDriver(),
-                                                    station.getPolarOffsetXDriver(),
-                                                    station.getPolarDriftXDriver(),
-                                                    station.getPolarOffsetYDriver(),
-                                                    station.getPolarDriftYDriver())) {
+        for (ParameterDriver driver : station.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
                 driver.setReferenceDate(state.getDate());
             }

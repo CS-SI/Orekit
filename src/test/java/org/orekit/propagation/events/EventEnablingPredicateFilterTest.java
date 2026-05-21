@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 package org.orekit.propagation.events;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
@@ -53,9 +56,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.mockito.Mockito.when;
 
 class EventEnablingPredicateFilterTest {
 
@@ -82,9 +83,23 @@ class EventEnablingPredicateFilterTest {
         final EnablingPredicate enablingPredicate = Mockito.mock();
         final EventEnablingPredicateFilter predicateFilter = new EventEnablingPredicateFilter(detector, enablingPredicate);
         // WHEN
-        final boolean value = predicateFilter.dependsOnTimeOnly();
+        final boolean value = predicateFilter.getEventFunction().dependsOnTimeOnly();
         // THEN
         Assertions.assertFalse(value);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testDependsOnMainVariablesOnly(final boolean flag) {
+        // GIVEN
+        final EventDetector detector = new DateDetector();
+        final EnablingPredicate enablingPredicate = Mockito.mock();
+        when(enablingPredicate.dependsOnMainVariablesOnly()).thenReturn(flag);
+        final EventEnablingPredicateFilter predicateFilter = new EventEnablingPredicateFilter(detector, enablingPredicate);
+        // WHEN
+        final boolean value = predicateFilter.getEventFunction().dependsOnMainVariablesOnly();
+        // THEN
+        Assertions.assertEquals(flag, value);
     }
 
     @Test
@@ -217,6 +232,7 @@ class EventEnablingPredicateFilterTest {
         DateDetector raw = new DateDetector(orbit.getDate().shiftedBy(3600.0)).
                         withMaxCheck(1000.0).
                         withHandler(new EventHandler() {
+                            @Override
                             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                                 reset.add(oldState.getDate());
                                 return oldState;
@@ -231,17 +247,17 @@ class EventEnablingPredicateFilterTest {
         EventEnablingPredicateFilter filtered =
                         new EventEnablingPredicateFilter(raw, (state, eventDetector, g) -> state.getDate().durationFrom(orbit.getDate()) > 20000.0);
         Propagator propagator = new KeplerianPropagator(orbit);
-        EventsLogger logger = new EventsLogger();
+        EventsLogger logger = new EventsLogger(false, new ArrayList<>());
         propagator.addEventDetector(logger.monitorDetector(filtered));
         propagator.propagate(orbit.getDate().shiftedBy(Constants.JULIAN_DAY));
         List<LoggedEvent> events = logger.getLoggedEvents();
         Assertions.assertEquals(4, events.size());
-        Assertions.assertEquals(6 * 3600, events.get(0).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(6 * 3600, events.getFirst().getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(7 * 3600, events.get(1).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(8 * 3600, events.get(2).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(9 * 3600, events.get(3).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(4, reset.size());
-        Assertions.assertEquals(6 * 3600, reset.get(0).durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(6 * 3600, reset.getFirst().durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(7 * 3600, reset.get(1).durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(8 * 3600, reset.get(2).durationFrom(orbit.getDate()), 1.0e-6);
         Assertions.assertEquals(9 * 3600, reset.get(3).durationFrom(orbit.getDate()), 1.0e-6);

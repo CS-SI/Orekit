@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,16 @@
  * limitations under the License.
  */
 package org.orekit.propagation.integration;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
@@ -55,16 +65,6 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DataDictionary;
 import org.orekit.utils.DoubleArrayDictionary;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 
 
 /** Common handling of {@link org.orekit.propagation.Propagator Propagator}
@@ -641,15 +641,22 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-        for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
-            final String   name       = provider.getName();
-            final int      offset     = secondaryOffsets.get(name);
-            final double[] additional = state.getAdditionalState(name);
-            System.arraycopy(additional, 0, secondary[0], offset, additional.length);
-        }
+        copyAdditionalStateOrDerivative(state, false, secondary);
 
         return secondary;
 
+    }
+
+    private void copyAdditionalStateOrDerivative(final SpacecraftState state, final boolean copyDerivative,
+                                                 final double[][] secondary) {
+        for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+            final String   name       = provider.getName();
+            final int      offset     = secondaryOffsets.get(name);
+            final int    dimension = provider.getDimension();
+            final double[] secondaryArray = copyDerivative ? state.getAdditionalStateDerivative(name) :
+                    state.getAdditionalState(name);
+            System.arraycopy(secondaryArray, 0, secondary[0], offset, dimension);
+        }
     }
 
     /** Create an ODE with all equations.
@@ -1009,10 +1016,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @return Orekit state
          */
         private SpacecraftState convertToOrekitForEventFunction(final ODEStateAndDerivative s) {
-            if (!this.detector.dependsOnTimeOnly()) {
+            if (!this.detector.getEventFunction().dependsOnMainVariablesOnly()) {
                 return convertToOrekitWithAdditional(s);
             } else {
-                // event function only needs time
+                // event function does not require secondary states or attitude rates
                 stateMapper.setAttitudeProvider(getFrozenAttitudeProvider());
                 final SpacecraftState converted = convertToOrekitWithoutAdditional(s);
                 stateMapper.setAttitudeProvider(getAttitudeProvider());
@@ -1044,12 +1051,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                     // secondary part
                     final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-                    for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
-                        final String name      = provider.getName();
-                        final int    offset    = secondaryOffsets.get(name);
-                        final int    dimension = provider.getDimension();
-                        System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
-                    }
+                    copyAdditionalStateOrDerivative(newState, false, secondary);
 
                     return new ODEState(newState.getDate().durationFrom(getStartDate()),
                                         primary, secondary);
@@ -1197,12 +1199,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             final double[][] secondaryDerivative = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
-                final String   name       = provider.getName();
-                final int      offset     = secondaryOffsets.get(name);
-                final double[] additionalDerivative = state.getAdditionalStateDerivative(name);
-                System.arraycopy(additionalDerivative, 0, secondaryDerivative[0], offset, additionalDerivative.length);
-            }
+            copyAdditionalStateOrDerivative(state, true, secondaryDerivative);
 
             return secondaryDerivative;
 
@@ -1332,7 +1329,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
      * when leaving the block, so the integrator only keeps its own handlers
-     * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate).
+     * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate)}.
      * </p>
      * @since 11.0
      */

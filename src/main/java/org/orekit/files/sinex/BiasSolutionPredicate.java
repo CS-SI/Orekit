@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.files.sinex;
 
-import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -36,7 +34,7 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
         @Override
         protected void store(final SinexBiasParseInfo parseInfo,
                              final String svn, final SatInSystem satId, final String siteCode,
-                             final ObservationType obs1, final ObservationType obs2,
+                             final String obs1, final String obs2,
                              final AbsoluteDate start, final AbsoluteDate end,
                              final double bias) {
             if (siteCode.isEmpty()) {
@@ -57,7 +55,7 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
         @Override
         protected void store(final SinexBiasParseInfo parseInfo,
                              final String svn, final SatInSystem satId, final String siteCode,
-                             final ObservationType obs1, final ObservationType obs2,
+                             final String obs1, final String obs2,
                              final AbsoluteDate start, final AbsoluteDate end,
                              final double bias) {
             if (siteCode.isEmpty()) {
@@ -77,20 +75,19 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
     public boolean test(final SinexBiasParseInfo parseInfo) {
         if (name().equals(parseInfo.parseString(1, 3))) {
             // this is the data type we are concerned with
-            final String          svn      = parseInfo.parseString(6, 4);
-            final SatInSystem     satId    = new SatInSystem(parseInfo.parseString(11, 3));
-            final String          siteCode = parseInfo.parseString(15, 9);
-            final ObservationType obs1     = parseInfo.parseObservationType(satId.getSystem(), 25, 4);
-            final ObservationType obs2     = parseInfo.parseObservationType(satId.getSystem(), 30, 4);
-            final AbsoluteDate    start    = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(35, 14), true);
-            final AbsoluteDate    end      = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(50, 14), false);
+            final String       svn      = parseInfo.parseString(6, 4);
+            final SatInSystem  satId    = new SatInSystem(parseInfo.parseString(11, 3));
+            final String       siteCode = parseInfo.parseString(15, 9);
+            final String       obs1     = parseInfo.parseString(25, 4);
+            final String       obs2     = parseInfo.parseString(30, 4);
+            final AbsoluteDate start    = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(35, 14), true);
+            final AbsoluteDate end      = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(50, 14), false);
 
             // code biases are in time units (ns converted to seconds by parseDoubleWithUnit),
             // they must be converted to meters
             // phase biases are in cycles, no conversion is needed for them
-            final double          factor   =
-                obs1.getMeasurementType() == MeasurementType.PSEUDO_RANGE ? Constants.SPEED_OF_LIGHT :  1;
-            final double          bias     = factor * parseInfo.parseDoubleWithUnit(65, 4, 70, 21);
+            final double factor = obs1.charAt(0) == 'C' ? Constants.SPEED_OF_LIGHT :  1;
+            final double bias   = factor * parseInfo.parseDoubleWithUnit(65, 4, 70, 21);
 
             store(parseInfo, svn, satId, siteCode, obs1, obs2, start, end, bias);
             return true;
@@ -113,7 +110,7 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
      */
     protected abstract void store(SinexBiasParseInfo parseInfo,
                                   String svn, SatInSystem satId, String siteCode,
-                                  ObservationType obs1, ObservationType obs2,
+                                  String obs1, String obs2,
                                   AbsoluteDate start, AbsoluteDate end,
                                   double bias);
 

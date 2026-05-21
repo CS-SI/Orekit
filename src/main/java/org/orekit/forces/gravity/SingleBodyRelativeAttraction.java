@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class SingleBodyRelativeAttraction extends AbstractBodyAttraction {
         // compute bodies separation vectors and squared norm
         final PVCoordinates bodyPV   = getBodyPVCoordinates(s.getDate(), s.getFrame());
         final Vector3D satToBody     = bodyPV.getPosition().subtract(s.getPosition());
-        final double r2Sat           = satToBody.getNormSq();
+        final double r2Sat           = satToBody.getNorm2Sq();
 
         // compute relative acceleration
         final double gm = parameters[0];
@@ -75,7 +75,7 @@ public class SingleBodyRelativeAttraction extends AbstractBodyAttraction {
         // compute bodies separation vectors and squared norm
         final FieldPVCoordinates<T> bodyPV = getBodyPVCoordinates(s.getDate(), s.getFrame());
         final FieldVector3D<T> satToBody   = bodyPV.getPosition().subtract(s.getPosition());
-        final T                r2Sat       = satToBody.getNormSq();
+        final T                r2Sat       = satToBody.getNorm2Sq();
 
         // compute relative acceleration
         final T gm = parameters[0];

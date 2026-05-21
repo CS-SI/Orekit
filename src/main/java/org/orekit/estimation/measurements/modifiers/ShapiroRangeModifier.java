@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,7 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical range measurement with Shapiro time delay.
  * <p>
@@ -32,25 +26,20 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 10.0
  */
-public class ShapiroRangeModifier extends AbstractShapiroBaseModifier implements EstimationModifier<Range> {
+public class ShapiroRangeModifier extends AbstractShapiroRangeModifier<Range> {
 
-    /** Simple constructor.
+    /** Simple constructor from gravitational constant.
      * @param gm gravitational constant for main body in signal path vicinity.
      */
     public ShapiroRangeModifier(final double gm) {
-        super(gm);
+        this(new ShapiroModel(gm));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
+    /**
+     * Constructor.
+     * @param shapiroModel Shapiro delay computer
+     */
+    public ShapiroRangeModifier(final ShapiroModel shapiroModel) {
+        super(shapiroModel);
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
-        doModify(this, estimated);
-    }
-
 }

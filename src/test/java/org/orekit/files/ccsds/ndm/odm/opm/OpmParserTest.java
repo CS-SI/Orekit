@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm.opm;
 
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.function.Function;
-
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -34,6 +25,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -45,14 +37,10 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
-import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
-import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
+import org.orekit.files.ccsds.ndm.odm.*;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
@@ -68,6 +56,14 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class OpmParserTest {
 
@@ -228,7 +224,7 @@ public class OpmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2000, 6, 3, 9, 0,
                                                  new TimeOffset(34, TimeOffset.SECOND, 100, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
-                            file.getManeuvers().get(0).getEpochIgnition());
+                            file.getManeuvers().getFirst().getEpochIgnition());
         Assertions.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
         Assertions.assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
         Assertions.assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
@@ -342,7 +338,7 @@ public class OpmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2000, 6, 3, 9, 0,
                                                  new TimeOffset(34, TimeOffset.SECOND, 100, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getGPS()),
-                            file.getManeuvers().get(0).getEpochIgnition());
+                            file.getManeuvers().getFirst().getEpochIgnition());
         Assertions.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
         Assertions.assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
         Assertions.assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
@@ -399,7 +395,7 @@ public class OpmParserTest {
                                                  TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
-        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().getFirst());
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assertions.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
@@ -496,7 +492,7 @@ public class OpmParserTest {
                                              TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
-        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().getFirst());
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assertions.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
@@ -660,7 +656,7 @@ public class OpmParserTest {
                                                  TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
-        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().getFirst());
         Assertions.assertEquals("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C", file.getHeader().getMessageId());
 
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
@@ -1070,19 +1066,6 @@ public class OpmParserTest {
         final Frame actualFrame = file.getMetadata().getFrame();
         MatcherAssert.assertThat(moon.getPVCoordinates(date, actualFrame),
                                  OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));
-    }
-
-    /** Test deprecated constructor. Can be removed in 14.0. */
-    @Test
-    @Deprecated
-    public void testDeprecatedConstructor() {
-        // action
-        OpmParser actual = new OpmParser(
-                null, true, null, null, 0, 0, null, new Function[0]);
-
-        // verify
-        MatcherAssert.assertThat(actual.getFrameMapper(),
-                Matchers.is(new OrekitCcsdsFrameMapper()));
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
+
+import org.hipparchus.CalculusFieldElement;
 
 /**  Interface for interpolation grids.
  * <p>
@@ -37,4 +39,15 @@ public interface InterpolationGrid {
      * @return time points between start and end
      */
     double[] getGridPoints(double stepStart, double stepEnd);
+
+    /** Get grid points that are within the current step.
+     * <p>The step is defined by its start and its end time.
+     * </p>
+     * @param stepStart start of the step
+     * @param stepEnd end of the step
+     * @param <T> type of the elements
+     * @return time points between start and end
+     * @since 14.0
+     */
+    <T extends CalculusFieldElement<T>> T[] getGridPoints(T stepStart, T stepEnd);
 }

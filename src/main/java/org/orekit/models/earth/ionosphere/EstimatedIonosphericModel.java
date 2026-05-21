@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.frames.FieldStaticTransform;
-import org.orekit.frames.StaticTransform;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -51,7 +48,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class EstimatedIonosphericModel implements IonosphericModel, IonosphericDelayModel {
+public class EstimatedIonosphericModel extends AbstractIonosphericModel {
 
     /** Name of the parameter of this model: the Vertical Total Electron Content. */
     public static final String VERTICAL_TOTAL_ELECTRON_CONTENT = "vertical total electron content";
@@ -60,18 +57,20 @@ public class EstimatedIonosphericModel implements IonosphericModel, IonosphericD
     private static final double FACTOR = 40.3e16;
 
     /** Ionospheric mapping Function model. */
-    private final transient IonosphericMappingFunction model;
+    private final IonosphericMappingFunction model;
 
     /** Driver for the Vertical Total Electron Content.*/
-    private final transient ParameterDriver vtec;
-
+    private final ParameterDriver vtec;
 
     /**
      * Build a new instance.
+     * @param earth earth body shape
      * @param model ionospheric mapping function
      * @param vtecValue value of the Vertical Total Electron Content in TECUnits
+     * @since 14.0
      */
-    public EstimatedIonosphericModel(final IonosphericMappingFunction model, final double vtecValue) {
+    public EstimatedIonosphericModel(final OneAxisEllipsoid earth, final IonosphericMappingFunction model, final double vtecValue) {
+        super(earth);
         this.model = model;
         this.vtec  = new ParameterDriver(EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT,
                                          vtecValue, FastMath.scalb(1.0, 3), 0.0, 1000.0);
@@ -79,33 +78,25 @@ public class EstimatedIonosphericModel implements IonosphericModel, IonosphericD
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
-                            final double frequency, final double[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double pathDelay(final SpacecraftState state,
+    public double pathDelay(final Vector3D localP1, final Vector3D localP2,
                             final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
                             final double frequency, final double[] parameters) {
 
-        // we use transform from base frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final StaticTransform base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final Vector3D        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+        final double baseAlt   = baseFrame.getPoint().getAltitude();
 
-        // Elevation in radians
-        final double          elevation  = position.getDelta();
+        // Lambda function for calculating path delay for each side of the link
+        final DelayCalculator calculateDelay = position -> {
 
-        // Only consider measures above the horizon
-        if (elevation > 0.0) {
-            // Delay
-            return pathDelay(elevation, frequency, parameters);
-        }
+            // Elevation of position w.r.t the base frame
+            final double elevation = position.getDelta();
 
-        return 0.0;
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
+                return pathDelay(elevation, frequency, parameters);
+            }
+            return 0.0;
+        };
+
+        return calculateDelay.apply(localP1) + calculateDelay.apply(localP2);
     }
 
     /**
@@ -133,32 +124,25 @@ public class EstimatedIonosphericModel implements IonosphericModel, IonosphericD
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
-                                                       final double frequency, final T[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldVector3D<T> localP1, final FieldVector3D<T> localP2,
                                                            final TopocentricFrame baseFrame, final FieldAbsoluteDate<T> receptionDate,
                                                            final double frequency, final T[] parameters) {
 
-        // we use transform from base frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final FieldStaticTransform<T> base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final FieldVector3D<T>        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+        final double baseAlt   = baseFrame.getPoint().getAltitude();
 
-        // Elevation in radians
-        final T elevation = position.getDelta();
+        // Lambda function for calculating path delay for each side of the link
+        final FieldDelayCalculator<T> calculateFieldDelay = position -> {
 
-        if (elevation.getReal() > 0.0) {
-            // Delay
-            return pathDelay(elevation, frequency, parameters);
-        }
+            // Elevation of object in radians w.r.t. minimum altitude point
+            final T elevation = position.getDelta();
 
-        return elevation.getField().getZero();
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
+                return pathDelay(elevation, frequency, parameters);
+            }
+            return elevation.getField().getZero();
+        };
+
+        return calculateFieldDelay.apply(localP1).add( calculateFieldDelay.apply(localP2) );
     }
 
     /**

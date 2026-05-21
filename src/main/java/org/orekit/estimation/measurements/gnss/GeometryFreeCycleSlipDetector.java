@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -92,11 +92,11 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
         for (CombinedObservationData cod : phasesGF) {
             final String nameSat = setName(prn, observation.getSatellite().getSystem());
             // Check for cycle-slip detection
-            final GnssSignal signal = cod.getUsedObservationData().get(0).getObservationType().getSignal(system);
+            final GnssSignal signal = cod.getUsedObservationData().getFirst().getObservationType().getSignal(system);
             final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), signal);
             if (!slip) {
                 // Update cycle slip data
-                cycleSlipDataSet(nameSat, date, cod.getValue(), cod.getUsedObservationData().get(0).getObservationType().getSignal(system));
+                cycleSlipDataSet(nameSat, date, cod.getValue(), cod.getUsedObservationData().getFirst().getObservationType().getSignal(system));
             }
         }
 

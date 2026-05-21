@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -63,16 +64,6 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
         this.filter   = filter;
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * This implementation initialize the measurement builder.
-     * </p>
-     */
-    @Override
-    public void init(final AbsoluteDate start, final AbsoluteDate end) {
-        builder.init(start, end);
-    }
-
     /** {@inheritDoc} */
     @Override
     public MeasurementBuilder<T> getBuilder() {
@@ -96,20 +87,13 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
         final List<AbsoluteDate> dates = getSelector().selectDates(first.getValue().getPreviousState().getDate(),
                                                                    first.getValue().getCurrentState().getDate());
 
-        // generate measurements when feasible
-        final SortedSet<EstimatedMeasurementBase<T>> measurements = new TreeSet<>();
-        for (final AbsoluteDate date : dates) {
-            if (measurementIsFeasible(date)) {
-                // a measurement is feasible at this date
-                final EstimatedMeasurementBase<T> built = getBuilder().build(date, interpolators);
-                if (filter.test(built)) {
-                    // add the generated measurement is the filters accepts it
-                    measurements.add(built);
-                }
-            }
-        }
+        // generate measurements when feasible and not filtered out
+        final Stream<EstimatedMeasurementBase<T>> stream = dates.stream()
+                .filter(this::measurementIsFeasible)
+                .map(date -> getBuilder().build(date, interpolators))
+                .filter(filter);
 
-        return measurements;
+        return stream.collect(java.util.stream.Collectors.toCollection(TreeSet::new));
 
     }
 

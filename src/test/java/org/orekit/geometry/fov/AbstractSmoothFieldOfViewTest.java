@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,7 +86,7 @@ public abstract class AbstractSmoothFieldOfViewTest {
         Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
         Assertions.assertEquals(1, footprint.size());
-        List<GeodeticPoint> loop = footprint.get(0);
+        List<GeodeticPoint> loop = footprint.getFirst();
         double minOffset = Double.POSITIVE_INFINITY;
         double maxOffset = 0;
         double minEl     = Double.POSITIVE_INFINITY;
@@ -133,6 +133,20 @@ public abstract class AbstractSmoothFieldOfViewTest {
         Assertions.assertEquals(expectedMinDist,       minDist,                       1.0);
         Assertions.assertEquals(expectedMaxDist,       maxDist,                       1.0);
 
+    }
+
+    protected void doTestFootprintExistence(final SmoothFieldOfView fov, final AttitudeProvider attitude
+                                   ) {
+
+        Propagator propagator = new KeplerianPropagator(orbit);
+        propagator.setAttitudeProvider(attitude);
+        SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(1000.0));
+        Transform inertToBody = state.getFrame().getTransformTo(earth.getBodyFrame(), state.getDate());
+        Transform fovToBody   = new Transform(state.getDate(),
+                                              state.toTransform().getInverse(),
+                                              inertToBody);
+        List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1), true, 1e7);
+        Assertions.assertEquals(footprint.size(), 1);
     }
 
     protected void doTestBoundary(final SmoothFieldOfView fov, final RandomGenerator random,

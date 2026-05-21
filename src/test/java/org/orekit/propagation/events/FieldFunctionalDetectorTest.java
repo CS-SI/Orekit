@@ -23,11 +23,14 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -35,18 +38,20 @@ import org.orekit.utils.FieldPVCoordinates;
 
 import java.util.function.Function;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Unit tests for {@link FieldFunctionalDetector}
  *
  * @author Evan Ward
  */
-public class FieldFunctionalDetectorTest {
+class FieldFunctionalDetectorTest {
 
     /**
      * Check {@link FieldFunctionalDetector}.
      */
     @Test
-    public void testFunctionalDetector() {
+    void testFunctionalDetector() {
         doTestFunctionalDetector(Binary64Field.getInstance());
     }
 
@@ -82,6 +87,17 @@ public class FieldFunctionalDetectorTest {
         MatcherAssert.assertThat(detector.getHandler().eventOccurred(null, detector, false),
                 CoreMatchers.is(Action.STOP));
         MatcherAssert.assertThat(detector.getFunction(), CoreMatchers.is(g));
+    }
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldFunctionalDetector<Binary64> fieldDetector = new FieldFunctionalDetector<>(Binary64Field.getInstance());
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final FunctionalDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
     }
 
 }

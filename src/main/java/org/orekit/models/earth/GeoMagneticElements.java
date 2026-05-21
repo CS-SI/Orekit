@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -30,22 +31,23 @@ import org.orekit.utils.units.UnitsConverter;
 public class GeoMagneticElements implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 1881493738280586855L;
 
     /** The magnetic field vector (East=X, North=Y, Nadir=Z). */
-    private Vector3D b;
+    private final Vector3D b;
 
     /** The magnetic inclination in radians. */
-    private double inclination;
+    private final double inclination;
 
     /** The magnetic declination in radians. */
-    private double declination;
+    private final double declination;
 
     /** The magnetic total intensity, in Teslas. */
-    private double totalIntensity;
+    private final double totalIntensity;
 
     /** The magnetic horizontal intensity, in Teslas. */
-    private double horizontalIntensity;
+    private final double horizontalIntensity;
 
     /** Construct a new element with the given field vector. The other elements
      * of the magnetic field are calculated from the field vector.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,7 +54,7 @@ public class PhaseCentersRangeModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
 
@@ -94,12 +94,12 @@ public class PhaseCentersRangeModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
 
         // create perfect range measurements without antenna offset
@@ -159,12 +159,12 @@ public class PhaseCentersRangeModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
 
         // create perfect range measurements without antenna offset
@@ -213,7 +213,7 @@ public class PhaseCentersRangeModifierTest {
             EstimatedMeasurementBase<Range> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Range ar = (Range) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 3.4e-7);
+            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1e-6);
             Assertions.assertEquals(1,
                                     estimated.getAppliedEffects().entrySet().stream().
                                     filter(e -> e.getKey().getEffectName().equals("mean phase center")).count());

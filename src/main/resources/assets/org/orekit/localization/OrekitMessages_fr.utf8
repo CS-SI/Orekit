@@ -154,6 +154,9 @@ WRONG_DEGREE_OR_ORDER=pas de terme ({0}, {1}) dans une décomposition en harmoni
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=type d'éléments orbitaux inattendus pour cette théorie de moyennisation
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=plusieurs dates de références ({0} et {1} diffèrent de {3,number,0.0##############E0} s) trouvées dans le fichier de champ de gravité {2}
 
@@ -255,6 +258,9 @@ INCONSISTENT_EARTH_MOON_RATIO_IN_FILES=valeurs incohérentes pour le rapport de 
 
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY=aucune donnée n''a été chargée pour le corps céleste {0}
+
+# unknown celestial body: {0}
+UNKNOWN_CELESTIAL_BODY=corps céleste inconnu : {0}
 
 # file {0} is not a JPL ephemerides binary file
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE=le fichier {0} n''est pas un fichier d''éphémérides du JPL
@@ -445,9 +451,6 @@ STK_UNMAPPED_COORDINATE_SYSTEM=le système de coordonnées STK « {0} » n''
 # unexpected end of STK file (after line {0})
 STK_UNEXPECTED_END_OF_FILE=fin inattendue d''un fichier STK (après la ligne {0})
 
-# unsupported clock file version {0}
-CLOCK_FILE_UNSUPPORTED_VERSION=version de fichier d''horloge {0} non prise en charge
-
 # version {0} from file {1} is not supported, supported version: {2}
 UNSUPPORTED_FILE_FORMAT_VERSION=version {0} du fichier {1} non prise en charge, versions prises en charge : {2}
 
@@ -483,6 +486,9 @@ UNABLE_TO_GENERATE_NEW_DATA_BEFORE=impossible de générer des données avant le
 
 # unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
 UNABLE_TO_GENERATE_NEW_DATA_AFTER=impossible de générer des données après le {0}, données requises pour {1} qui est {2,number,0.0##############E0} s après
+
+# unable to compute elliptic eccentric anomaly from the mean anomaly after {0} iterations
+UNABLE_TO_COMPUTE_ELLIPTIC_ECCENTRIC_ANOMALY=impossible de calculer l''anomalie excentrique elliptique à partir de l''anomalie moyenne après {0} itérations
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=impossible de calculer l''anomalie excentrique hyperbolique à partir de l''anomalie moyenne après {0} itérations
@@ -953,3 +959,138 @@ LINE_NEVER_CROSSES_ALTITUDE=la ligne ne franchit jamais l''altitude {0}
 
 # body shape must be a one-axis ellipsoid
 BODY_SHAPE_MUST_BE_A_ONE_AXIS_ELLIPSOID=le corps devrait être un ellipsoïde à axe de symétrie
+
+# missing time system definition in file {0}
+MISSING_TIME_SYSTEM_DEFINITION=définition de temps système manquante dans le fichier {0}
+
+# wrong stations numbers in file {0}, expected {1}, got {2}
+WRONG_STATIONS_NUMBER=nombre de stations erroné dans le fichier {0}, {1} attendues, {2} définies
+
+# wrong satellites numbers in file {0}, expected {1}, got {2}
+WRONG_SATELLITES_NUMBER=nombre de satellites erroné dans le fichier {0}, {1} attendus, {2} définis
+
+# invalid format: width = {0}, precision = {1}
+INVALID_FORMAT=format invalide : taille = {0}, précision = {1}
+
+# output {0} has already been closed
+OUTPUT_ALREADY_CLOSED=la sortie {0} a déjà été fermée
+
+# Householder solver failed to converge after {0} iterations
+LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE=échec de convergence après {0} itérations dans le solveur de Householder
+
+# correction of perturbed Lambert solution failed to converge after {0} iterations
+LAMBERT_CORRECTION_DID_NOT_CONVERGE=échec de convergence après {0} itérations dans la correction de la solution de Lambert perturbée
+
+# invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight
+LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=nombre de révolutions {0} invalide, le nombre maximum est de {1} pour cette durée de transfert
+
+# invalid number of facets: {0}, it must be an odd number
+NUMBER_OF_FACETS_NOT_ODD={0} facettes est un nombre invalide, le nombre de facettes doit être impair
+
+# Invalid DAF FTP string found in DAF file {0}
+INVALID_DAF_FTPSTR = <MISSING TRANSLATION>
+
+# Incomplete DAF comment record found
+INCOMPLETE_DAF_COMMENT_RECORD = <MISSING TRANSLATION>
+
+# Incomplete DAF summary record found
+INCOMPLETE_DAF_SUMMARY_RECORD = <MISSING TRANSLATION>
+
+# DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
+INVALID_DAF_ENDIANNESS = <MISSING TRANSLATION>
+
+# DAF file type string must be of the format DAF/XXXX, got {0}
+INVALID_DAF_FILETYPE_STRING = <MISSING TRANSLATION>
+
+# Incomplete DAF name record found
+INCOMPLETE_DAF_NAME_RECORD = <MISSING TRANSLATION>
+
+# DAF object cannot be null
+NULL_DAF = <MISSING TRANSLATION>
+
+# Initial position for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_DISTANCE = <MISSING TRANSLATION>
+
+# Initial velocity for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_VELOCITY = <MISSING TRANSLATION>
+
+# Rectilinear motion detected in two-body propagator
+TWOBODY_RECTILINEAR_MOTION = <MISSING TRANSLATION>
+
+# Two-body propagation numerically unstable
+TWOBODY_UNSTABLE_PROPAGATION = <MISSING TRANSLATION>
+
+# GM value cannot be negative
+NEGATIVE_GM = <MISSING TRANSLATION>
+
+# Stumpff function order cannot be negative
+STUMPFF_NEGATIVE_ORDER = <MISSING TRANSLATION>
+
+# Semilatus rectum cannot be negative
+NEGATIVE_SEMILATUS_RECTUM = <MISSING TRANSLATION>
+
+# Eccentricity cannot be negative
+NEGATIVE_ECCENTRICITY = <MISSING TRANSLATION>
+
+# Central body radius cannot be negative
+NEGATIVE_CENTRAL_BODY_RADIUS = <MISSING TRANSLATION>
+
+# Norm of trajectory pole vector is zero
+ZERO_NORM_TRAJECTORY_POLE_VECTOR = <MISSING TRANSLATION>
+
+# Norm of periapsis vector is zero
+ZERO_NORM_PERIAPSIS_VECTOR = <MISSING TRANSLATION>
+
+# Norm of central body pole vector is zero
+ZERO_NORM_CENTRAL_BODY_POLE_VECTOR = <MISSING TRANSLATION>
+
+# Trajectory pole and periapsis vectors are not orthogonal
+NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS = <MISSING TRANSLATION>
+
+# Semimajor axis cannot be negative
+NEGATIVE_SEMIMAJOR_AXIS = <MISSING TRANSLATION>
+
+# Unknown SPK type {0}
+UNKNOWN_SPK_TYPE = <MISSING TRANSLATION>
+
+# Unknown SPK subtype code found for SPK segment of type {0}
+UNKNOWN_SPK_SUBTYPE = <MISSING TRANSLATION>
+
+# Unexpected number of metadata items in type {0} SPK
+SPK_UNEXPECTED_NUMBER_METADATA = <MISSING TRANSLATION>
+
+# Unexpected number of constants in type {0} SPK
+SPK_UNEXPECTED_NUMBER_CONSTANTS = <MISSING TRANSLATION>
+
+# Unexpected data packet size in type {0} SPK"
+SPK_UNEXPECTED_DATA_PACKET_SIZE = <MISSING TRANSLATION>
+
+# Target date {0} is outside the interval covered by the SPK segment
+SPK_TARGET_DATE_OUTSIDE_INTERVAL = <MISSING TRANSLATION>
+
+# Segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+SPK_INTERPOLATION_SEGMENT_TOO_SHORT = <MISSING TRANSLATION>
+
+# Unknown PCK segment type {0}.
+UNKNOWN_PCK_TYPE = <MISSING TRANSLATION>
+
+# Unexpected number of metadata items in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_METADATA = <MISSING TRANSLATION>
+
+# Unexpected number of constants in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_CONSTANTS = <MISSING TRANSLATION>
+
+# Unexpected data packet size in type {0} PCK segment
+PCK_UNEXPECTED_DATA_PACKET_SIZE = <MISSING TRANSLATION>
+
+# Target date {0} is outside the interval covered by the PCK segment
+PCK_TARGET_DATE_OUTSIDE_INTERVAL = <MISSING TRANSLATION>
+
+# PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+PCK_INTERPOLATION_SEGMENT_TOO_SHORT = <MISSING TRANSLATION>
+
+# Comments require {0} records but DAF file record specifies only {1} reserved records
+DAF_INSUFFICIENT_COMMENT_RECORDS = <MISSING TRANSLATION>
+
+# File description string is {0} characters long but should be at most 60 characters
+DAF_TOO_LONG_FILEDESCRIPTION_STRING = <MISSING TRANSLATION>

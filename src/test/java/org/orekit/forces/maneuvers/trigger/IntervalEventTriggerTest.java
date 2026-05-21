@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.maneuvers.trigger;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -25,14 +24,12 @@ import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.ParameterDriver;
 
 class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<IntervalEventTrigger<DateDetector>> {
 
@@ -46,23 +43,14 @@ class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<IntervalEven
         }
 
         @Override
-        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
-            D convertIntervalDetector(Field<S> field, DateDetector detector) {
+        protected <S extends CalculusFieldElement<S>> FieldDateDetector<S> convertIntervalDetector(Field<S> field, DateDetector detector) {
             final FieldAdaptableInterval<S> maxCheck  = (s, isForward) -> detector.getMaxCheckInterval().currentInterval(s.toSpacecraftState(), isForward);
             final S                    threshold = field.getZero().newInstance(detector.getThreshold());
-            final FieldAbsoluteDate<S> d0 = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
+            final FieldAbsoluteDate<S> d0 = new FieldAbsoluteDate<>(field, detector.getDates().getFirst().getDate());
             final FieldAbsoluteDate<S> d1 = new FieldAbsoluteDate<>(field, detector.getDates().get(1).getDate());
-            @SuppressWarnings("unchecked")
-            final D converted =
-                (D) new FieldDateDetector<>(field, d0, d1).
+            return new FieldDateDetector<>(field, d0, d1).
                                               withMaxCheck(maxCheck).
                                               withThreshold(threshold);
-            return converted;
-        }
-
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
         }
 
     }
@@ -79,7 +67,7 @@ class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<IntervalEven
         Assertions.assertEquals(1,     trigger.getEventDetectors().count());
         Assertions.assertEquals(1,     trigger.getFieldEventDetectors(Binary64Field.getInstance()).count());
         Assertions.assertEquals(2,     dates.size());
-        Assertions.assertEquals(  0.0, dates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        Assertions.assertEquals(  0.0, dates.getFirst().getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
         Assertions.assertEquals(100.0, dates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
     }
 

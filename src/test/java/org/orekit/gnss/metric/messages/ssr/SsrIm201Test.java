@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,12 @@
  */
 package org.orekit.gnss.metric.messages.ssr;
 
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -26,8 +30,6 @@ import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
-
-import java.util.ArrayList;
 
 public class SsrIm201Test {
 
@@ -92,7 +94,7 @@ public class SsrIm201Test {
         Assertions.assertEquals(1,                            im201.getHeader().getNumberOfIonosphericLayers());
 
         // Verify data
-        final SsrIm201Data data = im201.getData().get(0);
+        final SsrIm201Data data = im201.getData().getFirst();
         final double[][] cnm = data.getCnm();
         final double[][] snm = data.getSnm();
         Assertions.assertEquals(650000,            data.getHeightIonosphericLayer(), eps);
@@ -181,7 +183,7 @@ public class SsrIm201Test {
         Assertions.assertEquals(1,                            im201.getHeader().getNumberOfIonosphericLayers());
 
         // Verify data
-        final SsrIm201Data data = im201.getData().get(0);
+        final SsrIm201Data data = im201.getData().getFirst();
         final double[][] cnm = data.getCnm();
         final double[][] snm = data.getSnm();
         Assertions.assertEquals(650000,            data.getHeightIonosphericLayer(), eps);
@@ -285,4 +287,8 @@ public class SsrIm201Test {
         return array;
     }
 
+    @BeforeAll
+    public static void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
 }

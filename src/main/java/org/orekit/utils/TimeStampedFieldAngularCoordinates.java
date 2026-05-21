@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link FieldAngularCoordinates}.
@@ -133,6 +134,26 @@ public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T
         this.date = date;
     }
 
+    /** Builds a rotation/rotation rate pair.
+     * @param date coordinates date
+     * @param coordinates coordinates
+     * @since 14.0
+     */
+    public TimeStampedFieldAngularCoordinates(final AbsoluteDate date,
+                                              final FieldAngularCoordinates<T> coordinates) {
+        this(date, coordinates.getRotation(), coordinates.getRotationRate(), coordinates.getRotationAcceleration());
+    }
+
+    /** Builds a rotation/rotation rate pair.
+     * @param date Fielded coordinates date
+     * @param coordinates coordinates
+     * @since 14.0
+     */
+    public TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
+                                              final FieldAngularCoordinates<T> coordinates) {
+        this(date.toAbsoluteDate(), coordinates);
+    }
+
     /** Builds an instance for a regular {@link TimeStampedAngularCoordinates}.
      * @param field fields to which the elements belong
      * @param ac coordinates to convert
@@ -167,11 +188,9 @@ public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T
      * @return a new pair whose effect is the reverse of the effect
      * of the instance
      */
+    @Override
     public TimeStampedFieldAngularCoordinates<T> revert() {
-        return new TimeStampedFieldAngularCoordinates<>(date,
-                                                        getRotation().revert(),
-                                                        getRotation().applyInverseTo(getRotationRate().negate()),
-                                                        getRotation().applyInverseTo(getRotationAcceleration().negate()));
+        return new TimeStampedFieldAngularCoordinates<>(date, super.revert());
     }
 
     /** {@inheritDoc} */
@@ -190,6 +209,7 @@ public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public TimeStampedFieldAngularCoordinates<T> shiftedBy(final double dt) {
         return shiftedBy(getDate().getField().getZero().newInstance(dt));
     }
@@ -204,11 +224,26 @@ public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public TimeStampedFieldAngularCoordinates<T> shiftedBy(final T dt) {
         final FieldAngularCoordinates<T> sac = super.shiftedBy(dt);
-        return new TimeStampedFieldAngularCoordinates<>(date.shiftedBy(dt),
-                                                        sac.getRotation(), sac.getRotationRate(), sac.getRotationAcceleration());
+        return new TimeStampedFieldAngularCoordinates<>(date.shiftedBy(dt), sac);
+    }
 
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple linear model. It is <em>not</em> intended as a replacement for
+     * proper attitude propagation but should be sufficient for either small
+     * time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     */
+    @Override
+    public TimeStampedFieldAngularCoordinates<T> shiftedBy(final TimeOffset dt) {
+        final FieldAngularCoordinates<T> sac = super.shiftedBy(dt);
+        return new TimeStampedFieldAngularCoordinates<>(date.shiftedBy(dt), sac);
     }
 
     /** Add an offset from the instance.
@@ -229,6 +264,7 @@ public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T
      * @return new instance, with offset subtracted
      * @see #subtractOffset(FieldAngularCoordinates)
      */
+    @Override
     public TimeStampedFieldAngularCoordinates<T> addOffset(final FieldAngularCoordinates<T> offset) {
         final FieldVector3D<T> rOmega    = getRotation().applyTo(offset.getRotationRate());
         final FieldVector3D<T> rOmegaDot = getRotation().applyTo(offset.getRotationAcceleration());
@@ -258,6 +294,7 @@ public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T
      * @return new instance, with offset subtracted
      * @see #addOffset(FieldAngularCoordinates)
      */
+    @Override
     public TimeStampedFieldAngularCoordinates<T> subtractOffset(final FieldAngularCoordinates<T> offset) {
         return addOffset(offset.revert());
     }

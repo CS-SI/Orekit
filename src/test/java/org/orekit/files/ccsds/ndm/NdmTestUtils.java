@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,20 +89,20 @@ public class NdmTestUtils {
                    original instanceof Integer   ||
                    original instanceof Enum) {
             return original.equals(rebuilt);
-        } else if (original instanceof Double) {
-            checkDouble((Double) original, (Double) rebuilt);
+        } else if (original instanceof Double double1) {
+            checkDouble(double1, (Double) rebuilt);
             return true;
-        } else if (original instanceof int[]) {
-            checkIntArray((int[]) original, (int[]) rebuilt);
+        } else if (original instanceof int[] ints) {
+            checkIntArray(ints, (int[]) rebuilt);
             return true;
-        } else if (original instanceof double[]) {
-            checkDoubleArray((double[]) original, (double[]) rebuilt);
+        } else if (original instanceof double[] doubles) {
+            checkDoubleArray(doubles, (double[]) rebuilt);
             return true;
-        } else if (original instanceof List) {
-            checkList((List<?>) original, (List<?>) rebuilt);
+        } else if (original instanceof List<?> list) {
+            checkList(list, (List<?>) rebuilt);
             return true;
-        } else if (original instanceof Map) {
-            checkMap((Map<?, ?>) original, (Map<?, ?>) rebuilt);
+        } else if (original instanceof Map<?, ?> map) {
+            checkMap(map, (Map<?, ?>) rebuilt);
             return true;
         } else if (original instanceof NdmConstituent            ||
                    original instanceof Segment                   ||
@@ -130,43 +130,43 @@ public class NdmTestUtils {
                    original instanceof AcmSatelliteEphemeris) {
             checkContainer(original, rebuilt);
             return true;
-        } else if (original instanceof FrameFacade) {
-            checkFrameFacade((FrameFacade) original, (FrameFacade) rebuilt);
+        } else if (original instanceof FrameFacade facade3) {
+            checkFrameFacade(facade3, (FrameFacade) rebuilt);
             return true;
-        } else if (original instanceof BodyFacade) {
-            checkBodyFacade((BodyFacade) original, (BodyFacade) rebuilt);
+        } else if (original instanceof BodyFacade facade2) {
+            checkBodyFacade(facade2, (BodyFacade) rebuilt);
             return true;
-        } else if (original instanceof OdMethodFacade) {
-            checkOdMethodFacade((OdMethodFacade) original, (OdMethodFacade) rebuilt);
+        } else if (original instanceof OdMethodFacade facade1) {
+            checkOdMethodFacade(facade1, (OdMethodFacade) rebuilt);
             return true;
-        } else if (original instanceof PocMethodFacade) {
-            checkPocMethodFacade((PocMethodFacade) original, (PocMethodFacade) rebuilt);
+        } else if (original instanceof PocMethodFacade facade) {
+            checkPocMethodFacade(facade, (PocMethodFacade) rebuilt);
             return true;
-        } else if (original instanceof TrajectoryStateHistory) {
-            checkOrbitStateHistory((TrajectoryStateHistory) original, (TrajectoryStateHistory) rebuilt);
+        } else if (original instanceof TrajectoryStateHistory history) {
+            checkOrbitStateHistory(history, (TrajectoryStateHistory) rebuilt);
             return true;
         } else if (original instanceof DataContext) {
             return true;
-        } else if (original instanceof Frame) {
-            checkFrame((Frame) original, (Frame) rebuilt);
+        } else if (original instanceof Frame frame) {
+            checkFrame(frame, (Frame) rebuilt);
             return true;
-        } else if (original instanceof AbsoluteDate) {
-            checkDate((AbsoluteDate) original, (AbsoluteDate) rebuilt);
+        } else if (original instanceof AbsoluteDate date) {
+            checkDate(date, (AbsoluteDate) rebuilt);
             return true;
-        } else if (original instanceof Unit) {
-            checkUnit((Unit) original, (Unit) rebuilt);
+        } else if (original instanceof Unit unit) {
+            checkUnit(unit, (Unit) rebuilt);
             return true;
-        } else if (original instanceof Vector3D) {
-            checkVector3D((Vector3D) original, (Vector3D) rebuilt);
+        } else if (original instanceof Vector3D vector3D) {
+            checkVector3D(vector3D, (Vector3D) rebuilt);
             return true;
-        } else if (original instanceof Quaternion) {
-            checkQuaternion((Quaternion) original, (Quaternion) rebuilt);
+        } else if (original instanceof Quaternion quaternion) {
+            checkQuaternion(quaternion, (Quaternion) rebuilt);
             return true;
-        } else if (original instanceof RealMatrix) {
-            checkRealMatrix((RealMatrix) original, (RealMatrix) rebuilt);
+        } else if (original instanceof RealMatrix matrix) {
+            checkRealMatrix(matrix, (RealMatrix) rebuilt);
             return true;
-        } else if (original instanceof Rotation) {
-            checkRotation((Rotation) original, (Rotation) rebuilt);
+        } else if (original instanceof Rotation rotation) {
+            checkRotation(rotation, (Rotation) rebuilt);
             return true;
         } else if (original instanceof CcsdsFrameMapper) {
             Assertions.assertEquals(original, rebuilt);

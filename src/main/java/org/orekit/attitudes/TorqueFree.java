@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -95,7 +95,7 @@ public class TorqueFree implements AttitudeProvider {
     private final DoubleModel doubleModel;
 
     /** Cached field-based models. */
-    private final transient Map<Field<? extends CalculusFieldElement<?>>, FieldModel<? extends CalculusFieldElement<?>>> cachedModels;
+    private final Map<Field<? extends CalculusFieldElement<?>>, FieldModel<? extends CalculusFieldElement<?>>> cachedModels;
 
     /** Simple constructor.
      * @param initialAttitude initial attitude

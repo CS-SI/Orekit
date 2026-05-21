@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,25 +22,26 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitException;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.FieldStaticTransform;
-import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeOffset;
 
 /** Field implementation of AbsolutePVCoordinates.
  * @see AbsolutePVCoordinates
  * @author Vincent Mouraux
  * @param <T> type of the field elements
  */
-public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
-    implements FieldTimeStamped<T>, FieldPVCoordinatesProvider<T> {
+public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
+    implements ShiftableFieldPVCoordinatesHolder<FieldAbsolutePVCoordinates<T>, T> {
 
     /** Frame in which are defined the coordinates. */
     private final Frame frame;
+
+    /** Position-velocity-acceleration vector. */
+    private final TimeStampedFieldPVCoordinates<T> timeStampedFieldPVCoordinates;
 
     /** Build from position, velocity, acceleration.
      * @param frame the frame in which the coordinates are defined
@@ -50,9 +51,9 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param acceleration the acceleration vector (m/sÂý)
      */
     public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
-                                 final FieldVector3D<T> position, final FieldVector3D<T> velocity, final FieldVector3D<T> acceleration) {
-        super(date, position, velocity, acceleration);
-        this.frame = frame;
+                                      final FieldVector3D<T> position, final FieldVector3D<T> velocity,
+                                      final FieldVector3D<T> acceleration) {
+        this(frame, new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration));
     }
 
     /** Build from position and velocity. Acceleration is set to zero.
@@ -62,8 +63,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param velocity the velocity vector (m/s)
      */
     public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
-                                 final FieldVector3D<T> position,
-                                 final FieldVector3D<T> velocity) {
+                                      final FieldVector3D<T> position, final FieldVector3D<T> velocity) {
         this(frame, date, position, velocity, FieldVector3D.getZero(date.getField()));
     }
 
@@ -73,8 +73,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param pva TimeStampedPVCoordinates
      */
     public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date, final FieldPVCoordinates<T> pva) {
-        super(date, pva);
-        this.frame = frame;
+        this(frame, new TimeStampedFieldPVCoordinates<>(date, pva));
     }
 
     /** Build from frame and TimeStampedFieldPVCoordinates.
@@ -82,7 +81,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param pva TimeStampedFieldPVCoordinates
      */
     public FieldAbsolutePVCoordinates(final Frame frame, final TimeStampedFieldPVCoordinates<T> pva) {
-        super(pva.getDate(), pva);
+        this.timeStampedFieldPVCoordinates = pva;
         this.frame = frame;
     }
 
@@ -91,7 +90,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param pva non-Field AbsolutePVCoordinates
      */
     public FieldAbsolutePVCoordinates(final Field<T> field, final AbsolutePVCoordinates pva) {
-        this(pva.getFrame(), new TimeStampedFieldPVCoordinates<>(field, pva));
+        this(pva.getFrame(), new TimeStampedFieldPVCoordinates<>(field, pva.getPVCoordinates()));
     }
 
     /** Multiplicative constructor
@@ -99,12 +98,11 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * <p>The TimeStampedFieldPVCoordinates built will be a * AbsPva</p>
      * @param date date of the built coordinates
      * @param a scale factor
-     * @param AbsPva base (unscaled) FieldAbsolutePVCoordinates
+     * @param absPva base (unscaled) FieldAbsolutePVCoordinates
      */
-    public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date,
-                                 final T a, final FieldAbsolutePVCoordinates<T> AbsPva) {
-        super(date, a, AbsPva);
-        this.frame = AbsPva.frame;
+    public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date, final T a,
+                                      final FieldAbsolutePVCoordinates<T> absPva) {
+        this(absPva.getFrame(), new TimeStampedFieldPVCoordinates<>(date, a, absPva.getPVCoordinates()));
     }
 
     /** Subtractive constructor
@@ -116,11 +114,10 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param start Starting FieldAbsolutePVCoordinates
      * @param end ending FieldAbsolutePVCoordinates
      */
-    public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date,
-                                 final FieldAbsolutePVCoordinates<T> start, final FieldAbsolutePVCoordinates<T> end) {
-        super(date, start, end);
+    public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date, final FieldAbsolutePVCoordinates<T> start,
+                                      final FieldAbsolutePVCoordinates<T> end) {
+        this(start.getFrame(), new TimeStampedFieldPVCoordinates<>(date, start.getPVCoordinates(), end.getPVCoordinates()));
         ensureIdenticalFrames(start, end);
-        this.frame = start.frame;
     }
 
     /** Linear constructor
@@ -135,11 +132,10 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param absPv2 second base (unscaled) FieldAbsolutePVCoordinates
      */
     public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date,
-                                 final T a1, final FieldAbsolutePVCoordinates<T> absPv1,
-                                 final T a2, final FieldAbsolutePVCoordinates<T> absPv2) {
-        super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates());
+                                      final T a1, final FieldAbsolutePVCoordinates<T> absPv1,
+                                      final T a2, final FieldAbsolutePVCoordinates<T> absPv2) {
+        this(absPv1.getFrame(), new TimeStampedFieldPVCoordinates<>(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates()));
         ensureIdenticalFrames(absPv1, absPv2);
-        this.frame = absPv1.getFrame();
     }
 
     /** Linear constructor
@@ -156,14 +152,14 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param absPv3 third base (unscaled) FieldAbsolutePVCoordinates
      */
     public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date,
-                                 final T a1, final FieldAbsolutePVCoordinates<T> absPv1,
-                                 final T a2, final FieldAbsolutePVCoordinates<T> absPv2,
-                                 final T a3, final FieldAbsolutePVCoordinates<T> absPv3) {
-        super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates(),
-                a3, absPv3.getPVCoordinates());
+                                      final T a1, final FieldAbsolutePVCoordinates<T> absPv1,
+                                      final T a2, final FieldAbsolutePVCoordinates<T> absPv2,
+                                      final T a3, final FieldAbsolutePVCoordinates<T> absPv3) {
+        this(absPv1.getFrame(), new TimeStampedFieldPVCoordinates<>(date, a1, absPv1.getPVCoordinates(), a2,
+                absPv2.getPVCoordinates(), a3, absPv3.getPVCoordinates()));
+
         ensureIdenticalFrames(absPv1, absPv2);
         ensureIdenticalFrames(absPv1, absPv3);
-        this.frame = absPv1.getFrame();
     }
 
     /** Linear constructor
@@ -186,12 +182,11 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
                                  final T a2, final FieldAbsolutePVCoordinates<T> absPv2,
                                  final T a3, final FieldAbsolutePVCoordinates<T> absPv3,
                                  final T a4, final FieldAbsolutePVCoordinates<T> absPv4) {
-        super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates(),
-                a3, absPv3.getPVCoordinates(), a4, absPv4.getPVCoordinates());
+        this(absPv1.getFrame(), new TimeStampedFieldPVCoordinates<>(date, a1, absPv1.getPVCoordinates(), a2,
+                absPv2.getPVCoordinates(), a3, absPv3.getPVCoordinates(), a4, absPv4.getPVCoordinates()));
         ensureIdenticalFrames(absPv1, absPv2);
         ensureIdenticalFrames(absPv1, absPv3);
         ensureIdenticalFrames(absPv1, absPv4);
-        this.frame = absPv1.getFrame();
     }
 
     /** Builds a FieldAbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
@@ -206,8 +201,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      */
     public <U extends FieldDerivative<T, U>> FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
                                                                         final FieldVector3D<U> p) {
-        super(date, p);
-        this.frame = frame;
+        this(frame, new TimeStampedFieldPVCoordinates<>(date, p));
     }
 
     /** Ensure that the frames from two FieldAbsolutePVCoordinates are identical.
@@ -236,7 +230,13 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      */
     @Override
     public FieldAbsolutePVCoordinates<T> shiftedBy(final T dt) {
-        final TimeStampedFieldPVCoordinates<T> spv = super.shiftedBy(dt);
+        final TimeStampedFieldPVCoordinates<T> spv = timeStampedFieldPVCoordinates.shiftedBy(dt);
+        return new FieldAbsolutePVCoordinates<>(frame, spv);
+    }
+
+    @Override
+    public FieldAbsolutePVCoordinates<T> shiftedBy(final TimeOffset dt) {
+        final TimeStampedFieldPVCoordinates<T> spv = timeStampedFieldPVCoordinates.shiftedBy(dt);
         return new FieldAbsolutePVCoordinates<>(frame, spv);
     }
 
@@ -252,7 +252,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      */
     @Override
     public FieldAbsolutePVCoordinates<T> shiftedBy(final double dt) {
-        final TimeStampedFieldPVCoordinates<T> spv = super.shiftedBy(dt);
+        final TimeStampedFieldPVCoordinates<T> spv = timeStampedFieldPVCoordinates.shiftedBy(dt);
         return new FieldAbsolutePVCoordinates<>(frame, spv);
     }
 
@@ -268,6 +268,12 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
         return this;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public FieldAbsoluteDate<T> getDate() {
+        return timeStampedFieldPVCoordinates.getDate();
+    }
+
     /** Get the frame in which the coordinates are defined.
      * @return frame in which the coordinates are defined
      */
@@ -279,43 +285,15 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @return TimeStampedFieldPVCoordinates
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
-        return this;
+        return timeStampedFieldPVCoordinates;
     }
 
-    /** Get the position in a specified frame.
-     * @param outputFrame frame in which the position coordinates shall be computed
-     * @return position
-     * @see #getPVCoordinates(Frame)
-     * @since 12.0
+    /**
+     * Getter for the acceleration vector.
+     * @return acceleration
      */
-    public FieldVector3D<T> getPosition(final Frame outputFrame) {
-        // If output frame requested is the same as definition frame,
-        // Position vector is returned directly
-        if (outputFrame == frame) {
-            return getPosition();
-        }
-
-        // Else, position vector is transformed to output frame
-        final FieldStaticTransform<T> t = frame.getStaticTransformTo(outputFrame, getDate());
-        return t.transformPosition(getPosition());
-    }
-
-    /** Get the TimeStampedFieldPVCoordinates in a specified frame.
-     * @param outputFrame frame in which the position/velocity coordinates shall be computed
-     * @return TimeStampedFieldPVCoordinates
-     * @exception OrekitException if transformation between frames cannot be computed
-     * @see #getPVCoordinates()
-     */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
-        // If output frame requested is the same as definition frame,
-        // PV coordinates are returned directly
-        if (outputFrame == frame) {
-            return getPVCoordinates();
-        }
-
-        // Else, PV coordinates are transformed to output frame
-        final FieldTransform<T> t = frame.getTransformTo(outputFrame, getDate());
-        return t.transformPVCoordinates(getPVCoordinates());
+    public FieldVector3D<T> getAcceleration() {
+        return timeStampedFieldPVCoordinates.getAcceleration();
     }
 
     /** {@inheritDoc} */
@@ -330,18 +308,18 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
         return frame.getStaticTransformTo(frame, otherDate).transformPosition(position);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame outputFrame) {
-        return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
-    }
-
     /**
      * Converts to an AbsolutePVCoordinates instance.
      * @return AbsolutePVCoordinates with same properties
      */
     public AbsolutePVCoordinates toAbsolutePVCoordinates() {
-        return new AbsolutePVCoordinates(frame, this.getDate()
-            .toAbsoluteDate(), this.getPVCoordinates().toPVCoordinates());
+        return new AbsolutePVCoordinates(frame, timeStampedFieldPVCoordinates.toTimeStampedPVCoordinates());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @DefaultDataContext
+    public String toString() {
+        return timeStampedFieldPVCoordinates.toString();
     }
 }

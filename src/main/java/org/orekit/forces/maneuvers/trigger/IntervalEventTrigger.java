@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,13 +42,13 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @since 11.1
  */
-public abstract class IntervalEventTrigger<T extends EventDetector> extends AbstractManeuverTriggers {
+public class IntervalEventTrigger<T extends EventDetector> extends AbstractManeuverTriggers {
 
     /** Intervals detector. */
     private final ManeuverTriggerDetector<T> firingIntervalDetector;
 
     /** Cached field-based detectors. */
-    private final transient Map<Field<? extends CalculusFieldElement<?>>, FieldEventDetector<? extends CalculusFieldElement<?>>> cached;
+    private final Map<Field<? extends CalculusFieldElement<?>>, FieldEventDetector<? extends CalculusFieldElement<?>>> cached;
 
     /** Simple constructor.
      * <p>
@@ -66,7 +66,7 @@ public abstract class IntervalEventTrigger<T extends EventDetector> extends Abst
      * </p>
      * @param prototypeFiringIntervalDetector prototype detector for firing interval
      */
-    protected IntervalEventTrigger(final T prototypeFiringIntervalDetector) {
+    public IntervalEventTrigger(final T prototypeFiringIntervalDetector) {
         this.firingIntervalDetector = new ManeuverTriggerDetector<>(prototypeFiringIntervalDetector, new Handler());
         this.cached                 = new HashMap<>();
     }
@@ -146,12 +146,11 @@ public abstract class IntervalEventTrigger<T extends EventDetector> extends Abst
      * parameterized types confuses the Java compiler.
      * </p>
      * @param field field to which the state belongs
-     * @param <D> type of the event detector
      * @param <S> type of the field elements
      * @return converted firing intervals detector
      */
-    private <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> FieldManeuverTriggerDetector<S, D> convertAndSetUpHandler(final Field<S> field) {
-        final D converted = convertIntervalDetector(field, firingIntervalDetector.getDetector());
+    private <S extends CalculusFieldElement<S>> FieldManeuverTriggerDetector<S, FieldEventDetector<S>> convertAndSetUpHandler(final Field<S> field) {
+        final FieldEventDetector<S> converted = convertIntervalDetector(field, firingIntervalDetector.getDetector());
         return new FieldManeuverTriggerDetector<>(converted, new FieldHandler<>());
     }
 
@@ -161,30 +160,17 @@ public abstract class IntervalEventTrigger<T extends EventDetector> extends Abst
      * non-field detector.
      * </p>
      * <p>
-     * A skeleton implementation of this method to convert some {@code XyzDetector} into {@code FieldXyzDetector},
-     * considering these detectors are created from a date and a number parameter is:
+     * A default implementation is provided but might need to be overridden in specific cases.
      * </p>
-     * <pre>{@code
-     *     protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
-     *         D convertIntervalDetector(final Field<S> field, final XyzDetector detector) {
-     *
-     *         final FieldAbsoluteDate<S> date  = new FieldAbsoluteDate<>(field, detector.getDate());
-     *         final S                    param = field.getZero().newInstance(detector.getParam());
-     *
-     *         D converted = (D) new FieldXyzDetector<>(date, param).withDetectionSettings(field, detector.getDetectionSettings());
-     *         return converted;
-     *
-     *     }
-     * }
-     * </pre>
      * @param field field to which the state belongs
      * @param detector primitive firing intervals detector to convert
-     * @param <D> type of the event detector
      * @param <S> type of the field elements
      * @return converted firing intervals detector
      */
-    protected abstract <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
-        D convertIntervalDetector(Field<S> field, T detector);
+    protected <S extends CalculusFieldElement<S>> FieldEventDetector<S> convertIntervalDetector(final Field<S> field,
+                                                                                                final T detector) {
+        return convertDetector(field, detector);
+    }
 
     /** Local handler for both start and stop triggers. */
     private class Handler extends TriggerHandler {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,9 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.Frame;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 
@@ -53,8 +50,7 @@ public class DragForce extends AbstractDragForceModel {
      * @param spacecraft the object physical and geometrical information
      */
     public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
-        super(atmosphere);
-        this.spacecraft = spacecraft;
+        this(atmosphere, spacecraft, true);
     }
 
     /** Simple constructor.
@@ -66,7 +62,20 @@ public class DragForce extends AbstractDragForceModel {
      */
     public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft,
                      final boolean useFiniteDifferencesOnDensityWrtPosition) {
-        super(atmosphere, useFiniteDifferencesOnDensityWrtPosition);
+        this(atmosphere, spacecraft, useFiniteDifferencesOnDensityWrtPosition, atmosphere);
+    }
+
+    /** Constructor.
+     * @param atmosphere atmospheric model
+     * @param spacecraft the object physical and geometrical information
+     * @param useFiniteDifferencesOnDensityWrtPosition flag to use finite differences to compute density derivatives w.r.t.
+     *                                                 position (is less accurate but can be faster depending on model)
+     * @param atmosphereForDerivatives atmospheric model used for partial derivatives (use fast one for performance)
+     * @since 14.0
+     */
+    public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft,
+                     final boolean useFiniteDifferencesOnDensityWrtPosition, final Atmosphere atmosphereForDerivatives) {
+        super(atmosphere, useFiniteDifferencesOnDensityWrtPosition, atmosphereForDerivatives);
         this.spacecraft = spacecraft;
     }
 
@@ -79,36 +88,14 @@ public class DragForce extends AbstractDragForceModel {
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
-
-        final AbsoluteDate date     = s.getDate();
-        final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPosition();
-
-        final double rho    = getAtmosphere().getDensity(date, position, frame);
-        final Vector3D vAtm = getAtmosphere().getVelocity(date, position, frame);
-        final Vector3D relativeVelocity = vAtm.subtract(s.getVelocity());
-
-        return spacecraft.dragAcceleration(s, rho, relativeVelocity, parameters);
-
+        return acceleration(s, getSpacecraft(), parameters);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters) {
-        // Density and its derivatives
-        final T rho = getFieldDensity(s);
-
-        // Spacecraft relative velocity with respect to the atmosphere
-        final FieldAbsoluteDate<T> date     = s.getDate();
-        final Frame                frame    = s.getFrame();
-        final FieldVector3D<T>     position = s.getPosition();
-        final FieldVector3D<T> vAtm = getAtmosphere().getVelocity(date, position, frame);
-        final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getVelocity());
-
-        // Drag acceleration along with its derivatives
-        return spacecraft.dragAcceleration(s, rho, relativeVelocity, parameters);
-
+        return acceleration(s, getSpacecraft(), parameters);
     }
 
     /** {@inheritDoc} */

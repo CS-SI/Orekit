@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -958,7 +958,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
         // compute desired point position along the line using a rough guess (spherical body)
         final double r     = altitude + getEquatorialRadius();
-        final double delta = r * r - line.getOrigin().getNormSq();
+        final double delta = r * r - line.getOrigin().getNorm2Sq();
         if (delta < 0) {
             throw new OrekitException(OrekitMessages.LINE_NEVER_CROSSES_ALTITUDE, altitude);
         }
@@ -1024,7 +1024,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
         // compute desired point position along the line using a rough guess (spherical body)
         final T r     = altitude.add(getEquatorialRadius());
-        final T delta = r.multiply(r).subtract(line.getOrigin().getNormSq());
+        final T delta = r.multiply(r).subtract(line.getOrigin().getNorm2Sq());
         if (delta.getReal() < 0) {
             throw new OrekitException(OrekitMessages.LINE_NEVER_CROSSES_ALTITUDE, altitude.getReal());
         }
@@ -1055,4 +1055,18 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public double getLongitude(final Vector3D point, final Frame frame, final AbsoluteDate date) {
+        final Vector3D pointInBodyFrame = frame.getStaticTransformTo(getFrame(), date).transformPosition(point);
+        return FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T getLongitude(final FieldVector3D<T> point, final Frame frame,
+                                                              final FieldAbsoluteDate<T> date) {
+        final FieldVector3D<T> pointInBodyFrame = frame.getStaticTransformTo(getFrame(), date).transformPosition(point);
+        return FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
+    }
 }

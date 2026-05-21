@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.propagation.events.FieldEventDetector;
  * @author Romain Serra
  * @since 13.0
  */
-public abstract class FieldCountingHandler<T extends CalculusFieldElement<T>> extends AbstractGenericCountingHandler
+public class FieldCountingHandler<T extends CalculusFieldElement<T>> extends AbstractCounter
         implements FieldEventHandler<T> {
 
     /** Constructor.
@@ -49,11 +49,14 @@ public abstract class FieldCountingHandler<T extends CalculusFieldElement<T>> ex
     }
 
     /**
-     * Method returning true if and only if the count needs to be incremented.
+     * Method returning true if and only if the count needs to be incremented. By default, count all.
      * @param state state at detection
      * @param detector detector
      * @param increasing flag on direction of event function
      * @return flag on counting
      */
-    protected abstract boolean doesCount(FieldSpacecraftState<T> state, FieldEventDetector<T> detector, boolean increasing);
+    protected boolean doesCount(final FieldSpacecraftState<T> state, final FieldEventDetector<T> detector,
+                                final boolean increasing) {
+        return true;
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.propagation.conversion.osc2mean.TLETheory;
@@ -180,7 +179,7 @@ public class TLE implements TimeStamped, ParameterDriversProvider {
     private final TimeScale utc;
 
     /** Driver for ballistic coefficient parameter. */
-    private final transient ParameterDriver bStarParameterDriver;
+    private final ParameterDriver bStarParameterDriver;
 
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
@@ -718,45 +717,6 @@ public class TLE implements TimeStamped, ParameterDriversProvider {
 
     /**
      * Convert Spacecraft State into TLE.
-     *
-     * @param state Spacecraft State to convert into TLE
-     * @param templateTLE only used to get identifiers like satellite number, launch year, etc. In other words, the keplerian elements contained in the generated TLE are based on the provided state and not the template TLE.
-     * @param generationAlgorithm TLE generation algorithm
-     * @return a generated TLE
-     * @since 12.0
-     * @deprecated As of release 13.0, use {@link #stateToTLE(SpacecraftState, TLE, OsculatingToMeanConverter)} instead.
-     */
-    @Deprecated
-    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
-                                 final TleGenerationAlgorithm generationAlgorithm) {
-        return generationAlgorithm.generate(state, templateTLE);
-    }
-
-    /**
-     * Convert Spacecraft State into TLE.
-     * <p>
-     * Uses the {@link DataContext#getDefault() default data context}.
-     * </p>
-     * <p>
-     * The B* is not calculated. Its value is simply copied from the model to the generated TLE.
-     * </p>
-     * @param state       Spacecraft State to convert into TLE
-     * @param templateTLE only used to get identifiers like satellite number, launch year, etc.
-     *                    In other words, the keplerian elements contained in the generated TLE
-     *                    are based on the provided state and not the template TLE.
-     * @param converter   osculating to mean orbit converter
-     * @return a generated TLE
-     * @since 13.0
-     */
-    @DefaultDataContext
-    public static TLE stateToTLE(final SpacecraftState state,
-                                 final TLE templateTLE,
-                                 final OsculatingToMeanConverter converter) {
-        return stateToTLE(state, templateTLE, converter, DataContext.getDefault());
-    }
-
-    /**
-     * Convert Spacecraft State into TLE.
      * <p>
      * The B* is not calculated. Its value is simply copied from the model to the generated TLE.
      * </p>
@@ -837,6 +797,19 @@ public class TLE implements TimeStamped, ParameterDriversProvider {
             }
         }
         return sum % 10;
+    }
+
+    /** Parse a satellite number from a String.
+     * <p>
+     * This method supports both traditional 5-digits satellite numbers
+     * and Alpha-5 TLE satellites IDs.
+     * </p>
+     * @param satNumberString the string to parse (e.g., "25544" or "A0001")
+     * @return the satellite number as an integer
+     * @since 14.0
+     */
+    public static int parseSatelliteNumber(final String satNumberString) {
+        return ParseUtils.parseSatelliteNumber(satNumberString, 0, satNumberString.length());
     }
 
     /** Check if this tle equals the provided tle.

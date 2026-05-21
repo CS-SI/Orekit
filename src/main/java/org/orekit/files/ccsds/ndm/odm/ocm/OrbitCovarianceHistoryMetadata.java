@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.List;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -89,16 +88,6 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
 
     /** Units of covariance element set. */
     private List<Unit> covUnits;
-
-    /** Simple constructor.
-     * @param epochT0 T0 epoch from file metadata
-     * @deprecated in favor of {@link
-     * #OrbitCovarianceHistoryMetadata(AbsoluteDate, CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OrbitCovarianceHistoryMetadata(final AbsoluteDate epochT0) {
-        this(epochT0, new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

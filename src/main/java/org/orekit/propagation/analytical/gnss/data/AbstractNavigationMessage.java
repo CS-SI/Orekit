@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,10 +34,8 @@ import org.orekit.time.TimeScales;
  * @see QZSSLegacyNavigationMessage
  * @see NavICLegacyNavigationMessage
  */
-public abstract class AbstractNavigationMessage<O extends AbstractNavigationMessage<O>> extends AbstractAlmanac<O> {
-
-    /** Mean Motion Difference from Computed Value. */
-    private double deltaN0;
+public abstract class AbstractNavigationMessage<O extends AbstractNavigationMessage<O>>
+    extends AbstractAlmanac<O> implements NavigationMessage {
 
     /** Time of clock epoch. */
     private AbsoluteDate epochToc;
@@ -47,19 +45,27 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      */
     private double transmissionTime;
 
+    /** Message type.
+     * @since 14.0
+     */
+    private final String type;
+
     /**
      * Constructor.
-     * @param mu Earth's universal gravitational parameter
+     * @param mu              Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle number of weeks in the GNSS cycle
+     * @param weeksInCycle    number of weeks in the GNSS cycle
      * @param timeScales      known time scales
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
+     * @param type            message type
      */
     protected AbstractNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
-                                        final TimeScales timeScales, final SatelliteSystem system) {
+                                        final TimeScales timeScales, final SatelliteSystem system,
+                                        final String type) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
+        this.type = type;
     }
 
     /** Constructor from field instance.
@@ -70,9 +76,21 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     protected <T extends CalculusFieldElement<T>,
                A extends AbstractNavigationMessage<A>> AbstractNavigationMessage(final FieldAbstractNavigationMessage<T, A> original) {
         super(original);
-        setDeltaN0(original.getDeltaN0().getReal());
         setEpochToc(original.getEpochToc().toAbsoluteDate());
         setTransmissionTime(original.getTransmissionTime().getReal());
+        this.type = original.getNavigationMessageType();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageType() {
+        return type;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageSubType() {
+        return null;
     }
 
     /**
@@ -92,20 +110,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      */
     public void setSqrtA(final double sqrtA) {
         getSmaDriver().setValue(sqrtA * sqrtA);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getDeltaN0() {
-        return deltaN0;
-    }
-
-    /**
-     * Setter for the delta of satellite mean motion.
-     * @param deltaN0 the value to set
-     */
-    public void setDeltaN0(final double deltaN0) {
-        this.deltaN0 = deltaN0;
     }
 
     /**

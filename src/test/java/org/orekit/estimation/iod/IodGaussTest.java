@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -32,9 +31,9 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Data based on "Fundamentals of Astrodynamics and Applications", Vallado
@@ -255,7 +254,7 @@ public class IodGaussTest extends AbstractIodTest {
                                                            los1, obsDate2, los2, obsDate3, los3);
         // Computation of the estimated orbit with iod lambert
         final IodLambert iodLambert = new IodLambert(Constants.WGS84_EARTH_MU);
-        final Orbit estimatedKepLambert = iodLambert.estimate(eme2000, true, 0,
+        final Orbit estimatedKepLambert = iodLambert.estimate(eme2000, false, 0,
                                                               propRef.getPosition(obsDate1, eme2000), obsDate1,
                                                               propRef.getPosition(obsDate2,
                                                                                   eme2000), obsDate2);

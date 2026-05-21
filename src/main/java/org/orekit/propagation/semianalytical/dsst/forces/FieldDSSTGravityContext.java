@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,11 +121,11 @@ public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends 
         // 2 * a / A
         this.ax2oA = a.divide(A).multiply(2.);
         // B / A
-        this.BoA = B.divide(A);;
+        this.BoA = B.divide(A);
         // 1 / AB
-        this.ooAB = A.multiply(B).reciprocal();;
+        this.ooAB = A.multiply(B).reciprocal();
         // C / 2AB
-        this.Co2AB =  auxiliaryElements.getC().multiply(ooAB).divide(2.);;
+        this.Co2AB =  auxiliaryElements.getC().multiply(ooAB).divide(2.);
         // B / (A * (1 + B))
         this.BoABpo = BoA.divide(B.add(1.));
         // &mu / a

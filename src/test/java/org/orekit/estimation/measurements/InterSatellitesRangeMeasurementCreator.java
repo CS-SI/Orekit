@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 
 public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
 
@@ -50,9 +51,9 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockBiasDriver().setValue(localClockOffset);
         this.remote              = new ObservableSatellite(1);
-        this.remote.getClockOffsetDriver().setValue(remoteClockOffset);
+        this.remote.getClockBiasDriver().setValue(remoteClockOffset);
     }
 
     public ObservableSatellite getLocalSatellite() {
@@ -65,11 +66,15 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
 
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
         count = 0;
-        if (local.getClockOffsetDriver().getReferenceDate() == null) {
-            local.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        for (final ParameterDriver param : local.getParametersDrivers()) {
+            if (param.getReferenceDate() == null) {
+                param.setReferenceDate(s0.getDate());
+            }
         }
-        if (remote.getClockOffsetDriver().getReferenceDate() == null) {
-            remote.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        for (final ParameterDriver param : remote.getParametersDrivers()) {
+            if (param.getReferenceDate() == null) {
+                param.setReferenceDate(s0.getDate());
+            }
         }
     }
 
@@ -77,8 +82,8 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
         try {
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
-            final double           remoteClk = remote.getClockOffsetDriver().getValue(date);
-            final double           localClk  = local.getClockOffsetDriver().getValue(date);
+            final double           remoteClk = remote.getOffsetValue(date);
+            final double           localClk  = local.getOffsetValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

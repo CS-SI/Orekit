@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,7 +57,7 @@ class OrbitHermiteInterpolatorTest {
         // Solution with PVA less precise than with PV only as the interpolating polynomial begins to oscillate heavily
         // outside the interpolating interval
         doTestCartesianInterpolation(true, CartesianDerivativesFilter.USE_PVA,
-                                     394, 9.60e-9, 3.21, 5.39e-10,
+                                     394, 9.604e-9, 3.21, 5.39e-10,
                                      2474, 2614, 6.55, 71);
 
     }

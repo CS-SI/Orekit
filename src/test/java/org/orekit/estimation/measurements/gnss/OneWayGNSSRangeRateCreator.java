@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,22 +16,23 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.Arrays;
+
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.QuadraticClockModel;
+import org.orekit.estimation.measurements.ObserverSatellite;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ClockOffset;
+import org.orekit.time.clocks.ClockOffset;
+import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.Arrays;
 
 public class OneWayGNSSRangeRateCreator
     extends MeasurementCreator {
@@ -41,6 +42,7 @@ public class OneWayGNSSRangeRateCreator
     private final Vector3D             antennaPhaseCenter1;
     private final Vector3D             antennaPhaseCenter2;
     private final ObservableSatellite  local;
+    private final ObserverSatellite    remoteSat;
 
     public OneWayGNSSRangeRateCreator(final BoundedPropagator ephemeris,
                                       final double localClockOffset,
@@ -68,21 +70,23 @@ public class OneWayGNSSRangeRateCreator
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockBiasDriver().setValue(localClockOffset);
         this.local.getClockDriftDriver().setValue(localClockRate);
         this.local.getClockAccelerationDriver().setValue(localClockAcceleration);
         this.remoteClk          = new QuadraticClockModel(ephemeris.getMinDate(),
                                                           remoteClockOffset,
                                                           remoteClockRate,
                                                           remoteClockAcceleration);
+        this.remoteSat          = new ObserverSatellite("", ephemeris, remoteClk);
     }
 
     public ObservableSatellite getLocalSatellite() {
         return local;
     }
 
+    @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
-        for (final ParameterDriver driver : Arrays.asList(local.getClockOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(local.getClockBiasDriver(),
                                                           local.getClockDriftDriver(),
                                                           local.getClockAccelerationDriver())) {
             if (driver.getReferenceDate() == null) {
@@ -91,6 +95,7 @@ public class OneWayGNSSRangeRateCreator
         }
     }
 
+    @Override
     public void handleStep(final SpacecraftState currentState) {
         try {
             final AbsoluteDate     date      = currentState.getDate();
@@ -120,7 +125,7 @@ public class OneWayGNSSRangeRateCreator
                                             remoteClk.getOffset(transitDate).getRate());
 
             // Generate measurement
-            addMeasurement(new OneWayGNSSRangeRate(ephemeris, remoteClk, date.shiftedBy(localClk.getOffset()), rangeRate, 1.0, 10, local));
+            addMeasurement(new OneWayGNSSRangeRate(remoteSat, date.shiftedBy(localClk.getBias()), rangeRate, 1.0, 10, local));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);

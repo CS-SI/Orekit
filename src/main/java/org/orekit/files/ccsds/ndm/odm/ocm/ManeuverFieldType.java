@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.orekit.files.ccsds.definitions.OnOff;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Unit;
 
@@ -290,17 +289,6 @@ public enum ManeuverFieldType {
      */
     public String outputField(final TimeConverter converter, final OrbitManeuver maneuver, final Formatter formatter)  {
         return writer.output(unit, converter, maneuver, formatter);
-    }
-
-    /** Output one maneuver field.
-     * @param converter converter for dates
-     * @param maneuver maneuver containing the field to output
-     * @return output field
-     * @deprecated since 13.0, because formatter should be specified. Use {@link ManeuverFieldType#outputField(TimeConverter, OrbitManeuver, Formatter)} instead.
-     */
-    @Deprecated
-    public String outputField(final TimeConverter converter, final OrbitManeuver maneuver) {
-        return writer.output(unit, converter, maneuver, new AccurateFormatter());
     }
 
     /** Interface for processing one field. */

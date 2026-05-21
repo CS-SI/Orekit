@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -106,8 +106,8 @@ class CartesianFuelCostTest {
         // THEN
         final List<EventDetector> detectorList = detectorStream.collect(Collectors.toList());
         Assertions.assertEquals(1, detectorList.size());
-        Assertions.assertEquals(mockedDetectionSettings, detectorList.get(0).getDetectionSettings());
-        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, detectorList.get(0).getHandler());
+        Assertions.assertEquals(mockedDetectionSettings, detectorList.getFirst().getDetectionSettings());
+        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, detectorList.getFirst().getHandler());
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,7 +82,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
             // compute bodies separation vectors and squared norm
             final FieldPVCoordinates<DerivativeStructure> bodyPV = body.getPVCoordinates(state.getDate(), state.getFrame());
             final FieldVector3D<DerivativeStructure> satToBody = position.subtract(bodyPV.getPosition()).negate();
-            final DerivativeStructure r2Sat = satToBody.getNormSq();
+            final DerivativeStructure r2Sat = satToBody.getNorm2Sq();
 
             // compute relative acceleration
             final FieldVector3D<DerivativeStructure> satAcc =
@@ -113,7 +113,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
             // compute bodies separation vectors and squared norm
             final FieldPVCoordinates<Gradient> bodyPV = body.getPVCoordinates(state.getDate(), state.getFrame());
             final FieldVector3D<Gradient> satToBody = position.subtract(bodyPV.getPosition()).negate();
-            final Gradient r2Sat = satToBody.getNormSq();
+            final Gradient r2Sat = satToBody.getNorm2Sq();
 
             // compute relative acceleration
             final FieldVector3D<Gradient> satAcc =
@@ -164,7 +164,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -220,7 +220,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -276,7 +276,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 

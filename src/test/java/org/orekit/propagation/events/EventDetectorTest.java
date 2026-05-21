@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -46,6 +45,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
@@ -60,9 +60,58 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class EventDetectorTest {
+import static org.mockito.Mockito.mock;
+
+
+class EventDetectorTest {
 
     private double mu;
+
+    @Test
+    void testGetEventFunction() {
+        // GIVEN
+        final double expected = -1.;
+        final EventDetector detector = new EventDetector() {
+            @Override
+            public double g(SpacecraftState s) {
+                return expected;
+            }
+
+            @Override
+            public EventHandler getHandler() {
+                return null;
+            }
+        };
+        // WHEN
+        final EventFunction eventFunction = detector.getEventFunction();
+        // THEN
+        Assertions.assertEquals(expected, eventFunction.value(mock(SpacecraftState.class)));
+    }
+
+    @Test
+    void testOf() {
+        // GIVEN
+        final EventDetectionSettings detectionSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final EventFunction eventFunction = state -> -1.;
+        final EventHandler handler = new StopOnEvent();
+        final EventDetector detector = EventDetector.of(eventFunction, handler, detectionSettings);
+        // WHEN & THEN
+        Assertions.assertEquals(handler, detector.getHandler());
+        Assertions.assertEquals(detectionSettings, detector.getDetectionSettings());
+        Assertions.assertEquals(eventFunction, detector.getEventFunction());
+        final SpacecraftState mockedState = mock();
+        Assertions.assertEquals(eventFunction.value(mockedState), detector.g(mockedState));
+    }
+
+    @Test
+    void testOfDefaultHandler() {
+        // GIVEN
+        final EventDetector detector = EventDetector.of(mock(EventFunction.class));
+        // WHEN
+        final EventHandler handler = detector.getHandler();
+        // THEN
+        Assertions.assertInstanceOf(ContinueOnEvent.class, handler);
+    }
 
     @Test
     void testFinish() {
@@ -71,7 +120,7 @@ public class EventDetectorTest {
         final EventDetector detector =
             new DummyDetector(new EventDetectionSettings(1.0, 1.0e-10, 100), handler);
         // WHEN
-        detector.finish(Mockito.mock(SpacecraftState.class));
+        detector.finish(mock(SpacecraftState.class));
         // THEN
         Assertions.assertTrue(handler.isFinished);
     }
@@ -112,7 +161,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testEventHandlerInit() {
+    void testEventHandlerInit() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -151,7 +200,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testBasicScheduling() {
+    void testBasicScheduling() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -207,7 +256,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testIssue108Numerical() {
+    void testIssue108Numerical() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -225,7 +274,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testIssue108Analytical() {
+    void testIssue108Analytical() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -270,7 +319,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testNoisyGFunction() {
+    void testNoisyGFunction() {
 
         // initial conditions
         Frame eme2000 = FramesFactory.getEME2000();
@@ -322,7 +371,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
         final Throwable dummyCause = new RuntimeException();
         try {
             // initial conditions
@@ -349,16 +398,17 @@ public class EventDetectorTest {
         } catch (OrekitException oe) {
             Assertions.assertSame(OrekitException.class, oe.getClass());
             Assertions.assertSame(dummyCause, oe.getCause().getCause());
-            String expected = "failed to find root between 2011-05-11T00:00:00.000Z " +
-                    "(g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)\n" +
-                    "Last iteration at 2011-05-11T00:00:00.000Z (g=-3.6E3)";
+            String expected = """
+                    failed to find root between 2011-05-11T00:00:00.000Z \
+                    (g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)
+                    Last iteration at 2011-05-11T00:00:00.000Z (g=-3.6E3)""";
             MatcherAssert.assertThat(oe.getMessage(Locale.US),
                     CoreMatchers.containsString(expected));
         }
     }
 
     @Test
-    public void testDefaultMethods() {
+    void testDefaultMethods() {
         EventDetector dummyDetector = new EventDetector() {
 
             @Override
@@ -389,7 +439,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testNumericalNoiseAtIntervalEnd() {
+    void testNumericalNoiseAtIntervalEnd() {
 
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -410,22 +460,22 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testForwardAnalytical() {
+    void testForwardAnalytical() {
         doTestScheduling(0.0, 1.0, 21, this::buildAnalytical);
     }
 
     @Test
-    public void testBackwardAnalytical() {
+    void testBackwardAnalytical() {
         doTestScheduling(1.0, 0.0, 21, this::buildAnalytical);
     }
 
     @Test
-    public void testForwardNumerical() {
+    void testForwardNumerical() {
         doTestScheduling(0.0, 1.0, 23, this::buildNumerical);
     }
 
     @Test
-    public void testBackwardNumerical() {
+    void testBackwardNumerical() {
         doTestScheduling(1.0, 0.0, 23, this::buildNumerical);
     }
 
@@ -519,7 +569,7 @@ public class EventDetectorTest {
         final EventDetectionSettings actualSettings = detector.getDetectionSettings();
         // THEN
         final EventDetectionSettings expectedSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
-        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final SpacecraftState mockedState = mock(SpacecraftState.class);
         Assertions.assertEquals(expectedSettings.getMaxCheckInterval().currentInterval(mockedState, true),
                 actualSettings.getMaxCheckInterval().currentInterval(mockedState, true));
         Assertions.assertEquals(expectedSettings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
@@ -540,7 +590,7 @@ public class EventDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         mu = Constants.EIGEN5C_EARTH_MU;
     }

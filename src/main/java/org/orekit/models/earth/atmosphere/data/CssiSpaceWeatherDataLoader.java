@@ -1,4 +1,4 @@
-/* Copyright 2020-2025 Clément Jonglez
+/* Copyright 2020-2026 Clément Jonglez
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -109,11 +109,11 @@ public class CssiSpaceWeatherDataLoader extends AbstractSolarActivityDataLoader<
                 if (!line.isEmpty()) {
 
                     if (line.equals("BEGIN DAILY_PREDICTED")) {
-                        lastObservedDate = set.last().getDate();
+                        lastObservedDate = set.getLast().getDate();
                     }
 
                     if (line.equals("BEGIN MONTHLY_FIT")) {
-                        lastDailyPredictedDate = set.last().getDate();
+                        lastDailyPredictedDate = set.getLast().getDate();
                     }
 
                     if (line.length() == 130 && isNumeric(line.substring(0, 4))) {
@@ -164,8 +164,8 @@ public class CssiSpaceWeatherDataLoader extends AbstractSolarActivityDataLoader<
         }
 
         try {
-            setMinDate(set.first().getDate());
-            setMaxDate(set.last().getDate());
+            setMinDate(set.getFirst().getDate());
+            setMaxDate(set.getLast().getDate());
         }
         catch (NoSuchElementException nse) {
             throw new OrekitException(nse, OrekitMessages.NO_DATA_IN_FILE, name);

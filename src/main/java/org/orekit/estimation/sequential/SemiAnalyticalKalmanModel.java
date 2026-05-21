@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -330,8 +330,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
             // Sort the measurement
             observedMeasurements.sort(new ChronologicalComparator());
-            final AbsoluteDate tStart             = observedMeasurements.get(0).getDate();
-            final AbsoluteDate tEnd               = observedMeasurements.get(observedMeasurements.size() - 1).getDate();
+            final AbsoluteDate tStart             = observedMeasurements.getFirst().getDate();
+            final AbsoluteDate tEnd               = observedMeasurements.getLast().getDate();
             final double       overshootTimeRange = FastMath.nextAfter(tEnd.durationFrom(tStart),
                                                     Double.POSITIVE_INFINITY);
 

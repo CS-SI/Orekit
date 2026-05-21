@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -172,7 +172,7 @@ class AttitudeProviderTest {
         @SuppressWarnings("unchecked")
         final FieldPVCoordinatesProvider<T> mockPvCoordinatesProvider = Mockito.mock(FieldPVCoordinatesProvider.class);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<T>(field, date);
+        final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<>(field, date);
         // WHEN
         final FieldRotation<T> actualRotation = attitudeProvider.getAttitudeRotation(mockPvCoordinatesProvider, fieldDate, REFERENCE_FRAME);
         // THEN

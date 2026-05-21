@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -161,7 +161,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
 
         // Get information for interpolation
         final AbsoluteDate interpolationDate = interpolationData.getInterpolationDate();
-        final Orbit        firstEntry        = sample.get(0);
+        final Orbit        firstEntry        = sample.getFirst();
         final OrbitType    orbitType         = firstEntry.getType();
         final Frame        inputFrame        = firstEntry.getFrame();
         final Frame        outputFrame       = getOutputInertialFrame();
@@ -212,7 +212,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
         final TimeStampedPVCoordinates interpolated = interpolator.interpolate(interpolationDate, sampleTimeStampedPV);
 
         // Use first entry gravitational parameter (initially checked that it is consistent throughout the sample)
-        final double mu = sample.get(0).getMu();
+        final double mu = sample.getFirst().getMu();
 
         return new CartesianOrbit(interpolated,
                                   inputFrame,
@@ -242,7 +242,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
         }
 
         // Use first entry gravitational parameter
-        final double mu = orbits.get(0).getMu();
+        final double mu = orbits.getFirst().getMu();
 
         // Interpolate and build a new instance
         final double[][] interpolated;

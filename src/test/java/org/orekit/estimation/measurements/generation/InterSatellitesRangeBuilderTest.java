@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.SortedSet;
+import java.util.function.Predicate;
+
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
@@ -31,8 +34,10 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -42,15 +47,14 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.events.InterSatDirectViewDetector;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
+import static org.mockito.Mockito.mock;
 
-import java.util.SortedSet;
-import java.util.function.Predicate;
-
-public class InterSatellitesRangeBuilderTest {
+class InterSatellitesRangeBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
@@ -60,10 +64,12 @@ public class InterSatellitesRangeBuilderTest {
                                                                 final ObservableSatellite remote) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<InterSatellitesRange> isrb =
-                        new InterSatellitesRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                                    1.0e-10,
-                                                                                                                    new GaussianRandomGenerator(random)),
-                                                        receiver, remote, true, SIGMA, 1.0);
+                        new InterSatellitesRangeBuilder(receiver, remote, true, SIGMA, 1.0);
+        if (random != null) {
+            isrb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         isrb.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -73,39 +79,52 @@ public class InterSatellitesRangeBuilderTest {
     }
 
     @Test
-    public void testForwardAll() {
+    void testGetSignalTravelTimeModel() {
+        // GIVEN
+        final SignalTravelTimeModel signalTravelTimeModel = mock();
+        final InterSatellitesRangeBuilder builder = new InterSatellitesRangeBuilder(
+                new ObservableSatellite(0), new ObservableSatellite(1), true,
+                new MeasurementQuality(1., 1.), signalTravelTimeModel);
+        // WHEN
+        final SignalTravelTimeModel actualModel = builder.getSignalTravelTimeModel();
+        // THEN
+        Assertions.assertEquals(signalTravelTimeModel, actualModel);
+    }
+
+    @Test
+    void testForwardAll() {
         doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> true,
-               264, 73485.963, 28386637.208, 2.8 * SIGMA);
+               264, 73485.963, 28386637.208, 6. * SIGMA);
     }
 
     @Test
-    public void testForwardIgnoreSmall() {
+    void testForwardIgnoreSmall() {
         doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] > 10000000.0,
-               182, 10111578.965, 28386637.208, 2.8 * SIGMA);
+               182, 10111578.965, 28386637.208, 6. * SIGMA);
     }
 
     @Test
-    public void testForwardIgnoreLarge() {
+    void testForwardIgnoreLarge() {
         doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] <= 10000000.0,
-               82, 73485.963, 9969288.418, 2.8 * SIGMA);
+               82, 73485.963, 9969288.418, 6. * SIGMA);
     }
 
     @Test
-    public void testBackwardAll() {
+    void testBackwardAll() {
         doTest(0x95c10149c4891232L, 0.0, -1.0, e -> true,
-               219, 243749.068, 28279283.197, 2.6 * SIGMA);
+               219, 243749.068, 28279283.197, 6. * SIGMA);
     }
 
     @Test
-    public void testBackwardIgnoreSmall() {
+    void testBackwardIgnoreSmall() {
         doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] > 10000000.0,
-               153, 10131712.178, 28279283.197, 2.6 * SIGMA);
+               153, 10131712.178, 28279283.197, 6. * SIGMA);
     }
 
     @Test
-    public void testBackwardIgnoreLarge() {
+    void testBackwardIgnoreLarge() {
         doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] <= 10000000.0,
-               66, 243749.068, 9950029.194, 2.6 * SIGMA);
+               66, 243749.068, 9950029.194, 6. * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -194,10 +213,10 @@ public class InterSatellitesRangeBuilderTest {
      }
 
      @BeforeEach
-     public void setUp() {
+     void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+         propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                    1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                    Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
      }

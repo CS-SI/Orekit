@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testStartDate() {
         setRoot("bulletinA");
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
         new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt", manager, () -> utc).fillHistory(null, history);
         Assertions.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56475),
                                              TimeScalesFactory.getUTC()),
@@ -48,7 +48,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testEndDate() {
         setRoot("bulletinA");
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
         new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt", manager, () -> utc).fillHistory(null, history);
         Assertions.assertTrue(getMaxGap(history) < 2);
         Assertions.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56968),
@@ -60,7 +60,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testSingleFile() {
         setRoot("bulletinA");
-        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
         new BulletinAFilesLoader("bulletina-xxvi-039.txt", manager, () -> utc).fillHistory(null, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                             data, true);
@@ -94,7 +94,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testRapidDataContent() {
         setRoot("bulletinA");
-        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
         new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME, manager, () -> utc).fillHistory(null, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                             data, true);
@@ -109,7 +109,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testFinalValuesContent() {
         setRoot("bulletinA");
-        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
         new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME, manager, () -> utc).fillHistory(null, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                 data, true);
@@ -118,7 +118,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(        (-3 * 0.04058 + 27 * 0.04000 + 27 * 0.03953 - 3 * 0.03917) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
         Assertions.assertEquals(asToRad((-3 * 0.1692  + 27 * 0.1689  + 27 * 0.1685  - 3 * 0.1684)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
         Assertions.assertEquals(asToRad((-3 * 0.3336  + 27 * 0.3322  + 27 * 0.3307  - 3 * 0.3294)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
-        double[] nroNutationCorrection = history.getNonRotatinOriginNutationCorrection(date);
+        double[] nroNutationCorrection = history.getNonRotatingOriginNutationCorrection(date);
         double[] equinoxNutationCorrection = history.getEquinoxNutationCorrection(date);
         Assertions.assertEquals(asToRad((-3 * -0.24  + 27 * -0.20  + 27 * -0.24  - 3 * -0.21) / 1000 / 48), nroNutationCorrection[0], 1.0e-10);
         Assertions.assertEquals(asToRad((-3 * -0.13  + 27 * -0.09  + 27 * -0.12  - 3 * -0.18) / 1000 / 48), nroNutationCorrection[1], 1.0e-10);
@@ -150,7 +150,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     private void checkTruncated(String name, OrekitMessages expected) {
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
         try {
             new BulletinAFilesLoader(name, manager, () -> utc).fillHistory(null, history);
             Assertions.fail("an exception should have been thrown");
@@ -169,7 +169,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     private void checkInconsistent(String name) {
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
         try {
             new BulletinAFilesLoader(name, manager, () -> utc).fillHistory(null, history);
             Assertions.fail("an exception should have been thrown");

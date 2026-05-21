@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.orbits;
 
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.complex.Complex;
@@ -27,8 +30,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DerivativeStateUtils;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -109,15 +114,14 @@ class KeplerianMotionCartesianUtilityTest {
             comparePV(expectedPV, actualPV.toPVCoordinates());
             final FieldOrbit<Gradient> fieldEquinoctialOrbit = OrbitType.EQUINOCTIAL.convertType(fieldOrbit);
             final FieldOrbit<Gradient> shiftedOrbit = fieldEquinoctialOrbit.shiftedBy(fieldDt);
-            compareDerivatives(shiftedOrbit.getPVCoordinates(), actualPV);
+            compareDerivatives(shiftedOrbit.getPVCoordinates(), actualPV, 1e-6, 1e-7);
         }
     }
 
     private static void compareDerivatives(final FieldPVCoordinates<Gradient> expectedPV,
-                                           final FieldPVCoordinates<Gradient> actualPV) {
-
-        final double toleranceGradientPosition = 1e-6;
-        final double toleranceGradientVelocity = 1e-7;
+                                           final FieldPVCoordinates<Gradient> actualPV,
+                                           final double toleranceGradientPosition,
+                                           final double toleranceGradientVelocity) {
         for (int i = 0; i < 6; i++) {
             Assertions.assertEquals(expectedPV.getPosition().getX().getPartialDerivative(i),
                     actualPV.getPosition().getX().getPartialDerivative(i), toleranceGradientPosition);
@@ -174,4 +178,99 @@ class KeplerianMotionCartesianUtilityTest {
         }
     }
 
+    @Test
+    void testIssue1642() {
+        // GIVEN
+        final double mu = 3.986004415E14;
+        final double dt = 0.0;
+        final Vector3D position = new Vector3D(988245.4346791464, 2167404.3909280975, 6523018.747615153);
+        final Vector3D velocity = new Vector3D(-19764906.936712902, -43348083.96540047, -130460363.35590248);
+
+        // WHEN
+        final PVCoordinates predictedPV = KeplerianMotionCartesianUtility
+                .predictPositionVelocity(dt, position, velocity, mu);
+
+        // THEN
+        comparePV(new PVCoordinates(position, velocity), predictedPV, 1e-15, 1e-15);
+    }
+
+    @Test
+    void testIssue1642Field() {
+        // GIVEN
+        final Gradient mu = new Gradient(3.986004415E14, new double[7]);
+        final Gradient dt = new Gradient(0.0, new double[7]);
+        final FieldVector3D<Gradient> position = new FieldVector3D<>(
+                new Gradient(988245.4346791464, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+                new Gradient(2167404.3909280975, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+                new Gradient(6523018.747615153, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0)
+        );
+        final FieldVector3D<Gradient> velocity = new FieldVector3D<>(
+                new Gradient(-19764906.936712902, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0),
+                new Gradient(-43348083.96540047, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0),
+                new Gradient(-130460363.35590248, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+        );
+
+        // WHEN
+        final FieldPVCoordinates<Gradient> predictedPV = KeplerianMotionCartesianUtility
+                .predictPositionVelocity(dt, position, velocity, mu);
+
+        // THEN
+        final FieldPVCoordinates<Gradient> expectedPV = new FieldPVCoordinates<>(position, velocity);
+        comparePV(expectedPV.toPVCoordinates(), predictedPV.toPVCoordinates(), 1e-15, 1e-15);
+        compareDerivatives(expectedPV, predictedPV, 1e-15, 1e-15);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2, 4, 6})
+    void testIssue1822(final int order) {
+
+        // GIVEN
+        final int freePars = 7;
+        final DSFactory factory = new DSFactory(freePars, order);
+        final Field<DerivativeStructure> field = factory.getDerivativeField();
+
+        final DerivativeStructure mu = field.getOne();
+        final DerivativeStructure dt = factory.variable(6, FastMath.PI / 4.0);
+
+        final FieldVector3D<DerivativeStructure> pos = new FieldVector3D<>(
+                factory.variable(0, 1.0),
+                factory.variable(1, 0.0),
+                factory.variable(2, 0.0)
+        );
+        final FieldVector3D<DerivativeStructure> vel = new FieldVector3D<>(
+                factory.variable(3, 0.0),
+                factory.variable(4, pos.getX().divide(mu).sqrt().getValue()),
+                factory.variable(5, 0.0)
+        );
+
+        // WHEN
+        final FieldPVCoordinates<DerivativeStructure> predictedPV =
+                KeplerianMotionCartesianUtility.predictPositionVelocity(dt, pos, vel, mu);
+
+        final Frame frame = FramesFactory.getGCRF();
+        final FieldAbsoluteDate<DerivativeStructure> date =
+                new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldCartesianOrbit<DerivativeStructure> cartesianOrbit =
+                new FieldCartesianOrbit<>(new FieldPVCoordinates<>(pos, vel), frame, date, mu);
+
+        final FieldEquinoctialOrbit<DerivativeStructure> equinoctialOrbit =
+                new FieldEquinoctialOrbit<>(cartesianOrbit);
+        final FieldPVCoordinates<DerivativeStructure> expectedPV =
+                equinoctialOrbit.shiftedBy(dt).getPVCoordinates();
+
+        // THEN
+        final FieldPVCoordinates<DerivativeStructure> deltaPV = new FieldPVCoordinates<>(
+                predictedPV.getPosition().subtract(expectedPV.getPosition()),
+                predictedPV.getVelocity().subtract(expectedPV.getVelocity())
+        );
+        final double[] deltaPartialsNorms = {
+                deltaPV.getPosition().getX().norm(),
+                deltaPV.getPosition().getY().norm(),
+                deltaPV.getPosition().getZ().norm(),
+                deltaPV.getVelocity().getX().norm(),
+                deltaPV.getVelocity().getY().norm(),
+                deltaPV.getVelocity().getZ().norm(),
+        };
+        Assertions.assertArrayEquals(new double[6], deltaPartialsNorms, 2e-10);
+    }
 }

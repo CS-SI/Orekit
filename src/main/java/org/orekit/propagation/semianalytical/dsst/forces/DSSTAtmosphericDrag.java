@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -135,6 +135,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[] getLLimits(final SpacecraftState state, final AuxiliaryElements auxiliaryElements) {
 
         final double perigee = auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc());
@@ -156,8 +157,9 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected <T extends CalculusFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
-                                                             final FieldAuxiliaryElements<T> auxiliaryElements) {
+                                                                 final FieldAuxiliaryElements<T> auxiliaryElements) {
 
         final Field<T> field = state.getDate().getField();
 

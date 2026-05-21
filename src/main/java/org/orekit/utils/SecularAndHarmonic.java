@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ public class SecularAndHarmonic {
     private double[] fitted;
 
     /** Observed points. */
-    private List<WeightedObservedPoint> observedPoints;
+    private final List<WeightedObservedPoint> observedPoints;
 
     /** RMS for convergence.
      * @since 10.3

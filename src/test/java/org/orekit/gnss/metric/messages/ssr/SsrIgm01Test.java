@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,7 +84,7 @@ public class SsrIgm01Test {
         Assertions.assertEquals(1,                            igm01.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G12
-        final SsrIgm01Data g12 = igm01.getSsrIgm01Data().get("G12").get(0);
+        final SsrIgm01Data g12 = igm01.getSsrIgm01Data().get("G12").getFirst();
         Assertions.assertEquals(12,                           g12.getSatelliteID());
         Assertions.assertEquals(132,                          g12.getGnssIod());
         Assertions.assertEquals(18.0095,                      g12.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
@@ -144,7 +144,7 @@ public class SsrIgm01Test {
         Assertions.assertEquals(1,                            igm01.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
-        final SsrIgm01Data e01 = igm01.getSsrIgm01Data().get("E01").get(0);
+        final SsrIgm01Data e01 = igm01.getSsrIgm01Data().get("E01").getFirst();
         Assertions.assertEquals(1,                            e01.getSatelliteID());
         Assertions.assertEquals(132,                          e01.getGnssIod());
         Assertions.assertEquals(18.0095,                      e01.getOrbitCorrection().getDeltaOrbitRadial(),        eps);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -223,12 +223,12 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.043893,  0.044721,  -0.037796 };
+        final double[] stationOffSet = { 0.043893,  0.044721,  -0.037797 };
         final double rangeBias = 0.041171;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -5.910596, 3.306617, -0.037131, 1.454304 };
+        final double[] refStatRange = { -5.910601, 3.306617, -0.037131, 1.454304 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
                 smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,
@@ -256,7 +256,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -6.212086, 3.196686, -0.012196, 1.456780 };
+        final double[] refStatRange = { -6.212088, 3.196686, -0.012196, 1.456780 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
                 smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,
@@ -385,13 +385,13 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
 
 
         // Accuracy for tests
-        final double parametersAccuracy = 2e-6;
+        final double parametersAccuracy = 1e-6;
 
         // Test on measurements parameters
         final List<DelegatingDriver> list = new ArrayList<>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
-        Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), parametersAccuracy);
+        Assertions.assertEquals(stationOffSet[0], list.getFirst().getValue(), parametersAccuracy);
         Assertions.assertEquals(stationOffSet[1], list.get(1).getValue(), parametersAccuracy);
         Assertions.assertEquals(stationOffSet[2], list.get(2).getValue(), parametersAccuracy);
         Assertions.assertEquals(rangeBias,        list.get(3).getValue(), parametersAccuracy);
@@ -556,7 +556,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Test on propagator parameters
         // -----------------------------
         final ParameterDriversList propagatorParameters = kalmanW3B.getPropagatorParameters();
-        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-4);
+        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().getFirst().getValue(), 1e-4);
         final Vector3D leakAcceleration0 =
                         new Vector3D(propagatorParameters.getDrivers().get(1).getValue(),
                                      propagatorParameters.getDrivers().get(3).getValue(),
@@ -576,7 +576,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         sortParametersChanges(list);
 
         // Station CastleRock
-        Assertions.assertEquals(castleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
+        Assertions.assertEquals(castleAzElBias[0], FastMath.toDegrees(list.getFirst().getValue()), angleAccuracy);
         Assertions.assertEquals(castleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
         Assertions.assertEquals(castleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -235,8 +235,8 @@ public class MarshallSolarActivityFutureEstimationLoader
         if (data.isEmpty()) {
             throw new OrekitException(OrekitMessages.NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE, name);
         }
-        setMinDate(data.first().getDate());
-        setMaxDate(data.last().getDate());
+        setMinDate(data.getFirst().getDate());
+        setMaxDate(data.getLast().getDate());
 
     }
 

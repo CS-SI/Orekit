@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,14 +19,16 @@ package org.orekit.propagation.events;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.TimeIntervalEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.DateDriver;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -221,10 +223,9 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
         return duration;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public boolean dependsOnTimeOnly() {
-        return true;
+    public EventFunction getEventFunction() {
+        return new ParameterDrivenDateIntervalEventFunction(start.getDate(), stop.getDate());
     }
 
     /** Compute the value of the switching function.
@@ -240,8 +241,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        return FastMath.min(s.getDate().durationFrom(start.getDate()),
-                            stop.getDate().durationFrom(s.getDate()));
+        return getEventFunction().value(s);
     }
 
     /** Base observer. */
@@ -338,4 +338,26 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
         }
     }
 
+    private static class ParameterDrivenDateIntervalEventFunction extends TimeIntervalEventFunction {
+
+        /**
+         * Constructor.
+         * @param startDate start date
+         * @param endDate end date
+         */
+        ParameterDrivenDateIntervalEventFunction(final AbsoluteDate startDate, final AbsoluteDate endDate) {
+            super(new TimeInterval() {
+                // unsafe implementation without sorting check
+                @Override
+                public AbsoluteDate getStartDate() {
+                    return startDate;
+                }
+
+                @Override
+                public AbsoluteDate getEndDate() {
+                    return endDate;
+                }
+            });
+        }
+    }
 }

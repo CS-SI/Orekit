@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.filtering;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.ElevationValueCrossingFunction;
 
 /**
  * Elevation pre-processing filter.
@@ -29,11 +30,8 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class ElevationFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter<T> {
 
-    /** Elevation threshold under which the measurement will be rejected [rad]. */
-    private final double threshold;
-
-    /** Ground station considered. */
-    private final GroundStation station;
+    /** Event function used to filter out. */
+    private final ElevationValueCrossingFunction elevationFunction;
 
     /**
      * Constructor.
@@ -41,19 +39,13 @@ public class ElevationFilter<T extends ObservedMeasurement<T>> implements Measur
      * @param threshold minimum elevation for a measurements to be accepted, in radians
      */
     public ElevationFilter(final GroundStation station, final double threshold) {
-        this.station   = station;
-        this.threshold = threshold;
+        this.elevationFunction = new ElevationValueCrossingFunction(null, station.getBaseFrame(), threshold);
     }
 
     /** {@inheritDoc} */
     @Override
     public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
-        // Current elevation of the satellite
-        final double trueElevation = station.getBaseFrame().
-                                     getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate()).
-                                     getElevation();
-        // Filter
-        if (trueElevation < threshold) {
+        if (elevationFunction.value(state) < 0.) {
             measurement.setEnabled(false);
         }
     }

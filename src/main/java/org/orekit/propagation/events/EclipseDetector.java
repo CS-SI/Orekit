@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,9 @@ package org.orekit.propagation.events;
 import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
+import org.orekit.propagation.events.functions.PenumbraEventFunction;
+import org.orekit.propagation.events.functions.UmbraEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.ExtendedPositionProvider;
@@ -102,7 +105,8 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     protected EclipseDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                               final OccultationEngine occultationEngine, final double margin, final boolean totalEclipse) {
-        super(detectionSettings, handler);
+        super(EventFunctionModifier.addReal(totalEclipse ? new UmbraEventFunction(occultationEngine) :
+                new PenumbraEventFunction(occultationEngine), margin), detectionSettings, handler);
         this.occultationEngine = occultationEngine;
         this.margin            = margin;
         this.totalEclipse      = totalEclipse;
@@ -178,17 +182,9 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
         return totalEclipse;
     }
 
-    /** Compute the value of the switching function.
-     * This function becomes negative when entering the region of shadow
-     * and positive when exiting.
-     * @param s the current state information: date, kinematics, attitude
-     * @return value of the switching function
-     */
+    @Override
     public double g(final SpacecraftState s) {
-        final OccultationEngine.OccultationAngles angles = occultationEngine.angles(s);
-        return totalEclipse ?
-               (angles.getSeparation() - angles.getLimbRadius() + angles.getOccultedApparentRadius() + margin) :
-               (angles.getSeparation() - angles.getLimbRadius() - angles.getOccultedApparentRadius() + margin);
+        return getEventFunction().value(s);
     }
 
 }

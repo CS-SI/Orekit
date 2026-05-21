@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.DSSTContext;
-import org.orekit.estimation.DSSTEstimationTestUtils;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
@@ -101,13 +101,13 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
     @Test
     public void testMissingUnscentedTransform() {
         try {
-            DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+            Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
             final boolean       perfectStart  = true;
             final double        minStep       = 1.e-6;
             final double        maxStep       = 60.;
             final double        dP            = 1.;
             final DSSTPropagatorBuilder propagatorBuilder =
-                            context.createBuilder(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart,
+                            context.createDsst(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart,
                                                   minStep, maxStep, dP);
             new SemiAnalyticalUnscentedKalmanEstimatorBuilder().
             addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6))).
@@ -122,7 +122,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
     public void testKeplerianRange() {
 
         // Create context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and DSST propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
@@ -133,25 +133,25 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double        dP            = 1.;
 
         // Propagator builder for measurement generation
-        final DSSTPropagatorBuilder builder = context.createBuilder(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart, minStep, maxStep, dP);
+        final DSSTPropagatorBuilder builder = context.createDsst(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                    new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
-        final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
+        final AbsoluteDate lastMeasurementEpoch = measurements.getLast().getDate();
 
         // DSST propagator builder (used for orbit determination)
-        final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
+        final DSSTPropagatorBuilder propagatorBuilder = context.createDsst(perfectStart, minStep, maxStep, dP);
 
         // Reference propagator for estimation performances
         final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Equinictial covariance matrix initialization
         final RealMatrix equinoctialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -183,10 +183,16 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double   posEps            = 1.0e-15;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 1.0e-15;
-        DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps);
+        final double[] expectedSigmasPos = {0.0, 0.0, 0.0};
+        final double   sigmaPosEps       = 1e-15;
+        final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
+        final double   sigmaVelEps       = 1e-15;
+        EstimationTestUtils.checkUnscentedSemiAnalyticalKalmanFit(false, kalman, measurements,
+                                                                  refOrbit, positionAngleType,
+                                                                  expectedDeltaPos, posEps,
+                                                                  expectedDeltaVel, velEps,
+                                                                  expectedSigmasPos, sigmaPosEps,
+                                                                  expectedSigmasVel, sigmaVelEps);
 
         Assertions.assertEquals(0.0, observer.getMeanResidual(), 5.11e-8);
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
@@ -204,7 +210,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
     public void testRangeWithZonal() {
 
         // Create context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
@@ -215,19 +221,19 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double        dP            = 1.;
 
         // Propagator builder for measurement generation
-        final DSSTPropagatorBuilder builder = context.createBuilder(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart, minStep, maxStep, dP);
+        final DSSTPropagatorBuilder builder = context.createDsst(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart, minStep, maxStep, dP);
         builder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
 
         // Create perfect range measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                    new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
-        final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
+        final AbsoluteDate lastMeasurementEpoch = measurements.getLast().getDate();
 
         // DSST propagator builder (used for orbit determination)
-        final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
+        final DSSTPropagatorBuilder propagatorBuilder = context.createDsst(perfectStart, minStep, maxStep, dP);
         propagatorBuilder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
 
         // Reference propagator for estimation performances
@@ -235,7 +241,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Equinictial covariance matrix initialization
         final RealMatrix equinoctialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -267,10 +273,16 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double   posEps            = 1.1e-7;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 3.9e-11;
-        DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps);
+        final double[] expectedSigmasPos = {0.0, 0.0, 0.0};
+        final double   sigmaPosEps       = 1e-15;
+        final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
+        final double   sigmaVelEps       = 1e-15;
+        EstimationTestUtils.checkUnscentedSemiAnalyticalKalmanFit(false, kalman, measurements,
+                                                                  refOrbit, positionAngleType,
+                                                                  expectedDeltaPos, posEps,
+                                                                  expectedDeltaVel, velEps,
+                                                                  expectedSigmasPos, sigmaPosEps,
+                                                                  expectedSigmasVel, sigmaVelEps);
 
         Assertions.assertEquals(0.0, observer.getMeanResidual(), 2.59e-3);
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
@@ -288,7 +300,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
     public void testRangeWithTesseral() {
 
         // Create context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
@@ -300,7 +312,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
 
         // Propagator builder for measurement generation
         final UnnormalizedSphericalHarmonicsProvider gravityField = GravityFieldFactory.getUnnormalizedProvider(2, 2);
-        final DSSTPropagatorBuilder builder = context.createBuilder(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart, minStep, maxStep, dP);
+        final DSSTPropagatorBuilder builder = context.createDsst(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart, minStep, maxStep, dP);
         builder.addForceModel(new DSSTZonal(gravityField));
         builder.addForceModel(new DSSTTesseral(context.earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityField,
                 gravityField.getMaxDegree(),
@@ -308,14 +320,14 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                 gravityField.getMaxDegree(), gravityField.getMaxOrder(), FastMath.min(4, gravityField.getMaxDegree() - 2)));
 
         // Create perfect range measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                    new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
-        final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
+        final AbsoluteDate lastMeasurementEpoch = measurements.getLast().getDate();
         // DSST propagator builder (used for orbit determination)
-        final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
+        final DSSTPropagatorBuilder propagatorBuilder = context.createDsst(perfectStart, minStep, maxStep, dP);
         propagatorBuilder.addForceModel(new DSSTZonal(gravityField));
         propagatorBuilder.addForceModel(new DSSTTesseral(context.earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityField,
                 gravityField.getMaxDegree(),
@@ -327,7 +339,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Equinictial covariance matrix initialization
         final RealMatrix equinoctialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -360,10 +372,16 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double   posEps            = 4.2e-7;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 3.8e-11;
-        DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps);
+        final double[] expectedSigmasPos = {0.0, 0.0, 0.0};
+        final double   sigmaPosEps       = 1e-15;
+        final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
+        final double   sigmaVelEps       = 1e-15;
+        EstimationTestUtils.checkUnscentedSemiAnalyticalKalmanFit(false, kalman, measurements,
+                                                                  refOrbit, positionAngleType,
+                                                                  expectedDeltaPos, posEps,
+                                                                  expectedDeltaVel, velEps,
+                                                                  expectedSigmasPos, sigmaPosEps,
+                                                                  expectedSigmasVel, sigmaVelEps);
 
         Assertions.assertEquals(0.0, observer.getMeanResidual(), 2.55e-3);
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());

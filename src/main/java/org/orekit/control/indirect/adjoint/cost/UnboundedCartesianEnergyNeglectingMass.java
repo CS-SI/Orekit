@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,7 +56,7 @@ public class UnboundedCartesianEnergyNeglectingMass extends AbstractCartesianCos
     @Override
     public double getHamiltonianContribution(final double[] adjointVariables, final double mass) {
         final Vector3D thrustAcceleration = getThrustAccelerationVector(adjointVariables, mass);
-        return -thrustAcceleration.getNormSq() / 2.;
+        return -thrustAcceleration.getNorm2Sq() / 2.;
     }
 
     /** {@inheritDoc} */

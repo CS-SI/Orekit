@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,9 +31,11 @@ public class IonosphereBDGIMMessage extends IonosphereBaseMessage {
      * @param system satellite system
      * @param prn satellite number
      * @param navigationMessageType navigation message type
+     * @param subType message subtype
      */
-    public IonosphereBDGIMMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
-        super(system, prn, navigationMessageType);
+    public IonosphereBDGIMMessage(final SatelliteSystem system, final int prn,
+                                  final String navigationMessageType, final String subType) {
+        super(system, prn, navigationMessageType, subType);
         alpha = new double[9];
     }
 

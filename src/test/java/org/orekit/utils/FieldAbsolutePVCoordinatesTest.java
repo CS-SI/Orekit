@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,6 @@ package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -36,77 +34,58 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-public class FieldAbsolutePVCoordinatesTest {
+class FieldAbsolutePVCoordinatesTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void TestPVOnlyConstructor() {
+    void testPVOnlyConstructor() {
         doTestPVOnlyConstructor(Binary64Field.getInstance());
     }
 
     @Test
-    public void testPVCoordinatesCopyConstructor() {
+    void testPVCoordinatesCopyConstructor() {
         doTestPVCoordinatesCopyConstructor(Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearConstructors() {
+    void testLinearConstructors() {
         doTestLinearConstructors(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDifferentFrames() {
+    void testDifferentFrames() {
         doTestDifferentFrames(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToDerivativeStructureVector1() {
-        doTestToDerivativeStructureVector1(Binary64Field.getInstance());
-    }
-
-    @Test
-    public void testToDerivativeStructureVector2() {
-        doTestToDerivativeStructureVector2(Binary64Field.getInstance());
-    }
-
-    @Test
-    public void testToUnivariateDerivative1Vector() {
-        doTestToUnivariateDerivative1Vector(Binary64Field.getInstance());
-    }
-
-    @Test
-    public void testToUnivariateDerivative2Vector() {
-        doTestToUnivariateDerivative2Vector(Binary64Field.getInstance());
-    }
-
-    @Test
-    public void testShift() {
+    void testShift() {
         doTestShift(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         doTestToString(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSamePV() {
+    void testSamePV() {
         doTestSamePV(Binary64Field.getInstance());
     }
 
     @Test
-    public void testTaylorProvider() {
+    void testTaylorProvider() {
         doTestTaylorProvider(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue1557() {
+    void testIssue1557() {
         // GIVEN
         final FieldAbsolutePVCoordinates<Binary64> absPV = TestUtils.getFakeFieldAbsolutePVACoordinates();
 
@@ -180,17 +159,17 @@ public class FieldAbsolutePVCoordinatesTest {
                                                                 new FieldVector3D<>(one.multiply(4.0), one.multiply(0.4), one.multiply(40.0)),
                                                                 new FieldVector3D<>(one.multiply(-4.0), one.multiply(-0.4), one.multiply(-40.0)),
                                                                 new FieldVector3D<>(one.multiply(40.0), one.multiply(-4.0), one.multiply(-400.0)));
-        checkPV(pv4, new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getJulianEpoch(field), one.multiply(4.0), pv1), 1.0e-15);
-        checkPV(pv2, new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getFiftiesEpoch(field), pv1, pv3), 1.0e-15);
-        checkPV(pv3, new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getGalileoEpoch(field), one, pv1, one, pv2), 1.0e-15);
-        checkPV(new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(2.0), pv4),
-                new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(3.0), pv1, one, pv2, one, pv3),
+        checkPV(pv4, new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getJulianEpoch(field), one.multiply(4.0), pv1), 1.0e-15);
+        checkPV(pv2, new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getFiftiesEpoch(field), pv1, pv3), 1.0e-15);
+        checkPV(pv3, new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(field), one, pv1, one, pv2), 1.0e-15);
+        checkPV(new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(2.0), pv4),
+                new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(3.0), pv1, one, pv2, one, pv3),
                 1.0e-15);
-        checkPV(new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(3.0), pv3),
-                new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(3.0), pv1, one, pv2, one, pv4),
+        checkPV(new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(3.0), pv3),
+                new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(3.0), pv1, one, pv2, one, pv4),
                 1.0e-15);
-        checkPV(new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(5.0), pv4),
-                new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(4.0), pv1, one.multiply(3.0), pv2, one.multiply(2.0), pv3, one, pv4),
+        checkPV(new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(5.0), pv4),
+                new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(4.0), pv1, one.multiply(3.0), pv2, one.multiply(2.0), pv3, one, pv4),
                 1.0e-15);
     }
 
@@ -212,204 +191,6 @@ public class FieldAbsolutePVCoordinatesTest {
         }
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestToDerivativeStructureVector1(Field<T> field) {
-        final T one = field.getOne();
-        FieldVector3D<FieldDerivativeStructure<T>> fv =
-                        new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                        FieldAbsoluteDate.getGalileoEpoch(field),
-                                        new FieldVector3D<>(one, one.multiply(0.1), one.multiply(10.0)),
-                                        new FieldVector3D<>(one.multiply(-1.0), one.multiply(-0.1), one.multiply(-10.0)),
-                                        new FieldVector3D<>(one.multiply(10.0), one.multiply(-1.0), one.multiply(-100.0))).toDerivativeStructureVector(1);
-
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(1, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).getReal(), 1.0e-15);
-        checkPV(new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                        FieldAbsoluteDate.getGalileoEpoch(field),
-                        new FieldVector3D<>(one,  one.multiply(0.1), one.multiply(10.0)),
-                        new FieldVector3D<>(one.multiply(-1.0), one.multiply(-0.1), one.multiply(-10.0)),
-                        FieldVector3D.getZero(field)),
-                new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                FieldAbsoluteDate.getGalileoEpoch(field), fv), 1.0e-15);
-
-        for (double dt = 0; dt < 10; dt += 0.125) {
-            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt).getReal(), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt).getReal(), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt).getReal(), 1.0e-14);
-        }
-
-        FieldAbsolutePVCoordinates<T> pv =
-                        new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                        FieldAbsoluteDate.getGalileoEpoch(field),
-                                        fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ().getReal(), 1.0e-15);
-
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestToDerivativeStructureVector2(Field<T> field) {
-        final T one = field.getOne();
-        FieldVector3D<FieldDerivativeStructure<T>> fv =
-                        new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                        FieldAbsoluteDate.getGalileoEpoch(field),
-                                        new FieldVector3D<>(one, one.multiply(0.1), one.multiply(10.0)),
-                                        new FieldVector3D<>(one.multiply(-1.0), one.multiply(-0.1), one.multiply(-10.0)),
-                                        new FieldVector3D<>(one.multiply(10.0), one.multiply(-1.0), one.multiply(-100.0))).toDerivativeStructureVector(2);
-
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(2, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2).getReal(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2).getReal(), 1.0e-15);
-        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2).getReal(), 1.0e-15);
-        checkPV(new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                        FieldAbsoluteDate.getGalileoEpoch(field),
-                        new FieldVector3D<>(one,  one.multiply(0.1), one.multiply(10.0)),
-                        new FieldVector3D<>(one.multiply(-1.0), one.multiply(-0.1), one.multiply(-10.0)),
-                        new FieldVector3D<>(one.multiply(10.0), one.multiply(-1.0), one.multiply(-100.0))),
-                new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                FieldAbsoluteDate.getGalileoEpoch(field), fv), 1.0e-15);
-
-        for (double dt = 0; dt < 10; dt += 0.125) {
-            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10),
-                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt).getReal(), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt).getReal(), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt).getReal(), 1.0e-14);
-        }
-
-        FieldAbsolutePVCoordinates<T> pv =
-                        new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                        FieldAbsoluteDate.getGalileoEpoch(field),
-                                        fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ().getReal(), 1.0e-15);
-        Assertions.assertEquals(  10.0, pv.getAcceleration().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, pv.getAcceleration().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals(-100.0, pv.getAcceleration().getZ().getReal(), 1.0e-15);
-
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestToUnivariateDerivative1Vector(Field<T> field) {
-        final T one = field.getOne();
-        FieldVector3D<FieldUnivariateDerivative1<T>> fv =
-                        new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                        FieldAbsoluteDate.getGalileoEpoch(field),
-                                        new FieldVector3D<>(one, one.multiply(0.1), one.multiply(10.0)),
-                                        new FieldVector3D<>(one.multiply(-1.0), one.multiply(-0.1), one.multiply(-10.0)),
-                                        new FieldVector3D<>(one.multiply(10.0), one.multiply(-1.0), one.multiply(-100.0))).toUnivariateDerivative1Vector();
-
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(1, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).getReal(), 1.0e-15);
-        checkPV(new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                        FieldAbsoluteDate.getGalileoEpoch(field),
-                        new FieldVector3D<>(one,  one.multiply(0.1), one.multiply(10.0)),
-                        new FieldVector3D<>(one.multiply(-1.0), one.multiply(-0.1), one.multiply(-10.0)),
-                        FieldVector3D.getZero(field)),
-                new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                FieldAbsoluteDate.getGalileoEpoch(field), fv), 1.0e-15);
-
-        for (double dt = 0; dt < 10; dt += 0.125) {
-            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt).getReal(), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt).getReal(), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt).getReal(), 1.0e-14);
-        }
-
-        FieldAbsolutePVCoordinates<T> pv =
-                        new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                        FieldAbsoluteDate.getGalileoEpoch(field),
-                                        fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ().getReal(), 1.0e-15);
-
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestToUnivariateDerivative2Vector(Field<T> field) {
-        final T one = field.getOne();
-        FieldVector3D<FieldUnivariateDerivative2<T>> fv =
-                        new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                        FieldAbsoluteDate.getGalileoEpoch(field),
-                                        new FieldVector3D<>(one, one.multiply(0.1), one.multiply(10.0)),
-                                        new FieldVector3D<>(one.multiply(-1.0), one.multiply(-0.1), one.multiply(-10.0)),
-                                        new FieldVector3D<>(one.multiply(10.0), one.multiply(-1.0), one.multiply(-100.0))).toUnivariateDerivative2Vector();
-
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(2, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).getReal(), 1.0e-15);
-        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2).getReal(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2).getReal(), 1.0e-15);
-        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2).getReal(), 1.0e-15);
-        checkPV(new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                        FieldAbsoluteDate.getGalileoEpoch(field),
-                        new FieldVector3D<>(one,  one.multiply(0.1), one.multiply(10.0)),
-                        new FieldVector3D<>(one.multiply(-1.0), one.multiply(-0.1), one.multiply(-10.0)),
-                        new FieldVector3D<>(one.multiply(10.0), one.multiply(-1.0), one.multiply(-100.0))),
-                new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                FieldAbsoluteDate.getGalileoEpoch(field), fv), 1.0e-15);
-
-        for (double dt = 0; dt < 10; dt += 0.125) {
-            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10),
-                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt).getReal(), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt).getReal(), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt).getReal(), 1.0e-14);
-        }
-
-        FieldAbsolutePVCoordinates<T> pv =
-                        new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
-                                        FieldAbsoluteDate.getGalileoEpoch(field),
-                                        fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ().getReal(), 1.0e-15);
-        Assertions.assertEquals(  10.0, pv.getAcceleration().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, pv.getAcceleration().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals(-100.0, pv.getAcceleration().getZ().getReal(), 1.0e-15);
-
-    }
-
     private <T extends CalculusFieldElement<T>> void doTestShift(Field<T> field) {
         final T one = field.getOne();
         FieldVector3D<T> p1 = new FieldVector3D<>(one, one.multiply(0.1), one.multiply(10.0));
@@ -420,7 +201,99 @@ public class FieldAbsolutePVCoordinatesTest {
         FieldVector3D<T> a2 = new FieldVector3D<>(one.multiply(10.0), one, one.multiply(100.0));
         checkPV(new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), FieldAbsoluteDate.getJ2000Epoch(field), p2, v2, a2),
                 new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(1.0), p1, v1, a1).shiftedBy(one.multiply(-1.0)), 1.0e-15);
-        Assertions.assertEquals(0.0, FieldAbsolutePVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(new Vector3D(-6, -0.6, -60)).getNorm().getReal(), 1.0e-15);
+    }
+
+    @Test
+    void testFieldConstructor() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final FieldVector3D<Binary64> position = FieldVector3D.getMinusI(field);
+        final FieldVector3D<Binary64> velocity = FieldVector3D.getMinusK(field);
+        final FieldPVCoordinates<Binary64> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
+        final FieldVector3D<FieldUnivariateDerivative2<Binary64>> fieldPosition = pvCoordinates.toUnivariateDerivative2Vector();
+        // WHEN
+        final FieldAbsolutePVCoordinates<Binary64> fieldAbsolutePVCoordinates = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
+                date, fieldPosition);
+        // THEN
+        Assertions.assertEquals(date, fieldAbsolutePVCoordinates.getDate());
+        Assertions.assertEquals(position, fieldAbsolutePVCoordinates.getPosition());
+        Assertions.assertEquals(velocity, fieldAbsolutePVCoordinates.getVelocity());
+    }
+
+    @Test
+    void testToAbsolutePVCoordinates() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Vector3D position = Vector3D.MINUS_I;
+        final Vector3D velocity = Vector3D.MINUS_K;
+        final AbsolutePVCoordinates expectedApv = new AbsolutePVCoordinates(FramesFactory.getEME2000(), date, position, velocity);
+        final FieldAbsolutePVCoordinates<Binary64> fieldPV = new FieldAbsolutePVCoordinates<>(field, expectedApv);
+        // WHEN
+        final AbsolutePVCoordinates actualApv = fieldPV.toAbsolutePVCoordinates();
+        // THEN
+        Assertions.assertEquals(expectedApv.getFrame(), actualApv.getFrame());
+        Assertions.assertEquals(expectedApv.getDate(), actualApv.getDate());
+        Assertions.assertEquals(expectedApv.getPosition(), actualApv.getPosition());
+        Assertions.assertEquals(expectedApv.getVelocity(), actualApv.getVelocity());
+        Assertions.assertEquals(expectedApv.getAcceleration(), actualApv.getAcceleration());
+    }
+
+    @Test
+    void testShiftNonField() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final FieldVector3D<Binary64> position = FieldVector3D.getMinusI(field);
+        final FieldVector3D<Binary64> velocity = FieldVector3D.getMinusK(field);
+        final FieldAbsolutePVCoordinates<Binary64> apv = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
+                date, position, velocity);
+        final double dt = 1.;
+        // WHEN
+        final FieldAbsolutePVCoordinates<Binary64> shiftedDouble = apv.shiftedBy(dt);
+        // THEN
+        final FieldAbsolutePVCoordinates<Binary64> shifted = apv.shiftedBy(new Binary64(dt));
+        Assertions.assertEquals(shiftedDouble.getFrame(), shifted.getFrame());
+        Assertions.assertEquals(shiftedDouble.getDate(), shifted.getDate());
+        Assertions.assertEquals(shiftedDouble.getPosition(), shifted.getPosition());
+        Assertions.assertEquals(shiftedDouble.getVelocity(), shifted.getVelocity());
+        Assertions.assertEquals(shiftedDouble.getAcceleration(), shifted.getAcceleration());
+    }
+
+    @Test
+    void testGetVelocityFrame() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final FieldVector3D<Binary64> position = FieldVector3D.getMinusI(field);
+        final FieldVector3D<Binary64> velocity = FieldVector3D.getMinusK(field);
+        final FieldAbsolutePVCoordinates<Binary64> apv = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
+                date, position, velocity);
+        final Frame otherFrame = FramesFactory.getGCRF();
+        // WHEN
+        final FieldVector3D<Binary64> velocityInOtherFrame = apv.getVelocity(otherFrame);
+        // THEN
+        final FieldVector3D<Binary64> expectedVelocity = apv.getPVCoordinates(otherFrame).getVelocity();
+        Assertions.assertEquals(expectedVelocity, velocityInOtherFrame);
+    }
+
+    @Test
+    void testGetVelocityDate() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final FieldVector3D<Binary64> position = FieldVector3D.getMinusI(field);
+        final FieldVector3D<Binary64> velocity = FieldVector3D.getMinusK(field);
+        final FieldAbsolutePVCoordinates<Binary64> apv = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
+                date, position, velocity);
+        final Frame otherFrame = FramesFactory.getGCRF();
+        final FieldAbsoluteDate<Binary64> otherDate = date.shiftedBy(1);
+        // WHEN
+        final FieldVector3D<Binary64> velocityAtOtherDate = apv.getVelocity(otherDate, otherFrame);
+        // THEN
+        final FieldVector3D<Binary64> expectedVelocity = apv.getPVCoordinates(otherDate, otherFrame).getVelocity();
+        Assertions.assertEquals(expectedVelocity, velocityAtOtherDate);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestToString(Field<T> field) {

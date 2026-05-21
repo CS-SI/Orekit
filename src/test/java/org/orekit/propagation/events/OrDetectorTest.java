@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,24 +16,28 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.Collections;
-import java.util.NoSuchElementException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.Collections;
+import java.util.NoSuchElementException;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link BooleanDetector#orCombine(EventDetector...)}.
  *
  * @author Evan Ward
  */
-public class OrDetectorTest {
+class OrDetectorTest {
 
     /** first operand. */
     private MockDetector a;
@@ -46,7 +50,7 @@ public class OrDetectorTest {
 
     /** create subject under test and dependencies. */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         a = new MockDetector();
         b = new MockDetector();
         s = null;
@@ -57,7 +61,7 @@ public class OrDetectorTest {
      * check {@link BooleanDetector#g(SpacecraftState)}.
      */
     @Test
-    public void testG() {
+    void testG() {
         // test zero cases
         a.g = b.g = 0.0;
         Assertions.assertEquals(0.0, or.g(s), 0);
@@ -96,7 +100,7 @@ public class OrDetectorTest {
      * check when there is numeric cancellation between the two g values.
      */
     @Test
-    public void testCancellation() {
+    void testCancellation() {
         a.g = -1e-10;
         b.g = -1e10;
         Assertions.assertTrue(or.g(s) < 0, "negative");
@@ -121,19 +125,21 @@ public class OrDetectorTest {
      * Check wrapped detectors are initialized.
      */
     @Test
-    public void testInit() {
+    void testInit() {
         // setup
-        EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
-        Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
-        EventDetector b = Mockito.mock(EventDetector.class);
-        Mockito.when(b.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
-        Mockito.when(b.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
-        EventHandler c = Mockito.mock(EventHandler.class);
+        EventDetector a = mock(EventDetector.class);
+        when(a.getEventFunction()).thenReturn(mock(EventFunction.class));
+        when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
+        when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
+        EventDetector b = mock(EventDetector.class);
+        when(b.getEventFunction()).thenReturn(mock(EventFunction.class));
+        when(b.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
+        when(b.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
+        EventHandler c = mock(EventHandler.class);
         BooleanDetector or = BooleanDetector.orCombine(a, b).withHandler(c);
         AbsoluteDate t = AbsoluteDate.CCSDS_EPOCH;
-        s = Mockito.mock(SpacecraftState.class);
-        Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
+        s = mock(SpacecraftState.class);
+        when(s.getDate()).thenReturn(t.shiftedBy(60.0));
 
         // action
         or.init(s, t);
@@ -147,7 +153,7 @@ public class OrDetectorTest {
 
     /** check when no operands are passed to the constructor. */
     @Test
-    public void testZeroDetectors() {
+    void testZeroDetectors() {
         // action
         try {
             BooleanDetector.orCombine(Collections.emptyList());
@@ -164,18 +170,8 @@ public class OrDetectorTest {
         public double g = 0;
 
         @Override
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-
-        }
-
-        @Override
         public double g(SpacecraftState s) {
             return this.g;
-        }
-
-        @Override
-        public EventDetectionSettings getDetectionSettings() {
-            return EventDetectionSettings.getDefaultEventDetectionSettings();
         }
 
         @Override

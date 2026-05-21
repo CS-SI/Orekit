@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -48,8 +50,23 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+
 class FieldElevationExtremumDetectorTest {
 
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldElevationExtremumDetector<Binary64> fieldDetector = new FieldElevationExtremumDetector<>(Binary64Field.getInstance(),
+                mock(TopocentricFrame.class));
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final ElevationExtremumDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getTopocentricFrame(), detector.getTopocentricFrame());
+    }
 
     @Test
     void testG() {

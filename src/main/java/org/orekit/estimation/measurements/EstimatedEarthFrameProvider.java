@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,25 +78,25 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
     private final UT1Scale baseUT1;
 
     /** Estimated UT1. */
-    private final transient UT1Scale estimatedUT1;
+    private final UT1Scale estimatedUT1;
 
     /** Driver for prime meridian offset. */
-    private final transient ParameterDriver primeMeridianOffsetDriver;
+    private final ParameterDriver primeMeridianOffsetDriver;
 
     /** Driver for prime meridian drift. */
-    private final transient ParameterDriver primeMeridianDriftDriver;
+    private final ParameterDriver primeMeridianDriftDriver;
 
     /** Driver for pole offset along X. */
-    private final transient ParameterDriver polarOffsetXDriver;
+    private final ParameterDriver polarOffsetXDriver;
 
     /** Driver for pole drift along X. */
-    private final transient ParameterDriver polarDriftXDriver;
+    private final ParameterDriver polarDriftXDriver;
 
     /** Driver for pole offset along Y. */
-    private final transient ParameterDriver polarOffsetYDriver;
+    private final ParameterDriver polarOffsetYDriver;
 
     /** Driver for pole drift along Y. */
-    private final transient ParameterDriver polarDriftYDriver;
+    private final ParameterDriver polarDriftYDriver;
 
     /** Build an estimated Earth frame.
      * <p>
@@ -340,6 +340,52 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
+
+    }
+
+    /** Get the static transform with derivatives.
+     * @param date date of the transform
+     * @param freeParameters total number of free parameters in the gradient
+     * @param indices indices of the estimated parameters in derivatives computations
+     * @return computed transform with derivatives
+     * @since 14.0
+     */
+    public FieldStaticTransform<Gradient> getStaticTransform(final FieldAbsoluteDate<Gradient> date,
+                                                 final int freeParameters,
+                                                 final Map<String, Integer> indices) {
+
+        // prime meridian shift parameters
+        final Gradient theta    = linearModel(freeParameters, date, primeMeridianOffsetDriver, primeMeridianDriftDriver,
+                indices);
+        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
+
+        // pole shift parameters
+        final Gradient xpNeg    = linearModel(freeParameters, date,
+                polarOffsetXDriver, polarDriftXDriver, indices).negate();
+        final Gradient ypNeg    = linearModel(freeParameters, date,
+                polarOffsetYDriver, polarDriftYDriver, indices).negate();
+        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
+        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
+
+        final Gradient                zero  = date.getField().getZero();
+        final FieldVector3D<Gradient> plusI = FieldVector3D.getPlusI(date.getField());
+        final FieldVector3D<Gradient> plusJ = FieldVector3D.getPlusJ(date.getField());
+        final FieldVector3D<Gradient> plusK = FieldVector3D.getPlusK(date.getField());
+
+        // take parametric prime meridian shift into account
+        final FieldStaticTransform<Gradient> meridianShift =
+                FieldStaticTransform.of(date, new FieldVector3D<>(zero, zero, thetaDot),
+                        new FieldRotation<>(plusK, theta, RotationConvention.FRAME_TRANSFORM));
+
+        // take parametric pole shift into account
+        final FieldStaticTransform<Gradient> poleShift =
+                FieldStaticTransform.compose(date,
+                        FieldStaticTransform.of(date, new FieldVector3D<>(zero, xpNegDot, zero),
+                                new FieldRotation<>(plusJ, xpNeg, RotationConvention.FRAME_TRANSFORM)),
+                        FieldStaticTransform.of(date, new FieldVector3D<>(ypNegDot, zero, zero),
+                                new FieldRotation<>(plusI, ypNeg, RotationConvention.FRAME_TRANSFORM)));
+
+        return FieldStaticTransform.compose(date, meridianShift, poleShift);
 
     }
 

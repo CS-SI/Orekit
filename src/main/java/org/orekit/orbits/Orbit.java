@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,11 +25,8 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.StaticTransform;
-import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
@@ -143,10 +140,10 @@ public abstract class Orbit
         ensurePseudoInertialFrame(frame);
         this.date = pvCoordinates.getDate();
         this.mu = mu;
-        if (pvCoordinates.getAcceleration().getNormSq() == 0) {
+        if (pvCoordinates.getAcceleration().getNorm2Sq() == 0) {
             // the acceleration was not provided,
             // compute it from Newtonian attraction
-            final double r2 = pvCoordinates.getPosition().getNormSq();
+            final double r2 = pvCoordinates.getPosition().getNorm2Sq();
             final double r3 = r2 * FastMath.sqrt(r2);
             this.pvCoordinates = new TimeStampedPVCoordinates(pvCoordinates.getDate(),
                                                               pvCoordinates.getPosition(),
@@ -193,7 +190,7 @@ public abstract class Orbit
         }
 
         final Vector3D p = pva.getPosition();
-        final double r2 = p.getNormSq();
+        final double r2 = p.getNorm2Sq();
 
         // Check if acceleration is relatively close to 0 compared to the Keplerian acceleration
         final double tolerance = mu * 1e-9;
@@ -209,6 +206,27 @@ public abstract class Orbit
             // the provided acceleration is either too small to be reliable (probably even 0), or NaN
             return false;
         }
+    }
+
+    /**
+     * Compute corrected shift from non-Keplerian part.
+     * @param keplerianShifted Keplerian shift
+     * @param dt time shift
+     * @return corrected position-velocity-acceleration vector
+     * @since 14.0
+     */
+    protected PVCoordinates shiftNonKeplerian(final PVCoordinates keplerianShifted, final double dt) {
+        // extract non-Keplerian acceleration from first time derivatives
+        final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
+
+        // add second order effect of non-Keplerian acceleration to Keplerian-only shift
+        final Vector3D fixedV = nonKeplerianAcceleration.scalarMultiply(dt).add(keplerianShifted.getVelocity());
+        final Vector3D fixedP   = nonKeplerianAcceleration.scalarMultiply(dt * dt / 2.).add(keplerianShifted.getPosition());
+        final double   fixedR2 = fixedP.getNorm2Sq();
+        final double   fixedR  = FastMath.sqrt(fixedR2);
+        final Vector3D fixedA  = nonKeplerianAcceleration.add(new Vector3D(-getMu() / (fixedR2 * fixedR),
+                keplerianShifted.getPosition()));
+        return new PVCoordinates(fixedP, fixedV, fixedA);
     }
 
     /** Returns true if and only if the orbit is elliptical i.e. has a non-negative semi-major axis.
@@ -448,55 +466,12 @@ public abstract class Orbit
         return date;
     }
 
-    /** Get the {@link TimeStampedPVCoordinates} in a specified frame.
-     * @param outputFrame frame in which the position/velocity coordinates shall be computed
-     * @return pvCoordinates in the specified output frame
-          * @see #getPVCoordinates()
-     */
-    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
-        if (pvCoordinates == null) {
-            pvCoordinates = initPVCoordinates();
-        }
-
-        // If output frame requested is the same as definition frame,
-        // PV coordinates are returned directly
-        if (outputFrame == frame) {
-            return pvCoordinates;
-        }
-
-        // Else, PV coordinates are transformed to output frame
-        final Transform t = frame.getTransformTo(outputFrame, date);
-        return t.transformPVCoordinates(pvCoordinates);
-    }
-
-    /** Get the position in a specified frame.
-     * @param outputFrame frame in which the position coordinates shall be computed
-     * @return position in the specified output frame
-     * @see #getPosition()
-     * @since 12.0
-     */
-    public Vector3D getPosition(final Frame outputFrame) {
-        if (position == null) {
-            position = initPosition();
-        }
-
-        // If output frame requested is the same as definition frame,
-        // Position vector is returned directly
-        if (outputFrame == frame) {
-            return position;
-        }
-
-        // Else, position vector is transformed to output frame
-        final StaticTransform t = frame.getStaticTransformTo(outputFrame, date);
-        return t.transformPosition(position);
-
-    }
-
     /** Get the position in definition frame.
      * @return position in the definition frame
      * @see #getPVCoordinates()
      * @since 12.0
      */
+    @Override
     public Vector3D getPosition() {
         if (position == null) {
             position = initPosition();
@@ -581,31 +556,29 @@ public abstract class Orbit
 
         final double[][] cachedJacobian;
         synchronized (this) {
-            switch (type) {
-                case MEAN :
+            cachedJacobian = switch (type) {
+                case MEAN -> {
                     if (jacobianMeanWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianMeanWrtCartesian = computeJacobianMeanWrtCartesian();
                     }
-                    cachedJacobian = jacobianMeanWrtCartesian;
-                    break;
-                case ECCENTRIC :
+                    yield jacobianMeanWrtCartesian;
+                }
+                case ECCENTRIC -> {
                     if (jacobianEccentricWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianEccentricWrtCartesian = computeJacobianEccentricWrtCartesian();
                     }
-                    cachedJacobian = jacobianEccentricWrtCartesian;
-                    break;
-                case TRUE :
+                    yield jacobianEccentricWrtCartesian;
+                }
+                case TRUE -> {
                     if (jacobianTrueWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianTrueWrtCartesian = computeJacobianTrueWrtCartesian();
                     }
-                    cachedJacobian = jacobianTrueWrtCartesian;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
+                    yield jacobianTrueWrtCartesian;
+                }
+            };
         }
 
         // fill the user provided array
@@ -629,31 +602,29 @@ public abstract class Orbit
 
         final double[][] cachedJacobian;
         synchronized (this) {
-            switch (type) {
-                case MEAN :
+            cachedJacobian = switch (type) {
+                case MEAN -> {
                     if (jacobianWrtParametersMean == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersMean = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersMean;
-                    break;
-                case ECCENTRIC :
+                    yield jacobianWrtParametersMean;
+                }
+                case ECCENTRIC -> {
                     if (jacobianWrtParametersEccentric == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersEccentric = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersEccentric;
-                    break;
-                case TRUE :
+                    yield jacobianWrtParametersEccentric;
+                }
+                case TRUE -> {
                     if (jacobianWrtParametersTrue == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersTrue = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersTrue;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
+                    yield jacobianWrtParametersTrue;
+                }
+            };
         }
 
         // fill the user-provided array

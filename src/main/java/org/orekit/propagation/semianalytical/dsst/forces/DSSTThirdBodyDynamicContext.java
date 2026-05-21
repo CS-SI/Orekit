@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,67 +35,67 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 public class DSSTThirdBodyDynamicContext extends ForceModelContext {
 
     /** Standard gravitational parameter μ for the body in m³/s². */
-    private double gm;
+    private final double gm;
 
     /** Distance from center of mass of the central body to the 3rd body. */
-    private double R3;
+    private final double R3;
 
     /** A = sqrt(μ * a). */
-    private double A;
+    private final double A;
 
     /** α. */
-    private double alpha;
+    private final double alpha;
 
     /** β. */
-    private double beta;
+    private final double beta;
 
     /** γ. */
-    private double gamma;
+    private final double gamma;
 
     /** B². */
-    private double BB;
+    private final double BB;
 
     /** B³. */
-    private double BBB;
+    private final double BBB;
 
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private double X;
+    private final double X;
 
     /** &Chi;². */
-    private double XX;
+    private final double XX;
 
     /** &Chi;³. */
-    private double XXX;
+    private final double XXX;
 
     /** -2 * a / A. */
-    private double m2aoA;
+    private final double m2aoA;
 
     /** B / A. */
-    private double BoA;
+    private final double BoA;
 
     /** 1 / (A * B). */
-    private double ooAB;
+    private final double ooAB;
 
     /** -C / (2 * A * B). */
-    private double mCo2AB;
+    private final double mCo2AB;
 
     /** B / A(1 + B). */
-    private double BoABpo;
+    private final double BoABpo;
 
     /** mu3 / R3. */
-    private double muoR3;
+    private final double muoR3;
 
     /** b = 1 / (1 + sqrt(1 - e²)) = 1 / (1 + B). */
-    private double b;
+    private final double b;
 
     /** h * &Chi;³. */
-    private double hXXX;
+    private final double hXXX;
 
     /** k * &Chi;³. */
-    private double kXXX;
+    private final double kXXX;
 
     /** Keplerian mean motion. */
-    private double motion;
+    private final double motion;
 
     /** Constructor.
      * @param aux auxiliary elements related to the current orbit

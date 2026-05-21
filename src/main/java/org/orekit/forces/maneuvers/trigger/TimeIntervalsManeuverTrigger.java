@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,10 +32,8 @@ import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
 import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.ParameterDriver;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,6 +76,16 @@ public class TimeIntervalsManeuverTrigger extends IntervalEventTrigger<BooleanDe
     }
 
     /**
+     * Build an instance based on the input time intervals. Detectors are created with default settings.
+     * @param timeIntervals intervals
+     * @return maneuver trigger
+     * @since 14.0
+     */
+    public static TimeIntervalsManeuverTrigger of(final List<TimeInterval> timeIntervals) {
+        return of(timeIntervals.toArray(new TimeInterval[0]));
+    }
+
+    /**
      * Build an instance based on the input time interval detectors.
      * @param timeIntervalDetectors detectors
      * @return maneuver trigger
@@ -88,19 +96,14 @@ public class TimeIntervalsManeuverTrigger extends IntervalEventTrigger<BooleanDe
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> D convertIntervalDetector(final Field<S> field,
-                                                                                                             final BooleanDetector detector) {
+    protected <S extends CalculusFieldElement<S>> FieldEventDetector<S> convertIntervalDetector(final Field<S> field,
+                                                                                                final BooleanDetector detector) {
         final FieldEventHandler<S> arbitraryHandler = new FieldContinueOnEvent<>();
-        return (D) FieldBooleanDetector.orCombine(detector.getDetectors().stream()
+        return FieldBooleanDetector.orCombine(detector.getDetectors().stream()
                 .map(TimeIntervalDetector.class::cast)
                 .map(intervalDetector -> new FieldTimeIntervalDetector<>(new FieldEventDetectionSettings<>(field,
                         intervalDetector.getDetectionSettings()), arbitraryHandler, intervalDetector.getTimeInterval()))
                 .collect(Collectors.toList()));
     }
 
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
-    }
 }

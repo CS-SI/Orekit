@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,26 +20,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
-public class TimeStampedDoubleTest {
+class TimeStampedDoubleTest {
+
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         final TimeStampedDouble tsd = new TimeStampedDouble(date, 1.68);
         Assertions.assertEquals(date, tsd.getDate());
         Assertions.assertEquals(1.68, tsd.getValue());
     }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedConstructor() {
-        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        final TimeStampedDouble tsd = new TimeStampedDouble(1.68, date);
-        Assertions.assertEquals(date, tsd.getDate());
-        Assertions.assertEquals(1.68, tsd.getValue());
-    }
     
     @Test
-    public void testToString() {
+    void testToString() {
         Utils.setDataRoot("regular-data");
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         final TimeStampedDouble tsd = new TimeStampedDouble(date, 1.68);

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,9 @@ public class FieldCircularLatitudeArgumentUtility {
 
     /** Tolerance for stopping criterion in iterative conversion from mean to eccentric angle. */
     private static final double TOLERANCE_CONVERGENCE = 1.0e-11;
+
+    /** Tolerance for stopping criterion in iterative conversion from mean to eccentric angle. */
+    private static final double TOLERANCE_RELATIVE_CONVERGENCE = 1.0e-13;
 
     /** Maximum number of iterations in iterative conversion from mean to eccentric angle. */
     private static final int MAXIMUM_ITERATION = 50;
@@ -135,7 +138,8 @@ public class FieldCircularLatitudeArgumentUtility {
             alphaEMalphaM  = alphaEMalphaM.subtract(shift);
             alphaE         = alphaM.add(alphaEMalphaM);
 
-            hasConverged = FastMath.abs(shift.getReal()) <= TOLERANCE_CONVERGENCE;
+            hasConverged = FastMath.norm(shift) <= TOLERANCE_CONVERGENCE ||
+                           shift.isSmall(alphaEMalphaM, TOLERANCE_RELATIVE_CONVERGENCE);
         } while (++iter < MAXIMUM_ITERATION && !hasConverged);
 
         if (!hasConverged) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,10 +69,10 @@ class CCIRLoader {
     private static final int DEPTH_FM3 = 9;
 
     /** F2 coefficients used for the computation of the F2 layer critical frequency. */
-    private double[][][] parsedF2;
+    private final double[][][] parsedF2;
 
     /** Fm3 coefficients used for the computation of the F2 layer maximum usable frequency factor. */
-    private double[][][] parsedFm3;
+    private final double[][][] parsedFm3;
 
     /**
      * Build a new instance.

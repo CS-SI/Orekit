@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,16 +32,16 @@ import org.orekit.time.AbsoluteDate;
 public class CycleSlipDetectorResults {
 
     /** Integer corresponding to the PRN number of the satellite. */
-    private String satellite;
+    private final String satellite;
 
     /** Date from which for this satellite cycle-slip detection begins. */
-    private Map<GnssSignal, AbsoluteDate> begin;
+    private final Map<GnssSignal, AbsoluteDate> begin;
 
     /** Date up to  which for this satellite  cycle-slip detection is valid. */
-    private Map<GnssSignal, AbsoluteDate> end;
+    private final Map<GnssSignal, AbsoluteDate> end;
 
     /** List of date at which cycle slip occurs. */
-    private Map<GnssSignal, List<AbsoluteDate>> results;
+    private final Map<GnssSignal, List<AbsoluteDate>> results;
 
     /**
      * Constructor.

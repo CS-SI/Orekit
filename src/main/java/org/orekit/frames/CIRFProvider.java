@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,7 @@ import org.orekit.time.TimeVectorFunction;
 class CIRFProvider implements EOPBasedTransformProvider {
 
     /** Function computing CIP/CIO components. */
-    private final transient TimeVectorFunction xysPxy2Function;
+    private final TimeVectorFunction xysPxy2Function;
 
     /** EOP history. */
     private final EOPHistory eopHistory;
@@ -79,7 +79,7 @@ class CIRFProvider implements EOPBasedTransformProvider {
     public Transform getTransform(final AbsoluteDate date) {
 
         final double[] xys  = xysPxy2Function.value(date);
-        final double[] dxdy = eopHistory.getNonRotatinOriginNutationCorrection(date);
+        final double[] dxdy = eopHistory.getNonRotatingOriginNutationCorrection(date);
 
         // position of the Celestial Intermediate Pole (CIP)
         final double xCurrent = xys[0] + dxdy[0];
@@ -112,7 +112,7 @@ class CIRFProvider implements EOPBasedTransformProvider {
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         final T[] xys  = xysPxy2Function.value(date);
-        final T[] dxdy = eopHistory.getNonRotatinOriginNutationCorrection(date);
+        final T[] dxdy = eopHistory.getNonRotatingOriginNutationCorrection(date);
 
         // position of the Celestial Intermediate Pole (CIP)
         final T xCurrent = xys[0].add(dxdy[0]);

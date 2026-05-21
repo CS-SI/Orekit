@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,13 +25,9 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FieldStaticTransform;
-import org.orekit.frames.StaticTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScale;
-import org.orekit.utils.ExtendedPositionProvider;
+
 
 /**
  * Class computing low-fidelity positions for the Sun. They should only be used in the decades around the year 2000.
@@ -41,7 +37,7 @@ import org.orekit.utils.ExtendedPositionProvider;
  * @author Romain Serra
  * @since 12.2
  */
-public class AnalyticalSolarPositionProvider implements ExtendedPositionProvider {
+public class AnalyticalSolarPositionProvider extends AbstractAnalyticalPositionProvider {
 
     /** Sine anc cosine of approximate ecliptic angle used when converting from ecliptic to EME2000. */
     private static final SinCos SIN_COS_ECLIPTIC_ANGLE_EME2000 = FastMath.sinCos(FastMath.toRadians(23.43929111));
@@ -49,19 +45,12 @@ public class AnalyticalSolarPositionProvider implements ExtendedPositionProvider
     /** Precomputed constant angle used in calculations. */
     private static final double INTERMEDIATE_ANGLE = FastMath.toRadians(282.9400);
 
-    /** EME2000 frame. */
-    private final Frame eme2000;
-
-    /** Time scale for Julian date. */
-    private final TimeScale timeScale;
-
     /**
      * Constructor.
      * @param dataContext data context
      */
     public AnalyticalSolarPositionProvider(final DataContext dataContext) {
-        this.eme2000 = dataContext.getFrames().getEME2000();
-        this.timeScale = dataContext.getTimeScales().getUTC();
+        super(dataContext);
     }
 
     /**
@@ -72,25 +61,13 @@ public class AnalyticalSolarPositionProvider implements ExtendedPositionProvider
         this(DataContext.getDefault());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
-        final Vector3D eme2000Position = getEME2000Position(date);
-        if (frame.equals(eme2000)) {
-            return eme2000Position;
-        } else {
-            final StaticTransform transform = eme2000.getStaticTransformTo(frame, date);
-            return transform.transformPosition(eme2000Position);
-        }
-    }
-
     /**
      * Computes the Sun's position vector in EME2000.
      * @param date date
      * @return solar position
      */
-    private Vector3D getEME2000Position(final AbsoluteDate date) {
-        final double tt = (date.getJD(timeScale) - 2451545.0) / 36525.0;
+    protected Vector3D getEME2000Position(final AbsoluteDate date) {
+        final double tt = (date.getJD(getTimeScale()) - 2451545.0) / 36525.0;
         final double M = FastMath.toRadians(357.5256 + 35999.049 * tt);
         final SinCos sinCosM = FastMath.sinCos(M);
         final SinCos sinCos2M = FastMath.sinCos(2 * M);
@@ -101,27 +78,14 @@ public class AnalyticalSolarPositionProvider implements ExtendedPositionProvider
             r * sinCosLambda.sin() * SIN_COS_ECLIPTIC_ANGLE_EME2000.sin());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date,
-                                                                            final Frame frame) {
-        final FieldVector3D<T> eme2000Position = getFieldEME2000Position(date);
-        if (frame.equals(eme2000)) {
-            return eme2000Position;
-        } else {
-            final FieldStaticTransform<T> transform = eme2000.getStaticTransformTo(frame, date);
-            return transform.transformPosition(eme2000Position);
-        }
-    }
-
     /**
      * Computes the Sun's position vector in EME2000.
      * @param date date
      * @param <T> field type
      * @return solar position
      */
-    private <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldEME2000Position(final FieldAbsoluteDate<T> date) {
-        final T tt = date.getJD(timeScale).subtract(2451545.0).divide(36525.0);
+    protected  <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldEME2000Position(final FieldAbsoluteDate<T> date) {
+        final T tt = date.getJD(getTimeScale()).subtract(2451545.0).divide(36525.0);
         final T M = FastMath.toRadians(tt.multiply(35999.049).add(357.5256));
         final FieldSinCos<T> sinCosM = FastMath.sinCos(M);
         final FieldSinCos<T> sinCos2M = FastMath.sinCos(M.multiply(2));

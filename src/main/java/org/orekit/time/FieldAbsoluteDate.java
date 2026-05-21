@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1336,8 +1336,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
             return true;
         }
 
-        if (other instanceof FieldAbsoluteDate) {
-            final FieldAbsoluteDate<?> otherF = (FieldAbsoluteDate<?>) other;
+        if (other instanceof FieldAbsoluteDate<?> otherF) {
             return fieldOffset.getField().equals(otherF.fieldOffset.getField()) &&
                    date.equals(otherF.date) && fieldOffset.getAddendum().equals(otherF.fieldOffset.getAddendum());
         }

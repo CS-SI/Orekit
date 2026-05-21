@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -1265,8 +1266,8 @@ public enum IERSConventions {
             final SimpleTimeStampedTableParser<MeanPole> parser =
                     new SimpleTimeStampedTableParser<>(3, converter);
             final List<MeanPole> annualPoleList = load(ANNUAL_POLE, in -> parser.parse(in, ANNUAL_POLE));
-            final AbsoluteDate firstAnnualPoleDate = annualPoleList.get(0).getDate();
-            final AbsoluteDate lastAnnualPoleDate  = annualPoleList.get(annualPoleList.size() - 1).getDate();
+            final AbsoluteDate firstAnnualPoleDate = annualPoleList.getFirst().getDate();
+            final AbsoluteDate lastAnnualPoleDate  = annualPoleList.getLast().getDate();
             final ImmutableTimeStampedCache<MeanPole> annualCache =
                     new ImmutableTimeStampedCache<>(2, annualPoleList);
 
@@ -3177,6 +3178,7 @@ public enum IERSConventions {
     private static class MeanPole implements TimeStamped, Serializable {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20131028L;
 
         /** Date. */

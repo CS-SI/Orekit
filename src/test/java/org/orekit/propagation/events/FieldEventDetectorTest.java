@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -49,8 +49,11 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
@@ -64,6 +67,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FieldEventDetectorTest {
 
@@ -71,12 +76,87 @@ class FieldEventDetectorTest {
 
     @Test
     @SuppressWarnings("unchecked")
+    void testOf() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldEventDetectionSettings<Binary64> detectionSettings = new FieldEventDetectionSettings<>(field,
+                EventDetectionSettings.getDefaultEventDetectionSettings());
+        final EventFunction eventFunction = state -> -1.;
+        final FieldEventHandler<Binary64> handler = new FieldStopOnEvent<>();
+        final FieldEventDetector<Binary64> detector = FieldEventDetector.of(eventFunction, handler, detectionSettings);
+        // WHEN & THEN
+        Assertions.assertEquals(handler, detector.getHandler());
+        Assertions.assertEquals(detectionSettings, detector.getDetectionSettings());
+        Assertions.assertEquals(eventFunction, detector.getEventFunction());
+        final FieldSpacecraftState<Binary64> mockedState = mock();
+        when(mockedState.getDate()).thenReturn(FieldAbsoluteDate.getArbitraryEpoch(field));
+        Assertions.assertEquals(eventFunction.value(mockedState), detector.g(mockedState));
+    }
+
+    @Test
+    void testOfNonFieldHandler() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final EventFunction function = state -> 1.;
+        final FieldEventHandler<Binary64> handler = new FieldStopOnEvent<>();
+        final EventDetector detector = EventDetector.of(function);
+        final FieldEventDetector<Binary64> fieldDetector = FieldEventDetector.of(field, handler, detector);
+        // WHEN & THEN
+        Assertions.assertEquals(handler, fieldDetector.getHandler());
+        Assertions.assertEquals(function, fieldDetector.getEventFunction());
+    }
+
+    @Test
+    void testOfNonFieldInit() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final TestDetector detector = new TestDetector();
+        final FieldEventDetector<Binary64> fieldDetector = FieldEventDetector.of(field, new FieldContinueOnEvent<>(), detector);
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        // WHEN
+        fieldDetector.init(fieldState, FieldAbsoluteDate.getFutureInfinity(field));
+        // THEN
+        Assertions.assertTrue(detector.initialized);
+    }
+
+    @Test
+    void testOfNonFieldReset() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final TestDetector detector = new TestDetector();
+        final FieldEventDetector<Binary64> fieldDetector = FieldEventDetector.of(field, new FieldContinueOnEvent<>(), detector);
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        // WHEN
+        fieldDetector.reset(fieldState, FieldAbsoluteDate.getFutureInfinity(field));
+        // THEN
+        Assertions.assertTrue(detector.reset);
+    }
+
+    @Test
+    void testOfNonFieldFinish() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final TestDetector detector = new TestDetector();
+        final FieldEventDetector<Binary64> fieldDetector = FieldEventDetector.of(field, new FieldContinueOnEvent<>(), detector);
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        // WHEN
+        fieldDetector.finish(fieldState);
+        // THEN
+        Assertions.assertTrue(detector.finished);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
     void testFinish() {
         // GIVEN
         final FinishingHandler handler = new FinishingHandler();
-        final FieldEventDetector<?> detector = new DummyDetector(new FieldEventDetectionSettings<>(1.0, Binary64.ONE, 100), handler);
+        final FieldEventDetector<?> detector = FieldEventDetector.of(state -> 1., handler,
+                new FieldEventDetectionSettings<>(1.0, Binary64.ONE, 100));
         // WHEN
-        detector.finish(Mockito.mock(FieldSpacecraftState.class));
+        detector.finish(mock(FieldSpacecraftState.class));
         // THEN
         Assertions.assertTrue(handler.isFinished);
     }
@@ -90,40 +170,13 @@ class FieldEventDetectorTest {
         }
     }
 
-    private static class DummyDetector implements FieldEventDetector<Binary64> {
-
-        private final FieldEventDetectionSettings<Binary64> detectionSettings;
-        private final FieldEventHandler<Binary64> handler;
-
-        public DummyDetector(final FieldEventDetectionSettings<Binary64> detectionSettings,
-                             final FieldEventHandler<Binary64> handler) {
-            this.detectionSettings = detectionSettings;
-            this.handler = handler;
-        }
-
-        public Binary64 g(final FieldSpacecraftState<Binary64> s) {
-            return s.getDate().getField().getZero();
-        }
-
-        @Override
-        public FieldEventHandler<Binary64> getHandler() {
-            return handler;
-        }
-
-        @Override
-        public FieldEventDetectionSettings<Binary64> getDetectionSettings() {
-            return detectionSettings;
-        }
-
-    }
-
     @Test
     @SuppressWarnings("unchecked")
     void testGetDetectionSettings() {
         // GIVEN
-        final FieldAdaptableInterval<Binary64> mockedInterval = Mockito.mock(FieldAdaptableInterval.class);
+        final FieldAdaptableInterval<Binary64> mockedInterval = mock(FieldAdaptableInterval.class);
         final FieldEventDetectionSettings<Binary64> settings = new FieldEventDetectionSettings<>(mockedInterval, Binary64.ONE, 10);
-        final FieldEventDetector<Binary64> detector = new DummyDetector(settings, null);
+        final FieldEventDetector<Binary64> detector = FieldEventDetector.of(mock(EventFunction.class), null, settings);
         // WHEN
         final FieldEventDetectionSettings<Binary64> actualSettings = detector.getDetectionSettings();
         // THEN
@@ -268,7 +321,7 @@ class FieldEventDetectorTest {
                                                              FramesFactory.getEME2000(), date, zero.add(mu));
         final T step = zero.add(60.0);
         final int    n    = 100;
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, step));
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(new ClassicalRungeKuttaFieldIntegrator<>(field, step));
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit));
         GCallsCounter<T> counter = new GCallsCounter<>(FieldAdaptableInterval.of(100000.0), zero.add(1.0e-6), 20,
@@ -327,6 +380,7 @@ class FieldEventDetectorTest {
             return count;
         }
 
+        @Override
         public T g(FieldSpacecraftState<T> s) {
             count++;
             return s.getMass().getField().getZero().add(1.0);
@@ -391,6 +445,7 @@ class FieldEventDetectorTest {
             this.provider = provider;
         }
 
+        @Override
         public T g(final FieldSpacecraftState<T> s) {
             FieldPVCoordinates<T> pv1     = provider.getPVCoordinates(s.getDate(), s.getFrame());
             FieldPVCoordinates<T> pv2     = s.getPVCoordinates();
@@ -444,9 +499,10 @@ class FieldEventDetectorTest {
         } catch (OrekitException oe) {
             Assertions.assertSame(OrekitException.class, oe.getClass());
             Assertions.assertSame(dummyCause, oe.getCause().getCause());
-            String expected = "failed to find root between 2011-05-11T00:00:00.000Z " +
-                    "(g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)\n" +
-                    "Last iteration at 2011-05-11T01:00:00.000Z (g=-3.6E3)";
+            String expected = """
+                    failed to find root between 2011-05-11T00:00:00.000Z \
+                    (g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)
+                    Last iteration at 2011-05-11T01:00:00.000Z (g=-3.6E3)""";
             MatcherAssert.assertThat(oe.getMessage(Locale.US),
                     CoreMatchers.containsString(expected));
         }
@@ -467,7 +523,12 @@ class FieldEventDetectorTest {
 
             @Override
             public T g(FieldSpacecraftState<T> s) {
-                return s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH);
+                return getEventFunction().value(s);
+            }
+
+            @Override
+            public EventFunction getEventFunction() {
+                return s -> s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH);
             }
 
             @Override
@@ -522,7 +583,7 @@ class FieldEventDetectorTest {
         OrbitType           type       = OrbitType.CARTESIAN;
         double[][]          tol        = ToleranceProvider.getDefaultToleranceProvider(0.0001).getTolerances(orbit, type);
         FieldODEIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.0001, 10.0, tol[0], tol[1]);
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(new FieldSpacecraftState<>(orbit));
         return propagator;
@@ -602,8 +663,40 @@ class FieldEventDetectorTest {
 
     }
 
+    private static class TestDetector implements EventDetector {
+
+        boolean initialized = false;
+        boolean finished = false;
+        boolean reset = false;
+
+        @Override
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            initialized = true;
+        }
+
+        @Override
+        public void reset(SpacecraftState state, AbsoluteDate target) {
+            reset = true;
+        }
+
+        @Override
+        public void finish(SpacecraftState state) {
+            finished = true;
+        }
+
+        @Override
+        public double g(SpacecraftState s) {
+            return 0;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return null;
+        }
+    }
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         mu = Constants.EIGEN5C_EARTH_MU;
     }

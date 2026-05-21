@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ abstract class MeasurementLog<T extends ObservedMeasurement<T>> implements Evalu
     /** Simple constructor.
      */
     MeasurementLog() {
-        this.evaluations = new TreeSet<EstimatedMeasurement<T>>(Comparator.naturalOrder());
+        this.evaluations = new TreeSet<>(Comparator.naturalOrder());
     }
 
     /** Compute residual value.
@@ -80,7 +80,7 @@ abstract class MeasurementLog<T extends ObservedMeasurement<T>> implements Evalu
             final StreamingStatistics stats = createStatisticsSummary();
 
             // Display statistics
-            final String name = evaluations.first().getObservedMeasurement().getClass().getSimpleName();
+            final String name = evaluations.getFirst().getObservedMeasurement().getClass().getSimpleName();
             logStream.println("Measurements type: " + name);
             logStream.println("   number of measurements: " + stats.getN() + "/" + evaluations.size());
             logStream.println("   residuals min  value  : " + stats.getMin());

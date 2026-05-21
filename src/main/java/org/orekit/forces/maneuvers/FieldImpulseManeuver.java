@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Exotrail
+/* Copyright 2002-2026 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.forces.maneuvers;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
@@ -28,7 +29,15 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldDetectorModifier;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.FieldStopOnDecreasing;
+import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
@@ -39,8 +48,8 @@ import org.orekit.utils.FieldPVCoordinates;
  * that can be provided to any {@link org.orekit.propagation.FieldPropagator
  * Propagator} and mirrors the standard version
  * {@link org.orekit.forces.maneuvers.ImpulseManeuver}.</p>
- * <p>The maneuver is executed when an underlying is triggered, in which case this class will generate a {@link
- * Action#RESET_STATE RESET_STATE} event. By default, the detection settings are those of the trigger.
+ * <p>The maneuver is executed when an underlying event is triggered and the handler returns anything but {@link Action#CONTINUE CONTINUE},
+ * in which case this class will generate a {@link Action#RESET_STATE RESET_STATE} event.
  * In the simple cases, the underlying event detector may be a basic
  * {@link org.orekit.propagation.events.FieldDateDetector date event}, but it
  * can also be a more elaborate {@link
@@ -89,7 +98,7 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
     private final FieldEventDetectionSettings<T> detectionSettings;
 
     /** Specific event handler. */
-    private final Handler<T> handler;
+    private final Handler handler;
 
     /** Field impulse provider. */
     private final FieldImpulseProvider<T> fieldImpulseProvider;
@@ -115,22 +124,6 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
     public FieldImpulseManeuver(final FieldEventDetector<T> trigger, final AttitudeProvider attitudeOverride,
                                 final FieldVector3D<T> deltaVSat, final T isp) {
         this(trigger, attitudeOverride, FieldImpulseProvider.of(deltaVSat), isp, Control3DVectorCostType.TWO_NORM);
-    }
-
-    /** Build a new instance.
-     * @param trigger triggering event
-     * @param attitudeOverride the attitude provider to use for the maneuver
-     * @param deltaVSat velocity increment in satellite frame
-     * @param isp engine specific impulse (s)
-     * @param control3DVectorCostType increment's norm for mass consumption
-     * @deprecated since 13.0
-     */
-    @Deprecated
-    public FieldImpulseManeuver(final FieldEventDetector<T> trigger, final AttitudeProvider attitudeOverride,
-                                final FieldVector3D<T> deltaVSat, final T isp,
-                                final Control3DVectorCostType control3DVectorCostType) {
-        this(trigger, trigger.getDetectionSettings(), attitudeOverride,
-                FieldImpulseProvider.of(deltaVSat), isp, control3DVectorCostType);
     }
 
     /** Build a new instance.
@@ -164,7 +157,32 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
         this.fieldImpulseProvider = fieldImpulseProvider;
         this.isp = isp;
         this.vExhaust = this.isp.multiply(Constants.G0_STANDARD_GRAVITY);
-        this.handler = new Handler<>();
+        this.handler = new Handler();
+    }
+
+    /**
+     * Constructor from non-Field impulse maneuver.
+     * The conversion of the trigger might not work as expected in specific cases and one might need to build it by hand.
+     * @param field field
+     * @param maneuver non-Field impulse maneuver
+     * @since 14.0
+     */
+    public FieldImpulseManeuver(final Field<T> field, final ImpulseManeuver maneuver) {
+        this(FieldEventDetector.of(field, convertHandler(maneuver.getDetector().getHandler()), maneuver.getDetector()),
+                maneuver.getAttitudeOverride(), FieldImpulseProvider.of(maneuver.getImpulseProvider()),
+                field.getZero().newInstance(maneuver.getIsp()), maneuver.getControl3DVectorCostType());
+    }
+
+    private static <T extends CalculusFieldElement<T>> FieldEventHandler<T> convertHandler(final EventHandler eventHandler) {
+        if (eventHandler instanceof StopOnDecreasing) {
+            return new FieldStopOnDecreasing<>();
+        } else if (eventHandler instanceof StopOnIncreasing) {
+            return new FieldStopOnIncreasing<>();
+        } else if (eventHandler instanceof ResetDerivativesOnEvent) {
+            return new FieldResetDerivativesOnEvent<>();
+        } else {
+            return new FieldStopOnEvent<>();
+        }
     }
 
     /**
@@ -233,16 +251,26 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
     }
 
     /** Local handler. */
-    private static class Handler<T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
+    private class Handler implements FieldEventHandler<T> {
+
+        @Override
+        public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target,
+                         final FieldEventDetector<T> detector) {
+            getDetector().getHandler().init(initialState, target, getDetector());
+        }
+
+        @Override
+        public void finish(final FieldSpacecraftState<T> finalState, final FieldEventDetector<T> detector) {
+            getDetector().getHandler().finish(finalState, getDetector());
+        }
 
         /** {@inheritDoc} */
         @Override
         public Action eventOccurred(final FieldSpacecraftState<T> s,
                                     final FieldEventDetector<T> detector,
                                     final boolean increasing) {
-            final FieldImpulseManeuver<T> im = (FieldImpulseManeuver<T>) detector;
-            im.trigger.getHandler().eventOccurred(s, im.trigger, increasing); // Action ignored but method still called
-            return Action.RESET_STATE;
+            final Action action = getDetector().getHandler().eventOccurred(s, getDetector(), increasing);
+            return action == Action.CONTINUE ? action : Action.RESET_STATE;
         }
 
         /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
  *
  * @author Nicolas Bernard
  */
-public class FixedNumberInterpolationGrid implements InterpolationGrid {
+public class FixedNumberInterpolationGrid extends AbstractInterpolationGrid {
 
     /** Number of points in the grid per step. */
     private final int pointsPerStep;
@@ -38,16 +38,9 @@ public class FixedNumberInterpolationGrid implements InterpolationGrid {
         this.pointsPerStep = pointsPerStep;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}. */
     @Override
-    public double[] getGridPoints(final double stepStart, final double stepEnd) {
-        final double[] grid = new double[pointsPerStep];
-
-        final double stepSize = (stepEnd - stepStart) / (pointsPerStep - 1);
-        for (int i = 0; i < pointsPerStep; i++) {
-            grid[i] = stepSize * i + stepStart;
-        }
-
-        return grid;
+    protected int getPointsPerStep(final double stepStart, final double stepEnd) {
+        return pointsPerStep;
     }
 }

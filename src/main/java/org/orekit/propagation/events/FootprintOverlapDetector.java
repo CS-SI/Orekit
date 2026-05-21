@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -273,8 +273,8 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                 body.getBodyFrame().getStaticTransformTo(s.getFrame(), s.getDate()),
                 s.toStaticTransform());
         for (final SamplingPoint point : sampledZone) {
-            final Vector3D lineOfSightBody = point.getPosition().subtract(scBody);
-            if (Vector3D.dotProduct(lineOfSightBody, point.getZenith()) <= 0) {
+            final Vector3D lineOfSightBody = point.position().subtract(scBody);
+            if (Vector3D.dotProduct(lineOfSightBody, point.zenith()) <= 0) {
                 // spacecraft is above this sample point local horizon
                 // get line of sight in spacecraft frame
                 final double offset = fov.offsetFromBoundary(bodyToSc.transformVector(lineOfSightBody),
@@ -287,38 +287,13 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
 
     }
 
-    /** Container for sampling points. */
-    private static class SamplingPoint {
-
-        /** Position of the point. */
-        private final Vector3D position;
-
-        /** Zenith vector of the point. */
-        private final Vector3D zenith;
-
-        /** Simple constructor.
-         * @param position position of the point
-         * @param zenith zenith vector of the point
-         */
-        SamplingPoint(final Vector3D position, final Vector3D zenith) {
-            this.position = position;
-            this.zenith   = zenith;
-        }
-
-        /** Get the point position.
-         * @return point position
-         */
-        public Vector3D getPosition() {
-            return position;
-        }
-
-        /** Get the point zenith vector.
-         * @return point zenith vector
-         */
-        public Vector3D getZenith() {
-            return zenith;
-        }
-
+    /**
+     * Container for sampling points.
+     *
+     * @param position Position of the point.
+     * @param zenith   Zenith vector of the point.
+     */
+    private record SamplingPoint(Vector3D position, Vector3D zenith) {
     }
 
 }

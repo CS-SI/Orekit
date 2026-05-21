@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,8 @@
  */
 package org.orekit.utils;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
@@ -36,12 +35,12 @@ import org.orekit.time.AbsoluteDate;
 public class AbsolutePVCoordinatesTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testPVOnlyConstructor() {
+    void testPVOnlyConstructor() {
         //setup
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getEME2000();
@@ -63,7 +62,7 @@ public class AbsolutePVCoordinatesTest {
     }
 
     @Test
-    public void testPVCoordinatesCopyConstructor() {
+    void testPVCoordinatesCopyConstructor() {
         //setup
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getEME2000();
@@ -84,50 +83,70 @@ public class AbsolutePVCoordinatesTest {
     }
 
     @Test
-    public void testLinearConstructors() {
-        Frame frame = FramesFactory.getEME2000();
-        AbsolutePVCoordinates pv1 = new AbsolutePVCoordinates(frame,
-                                                              AbsoluteDate.CCSDS_EPOCH,
-                                                              new Vector3D( 1,  0.1,   10),
-                                                              new Vector3D(-1, -0.1,  -10),
-                                                              new Vector3D(10, -1.0, -100));
-        AbsolutePVCoordinates pv2 = new AbsolutePVCoordinates(frame,
-                                                              AbsoluteDate.FIFTIES_EPOCH,
-                                                              new Vector3D( 2,  0.2,   20),
-                                                              new Vector3D(-2, -0.2,  -20),
-                                                              new Vector3D(20, -2.0, -200));
-        AbsolutePVCoordinates pv3 = new AbsolutePVCoordinates(frame,
-                                                              AbsoluteDate.GALILEO_EPOCH,
-                                                              new Vector3D( 3,  0.3,   30),
-                                                              new Vector3D(-3, -0.3,  -30),
-                                                              new Vector3D(30, -3.0, -300));
-        AbsolutePVCoordinates pv4 = new AbsolutePVCoordinates(frame,
-                                                              AbsoluteDate.JULIAN_EPOCH,
-                                                              new Vector3D( 4,  0.4,   40),
-                                                              new Vector3D(-4, -0.4,  -40),
-                                                              new Vector3D(40, -4.0, -400));
-        assertPV(pv4, new AbsolutePVCoordinates(AbsoluteDate.JULIAN_EPOCH, 4, pv1), 1.0e-15);
-        assertPV(pv2, new AbsolutePVCoordinates(AbsoluteDate.FIFTIES_EPOCH, pv1, pv3), 1.0e-15);
-        assertPV(pv3, new AbsolutePVCoordinates(AbsoluteDate.GALILEO_EPOCH, 1, pv1, 1, pv2), 1.0e-15);
-        assertPV(new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 2, pv4),
-                 new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv3),
-                 1.0e-15);
-        assertPV(new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 3, pv3),
-                 new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv4),
-                 1.0e-15);
-        assertPV(new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 5, pv4),
-                 new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 4, pv1, 3, pv2, 2, pv3, 1, pv4),
-                 1.0e-15);
+    void testFieldConstructor() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final UnivariateDerivative2Field field = UnivariateDerivative2Field.getInstance();
+        final Vector3D position = new Vector3D(1, 2, 3);
+        final Vector3D velocity = new Vector3D(4, 5, 6);
+        final Vector3D acceleration = new Vector3D(7, 8, 9);
+        final FieldVector3D<UnivariateDerivative2> fieldPosition = new FieldVector3D<>(field, position)
+                .add(new FieldVector3D<>(new UnivariateDerivative2(0., velocity.getX(), acceleration.getX()),
+                        new UnivariateDerivative2(0., velocity.getY(), acceleration.getY()),
+                        new UnivariateDerivative2(0., velocity.getZ(), acceleration.getZ())));
+        // WHEN
+        final AbsolutePVCoordinates apv = new AbsolutePVCoordinates(FramesFactory.getEME2000(), date, fieldPosition);
+        // THEN
+        Assertions.assertEquals(position, apv.getPosition());
+        Assertions.assertEquals(velocity, apv.getVelocity());
+        Assertions.assertEquals(acceleration, apv.getAcceleration());
     }
 
     @Test
-    public void testDifferentFrames() {
+    void testLinearConstructors() {
+        Frame frame = FramesFactory.getEME2000();
+        AbsolutePVCoordinates pv1 = new AbsolutePVCoordinates(frame,
+                AbsoluteDate.CCSDS_EPOCH,
+                new Vector3D(1, 0.1, 10),
+                new Vector3D(-1, -0.1, -10),
+                new Vector3D(10, -1.0, -100));
+        AbsolutePVCoordinates pv2 = new AbsolutePVCoordinates(frame,
+                AbsoluteDate.FIFTIES_EPOCH,
+                new Vector3D(2, 0.2, 20),
+                new Vector3D(-2, -0.2, -20),
+                new Vector3D(20, -2.0, -200));
+        AbsolutePVCoordinates pv3 = new AbsolutePVCoordinates(frame,
+                AbsoluteDate.GALILEO_EPOCH,
+                new Vector3D(3, 0.3, 30),
+                new Vector3D(-3, -0.3, -30),
+                new Vector3D(30, -3.0, -300));
+        AbsolutePVCoordinates pv4 = new AbsolutePVCoordinates(frame,
+                AbsoluteDate.JULIAN_EPOCH,
+                new Vector3D(4, 0.4, 40),
+                new Vector3D(-4, -0.4, -40),
+                new Vector3D(40, -4.0, -400));
+        assertAbsPV(pv4, new AbsolutePVCoordinates(AbsoluteDate.JULIAN_EPOCH, 4, pv1), 1.0e-15);
+        assertAbsPV(pv2, new AbsolutePVCoordinates(AbsoluteDate.FIFTIES_EPOCH, pv1, pv3), 1.0e-15);
+        assertAbsPV(pv3, new AbsolutePVCoordinates(AbsoluteDate.GALILEO_EPOCH, 1, pv1, 1, pv2), 1.0e-15);
+        assertAbsPV(new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 2, pv4),
+                new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv3),
+                1.0e-15);
+        assertAbsPV(new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 3, pv3),
+                new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv4),
+                1.0e-15);
+        assertAbsPV(new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 5, pv4),
+                new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 4, pv1, 3, pv2, 2, pv3, 1, pv4),
+                1.0e-15);
+    }
+
+    @Test
+    void testDifferentFrames() {
         final AbsolutePVCoordinates apv1 = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                                                     AbsoluteDate.ARBITRARY_EPOCH,
-                                                                     Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+                AbsoluteDate.ARBITRARY_EPOCH,
+                Vector3D.ZERO, Vector3D.ZERO);
         final AbsolutePVCoordinates apv2 = new AbsolutePVCoordinates(FramesFactory.getGCRF(),
-                                                                     AbsoluteDate.ARBITRARY_EPOCH,
-                                                                     Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+                AbsoluteDate.ARBITRARY_EPOCH,
+                Vector3D.ZERO, Vector3D.ZERO);
         try {
             new AbsolutePVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, apv1, apv2);
             Assertions.fail("an exception should have been thrown");
@@ -139,221 +158,30 @@ public class AbsolutePVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector1() {
-        FieldVector3D<DerivativeStructure> fv =
-                new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                          AbsoluteDate.GALILEO_EPOCH,
-                                          new Vector3D( 1,  0.1,  10),
-                                          new Vector3D(-1, -0.1, -10),
-                                          new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(1);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(1, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
-        assertPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                           AbsoluteDate.GALILEO_EPOCH,
-                                           new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10),
-                                           Vector3D.ZERO),
-                 new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                          AbsoluteDate.GALILEO_EPOCH, fv), 1.0e-15);
-
-        for (double dt = 0; dt < 10; dt += 0.125) {
-            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
-        }
-
-        AbsolutePVCoordinates pv = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                                             AbsoluteDate.GALILEO_EPOCH,
-                                                             fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
-
-    }
-
-    @Test
-    public void testToDerivativeStructureVector2() {
-        FieldVector3D<DerivativeStructure> fv =
-                new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                          AbsoluteDate.GALILEO_EPOCH,
-                                          new Vector3D( 1,  0.1,  10),
-                                          new Vector3D(-1, -0.1, -10),
-                                          new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(2);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(2, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
-        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
-        assertPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                           AbsoluteDate.GALILEO_EPOCH,
-                                           new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10),
-                                           new Vector3D(10, -1.0, -100)),
-                 new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                          AbsoluteDate.GALILEO_EPOCH, fv), 1.0e-15);
-
-        for (double dt = 0; dt < 10; dt += 0.125) {
-            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10),
-                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
-        }
-
-        AbsolutePVCoordinates pv = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                                             AbsoluteDate.GALILEO_EPOCH,
-                                                             fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
-        Assertions.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
-        Assertions.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
-
-    }
-
-    @Test
-    public void testToUnivariateDerivative1Vector() {
-        FieldVector3D<UnivariateDerivative1> fv =
-                new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                          AbsoluteDate.GALILEO_EPOCH,
-                                          new Vector3D( 1,  0.1,  10),
-                                          new Vector3D(-1, -0.1, -10),
-                                          new Vector3D(10, -1.0, -100)).toUnivariateDerivative1Vector();
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(1, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
-        assertPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                           AbsoluteDate.GALILEO_EPOCH,
-                                           new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10),
-                                           Vector3D.ZERO),
-                 new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                          AbsoluteDate.GALILEO_EPOCH, fv), 1.0e-15);
-
-        for (double dt = 0; dt < 10; dt += 0.125) {
-            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
-        }
-
-        AbsolutePVCoordinates pv = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                                             AbsoluteDate.GALILEO_EPOCH,
-                                                             fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
-
-    }
-
-    @Test
-    public void testToUnivariateDerivative2Vector() {
-        FieldVector3D<UnivariateDerivative2> fv =
-                new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                          AbsoluteDate.GALILEO_EPOCH,
-                                          new Vector3D( 1,  0.1,  10),
-                                          new Vector3D(-1, -0.1, -10),
-                                          new Vector3D(10, -1.0, -100)).toUnivariateDerivative2Vector();
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(2, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
-        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
-        assertPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                           AbsoluteDate.GALILEO_EPOCH,
-                                           new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10),
-                                           new Vector3D(10, -1.0, -100)),
-                 new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                          AbsoluteDate.GALILEO_EPOCH, fv), 1.0e-15);
-
-        for (double dt = 0; dt < 10; dt += 0.125) {
-            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                           new Vector3D(-1, -0.1, -10),
-                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
-        }
-
-        AbsolutePVCoordinates pv = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                                             AbsoluteDate.GALILEO_EPOCH,
-                                                             fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
-        Assertions.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
-        Assertions.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
-
-    }
-
-    @Test
-    public void testShift() {
-        Vector3D p1 = new Vector3D(  1,  0.1,   10);
-        Vector3D v1 = new Vector3D( -1, -0.1,  -10);
-        Vector3D a1 = new Vector3D( 10,  1.0,  100);
-        Vector3D p2 = new Vector3D(  7,  0.7,   70);
+    void testShift() {
+        Vector3D p1 = new Vector3D(1, 0.1, 10);
+        Vector3D v1 = new Vector3D(-1, -0.1, -10);
+        Vector3D a1 = new Vector3D(10, 1.0, 100);
+        Vector3D p2 = new Vector3D(7, 0.7, 70);
         Vector3D v2 = new Vector3D(-11, -1.1, -110);
-        Vector3D a2 = new Vector3D( 10,  1.0,  100);
-        assertPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, p2, v2, a2),
-                 new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH.shiftedBy(1.0), p1, v1, a1).shiftedBy(-1.0), 1.0e-15);
-        Assertions.assertEquals(0.0, AbsolutePVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(new Vector3D(-6, -0.6, -60)).getNorm(), 1.0e-15);
+        Vector3D a2 = new Vector3D(10, 1.0, 100);
+        assertAbsPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, p2, v2, a2),
+                new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH.shiftedBy(1.0), p1, v1, a1).shiftedBy(-1.0), 1.0e-15);
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         AbsolutePVCoordinates pv =
-            new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                      AbsoluteDate.J2000_EPOCH,
-                                      new Vector3D( 1,   0.1,  10),
-                                      new Vector3D(-1,  -0.1, -10),
-                                      new Vector3D(10,   1.0, 100));
+                new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                        AbsoluteDate.J2000_EPOCH,
+                        new Vector3D(1, 0.1, 10),
+                        new Vector3D(-1, -0.1, -10),
+                        new Vector3D(10, 1.0, 100));
         Assertions.assertEquals("{2000-01-01T11:58:55.816, P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
     }
 
     @Test
-    public void testSamePV() {
+    void testSamePV() {
         //setup
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getEME2000();
@@ -368,37 +196,37 @@ public class AbsolutePVCoordinatesTest {
         Assertions.assertSame(actual.getPosition(), actual.getPosition(frame));
         Assertions.assertNotSame(actual.getPosition(), actual.getPosition(otherEme2000));
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(actual.getPosition(frame),
-                                                  actual.getPosition(otherEme2000)),
-                                1.0e-15);
+                Vector3D.distance(actual.getPosition(frame),
+                        actual.getPosition(otherEme2000)),
+                1.0e-15);
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(actual.getPVCoordinates(frame).getPosition(),
-                                                  actual.getPVCoordinates(date, frame).getPosition()),
-                                1.0e-15);
+                Vector3D.distance(actual.getPVCoordinates(frame).getPosition(),
+                        actual.getPVCoordinates(date, frame).getPosition()),
+                1.0e-15);
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
-                                                  actual.getPVCoordinates(date, frame).getVelocity()),
-                                1.0e-15);
+                Vector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
+                        actual.getPVCoordinates(date, frame).getVelocity()),
+                1.0e-15);
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
-                                                  actual.getPVCoordinates(date, frame).getAcceleration()),
-                                1.0e-15);
+                Vector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
+                        actual.getPVCoordinates(date, frame).getAcceleration()),
+                1.0e-15);
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(actual.getPVCoordinates(frame).getPosition(),
-                                                  actual.getPVCoordinates(date, otherEme2000).getPosition()),
-                                1.0e-15);
+                Vector3D.distance(actual.getPVCoordinates(frame).getPosition(),
+                        actual.getPVCoordinates(date, otherEme2000).getPosition()),
+                1.0e-15);
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
-                                                  actual.getPVCoordinates(date, otherEme2000).getVelocity()),
-                                1.0e-15);
+                Vector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
+                        actual.getPVCoordinates(date, otherEme2000).getVelocity()),
+                1.0e-15);
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
-                                                  actual.getPVCoordinates(date, otherEme2000).getAcceleration()),
-                                1.0e-15);
+                Vector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
+                        actual.getPVCoordinates(date, otherEme2000).getAcceleration()),
+                1.0e-15);
     }
 
     @Test
-    public void testIssue1557(){
+    void testIssue1557() {
         // GIVEN
         final AbsolutePVCoordinates absPV = TestUtils.getFakeAbsolutePVCoordinates();
 
@@ -411,7 +239,7 @@ public class AbsolutePVCoordinatesTest {
     }
 
     @Test
-    public void testTaylorProvider() {
+    void testTaylorProvider() {
         //setup
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getEME2000();
@@ -424,8 +252,8 @@ public class AbsolutePVCoordinatesTest {
 
         //verify 
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(actual.getPosition(date, frame), pv.getPosition(date, frame)),
-                                1.0e-15);
+                Vector3D.distance(actual.getPosition(date, frame), pv.getPosition(date, frame)),
+                1.0e-15);
         Assertions.assertEquals(actual.getPVCoordinates(date, frame).toString(), pv.getPVCoordinates(date, frame).toString());
 
     }
@@ -443,4 +271,7 @@ public class AbsolutePVCoordinatesTest {
         Assertions.assertEquals(expected.getAcceleration().getZ(), real.getAcceleration().getZ(), epsilon);
     }
 
+    public static void assertAbsPV(AbsolutePVCoordinates expected, AbsolutePVCoordinates real, double epsilon) {
+        assertPV(expected.getPVCoordinates(), real.getPVCoordinates(), epsilon);
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -159,7 +159,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final Vector3D     position     = s.getPosition();
         final Vector3D     sunPosition  = sun.getPosition(date, frame);
         final Vector3D     sunSatVector = position.subtract(sunPosition);
-        final double       r2           = sunSatVector.getNormSq();
+        final double       r2           = sunSatVector.getNorm2Sq();
 
         // compute flux
         final double   ratio = getLightingRatio(s, sunPosition);
@@ -180,7 +180,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final FieldVector3D<T>     position     = s.getPosition();
         final FieldVector3D<T>     sunPosition  = sun.getPosition(date, frame);
         final FieldVector3D<T>     sunSatVector = position.subtract(sunPosition);
-        final T                    r2           = sunSatVector.getNormSq();
+        final T                    r2           = sunSatVector.getNorm2Sq();
 
         // compute flux
         final T                ratio = getLightingRatio(s, sunPosition);

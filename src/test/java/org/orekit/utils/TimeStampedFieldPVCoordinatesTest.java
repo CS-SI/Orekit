@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ import org.orekit.time.FieldTimeStamped;
 public class TimeStampedFieldPVCoordinatesTest {
 
     @Test
-    public void testLinearConstructors() {
+    void testLinearConstructors() {
         DSFactory factory = new DSFactory(6, 1);
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv1 =
                 new TimeStampedFieldPVCoordinates<>(AbsoluteDate.CCSDS_EPOCH,
@@ -115,7 +115,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector1() {
+    void testToDerivativeStructureVector1() {
         FieldVector3D<FieldDerivativeStructure<Binary64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
@@ -158,7 +158,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector2() {
+    void testToDerivativeStructureVector2() {
         FieldVector3D<FieldDerivativeStructure<Binary64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
@@ -208,7 +208,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToUnivariateDerivative1Vector() {
+    void testToUnivariateDerivative1Vector() {
         FieldVector3D<FieldUnivariateDerivative1<Binary64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
@@ -251,7 +251,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToUnivariateDerivative2Vector() {
+    void testToUnivariateDerivative2Vector() {
         FieldVector3D<FieldUnivariateDerivative2<Binary64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
@@ -301,7 +301,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testShift() {
+    void testShift() {
         FieldVector3D<DerivativeStructure> p1 = createVector(  1,  0.1,   10, 4);
         FieldVector3D<DerivativeStructure> v1 = createVector( -1, -0.1,  -10, 4);
         FieldVector3D<DerivativeStructure> a1 = createVector( 10,  1.0,  100, 4);
@@ -316,7 +316,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         Utils.setDataRoot("regular-data");
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv =
             new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH,
@@ -327,7 +327,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testIssue510() {
+    void testIssue510() {
         DSFactory factory = new DSFactory(1, 1);
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv =
                         new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(factory.getDerivativeField()),
@@ -365,7 +365,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testIssue774() {
+    void testIssue774() {
         doTestIssue774(Binary64Field.getInstance());
     }
 
@@ -378,8 +378,8 @@ public class TimeStampedFieldPVCoordinatesTest {
 
         // Coordinates
         final FieldPVCoordinates<T> pv =
-                        new FieldPVCoordinates<T>(new FieldVector3D<T>(zero, zero, zero),
-                                                  new FieldVector3D<T>(zero, zero, zero));
+                new FieldPVCoordinates<>(new FieldVector3D<>(zero, zero, zero),
+                        new FieldVector3D<>(zero, zero, zero));
 
         // Time stamped object
         final FieldTimeStamped<T> timeStamped =

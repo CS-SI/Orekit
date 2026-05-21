@@ -154,6 +154,9 @@ WRONG_DEGREE_OR_ORDER=cap terme ({0}, {1}) en una descomposició armònica esfè
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=s''han trobat varies dates de referència ({0} i {1} difereixen de {3,number,0.0##############E0} s) en el fitxer de camp gravitacional {2}
 
@@ -255,6 +258,9 @@ INCONSISTENT_EARTH_MOON_RATIO_IN_FILES=valors incoherents de la relació de mass
 
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY=no hi ha dades carregades pel cos celestial {0}
+
+# unknown celestial body: {0}
+UNKNOWN_CELESTIAL_BODY=<MISSING TRANSLATION>
 
 # file {0} is not a JPL ephemerides binary file
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE=el fitxer {0} no és un fitxer d''efemèrides binari del JPL
@@ -445,9 +451,6 @@ STK_UNMAPPED_COORDINATE_SYSTEM=el sistema de coordenades "{0}" de STK encara no 
 # unexpected end of STK file (after line {0})
 STK_UNEXPECTED_END_OF_FILE=final inesperat d''un fitxer STK (després de la linea {0})
 
-# unsupported clock file version {0}
-CLOCK_FILE_UNSUPPORTED_VERSION=versió de l''arxiu de rellotge {0} no reconeguda
-
 # version {0} from file {1} is not supported, supported version: {2}
 UNSUPPORTED_FILE_FORMAT_VERSION=versió {0} del fitxer {1} no s''ha tingut en compte, versions tingudes en compte: {2}
 
@@ -483,6 +486,9 @@ UNABLE_TO_GENERATE_NEW_DATA_BEFORE=no es pot generar noves dades abans de {0}, l
 
 # unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
 UNABLE_TO_GENERATE_NEW_DATA_AFTER=no es poden generar noves dades després de {0}, les dades sol·licitades per a {1} són de {2,number,0.0##############E0} segonds després
+
+# unable to compute elliptic eccentric anomaly from the mean anomaly after {0} iterations
+UNABLE_TO_COMPUTE_ELLIPTIC_ECCENTRIC_ANOMALY=després de {0} iteracins no s''ha aconseguit calcular l''anomalia excèntrica el·líptica a partir de l''anomalia mitjana
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=després de {0} iteracins no s''ha aconseguit calcular l''anomalia excèntrica hiperbòlica a partir de l''anomalia mitjana
@@ -953,3 +959,138 @@ LINE_NEVER_CROSSES_ALTITUDE=
 
 # body shape must be a one-axis ellipsoid
 BODY_SHAPE_MUST_BE_A_ONE_AXIS_ELLIPSOID=
+
+# missing time system definition in file {0}
+MISSING_TIME_SYSTEM_DEFINITION=
+
+# wrong stations numbers in file {0}, expected {1}, got {2}
+WRONG_STATIONS_NUMBER=
+
+# wrong satellites numbers in file {0}, expected {1}, got {2}
+WRONG_SATELLITES_NUMBER=
+
+# invalid format: width = {0}, precision = {1}
+INVALID_FORMAT=
+
+# output {0} has already been closed
+OUTPUT_ALREADY_CLOSED=
+
+# Householder solver failed to converge after {0} iterations
+LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE=
+
+# correction of perturbed Lambert solution failed to converge after {0} iterations
+LAMBERT_CORRECTION_DID_NOT_CONVERGE=
+
+# invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight
+LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=
+
+# invalid number of facets: {0}, it must be an odd number
+NUMBER_OF_FACETS_NOT_ODD=
+
+# Invalid DAF FTP string found in DAF file {0}
+INVALID_DAF_FTPSTR = <MISSING TRANSLATION>
+
+# Incomplete DAF comment record found
+INCOMPLETE_DAF_COMMENT_RECORD = <MISSING TRANSLATION>
+
+# Incomplete DAF summary record found
+INCOMPLETE_DAF_SUMMARY_RECORD = <MISSING TRANSLATION>
+
+# DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
+INVALID_DAF_ENDIANNESS = <MISSING TRANSLATION>
+
+# DAF file type string must be of the format DAF/XXXX, got {0}
+INVALID_DAF_FILETYPE_STRING = <MISSING TRANSLATION>
+
+# Incomplete DAF name record found
+INCOMPLETE_DAF_NAME_RECORD = <MISSING TRANSLATION>
+
+# DAF object cannot be null
+NULL_DAF = <MISSING TRANSLATION>
+
+# Initial position for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_DISTANCE = <MISSING TRANSLATION>
+
+# Initial velocity for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_VELOCITY = <MISSING TRANSLATION>
+
+# Rectilinear motion detected in two-body propagator
+TWOBODY_RECTILINEAR_MOTION = <MISSING TRANSLATION>
+
+# Two-body propagation numerically unstable
+TWOBODY_UNSTABLE_PROPAGATION = <MISSING TRANSLATION>
+
+# GM value cannot be negative
+NEGATIVE_GM = <MISSING TRANSLATION>
+
+# Stumpff function order cannot be negative
+STUMPFF_NEGATIVE_ORDER = <MISSING TRANSLATION>
+
+# Semilatus rectum cannot be negative
+NEGATIVE_SEMILATUS_RECTUM = <MISSING TRANSLATION>
+
+# Eccentricity cannot be negative
+NEGATIVE_ECCENTRICITY = <MISSING TRANSLATION>
+
+# Central body radius cannot be negative
+NEGATIVE_CENTRAL_BODY_RADIUS = <MISSING TRANSLATION>
+
+# Norm of trajectory pole vector is zero
+ZERO_NORM_TRAJECTORY_POLE_VECTOR = <MISSING TRANSLATION>
+
+# Norm of periapsis vector is zero
+ZERO_NORM_PERIAPSIS_VECTOR = <MISSING TRANSLATION>
+
+# Norm of central body pole vector is zero
+ZERO_NORM_CENTRAL_BODY_POLE_VECTOR = <MISSING TRANSLATION>
+
+# Trajectory pole and periapsis vectors are not orthogonal
+NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS = <MISSING TRANSLATION>
+
+# Semimajor axis cannot be negative
+NEGATIVE_SEMIMAJOR_AXIS = <MISSING TRANSLATION>
+
+# Unknown SPK type {0}
+UNKNOWN_SPK_TYPE = <MISSING TRANSLATION>
+
+# Unknown SPK subtype code found for SPK segment of type {0}
+UNKNOWN_SPK_SUBTYPE = <MISSING TRANSLATION>
+
+# Unexpected number of metadata items in type {0} SPK
+SPK_UNEXPECTED_NUMBER_METADATA = <MISSING TRANSLATION>
+
+# Unexpected number of constants in type {0} SPK
+SPK_UNEXPECTED_NUMBER_CONSTANTS = <MISSING TRANSLATION>
+
+# Unexpected data packet size in type {0} SPK"
+SPK_UNEXPECTED_DATA_PACKET_SIZE = <MISSING TRANSLATION>
+
+# Target date {0} is outside the interval covered by the SPK segment
+SPK_TARGET_DATE_OUTSIDE_INTERVAL = <MISSING TRANSLATION>
+
+# Segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+SPK_INTERPOLATION_SEGMENT_TOO_SHORT = <MISSING TRANSLATION>
+
+# Unknown PCK segment type {0}.
+UNKNOWN_PCK_TYPE = <MISSING TRANSLATION>
+
+# Unexpected number of metadata items in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_METADATA = <MISSING TRANSLATION>
+
+# Unexpected number of constants in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_CONSTANTS = <MISSING TRANSLATION>
+
+# Unexpected data packet size in type {0} PCK segment
+PCK_UNEXPECTED_DATA_PACKET_SIZE = <MISSING TRANSLATION>
+
+# Target date {0} is outside the interval covered by the PCK segment
+PCK_TARGET_DATE_OUTSIDE_INTERVAL = <MISSING TRANSLATION>
+
+# PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+PCK_INTERPOLATION_SEGMENT_TOO_SHORT = <MISSING TRANSLATION>
+
+# Comments require {0} records but DAF file record specifies only {1} reserved records
+DAF_INSUFFICIENT_COMMENT_RECORDS = <MISSING TRANSLATION>
+
+# File description string is {0} characters long but should be at most 60 characters
+DAF_TOO_LONG_FILEDESCRIPTION_STRING = <MISSING TRANSLATION>

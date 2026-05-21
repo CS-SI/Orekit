@@ -1,4 +1,4 @@
-/* Copyright 2023-2025 Alberto Ferrero
+/* Copyright 2023-2026 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -30,10 +30,7 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
  * @author Alberto Ferrero
  * @since 12.0
  */
-public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRangeCrossingDetector> {
-
-    /** Body on which the longitude is defined. */
-    private final OneAxisEllipsoid body;
+public class LongitudeRangeCrossingDetector extends AbstractGeographicalDetector<LongitudeRangeCrossingDetector> {
 
     /** Fixed longitude to be crossed, lower boundary in radians. */
     private final double fromLongitude;
@@ -54,7 +51,7 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
      * @param fromLongitude longitude to be crossed, lower range boundary
      * @param toLongitude longitude to be crossed, upper range boundary
      */
-    public LongitudeRangeCrossingDetector(final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
+    public LongitudeRangeCrossingDetector(final BodyShape body, final double fromLongitude, final double toLongitude) {
         this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body, fromLongitude, toLongitude);
     }
 
@@ -66,7 +63,7 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
      * @param toLongitude longitude to be crossed, upper range boundary
      */
     public LongitudeRangeCrossingDetector(final double maxCheck, final double threshold,
-                                          final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
+                                          final BodyShape body, final double fromLongitude, final double toLongitude) {
         this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnDecreasing(),
              body, fromLongitude, toLongitude);
     }
@@ -85,9 +82,8 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
      * @since 13.0
      */
     protected LongitudeRangeCrossingDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
-                                             final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        super(detectionSettings, handler);
-        this.body     = body;
+                                             final BodyShape body, final double fromLongitude, final double toLongitude) {
+        super(detectionSettings, handler, body);
         this.fromLongitude = ensureLongitudePositiveContinuity(fromLongitude);
         this.toLongitude = ensureLongitudePositiveContinuity(toLongitude);
         this.sign = FastMath.signum(this.toLongitude - this.fromLongitude);
@@ -97,14 +93,7 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
     @Override
     protected LongitudeRangeCrossingDetector create(final EventDetectionSettings detectionSettings,
                                                     final EventHandler newHandler) {
-        return new LongitudeRangeCrossingDetector(detectionSettings, newHandler, body, fromLongitude, toLongitude);
-    }
-
-    /** Get the body on which the geographic zone is defined.
-     * @return body on which the geographic zone is defined
-     */
-    public OneAxisEllipsoid getBody() {
-        return body;
+        return new LongitudeRangeCrossingDetector(detectionSettings, newHandler, getBodyShape(), fromLongitude, toLongitude);
     }
 
     /** Get the fixed longitude range to be crossed (radians), lower boundary.
@@ -151,8 +140,7 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
-        final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
-            s.getFrame(), s.getDate());
+        final GeodeticPoint gp = getBodyShape().transform(s.getPosition(), s.getFrame(), s.getDate());
 
         // point longitude
         final double longitude = ensureLongitudePositiveContinuity(gp.getLongitude());

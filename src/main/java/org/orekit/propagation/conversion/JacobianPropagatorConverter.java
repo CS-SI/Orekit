@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -72,7 +72,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
             final ValuesHandler handler = new ValuesHandler();
             propagator.getMultiplexer().add(handler);
             final List<SpacecraftState> sample = getSample();
-            propagator.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+            propagator.propagate(sample.getLast().getDate().shiftedBy(10.0));
             return handler.value;
         };
     }
@@ -84,7 +84,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
             final JacobianHandler handler = new JacobianHandler(propagator, point.getDimension());
             propagator.getMultiplexer().add(handler);
             final List<SpacecraftState> sample = getSample();
-            propagator.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+            propagator.propagate(sample.getLast().getDate().shiftedBy(10.0));
             return new Pair<>(handler.value, handler.jacobian);
         };
     }

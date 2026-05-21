@@ -154,6 +154,9 @@ WRONG_DEGREE_OR_ORDER=ningún término ({0}, {1}) en una descomposición armóni
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=tipos de elementos orbitales incorrectos para esta teoría de de promediado
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=tipo de observador no válido para este cálculo
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=se han encontrado varias fechas de referencia ({0} y {1} difieren de {3,number,0.0##############E0} s) en el fichero de campo gravitacional {2}
 
@@ -255,6 +258,9 @@ INCONSISTENT_EARTH_MOON_RATIO_IN_FILES=valores incoherentes de la relación de m
 
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY=no hay datos cargados para el cuerpo celeste {0}
+
+# unknown celestial body: {0}
+UNKNOWN_CELESTIAL_BODY=<MISSING TRANSLATION>
 
 # file {0} is not a JPL ephemerides binary file
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE=el fichero {0} no es un fichero de efemérides binario del JPL
@@ -445,9 +451,6 @@ STK_UNMAPPED_COORDINATE_SYSTEM=el sistema de coordenadas "{0}" de STK aún no ha
 # unexpected end of STK file (after line {0})
 STK_UNEXPECTED_END_OF_FILE=final inesperado de un fichero STK (después de la línea {0})
 
-# unsupported clock file version {0}
-CLOCK_FILE_UNSUPPORTED_VERSION=versión de archivo de reloj {0} no reconocida
-
 # version {0} from file {1} is not supported, supported version: {2}
 UNSUPPORTED_FILE_FORMAT_VERSION=verion {0} del fichero {1} no se ha tenido en cuenta, versiones tenidas en cuenta : {2}
 
@@ -483,6 +486,9 @@ UNABLE_TO_GENERATE_NEW_DATA_BEFORE=no se pueden generar nuevos datos antes de {0
 
 # unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
 UNABLE_TO_GENERATE_NEW_DATA_AFTER=no se pueden generar nuevos datos después de {0}, los datos solicitados para {1} son de {2,number,0.0##############E0} segundos después
+
+# unable to compute elliptic eccentric anomaly from the mean anomaly after {0} iterations
+UNABLE_TO_COMPUTE_ELLIPTIC_ECCENTRIC_ANOMALY=después de {0} iteraciones no se ha conseguido calcular la anomalía excéntrica elíptica a partir de la anomalía media
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=después de {0} iteraciones no se ha conseguido calcular la anomalía excéntrica hiperbólica a partir de la anomalía media
@@ -946,10 +952,145 @@ COVARIANCE_MUST_BE_SQUARE=la matriz de covarianza debe ser cuadrada
 INCONSISTENT_STATE_DIMENSIONS=las dimensiones del vector de estado ({0}) y de la covarianza ({1}) son incompatibles
 
 # data at date {0} has already been automatically expunged
-EXPUNGED_SPAN=
+EXPUNGED_SPAN=los datos para la fecha {0} ya han sido eliminados automáticamente
 
 # line never crosses altitude {0}
 LINE_NEVER_CROSSES_ALTITUDE=la línea nunca atraviesa la altitud {0}
 
 # body shape must be a one-axis ellipsoid
-BODY_SHAPE_MUST_BE_A_ONE_AXIS_ELLIPSOID=
+BODY_SHAPE_MUST_BE_A_ONE_AXIS_ELLIPSOID=la forma del cuerpo debe ser un elipsoide de un eje
+
+# missing time system definition in file {0}
+MISSING_TIME_SYSTEM_DEFINITION=sistema de tiempo no definido en el archivo {0}
+
+# wrong stations numbers in file {0}, expected {1}, got {2}
+WRONG_STATIONS_NUMBER=número de estaciones incorrecto en el archivo {0}, se esperaba {1}, se recibió {2}
+
+# wrong satellites numbers in file {0}, expected {1}, got {2}
+WRONG_SATELLITES_NUMBER=número de satélites incorrecto en el archivo {0}, se esperaba {1}, se recibió {2}
+
+# invalid format: width = {0}, precision = {1}
+INVALID_FORMAT=formato inválido: ancho = {0}, precisión = {1}
+
+# output {0} has already been closed
+OUTPUT_ALREADY_CLOSED=la salida {0} ya se ha cerrado
+
+# Householder solver failed to converge after {0} iterations
+LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE=el resolvedor Householder no consiguió converger tras {0} iteraciones
+
+# correction of perturbed Lambert solution failed to converge after {0} iterations
+LAMBERT_CORRECTION_DID_NOT_CONVERGE=la corrección de la solución de Lambert perturbada no consiguió converger tras {0} iteraciones
+
+# invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight
+LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=número de revoluciones {0} inválido para el problema de Lambert, un máximo de {1} es posible con el tiempo de vuelo especificado
+
+# invalid number of facets: {0}, it must be an odd number
+NUMBER_OF_FACETS_NOT_ODD=número de facetas inválido: {0}, debe ser un número impar
+
+# Invalid DAF FTP string found in DAF file {0}
+INVALID_DAF_FTPSTR = Cadena FTP de DAF invalida en archivo DAF {0}
+
+# Incomplete DAF comment record found
+INCOMPLETE_DAF_COMMENT_RECORD = Registro DAF de comentarios incompleto encontrado
+
+# Incomplete DAF summary record found
+INCOMPLETE_DAF_SUMMARY_RECORD = Registro DAF de resúmenes incompleto encontrado
+
+# DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
+INVALID_DAF_ENDIANNESS = La cadena DAF de endianidad debe ser BIG-IEEE o LTL-IEEE, pero se encontró {0}
+
+# DAF file type string must be of the format DAF/XXXX, got {0}
+INVALID_DAF_FILETYPE_STRING = La cadena DAF de tipo de archivo debe seguir el formato DAF/XXXX, pero se encontró {0}
+
+# Incomplete DAF name record found
+INCOMPLETE_DAF_NAME_RECORD = Registro DAF de nombres incompleto encontrado
+
+# DAF object cannot be null
+NULL_DAF = El objeto DAF no puede ser nulo
+
+# Initial position for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_DISTANCE = Posición inicial para el propagador de dos cuerpos es cero
+
+# Initial velocity for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_VELOCITY = Velocidad inicial para el propagador de dos cuerpos es cero
+
+# Rectilinear motion detected in two-body propagator
+TWOBODY_RECTILINEAR_MOTION = Movimiento rectilíneo detectado en el propagador de dos cuerpos
+
+# Two-body propagation numerically unstable
+TWOBODY_UNSTABLE_PROPAGATION = Propagación de dos cuerpos es numéricamente inestable
+
+# GM value cannot be negative
+NEGATIVE_GM = El valor de GM no puede ser negativo
+
+# Stumpff function order cannot be negative
+STUMPFF_NEGATIVE_ORDER = El orden de las funciones de Stumpff no puede ser negativo
+
+# Semilatus rectum cannot be negative
+NEGATIVE_SEMILATUS_RECTUM = El semilatus rectum no puede ser negativo
+
+# Eccentricity cannot be negative
+NEGATIVE_ECCENTRICITY = La eccentricidad no puede ser negativa
+
+# Central body radius cannot be negative
+NEGATIVE_CENTRAL_BODY_RADIUS = El radio del cuerpo central no puede ser negativo
+
+# Norm of trajectory pole vector is zero
+ZERO_NORM_TRAJECTORY_POLE_VECTOR = La norma del vector del polo de la trayectoria es cero
+
+# Norm of periapsis vector is zero
+ZERO_NORM_PERIAPSIS_VECTOR = La norma del vector del periastro es cero
+
+# Norm of central body pole vector is zero
+ZERO_NORM_CENTRAL_BODY_POLE_VECTOR = La normal del vector del polo del cuerpo central es cero
+
+# Trajectory pole and periapsis vectors are not orthogonal
+NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS = Los vectors del polo de la trayectoria y del periastro no son ortogonales
+
+# Semimajor axis cannot be negative
+NEGATIVE_SEMIMAJOR_AXIS = El semieje mayor no puede ser negativo
+
+# Unknown SPK type {0}
+UNKNOWN_SPK_TYPE = El tipo de SPK {0} es desconocido
+
+# Unknown SPK subtype code found for SPK segment of type {0}
+UNKNOWN_SPK_SUBTYPE = Subtipo de SPK desconocido encontrado para segmento SPK de tipo {0}
+
+# Unexpected number of metadata items in type {0} SPK
+SPK_UNEXPECTED_NUMBER_METADATA = Número inesperado de elementos de metadatos en SPK de tipo {0}
+
+# Unexpected number of constants in type {0} SPK
+SPK_UNEXPECTED_NUMBER_CONSTANTS = Número inesperado de constantes en SPK de tipo {0}
+
+# Unexpected data packet size in type {0} SPK"
+SPK_UNEXPECTED_DATA_PACKET_SIZE = Tamaño de paquete de datos inesperado en SPK de tipo {0}
+
+# Target date {0} is outside the interval covered by the SPK segment
+SPK_TARGET_DATE_OUTSIDE_INTERVAL = La fecha objetivo {0} se encuentra fuera del intervalo cubierto por el segmento SPK
+
+# Segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+SPK_INTERPOLATION_SEGMENT_TOO_SHORT = El segmento no contiene suficientes registros de datos para llevar a cabo interpolación de tipo {0} ({1} disponibles, al menos {2} requeridos)
+
+# Unknown PCK segment type {0}.
+UNKNOWN_PCK_TYPE = El tipo de PCK {0} es desconocido.
+
+# Unexpected number of metadata items in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_METADATA = Número inesperado de elementos de metadatos en segmento PCK de tipo {0}
+
+# Unexpected number of constants in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_CONSTANTS = Número inesperado de constantes en segmento PCK de tipo {0}
+
+# Unexpected data packet size in type {0} PCK segment
+PCK_UNEXPECTED_DATA_PACKET_SIZE = Tamaño de paquete de datos inesperado en segmento PCK de tipo {0}
+
+# Target date {0} is outside the interval covered by the PCK segment
+PCK_TARGET_DATE_OUTSIDE_INTERVAL = La fecha objetivo {0} se encuentra fuera del intervalo cubierto por el segmento PCK
+
+# PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+PCK_INTERPOLATION_SEGMENT_TOO_SHORT = El segmento PCK no contiene suficientes registros de datos para realizar interpolación de tipo {0} ({1} disponibles, al menos {2} requeridos)
+
+# Comments require {0} records but DAF file record specifies only {1} reserved records
+DAF_INSUFFICIENT_COMMENT_RECORDS = Los comentarios requieren {0} registros pero el registro de archivo DAF especifica solo {1} registros reservados
+
+# File description string is {0} characters long but should be at most 60 characters
+DAF_TOO_LONG_FILEDESCRIPTION_STRING = La cadena de descripción del archivo tiene {0} caracteres pero debería tener como máximo 60 caracteres

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -177,7 +177,7 @@ public class PolygonalFieldOfViewTest {
         Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
         Assertions.assertEquals(1, footprint.size());
-        List<GeodeticPoint> loop = footprint.get(0);
+        List<GeodeticPoint> loop = footprint.getFirst();
         Assertions.assertEquals(234, loop.size());
         double minEl   = Double.POSITIVE_INFINITY;
         double maxEl = 0;
@@ -233,7 +233,7 @@ public class PolygonalFieldOfViewTest {
         Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
         Assertions.assertEquals(1, footprint.size());
-        List<GeodeticPoint> loop = footprint.get(0);
+        List<GeodeticPoint> loop = footprint.getFirst();
         Assertions.assertEquals(expectedPoints, loop.size());
         double minEl     = Double.POSITIVE_INFINITY;
         double maxEl     = 0;

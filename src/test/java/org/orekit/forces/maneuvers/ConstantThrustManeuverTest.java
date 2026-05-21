@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -226,7 +226,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals("", maneuver.getName());
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
         Assertions.assertEquals(6, drivers.size());
-        Assertions.assertEquals("thrust", drivers.get(0).getName());
+        Assertions.assertEquals("thrust", drivers.getFirst().getName());
         Assertions.assertEquals("flow rate", drivers.get(1).getName());
         EventDetector detector = maneuver.getEventDetectors().findFirst().get();
 
@@ -250,7 +250,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                        "1A-");
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
         Assertions.assertEquals(6, drivers.size());
-        Assertions.assertEquals("1A-thrust", drivers.get(0).getName());
+        Assertions.assertEquals("1A-thrust", drivers.getFirst().getName());
         Assertions.assertEquals("1A-flow rate", drivers.get(1).getName());
         EventDetector detector = maneuver.getEventDetectors().findFirst().get();
 
@@ -365,7 +365,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -427,7 +427,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -488,7 +488,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -791,7 +791,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                             1.0e-9);
         Assertions.assertTrue(maneuver.isFiring(middleState.shiftedBy(3 * duration)));
         Assertions.assertEquals(0.186340263,
-                            maneuver.acceleration(middleState.shiftedBy(3 * duration), maneuver.getParameters()).getNorm(),
+                            maneuver.acceleration(middleState.withMassRate(0).shiftedBy(3 * duration), maneuver.getParameters()).getNorm(),
                             1.0e-9);
 
 

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,7 +85,7 @@ public class FieldUnboundedCartesianEnergyNeglectingMass<T extends CalculusField
     @Override
     public T getFieldHamiltonianContribution(final T[] adjointVariables, final T mass) {
         final FieldVector3D<T> thrustAcceleration = getFieldThrustAccelerationVector(adjointVariables, mass);
-        return thrustAcceleration.getNormSq().multiply(-1. / 2.);
+        return thrustAcceleration.getNorm2Sq().multiply(-1. / 2.);
     }
 
     /** {@inheritDoc} */

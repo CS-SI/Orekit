@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import java.util.stream.Stream;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
-
-import java.util.stream.Stream;
 
 /**
  * Fuel cost penalized with a quadratic term. For epsilon equal to 1, one gets the bounded energy cost.
@@ -122,32 +122,30 @@ public class QuadraticPenaltyCartesianFuel extends PenalizedCartesianFuelCost {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new QuadraticPenalizedSwitchDetector(getEventDetectionSettings(), 0),
-                new QuadraticPenalizedSwitchDetector(getEventDetectionSettings(), getMaximumThrustMagnitude()));
+        return Stream.of(new QuadraticPenalizedSwitchFunction(0),
+                new QuadraticPenalizedSwitchFunction(getMaximumThrustMagnitude()))
+                .map(eventFunction -> buildSwitchDetector(eventFunction, getEventDetectionSettings()));
     }
 
     /**
-     * Event detector for control non-differentiability.
+     * Event function for control non-differentiability.
      */
-    private class QuadraticPenalizedSwitchDetector extends ControlSwitchDetector {
+    private class QuadraticPenalizedSwitchFunction extends ControlSwitchFunction {
 
         /** Critical value at which the switching function has an event. */
         private final double criticalValue;
 
         /**
          * Constructor.
-         * @param detectionSettings detection settings.
          * @param criticalValue switch function value to detect
          */
-        QuadraticPenalizedSwitchDetector(final EventDetectionSettings detectionSettings,
-                                         final double criticalValue) {
-            super(detectionSettings);
+        QuadraticPenalizedSwitchFunction(final double criticalValue) {
             this.criticalValue = criticalValue;
         }
 
         /** {@inheritDoc} */
         @Override
-        public double g(final SpacecraftState state) {
+        public double value(final SpacecraftState state) {
             final double[] adjoint = state.getAdditionalState(getAdjointName());
             return evaluateSwitchFunction(adjoint, state.getMass()) - criticalValue;
         }

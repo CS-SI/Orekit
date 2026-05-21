@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -423,8 +423,8 @@ public class UTCScaleTest {
     public void testGetUTCTAIOffsets() {
         final List<UTCTAIOffset> offsets = utc.getUTCTAIOffsets();
         Assertions.assertEquals(41, offsets.size());
-        final UTCTAIOffset firstOffset = offsets.get(0);
-        final UTCTAIOffset lastOffset = offsets.get(offsets.size() - 1);
+        final UTCTAIOffset firstOffset = offsets.getFirst();
+        final UTCTAIOffset lastOffset = offsets.getLast();
         Assertions.assertEquals(37300, firstOffset.getMJD()); // 1961-01-01
         Assertions.assertEquals(57754, lastOffset.getMJD()); // 2017-01-01
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -231,7 +231,7 @@ public class FramesFactoryTest {
         Transform t = icrf.getTransformTo(FramesFactory.getGCRF(),
                                           new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
         Assertions.assertEquals(0.0, t.getRotation().getAngle(), 1.0e-15);
-        Assertions.assertEquals(CelestialBodyFactory.EARTH_MOON + "/inertial", icrf.getParent().getName());
+        Assertions.assertEquals(CelestialBodyFactory.EARTH_MOON + "/ICRF", icrf.getParent().getName());
         Assertions.assertEquals(Predefined.GCRF.getName(), icrf.getParent().getParent().getName());
     }
 
@@ -296,7 +296,7 @@ public class FramesFactoryTest {
         Utils.setDataRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> rawEquinox = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> rawEquinox = new TreeSet<>(new ChronologicalComparator());
         DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc)
@@ -315,7 +315,7 @@ public class FramesFactoryTest {
         Utils.setDataRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
-        final SortedSet<EOPEntry> rawNRO = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        final SortedSet<EOPEntry> rawNRO = new TreeSet<>(new ChronologicalComparator());
         DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc)
@@ -340,7 +340,7 @@ public class FramesFactoryTest {
     }
 
     private void testCIP(IERSConventions conventions, double threshold) {
-        Utils.setLoaders(conventions, new ArrayList<EOPEntry>());
+        Utils.setLoaders(conventions, new ArrayList<>());
         Frame cirf = FramesFactory.getCIRF(conventions, false);
         Frame tod  = FramesFactory.getTOD(conventions, false);
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 06, 21), TimeComponents.H00,
@@ -383,8 +383,8 @@ public class FramesFactoryTest {
         Utils.setLoaders(IERSConventions.IERS_2010, converted);
         Frame todConvertedCorrection  = FramesFactory.getTOD(IERSConventions.IERS_2010, false);
 
-        for (AbsoluteDate date = forced.get(0).getDate();
-             date.compareTo(forced.get(forced.size() - 1).getDate()) < 0;
+        for (AbsoluteDate date = forced.getFirst().getDate();
+             date.compareTo(forced.getLast().getDate()) < 0;
              date = date.shiftedBy(3600)) {
             Transform tNoCorrection =
                     FramesFactory.getNonInterpolatingTransform(todNoCorrection, cirf, date);

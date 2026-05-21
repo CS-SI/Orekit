@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.frames.Frame;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -144,9 +143,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     @DefaultDataContext
     public TimeSpanDragForce(final Atmosphere atmosphere,
                              final DragSensitive spacecraft) {
-        super(atmosphere);
-        this.dragSensitiveTimeSpanMap = new TimeSpanMap<>(spacecraft);
-        this.timeScale = TimeScalesFactory.getUTC();
+        this(atmosphere, spacecraft, TimeScalesFactory.getUTC());
     }
 
     /** Constructor.
@@ -157,7 +154,21 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     public TimeSpanDragForce(final Atmosphere atmosphere,
                              final DragSensitive spacecraft,
                              final TimeScale timeScale) {
-        super(atmosphere);
+        this(atmosphere, spacecraft, atmosphere, timeScale);
+    }
+
+    /** Constructor.
+     * @param atmosphere atmospheric model
+     * @param spacecraft the initial object physical and geometric information
+     * @param timeScale Time scale used for the default names of the drag parameter drivers
+     * @param atmosphereForDerivatives atmospheric model used for partial derivatives (use fast one for performance)
+     * @since 14.0
+     */
+    public TimeSpanDragForce(final Atmosphere atmosphere,
+                             final DragSensitive spacecraft,
+                             final Atmosphere atmosphereForDerivatives,
+                             final TimeScale timeScale) {
+        super(atmosphere, true, atmosphereForDerivatives);
         this.dragSensitiveTimeSpanMap = new TimeSpanMap<>(spacecraft);
         this.timeScale = timeScale;
     }
@@ -233,44 +244,24 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
-
-        // Local atmospheric density
-        final AbsoluteDate date     = s.getDate();
-        final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPosition();
-        final double rho    = getAtmosphere().getDensity(date, position, frame);
-
-        // Spacecraft relative velocity with respect to the atmosphere
-        final Vector3D vAtm = getAtmosphere().getVelocity(date, position, frame);
-        final Vector3D relativeVelocity = vAtm.subtract(s.getVelocity());
-
         // Extract the proper parameters valid at date from the input array
+        final AbsoluteDate date = s.getDate();
         final double[] extractedParameters = extractParameters(parameters, date);
 
         // Compute and return drag acceleration
-        return getDragSensitive(date).dragAcceleration(s, rho, relativeVelocity, extractedParameters);
-
+        return acceleration(s, getDragSensitive(date), extractedParameters);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters) {
-        // Density and its derivatives
-        final T rho = getFieldDensity(s);
-
-        // Spacecraft relative velocity with respect to the atmosphere
-        final FieldAbsoluteDate<T> date     = s.getDate();
-        final Frame                frame    = s.getFrame();
-        final FieldVector3D<T>     position = s.getPosition();
-        final FieldVector3D<T> vAtm = getAtmosphere().getVelocity(date, position, frame);
-        final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getVelocity());
-
         // Extract the proper parameters valid at date from the input array
+        final FieldAbsoluteDate<T> date = s.getDate();
         final T[] extractedParameters = extractParameters(parameters, date);
 
         // Compute and return drag acceleration
-        return getDragSensitive(date.toAbsoluteDate()).dragAcceleration(s, rho, relativeVelocity, extractedParameters);
+        return acceleration(s, getDragSensitive(date.toAbsoluteDate()), extractedParameters);
     }
 
     /**{@inheritDoc}

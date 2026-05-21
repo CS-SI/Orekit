@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -145,7 +145,7 @@ public class DTM2000 extends AbstractSunInfluencedAtmosphere {
     private static double[] tp   = null;
 
     /** External data container. */
-    private DTM2000InputParameters inputParams;
+    private final DTM2000InputParameters inputParams;
 
     /** Earth body shape. */
     private final BodyShape earth;
@@ -880,7 +880,7 @@ public class DTM2000 extends AbstractSunInfluencedAtmosphere {
     private static class FieldComputation<T extends CalculusFieldElement<T>> {
 
         /** Number of days in current year. */
-        private int day;
+        private final int day;
 
         /** Instant solar flux. f[1] = instantaneous flux; f[2] = 0. (not used). */
         private double[] f = new double[3];

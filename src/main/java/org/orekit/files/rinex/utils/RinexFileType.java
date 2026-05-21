@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,12 @@ public enum RinexFileType {
     OBSERVATION("O"),
 
     /** Rinex navigation (G is for Glonass navigation, in Rinex 2.X). */
-    NAVIGATION("N", "G");
+    NAVIGATION("N", "G"),
+
+    /** Rinex Clock.
+     * @since 14.0
+     */
+    CLOCK("C");
 
     /** Parsing map. */
     private static final Map<String, RinexFileType> KEYS_MAP = new HashMap<>();

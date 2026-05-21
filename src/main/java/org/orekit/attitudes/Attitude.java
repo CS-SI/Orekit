@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,10 +73,7 @@ public class Attitude implements TimeStamped, TimeShiftable<Attitude> {
     public Attitude(final AbsoluteDate date, final Frame referenceFrame,
                     final AngularCoordinates orientation) {
         this(referenceFrame,
-             new TimeStampedAngularCoordinates(date,
-                                               orientation.getRotation(),
-                                               orientation.getRotationRate(),
-                                               orientation.getRotationAcceleration()));
+             new TimeStampedAngularCoordinates(date, orientation));
     }
 
     /** Creates a new instance.

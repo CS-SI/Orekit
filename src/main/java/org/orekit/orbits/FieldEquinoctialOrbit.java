@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.orbits;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -282,9 +282,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         final FieldVector3D<T> pvP = pvCoordinates.getPosition();
         final FieldVector3D<T> pvV = pvCoordinates.getVelocity();
         final FieldVector3D<T> pvA = pvCoordinates.getAcceleration();
-        final T r2 = pvP.getNormSq();
+        final T r2 = pvP.getNorm2Sq();
         final T r  = r2.sqrt();
-        final T V2 = pvV.getNormSq();
+        final T V2 = pvV.getNorm2Sq();
         final T rV2OnMu = r.multiply(V2).divide(mu);
 
         // compute semi-major axis
@@ -506,19 +506,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLv() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return cachedL;
-
-            case ECCENTRIC:
-                return FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
-
-            case MEAN:
-                return FieldEquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> cachedL;
+            case ECCENTRIC -> FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
+            case MEAN -> FieldEquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -552,19 +544,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLE() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
-
-            case ECCENTRIC:
-                return cachedL;
-
-            case MEAN:
-                return FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
+            case ECCENTRIC -> cachedL;
+            case MEAN -> FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -599,19 +583,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLM() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return FieldEquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
-
-            case MEAN:
-                return cachedL;
-
-            case ECCENTRIC:
-                return FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> FieldEquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
+            case MEAN -> cachedL;
+            case ECCENTRIC -> FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -863,7 +839,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         computePVWithoutA();
 
         // acceleration
-        final T r2 = partialPV.getPosition().getNormSq();
+        final T r2 = partialPV.getPosition().getNorm2Sq();
         final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
         final FieldVector3D<T> acceleration = hasNonKeplerianRates() ?
@@ -1001,7 +977,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         this.computePVWithoutA();
         final FieldVector3D<T> fixedP = new FieldVector3D<>(getOne(), this.partialPV.getPosition(),
                                                             dt.square().multiply(0.5), nonKeplerianAcceleration);
-        final T fixedR2 = fixedP.getNormSq();
+        final T fixedR2 = fixedP.getNorm2Sq();
         final T fixedR  = fixedR2.sqrt();
         final FieldVector3D<T> fixedV = new FieldVector3D<>(getOne(), this.partialPV.getVelocity(),
                                                             dt, nonKeplerianAcceleration);
@@ -1026,7 +1002,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         computePVWithoutA();
         final FieldVector3D<T> position = partialPV.getPosition();
         final FieldVector3D<T> velocity = partialPV.getVelocity();
-        final T r2         = position.getNormSq();
+        final T r2         = position.getNorm2Sq();
         final T r          = r2.sqrt();
         final T r3         = r.multiply(r2);
 
@@ -1226,12 +1202,12 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @return a string representation of this object
      */
     public String toString() {
-        return new StringBuilder().append("equinoctial parameters: ").append('{').
-                                  append("a: ").append(a.getReal()).
-                                  append("; ex: ").append(ex.getReal()).append("; ey: ").append(ey.getReal()).
-                                  append("; hx: ").append(hx.getReal()).append("; hy: ").append(hy.getReal()).
-                                  append("; lv: ").append(FastMath.toDegrees(getLv().getReal())).
-                                  append(";}").toString();
+        return "equinoctial parameters: " + '{' +
+                "a: " + a.getReal() +
+                "; ex: " + ex.getReal() + "; ey: " + ey.getReal() +
+                "; hx: " + hx.getReal() + "; hy: " + hy.getReal() +
+                "; lv: " + FastMath.toDegrees(getLv().getReal()) +
+                ";}";
     }
 
     /** {@inheritDoc} */

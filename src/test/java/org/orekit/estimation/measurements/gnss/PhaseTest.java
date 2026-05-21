@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -87,12 +87,12 @@ public class PhaseTest {
             System.out.println("\nTest Range Phase Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 5.7e-10;
-        double refErrorsPMean   = 4.0e-09;
-        double refErrorsPMax    = 2.4e-07;
-        double refErrorsVMedian = 2.0e-05;
-        double refErrorsVMean   = 8.3e-05;
-        double refErrorsVMax    = 4.6e-03;
+        double refErrorsPMedian = 5.4e-10;
+        double refErrorsPMean   = 3.9e-09;
+        double refErrorsPMax    = 2.2e-07;
+        double refErrorsVMedian = 2.4e-05;
+        double refErrorsVMean   = 7.4e-05;
+        double refErrorsVMax    = 2.1e-03;
         this.genericTestStateDerivatives(printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -110,12 +110,12 @@ public class PhaseTest {
             System.out.println("\nTest Phase State Derivatives with Modifier - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 5.7e-10;
-        double refErrorsPMean   = 4.0e-09;
-        double refErrorsPMax    = 2.4e-07;
-        double refErrorsVMedian = 2.0e-05;
-        double refErrorsVMean   = 8.3e-05;
-        double refErrorsVMax    = 4.6e-03;
+        double refErrorsPMedian = 5.4e-10;
+        double refErrorsPMean   = 3.9e-09;
+        double refErrorsPMax    = 2.2e-07;
+        double refErrorsVMedian = 2.4e-05;
+        double refErrorsVMean   = 7.4e-05;
+        double refErrorsVMax    = 2.1e-03;
         this.genericTestStateDerivatives(printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -152,7 +152,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect phase measurements
@@ -160,7 +160,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -215,7 +215,7 @@ public class PhaseTest {
                     // Print results on console ?
                     if (printResults) {
                         final AbsoluteDate measurementDate = measurement.getDate();
-                        String stationName = ((Phase) measurement).getStation().getBaseFrame().getName();
+                        String stationName = ((Phase) measurement).getObserver().getName();
 
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s     %19.6f      %19.6f    %13.6e   %13.6e%n",
                                          stationName, measurementDate, date,
@@ -243,7 +243,7 @@ public class PhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -273,7 +273,7 @@ public class PhaseTest {
         Assertions.assertEquals(0.0, relErrorsMax,    2.8e-14);
 
         // Test measurement type
-        Assertions.assertEquals(Phase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(Phase.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults,
@@ -283,7 +283,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -291,7 +291,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -358,7 +358,7 @@ public class PhaseTest {
                     }
                     // Print values in console ?
                     if (printResults) {
-                        String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Phase) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e  " +
@@ -394,7 +394,7 @@ public class PhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -430,13 +430,13 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -444,9 +444,9 @@ public class PhaseTest {
                                                                             PredefinedGnssSignal.E01,
                                                                             ambiguity,
                                                                             satClockOffset);
-        creator.getSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getSatellite().getClockBiasDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -469,7 +469,7 @@ public class PhaseTest {
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
                     // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Phase) measurement).getStation();
+                    final GroundStation stationParameter = (GroundStation) ((Phase) measurement).getObserver();
 
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
@@ -482,15 +482,15 @@ public class PhaseTest {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        stationParameter.getClockOffsetDriver(),
+                        stationParameter.getClockBiasDriver(),
                         stationParameter.getEastOffsetDriver(),
                         stationParameter.getNorthOffsetDriver(),
                         stationParameter.getZenithOffsetDriver(),
-                        measurement.getSatellites().get(0).getClockOffsetDriver()
+                        measurement.getSatellites().getFirst().getClockBiasDriver()
                     };
 
                     if (printResults) {
-                        String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Phase) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
                                           stationName, measurement.getDate(), date);
                     }
@@ -548,7 +548,7 @@ public class PhaseTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
@@ -575,17 +575,17 @@ public class PhaseTest {
     public void testStateDerivativesWithTroposphericModifier() {
 
         final boolean printResults     = false;
-        final double  refErrorsPMedian = 5.4e-10;
+        final double  refErrorsPMedian = 6.0e-10;
         final double  refErrorsPMean   = 5.2e-9;
-        final double  refErrorsPMax    = 2.9e-7;
-        final double  refErrorsVMedian = 1.5e-5;
-        final double  refErrorsVMean   = 8.3e-5;
-        final double  refErrorsVMax    = 4.6e-3;
+        final double  refErrorsPMax    = 3.7e-7;
+        final double  refErrorsVMedian = 2.4e-5;
+        final double  refErrorsVMean   = 8.9e-5;
+        final double  refErrorsVMax    = 2.7e-3;
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -593,7 +593,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -619,15 +619,15 @@ public class PhaseTest {
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
-                    String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
+                    String stationName  = ((Phase) measurement).getObserver().getName();
 
                     // Add modifier
                     final NiellMappingFunctionModel      mappingFunction = new NiellMappingFunctionModel();
                     final EstimatedModel                 tropoModel      = new EstimatedModel(mappingFunction, 5.0);
                     final PhaseTroposphericDelayModifier modifier        = new PhaseTroposphericDelayModifier(tropoModel);
                     final List<ParameterDriver>          parameters      = modifier.getParametersDrivers();
-                    parameters.get(0).setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
-                    parameters.get(0).setSelected(true);
+                    parameters.getFirst().setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
+                    parameters.getFirst().setSelected(true);
                     ((Phase) measurement).addModifier(modifier);
 
                     // We intentionally propagate to a date which is close to the
@@ -706,7 +706,7 @@ public class PhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -740,17 +740,17 @@ public class PhaseTest {
     public void testStateDerivativesWithIonosphericModifier() {
 
         final boolean printResults = false;
-        final double refErrorsPMedian = 5.6e-10;
-        final double refErrorsPMean = 2.1e-9;
-        final double refErrorsPMax = 7.1e-8;
-        final double refErrorsVMedian = 1.5e-5;
-        final double refErrorsVMean = 7.9e-5;
-        final double refErrorsVMax = 4.6e-3;
+        final double refErrorsPMedian = 6.7e-10;
+        final double refErrorsPMean = 3.0e-9;
+        final double refErrorsPMax = 9.0e-8;
+        final double refErrorsVMedian = 2.4e-5;
+        final double refErrorsVMean = 7.5e-5;
+        final double refErrorsVMax = 2.1e-3;
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -758,7 +758,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -774,9 +774,14 @@ public class PhaseTest {
         // "final" value to be seen by "handleStep" function of the propagator
         final List<Double> errorsP = new ArrayList<>();
         final List<Double> errorsV = new ArrayList<>();
-
-        final IonosphericModel model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
+        
+        // Create the ionospheric model
+        final OneAxisEllipsoid earthBodyShape  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final IonosphericModel model = new KlobucharIonoModel(earthBodyShape, new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                                               new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+
         final double frequency = PredefinedGnssSignal.G01.getFrequency();
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
 
@@ -839,7 +844,7 @@ public class PhaseTest {
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e%n",
-                                          phase.getStation().getBaseFrame().getName(), measurement.getDate(), date,
+                                          phase.getObserver().getName(), measurement.getDate(), date,
                                           dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
                                           dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
                                           dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
@@ -869,7 +874,7 @@ public class PhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();

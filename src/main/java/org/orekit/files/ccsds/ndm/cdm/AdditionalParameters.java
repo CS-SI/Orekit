@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.cdm;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
 import org.orekit.frames.Frame;
 
@@ -78,14 +77,6 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** The method used for the calculation of COV_CONFIDENCE. */
     private String covConfidenceMethod;
 
-    /** Simple constructor.
-     * @deprecated in favor of {@link #AdditionalParameters(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AdditionalParameters() {
-        this(new OrekitCcsdsFrameMapper());
-    }
-
     /**
      * Simple constructor.
      *
@@ -112,12 +103,6 @@ public class AdditionalParameters extends CommonPhysicalProperties {
         periapsisAltitude = Double.NaN;
         inclination       = Double.NaN;
         covConfidence       = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void validate(final double version) {
-        super.validate(version);
     }
 
     /**

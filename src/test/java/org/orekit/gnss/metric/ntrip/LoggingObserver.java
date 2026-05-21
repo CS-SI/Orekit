@@ -1,4 +1,4 @@
-/* Copyright 2020-2025 CS GROUP
+/* Copyright 2020-2026 CS GROUP
  * All rights reserved.
  */
 package org.orekit.gnss.metric.ntrip;

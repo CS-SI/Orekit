@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.AdMethodType;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
@@ -92,14 +91,6 @@ public class AttitudeDetermination extends CommentsContainer {
 
     /** Sensors used. */
     private final List<AttitudeDeterminationSensor> sensorsUsed;
-
-    /** Simple constructor.
-     * @deprecated in favor of {@link #AttitudeDetermination(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AttitudeDetermination() {
-        this(new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

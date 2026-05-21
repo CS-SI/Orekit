@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,11 @@ import org.orekit.propagation.analytical.gnss.SBASPropagatorBuilder;
  */
 public class SBASNavigationMessage extends AbstractEphemerisMessage implements SBASOrbitalElements {
 
+    /** Message type.
+     * @since 14.0
+     */
+    public static final String SBAS = "SBAS";
+
     /** Transmission time  of  message  (start  of  the message) in GPS seconds of the week. */
     private double time;
 
@@ -49,6 +54,18 @@ public class SBASNavigationMessage extends AbstractEphemerisMessage implements S
     /** Constructor. */
     public SBASNavigationMessage() {
         // Nothing to do ...
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageType() {
+        return SBAS;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageSubType() {
+        return null;
     }
 
     /**
@@ -156,7 +173,6 @@ public class SBASNavigationMessage extends AbstractEphemerisMessage implements S
         // The value is given as a floating number in the navigation message
         this.iodn = (int) iod;
     }
-
 
     /** {@inheritDoc} */
     @Override

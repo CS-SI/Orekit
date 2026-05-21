@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,13 +45,13 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-public class FixedPointTleGenerationAlgorithmTest {
+class FixedPointTleGenerationAlgorithmTest {
 
     private TLE geoTLE;
     private TLE leoTLE;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         geoTLE = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
                          "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
@@ -144,10 +144,10 @@ public class FixedPointTleGenerationAlgorithmTest {
         // Changes frame
         final Frame eme2000 = FramesFactory.getEME2000();
         final TimeStampedFieldPVCoordinates<T> pv = state.getPVCoordinates(eme2000);
-        final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(pv, eme2000, state.getOrbit().getMu());
+        final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pv, eme2000, state.getOrbit().getMu());
 
         // Convert to TLE
-        final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm().generate(new FieldSpacecraftState<T>(orbit), tleISS);
+        final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm().generate(new FieldSpacecraftState<>(orbit), tleISS);
 
         // Verify
         Assertions.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
@@ -375,7 +375,7 @@ public class FixedPointTleGenerationAlgorithmTest {
 
         // Generate a TLE based on the orbit and check that the generated TLE is the same as the
         // original one.
-        final TLE generatedTle = TLE.stateToTLE(new SpacecraftState(orbit), initialTle, algorithm);
+        final TLE generatedTle = algorithm.generate(new SpacecraftState(orbit), initialTle);
         Assertions.assertEquals(initialTle.getLine1(), generatedTle.getLine1());
         Assertions.assertEquals(initialTle.getLine2(), generatedTle.getLine2());
         final TimeStampedPVCoordinates actualPvCoordinates = TLEPropagator.selectExtrapolator(generatedTle).getInitialState().getPVCoordinates();

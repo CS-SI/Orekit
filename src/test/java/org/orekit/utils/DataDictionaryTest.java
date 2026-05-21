@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Airbus Defence and Space
+/* Copyright 2002-2026 Airbus Defence and Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ public class DataDictionaryTest {
         dictionary.put("object", file);
 
         Assertions.assertArrayEquals(new double[]{1.0, 2.0, 3.0}, ((double[]) dictionary.get("a")), 1.0e-15);
-        Assertions.assertEquals("Lorem Ipsum", ((String) dictionary.get("string")));
+        Assertions.assertEquals("Lorem Ipsum", dictionary.get("string"));
         Assertions.assertEquals(9, dictionary.get("int"));
         Assertions.assertEquals(file, dictionary.get("object"));
     }
@@ -58,7 +58,7 @@ public class DataDictionaryTest {
         original.put("string", "Lorem Ipsum");
 
         DataDictionary copy = new DataDictionary(original);
-        Assertions.assertEquals("Lorem Ipsum", ((String) copy.get("string")));
+        Assertions.assertEquals("Lorem Ipsum", copy.get("string"));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class DataDictionaryTest {
         Assertions.assertFalse(dictionary.remove("not-a-key"));
         Assertions.assertEquals(2, dictionary.size());
 
-        Assertions.assertEquals("a", dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("a", dictionary.getData().getFirst().getKey());
         Assertions.assertEquals("b", dictionary.getData().get(1).getKey());
 
         dictionary.clear();
@@ -134,7 +134,7 @@ public class DataDictionaryTest {
         Assertions.assertArrayEquals(new double[]{1.0, 2.0, 3.0}, ((double[]) dictionary.get("a")), 1.0e-15);
         Assertions.assertEquals(file, dictionary.get("toreplace"));
         Assertions.assertEquals(9, dictionary.get("b"));
-        Assertions.assertEquals("a", dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("a", dictionary.getData().getFirst().getKey());
         Assertions.assertEquals("b", dictionary.getData().get(1).getKey());
         Assertions.assertEquals("toreplace", dictionary.getData().get(2).getKey());
     }
@@ -207,6 +207,57 @@ public class DataDictionaryTest {
         map.put("z", new double[]{});
         Assertions.assertEquals(4, map.size());
         Assertions.assertEquals(0, dictionary.size());
+    }
+
+    @Test
+    public void testToDoubleDictionarySkipsNonDoubles() {
+        // GIVEN
+        DataDictionary dictionary = new DataDictionary();
+        dictionary.put("arr", new double[]{1.0, 2.0});
+        dictionary.put("str", "hello");
+        dictionary.put("num", 42);
+        // WHEN
+        DoubleArrayDictionary result = dictionary.toDoubleDictionary();
+        // THEN
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertArrayEquals(new double[]{1.0, 2.0}, result.get("arr"), 1.0e-15);
+        Assertions.assertNull(result.getEntry("str"));
+        Assertions.assertNull(result.getEntry("num"));
+    }
+
+    @Test
+    public void testPutAllDictionaryCopiesEntries() {
+        // GIVEN
+        DataDictionary target = new DataDictionary();
+        target.put("a", new double[]{1.0});
+        target.put("b", "keep");
+        DataDictionary source = new DataDictionary();
+        source.put("c", new double[]{9.0});
+        source.put("b", "overwrite");
+        source.put("d", 7);
+        // WHEN
+        target.putAll(source);
+        // THEN
+        Assertions.assertEquals(4, target.size());
+        Assertions.assertArrayEquals(new double[]{1.0}, (double[]) target.get("a"), 1.0e-15);
+        Assertions.assertEquals("overwrite", target.get("b"));
+        Assertions.assertArrayEquals(new double[]{9.0}, (double[]) target.get("c"), 1.0e-15);
+        Assertions.assertEquals(7, target.get("d"));
+    }
+
+    @Test
+    public void testEntryOperationsNoOpOnNonDoubleEntry() {
+        // GIVEN
+        DataDictionary dictionary = new DataDictionary();
+        dictionary.put("s", "hello");
+        DoubleArrayDictionary raw = new DoubleArrayDictionary();
+        raw.put("x", new double[]{1.0});
+        // WHEN
+        dictionary.getEntry("s").increment(new double[]{1.0});
+        dictionary.getEntry("s").scaledIncrement(2.0, raw.getEntry("x"));
+        dictionary.getEntry("s").zero();
+        // THEN
+        Assertions.assertEquals("hello", dictionary.get("s"));
     }
 
     @BeforeEach

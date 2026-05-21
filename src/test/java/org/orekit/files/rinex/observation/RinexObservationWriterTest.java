@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.measurements.QuadraticClockModel;
+import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
 import org.orekit.files.rinex.section.RinexComment;
@@ -110,7 +110,7 @@ public class RinexObservationWriterTest {
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
             writer.setReceiverClockModel(robs.extractClockModel(2));
-            writer.writeObservationDataSet(robs.getObservationDataSets().get(0));
+            writer.writeObservationDataSet(robs.getObservationDataSets().getFirst());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.HEADER_NOT_WRITTEN, oe.getSpecifier());
@@ -259,23 +259,51 @@ public class RinexObservationWriterTest {
 
     private void checkRinexHeader(final RinexObservationHeader first, final RinexObservationHeader second,
                                   final double expectedDt) {
+
+        // base header
         Assertions.assertEquals(first.getFormatVersion(),          second.getFormatVersion(), 0.001);
+        Assertions.assertEquals(first.getFileType(),               second.getFileType());
         Assertions.assertEquals(first.getSatelliteSystem(),        second.getSatelliteSystem());
         Assertions.assertEquals(first.getProgramName(),            second.getProgramName());
         Assertions.assertEquals(first.getRunByName(),              second.getRunByName());
         Assertions.assertEquals(first.getCreationDateComponents(), second.getCreationDateComponents());
         Assertions.assertEquals(first.getCreationTimeZone(),       second.getCreationTimeZone());
         checkDate(first.getCreationDate(), second.getCreationDate(), 0.0);
+        Assertions.assertEquals(first.getReceiverNumber(),         second.getReceiverNumber());
+        Assertions.assertEquals(first.getReceiverType(),           second.getReceiverType());
+        Assertions.assertEquals(first.getReceiverVersion(),        second.getReceiverVersion());
+        Assertions.assertEquals(first.getLeapSecondsGNSS(),        second.getLeapSecondsGNSS());
+        Assertions.assertEquals(first.getLeapSecondsFuture(),      second.getLeapSecondsFuture());
+        Assertions.assertEquals(first.getLeapSecondsWeekNum(),     second.getLeapSecondsWeekNum());
+        Assertions.assertEquals(first.getLeapSecondsDayNum(),      second.getLeapSecondsDayNum());
         Assertions.assertEquals(first.getDoi(),                    second.getDoi());
         Assertions.assertEquals(first.getLicense(),                second.getLicense());
         Assertions.assertEquals(first.getStationInformation(),     second.getStationInformation());
+
+        // clock-obs header
+        Assertions.assertEquals(first.getListAppliedDCBS().size(), second.getListAppliedDCBS().size());
+        for (int i = 0; i < first.getListAppliedDCBS().size(); ++i) {
+            checkDCB(first.getListAppliedDCBS().get(i), second.getListAppliedDCBS().get(i));
+        }
+        Assertions.assertEquals(first.getListAppliedPCVS().size(), second.getListAppliedPCVS().size());
+        for (int i = 0; i < first.getListAppliedPCVS().size(); ++i) {
+            checkPCV(first.getListAppliedPCVS().get(i), second.getListAppliedPCVS().get(i));
+        }
+        Assertions.assertEquals(first.getTypeObs().size(), second.getTypeObs().size());
+        for (final Map.Entry<SatelliteSystem, List<String>> firstE : first.getTypeObs().entrySet()) {
+            List<String> firstT  = firstE.getValue();
+            List<String> secondT = second.getTypeObs().get(firstE.getKey());
+            Assertions.assertEquals(firstT.size(), secondT.size());
+            for (int i = 0; i < firstT.size(); ++i) {
+                Assertions.assertEquals(firstT.get(i), secondT.get(i));
+            }
+        }
+
+        // observation header
         Assertions.assertEquals(first.getMarkerName(),             second.getMarkerName());
         Assertions.assertEquals(first.getMarkerNumber(),           second.getMarkerNumber());
         Assertions.assertEquals(first.getObserverName(),           second.getObserverName());
         Assertions.assertEquals(first.getAgencyName(),             second.getAgencyName());
-        Assertions.assertEquals(first.getReceiverNumber(),         second.getReceiverNumber());
-        Assertions.assertEquals(first.getReceiverType(),           second.getReceiverType());
-        Assertions.assertEquals(first.getReceiverVersion(),        second.getReceiverVersion());
         Assertions.assertEquals(first.getAntennaNumber(),          second.getAntennaNumber());
         Assertions.assertEquals(first.getAntennaType(),            second.getAntennaType());
         checkVector(first.getApproxPos(), second.getApproxPos());
@@ -286,7 +314,6 @@ public class RinexObservationWriterTest {
         Assertions.assertEquals(first.getInterval(),               second.getInterval(),              1.0e-12);
         checkDate(first.getTFirstObs(), second.getTFirstObs(), expectedDt);
         checkDate(first.getTLastObs(),  second.getTLastObs(), expectedDt);
-        Assertions.assertEquals(first.getLeapSeconds(),            second.getLeapSeconds());
         Assertions.assertEquals(first.getMarkerType(),             second.getMarkerType());
         checkVector(first.getAntennaReferencePoint(),              second.getAntennaReferencePoint());
         Assertions.assertEquals(first.getObservationCode(),        second.getObservationCode());
@@ -299,14 +326,6 @@ public class RinexObservationWriterTest {
         Assertions.assertEquals(first.getLeapSecondsFuture(),      second.getLeapSecondsFuture());
         Assertions.assertEquals(first.getLeapSecondsWeekNum(),     second.getLeapSecondsWeekNum());
         Assertions.assertEquals(first.getLeapSecondsDayNum(),      second.getLeapSecondsDayNum());
-        Assertions.assertEquals(first.getListAppliedDCBS().size(), second.getListAppliedDCBS().size());
-        for (int i = 0; i < first.getListAppliedDCBS().size(); ++i) {
-            checkDCB(first.getListAppliedDCBS().get(i), second.getListAppliedDCBS().get(i));
-        }
-        Assertions.assertEquals(first.getListAppliedPCVS().size(), second.getListAppliedPCVS().size());
-        for (int i = 0; i < first.getListAppliedPCVS().size(); ++i) {
-            checkPCV(first.getListAppliedPCVS().get(i), second.getListAppliedPCVS().get(i));
-        }
         Assertions.assertEquals(first.getPhaseShiftCorrections().size(), second.getPhaseShiftCorrections().size());
         for (int i = 0; i < first.getPhaseShiftCorrections().size(); ++i) {
             checkPhaseShiftCorrection(first.getPhaseShiftCorrections().get(i), second.getPhaseShiftCorrections().get(i));
@@ -324,21 +343,12 @@ public class RinexObservationWriterTest {
         }
         Assertions.assertEquals(first.getNbSat(),      second.getNbSat());
         Assertions.assertEquals(first.getNbObsPerSat().size(), second.getNbObsPerSat().size());
-        for (final Map.Entry<SatInSystem, Map<ObservationType, Integer>> firstE : first.getNbObsPerSat().entrySet()) {
-            Map<ObservationType, Integer> firstV  = firstE.getValue();
-            Map<ObservationType, Integer> secondV = second.getNbObsPerSat().get(firstE.getKey());
+        for (final Map.Entry<SatInSystem, Map<String, Integer>> firstE : first.getNbObsPerSat().entrySet()) {
+            Map<String, Integer> firstV  = firstE.getValue();
+            Map<String, Integer> secondV = second.getNbObsPerSat().get(firstE.getKey());
             Assertions.assertEquals(firstV.size(), secondV.size());
-            for (final Map.Entry<ObservationType, Integer> firstF : firstV.entrySet()) {
+            for (final Map.Entry<String, Integer> firstF : firstV.entrySet()) {
                 Assertions.assertEquals(firstF.getValue(), secondV.get(firstF.getKey()));
-            }
-        }
-        Assertions.assertEquals(first.getTypeObs().size(), second.getTypeObs().size());
-        for (final Map.Entry<SatelliteSystem, List<ObservationType>> firstE : first.getTypeObs().entrySet()) {
-            List<ObservationType> firstT  = firstE.getValue();
-            List<ObservationType> secondT = second.getTypeObs().get(firstE.getKey());
-            Assertions.assertEquals(firstT.size(), secondT.size());
-            for (int i = 0; i < firstT.size(); ++i) {
-                Assertions.assertEquals(firstT.get(i), secondT.get(i));
             }
         }
         Assertions.assertTrue(Precision.equalsIncludingNaN(first.getC1cCodePhaseBias(), second.getC1cCodePhaseBias(), 1.0e-12));

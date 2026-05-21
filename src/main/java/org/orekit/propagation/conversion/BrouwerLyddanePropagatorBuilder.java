@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -283,7 +283,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagato
         // Initialize propagator
         final BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(createInitialOrbit(), getAttitudeProvider(), getMass(),
             provider, newM2);
-        propagator.getParametersDrivers().get(0).setSelected(isSelected);
+        propagator.getParametersDrivers().getFirst().setSelected(isSelected);
         getImpulseManeuvers().forEach(propagator::addEventDetector);
 
         // Return

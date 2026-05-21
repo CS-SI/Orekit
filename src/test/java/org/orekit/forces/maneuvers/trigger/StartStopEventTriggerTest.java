@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,25 +16,34 @@
  */
 package org.orekit.forces.maneuvers.trigger;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
+import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventEnablingPredicateFilter;
+import org.orekit.propagation.events.EventShifter;
+import org.orekit.propagation.events.EventSlopeFilter;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldEventEnablingPredicateFilter;
+import org.orekit.propagation.events.FieldEventShifter;
+import org.orekit.propagation.events.FieldEventSlopeFilter;
+import org.orekit.propagation.events.FilterType;
+import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.ParameterDriver;
 
-public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
+
+class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
 
     public static class StartStopDates extends StartStopEventsTrigger<DateDetector, DateDetector> {
 
@@ -48,30 +57,6 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
                   withThreshold(1.0e-10).
                   withHandler(new StopOnEvent()));
         }
-
-        @Override
-        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
-            D convertStartDetector(Field<S> field, DateDetector detector) {
-            final FieldAbsoluteDate<S> target = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
-            @SuppressWarnings("unchecked")
-            final D converted = (D) new FieldDateDetector<>(field, target);
-            return converted;
-        }
-
-        @Override
-        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
-        D convertStopDetector(Field<S> field, DateDetector detector) {
-            final FieldAbsoluteDate<S> target = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
-            @SuppressWarnings("unchecked")
-            final D converted = (D) new FieldDateDetector<>(field, target);
-            return converted;
-        }
-
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
-        }
-
     }
 
     protected StartStopEventsTrigger<DateDetector, DateDetector> createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
@@ -87,11 +72,45 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
         Assertions.assertEquals(2,     trigger.getEventDetectors().count());
         Assertions.assertEquals(2,     trigger.getFieldEventDetectors(Binary64Field.getInstance()).count());
         Assertions.assertEquals(2,     startDates.size());
-        Assertions.assertEquals(  0.0, startDates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        Assertions.assertEquals(  0.0, startDates.getFirst().getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
         Assertions.assertEquals(110.0, startDates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
         Assertions.assertEquals(2,     stopDates.size());
-        Assertions.assertEquals(100.0, stopDates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        Assertions.assertEquals(100.0, stopDates.getFirst().getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
         Assertions.assertEquals(120.0, stopDates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+    }
+
+    @Test
+    void testConvertDetector() {
+        // GIVEN
+        final EventShifter startDetector = new EventShifter(new DateDetector(), true, 1., 2.);
+        final EventSlopeFilter<EventDetector> slopeFilter = new EventSlopeFilter<>(new NodeDetector(FramesFactory.getGCRF()),
+                FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
+        final EventEnablingPredicateFilter stopDetector = new EventEnablingPredicateFilter(slopeFilter, (state, detector, g) -> true);
+        final StartStopEventsTrigger<EventShifter, EventDetector> trigger = new StartStopEventsTrigger<>(startDetector,
+                stopDetector);
+        final Binary64Field field = Binary64Field.getInstance();
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        // WHEN
+        final FieldEventDetector<Binary64> fieldStartDetector = trigger.convertDetector(field, startDetector);
+        final FieldEventDetector<Binary64> fieldStopDetector = trigger.convertDetector(field, stopDetector);
+        // THEN
+        Assertions.assertInstanceOf(FieldEventShifter.class, fieldStartDetector);
+        Assertions.assertEquals(startDetector.getThreshold(), fieldStartDetector.getThreshold().getReal());
+        final FieldEventShifter<Binary64> fieldEventShifter = (FieldEventShifter<Binary64>) fieldStartDetector;
+        Assertions.assertEquals(startDetector.isUseShiftedStates(), fieldEventShifter.isUseShiftedStates());
+        Assertions.assertEquals(startDetector.getIncreasingTimeShift(), fieldEventShifter.getIncreasingTimeShift().getReal());
+        Assertions.assertEquals(startDetector.getDecreasingTimeShift(), fieldEventShifter.getDecreasingTimeShift().getReal());
+        Assertions.assertInstanceOf(FieldEventEnablingPredicateFilter.class, fieldStopDetector);
+        Assertions.assertEquals(stopDetector.getThreshold(), fieldStopDetector.getThreshold().getReal());
+        final FieldEventEnablingPredicateFilter<Binary64> fieldEventEnablingPredicateFilter = (FieldEventEnablingPredicateFilter<Binary64>) fieldStopDetector;
+        Assertions.assertInstanceOf(FieldEventSlopeFilter.class, fieldEventEnablingPredicateFilter.getDetector());
+        final FieldEventSlopeFilter<?, Binary64> fieldEventSlopeFilter = (FieldEventSlopeFilter<?, Binary64>) (fieldEventEnablingPredicateFilter.getDetector());
+        Assertions.assertEquals(slopeFilter.getFilterType(), fieldEventSlopeFilter.getFilterType());
+        Assertions.assertEquals(startDetector.g(state), fieldStartDetector.g(fieldState).getReal());
+        stopDetector.init(state, AbsoluteDate.FUTURE_INFINITY);
+        fieldStopDetector.init(fieldState, FieldAbsoluteDate.getFutureInfinity(field));
+        Assertions.assertEquals(stopDetector.g(state), fieldStopDetector.g(fieldState).getReal());
     }
 
 }

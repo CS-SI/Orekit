@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,10 +82,10 @@ public class UTCTAIHistoryFilesLoader extends AbstractSelfFeedingLoader
     public static class Parser implements UTCTAIOffsetsLoader.Parser {
 
         /** Regular data lines pattern. */
-        private Pattern regularPattern;
+        private final Pattern regularPattern;
 
         /** Last line pattern pattern. */
-        private Pattern lastPattern;
+        private final Pattern lastPattern;
 
         /** Simple constructor.
          */

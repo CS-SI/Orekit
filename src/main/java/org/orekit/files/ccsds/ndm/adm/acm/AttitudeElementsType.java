@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,27 +36,46 @@ public enum AttitudeElementsType {
     /** Quaternion. */
     QUATERNION("Quaternion",
                "n/a", "n/a", "n/a", "n/a") {
+
         /** {@inheritDoc} */
         @Override
         public Rotation toRotation(final RotationOrder order, final double[] elements) {
             return new Rotation(elements[3], elements[0], elements[1], elements[2], true);
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] toRawElements(final Rotation rotation, final RotationOrder order) {
+            return new double[] {
+                rotation.getQ1(), rotation.getQ2(), rotation.getQ3(), rotation.getQ0()
+            };
+        }
+
     },
 
     /** Euler angles. */
     EULER_ANGLES("Euler angles",
                  "°", "°", "°") {
+
         /** {@inheritDoc} */
         @Override
         public Rotation toRotation(final RotationOrder order, final double[] elements) {
             return new Rotation(order, RotationConvention.FRAME_TRANSFORM,
                                 elements[0], elements[1], elements[2]);
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] toRawElements(final Rotation rotation, final RotationOrder order) {
+            return rotation.getAngles(order, RotationConvention.FRAME_TRANSFORM);
+        }
+
     },
 
     /** Direction cosine matrix. */
     DCM("Direction cosine matrix",
         "n/a", "n/a", "n/a", "n/a", "n/a", "n/a", "n/a", "n/a", "n/a") {
+
         /** {@inheritDoc} */
         @Override
         public Rotation toRotation(final RotationOrder order, final double[] elements) {
@@ -66,6 +85,18 @@ public enum AttitudeElementsType {
                 { elements[2], elements[5], elements[8] }
             }, 1.0e-10);
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] toRawElements(final Rotation rotation, final RotationOrder order) {
+            final double[][] matrix = rotation.getMatrix();
+            return new double[] {
+                matrix[0][0], matrix[1][0], matrix[2][0],
+                matrix[0][1], matrix[1][1], matrix[2][1],
+                matrix[0][2], matrix[1][2], matrix[2][2]
+            };
+        }
+
     };
 
     // CHECKSTYLE: resume MultipleStringLiterals check
@@ -100,6 +131,14 @@ public enum AttitudeElementsType {
      * @return rotation
      */
     public abstract Rotation toRotation(RotationOrder order, double[] elements);
+
+    /** Convert to raw elements array.
+     * @param rotation rotation
+     * @param order rotation order for Euler angles
+     * @return elements elements values in SI units
+     * @since 14.0
+     */
+    public abstract double[] toRawElements(Rotation rotation, RotationOrder order);
 
     /** {@inheritDoc} */
     @Override

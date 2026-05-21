@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,10 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -71,16 +74,22 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
     }
 
     /** Compute the measurement error due to Troposphere.
-     * @param station station
-     * @param state spacecraft state
+     * @param observer object that observes signal
+     * @param state    estimated spacecraft state
      * @return the measurement error due to Troposphere
      */
-    public double rangeRateErrorTroposphericModel(final GroundStation station,
+    public double rangeRateErrorTroposphericModel(final Observer observer,
                                                   final SpacecraftState state) {
         // The effect of tropospheric correction on the range rate is
         // computed using finite differences.
 
+        // Currently not calculating tropospheric delays for this type of observer
+        if (observer.isSpaceBased()) {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
+        }
+
         final double dt = 10; // s
+        final GroundStation station = (GroundStation) observer;
 
         // spacecraft position and elevation as seen from the ground station
         final Vector3D position = state.getPosition();
@@ -94,8 +103,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay in meters
             final double d1 = tropoModel.pathDelay(trackingCoordinates1,
                                                    station.getOffsetGeodeticPoint(state.getDate()),
-                                                   tropoModel.getParameters(state.getDate()), state.getDate()).
-                              getDelay();
+                                                   tropoModel.getParameters(state.getDate()), state.getDate()).getDelay();
 
             // propagate spacecraft state forward by dt
             final SpacecraftState state2 = state.shiftedBy(dt);
@@ -121,18 +129,25 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
 
 
     /** Compute the measurement error due to Troposphere.
-     * @param <T> type of the element
-     * @param station station
-     * @param state spacecraft state
+     * @param <T>        type of the element
+     * @param observer   object that observes signal
+     * @param state      estimated spacecraft state
      * @param parameters tropospheric model parameters
      * @return the measurement error due to Troposphere
      */
-    public <T extends CalculusFieldElement<T>> T rangeRateErrorTroposphericModel(final GroundStation station,
+    public <T extends CalculusFieldElement<T>> T rangeRateErrorTroposphericModel(final Observer observer,
                                                                                  final FieldSpacecraftState<T> state,
                                                                                  final T[] parameters) {
+
+        // Check to make sure Observer is NOT space-based
+        if (observer.isSpaceBased()) {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
+        }
+
         // Field
-        final Field<T> field = state.getDate().getField();
-        final T zero         = field.getZero();
+        final Field<T> field  = state.getDate().getField();
+        final T zero          = field.getZero();
+        final GroundStation station = (GroundStation) observer;
 
         // The effect of tropospheric correction on the range rate is
         // computed using finite differences.
@@ -149,8 +164,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay in meters
             final T d1 = tropoModel.pathDelay(trackingCoordinates1,
                                               station.getOffsetGeodeticPoint(state.getDate()),
-                                              parameters, state.getDate()).
-                         getDelay();
+                                              parameters, state.getDate()).getDelay();
 
             // propagate spacecraft state forward by dt
             final FieldSpacecraftState<T> state2 = state.shiftedBy(dt);

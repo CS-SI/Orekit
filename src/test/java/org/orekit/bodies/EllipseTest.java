@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,7 +84,7 @@ public class EllipseTest {
                                              new Vector3D(3.0e3, 4.0e3, 0.0),
                                              Vector3D.ZERO);
         TimeStampedPVCoordinates g0 = e.projectToEllipse(linearMotion);
-        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        List<TimeStampedPVCoordinates> sample = new ArrayList<>();
         for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
             sample.add(e.projectToEllipse(linearMotion.shiftedBy(dt)));
         }

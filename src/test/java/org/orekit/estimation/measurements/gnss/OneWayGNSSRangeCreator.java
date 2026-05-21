@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,11 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.ObserverSatellite;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.Constants;
 
 public class OneWayGNSSRangeCreator extends MeasurementCreator {
@@ -35,6 +37,7 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
     private final Vector3D             antennaPhaseCenter1;
     private final Vector3D             antennaPhaseCenter2;
     private final ObservableSatellite  local;
+    private final ObserverSatellite    remote;
 
     public OneWayGNSSRangeCreator(final BoundedPropagator ephemeris,
                                   final double localClockOffset,
@@ -49,25 +52,28 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
                                   final Vector3D antennaPhaseCenter2) {
         this.ephemeris           = ephemeris;
         this.remoteClk           = remoteClockOffset;
+        this.remote              = new ObserverSatellite("", ephemeris, new QuadraticClockModel(ephemeris.getMinDate(), remoteClockOffset, 0.0, 0.0));
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockBiasDriver().setValue(localClockOffset);
     }
 
     public ObservableSatellite getLocalSatellite() {
         return local;
     }
 
+    @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
-        if (local.getClockOffsetDriver().getReferenceDate() == null) {
-            local.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        if (local.getClockBiasDriver().getReferenceDate() == null) {
+            local.getClockBiasDriver().setReferenceDate(s0.getDate());
         }
     }
 
+    @Override
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double           localClk  = local.getClockOffsetDriver().getValue(currentState.getDate());
+            final double           localClk  = local.getClockBiasDriver().getValue(currentState.getDate());
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
@@ -94,7 +100,7 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
             final double downLinkDistance = Vector3D.distance(position, otherAtTransit);
 
             // Generate measurement
-            addMeasurement(new OneWayGNSSRange(ephemeris, remoteClk, date.shiftedBy(localClk), downLinkDistance + deltaD, 1.0, 10, local));
+            addMeasurement(new OneWayGNSSRange(remote, date.shiftedBy(localClk), downLinkDistance + deltaD, 1.0, 10, local));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);

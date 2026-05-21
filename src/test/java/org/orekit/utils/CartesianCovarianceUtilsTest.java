@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,8 +29,7 @@ import org.orekit.Utils;
 import org.orekit.frames.*;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.StateCovariance;
+import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.time.AbsoluteDate;
 
 class CartesianCovarianceUtilsTest {
@@ -100,7 +99,7 @@ class CartesianCovarianceUtilsTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

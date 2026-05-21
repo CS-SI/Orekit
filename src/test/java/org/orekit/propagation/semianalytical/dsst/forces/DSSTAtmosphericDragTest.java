@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -177,7 +177,7 @@ class DSSTAtmosphericDragTest {
         final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), 1);
 
         // Set the force models
-        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
 
         drag.registerAttitudeProvider(attitudeProvider);
         shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters(meanState.getDate())));

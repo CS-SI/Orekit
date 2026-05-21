@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm;
 import org.hipparchus.complex.Quaternion;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.cdm.AdditionalParameters;
 import org.orekit.files.ccsds.ndm.odm.ocm.OrbitPhysicalProperties;
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -103,17 +102,6 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /**
      * Simple constructor.
      *
-     * @deprecated in favor of
-     * {@link #CommonPhysicalProperties(CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public CommonPhysicalProperties() {
-        this(new OrekitCcsdsFrameMapper());
-    }
-
-    /**
-     * Simple constructor.
-     *
      * @param frameMapper for creating a {@link Frame}.
      * @since 13.1.5
      */
@@ -142,12 +130,6 @@ public class CommonPhysicalProperties extends CommentsContainer {
         vmApparent               = Double.NaN;
         vmApparentMax            = Double.NaN;
         reflectance              = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void validate(final double version) {
-        super.validate(version);
     }
 
     /** Get the Optimally Enclosing Box parent reference frame.

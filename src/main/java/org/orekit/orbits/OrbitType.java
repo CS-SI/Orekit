@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1106,7 +1106,7 @@ public enum OrbitType {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();
-        final double r2 = pv.getPosition().getNormSq();
+        final double r2 = pv.getPosition().getNorm2Sq();
         final double v  = pv.getVelocity().getNorm();
         final double dV = orbit.getMu() * dP / (v * r2);
 

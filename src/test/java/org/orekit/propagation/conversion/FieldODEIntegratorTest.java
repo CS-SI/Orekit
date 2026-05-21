@@ -217,20 +217,20 @@ public class FieldODEIntegratorTest {
         assertBuiltIntegrator(referenceIntegrator01, builtIntegrator01, orbit);
         assertBuiltIntegrator(referenceIntegrator02, builtIntegrator02, orbit);
         assertBuiltIntegrator(referenceIntegrator03, builtIntegrator03, orbit);
-        assertBuiltIntegrator(referenceIntegrator03, builtIntegrator03Bis, orbit);
+        assertBuiltIntegrator(new ClassicalRungeKuttaFieldIntegrator<>(field, fieldStep), builtIntegrator03Bis, orbit);
         assertBuiltIntegrator(referenceIntegrator04, builtIntegrator04, orbit);
         assertBuiltIntegrator(referenceIntegrator05, builtIntegrator05, orbit);
         assertBuiltIntegrator(referenceIntegrator06, builtIntegrator06, orbit);
-        assertBuiltIntegrator(referenceIntegrator06, builtIntegrator06Bis, orbit);
+        assertBuiltIntegrator(new EulerFieldIntegrator<>(field, fieldStep), builtIntegrator06Bis, orbit);
         assertBuiltIntegrator(referenceIntegrator07, builtIntegrator07, orbit);
-        assertBuiltIntegrator(referenceIntegrator07, builtIntegrator07Bis, orbit);
+        assertBuiltIntegrator(new GillFieldIntegrator<>(field, fieldStep), builtIntegrator07Bis, orbit);
         assertBuiltIntegrator(referenceIntegrator08, builtIntegrator08, orbit);
         assertBuiltIntegrator(referenceIntegrator09, builtIntegrator09, orbit);
-        assertBuiltIntegrator(referenceIntegrator09, builtIntegrator09Bis, orbit);
+        assertBuiltIntegrator(new LutherFieldIntegrator<>(field, fieldStep), builtIntegrator09Bis, orbit);
         assertBuiltIntegrator(referenceIntegrator10, builtIntegrator10, orbit);
-        assertBuiltIntegrator(referenceIntegrator10, builtIntegrator10Bis, orbit);
+        assertBuiltIntegrator(new MidpointFieldIntegrator<>(field, fieldStep), builtIntegrator10Bis, orbit);
         assertBuiltIntegrator(referenceIntegrator11, builtIntegrator11, orbit);
-        assertBuiltIntegrator(referenceIntegrator11, builtIntegrator11Bis, orbit);
+        assertBuiltIntegrator(new ThreeEighthesFieldIntegrator<>(field, fieldStep), builtIntegrator11Bis, orbit);
     }
 
     @Test
@@ -257,14 +257,14 @@ public class FieldODEIntegratorTest {
 
         // Create propagator with reference integrator and initialize its state
         final FieldNumericalPropagator<Binary64> referencePropagator =
-                new FieldNumericalPropagator<>(field, referenceIntegrator);
+                new FieldNumericalPropagator<>(referenceIntegrator);
         referencePropagator.setInitialState(initialState);
         referencePropagator.addForceModel(sunAttraction);
         referencePropagator.addForceModel(moonAttraction);
 
         // Create propagator with built integrator and initialize its state
         final FieldNumericalPropagator<Binary64> builtPropagator =
-                new FieldNumericalPropagator<>(field, builtIntegrator);
+                new FieldNumericalPropagator<>(builtIntegrator);
         builtPropagator.setInitialState(initialState);
         builtPropagator.addForceModel(sunAttraction);
         builtPropagator.addForceModel(moonAttraction);

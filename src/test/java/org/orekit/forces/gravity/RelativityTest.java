@@ -77,10 +77,10 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                         getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).
                         getValue(state.getDate().toAbsoluteDate());
             //radius
-            final DerivativeStructure r2 = position.getNormSq();
+            final DerivativeStructure r2 = position.getNorm2Sq();
             final DerivativeStructure r = r2.sqrt();
             //speed squared
-            final DerivativeStructure s2 = velocity.getNormSq();
+            final DerivativeStructure s2 = velocity.getNorm2Sq();
             final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
             //eq. 3.146
             return new FieldVector3D<>(r.reciprocal().multiply(4 * gm).subtract(s2),
@@ -104,10 +104,10 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                         getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).
                         getValue(state.getDate().toAbsoluteDate());
             //radius
-            final Gradient r2 = position.getNormSq();
+            final Gradient r2 = position.getNorm2Sq();
             final Gradient r = r2.sqrt();
             //speed squared
-            final Gradient s2 = velocity.getNormSq();
+            final Gradient s2 = velocity.getNorm2Sq();
             final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
             //eq. 3.146
             return new FieldVector3D<>(r.reciprocal().multiply(4 * gm).subtract(s2),
@@ -150,7 +150,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         //force is ~1e-8 so this give ~3 sig figs.
         double tol = 2e-11;
         Vector3D circularApproximation = p.normalize().scalarMultiply(
-                gm / p.getNormSq() * 3 * v.getNormSq() / (c * c));
+                gm / p.getNorm2Sq() * 3 * v.getNorm2Sq() / (c * c));
         Assertions.assertEquals(
                 0,
                 acceleration.subtract(circularApproximation).getNorm(),
@@ -228,7 +228,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         Vector3D p = pv.getPosition();
         Vector3D v = pv.getVelocity();
         Vector3D circularApproximation = p.normalize().scalarMultiply(
-                gm / p.getNormSq() * 3 * v.getNormSq() / (c * c));
+                gm / p.getNorm2Sq() * 3 * v.getNorm2Sq() / (c * c));
         Assertions.assertEquals(
                 0,
                 acceleration.subtract(circularApproximation).getNorm(),
@@ -293,7 +293,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -355,7 +355,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -416,7 +416,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 

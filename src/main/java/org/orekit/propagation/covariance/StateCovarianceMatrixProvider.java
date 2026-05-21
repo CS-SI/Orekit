@@ -1,0 +1,228 @@
+/* Copyright 2002-2026 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.propagation.covariance;
+
+import org.hipparchus.linear.RealMatrix;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.AdditionalDataProvider;
+import org.orekit.propagation.MatricesHarvester;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+
+/**
+ * Additional state provider for state covariance matrix.
+ * <p>
+ * This additional state provider allows computing a propagated covariance matrix based on a user defined input state
+ * covariance matrix. The computation of the propagated covariance matrix uses the State Transition Matrix between the
+ * propagated spacecraft state and the initial state. As a result, the user must define the name
+ * {@link #stmName of the provider for the State Transition Matrix}. The STM is assumed to be the identity at the
+ * covariance epoch, if it is not, results will not be consistent.
+ * <p>
+ * As the State Transition Matrix and the input state covariance matrix can be expressed in different orbit types, the
+ * user must specify both orbit types when building the covariance provider. In addition, the position angle used in
+ * both matrices must also be specified.
+ * <p>
+ * In order to add this additional state provider to an orbit propagator, user must use the
+ * {@link Propagator#addAdditionalDataProvider(AdditionalDataProvider)} method.
+ * <p>
+ * For a given propagated spacecraft {@code state}, the propagated state covariance matrix is accessible through the
+ * method {@link #getStateCovariance(SpacecraftState)}
+ * <p>
+ * The provider must be initialized with the same epoch as the reference covariance. This means either that the very first
+ * propagation must start from this date or the {@link #init(SpacecraftState, AbsoluteDate)} (SpacecraftState)
+ * must be called manually once before use. Failure to do so will result in an {@link NullPointerException}.
+ *
+ * @author Bryan Cazabonne
+ * @author Vincent Cucchietti
+ * @since 11.3
+ */
+public class StateCovarianceMatrixProvider implements AdditionalDataProvider<RealMatrix> {
+
+    /** Dimension of the state. */
+    private static final int ORBITAL_STATE_DIMENSION = 6;
+
+    /** Name of the state for State Transition Matrix. */
+    private final String stmName;
+
+    /** Matrix harvester to access the State Transition Matrix. */
+    private final MatricesHarvester harvester;
+
+    /** Name of the additional state. */
+    private final String additionalName;
+
+    /** Orbit type used for the State Transition Matrix. */
+    private final OrbitType stmOrbitType;
+
+    /** Position angle used for State Transition Matrix. */
+    private final PositionAngleType stmAngleType;
+
+    /** Orbit type for the covariance matrix. */
+    private final OrbitType covOrbitType;
+
+    /** Position angle used for the covariance matrix. */
+    private final PositionAngleType covAngleType;
+
+    /** Reference state covariance. */
+    private final StateCovariance covRef;
+
+    /** State covariance matrix adapted for STM. */
+    private RealMatrix covMatrixRef;
+
+    /**
+     * Constructor.
+     *
+     * @param additionalName name of the additional state
+     * @param stmName name of the state for State Transition Matrix
+     * @param harvester matrix harvester as returned by
+     * {@code propagator.setupMatricesComputation(stmName, null, null)}
+     * @param covRef reference state covariance
+     */
+    public StateCovarianceMatrixProvider(final String additionalName, final String stmName,
+                                         final MatricesHarvester harvester, final StateCovariance covRef) {
+        // Initialize fields
+        this.additionalName = additionalName;
+        this.stmName = stmName;
+        this.harvester = harvester;
+        this.covRef = covRef;
+        this.covOrbitType = covRef.getOrbitType();
+        this.covAngleType = covRef.getPositionAngleType();
+        this.stmOrbitType = harvester.getOrbitType();
+        this.stmAngleType = harvester.getPositionAngleType();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return additionalName;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        if (initialState.getDate().isEqualTo(covRef.getDate())) {
+            // Convert the initial state covariance in the same orbit type and frame as the STM
+            final Orbit initialOrbit = initialState.getOrbit();
+            StateCovariance covariance = covRef.changeCovarianceFrame(initialOrbit, initialState.getFrame());
+            covariance = covariance.changeCovarianceType(initialOrbit, stmOrbitType, stmAngleType);
+            covMatrixRef = covariance.getMatrix();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The covariance matrix can be computed only if the State Transition Matrix state is available.
+     * </p>
+     */
+    @Override
+    public boolean yields(final SpacecraftState state) {
+        return !state.hasAdditionalData(stmName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getAdditionalData(final SpacecraftState state) {
+
+        // State transition matrix for the input state
+        final int inclusiveSize = ORBITAL_STATE_DIMENSION - 1;
+        final RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state).getSubMatrix(0, inclusiveSize, 0, inclusiveSize);
+
+        // Compute the propagated covariance matrix
+        RealMatrix propCov = dYdY0.multiply(covMatrixRef.multiplyTransposed(dYdY0));
+        final StateCovariance propagated = new StateCovariance(propCov, state.getDate(), state.getFrame(), stmOrbitType, stmAngleType);
+
+        // Update to the user defined type
+        propCov = propagated.changeCovarianceType(state.getOrbit(), covOrbitType, covAngleType).getMatrix();
+
+        // Return the propagated covariance matrix
+        return propCov;
+
+    }
+
+    /**
+     * Get the orbit type in which the covariance matrix is expressed.
+     *
+     * @return the orbit type
+     */
+    public OrbitType getCovarianceOrbitType() {
+        return covOrbitType;
+    }
+
+    /**
+     * Get the state covariance in the same frame/local orbital frame, orbit type and position angle as the reference
+     * covariance.
+     *
+     * @param state spacecraft state to which the covariance matrix should correspond
+     * @return the state covariance
+     * @see #getStateCovariance(SpacecraftState, Frame)
+     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngleType)
+     */
+    public StateCovariance getStateCovariance(final SpacecraftState state) {
+
+        // Get the current propagated covariance
+        final RealMatrix covarianceMatrix = getAdditionalData(state);
+
+        // Create associated state covariance
+        final StateCovariance covariance =
+                new StateCovariance(covarianceMatrix, state.getDate(), state.getFrame(), covOrbitType, covAngleType);
+
+        // Return the state covariance in same frame/lof as reference covariance
+        if (covRef.getLOF() == null) {
+            return covariance;
+        }
+        else {
+            return covariance.changeCovarianceFrame(state.getOrbit(), covRef.getLOF());
+        }
+
+    }
+
+    /**
+     * Get the state covariance expressed in a given frame.
+     * <p>
+     * The output covariance matrix is expressed in the same orbit type as {@link #getCovarianceOrbitType()}.
+     *
+     * @param state spacecraft state to which the covariance matrix should correspond
+     * @param frame output frame for which the output covariance matrix must be expressed (must be inertial)
+     * @return the state covariance expressed in <code>frame</code>
+     * @see #getStateCovariance(SpacecraftState)
+     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngleType)
+     */
+    public StateCovariance getStateCovariance(final SpacecraftState state, final Frame frame) {
+        // Return the converted covariance
+        return getStateCovariance(state).changeCovarianceFrame(state.getOrbit(), frame);
+    }
+
+    /**
+     * Get the state covariance expressed in a given orbit type.
+     *
+     * @param state spacecraft state to which the covariance matrix should correspond
+     * @param orbitType output orbit type
+     * @param angleType output position angle (not used if orbitType equals {@code CARTESIAN})
+     * @return the state covariance in <code>orbitType</code> and <code>angleType</code>
+     * @see #getStateCovariance(SpacecraftState)
+     * @see #getStateCovariance(SpacecraftState, Frame)
+     */
+    public StateCovariance getStateCovariance(final SpacecraftState state, final OrbitType orbitType,
+                                              final PositionAngleType angleType) {
+        // Return the converted covariance
+        return getStateCovariance(state).changeCovarianceType(state.getOrbit(), orbitType, angleType);
+    }
+}

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,6 +39,7 @@ import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Formatter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -97,7 +98,7 @@ public enum AttitudeType {
             }
 
             // Return
-            return new TimeStampedAngularCoordinates(date, rotation, Vector3D.ZERO, Vector3D.ZERO);
+            return new TimeStampedAngularCoordinates(date, new AngularCoordinates(rotation));
 
         }
 
@@ -329,7 +330,7 @@ public enum AttitudeType {
             }
 
             // Return
-            return new TimeStampedAngularCoordinates(date, rotation, Vector3D.ZERO, Vector3D.ZERO);
+            return new TimeStampedAngularCoordinates(date, new AngularCoordinates(rotation));
         }
 
     },
@@ -884,26 +885,14 @@ public enum AttitudeType {
         return isSpacecraftBodyRate ? rate : rotation.applyTo(rate);
     }
 
-    /** Container for a name associated to a format version.
+    /**
+     * Container for a name associated to a format version.
+     *
+     * @param since Version at which this name was defined.
+     * @param name  Name.
      * @since 12.0
      */
-    private static class VersionedName {
-
-        /** Version at which this name was defined. */
-        private final double since;
-
-        /** Name. */
-        private final String name;
-
-        /** Simple constructor.
-         * @param since version at which this name was defined
-         * @param name name
-         */
-        VersionedName(final double since, final String name) {
-            this.since = since;
-            this.name  = name;
-        }
-
+    private record VersionedName(double since, String name) {
     }
 
 }

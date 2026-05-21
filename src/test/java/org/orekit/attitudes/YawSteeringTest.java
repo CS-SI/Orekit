@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -161,7 +161,7 @@ class YawSteeringTest {
                                              CelestialBodyFactory.getSun(),
                                              Vector3D.MINUS_I);
 
-        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        List<TimeStampedPVCoordinates> sample = new ArrayList<>();
         for (double dt = -0.1; dt < 0.1; dt += 0.05) {
             Orbit o = circOrbit.shiftedBy(dt);
             sample.add(law.getTargetPV(o, o.getDate(), o.getFrame()));

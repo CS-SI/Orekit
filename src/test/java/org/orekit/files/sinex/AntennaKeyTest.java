@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Thales Alenia Space
+/* Copyright 2002-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ public class AntennaKeyTest {
     public void testMatchingCandidates() {
 
         Assertions.assertEquals(4, key1.matchingCandidates().size());
-        Assertions.assertSame(key1, key1.matchingCandidates().get(0));
+        Assertions.assertSame(key1, key1.matchingCandidates().getFirst());
         Assertions.assertNotEquals(key1, key1.matchingCandidates().get(1));
         Assertions.assertNotEquals(key1, key1.matchingCandidates().get(2));
         Assertions.assertNotEquals(key1, key1.matchingCandidates().get(3));
@@ -59,7 +59,7 @@ public class AntennaKeyTest {
                                 key1.matchingCandidates().get(3));
 
         Assertions.assertEquals(4, key2.matchingCandidates().size());
-        Assertions.assertSame(key2, key2.matchingCandidates().get(0));
+        Assertions.assertSame(key2, key2.matchingCandidates().getFirst());
         Assertions.assertEquals(key2, key2.matchingCandidates().get(1));
         Assertions.assertEquals(key2, key2.matchingCandidates().get(2));
         Assertions.assertEquals(key2, key2.matchingCandidates().get(3));

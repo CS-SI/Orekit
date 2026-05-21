@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,16 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.orekit.TestUtils;
+import org.orekit.Utils;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -40,15 +47,20 @@ import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class InterSatellitesRangeTest {
+class InterSatellitesRangeTest {
 
 
     /**
@@ -56,7 +68,7 @@ public class InterSatellitesRangeTest {
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest inter-satellites Range Values\n");
@@ -70,19 +82,19 @@ public class InterSatellitesRangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesEmitter() {
+    void testStateDerivativesEmitter() {
 
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest inter-satellites Range State Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 1.6e-10;
-        double refErrorsPMean   = 4.2e-10;
-        double refErrorsPMax    = 1.6e-08;
+        double refErrorsPMedian = 1.8e-09;
+        double refErrorsPMean   = 6.2e-09;
+        double refErrorsPMax    = 1.7e-07;
         double refErrorsVMedian = 1.7e-03;
-        double refErrorsVMean   = 3.6e-03;
-        double refErrorsVMax    = 7.9e-02;
+        double refErrorsVMean   = 3.9e-03;
+        double refErrorsVMax    = 1.1e-01;
         this.genericTestStateDerivatives(printResults, 0,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -93,19 +105,19 @@ public class InterSatellitesRangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesTransit() {
+    void testStateDerivativesTransit() {
 
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest inter-satellites Range State Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 1.6e-10;
-        double refErrorsPMean   = 4.2e-10;
-        double refErrorsPMax    = 1.6e-08;
-        double refErrorsVMedian = 7.2e-04;
-        double refErrorsVMean   = 1.3e-03;
-        double refErrorsVMax    = 2.0e-02;
+        double refErrorsPMedian = 3.8e-10;
+        double refErrorsPMean   = 2.0e-09;
+        double refErrorsPMax    = 1.3e-07;
+        double refErrorsVMedian = 8.4e-04;
+        double refErrorsVMean   = 1.8e-03;
+        double refErrorsVMax    = 2.9e-02;
         this.genericTestStateDerivatives(printResults, 1,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -120,7 +132,7 @@ public class InterSatellitesRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range measurements
@@ -227,7 +239,7 @@ public class InterSatellitesRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -250,15 +262,15 @@ public class InterSatellitesRangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 2.2e-7);
-        Assertions.assertEquals(0.0, absErrorsMin,    1.4e-6);
-        Assertions.assertEquals(0.0, absErrorsMax,    2.0e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 4.1e-12);
+        Assertions.assertEquals(0.0, absErrorsMedian, 2.6e-7);
+        Assertions.assertEquals(0.0, absErrorsMin,    2.2e-6);
+        Assertions.assertEquals(0.0, absErrorsMax,    3.1e-7);
+        Assertions.assertEquals(0.0, relErrorsMedian, 5.4e-12);
         Assertions.assertEquals(0.0, relErrorsMax,    5.0e-11);
 
         // Test measurement type
         Assertions.assertEquals(InterSatellitesRange.MEASUREMENT_TYPE,
-                                measurements.get(0).getMeasurementType());
+                                measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -268,7 +280,7 @@ public class InterSatellitesRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range measurements
@@ -387,7 +399,7 @@ public class InterSatellitesRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -422,12 +434,12 @@ public class InterSatellitesRangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Run test
         double refErrorsMedian = 1.0e-12;
-        double refErrorsMean   = 4.0e-9;
-        double refErrorsMax    = 2.0e-7;
+        double refErrorsMean   = 4.0e-8;
+        double refErrorsMax    = 2.0e-6;
         this.genericTestParameterDerivatives(refErrorsMedian, refErrorsMean, refErrorsMax);
 
     }
@@ -437,7 +449,7 @@ public class InterSatellitesRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites phase measurements
@@ -458,8 +470,8 @@ public class InterSatellitesRangeTest {
         final InterSatellitesRangeMeasurementCreator creator = new InterSatellitesRangeMeasurementCreator(ephemeris,
                                                                                                           localClockOffset,
                                                                                                           remoteClockOffset);
-        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -493,14 +505,14 @@ public class InterSatellitesRangeTest {
                         ephemeris.propagate(date)
                     };
                     ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockOffsetDriver(),
-                        measurement.getSatellites().get(1).getClockOffsetDriver()
+                        measurement.getSatellites().getFirst().getClockBiasDriver(),
+                        measurement.getSatellites().get(1).getClockBiasDriver()
                     };
 
                     // Only local satellite clock offset is considered for two ways measurements
                     if (((InterSatellitesRange) measurement).isTwoWay()) {
                         drivers = new ParameterDriver[] {
-                            measurement.getSatellites().get(0).getClockOffsetDriver()
+                            measurement.getSatellites().getFirst().getClockBiasDriver()
                         };
                     }
 
@@ -541,7 +553,7 @@ public class InterSatellitesRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
@@ -557,4 +569,83 @@ public class InterSatellitesRangeTest {
 
     }
 
+    @Test
+    void testEstimateNoRelativeVelocity() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final Orbit orbit = new EquinoctialOrbit(7e6, 0., 0., 0., 0., 0., PositionAngleType.TRUE,
+                gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final Orbit otherOrbit = new EquinoctialOrbit(7e6, 0., 0., 0., 0., 0.1, PositionAngleType.TRUE,
+                gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit), new SpacecraftState(otherOrbit)};
+        final ObservableSatellite sat0 = new ObservableSatellite(0);
+        final ObservableSatellite sat1 = new ObservableSatellite(1);
+        final SignalTravelTimeModel instantaneousSignal = new SignalTravelTimeModel(((iteration, previous, current) -> true));
+        // WHEN
+        final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, false, epoch, 0., new MeasurementQuality(new double[] {1.}),
+                instantaneousSignal);
+        final EstimatedMeasurementBase<InterSatellitesRange> estimated = range.estimateWithoutDerivatives(state);
+        // THEN
+        final double expectedRange = orbit.getPosition().subtract(otherOrbit.getPosition()).getNorm2();
+        assertEquals(expectedRange, estimated.getEstimatedValue()[0], 1);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testParticipantsWithoutDerivatives(final boolean twoWay) {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit),
+                new SpacecraftState(TestUtils.getDefaultOrbit(epoch))};
+        final ObservableSatellite sat0 = new ObservableSatellite(0);
+        sat0.getClockBiasDriver().setValue(0.1);
+        sat0.getClockBiasDriver().setReferenceDate(epoch);
+        final ObservableSatellite sat1 = new ObservableSatellite(1);
+        sat1.getClockBiasDriver().setValue(0.2);
+        sat1.getClockDriftDriver().setValue(0.01);
+        sat1.getClockBiasDriver().setReferenceDate(epoch);
+        // WHEN
+        final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, twoWay, epoch, 0., 1., 1.);
+        final EstimatedMeasurementBase<InterSatellitesRange> estimatedWithoutDerivatives = range.estimateWithoutDerivatives(state);
+        // THEN
+        final EstimatedMeasurement<InterSatellitesRange> estimated = range.estimate(0, 0, state);
+        assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-7);
+        assertEquals(estimated.getStates()[0].getDate(), estimatedWithoutDerivatives.getStates()[0].getDate());
+        assertArrayEquals(estimated.getStates()[0].getPosition().toArray(), estimatedWithoutDerivatives.getStates()[0].getPosition().toArray(), 1e-10);
+        assertEquals(estimated.getStates()[1].getDate(), estimatedWithoutDerivatives.getStates()[1].getDate());
+        assertArrayEquals(estimated.getStates()[1].getPosition().toArray(), estimatedWithoutDerivatives.getStates()[1].getPosition().toArray(), 1e-10);
+        compareParticipants(estimated, estimatedWithoutDerivatives, twoWay);
+    }
+
+    private void compareParticipants(final EstimatedMeasurementBase<?> expected, final EstimatedMeasurementBase<?> actual,
+                                     final boolean twoWay) {
+        final TimeStampedPVCoordinates firstParticipant = expected.getParticipants()[0];
+        final TimeStampedPVCoordinates secondParticipant = expected.getParticipants()[1];
+        final TimeStampedPVCoordinates expectedFirstParticipant = actual.getParticipants()[0];
+        final TimeStampedPVCoordinates expectedSecondParticipant = actual.getParticipants()[1];
+        final double tolerance = 1e-7;
+        assertCloseDate(expectedFirstParticipant.getDate(), firstParticipant.getDate());
+        assertArrayEquals(expectedFirstParticipant.getPosition().toArray(), firstParticipant.getPosition().toArray(), tolerance);
+        assertCloseDate(expectedSecondParticipant.getDate(), secondParticipant.getDate());
+        assertArrayEquals(expectedSecondParticipant.getPosition().toArray(), secondParticipant.getPosition().toArray(), tolerance);
+        if (twoWay) {
+            final TimeStampedPVCoordinates thirdParticipant = expected.getParticipants()[2];
+            final TimeStampedPVCoordinates expectedThirdParticipant = actual.getParticipants()[2];
+            assertCloseDate(expectedThirdParticipant.getDate(), thirdParticipant.getDate());
+            assertArrayEquals(expectedThirdParticipant.getPosition().toArray(), thirdParticipant.getPosition().toArray(), tolerance);
+        }
+    }
+
+    private void assertCloseDate(final AbsoluteDate expected, final AbsoluteDate actual) {
+        assertTrue(expected.isCloseTo(actual, 1e-11));
+    }
 }

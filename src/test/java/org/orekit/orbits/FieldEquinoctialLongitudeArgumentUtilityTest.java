@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,12 @@
  */
 package org.orekit.orbits;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.Binary64;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,6 +35,31 @@ class FieldEquinoctialLongitudeArgumentUtilityTest {
     private static final Complex EX = new Complex(0.1, 0.);
     private static final Complex EY = new Complex(0.66, 0.);
     private static final double TOLERANCE = 1e-10;
+
+    @Test
+    void testIssue1764() {
+        final double mu = 1.0;
+        final double dt = FastMath.PI / 2.0;
+
+        final DSFactory factory = new DSFactory(2, 6);
+        final DerivativeStructure aDs = factory.variable(0, 1.0);
+        final DerivativeStructure eDs = factory.variable(1, 1e-12);
+
+        final SinCos sc = FastMath.sinCos(FastMath.PI / 6.0);
+        final DerivativeStructure exDs = eDs.multiply(sc.cos());
+        final DerivativeStructure eyDs = eDs.multiply(sc.sin());
+
+        final DerivativeStructure nDs = aDs.pow(3).reciprocal().multiply(mu).sqrt();
+        final DerivativeStructure MDs = nDs.multiply(dt);
+
+        final DerivativeStructure EDs = FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(exDs, eyDs, MDs);
+        final DerivativeStructure zDs = FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(exDs, eyDs, EDs).subtract(MDs);
+
+        final double[] derivatives = zDs.getAllDerivatives();
+        for (int i = 1; i < derivatives.length; i++) {
+            Assertions.assertEquals(0., derivatives[i], 1e-12);
+        }
+    }
 
     @Test
     void testMeanToTrueAndBack() {

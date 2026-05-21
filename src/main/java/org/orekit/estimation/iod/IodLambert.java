@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,12 @@
  */
 package org.orekit.estimation.iod;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.orekit.control.heuristics.lambert.LambertBoundaryConditions;
 import org.orekit.control.heuristics.lambert.LambertBoundaryVelocities;
+import org.orekit.control.heuristics.lambert.LambertSolution;
 import org.orekit.control.heuristics.lambert.LambertSolver;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -44,12 +46,24 @@ public class IodLambert {
     /** gravitational constant. */
     private final double mu;
 
-    /** Creator.
+    /** solver for the Lambert problem. */
+    private final LambertSolver lambertSolver;
+
+    /** Creator with a provided Lambert solver.
+     *
+     * @param lambertSolver solver for the Lambert problem
+     */
+    public IodLambert(final LambertSolver lambertSolver) {
+        this.mu = lambertSolver.getMu();
+        this.lambertSolver = lambertSolver;
+    }
+
+    /** Creator with a Lambert solver with default Householder solver parameters.
      *
      * @param mu gravitational constant
-     */
+    */
     public IodLambert(final double mu) {
-        this.mu = mu;
+        this(new LambertSolver(mu));
     }
 
     /** Estimate an initial orbit from two position measurements.
@@ -167,10 +181,18 @@ public class IodLambert {
         if (tau < 0.) {
             throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, t1, t2, -tau);
         }
-        final LambertSolver solver = new LambertSolver(mu);
+        final LambertSolver solver = lambertSolver;
         final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(t1, p1, t2, p2,
                 frame);
-        final LambertBoundaryVelocities velocities = solver.solve(posigrade, nRev, boundaryConditions);
+        final List<LambertSolution> solutionsList = solver.solve(posigrade, nRev, boundaryConditions);
+        final LambertBoundaryVelocities velocities;
+        if (nRev > 0 && !posigrade) {
+            // to reproduce previous behaviour, we grab the high path solution
+            velocities = solutionsList.get(1).getBoundaryVelocities();
+        } else {
+            // then we are getting either the only solution (case nRev = 0) or the low path solution for a multi-revolution, posigrade transfer problem
+            velocities = solutionsList.getFirst().getBoundaryVelocities();
+        }
         if (velocities == null) {
             return null;
         } else {
@@ -178,29 +200,4 @@ public class IodLambert {
                     frame, mu);
         }
     }
-
-    /** Lambert's solver for the historical, planar problem.
-     * Assume mu=1.
-     *
-     * @param r1 radius 1
-     * @param r2  radius 2
-     * @param dth sweep angle
-     * @param tau time of flight
-     * @param mRev number of revs
-     * @param V1 velocity at departure in (T, N) basis
-     * @return exit flag
-     * @deprecated as of 13.1, use {@link LambertSolver}
-     */
-    boolean solveLambertPb(final double r1, final double r2, final double dth, final double tau,
-                           final int mRev, final double[] V1) {
-        final Vector2D solution = LambertSolver.solveNormalized2D(r1, r2, dth, tau, mRev);
-        if (solution == Vector2D.NaN) {
-            return false;
-        } else {
-            V1[0] = solution.getX();
-            V1[1] = solution.getY();
-            return true;
-        }
-    }
-
 }

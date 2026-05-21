@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
@@ -118,7 +119,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
     private final boolean forwardPropagation;
 
     /** Model function value. */
-    private RealVector value;
+    private final RealVector value;
 
     /** Harvesters for extracting State Transition Matrices and Jacobians from integrated states.
      * @since 11.1
@@ -126,7 +127,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
     private final MatricesHarvester[] harvesters;
 
     /** Model function Jacobian. */
-    private RealMatrix jacobian;
+    private final RealMatrix jacobian;
 
     /**
      * Constructor.
@@ -135,10 +136,10 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public AbstractBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer) {
+    protected AbstractBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
+                                   final List<ObservedMeasurement<?>> measurements,
+                                   final ParameterDriversList estimatedMeasurementsParameters,
+                                   final ModelObserver observer) {
 
         this.builders                        = propagatorBuilders.clone();
         this.measurements                    = measurements;
@@ -223,8 +224,8 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
         // Sort the measurement list chronologically
         measurements.sort(new ChronologicalComparator());
-        firstDate = measurements.get(0).getDate();
-        lastDate  = measurements.get(measurements.size() - 1).getDate();
+        firstDate = measurements.getFirst().getDate();
+        lastDate  = measurements.getLast().getDate();
 
         // Decide the direction of propagation
         forwardPropagation = FastMath.abs(refDate.durationFrom(firstDate)) <= FastMath.abs(refDate.durationFrom(lastDate));
@@ -426,7 +427,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
         // compute weighted residuals
         evaluations.put(observedMeasurement, evaluation);
-        if (evaluation.getStatus() == EstimatedMeasurement.Status.REJECTED) {
+        if (evaluation.getStatus() == EstimatedMeasurementBase.Status.REJECTED) {
             return;
         }
 
@@ -540,8 +541,8 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         precompensated.sort(new ChronologicalComparator());
 
         // Assign first and last date
-        firstDate = precompensated.get(0).getDate();
-        lastDate  = precompensated.get(precompensated.size() - 1).getDate();
+        firstDate = precompensated.getFirst().getDate();
+        lastDate  = precompensated.getLast().getDate();
 
         // Reverse the list in case of backward propagation
         if (!forwardPropagation) {

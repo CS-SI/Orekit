@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.estimation.measurements.QuadraticClockModel;
-import org.orekit.gnss.TimeSystem;
+import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.gnss.PredefinedTimeSystem;
 
 public class ClockTimeScaleTest {
 
@@ -38,7 +38,7 @@ public class ClockTimeScaleTest {
                                                                   FastMath.scalb(1.0, -11),
                                                                   FastMath.scalb(1.0, -12));
         final ClockTimeScale positive = new ClockTimeScale(name,
-                                                           TimeSystem.GALILEO.getTimeScale(TimeScalesFactory.getTimeScales()),
+                                                           PredefinedTimeSystem.GALILEO.getTimeScale(TimeScalesFactory.getTimeScales()),
                                                            clock);
         Assertions.assertEquals(name, positive.getName());
         Assertions.assertEquals(1.00 / 1024.0 - 19.0, positive.offsetFromTAI(t0).toDouble(),                   1.0e-15);

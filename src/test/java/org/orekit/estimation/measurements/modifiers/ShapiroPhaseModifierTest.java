@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ public class ShapiroPhaseModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -62,7 +62,7 @@ public class ShapiroPhaseModifierTest {
         final int    ambiguity         = 1234;
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockBiasDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         List<ObservedMeasurement<?>> measurements =
@@ -105,7 +105,7 @@ public class ShapiroPhaseModifierTest {
         }
 
         // wavelength
-        final double wavelength = ((Phase) measurements.get(0)).getWavelength();
+        final double wavelength = ((Phase) measurements.getFirst()).getWavelength();
 
         Assertions.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
         Assertions.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);

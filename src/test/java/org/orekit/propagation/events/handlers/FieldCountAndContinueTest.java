@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,16 @@ import org.junit.jupiter.params.provider.ValueSource;
 class FieldCountAndContinueTest {
 
     @Test
+    void testConstructorDefaultCount() {
+        // GIVEN
+
+        // WHEN
+        final FieldCountAndContinue<Binary64> handler = new FieldCountAndContinue<>();
+        // THEN
+        Assertions.assertEquals(0, handler.getCount());
+    }
+
+    @Test
     void testConstructor() {
         // GIVEN
         final int expectedCount = 2;
@@ -40,8 +50,8 @@ class FieldCountAndContinueTest {
         // GIVEN
         final FieldCountAndContinue<Binary64> handler = new FieldCountAndContinue<>(0);
         // WHEN
-        final boolean value = handler.doesCount(null, null, isIncreasing);
+        handler.eventOccurred(null, null, isIncreasing);
         // THEN
-        Assertions.assertTrue(value);
+        Assertions.assertEquals(1, handler.getCount());
     }
 }

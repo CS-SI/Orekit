@@ -1,0 +1,97 @@
+/* Copyright 2022-2026 Thales Alenia Space
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.files.rinex.section;
+
+import org.orekit.files.rinex.AppliedDCBS;
+import org.orekit.files.rinex.AppliedPCVS;
+import org.orekit.files.rinex.utils.RinexFileType;
+import org.orekit.gnss.SatelliteSystem;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/** Base container for both Rinex clock and observations headers.
+ * @since 14.0
+ */
+public abstract class RinexClockObsBaseHeader extends RinexBaseHeader {
+
+    /** Observation types for each satellite systems. */
+    private final Map<SatelliteSystem, List<String>> mapTypeObs;
+
+    /** List of applied differential code bias corrections. */
+    private final List<AppliedDCBS> listAppliedDCBS;
+
+    /** List of antenna center variation corrections. */
+    private final List<AppliedPCVS> listAppliedPCVS;
+
+    /** Simple constructor.
+     * @param fileType file type
+     */
+    protected RinexClockObsBaseHeader(final RinexFileType fileType) {
+        super(fileType);
+        mapTypeObs      = new HashMap<>();
+        listAppliedDCBS = new ArrayList<>();
+        listAppliedPCVS = new ArrayList<>();
+    }
+
+    /** Set the number of observations for a satellite.
+     * @param system satellite system
+     * @param types observation types
+     */
+    public void setTypeObs(final SatelliteSystem system, final List<String> types) {
+        mapTypeObs.put(system, new ArrayList<>(types));
+    }
+
+    /** Get an unmodifiable view of the map of observation types.
+     * @return unmodifiable view of the map of observation types
+     */
+    public Map<SatelliteSystem, List<String>> getTypeObs() {
+        return Collections.unmodifiableMap(mapTypeObs);
+    }
+
+    /** Add applied differential code bias corrections.
+     * @param appliedDCBS applied differential code bias corrections to add
+     */
+    public void addAppliedDCBS(final AppliedDCBS appliedDCBS) {
+        listAppliedDCBS.add(appliedDCBS);
+    }
+
+    /** Get the list of applied differential code bias corrections.
+     * @return list of applied differential code bias corrections
+     */
+    public List<AppliedDCBS> getListAppliedDCBS() {
+        return Collections.unmodifiableList(listAppliedDCBS);
+    }
+
+    /** Add antenna center variation corrections.
+     * @param appliedPCVS antenna center variation corrections
+     */
+    public void addAppliedPCVS(final AppliedPCVS appliedPCVS) {
+        listAppliedPCVS.add(appliedPCVS);
+    }
+
+    /** Get the list of antenna center variation corrections.
+     * @return List of antenna center variation corrections
+     */
+    public List<AppliedPCVS> getListAppliedPCVS() {
+        return Collections.unmodifiableList(listAppliedPCVS);
+    }
+
+}

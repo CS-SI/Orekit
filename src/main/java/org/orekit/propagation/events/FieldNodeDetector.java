@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,8 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.NodeEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
@@ -93,12 +95,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
             threshold, DEFAULT_MAX_ITER), new FieldStopOnIncreasing<>(), frame);
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
+    /** Constructor with detection settings and handler.
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param frame frame in which the equator is defined (typical
@@ -108,15 +105,34 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     protected FieldNodeDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                 final FieldEventHandler<T> handler, final Frame frame) {
-        super(detectionSettings, handler);
-        this.frame = frame;
+        this(new NodeEventFunction(frame), detectionSettings, handler);
+    }
+
+    /** Protected constructor with full parameters.
+     * <p>
+     * This constructor is not public as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param nodeEventFunction event function
+     * @param detectionSettings event detection settings
+     * @param handler event handler to call at event occurrences
+     * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
+     * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
+     * @since 14.0
+     */
+    protected FieldNodeDetector(final NodeEventFunction nodeEventFunction,
+                                final FieldEventDetectionSettings<T> detectionSettings,
+                                final FieldEventHandler<T> handler) {
+        super(nodeEventFunction, detectionSettings, handler);
+        this.frame = nodeEventFunction.getFrame();
     }
 
     /** {@inheritDoc} */
     @Override
     protected FieldNodeDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                           final FieldEventHandler<T> newHandler) {
-        return new FieldNodeDetector<>(detectionSettings, newHandler, frame);
+        return new FieldNodeDetector<>((NodeEventFunction) getEventFunction(), detectionSettings, newHandler);
     }
 
     /** Find time separation between nodes.
@@ -171,12 +187,15 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
      */
+    @Override
     public T g(final FieldSpacecraftState<T> s) {
-        return s.getPosition(frame).getZ();
+        return getEventFunction().value(s);
     }
 
-//    public NodeDetector toNoField() {
-//        return new NodeDetector(getThreshold().getReal(), orbit.toOrbit(), frame);
-//    }
-
+    /** {@inheritDoc} */
+    @Override
+    public NodeDetector toEventDetector(final EventHandler eventHandler) {
+        return new NodeDetector((NodeEventFunction) getEventFunction(),
+                getDetectionSettings().toEventDetectionSettings(), eventHandler);
+    }
 }

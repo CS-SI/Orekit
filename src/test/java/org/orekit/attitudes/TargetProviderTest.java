@@ -38,7 +38,7 @@ class TargetProviderTest {
         final TestTargetProvider testTargetProvider = new TestTargetProvider();
         final TimeStampedPVCoordinates pvCoordinates = new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH,
                 new PVCoordinates());
-        final TimeStampedFieldPVCoordinates<Complex> fieldPVCoordinates = new TimeStampedFieldPVCoordinates<Complex>(ComplexField.getInstance(),
+        final TimeStampedFieldPVCoordinates<Complex> fieldPVCoordinates = new TimeStampedFieldPVCoordinates<>(ComplexField.getInstance(),
                 pvCoordinates);
         // WHEN
         final FieldVector3D<Complex> targetVector = testTargetProvider.getTargetDirection(null, null, fieldPVCoordinates, null);

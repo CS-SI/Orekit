@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import java.io.Serializable;
+import java.io.Serial;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -102,7 +102,7 @@ import org.orekit.utils.Constants;
  */
 public class AbsoluteDate
     extends TimeOffset
-    implements TimeStamped, TimeShiftable<AbsoluteDate>, Comparable<TimeOffset>, Serializable {
+    implements TimeStamped, TimeShiftable<AbsoluteDate> {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
      * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes
@@ -242,6 +242,7 @@ public class AbsoluteDate
     public static final AbsoluteDate FUTURE_INFINITY = ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20240711L;
 
     /** Create an instance with a default value ({@link #J2000_EPOCH}).

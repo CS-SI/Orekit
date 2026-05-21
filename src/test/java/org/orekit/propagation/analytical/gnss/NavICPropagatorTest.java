@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,10 +22,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
-import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
@@ -36,6 +36,7 @@ import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
@@ -48,12 +49,14 @@ public class NavICPropagatorTest {
     private static NavICAlmanac almanac;
     private static Frames frames;
 
+    @DefaultDataContext
     @BeforeAll
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
+        final DataContext context = DataContext.getDefault();
 
         // Almanac for satellite 1 for April 1st 2014 (Source: Rinex 3.04 format - Table A19)
-        almanac = new NavICAlmanac(DataContext.getDefault().getTimeScales(), SatelliteSystem.NAVIC);
+        almanac = new NavICAlmanac(context.getTimeScales(), SatelliteSystem.NAVIC);
         almanac.setPRN(1);
         almanac.setWeek(1786);
         almanac.setTime(172800.0);
@@ -67,13 +70,15 @@ public class NavICPropagatorTest {
         almanac.setAf0(-9.473115205765e-04);
         almanac.setAf1(1.250555214938e-12);
 
-        frames = DataContext.getDefault().getFrames();
+        frames = context.getFrames();
     }
 
     @Test
     public void testNavICCycle() {
         // Builds the NavIC propagator from the almanac
-        final GNSSPropagator propagator = almanac.getPropagator(frames);
+        final GNSSPropagator propagator =
+            almanac.getPropagator(frames.getEME2000(),
+                                  frames.getITRF(IERSConventions.IERS_2010, false));
         // Propagate at the NavIC date and one NavIC cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -88,7 +93,9 @@ public class NavICPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the NavIC propagator from the almanac
-        final GNSSPropagator propagator = almanac.getPropagator(frames);
+        final GNSSPropagator propagator =
+            almanac.getPropagator(frames.getEME2000(),
+                                  frames.getITRF(IERSConventions.IERS_2010, true));
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
         Assertions.assertEquals(3.986005e+14, almanac.getMu(), 1.0e6);
         // Defines some date
@@ -105,7 +112,9 @@ public class NavICPropagatorTest {
 
     @Test
     public void testResetInitialState() {
-        final GNSSPropagator propagator = almanac.getPropagator();
+        final GNSSPropagator propagator =
+            almanac.getPropagator(frames.getEME2000(),
+                                  frames.getITRF(IERSConventions.IERS_2010, false));
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
@@ -113,7 +122,11 @@ public class NavICPropagatorTest {
 
     @Test
     public void testResetIntermediateState() {
-        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        GNSSPropagator propagator =
+            new GNSSPropagatorBuilder(almanac,
+                                      frames.getEME2000(),
+                                      frames.getITRF(IERSConventions.IERS_2010, false)).
+                buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),
                                           true);
@@ -123,11 +136,12 @@ public class NavICPropagatorTest {
     @Test
     public void testDerivativesConsistency() {
 
-        final Frame eme2000 = FramesFactory.getEME2000();
+        final Frame eme2000 = frames.getEME2000();
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        final GNSSPropagator propagator = almanac.getPropagator(frames);
+        final GNSSPropagator propagator =
+            almanac.getPropagator(eme2000, frames.getITRF(IERSConventions.IERS_2010, true));
         GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.NAVIC).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -158,7 +172,9 @@ public class NavICPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the NavICPropagator from the almanac
-        final GNSSPropagator propagator = almanac.getPropagator(frames);
+        final GNSSPropagator propagator =
+            almanac.getPropagator(frames.getEME2000(),
+                                  frames.getITRF(IERSConventions.IERS_2010, false));
         // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,9 @@ import org.hipparchus.linear.RealVector;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.estimation.DSSTContext;
-import org.orekit.estimation.DSSTEstimationTestUtils;
+import org.orekit.estimation.Context;
 import org.orekit.estimation.DSSTForce;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
@@ -89,14 +89,14 @@ public class SemiAnalyticalKalmanModelTest {
     public void setup() {
 
         // Create context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Initial orbit and date
         this.orbit0 = context.initialOrbit;
         ObservableSatellite sat = new ObservableSatellite(0);
 
         // Create propagator builder
-        this.propagatorBuilder = context.createBuilder(PropagationType.MEAN, PropagationType.OSCULATING, true,
+        this.propagatorBuilder = context.createDsst(PropagationType.MEAN, PropagationType.OSCULATING, true,
                                                        1.0e-6, 60.0, 10., DSSTForce.SOLAR_RADIATION_PRESSURE);
 
         // Create PV at t0
@@ -104,17 +104,17 @@ public class SemiAnalyticalKalmanModelTest {
 
         // Create one 0m range measurement at t0 + 10s
         final AbsoluteDate date  = date0.shiftedBy(10.);
-        final GroundStation station = context.stations.get(0);
+        final GroundStation station = context.stations.getFirst();
         this.range = new Range(station, true, date, 18616150., 10., 1., sat);
         // Exact range value is 1.8616150246470984E7 m
 
         // Add sat range bias to PV and select it
-        final Bias<Range> satRangeBias = new Bias<Range>(new String[] {"sat range bias"},
-                                                         new double[] {100.},
-                                                         new double[] {10.},
-                                                         new double[] {0.},
-                                                         new double[] {100.});
-        this.satRangeBiasDriver = satRangeBias.getParametersDrivers().get(0);
+        final Bias<Range> satRangeBias = new Bias<>(new String[]{"sat range bias"},
+                new double[]{100.},
+                new double[]{10.},
+                new double[]{0.},
+                new double[]{100.});
+        this.satRangeBiasDriver = satRangeBias.getParametersDrivers().getFirst();
         satRangeBiasDriver.setSelected(true);
         satRangeBiasDriver.setReferenceDate(date);
         range.addModifier(satRangeBias);
@@ -282,7 +282,7 @@ public class SemiAnalyticalKalmanModelTest {
 
 
     /** Observer allowing to get Kalman model after a measurement was processed in the Kalman filter. */
-    public class ModelLogger implements KalmanObserver {
+    public static class ModelLogger implements KalmanObserver {
         KalmanEstimation estimation;
 
         @Override

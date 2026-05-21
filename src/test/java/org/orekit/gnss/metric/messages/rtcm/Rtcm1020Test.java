@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagatorBuilder;
 import org.orekit.time.GLONASSDate;
@@ -94,7 +94,7 @@ public class Rtcm1020Test {
         final Rtcm1020                 rtcm1020       = (Rtcm1020) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
                                                         parse(message, false);
         final Rtcm1020Data             ephemerisData  = rtcm1020.getEphemerisData();
-        final GLONASSNavigationMessage glonassMessage = ephemerisData.getGlonassNavigationMessage();
+        final GLONASSFdmaNavigationMessage glonassMessage = ephemerisData.getGlonassNavigationMessage();
 
         // Verify propagator initialization
         final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(new ClassicalRungeKuttaIntegrator(60.0), glonassMessage, true).build();

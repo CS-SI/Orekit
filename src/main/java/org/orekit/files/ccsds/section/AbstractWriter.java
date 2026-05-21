@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,10 +29,10 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 public abstract class AbstractWriter {
 
     /** Name of the XML tag surrounding the section. */
-    private String xmlTag;
+    private final String xmlTag;
 
     /** Name of the KVN tag surrounding the section (may be null). */
-    private String kvnTag;
+    private final String kvnTag;
 
     /** Simple constructor.
      * @param xmlTag name of the XML tag surrounding the section

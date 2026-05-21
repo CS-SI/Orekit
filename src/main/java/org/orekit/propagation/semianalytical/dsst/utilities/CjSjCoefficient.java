@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -116,7 +116,7 @@ public class CjSjCoefficient {
      * @param j order
      */
     private void updateCjSj(final int j) {
-        Complex last = cjsj.get(cjsj.size() - 1);
+        Complex last = cjsj.getLast();
         for (int i = jLast; i < j; i++) {
             final Complex next = last.multiply(kih);
             cjsj.add(next);

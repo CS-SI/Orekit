@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,11 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.FieldGnssPropagator;
-import org.orekit.propagation.analytical.gnss.FieldGnssPropagatorBuilder;
 
 import java.util.function.Function;
 
@@ -60,68 +58,35 @@ public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>,
     /**
      * Get the propagator corresponding to the navigation message.
      * <p>
-     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
+     * The attitude provider is set by default to be aligned with the provided inertial frame.<br>
      * The mass is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-     * The ECI frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-     *  context.<br>
-     * The ECEF frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-     *  CIO/2010-based ITRF simple EOP} in the default data context.
-     * </p><p>
-     * This constructor uses the {@link DataContext#getDefault() default data context}
+     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.
      * </p>
+     * @param inertial inertial frame, use to provide the propagated orbit
+     * @param bodyFixed body fixed frame, corresponding to the navigation message
      * @return the propagator corresponding to the navigation message
-     * @see #getPropagator(Frames)
-     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, CalculusFieldElement)
+     * @see #getPropagator(AttitudeProvider, Frame, Frame, CalculusFieldElement)
+     * @since 14.0
      */
-    @DefaultDataContext
-    public FieldGnssPropagator<T> getPropagator() {
-        return new FieldGnssPropagatorBuilder<>(this).build();
+    public FieldGnssPropagator<T> getPropagator(final Frame inertial, final Frame bodyFixed) {
+        return getPropagator(new FrameAlignedProvider(inertial),
+                             inertial, bodyFixed,
+                             getMu().newInstance(Propagator.DEFAULT_MASS));
     }
 
     /**
      * Get the propagator corresponding to the navigation message.
-     * <p>
-     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
-     * The mass is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-     * The ECI frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-     *  context.<br>
-     * The ECEF frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-     *  CIO/2010-based ITRF simple EOP} in the default data context.
-     * </p>
-     * @param frames set of frames to use
-     * @return the propagator corresponding to the navigation message
-     * @see #getPropagator()
-     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, CalculusFieldElement)
-     */
-    public FieldGnssPropagator<T> getPropagator(final Frames frames) {
-        return new FieldGnssPropagatorBuilder<>(this, frames).build();
-    }
-
-    /**
-     * Get the propagator corresponding to the navigation message.
-     * @param frames set of frames to use
      * @param provider attitude provider
      * @param inertial inertial frame, use to provide the propagated orbit
      * @param bodyFixed body fixed frame, corresponding to the navigation message
      * @param mass spacecraft mass in kg
      * @return the propagator corresponding to the navigation message
-     * @see #getPropagator()
-     * @see #getPropagator(Frames)
+     * @see #getPropagator(Frame, Frame)
+     * @since 14.0
      */
-    public FieldGnssPropagator<T> getPropagator(final Frames frames, final AttitudeProvider provider,
+    public FieldGnssPropagator<T> getPropagator(final AttitudeProvider provider,
                                                 final Frame inertial, final Frame bodyFixed, final T mass) {
-        return new FieldGnssPropagatorBuilder<>(this, frames).
-               attitudeProvider(provider).
-               eci(inertial).
-               ecef(bodyFixed).
-               mass(mass).
-               build();
+        return new FieldGnssPropagator<>(this, inertial, bodyFixed, provider, mass);
     }
 
 }

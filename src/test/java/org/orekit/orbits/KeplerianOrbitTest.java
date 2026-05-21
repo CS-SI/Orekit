@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -922,7 +922,7 @@ class KeplerianOrbitTest {
         // we use this to compute a velocity step size from the position step size
         Vector3D p = orbit.getPosition();
         Vector3D v = orbit.getVelocity();
-        double hV = orbit.getMu() * hP / (v.getNorm() * p.getNormSq());
+        double hV = orbit.getMu() * hP / (v.getNorm() * p.getNorm2Sq());
 
         double h;
         Vector3D dP = Vector3D.ZERO;
@@ -1049,7 +1049,7 @@ class KeplerianOrbitTest {
                             tolerance * a.getNorm());
 
         // check jerk is the derivative of acceleration
-        final double r2 = p.getNormSq();
+        final double r2 = p.getNorm2Sq();
         final double r  = FastMath.sqrt(r2);
         Vector3D keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getAcceleration().getX()),
@@ -1324,7 +1324,7 @@ class KeplerianOrbitTest {
     void testEquatorialRetrograde() {
         Vector3D position = new Vector3D(10000000.0, 0.0, 0.0);
         Vector3D velocity = new Vector3D(0.0, -6500.0, 1.0e-10);
-        double r2 = position.getNormSq();
+        double r2 = position.getNorm2Sq();
         double r  = FastMath.sqrt(r2);
         Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
                                              1, new Vector3D(-0.1, 0.2, 0.3));
@@ -1352,7 +1352,7 @@ class KeplerianOrbitTest {
         KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                                                   date, Constants.EIGEN5C_EARTH_MU);
         Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
-        double r2 = position.getNormSq();
+        double r2 = position.getNorm2Sq();
         double r  = FastMath.sqrt(r2);
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
         Assertions.assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
@@ -1382,7 +1382,7 @@ class KeplerianOrbitTest {
         KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                                                   date, Constants.EIGEN5C_EARTH_MU);
         Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
-        double r2 = position.getNormSq();
+        double r2 = position.getNorm2Sq();
         double r  = FastMath.sqrt(r2);
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
         Assertions.assertEquals(4.78e-4, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-6);

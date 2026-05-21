@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,10 +48,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class LongitudeCrossingDetectorTest {
+class LongitudeCrossingDetectorTest {
 
     @Test
-    public void testRegularCrossing() {
+    void testRegularCrossing() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -67,7 +67,7 @@ public class LongitudeCrossingDetectorTest {
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
         Assertions.assertEquals(10.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
-        Assertions.assertSame(earth, d.getBody());
+        Assertions.assertSame(earth, d.getBodyShape());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -109,7 +109,7 @@ public class LongitudeCrossingDetectorTest {
     }
 
     @Test
-    public void testZigZag() {
+    void testZigZag() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -151,7 +151,7 @@ public class LongitudeCrossingDetectorTest {
     }
 
     @Test
-    public void testIssue997() {
+    void testIssue997() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -190,7 +190,7 @@ public class LongitudeCrossingDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

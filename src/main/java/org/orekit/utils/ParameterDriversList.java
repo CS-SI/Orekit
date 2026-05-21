@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -109,8 +109,8 @@ public class ParameterDriversList {
      */
     private DelegatingDriver getAssociatedDelegatingDriver(final ParameterDriver driver) {
         for (final ParameterObserver observer : driver.getObservers()) {
-            if (observer instanceof ChangesForwarder) {
-                return ((ChangesForwarder) observer).getDelegatingDriver();
+            if (observer instanceof ChangesForwarder forwarder) {
+                return forwarder.getDelegatingDriver();
             }
         }
         return null;
@@ -258,11 +258,7 @@ public class ParameterDriversList {
          * @since 10.1
          */
         private void removeOwner(final ParameterDriversList owner) {
-            for (final Iterator<ParameterDriversList> iterator = owners.iterator(); iterator.hasNext();) {
-                if (iterator.next() == owner) {
-                    iterator.remove();
-                }
-            }
+            owners.removeIf(parameterDriversList -> parameterDriversList == owner);
         }
 
         /** Add a driver. Warning, by doing this operation
@@ -329,7 +325,6 @@ public class ParameterDriversList {
 
             // synchronize parameter
             setValueSpanMap(other);
-            //setValue(other.getValue());
             setReferenceDate(other.getReferenceDate());
             if (isSelected()) {
                 other.setSelected(true);

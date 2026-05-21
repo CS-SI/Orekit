@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,7 +86,7 @@ public class SingleBodyAbsoluteAttraction extends AbstractBodyAttraction {
         // compute bodies separation vectors and squared norm
         final Vector3D bodyPosition = getBodyPosition(s.getDate(), s.getFrame());
         final Vector3D satToBody     = bodyPosition.subtract(s.getPosition());
-        final double r2Sat           = satToBody.getNormSq();
+        final double r2Sat           = satToBody.getNorm2Sq();
 
         // compute absolute acceleration
         return new Vector3D(parameters[0] / (r2Sat * FastMath.sqrt(r2Sat)), satToBody);
@@ -100,7 +100,7 @@ public class SingleBodyAbsoluteAttraction extends AbstractBodyAttraction {
          // compute bodies separation vectors and squared norm
         final FieldVector3D<T> centralToBody = getBodyPosition(s.getDate(), s.getFrame());
         final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
-        final T                r2Sat         = satToBody.getNormSq();
+        final T                r2Sat         = satToBody.getNorm2Sq();
 
         // compute absolute acceleration
         return new FieldVector3D<>(parameters[0].divide(r2Sat.multiply(r2Sat.sqrt())), satToBody);

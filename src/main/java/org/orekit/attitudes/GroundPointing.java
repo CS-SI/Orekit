@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,11 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -55,12 +55,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public abstract class GroundPointing implements AttitudeProvider {
 
     /** J axis. */
-    private static final PVCoordinates PLUS_J =
-            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates PLUS_J = new PVCoordinates(Vector3D.PLUS_J);
 
     /** K axis. */
-    private static final PVCoordinates PLUS_K =
-            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates PLUS_K = new PVCoordinates(Vector3D.PLUS_K);
 
     /** Inertial frame. */
     private final Frame inertialFrame;
@@ -158,7 +156,7 @@ public abstract class GroundPointing implements AttitudeProvider {
         final Vector3D p  = pva.getPosition();
         final Vector3D v  = pva.getVelocity();
         final Vector3D a  = pva.getAcceleration();
-        final double   r2 = p.getNormSq();
+        final double   r2 = p.getNorm2Sq();
         final double   r  = FastMath.sqrt(r2);
         final Vector3D keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
         final PVCoordinates velocity = new PVCoordinates(v, a, keplerianJerk);
@@ -193,7 +191,7 @@ public abstract class GroundPointing implements AttitudeProvider {
         final FieldVector3D<T> p  = pva.getPosition();
         final FieldVector3D<T> v  = pva.getVelocity();
         final FieldVector3D<T> a  = pva.getAcceleration();
-        final T   r2 = p.getNormSq();
+        final T   r2 = p.getNorm2Sq();
         final T   r  = r2.sqrt();
         final FieldVector3D<T> keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-3).divide(r2), a, a.getNorm().divide(r).multiply(-1), v);
         final FieldPVCoordinates<T> velocity = new FieldPVCoordinates<>(v, a, keplerianJerk);

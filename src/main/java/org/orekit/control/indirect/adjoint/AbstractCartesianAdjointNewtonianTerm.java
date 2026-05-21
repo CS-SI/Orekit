@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -116,7 +116,7 @@ public abstract class AbstractCartesianAdjointNewtonianTerm extends AbstractCart
      */
     protected Vector3D getNewtonianAcceleration(final double[] position) {
         final Vector3D positionVector = new Vector3D(position[0], position[1], position[2]);
-        final double squaredRadius = positionVector.getNormSq();
+        final double squaredRadius = positionVector.getNorm2Sq();
         final double factor = -getMu() / (squaredRadius * FastMath.sqrt(squaredRadius));
         return positionVector.scalarMultiply(factor);
     }
@@ -129,7 +129,7 @@ public abstract class AbstractCartesianAdjointNewtonianTerm extends AbstractCart
      */
     protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldNewtonianAcceleration(final T[] position) {
         final FieldVector3D<T> positionVector = new FieldVector3D<>(position[0], position[1], position[2]);
-        final T squaredRadius = positionVector.getNormSq();
+        final T squaredRadius = positionVector.getNorm2Sq();
         final T factor = (squaredRadius.multiply(FastMath.sqrt(squaredRadius))).reciprocal().multiply(-getMu());
         return positionVector.scalarMultiply(factor);
     }

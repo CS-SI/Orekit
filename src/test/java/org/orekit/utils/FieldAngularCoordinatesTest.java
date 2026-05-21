@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -420,7 +420,7 @@ public class FieldAngularCoordinatesTest {
                                                              zero.add( -2.7451871050415643E-12),
                                                              zero.add( -2.781723303703499E-10 ));
 
-        FieldPVCoordinates<Binary64> B = new FieldPVCoordinates<Binary64>(pos_B, vel_B, acc_B);
+        FieldPVCoordinates<Binary64> B = new FieldPVCoordinates<>(pos_B, vel_B, acc_B);
 
 
         FieldVector3D<Binary64> pos_A = new FieldVector3D<>(zero.add(-0.44665912825286425 ),
@@ -621,7 +621,7 @@ public class FieldAngularCoordinatesTest {
         checkInverse(FieldVector3D.getZero(field),  FieldVector3D.getPlusK(field), FieldVector3D.getZero(field));
         checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), FieldVector3D.getPlusK(field));
         checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), FieldVector3D.getPlusI(field));
-        checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), new FieldVector3D<Binary64>(field, new Vector3D(1, 0, -1)).normalize());
+        checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), new FieldVector3D<>(field, new Vector3D(1, 0, -1)).normalize());
         checkInverse(FieldVector3D.getZero(field),  FieldVector3D.getPlusI(field), FieldVector3D.getZero(field), FieldVector3D.getPlusJ(field),  FieldVector3D.getZero(field));
     }
 
@@ -683,8 +683,8 @@ public class FieldAngularCoordinatesTest {
         PVCoordinates u2 = new PVCoordinates(new Vector3D( 0.23723907259910096,   0.9628700806685033,    -0.1288364474275361),
                                              new Vector3D(-7.98741002062555E-24,  2.4979687659429984E-24, 3.9607863426704016E-24),
                                              new Vector3D(-3.150541868418562E-23, 9.856329862034835E-24,  1.5648124883326986E-23));
-        PVCoordinates v1 = new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
-        PVCoordinates v2 = new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO, Vector3D.ZERO);
+        PVCoordinates v1 = new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO);
+        PVCoordinates v2 = new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO);
         AngularCoordinates ac = new AngularCoordinates(u1, u2, v1, v2, 1.0e-9);
         PVCoordinates v1Computed = ac.applyTo(u1);
         PVCoordinates v2Computed = ac.applyTo(u2);

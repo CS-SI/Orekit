@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
@@ -81,41 +80,13 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
     private AemData currentBlock;
 
     /** Default interpolation degree. */
-    private int defaultInterpolationDegree;
+    private final int defaultInterpolationDegree;
 
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
 
     /** Current attitude entry. */
     private AttitudeEntry currentEntry;
-
-    /**Complete constructor.
-     * <p>
-     * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildAemParser()
-     * parserBuilder.buildAemParser()}.
-     * </p>
-     * @param conventions IERS Conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * (may be null if time system is absolute)
-     * @param defaultInterpolationDegree default interpolation degree
-     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
-     * @param filters filters to apply to parse tokens
-     * @since 12.0
-     * @deprecated in favor of {@link #AemParser(IERSConventions, boolean, DataContext,
-     * AbsoluteDate, int, ParsedUnitsBehavior, Function[], CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public AemParser(final IERSConventions conventions, final boolean simpleEOP,
-                     final DataContext dataContext, final AbsoluteDate missionReferenceDate,
-                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
-        this(conventions, simpleEOP, dataContext, missionReferenceDate,
-                defaultInterpolationDegree, parsedUnitsBehavior, filters,
-                new OrekitCcsdsFrameMapper());
-    }
 
     /**Complete constructor.
      * <p>

@@ -16,6 +16,9 @@
  */
 package org.orekit.models.earth;
 
+import java.io.Serial;
+
+
 import org.hipparchus.util.FastMath;
 import org.orekit.models.AtmosphericRefractionModel;
 
@@ -55,6 +58,7 @@ public class EarthStandardAtmosphereRefraction implements AtmosphericRefractionM
     private static final double MAX_ELEVATION = 89.89;
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 6001744143210742620L;
 
     /** Refraction correction from local pressure and temperature. */

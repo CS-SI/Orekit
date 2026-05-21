@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,14 +24,11 @@ import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.intervals.AdaptableInterval;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
-import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.time.AbsoluteDate;
@@ -294,83 +291,79 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
      * Method to create a new umbra detector.
      * @return detector
      */
-    private InternalEclipseDetector createUmbraEclipseDetector() {
-        return new InternalEclipseDetector() {
-            @Override
-            public double g(final SpacecraftState s) {
-                final Vector3D position = s.getPosition();
-                final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate());
-                final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
-                final double s0 = -position.dotProduct(occultedBodyDirection);
-                final double distanceSun = occultedBodyPosition.getNorm();
-                final double squaredDistance = position.getNormSq();
-                final double sinf2 = (occultedBodyRadius - getOccultingBodyRadius()) / distanceSun;
-                final double l = FastMath.sqrt(squaredDistance - s0 * s0);
-                final double l2 = (s0 * sinf2 - getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf2 * sinf2);
-                return FastMath.abs(l2) / l - 1.;
-            }
-        };
+    private EventDetector createUmbraEclipseDetector() {
+        return EventDetector.of(new UmbraEclipseFunction(), new ResetDerivativesOnEvent(), getEventDetectionSettings());
     }
 
     /**
      * Method to create a new penumbra detector.
      * @return detector
      */
-    private InternalEclipseDetector createPenumbraEclipseDetector() {
-        return new InternalEclipseDetector() {
-            @Override
-            public double g(final SpacecraftState s) {
-                final Vector3D position = s.getPosition();
-                final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate());
-                final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
-                final double s0 = -position.dotProduct(occultedBodyDirection);
-                final double distanceSun = occultedBodyPosition.getNorm();
-                final double squaredDistance = position.getNormSq();
-                final double l = FastMath.sqrt(squaredDistance - s0 * s0);
-                final double sinf1 = (occultedBodyRadius + getOccultingBodyRadius()) / distanceSun;
-                final double l1 = (s0 * sinf1 + getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf1 * sinf1);
-                return l1 / l - 1.;
-            }
-        };
+    private EventDetector createPenumbraEclipseDetector() {
+        return EventDetector.of(new PenumbraEclipseFunction(), new ResetDerivativesOnEvent(), getEventDetectionSettings());
     }
 
-    /**
-     * Internal class for event detector.
-     */
-    private abstract class InternalEclipseDetector implements EventDetector {
-        /** Event handler. */
-        private final ResetDerivativesOnEvent handler;
+    private class PenumbraEclipseFunction implements EventFunction {
 
-        /**
-         * Constructor.
-         */
-        InternalEclipseDetector() {
-            this.handler = new ResetDerivativesOnEvent();
+        @Override
+        public double value(final SpacecraftState s) {
+            final Vector3D position = s.getPosition();
+            final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate());
+            final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
+            final double s0 = -position.dotProduct(occultedBodyDirection);
+            final double distanceSun = occultedBodyPosition.getNorm();
+            final double squaredDistance = position.getNorm2Sq();
+            final double l = FastMath.sqrt(squaredDistance - s0 * s0);
+            final double sinf1 = (occultedBodyRadius + getOccultingBodyRadius()) / distanceSun;
+            final double l1 = (s0 * sinf1 + getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf1 * sinf1);
+            return l1 / l - 1.;
         }
 
         @Override
-        public EventDetectionSettings getDetectionSettings() {
-            return getEventDetectionSettings();
+        public <T extends CalculusFieldElement<T>> T value(final FieldSpacecraftState<T> fieldState) {
+            final FieldVector3D<T> position = fieldState.getPosition();
+            final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(fieldState.getDate());
+            final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
+            final T s0 = position.dotProduct(occultedBodyDirection).negate();
+            final T distanceSun = occultedBodyPosition.getNorm();
+            final T squaredDistance = position.getNorm2Sq();
+            final T reciprocalDistanceSun = distanceSun.reciprocal();
+            final T sinf1 = reciprocalDistanceSun.multiply(occultedBodyRadius + getOccultingBodyRadius());
+            final T l1 = (s0.multiply(sinf1).add(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf1.square().negate().add(1)));
+            final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
+            return l1.divide(l).subtract(1);
+        }
+    }
+
+    private class UmbraEclipseFunction implements EventFunction {
+
+        @Override
+        public double value(final SpacecraftState state) {
+            final Vector3D position = state.getPosition();
+            final Vector3D occultedBodyPosition = getOccultedBodyPosition(state.getDate());
+            final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
+            final double s0 = -position.dotProduct(occultedBodyDirection);
+            final double distanceSun = occultedBodyPosition.getNorm();
+            final double squaredDistance = position.getNorm2Sq();
+            final double sinf2 = (occultedBodyRadius - getOccultingBodyRadius()) / distanceSun;
+            final double l = FastMath.sqrt(squaredDistance - s0 * s0);
+            final double l2 = (s0 * sinf2 - getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf2 * sinf2);
+            return FastMath.abs(l2) / l - 1.;
         }
 
         @Override
-        public double getThreshold() {
-            return getDetectionSettings().getThreshold();
-        }
-
-        @Override
-        public AdaptableInterval getMaxCheckInterval() {
-            return getDetectionSettings().getMaxCheckInterval();
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return getDetectionSettings().getMaxIterationCount();
-        }
-
-        @Override
-        public EventHandler getHandler() {
-            return handler;
+        public <T extends CalculusFieldElement<T>> T value(final FieldSpacecraftState<T> fieldState) {
+            final FieldVector3D<T> position = fieldState.getPosition();
+            final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(fieldState.getDate());
+            final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
+            final T s0 = position.dotProduct(occultedBodyDirection).negate();
+            final T distanceSun = occultedBodyPosition.getNorm();
+            final T squaredDistance = position.getNorm2Sq();
+            final T reciprocalDistanceSun = distanceSun.reciprocal();
+            final T sinf2 = reciprocalDistanceSun.multiply(occultedBodyRadius - getOccultingBodyRadius());
+            final T l2 = (s0.multiply(sinf2).subtract(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf2.square().negate().add(1)));
+            final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
+            return FastMath.abs(l2).divide(l).subtract(1);
         }
     }
 
@@ -391,23 +384,8 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
      * @param <T> field type
      * @return detector
      */
-    private <T extends CalculusFieldElement<T>> FieldInternalEclipseDetector<T> createFieldUmbraEclipseDetector(final FieldEventDetectionSettings<T> detectionSettings) {
-        return new FieldInternalEclipseDetector<T>(detectionSettings) {
-            @Override
-            public T g(final FieldSpacecraftState<T> s) {
-                final FieldVector3D<T> position = s.getPosition();
-                final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(s.getDate());
-                final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
-                final T s0 = position.dotProduct(occultedBodyDirection).negate();
-                final T distanceSun = occultedBodyPosition.getNorm();
-                final T squaredDistance = position.getNormSq();
-                final T reciprocalDistanceSun = distanceSun.reciprocal();
-                final T sinf2 = reciprocalDistanceSun.multiply(occultedBodyRadius - getOccultingBodyRadius());
-                final T l2 = (s0.multiply(sinf2).subtract(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf2.square().negate().add(1)));
-                final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
-                return FastMath.abs(l2).divide(l).subtract(1);
-            }
-        };
+    private <T extends CalculusFieldElement<T>> FieldEventDetector<T> createFieldUmbraEclipseDetector(final FieldEventDetectionSettings<T> detectionSettings) {
+        return FieldEventDetector.of(new UmbraEclipseFunction(), new FieldResetDerivativesOnEvent<>(), detectionSettings);
     }
 
     /**
@@ -416,67 +394,8 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
      * @param <T> field type
      * @return detector
      */
-    private <T extends CalculusFieldElement<T>> FieldInternalEclipseDetector<T> createFieldPenumbraEclipseDetector(final FieldEventDetectionSettings<T> detectionSettings) {
-        return new FieldInternalEclipseDetector<T>(detectionSettings) {
-            @Override
-            public T g(final FieldSpacecraftState<T> s) {
-                final FieldVector3D<T> position = s.getPosition();
-                final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(s.getDate());
-                final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
-                final T s0 = position.dotProduct(occultedBodyDirection).negate();
-                final T distanceSun = occultedBodyPosition.getNorm();
-                final T squaredDistance = position.getNormSq();
-                final T reciprocalDistanceSun = distanceSun.reciprocal();
-                final T sinf1 = reciprocalDistanceSun.multiply(occultedBodyRadius + getOccultingBodyRadius());
-                final T l1 = (s0.multiply(sinf1).add(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf1.square().negate().add(1)));
-                final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
-                return l1.divide(l).subtract(1);
-            }
-        };
+    private <T extends CalculusFieldElement<T>> FieldEventDetector<T> createFieldPenumbraEclipseDetector(final FieldEventDetectionSettings<T> detectionSettings) {
+        return FieldEventDetector.of(new PenumbraEclipseFunction(), new FieldResetDerivativesOnEvent<>(), detectionSettings);
     }
 
-    /**
-     * Internal class for event detector.
-     */
-    private abstract static class FieldInternalEclipseDetector<T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
-        /** Event handler. */
-        private final FieldResetDerivativesOnEvent<T> handler;
-
-        /** Detection settings. */
-        private final FieldEventDetectionSettings<T> fieldEventDetectionSettings;
-
-        /**
-         * Constructor.
-         * @param fieldEventDetectionSettings detection settings
-         */
-        FieldInternalEclipseDetector(final FieldEventDetectionSettings<T> fieldEventDetectionSettings) {
-            this.handler = new FieldResetDerivativesOnEvent<>();
-            this.fieldEventDetectionSettings = fieldEventDetectionSettings;
-        }
-
-        @Override
-        public FieldEventDetectionSettings<T> getDetectionSettings() {
-            return fieldEventDetectionSettings;
-        }
-
-        @Override
-        public T getThreshold() {
-            return getDetectionSettings().getThreshold();
-        }
-
-        @Override
-        public FieldAdaptableInterval<T> getMaxCheckInterval() {
-            return getDetectionSettings().getMaxCheckInterval();
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return getDetectionSettings().getMaxIterationCount();
-        }
-
-        @Override
-        public FieldEventHandler<T> getHandler() {
-            return handler;
-        }
-    }
 }

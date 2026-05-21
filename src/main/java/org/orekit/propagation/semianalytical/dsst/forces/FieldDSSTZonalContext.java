@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,43 +39,25 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
 
     // Short period terms
     /** h * k. */
-    private T hk;
+    private final T hk;
     /** k² - h². */
-    private T k2mh2;
+    private final T k2mh2;
     /** (k² - h²) / 2. */
-    private T k2mh2o2;
+    private final T k2mh2o2;
     /** 1 / (n² * a²). */
-    private T oon2a2;
+    private final T oon2a2;
     /** 1 / (n² * a) . */
-    private T oon2a;
+    private final T oon2a;
     /** χ³ / (n² * a). */
-    private T x3on2a;
+    private final T x3on2a;
     /** χ / (n² * a²). */
-    private T xon2a2;
+    private final T xon2a2;
     /** (C * χ) / ( 2 * n² * a² ). */
-    private T cxo2n2a2;
+    private final T cxo2n2a2;
     /** (χ²) / (n² * a² * (χ + 1 ) ). */
-    private T x2on2a2xp1;
+    private final T x2on2a2xp1;
     /** B * B. */
-    private T BB;
-
-    /** Constructor with central body frame equals orbit frame.
-     *
-     * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param provider          provider for spherical harmonics
-     * @param parameters        values of the force model parameters (only 1 values
-     * for each parameters corresponding to state date) obtained by calling the extract
-     * parameter method {@link #extractParameters(double[], AbsoluteDate)}
-     * to selected the right value for state date or by getting the parameters for a specific date
-     * @deprecated since 12.2 and issue 1104, should be removed in 13.0
-     */
-    @Deprecated
-    FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
-                          final UnnormalizedSphericalHarmonicsProvider provider,
-                          final T[] parameters) {
-
-        this(auxiliaryElements, auxiliaryElements.getFrame(), provider, parameters);
-    }
+    private final T BB;
 
     /** Constructor with central body frame potentially different from orbit frame.
      *

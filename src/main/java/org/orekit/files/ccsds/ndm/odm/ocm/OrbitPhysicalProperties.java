@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.hipparchus.linear.DefaultRealMatrixChangingVisitor;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -110,16 +109,6 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
 
     /** Inertia matrix. */
     private final RealMatrix inertiaMatrix;
-
-    /** Simple constructor.
-     * @param epochT0 T0 epoch from file metadata
-     * @deprecated in favor of {@link #OrbitPhysicalProperties(AbsoluteDate,
-     * CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public OrbitPhysicalProperties(final AbsoluteDate epochT0) {
-        this(epochT0, new OrekitCcsdsFrameMapper());
-    }
 
     /**
      * Simple constructor.

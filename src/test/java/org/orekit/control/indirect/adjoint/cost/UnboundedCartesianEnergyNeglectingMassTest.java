@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ class UnboundedCartesianEnergyNeglectingMassTest {
         // WHEN
         final double contribution = mockedEnergy.getHamiltonianContribution(adjoint, mass);
         // THEN
-        Assertions.assertEquals(-vector.getNormSq() * 0.5, contribution);
+        Assertions.assertEquals(-vector.getNorm2Sq() * 0.5, contribution);
     }
 
 

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,14 +66,14 @@ public class Acm extends NdmConstituent<AdmHeader, Segment<AcmMetadata, AcmData>
      * @return metadata from the single {@link #getSegments() segment}
      */
     public AcmMetadata getMetadata() {
-        return getSegments().get(0).getMetadata();
+        return getSegments().getFirst().getMetadata();
     }
 
     /** Get the data from the single {@link #getSegments() segment}.
      * @return data from the single {@link #getSegments() segment}
      */
     public AcmData getData() {
-        return getSegments().get(0).getData();
+        return getSegments().getFirst().getData();
     }
 
     /** {@inheritDoc} */
@@ -91,7 +91,7 @@ public class Acm extends NdmConstituent<AdmHeader, Segment<AcmMetadata, AcmData>
         } else {
             name = UNKNOWN_OBJECT;
         }
-        final List<AttitudeStateHistory> histories = getSegments().get(0).getData().getAttitudeBlocks();
+        final List<AttitudeStateHistory> histories = getSegments().getFirst().getData().getAttitudeBlocks();
         return (histories == null) ?
                Collections.emptyMap() :
                Collections.singletonMap(name, new AcmSatelliteEphemeris(name, histories));

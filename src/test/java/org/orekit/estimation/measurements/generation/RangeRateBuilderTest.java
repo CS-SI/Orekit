@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,13 +21,22 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.ReferenceEllipsoid;
+import org.orekit.signal.SignalTravelTimeModel;
+import static org.mockito.Mockito.mock;
 
-public class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<RangeRate> {
+class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<RangeRate> {
 
     private static final double SIGMA = 0.01;
     private static final double BIAS  = 0.002;
@@ -37,10 +46,12 @@ public class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<R
                                                        final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<RangeRate> rrb =
-                        new RangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                         1.0e-10,
-                                                                                                         new GaussianRandomGenerator(random)),
-                                             groundStation, true, SIGMA, 1.0, satellite);
+                        new RangeRateBuilder(groundStation, true, SIGMA, 1.0, satellite);
+        if (random != null) {
+            rrb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         rrb.addModifier(new Bias<>(new String[] { "bias" },
                         new double[] { BIAS },
                         new double[] { 1.0 },
@@ -50,13 +61,27 @@ public class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<R
     }
 
     @Test
-    public void testForward() {
-        doTest(0x02c925b8812d8992l, 0.4, 0.9, 128, 2.4 * SIGMA);
+    void testGetSignalTravelTimeModel() {
+        // GIVEN
+        final GroundStation station = new GroundStation(new TopocentricFrame(ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true)),
+                new GeodeticPoint(0., 0., 0), ""));
+        final SignalTravelTimeModel signalTravelTimeModel = mock();
+        final RangeRateBuilder builder = new RangeRateBuilder(station, true,
+                new MeasurementQuality(1., 1.), signalTravelTimeModel, new ObservableSatellite(0));
+        // WHEN
+        final SignalTravelTimeModel actualModel = builder.getSignalTravelTimeModel();
+        // THEN
+        Assertions.assertEquals(signalTravelTimeModel, actualModel);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0x34ce85d26d51cd91l, -0.2, -0.6, 100, 3.3 * SIGMA);
+    void testForward() {
+        doTest(0x02c925b8812d8992l, 0.4, 0.9, 128, 6. * SIGMA);
+    }
+
+    @Test
+    void testBackward() {
+        doTest(0x34ce85d26d51cd91l, -0.2, -0.6, 100, 6. * SIGMA);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 
 /** Abstract class for detectors using a topocentric frame.
@@ -36,13 +38,17 @@ public abstract class FieldAbstractTopocentricDetector<D extends FieldAbstractDe
     private final TopocentricFrame topocentricFrame;
 
     /** Protected constructor with full parameters.
+     * @param eventFunction event function
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param topocentricFrame topocentric frame
+     * @since 14.0
      */
-    protected FieldAbstractTopocentricDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
+    protected FieldAbstractTopocentricDetector(final EventFunction eventFunction,
+                                               final FieldEventDetectionSettings<T> detectionSettings,
+                                               final FieldEventHandler<T> handler,
                                                final TopocentricFrame topocentricFrame) {
-        super(detectionSettings, handler);
+        super(eventFunction, detectionSettings, handler);
         this.topocentricFrame = topocentricFrame;
     }
 
@@ -54,4 +60,12 @@ public abstract class FieldAbstractTopocentricDetector<D extends FieldAbstractDe
         return topocentricFrame;
     }
 
+
+    /** Get the elevation value.
+     * @param s the current state information: date, kinematics, attitude
+     * @return spacecraft elevation
+     */
+    public T getElevation(final FieldSpacecraftState<T> s) {
+        return getTopocentricFrame().getElevation(s.getPosition(), s.getFrame(), s.getDate());
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,7 +91,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
                                                                                               tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
                 addAdditionalData(linear.getName(), field.getZero().newInstance(reference)));
         propagatorNumerical.addAdditionalDerivativesProvider(linear);
@@ -143,7 +143,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
                                                                                               tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
                 addAdditionalData(linear1.getName(), field.getZero().newInstance(reference1)).
                 addAdditionalData(linear2.getName(), field.getZero().newInstance(reference2)));
@@ -173,7 +173,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
                         tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
                 addAdditionalData(yield1.getName(), field.getZero().newInstance(init1)).
                 addAdditionalData(yield2.getName(), field.getZero().newInstance(init2)));
@@ -200,7 +200,7 @@ public class FieldAdditionalDerivativesProvidersTest {
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
                                                               tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
                 addAdditionalData(coupling.getName(),
                                                                field.getZero().newInstance(coupling.secondaryInit)));

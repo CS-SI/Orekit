@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @since 12.1
  * @param <T> field type
  */
-public class FieldRecallLastOccurrence<T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
+public class FieldRecallLastOccurrence<T extends CalculusFieldElement<T>> implements FieldEventHandlerModifier<T> {
 
     /** Wrapped event handler. */
     private final FieldEventHandler<T> wrappedHandler;
@@ -46,6 +46,11 @@ public class FieldRecallLastOccurrence<T extends CalculusFieldElement<T>> implem
      */
     public FieldRecallLastOccurrence(final FieldEventHandler<T> wrappedHandler) {
         this.wrappedHandler = wrappedHandler;
+    }
+
+    @Override
+    public FieldEventHandler<T> getOriginalHandler() {
+        return wrappedHandler;
     }
 
     /** Getter for last occurrence.
@@ -72,18 +77,5 @@ public class FieldRecallLastOccurrence<T extends CalculusFieldElement<T>> implem
                                 final boolean increasing) {
         lastOccurrence = s.getDate();
         return wrappedHandler.eventOccurred(s, detector, increasing);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector,
-                                              final FieldSpacecraftState<T> oldState) {
-        return wrappedHandler.resetState(detector, oldState);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void finish(final FieldSpacecraftState<T> finalState, final FieldEventDetector<T> detector) {
-        wrappedHandler.finish(finalState, detector);
     }
 }

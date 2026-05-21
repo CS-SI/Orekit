@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,18 @@
  */
 package org.orekit.utils;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Derivative;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
@@ -43,8 +48,8 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      * @param velocity the velocity vector (m/s)
      * @param acceleration the acceleration vector (m/s²)
      */
-    public TimeStampedPVCoordinates(final AbsoluteDate date,
-                                    final Vector3D position, final Vector3D velocity, final Vector3D acceleration) {
+    public TimeStampedPVCoordinates(final AbsoluteDate date, final Vector3D position,
+                                    final Vector3D velocity, final Vector3D acceleration) {
         super(position, velocity, acceleration);
         this.date = date;
     }
@@ -56,9 +61,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
      */
-    public TimeStampedPVCoordinates(final AbsoluteDate date,
-                                    final Vector3D position,
-                                    final Vector3D velocity) {
+    public TimeStampedPVCoordinates(final AbsoluteDate date, final Vector3D position, final Vector3D velocity) {
         this(date, position, velocity, Vector3D.ZERO);
     }
 
@@ -81,10 +84,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public TimeStampedPVCoordinates(final AbsoluteDate date,
                                     final double a, final PVCoordinates pv) {
-        super(new Vector3D(a, pv.getPosition()),
-              new Vector3D(a, pv.getVelocity()),
-              new Vector3D(a, pv.getAcceleration()));
-        this.date = date;
+        this(date, new PVCoordinates(a, pv));
     }
 
     /** Subtractive constructor
@@ -96,10 +96,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public TimeStampedPVCoordinates(final AbsoluteDate date,
                                     final PVCoordinates start, final PVCoordinates end) {
-        super(end.getPosition().subtract(start.getPosition()),
-              end.getVelocity().subtract(start.getVelocity()),
-              end.getAcceleration().subtract(start.getAcceleration()));
-        this.date = date;
+        this(date, new PVCoordinates(start, end));
     }
 
     /** Linear constructor
@@ -114,10 +111,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     public TimeStampedPVCoordinates(final AbsoluteDate date,
                                     final double a1, final PVCoordinates pv1,
                                     final double a2, final PVCoordinates pv2) {
-        super(new Vector3D(a1, pv1.getPosition(),     a2, pv2.getPosition()),
-              new Vector3D(a1, pv1.getVelocity(),     a2, pv2.getVelocity()),
-              new Vector3D(a1, pv1.getAcceleration(), a2, pv2.getAcceleration()));
-        this.date = date;
+        this(date, new PVCoordinates(a1, pv1, a2, pv2));
     }
 
     /** Linear constructor
@@ -135,10 +129,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
                                     final double a1, final PVCoordinates pv1,
                                     final double a2, final PVCoordinates pv2,
                                     final double a3, final PVCoordinates pv3) {
-        super(new Vector3D(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
-              new Vector3D(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
-              new Vector3D(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
-        this.date = date;
+        this(date, new PVCoordinates(a1, pv1, a2, pv2, a3, pv3));
     }
 
     /** Linear constructor
@@ -159,10 +150,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
                                     final double a2, final PVCoordinates pv2,
                                     final double a3, final PVCoordinates pv3,
                                     final double a4, final PVCoordinates pv4) {
-        super(new Vector3D(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition(),     a4, pv4.getPosition()),
-              new Vector3D(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity(),     a4, pv4.getVelocity()),
-              new Vector3D(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration(), a4, pv4.getAcceleration()));
-        this.date = date;
+        this(date, new PVCoordinates(a1, pv1, a2, pv2, a3, pv3, a4, pv4));
     }
 
     /** Builds a TimeStampedPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link Derivative}&gt;.
@@ -229,7 +217,34 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      * @return provider based on Taylor expansion, for small time shifts around instance date
      */
     public PVCoordinatesProvider toTaylorProvider(final Frame instanceFrame) {
-        return new ShiftingPVCoordinatesProvider(this, instanceFrame);
+        return new AbsolutePVCoordinates(instanceFrame, this);
+    }
+
+    @Override
+    public TimeStampedFieldPVCoordinates<DerivativeStructure> toDerivativeStructurePV(final int order) {
+        final FieldPVCoordinates<DerivativeStructure> fieldPV = super.toDerivativeStructurePV(order);
+        final Field<DerivativeStructure> field = fieldPV.getPosition().getX().getField();
+        final DerivativeStructure dt = field.getZero().getFactory().variable(0, 1.);
+        final FieldAbsoluteDate<DerivativeStructure> fieldDate = new FieldAbsoluteDate<>(field, date).shiftedBy(dt);
+        return new TimeStampedFieldPVCoordinates<>(fieldDate, fieldPV);
+    }
+
+    @Override
+    public TimeStampedFieldPVCoordinates<UnivariateDerivative1> toUnivariateDerivative1PV() {
+        final FieldPVCoordinates<UnivariateDerivative1> fieldPV = super.toUnivariateDerivative1PV();
+        final Field<UnivariateDerivative1> field = fieldPV.getPosition().getX().getField();
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(field, date)
+                .shiftedBy(new UnivariateDerivative1(0., 1.));
+        return new TimeStampedFieldPVCoordinates<>(fieldDate, fieldPV);
+    }
+
+    @Override
+    public TimeStampedFieldPVCoordinates<UnivariateDerivative2> toUnivariateDerivative2PV() {
+        final FieldPVCoordinates<UnivariateDerivative2> fieldPV = super.toUnivariateDerivative2PV();
+        final Field<UnivariateDerivative2> field = fieldPV.getPosition().getX().getField();
+        final FieldAbsoluteDate<UnivariateDerivative2> fieldDate = new FieldAbsoluteDate<>(field, date)
+                .shiftedBy(new UnivariateDerivative2(0., 1., 0.));
+        return new TimeStampedFieldPVCoordinates<>(fieldDate, fieldPV);
     }
 
     /** Return a string representation of this date, position, velocity, and acceleration.
@@ -252,17 +267,17 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public String toString(final TimeScale utc) {
         final String comma = ", ";
-        return new StringBuilder().append('{').
-                                  append(date.toString(utc)).append(", P(").
-                                  append(getPosition().getX()).append(comma).
-                                  append(getPosition().getY()).append(comma).
-                                  append(getPosition().getZ()).append("), V(").
-                                  append(getVelocity().getX()).append(comma).
-                                  append(getVelocity().getY()).append(comma).
-                                  append(getVelocity().getZ()).append("), A(").
-                                  append(getAcceleration().getX()).append(comma).
-                                  append(getAcceleration().getY()).append(comma).
-                                  append(getAcceleration().getZ()).append(")}").toString();
+        return '{' +
+                date.toString(utc) + ", P(" +
+                getPosition().getX() + comma +
+                getPosition().getY() + comma +
+                getPosition().getZ() + "), V(" +
+                getVelocity().getX() + comma +
+                getVelocity().getY() + comma +
+                getVelocity().getZ() + "), A(" +
+                getAcceleration().getX() + comma +
+                getAcceleration().getY() + comma +
+                getAcceleration().getZ() + ")}";
     }
 
 }

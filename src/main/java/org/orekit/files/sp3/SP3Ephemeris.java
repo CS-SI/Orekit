@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import java.util.List;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.AggregatedClockModel;
-import org.orekit.time.ClockModel;
+import org.orekit.time.clocks.AggregatedClockModel;
+import org.orekit.time.clocks.ClockModel;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeSpanMap;
 
@@ -91,13 +91,13 @@ public class SP3Ephemeris implements EphemerisFile.SatelliteEphemeris<SP3Coordin
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return segments.isEmpty() ? null : segments.get(0).getStart();
+        return segments.isEmpty() ? null : segments.getFirst().getStart();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return segments.isEmpty() ? null : segments.get(segments.size() - 1).getStop();
+        return segments.isEmpty() ? null : segments.getLast().getStop();
     }
 
     /** Get the reference frame.
@@ -133,7 +133,7 @@ public class SP3Ephemeris implements EphemerisFile.SatelliteEphemeris<SP3Coordin
             segment = new SP3Segment(mu, frame,  interpolationSamples, filter);
             segments.add(segment);
         } else {
-            segment = segments.get(segments.size() - 1);
+            segment = segments.getLast();
         }
         segment.addCoordinate(coord);
     }

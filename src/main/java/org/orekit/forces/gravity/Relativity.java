@@ -82,10 +82,10 @@ public class Relativity implements ForceModel {
         final Vector3D p = pv.getPosition();
         final Vector3D v = pv.getVelocity();
         //radius
-        final double r2 = p.getNormSq();
+        final double r2 = p.getNorm2Sq();
         final double r = FastMath.sqrt(r2);
         //speed
-        final double s2 = v.getNormSq();
+        final double s2 = v.getNorm2Sq();
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
         //eq. 3.146
         return new Vector3D(
@@ -108,10 +108,10 @@ public class Relativity implements ForceModel {
         final FieldVector3D<T> p = pv.getPosition();
         final FieldVector3D<T> v = pv.getVelocity();
         //radius
-        final T r2 = p.getNormSq();
+        final T r2 = p.getNorm2Sq();
         final T r = r2.sqrt();
         //speed
-        final T s2 = v.getNormSq();
+        final T s2 = v.getNorm2Sq();
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
         //eq. 3.146
         return new FieldVector3D<>(r.reciprocal().multiply(4).multiply(gm).subtract(s2),

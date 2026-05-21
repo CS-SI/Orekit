@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,12 +36,6 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     /** Indicator for CNV 2 messages. */
     private final boolean cnv2;
 
-    /** Change rate in semi-major axis (m/s). */
-    private T aDot;
-
-    /** Change rate in Δn₀. */
-    private T deltaN0Dot;
-
     /** The user SV accuracy (m). */
     private T svAccuracy;
 
@@ -78,6 +72,11 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     /** Term 2 of Non-Elevation-Dependent User Range Accuracy. */
     private int uraiNed2;
 
+    /** Flags.
+     * @since 14.0
+     */
+    private int flags;
+
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
@@ -85,8 +84,6 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     protected FieldCivilianNavigationMessage(final Field<T> field, final O original) {
         super(field, original);
         this.cnv2 = original.isCnv2();
-        setADot(field.getZero().newInstance(original.getADot()));
-        setDeltaN0Dot(field.getZero().newInstance(original.getDeltaN0Dot()));
         setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
         setSvHealth(original.getSvHealth());
         setIscL1CA(field.getZero().newInstance(original.getIscL1CA()));
@@ -99,6 +96,7 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
         setUraiNed0(original.getUraiNed0());
         setUraiNed1(original.getUraiNed1());
         setUraiNed2(original.getUraiNed2());
+        setFlags(original.getFlags());
     }
 
     /** Constructor from different field instance.
@@ -110,8 +108,6 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
                                                                                  final FieldCivilianNavigationMessage<V, O> original) {
         super(converter, original);
         this.cnv2 = original.isCnv2();
-        setADot(converter.apply(original.getADot()));
-        setDeltaN0Dot(converter.apply(original.getDeltaN0Dot()));
         setSvAccuracy(converter.apply(original.getSvAccuracy()));
         setSvHealth(original.getSvHealth());
         setIscL1CA(converter.apply(original.getIscL1CA()));
@@ -124,6 +120,13 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
         setUraiNed0(original.getUraiNed0());
         setUraiNed1(original.getUraiNed1());
         setUraiNed2(original.getUraiNed2());
+        setFlags(original.getFlags());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isCivilianMessage() {
+        return true;
     }
 
     /** Check it message is a CNV2 message.
@@ -131,34 +134,6 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
      */
     public boolean isCnv2() {
         return cnv2;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public T getADot() {
-        return aDot;
-    }
-
-    /**
-     * Setter for the change rate in semi-major axis.
-     * @param value the change rate in semi-major axis
-     */
-    public void setADot(final T value) {
-        this.aDot = value;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public T getDeltaN0Dot() {
-        return deltaN0Dot;
-    }
-
-    /**
-     * Setter for change rate in Δn₀.
-     * @param deltaN0Dot change rate in Δn₀
-     */
-    public void setDeltaN0Dot(final T deltaN0Dot) {
-        this.deltaN0Dot = deltaN0Dot;
     }
 
     /**
@@ -351,6 +326,22 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
      */
     public void setUraiNed2(final int uraiNed2) {
         this.uraiNed2 = uraiNed2;
+    }
+
+    /** Get the flags.
+     * @return flags
+     * @since 14.0
+     */
+    public int getFlags() {
+        return flags;
+    }
+
+    /** Set the flags.
+     * @param flags flags
+     * @since 14.0
+     */
+    public void setFlags(final int flags) {
+        this.flags = flags;
     }
 
 }

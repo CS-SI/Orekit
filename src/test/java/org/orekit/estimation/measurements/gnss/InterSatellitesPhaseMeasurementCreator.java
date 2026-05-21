@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,9 +60,9 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockBiasDriver().setValue(localClockOffset);
         this.remote              = new ObservableSatellite(1);
-        this.remote.getClockOffsetDriver().setValue(remoteClockOffset);
+        this.remote.getClockBiasDriver().setValue(remoteClockOffset);
         this.cache               = new AmbiguityCache();
     }
 
@@ -75,11 +75,11 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
     }
 
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
-        if (local.getClockOffsetDriver().getReferenceDate() == null) {
-            local.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        if (local.getClockBiasDriver().getReferenceDate() == null) {
+            local.getClockBiasDriver().setReferenceDate(s0.getDate());
         }
-        if (remote.getClockOffsetDriver().getReferenceDate() == null) {
-            remote.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        if (remote.getClockBiasDriver().getReferenceDate() == null) {
+            remote.getClockBiasDriver().setReferenceDate(s0.getDate());
         }
     }
 
@@ -87,8 +87,8 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
         try {
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
-            final double           remoteClk = remote.getClockOffsetDriver().getValue(date);
-            final double           localClk  = local.getClockOffsetDriver().getValue(date);
+            final double           remoteClk = remote.getClockBiasDriver().getValue(date);
+            final double           localClk  = local.getClockBiasDriver().getValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

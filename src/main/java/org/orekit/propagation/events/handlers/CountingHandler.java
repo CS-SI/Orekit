@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +21,20 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 
 /**
- * Abstract class for handlers counting event occurrences. The {@link Action} can be modified according to the count.
+ * Class for handlers counting event occurrences. The {@link Action} can be modified according to the count.
  * @author Romain Serra
  * @since 13.0
  */
-public abstract class CountingHandler extends AbstractGenericCountingHandler implements EventHandler {
+public class CountingHandler extends AbstractCounter implements EventHandler {
+
+    /**
+     * Constructor with initial count at zero.
+     *
+     * @param action        Action to initialize attribute
+     */
+    public CountingHandler(final Action action) {
+        this(0, action);
+    }
 
     /**
      * Constructor.
@@ -33,7 +42,7 @@ public abstract class CountingHandler extends AbstractGenericCountingHandler imp
      * @param startingCount value to initialize count
      * @param action        Action to initialize attribute
      */
-    protected CountingHandler(final int startingCount, final Action action) {
+    public CountingHandler(final int startingCount, final Action action) {
         super(startingCount, action);
     }
 
@@ -47,11 +56,13 @@ public abstract class CountingHandler extends AbstractGenericCountingHandler imp
     }
 
     /**
-     * Method returning true if and only if the count needs to be incremented.
+     * Method returning true if and only if the count needs to be incremented. By default, count all.
      * @param state state at detection
      * @param detector detector
      * @param increasing flag on direction of event function
      * @return flag on counting
      */
-    protected abstract boolean doesCount(SpacecraftState state, EventDetector detector, boolean increasing);
+    protected boolean doesCount(final SpacecraftState state, final EventDetector detector, final boolean increasing) {
+        return true;
+    }
 }

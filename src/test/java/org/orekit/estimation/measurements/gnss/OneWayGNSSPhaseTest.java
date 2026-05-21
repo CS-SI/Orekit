@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.QuadraticClockModel;
+import org.orekit.estimation.measurements.ObserverSatellite;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
@@ -48,6 +48,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
@@ -55,7 +56,7 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class OneWayGNSSPhaseTest {
+class OneWayGNSSPhaseTest {
 
     private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
@@ -64,7 +65,7 @@ public class OneWayGNSSPhaseTest {
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest One-way GNSS phase Values\n");
@@ -78,7 +79,7 @@ public class OneWayGNSSPhaseTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -108,7 +109,7 @@ public class OneWayGNSSPhaseTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -134,7 +135,7 @@ public class OneWayGNSSPhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range measurements
@@ -227,7 +228,7 @@ public class OneWayGNSSPhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -253,11 +254,11 @@ public class OneWayGNSSPhaseTest {
         Assertions.assertEquals(0.0, absErrorsMedian, 6.7e-7);
         Assertions.assertEquals(0.0, absErrorsMin,    3.2e-6);
         Assertions.assertEquals(0.0, absErrorsMax,    5.7e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 5.4e-12);
+        Assertions.assertEquals(0.0, relErrorsMedian, 5.5e-12);
         Assertions.assertEquals(0.0, relErrorsMax,    1.6e-10);
 
         // Test measurement type
-        Assertions.assertEquals(OneWayGNSSPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(OneWayGNSSPhase.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -267,7 +268,7 @@ public class OneWayGNSSPhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect one-way GNSS range measurements
@@ -386,7 +387,7 @@ public class OneWayGNSSPhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -422,7 +423,7 @@ public class OneWayGNSSPhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect one-way GNSS range measurements
@@ -442,7 +443,7 @@ public class OneWayGNSSPhaseTest {
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
         final OneWayGNSSPhaseCreator creator = new OneWayGNSSPhaseCreator(ephemeris, "remote", RADIO_WAVE, ambiguity, localClockOffset, remoteClockOffset);
-        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -475,33 +476,33 @@ public class OneWayGNSSPhaseTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockOffsetDriver(),
+                        measurement.getSatellites().getFirst().getClockBiasDriver(),
                     };
 
-                    for (int i = 0; i < drivers.length; ++i) {
-                        for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
+                    for (ParameterDriver driver : drivers) {
+                        for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                            final double[] gradient = measurement.estimate(0, 0, states).getParameterDerivatives(driver, span.getStart());
                             Assertions.assertEquals(1, measurement.getDimension());
                             Assertions.assertEquals(1, gradient.length);
-                            
+
                             // Compute a reference value using finite differences
                             final ParameterFunction dMkdP =
-                                            Differentiation.differentiate(new ParameterFunction() {
-                                                /** {@inheritDoc} */
-                                                @Override
-                                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                                    return measurement.
-                                                           estimateWithoutDerivatives(states).
-                                                           getEstimatedValue()[0];
-                                                }
-                                            }, 5, 10.0 * drivers[i].getScale());
-                            final double ref = dMkdP.value(drivers[i], date);
-                            
+                                    Differentiation.differentiate(new ParameterFunction() {
+                                        /** {@inheritDoc} */
+                                        @Override
+                                        public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                            return measurement.
+                                                    estimateWithoutDerivatives(states).
+                                                    getEstimatedValue()[0];
+                                        }
+                                    }, 5, 10.0 * driver.getScale());
+                            final double ref = dMkdP.value(driver, date);
+
                             if (printResults) {
-                                System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
+                                System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0] - ref, FastMath.abs((gradient[0] - ref) / ref));
                             }
-                            
-                            final double relError = FastMath.abs((ref-gradient[0])/ref);
+
+                            final double relError = FastMath.abs((ref - gradient[0]) / ref);
                             relErrorList.add(relError);
                         }
                     }
@@ -520,13 +521,13 @@ public class OneWayGNSSPhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Check number of parameter drivers attached to measurement
-        List<ParameterDriver> paramDrivers = measurements.get(0).getParametersDrivers();
+        List<ParameterDriver> paramDrivers = measurements.getFirst().getParametersDrivers();
         Assertions.assertEquals(4, paramDrivers.size());
 
         // Check the parameter names
-        Assertions.assertEquals("clock-offset-sat-0", paramDrivers.get(0).getName());
-        Assertions.assertEquals("clock-drift-sat-0", paramDrivers.get(1).getName());
-        Assertions.assertEquals("clock-acceleration-sat-0", paramDrivers.get(2).getName());
+        Assertions.assertEquals("sat-0-clock-bias", paramDrivers.getFirst().getName());
+        Assertions.assertEquals("sat-0-clock-drift", paramDrivers.get(1).getName());
+        Assertions.assertEquals("sat-0-clock-acceleration", paramDrivers.get(2).getName());
         Assertions.assertEquals("ambiguity-remote-sat-0-154.00", paramDrivers.get(3).getName());
 
         // Print results ? Header
@@ -542,7 +543,7 @@ public class OneWayGNSSPhaseTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
@@ -566,13 +567,14 @@ public class OneWayGNSSPhaseTest {
     }
 
     @Test
-    public void testIssue734() {
+    void testIssue734() {
 
         Utils.setDataRoot("regular-data");
 
         // Create a phase measurement. Remote is set to null since it not used by the test
-        final OneWayGNSSPhase phase = new OneWayGNSSPhase(null, "",
-                                                          new QuadraticClockModel(AbsoluteDate.J2000_EPOCH, 635.0e-6, 0.0, 0.0),
+        final ObserverSatellite gnssSatellite = new ObserverSatellite("", null, 
+                                                                      new QuadraticClockModel(AbsoluteDate.J2000_EPOCH, 635.0e-6, 0.0, 0.0));
+        final OneWayGNSSPhase phase = new OneWayGNSSPhase(gnssSatellite,
                                                           AbsoluteDate.J2000_EPOCH, 467614.701,
                                                           PredefinedGnssSignal.G01.getWavelength(), 0.02, 1.0,
                                                           new ObservableSatellite(0),

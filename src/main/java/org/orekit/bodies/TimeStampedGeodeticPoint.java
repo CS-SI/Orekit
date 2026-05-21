@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,8 +73,7 @@ public class TimeStampedGeodeticPoint extends GeodeticPoint implements TimeStamp
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof TimeStampedGeodeticPoint) {
-            final TimeStampedGeodeticPoint other = (TimeStampedGeodeticPoint) object;
+        if (object instanceof TimeStampedGeodeticPoint other) {
             return other.date.isEqualTo(date) && super.equals(other);
         } else {
             return false;

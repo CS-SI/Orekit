@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,10 @@
  */
 package org.orekit.frames;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
@@ -24,9 +28,9 @@ import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.random.RandomGenerator;
@@ -40,13 +44,16 @@ import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
-import org.orekit.utils.*;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-
-public class FieldTransformTest {
+class FieldTransformTest {
 
     @Test
     void testIdentityTransformVector() {
@@ -77,7 +84,7 @@ public class FieldTransformTest {
         // WHEN
         final FieldPVCoordinates<Binary64> transformed = identity.transformPVCoordinates(pvCoordinates);
         // THEN
-        final FieldPVCoordinates<Binary64> fieldPVCoordinates = new FieldPVCoordinates<Binary64>(field, pvCoordinates);
+        final FieldPVCoordinates<Binary64> fieldPVCoordinates = new FieldPVCoordinates<>(field, pvCoordinates);
         Assertions.assertEquals(position, transformed.getPosition().toVector3D());
         Assertions.assertEquals(velocity, transformed.getVelocity().toVector3D());
         Assertions.assertEquals(acceleration, transformed.getAcceleration().toVector3D());
@@ -166,7 +173,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testIdentityTranslation() {
+    void testIdentityTranslation() {
         doTestIdentityTranslation(Binary64Field.getInstance());
     }
 
@@ -176,7 +183,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testIdentityRotation() {
+    void testIdentityRotation() {
         doTestIdentityRotation(Binary64Field.getInstance());
     }
 
@@ -186,7 +193,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testIdentityLine() {
+    void testIdentityLine() {
         doTestIdentityLine(Binary64Field.getInstance());
     }
 
@@ -200,7 +207,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testSimpleComposition() {
+    void testSimpleComposition() {
         doTestSimpleComposition(Binary64Field.getInstance());
     }
 
@@ -218,7 +225,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testAcceleration() {
+    void testAcceleration() {
         doTestAcceleration(Binary64Field.getInstance());
     }
 
@@ -232,7 +239,7 @@ public class FieldTransformTest {
             FieldPVCoordinates<T> transformedPV = evolvingTransform(FieldAbsoluteDate.getJ2000Epoch(field), dt).transformPVCoordinates(basePV);
 
             // rebuild transformed acceleration, relying only on transformed position and velocity
-            List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<TimeStampedFieldPVCoordinates<T>>();
+            List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<>();
             double h = 1.0e-2;
             for (int i = -3; i < 4; ++i) {
                 FieldTransform<T> t = evolvingTransform(FieldAbsoluteDate.getJ2000Epoch(field), dt + i * h);
@@ -256,7 +263,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testAccelerationComposition() {
+    void testAccelerationComposition() {
         doTestAccelerationComposition(Binary64Field.getInstance());
     }
 
@@ -310,7 +317,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testRandomComposition() {
+    void testRandomComposition() {
         doTestRandomComposition(Binary64Field.getInstance());
     }
 
@@ -360,7 +367,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testReverse() {
+    void testReverse() {
         doTestReverse(Binary64Field.getInstance());
     }
 
@@ -376,7 +383,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testIdentityJacobianP() {
+    void testIdentityJacobianP() {
         doTestIdentityJacobianP(Binary64Field.getInstance());
     }
 
@@ -385,7 +392,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testIdentityJacobianPV() {
+    void testIdentityJacobianPV() {
         doTestIdentityJacobianPV(Binary64Field.getInstance());
     }
 
@@ -394,7 +401,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testIdentityJacobianPVA() {
+    void testIdentityJacobianPVA() {
         doTestIdentityJacobianPVA(Binary64Field.getInstance());
     }
 
@@ -413,7 +420,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testDecomposeAndRebuild() {
+    void testDecomposeAndRebuild() {
         doTestDecomposeAndRebuild(Binary64Field.getInstance());
     }
 
@@ -434,7 +441,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testTranslation() {
+    void testTranslation() {
         doTestTranslation(Binary64Field.getInstance());
     }
 
@@ -456,7 +463,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testTranslationDouble() {
+    void testTranslationDouble() {
         doTestTranslationDouble(Binary64Field.getInstance());
     }
 
@@ -478,7 +485,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testRoughTransPV() {
+    void testRoughTransPV() {
         doTestRoughTransPV(Binary64Field.getInstance());
     }
 
@@ -570,7 +577,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testRotPV() {
+    void testRotPV() {
         doTestRotPV(Binary64Field.getInstance());
     }
 
@@ -617,7 +624,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testTransPV() {
+    void testTransPV() {
         doTestTransPV(Binary64Field.getInstance());
     }
 
@@ -661,7 +668,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testTransPVDouble() {
+    void testTransPVDouble() {
         doTestTransPVDouble(Binary64Field.getInstance());
     }
 
@@ -705,7 +712,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testRotation() {
+    void testRotation() {
         doTestRotation(Binary64Field.getInstance());
     }
 
@@ -733,7 +740,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testJacobianP() {
+    void testJacobianP() {
         doTestJacobianP(Binary64Field.getInstance());
     }
 
@@ -742,9 +749,9 @@ public class FieldTransformTest {
         // base directions for finite differences
         @SuppressWarnings("unchecked")
         FieldPVCoordinates<T>[] directions = (FieldPVCoordinates<T>[]) Array.newInstance(FieldPVCoordinates.class, 3);
-        directions[0] = new FieldPVCoordinates<>(FieldVector3D.getPlusI(field), FieldVector3D.getZero(field), FieldVector3D.getZero(field));
-        directions[1] = new FieldPVCoordinates<>(FieldVector3D.getPlusJ(field), FieldVector3D.getZero(field), FieldVector3D.getZero(field));
-        directions[2] = new FieldPVCoordinates<>(FieldVector3D.getPlusK(field), FieldVector3D.getZero(field), FieldVector3D.getZero(field));
+        directions[0] = new FieldPVCoordinates<>(FieldVector3D.getPlusI(field), FieldVector3D.getZero(field));
+        directions[1] = new FieldPVCoordinates<>(FieldVector3D.getPlusJ(field), FieldVector3D.getZero(field));
+        directions[2] = new FieldPVCoordinates<>(FieldVector3D.getPlusK(field), FieldVector3D.getZero(field));
         double h = 0.01;
 
         RandomGenerator random = new Well19937a(0x47fd0d6809f4b173l);
@@ -812,7 +819,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testJacobianPV() {
+    void testJacobianPV() {
         doTestJacobianPV(Binary64Field.getInstance());
     }
 
@@ -821,7 +828,7 @@ public class FieldTransformTest {
         // base directions for finite differences
         @SuppressWarnings("unchecked")
         FieldPVCoordinates<T>[] directions = (FieldPVCoordinates<T>[]) Array.newInstance(FieldPVCoordinates.class, 6);
-        directions[0] = new FieldPVCoordinates<>(FieldVector3D.getPlusI(field), FieldVector3D.getZero(field),  FieldVector3D.getZero(field));
+        directions[0] = new FieldPVCoordinates<>(FieldVector3D.getPlusI(field), FieldVector3D.getZero(field));
         directions[1] = new FieldPVCoordinates<>(FieldVector3D.getPlusJ(field), FieldVector3D.getZero(field),  FieldVector3D.getZero(field));
         directions[2] = new FieldPVCoordinates<>(FieldVector3D.getPlusK(field), FieldVector3D.getZero(field),  FieldVector3D.getZero(field));
         directions[3] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getPlusI(field), FieldVector3D.getZero(field));
@@ -898,7 +905,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testJacobianPVA() {
+    void testJacobianPVA() {
         doTestJacobianPVA(Binary64Field.getInstance());
     }
 
@@ -907,12 +914,12 @@ public class FieldTransformTest {
         // base directions for finite differences
         @SuppressWarnings("unchecked")
         FieldPVCoordinates<T>[] directions = (FieldPVCoordinates<T>[]) Array.newInstance(FieldPVCoordinates.class, 9);
-        directions[0] = new FieldPVCoordinates<>(FieldVector3D.getPlusI(field), FieldVector3D.getZero(field),  FieldVector3D.getZero(field));
-        directions[1] = new FieldPVCoordinates<>(FieldVector3D.getPlusJ(field), FieldVector3D.getZero(field),  FieldVector3D.getZero(field));
-        directions[2] = new FieldPVCoordinates<>(FieldVector3D.getPlusK(field), FieldVector3D.getZero(field),  FieldVector3D.getZero(field));
-        directions[3] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getPlusI(field), FieldVector3D.getZero(field));
-        directions[4] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getPlusJ(field), FieldVector3D.getZero(field));
-        directions[5] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getPlusK(field), FieldVector3D.getZero(field));
+        directions[0] = new FieldPVCoordinates<>(FieldVector3D.getPlusI(field), FieldVector3D.getZero(field));
+        directions[1] = new FieldPVCoordinates<>(FieldVector3D.getPlusJ(field), FieldVector3D.getZero(field));
+        directions[2] = new FieldPVCoordinates<>(FieldVector3D.getPlusK(field), FieldVector3D.getZero(field));
+        directions[3] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getPlusI(field));
+        directions[4] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getPlusJ(field));
+        directions[5] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getPlusK(field));
         directions[6] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getZero(field),  FieldVector3D.getPlusI(field));
         directions[7] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getZero(field),  FieldVector3D.getPlusJ(field));
         directions[8] = new FieldPVCoordinates<>(FieldVector3D.getZero(field),  FieldVector3D.getZero(field),  FieldVector3D.getPlusK(field));
@@ -979,7 +986,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testLine() {
+    void testLine() {
         doTestLine(Binary64Field.getInstance());
     }
 
@@ -1001,7 +1008,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testLineDouble() {
+    void testLineDouble() {
         doTestLineDouble(Binary64Field.getInstance());
     }
 
@@ -1023,7 +1030,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testLinear() {
+    void testLinear() {
         doTestLinear(Binary64Field.getInstance());
     }
 
@@ -1099,7 +1106,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testShift() {
+    void testShift() {
         doTestShift(Binary64Field.getInstance());
     }
 
@@ -1159,7 +1166,7 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testShiftDerivatives() {
+    void testShiftDerivatives() {
         doTestShiftDerivatives(Binary64Field.getInstance());
     }
 
@@ -1315,13 +1322,13 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testInterpolation() {
+    void testInterpolation() {
         doTestInterpolation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field) {
         FieldAbsoluteDate<T> t0 = FieldAbsoluteDate.getGalileoEpoch(field);
-        List<FieldTransform<T>> sample = new ArrayList<FieldTransform<T>>();
+        List<FieldTransform<T>> sample = new ArrayList<>();
         for (int i = 0; i < 5; ++i) {
             sample.add(evolvingTransform(t0, i * 0.8));
         }

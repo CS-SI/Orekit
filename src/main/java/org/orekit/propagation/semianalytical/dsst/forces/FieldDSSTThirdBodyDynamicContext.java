@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,67 +36,67 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 public class FieldDSSTThirdBodyDynamicContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     /** Standard gravitational parameter μ for the body in m³/s². */
-    private T gm;
+    private final T gm;
 
     /** Distance from center of mass of the central body to the 3rd body. */
-    private T R3;
+    private final T R3;
 
     /** A = sqrt(μ * a). */
-    private T A;
+    private final T A;
 
     /** α. */
-    private T alpha;
+    private final T alpha;
 
     /** β. */
-    private T beta;
+    private final T beta;
 
     /** γ. */
-    private T gamma;
+    private final T gamma;
 
     /** B². */
-    private T BB;
+    private final T BB;
 
     /** B³. */
-    private T BBB;
+    private final T BBB;
 
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private T X;
+    private final T X;
 
     /** &Chi;². */
-    private T XX;
+    private final T XX;
 
     /** &Chi;³. */
-    private T XXX;
+    private final T XXX;
 
     /** -2 * a / A. */
-    private T m2aoA;
+    private final T m2aoA;
 
     /** B / A. */
-    private T BoA;
+    private final T BoA;
 
     /** 1 / (A * B). */
-    private T ooAB;
+    private final T ooAB;
 
     /** -C / (2 * A * B). */
-    private T mCo2AB;
+    private final T mCo2AB;
 
     /** B / A(1 + B). */
-    private T BoABpo;
+    private final T BoABpo;
 
     /** mu3 / R3. */
-    private T muoR3;
+    private final T muoR3;
 
     /** b = 1 / (1 + sqrt(1 - e²)) = 1 / (1 + B).*/
-    private T b;
+    private final T b;
 
     /** h * &Chi;³. */
-    private T hXXX;
+    private final T hXXX;
 
     /** k * &Chi;³. */
-    private T kXXX;
+    private final T kXXX;
 
     /** Keplerian mean motion. */
-    private T motion;
+    private final T motion;
 
     /** Constructor.
      * @param aux auxiliary elements related to the current orbit

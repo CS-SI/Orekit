@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,10 +28,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -45,6 +49,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -67,22 +72,24 @@ class FieldEventsLoggerTest {
         // GIVEN
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
         final FieldDateDetector<Binary64> dateDetector = new FieldDateDetector<>(fieldDate);
-        final FieldEventsLogger<Binary64> eventsLogger = new FieldEventsLogger<>();
+        final FieldEventsLogger<Binary64> eventsLogger = new FieldEventsLogger<>(new ArrayList<>());
         // WHEN
         final FieldEventDetector<Binary64> detector = eventsLogger.monitorDetector(dateDetector);
         // THEN
         Assertions.assertInstanceOf(FieldDetectorModifier.class, detector);
+        Assertions.assertTrue(eventsLogger.getLoggedEvents().isEmpty());
         final FieldDetectorModifier<Binary64> modifier = (FieldDetectorModifier<Binary64>) detector;
         Assertions.assertEquals(dateDetector, modifier.getDetector());
     }
 
-    @Test
-    void testMonitorDetectorHandlerEventOccurred() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testMonitorDetectorHandlerEventOccurred(final boolean logReset) {
         // GIVEN
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
         final FieldCountAndContinue<Binary64> counterHandler = new FieldCountAndContinue<>(0);
         final FieldDateDetector<Binary64> dateDetector = new FieldDateDetector<>(fieldDate).withHandler(counterHandler);
-        final FieldEventsLogger<Binary64> eventsLogger = new FieldEventsLogger<>();
+        final FieldEventsLogger<Binary64> eventsLogger = new FieldEventsLogger<>(logReset, new ArrayList<>());
         final FieldEventDetector<Binary64> detector = eventsLogger.monitorDetector(dateDetector);
         final FieldEventHandler<Binary64> handler = detector.getHandler();
         @SuppressWarnings("unchecked")
@@ -94,9 +101,10 @@ class FieldEventsLoggerTest {
         Assertions.assertEquals(Action.CONTINUE, action);
         final List<FieldEventsLogger.FieldLoggedEvent<Binary64>> loggedEvents = eventsLogger.getLoggedEvents();
         Assertions.assertEquals(loggedEvents.size(), counterHandler.getCount());
-        final FieldEventsLogger.FieldLoggedEvent<Binary64> event = loggedEvents.get(0);
+        final FieldEventsLogger.FieldLoggedEvent<Binary64> event = loggedEvents.getFirst();
         Assertions.assertEquals(mockedState, event.getState());
-        Assertions.assertEquals(mockedState, event.getResetState());
+        Assertions.assertNull(event.getResetState());
+        Assertions.assertEquals(action, event.getAction());
     }
 
     @Test
@@ -120,6 +128,37 @@ class FieldEventsLoggerTest {
             Assertions.assertNotEquals(fieldState, state);
         } else {
             Assertions.assertEquals(fieldState, state);
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testMonitorDetectorHandlerEventOccurredReset() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> dateDetector = new FieldDateDetector<>(field).withHandler(new FailingResetHandler());
+        final boolean logResetStates = false;
+        final FieldEventsLogger<Binary64> eventsLogger = new FieldEventsLogger<>(logResetStates, new ArrayList<>());
+        final FieldEventDetector<Binary64> detector = eventsLogger.monitorDetector(dateDetector);
+        final FieldSpacecraftState<Binary64> mockedState = mock();
+        when(mockedState.getDate()).thenReturn(FieldAbsoluteDate.getArbitraryEpoch(field));
+        // WHEN
+        final Action action = detector.getHandler().eventOccurred(mockedState, dateDetector, true);
+        // THEN
+        Assertions.assertEquals(Action.RESET_STATE, action);
+        Assertions.assertNull(eventsLogger.getLoggedEvents().getFirst().getResetState());
+    }
+
+    private static class FailingResetHandler implements FieldEventHandler<Binary64> {
+
+        @Override
+        public Action eventOccurred(FieldSpacecraftState<Binary64> s, FieldEventDetector<Binary64> detector, boolean increasing) {
+            return Action.RESET_STATE;
+        }
+
+        @Override
+        public FieldSpacecraftState<Binary64> resetState(FieldEventDetector<Binary64> detector, FieldSpacecraftState<Binary64> oldState) {
+            throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
         }
     }
 
@@ -168,7 +207,7 @@ class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
@@ -211,7 +250,7 @@ class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
@@ -247,7 +286,7 @@ class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
@@ -291,7 +330,7 @@ class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
@@ -347,7 +386,7 @@ class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;

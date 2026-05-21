@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,7 +62,7 @@ public enum UtcId {
     NIST("UTC(NIST)"),
 
     /** UTCIRN / UTC(NPLI). */
-    IRN("UTCIRN", "UTC(NPLI)"),
+    IRN("UTC(NPLI)", "UTCIRN"),
 
     /** UTC(OP). */
     OP("UTC(OP)");
@@ -86,6 +86,14 @@ public enum UtcId {
      */
     UtcId(final String... ids) {
         this.ids = ids.clone();
+    }
+
+    /** Get reference ID.
+     * @return reference ID
+     * @since 14.0
+     */
+    public String getId() {
+        return ids[0];
     }
 
     /** Parse a string to get the UTC id.

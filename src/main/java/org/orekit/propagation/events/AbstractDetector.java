@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,11 +19,13 @@ package org.orekit.propagation.events;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 
-/** Common parts shared by several orbital events finders.
+/** Common parts shared by several events finders.
+ * It should only be implemented by detectors able to accept any handler.
  * @param <T> type of the detector
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
@@ -42,11 +44,14 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     /** Detection settings. */
     private final EventDetectionSettings eventDetectionSettings;
 
-    /** Default handler for event overrides. */
+    /** Handler for event overrides. */
     private final EventHandler handler;
 
+    /** Default event function. */
+    private final EventFunction defaultEventFunction;
+
     /** Propagation direction. */
-    private boolean forward;
+    private boolean forward = true;
 
     /** Build a new instance.
      * @param maxCheck maximum checking interval, must be strictly positive (s)
@@ -68,7 +73,22 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
         checkStrictlyPositive(detectionSettings.getThreshold());
         this.eventDetectionSettings = detectionSettings;
         this.handler   = handler;
-        this.forward   = true;
+        this.defaultEventFunction = this::g;
+    }
+
+    /** Build a new instance.
+     * @param eventFunction event function
+     * @param detectionSettings event detection settings
+     * @param handler event handler to call at event occurrences
+     * @since 14.0
+     */
+    protected AbstractDetector(final EventFunction eventFunction,
+                               final EventDetectionSettings detectionSettings,
+                               final EventHandler handler) {
+        checkStrictlyPositive(detectionSettings.getThreshold());
+        this.eventDetectionSettings = detectionSettings;
+        this.handler   = handler;
+        this.defaultEventFunction = eventFunction;
     }
 
     /**
@@ -105,6 +125,11 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
                      final AbsoluteDate t) {
         EventDetector.super.init(s0, t);
         forward = checkIfForward(s0, t);
+    }
+
+    @Override
+    public EventFunction getEventFunction() {
+        return defaultEventFunction;
     }
 
     /** {@inheritDoc} */

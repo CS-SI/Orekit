@@ -1,0 +1,113 @@
+/* Copyright 2022-2026 Thales Alenia Space
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.time.clocks;
+
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
+
+/** Container for time stamped clock offset.
+ * @param <T> type of the field elements
+ * @author Luc Maisonobe
+ * @since 12.1
+ */
+public class FieldClockOffset<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
+
+    /** Date. */
+    private final FieldAbsoluteDate<T> date;
+
+    /** Clock bias. */
+    private final T bias;
+
+    /** Clock rate. */
+    private final T rate;
+
+    /** Clock acceleration. */
+    private final T acceleration;
+
+    /** Simple constructor.
+     * @param date         date
+     * @param bias         clock bias
+     * @param rate         clock rate (can be set to {@code null} if unknown)
+     * @param acceleration clock acceleration (can be set to {@code null} if unknown)
+     */
+    public FieldClockOffset(final FieldAbsoluteDate<T> date, final T bias,
+                            final T rate, final T acceleration) {
+        this.date         = date;
+        this.bias         = bias;
+        this.rate         = rate;
+        this.acceleration = acceleration;
+    }
+
+    /** Add another offset to the instance.
+     * <p>
+     * The instance is not modified, a new instance is created
+     * </p>
+     * @param other offset to add (date part will be ignored)
+     * @return instance + other, at instance date
+     * @since 14.0
+     */
+    public FieldClockOffset<T> add(final FieldClockOffset<T> other) {
+        return new FieldClockOffset<>(date,
+                                      bias.add(other.bias),
+                                      rate.add(other.rate),
+                                      acceleration.add(other.acceleration));
+    }
+
+    /** Subtract another offset from the instance.
+     * <p>
+     * The instance is not modified, a new instance is created
+     * </p>
+     * @param other offset to subtract (date part will be ignored)
+     * @return instance - other, at instance date
+     * @since 14.0
+     */
+    public FieldClockOffset<T> subtract(final FieldClockOffset<T> other) {
+        return new FieldClockOffset<>(date,
+                                      bias.subtract(other.bias),
+                                      rate.subtract(other.rate),
+                                      acceleration.subtract(other.acceleration));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldAbsoluteDate<T> getDate() {
+        return date;
+    }
+
+    /** Get bias.
+     * @return bias
+     */
+    public T getBias() {
+        return bias;
+    }
+
+    /** Get rate.
+     * @return rate ({@code null} if unknown)
+     */
+    public T getRate() {
+        return rate;
+    }
+
+    /** Get acceleration.
+     * @return acceleration ({@code null} if unknown)
+     */
+    public T getAcceleration() {
+        return acceleration;
+    }
+
+}

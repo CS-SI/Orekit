@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,23 @@
  */
 package org.orekit.files.rinex.navigation;
 
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.data.NavigationMessage;
+import org.orekit.utils.formatting.FastLongFormatter;
+
+import java.io.IOException;
 
 /** Container for data shared by several navigation messages.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class TypeSvMessage {
+public abstract class TypeSvMessage implements NavigationMessage {
+
+    /** Formatter for identifier.
+     * @since 14.0
+     */
+    private static final FastLongFormatter TWO_DIGITS = new FastLongFormatter(2, true);
 
     /** Satellite system. */
     private final SatelliteSystem system;
@@ -31,20 +41,26 @@ public class TypeSvMessage {
     private final int prn;
 
     /** Navigation message type. */
-    private final String navigationMessageType;
+    private final String type;
+
+    /** Navigation message subtype. */
+    private final String subType;
 
     /** Simple constructor.
      * @param system satellite system
      * @param prn satellite number
-     * @param navigationMessageType navigation message type
+     * @param type navigation message type
+     * @param subType navigation message subtype
      */
-    protected TypeSvMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
-        this.system                = system;
-        this.prn                   = prn;
-        this.navigationMessageType = navigationMessageType;
+    protected TypeSvMessage(final SatelliteSystem system, final int prn,
+                            final String type, final String subType) {
+        this.system  = system;
+        this.prn     = prn;
+        this.type    = type;
+        this.subType = subType;
     }
 
-    /** Get satellite system.
+    /** Get the satellite system.
      * @return the system
      */
     public SatelliteSystem getSystem() {
@@ -58,11 +74,32 @@ public class TypeSvMessage {
         return prn;
     }
 
-    /** Get navigation message type.
-     * @return the navigation message type
+    /** Get the identifier.
+     * @return identifier
+     * @since 14.0
      */
+    public String getIdentifier() {
+        try {
+            final StringBuilder sb = new StringBuilder();
+            sb.append(system.getKey());
+            TWO_DIGITS.appendTo(sb, prn);
+            return sb.toString();
+        } catch (IOException ioe) {
+            // this should never happen
+            throw new OrekitInternalError(ioe);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public String getNavigationMessageType() {
-        return navigationMessageType;
+        return type;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageSubType() {
+        return subType;
     }
 
 }

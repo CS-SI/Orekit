@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,7 @@ package org.orekit.files.rinex.clock;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,10 +26,11 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
@@ -39,20 +38,20 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
-import org.orekit.files.rinex.clock.RinexClock.ClockDataType;
-import org.orekit.files.rinex.clock.RinexClock.Receiver;
-import org.orekit.files.rinex.clock.RinexClock.ReferenceClock;
+import org.orekit.files.rinex.section.CommonLabel;
+import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.PredefinedObservationType;
+import org.orekit.gnss.PredefinedTimeSystem;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.units.Unit;
 
 /** A parser for the clock file from the IGS.
  * This parser handles versions 2.0 to 3.04 of the RINEX clock files.
@@ -71,167 +70,97 @@ import org.orekit.time.TimeScales;
  */
 public class RinexClockParser {
 
-    /** Handled clock file format versions. */
-    private static final List<Double> HANDLED_VERSIONS = Arrays.asList(2.00, 3.00, 3.01, 3.02, 3.04);
-
-    /** Pattern for date format yyyy-mm-dd hh:mm. */
-    private static final Pattern DATE_PATTERN_1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");
-
-    /** Pattern for date format yyyymmdd hhmmss zone or YYYYMMDD  HHMMSS zone. */
-    private static final Pattern DATE_PATTERN_2 = Pattern.compile("^[0-9]{8}\\s{1,2}[0-9]{6}.*$");
-
-    /** Pattern for date format dd-MONTH-yyyy hh:mm zone or d-MONTH-yyyy hh:mm zone. */
-    private static final Pattern DATE_PATTERN_3 = Pattern.compile("^[0-9]{1,2}-[a-z,A-Z]{3}-[0-9]{4} [0-9]{2}:[0-9]{2}.*$");
-
-    /** Pattern for date format dd-MONTH-yy hh:mm zone or d-MONTH-yy hh:mm zone. */
-    private static final Pattern DATE_PATTERN_4 = Pattern.compile("^[0-9]{1,2}-[a-z,A-Z]{3}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");
-
-    /** Pattern for date format yyyy MONTH dd hh:mm:ss or yyyy MONTH d hh:mm:ss. */
-    private static final Pattern DATE_PATTERN_5 = Pattern.compile("^[0-9]{4} [a-z,A-Z]{3} [0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}.*$");
+    /** Millimeter unit. */
+    private static final Unit MILLIMETER = Unit.parse("mm");
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
 
-    /** SYS string for line browsing stop. */
-    private static final String SYS = "SYS";
-
-    /** One millimeter, in meters. */
-    private static final double MILLIMETER = 1.0e-3;
-
     /** Mapping from frame identifier in the file to a {@link Frame}. */
     private final Function<? super String, ? extends Frame> frameBuilder;
 
-    /** Set of time scales. */
-    private final TimeScales timeScales;
-
-    /** Mapper from string to observation type.
+    /** Mapper from string to the observation type.
      * @since 13.0
      */
     private final Function<? super String, ? extends ObservationType> typeBuilder;
 
+    /** Mapper from string to time system.
+     * @since 14.0
+     */
+    private final Function<? super String, ? extends TimeSystem> timeSystemBuilder;
+
+    /** Set of time scales. */
+    private final TimeScales timeScales;
+
     /** Create a clock file parser using default values.
      * <p>
-     * This constructor uses the {@link DataContext#getDefault() default data context},
-     * and {@link IGSUtils#guessFrame} and recognizes only {@link PredefinedObservationType}.
+     * This constructor uses the {@link DataContext#getDefault() default data context}
+     * and {@link IGSUtils#guessFrame(String)}, it recognizes only {@link
+     * org.orekit.gnss.PredefinedObservationType} and {@link org.orekit.gnss.PredefinedTimeSystem}.
      * </p>
-     * @see #RinexClockParser(Function)
+     * @see #RinexClockParser(Function, Function, Function, TimeScales)
      */
     @DefaultDataContext
     public RinexClockParser() {
-        this(IGSUtils::guessFrame);
-    }
-
-    /** Create a clock file parser and specify the frame builder.
-     * <p>
-     * This constructor uses the {@link DataContext#getDefault() default data context}
-     * and recognizes only {@link PredefinedObservationType}.
-     * </p>
-     * @param frameBuilder is a function that can construct a frame from a clock file
-     *                     coordinate system string. The coordinate system can be
-     *                     any 5 character string e.g. ITR92, IGb08.
-     * @see #RinexClockParser(Function, Function, TimeScales)
-     */
-    @DefaultDataContext
-    public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder) {
-        this(frameBuilder, PredefinedObservationType::valueOf,
+        this(IGSUtils::guessFrame,
+             PredefinedObservationType::valueOf,
+             PredefinedTimeSystem::parseTimeSystem,
              DataContext.getDefault().getTimeScales());
     }
 
     /** Constructor, build the IGS clock file parser.
-     * @param frameBuilder is a function that can construct a frame from a clock file
-     *                     coordinate system string. The coordinate system can be
-     *                     any 5 character string e.g. ITR92, IGb08.
-     * @param typeBuilder mapper from string to observation type
-     * @param timeScales   the set of time scales used for parsing dates.
-     * @since 13.0
+     * @param frameBuilder      is a function that can construct a frame from a clock file
+     *                          coordinate system string. The coordinate system can be
+     *                          any 5 characters string e.g., ITR92, IGb08.
+     * @param typeBuilder       mapper from string to the observation type
+     * @param timeSystemBuilder mapper from string to time system (useful for user-defined time systems)
+     * @param timeScales        the set of time scales used for parsing dates.
+     * @since 14.0
      */
     public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder,
                             final Function<? super String, ? extends ObservationType> typeBuilder,
+                            final Function<? super String, ? extends TimeSystem> timeSystemBuilder,
                             final TimeScales timeScales) {
-        this.frameBuilder = frameBuilder;
-        this.typeBuilder  = typeBuilder;
-        this.timeScales   = timeScales;
-    }
-
-    /**
-     * Parse an IGS clock file from an input stream using the UTF-8 charset.
-     *
-     * <p> This method creates a {@link BufferedReader} from the stream and as such this
-     * method may read more data than necessary from {@code stream} and the additional
-     * data will be lost. The other parse methods do not have this issue.
-     *
-     * @param stream to read the IGS clock file from
-     * @return a parsed IGS clock file
-     * @see #parse(String)
-     * @see #parse(BufferedReader, String)
-     * @see #parse(DataSource)
-     */
-    public RinexClock parse(final InputStream stream) {
-        return parse(new DataSource("<stream>", () -> stream));
-    }
-
-    /**
-     * Parse an IGS clock file from a file on the local file system.
-     * @param fileName file name
-     * @return a parsed IGS clock file
-     * @see #parse(InputStream)
-     * @see #parse(BufferedReader, String)
-     * @see #parse(DataSource)
-     */
-    public RinexClock parse(final String fileName) {
-        return parse(new DataSource(Paths.get(fileName).toFile()));
-    }
-
-    /**
-     * Parse an IGS clock file from a stream.
-     * @param reader containing the clock file
-     * @param fileName file name
-     * @return a parsed IGS clock file
-     * @see #parse(InputStream)
-     * @see #parse(String)
-     * @see #parse(DataSource)
-     */
-    public RinexClock parse(final BufferedReader reader, final String fileName) {
-        return parse(new DataSource(fileName, () -> reader));
+        this.frameBuilder      = frameBuilder;
+        this.typeBuilder       = typeBuilder;
+        this.timeSystemBuilder = timeSystemBuilder;
+        this.timeScales        = timeScales;
     }
 
     /** Parse an IGS clock file from a {@link DataSource}.
      * @param source source for clock file
      * @return a parsed IGS clock file
-     * @see #parse(InputStream)
-     * @see #parse(String)
-     * @see #parse(BufferedReader, String)
      * @since 12.1
      */
     public RinexClock parse(final DataSource source) {
 
+        Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.VERSION);
+
         // initialize internal data structures
-        final ParseInfo pi = new ParseInfo();
+        final ParseInfo parseInfo = new ParseInfo(source.getName());
 
         try (Reader reader = source.getOpener().openReaderOnce();
              BufferedReader br = new BufferedReader(reader)) {
-            pi.lineNumber = 0;
-            Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
+            ++parseInfo.lineNumber;
             nextLine:
             for (String line = br.readLine(); line != null; line = br.readLine()) {
-                ++pi.lineNumber;
                 for (final LineParser candidate : candidateParsers) {
-                    if (candidate.canHandle(line)) {
+                    if (candidate.canHandle.apply(parseInfo.file.getHeader(), line)) {
                         try {
-                            candidate.parse(line, pi);
-                            candidateParsers = candidate.allowedNext();
+                            candidate.parsingMethod.parse(line, parseInfo);
+                            ++parseInfo.lineNumber;
+                            candidateParsers = candidate.allowedNextProvider.apply(parseInfo);
                             continue nextLine;
-                        } catch (StringIndexOutOfBoundsException |
-                            NumberFormatException | InputMismatchException e) {
+                        } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
                             throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                      pi.lineNumber, source.getName(), line);
+                                                      parseInfo.lineNumber, source.getName(), line);
                         }
                     }
                 }
 
                 // no parsers found for this line
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          pi.lineNumber, source.getName(), line);
+                                          parseInfo.lineNumber, source.getName(), line);
 
             }
 
@@ -239,24 +168,50 @@ public class RinexClockParser {
             throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
         }
 
-        return pi.file;
+        return parseInfo.file;
 
     }
 
     /** Transient data used for parsing a clock file. */
     private class ParseInfo {
 
+        /** Name of the data source. */
+        private final String name;
+
+        /** Mapping from frame identifier in the file to a {@link Frame}.
+         * @since 14.0
+         */
+        private final Function<? super String, ? extends Frame> frameBuilder;
+
+        /** Mapper from string to the observation type.
+         * @since 14.0
+         */
+        private final Function<? super String, ? extends ObservationType> typeBuilder;
+
+        /** Mapper from string to time system.
+         * @since 14.0
+         */
+        private final Function<? super String, ? extends TimeSystem> timeSystemBuilder;
+
+        /** Set of time scales for parsing dates.
+         * @since 14.0
+         */
+        private final TimeScales timeScales;
+
         /** Current line number of the navigation message. */
         private int lineNumber;
-
-        /** Set of time scales for parsing dates. */
-        private final TimeScales timeScales;
 
         /** The corresponding clock file object. */
         private final RinexClock file;
 
         /** Current satellite system for observation type parsing. */
         private SatelliteSystem currentSatelliteSystem;
+
+        /** Remaining number of observation types. */
+        private int remainingObsTypes;
+
+        /** Indicator for completed header. */
+        private boolean headerCompleted;
 
         /** Current start date for reference clocks. */
         private AbsoluteDate referenceClockStartDate;
@@ -267,37 +222,49 @@ public class RinexClockParser {
         /** Pending reference clocks list. */
         private List<ReferenceClock> pendingReferenceClocks;
 
+        /** Number of stations. */
+        private int nbStations;
+
+        /** Number of satellites. */
+        private int nbSatellites;
+
         /** Current clock data type. */
         private ClockDataType currentDataType;
 
         /** Current receiver/satellite name. */
         private String currentName;
 
-        /** Current data date components. */
-        private DateComponents currentDateComponents;
+        /** Date if the clock data line. */
+        private AbsoluteDate date;
 
-        /** Current data time components. */
-        private TimeComponents currentTimeComponents;
+        /** Total number of values to parse. */
+        private int totalValues;
 
-        /** Current data number of data values to follow. */
-        private int currentNumberOfValues;
+        /** Index of next value to parse. */
+        private int valueIndex;
 
         /** Current data values. */
-        private double[] currentDataValues;
+        private final double[] values;
 
-        /** Constructor, build the ParseInfo object. */
-        protected ParseInfo () {
-            this.timeScales = RinexClockParser.this.timeScales;
-            this.file = new RinexClock(frameBuilder);
-            this.pendingReferenceClocks = new ArrayList<>();
-        }
-
-        /** Build an observation type.
-         * @param type observation type
-         * @return built type
+        /** Constructor, build the ParseInfo object.
+         * @param name name of the data source
          */
-        ObservationType buildType(final String type) {
-            return RinexClockParser.this.typeBuilder.apply(type);
+        ParseInfo(final String name) {
+            this.name                   = name;
+            this.frameBuilder           = RinexClockParser.this.frameBuilder;
+            this.typeBuilder            = RinexClockParser.this.typeBuilder;
+            this.timeSystemBuilder      = RinexClockParser.this.timeSystemBuilder;
+            this.timeScales             = RinexClockParser.this.timeScales;
+            this.file                   = new RinexClock();
+            this.lineNumber             = 0;
+            this.pendingReferenceClocks = new ArrayList<>();
+            this.values                 = new double[6];
+
+            // reset the default values set by header constructor
+            this.file.getHeader().setProgramName(null);
+            this.file.getHeader().setRunByName(null);
+            this.file.getHeader().setCreationDateComponents(null);
+
         }
 
     }
@@ -307,776 +274,522 @@ public class RinexClockParser {
     private enum LineParser {
 
         /** Parser for version, file type and satellite system. */
-        HEADER_VERSION("^.+RINEX VERSION / TYPE( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    // First element of the line is format version
-                    final double version = scanner.nextDouble();
-
-                    // Throw exception if format version is not handled
-                    if (!HANDLED_VERSIONS.contains(version)) {
-                        throw new OrekitException(OrekitMessages.CLOCK_FILE_UNSUPPORTED_VERSION, version);
+        VERSION((header, line) -> header.matchFound(CommonLabel.VERSION, line),
+                (line, parseInfo) ->  {
+                    final RinexClockHeader header = parseInfo.file.getHeader();
+                    header.parseVersionFileTypeSatelliteSystem(line, null, parseInfo.name,
+                                                               2.00, 3.00, 3.01, 3.02, 3.04);
+                    if (header.getFormatVersion() < 3.0) {
+                        // before 3.0, only GPS system was used
+                        header.setSatelliteSystem(SatelliteSystem.GPS);
+                        header.setTimeSystem(PredefinedTimeSystem.GPS);
+                        header.setTimeScale(parseInfo.timeSystemBuilder.
+                                            apply(PredefinedTimeSystem.GPS.getKey()).
+                                            getTimeScale(parseInfo.timeScales));
                     }
-
-                    pi.file.setFormatVersion(version);
-
-                    // Second element is clock file indicator, not used here
-
-                    // Last element is the satellite system, might be missing
-                    final String satelliteSystemString = line.substring(40, 45).trim();
-
-                    // Check satellite if system is recorded
-                    if (!satelliteSystemString.isEmpty()) {
-                        // Record satellite system and default time system in clock file object
-                        final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(satelliteSystemString);
-                        pi.file.setSatelliteSystem(satelliteSystem);
-                        if (satelliteSystem.getObservationTimeScale() != null) {
-                            pi.file.setTimeScale(satelliteSystem.getObservationTimeScale().getTimeScale(pi.timeScales));
-                        }
-                    }
-                    // Set time scale to UTC by default
-                    if (pi.file.getTimeScale() == null) {
-                        pi.file.setTimeScale(pi.timeScales.getUTC());
-                    }
-                }
-            }
-
-        },
+                },
+                LineParser::headerNext),
 
         /** Parser for generating program and emiting agency. */
-        HEADER_PROGRAM("^.+PGM / RUN BY / DATE( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-
-                // First element of the name of the generating program
-                final String programName = line.substring(0, 20).trim();
-                pi.file.setProgramName(programName);
-
-                // Second element is the name of the emiting agency
-                final String agencyName = line.substring(20, 40).trim();
-                pi.file.setAgencyName(agencyName);
-
-                // Third element is date
-                String dateString = "";
-
-                if (pi.file.getFormatVersion() < 3.04) {
-
-                    // Date string location before 3.04 format version
-                    dateString = line.substring(40, 60);
-
-                } else {
-
-                    // Date string location after 3.04 format version
-                    dateString = line.substring(42, 65);
-
-                }
-
-                parseDateTimeZone(dateString, pi);
-
-            }
-
-        },
+        PROGRAM((header, line) -> header.matchFound(CommonLabel.PROGRAM, line),
+                (line, parseInfo) -> parseInfo.file.getHeader().parseProgramRunByDate(line, parseInfo.timeScales),
+                LineParser::headerNext),
 
         /** Parser for comments. */
-        HEADER_COMMENT("^.+COMMENT( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-
-                if (pi.file.getFormatVersion() < 3.04) {
-                    pi.file.addComment(line.substring(0, 60).trim());
-                } else {
-                    pi.file.addComment(line.substring(0, 65).trim());
-                }
-            }
-
-        },
+        COMMENT((header, line) -> header.matchFound(CommonLabel.COMMENT, line),
+                (line, parseInfo) -> ParsingUtils.parseComment(parseInfo.lineNumber, line, parseInfo.file),
+                LineParser::commentNext),
 
         /** Parser for satellite system and related observation types. */
-        HEADER_SYSTEM_OBS("^[A-Z] .*SYS / # / OBS TYPES( )*$") {
+        SYS_NB_TYPES_OF_OBSERV((header, line) -> header.matchFound(CommonLabel.SYS_NB_TYPES_OF_OBSERV, line),
+                               (line, parseInfo) -> {
+                                   final RinexClockHeader header = parseInfo.file.getHeader();
+                                   if (parseInfo.remainingObsTypes == 0) {
+                                       // we are starting a new satellite system
+                                       parseInfo.currentSatelliteSystem =
+                                           SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1));
+                                       parseInfo.remainingObsTypes = ParsingUtils.parseInt(line, 3, 3);
+                                   }
+                                   for (int i = 0;
+                                        i < (header.isBefore304() ? 13 : 14) && parseInfo.remainingObsTypes > 0;
+                                        ++i) {
+                                       parseInfo.remainingObsTypes--;
+                                       final String obsType = ParsingUtils.parseString(line,
+                                                                                       (header.isBefore304() ? 7 : 8) + 4 * i,
+                                                                                       3);
+                                       header.addSystemObservationType(parseInfo.currentSatelliteSystem,
+                                                                       parseInfo.typeBuilder.apply(obsType));
+                                   }
+                               },
+                               LineParser::sysObsTypesNext),
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
+        /** Parser for time system identifier. */
+        TIME_SYSTEM_ID((header, line) -> header.matchFound(ClockLabel.TIME_SYSTEM_ID, line),
+                       (line, parseInfo) -> {
+                           final RinexClockHeader header = parseInfo.file.getHeader();
+                           final TimeSystem timeSystem = parseInfo.timeSystemBuilder.
+                                                         apply(ParsingUtils.parseString(line, 3, 3));
+                           header.setTimeSystem(timeSystem);
+                           header.setTimeScale(timeSystem.getTimeScale(parseInfo.timeScales));
+                       },
+                       LineParser::headerNext),
 
-                    // First element of the line is satellite system code
-                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(scanner.next());
-                    pi.currentSatelliteSystem = satelliteSystem;
+        /** Parser for leap seconds separating UTC and TAI. */
+        LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
+                     (line, parseInfo) -> parseInfo.file.getHeader().
+                                          setLeapSecondsTAI(ParsingUtils.parseInt(line, 0, 6)),
+                     LineParser::headerNext),
 
-                    // Second element is the number of different observation types
-                    scanner.nextInt();
+        /** Parser for leap seconds separating UTC and GNSS. */
+        LEAP_SECONDS_GNSS((header, line) -> header.matchFound(ClockLabel.LEAP_SECONDS_GNSS, line),
+                          (line, parseInfo) -> parseInfo.file.getHeader().
+                                               setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6)),
+                          LineParser::headerNext),
 
-                    // Parse all observation types
-                    String currentObsType = scanner.next();
-                    while (!currentObsType.equals(SYS)) {
-                        pi.file.addSystemObservationType(satelliteSystem, pi.buildType(currentObsType));
-                        currentObsType = scanner.next();
-                    }
-                }
-            }
+        /** Parser for differential code bias corrections. */
+        SYS_DCBS_APPLIED((header, line) -> header.matchFound(CommonLabel.SYS_DCBS_APPLIED, line),
+                         (line, parseInfo) -> {
+                             // we added small margins to the character indices here because some files
+                             // do NOT respect the format
+                             // the reference example in table A17 of the rinex 3.04 specification itself exhibits
+                             // errors (the source field is shifted 2 characters to the left wrt. the specification,
+                             // i.e. this line in table A17 is consistent with the rinex clock 3.02 specification,
+                             // not with the rinex clock 3.04 specification…).
+                             final RinexClockHeader header = parseInfo.file.getHeader();
+                             final SatelliteSystem satelliteSystem =
+                                 SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1),
+                                                                      header.getSatelliteSystem());
+                             header.addAppliedDCBS(new AppliedDCBS(satelliteSystem,
+                                                                   ParsingUtils.parseString(line,  2, 18),
+                                                                   ParsingUtils.parseString(line, 20,
+                                                                                            header.getLabelIndex() - 20)));
+                         },
+                         LineParser::headerNext),
 
-        },
-
-        /** Parser for continuation of satellite system and related observation types. */
-        HEADER_SYSTEM_OBS_CONTINUATION("^ .*SYS / # / OBS TYPES( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    // This is a continuation line, there are only observation types
-                    // Parse all observation types
-                    String currentObsType = scanner.next();
-                    while (!currentObsType.equals(SYS)) {
-                        pi.file.addSystemObservationType(pi.currentSatelliteSystem, pi.buildType(currentObsType));
-                        currentObsType = scanner.next();
-                    }
-                }
-            }
-
-        },
-
-        /** Parser for data time system. */
-        HEADER_TIME_SYSTEM("^.+TIME SYSTEM ID( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    // Only element is the time system code
-                    final TimeSystem timeSystem = TimeSystem.parseTimeSystem(scanner.next());
-                    final TimeScale timeScale = timeSystem.getTimeScale(pi.timeScales);
-                    pi.file.setTimeSystem(timeSystem);
-                    pi.file.setTimeScale(timeScale);
-                }
-            }
-
-        },
-
-        /** Parser for leap seconds. */
-        HEADER_LEAP_SECONDS("^.+LEAP SECONDS( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    // Only element is the number of leap seconds
-                    final int numberOfLeapSeconds = scanner.nextInt();
-                    pi.file.setNumberOfLeapSeconds(numberOfLeapSeconds);
-                }
-            }
-
-        },
-
-        /** Parser for leap seconds GNSS. */
-        HEADER_LEAP_SECONDS_GNSS("^.+LEAP SECONDS GNSS( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    // Only element is the number of leap seconds GNSS
-                    final int numberOfLeapSecondsGNSS = scanner.nextInt();
-                    pi.file.setNumberOfLeapSecondsGNSS(numberOfLeapSecondsGNSS);
-                }
-            }
-
-        },
-
-        /** Parser for applied differencial code bias corrections. */
-        HEADER_DCBS("^.+SYS / DCBS APPLIED( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                // First element, if present, is the related satellite system
-                final String system = line.substring(0, 1);
-                if (!" ".equals(system)) {
-                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(system);
-
-                    // Second element is the program name
-                    final String progDCBS = line.substring(2, 20).trim();
-
-                    // Third element is the source of the corrections
-                    String sourceDCBS = "";
-                    if (pi.file.getFormatVersion() < 3.04) {
-                        sourceDCBS = line.substring(19, 60).trim();
-                    } else {
-                        sourceDCBS = line.substring(22, 65).trim();
-                    }
-
-                    // Check if sought fields were not actually blanks
-                    if (!progDCBS.isEmpty()) {
-                        pi.file.addAppliedDCBS(new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
-                    }
-                }
-            }
-
-        },
-
-        /** Parser for applied phase center variation corrections. */
-        HEADER_PCVS("^.+SYS / PCVS APPLIED( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-
-                // First element, if present, is the related satellite system
-                final String system = line.substring(0, 1);
-                if (!" ".equals(system)) {
-                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(system);
-
-                    // Second element is the program name
-                    final String progPCVS = line.substring(2, 20).trim();
-
-                    // Third element is the source of the corrections
-                    String sourcePCVS = "";
-                    if (pi.file.getFormatVersion() < 3.04) {
-                        sourcePCVS = line.substring(19, 60).trim();
-                    } else {
-                        sourcePCVS = line.substring(22, 65).trim();
-                    }
-
-                    // Check if sought fields were not actually blanks
-                    if (!progPCVS.isEmpty() || !sourcePCVS.isEmpty()) {
-                        pi.file.addAppliedPCVS(new AppliedPCVS(satelliteSystem, progPCVS, sourcePCVS));
-                    }
-                }
-            }
-
-        },
+        /** Parser for phase center variations corrections. */
+        SYS_PCVS_APPLIED((header, line) -> header.matchFound(CommonLabel.SYS_PCVS_APPLIED, line),
+                         (line, parseInfo) -> {
+                             // we added small margins to the character indices here because some files
+                             // do NOT respect the format
+                             // the reference example in table A17 of the rinex 3.04 specification itself exhibits
+                             // errors (the source field is shifted 2 characters to the left wrt. the specification,
+                             // i.e. this line in table A17 is consistent with the rinex clock 3.02 specification,
+                             // not with the rinex clock 3.04 specification…).
+                             final RinexClockHeader header = parseInfo.file.getHeader();
+                             final SatelliteSystem satelliteSystem =
+                                     SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1),
+                                                                          header.getSatelliteSystem());
+                             header.addAppliedPCVS(new AppliedPCVS(satelliteSystem,
+                                                                   ParsingUtils.parseString(line,  2, 18),
+                                                                   ParsingUtils.parseString(line, 20,
+                                                                                            header.getLabelIndex() - 20)));
+                         },
+                         LineParser::headerNext),
 
         /** Parser for the different clock data types that are stored in the file. */
-        HEADER_TYPES_OF_DATA("^.+# / TYPES OF DATA( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    // First element is the number of different types of data
-                    final int numberOfDifferentDataTypes = scanner.nextInt();
-
-                    // Loop over data types
-                    for (int i = 0; i < numberOfDifferentDataTypes; i++) {
-                        final ClockDataType dataType = ClockDataType.parseClockDataType(scanner.next());
-                        pi.file.addClockDataType(dataType);
-                    }
-                }
-            }
-
-        },
+        NB_TYPES_OF_DATA((header, line) -> header.matchFound(ClockLabel.NB_TYPES_OF_DATA, line),
+                         (line, parseInfo) -> {
+                             final int n = ParsingUtils.parseInt(line, 0, 6);
+                             if (n < 1) {
+                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                           parseInfo.lineNumber, parseInfo.name, line);
+                             }
+                             for (int i = 0; i < n; i++) {
+                                 final String type = ParsingUtils.parseString(line, 10 + i * 6, 4);
+                                 try {
+                                     parseInfo.file.getHeader().addClockDataType(ClockDataType.valueOf(type));
+                                 } catch (IllegalArgumentException iae) {
+                                     throw new OrekitException(OrekitMessages.UNKNOWN_CLOCK_DATA_TYPE, type);
+                                 }
+                             }
+                         },
+                         LineParser::headerNext),
 
         /** Parser for the station with reference clock. */
-        HEADER_STATIONS_NAME("^.+STATION NAME / NUM( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    // First element is the station clock reference ID
-                    final String stationName = scanner.next();
-                    pi.file.setStationName(stationName);
-
-                    // Second element is the station clock reference identifier
-                    final String stationIdentifier = scanner.next();
-                    pi.file.setStationIdentifier(stationIdentifier);
-                }
-            }
-
-        },
+        STATION_NAME_NUM((header, line) -> header.matchFound(ClockLabel.STATION_NAME_NUM, line),
+                         (line, parseInfo) -> {
+                             // we use a Scanner here instead of relying on the character indices
+                             // because some files do NOT respect the format
+                             // the reference example in table A18 of the rinex 3.04 specification itself exhibits
+                             // errors (the DOMES number field is shifted 5 characters to the left wrt. the
+                             // specification, i.e. this line in table A18 is consistent with the rinex clock 3.02
+                             // specification, not with the rinex clock 3.04 specification…).
+                             // We fall back to a Scanner, which should handle all format versions properly
+                             final RinexClockHeader header = parseInfo.file.getHeader();
+                             try (Scanner s1      = new Scanner(line.substring(0, header.getLabelIndex()));
+                                  Scanner s2      = s1.useDelimiter(SPACES);
+                                  Scanner scanner = s2.useLocale(Locale.US)) {
+                                 header.setStationName(scanner.next());
+                                 header.setStationIdentifier(scanner.next());
+                             }
+                         },
+                         LineParser::headerNext),
 
         /** Parser for the reference clock in case of calibration data. */
-        HEADER_STATION_CLOCK_REF("^.+STATION CLK REF( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                if (pi.file.getFormatVersion() < 3.04) {
-                    pi.file.setExternalClockReference(line.substring(0, 60).trim());
-                } else {
-                    pi.file.setExternalClockReference(line.substring(0, 65).trim());
-                }
-            }
-
-        },
+        STATION_CLK_REF((header, line) -> header.matchFound(ClockLabel.STATION_CLK_REF, line),
+                        (line, parseInfo) ->  {
+                            final RinexClockHeader header = parseInfo.file.getHeader();
+                            if (header.isBefore304()) {
+                                header.setExternalClockReference(line.substring(0, 60).trim());
+                            } else {
+                                header.setExternalClockReference(line.substring(0, 65).trim());
+                            }
+                        },
+                        LineParser::headerNext),
 
         /** Parser for the analysis center. */
-        HEADER_ANALYSIS_CENTER("^.+ANALYSIS CENTER( )*$") {
+        ANALYSIS_CENTER((header, line) -> header.matchFound(ClockLabel.ANALYSIS_CENTER, line),
+                        (line, parseInfo) -> {
+                            final RinexClockHeader header = parseInfo.file.getHeader();
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
+                            // First element is IGS AC designator
+                            header.setAnalysisCenterID(ParsingUtils.parseString(line, 0, 3));
 
-                // First element is IGS AC designator
-                final String analysisCenterID = line.substring(0, 3).trim();
-                pi.file.setAnalysisCenterID(analysisCenterID);
-
-                // Then, the full name of the analysis center
-                String analysisCenterName = "";
-                if (pi.file.getFormatVersion() < 3.04) {
-                    analysisCenterName = line.substring(5, 60).trim();
-                } else {
-                    analysisCenterName = line.substring(5, 65).trim();
-                }
-                pi.file.setAnalysisCenterName(analysisCenterName);
-            }
-
-        },
+                            // Then, the full name of the analysis center
+                            if (header.isBefore304()) {
+                                header.setAnalysisCenterName(ParsingUtils.parseString(line, 5, 55));
+                            } else {
+                                header.setAnalysisCenterName(ParsingUtils.parseString(line, 5, 60));
+                            }
+                        },
+                        LineParser::headerNext),
 
         /** Parser for the number of reference clocks over a period. */
-        HEADER_NUMBER_OF_CLOCK_REF("^.+# OF CLK REF( )*$") {
+        NB_OF_CLK_REF((header, line) -> header.matchFound(ClockLabel.NB_OF_CLK_REF, line),
+                      (line, parseInfo) -> {
+                          final RinexClockHeader header = parseInfo.file.getHeader();
+                          if (!parseInfo.pendingReferenceClocks.isEmpty()) {
+                              // Modify time span map of the reference clocks to accept the pending reference clock
+                              header.addReferenceClockList(parseInfo.pendingReferenceClocks,
+                                                           parseInfo.referenceClockStartDate,
+                                                           parseInfo.referenceClockEndDate);
+                              parseInfo.pendingReferenceClocks = new ArrayList<>();
+                          }
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    if (!pi.pendingReferenceClocks.isEmpty()) {
-                        // Modify time span map of the reference clocks to accept the pending reference clock
-                        pi.file.addReferenceClockList(pi.pendingReferenceClocks,
-                                                      pi.referenceClockStartDate);
-                        pi.pendingReferenceClocks = new ArrayList<>();
-                    }
-
-                    // First element is the number of reference clocks corresponding to the period
-                    scanner.nextInt();
-
-                    if (scanner.hasNextInt()) {
-                        // Second element is the start epoch of the period
-                        final int startYear   = scanner.nextInt();
-                        final int startMonth  = scanner.nextInt();
-                        final int startDay    = scanner.nextInt();
-                        final int startHour   = scanner.nextInt();
-                        final int startMin    = scanner.nextInt();
-                        final double startSec = scanner.nextDouble();
-                        final AbsoluteDate startEpoch = new AbsoluteDate(startYear, startMonth, startDay,
-                                                                         startHour, startMin, startSec,
-                                                                         pi.file.getTimeScale());
-                        pi.referenceClockStartDate = startEpoch;
-
-                        // Third element is the end epoch of the period
-                        final int endYear   = scanner.nextInt();
-                        final int endMonth  = scanner.nextInt();
-                        final int endDay    = scanner.nextInt();
-                        final int endHour   = scanner.nextInt();
-                        final int endMin    = scanner.nextInt();
-                        double endSec       = 0.0;
-                        if (pi.file.getFormatVersion() < 3.04) {
-                            endSec = Double.parseDouble(line.substring(51, 60));
-                        } else {
-                            endSec = scanner.nextDouble();
-                        }
-                        final AbsoluteDate endEpoch = new AbsoluteDate(endYear, endMonth, endDay,
-                                                                       endHour, endMin, endSec,
-                                                                       pi.file.getTimeScale());
-                        pi.referenceClockEndDate = endEpoch;
-                    } else {
-                        pi.referenceClockStartDate = AbsoluteDate.PAST_INFINITY;
-                        pi.referenceClockEndDate = AbsoluteDate.FUTURE_INFINITY;
-                    }
-                }
-            }
-
-        },
+                          final String startStop = line.substring(7, header.getLabelIndex()).trim();
+                          if (startStop.isEmpty()) {
+                              // no start/stop epoch the record applies to the whole file
+                              parseInfo.referenceClockStartDate = AbsoluteDate.PAST_INFINITY;
+                              parseInfo.referenceClockEndDate   = AbsoluteDate.FUTURE_INFINITY;
+                          } else {
+                              // we use a Scanner here instead of relying on the character indices
+                              // because some files do NOT respect the format
+                              // the reference example in table A17 of the rinex 3.04 specification itself exhibits
+                              // errors (the seconds field in start date is shifted 1 character to the left wrt.
+                              // the specification, the first few fields in end date are shifted 2 characters to the
+                              // left wrt. the specification, and the seconds field in end date is shifted 3 characters
+                              // to the left wrt. specification, i.e. this line in table A17 is consistent with
+                              // the rinex clock 3.02 specification, not with the rinex clock 3.04 specification…).
+                              // we were not able to find any real 3.04 files that have non-empty dates on clock ref lines.
+                              // We fall back to a Scanner, which should handle all format versions properly
+                              try (Scanner s1      = new Scanner(startStop);
+                                   Scanner s2      = s1.useDelimiter(SPACES);
+                                   Scanner scanner = s2.useLocale(Locale.US)) {
+                                  final TimeScale ts = header.getFormatVersion() < 3.02 ?
+                                                       parseInfo.timeScales.getGPS() : header.getTimeScale();
+                                  parseInfo.referenceClockStartDate =
+                                      new AbsoluteDate(scanner.nextInt(), scanner.nextInt(), scanner.nextInt(),
+                                                       scanner.nextInt(), scanner.nextInt(), scanner.nextDouble(),
+                                                       ts);
+                                  parseInfo.referenceClockEndDate =
+                                      new AbsoluteDate(scanner.nextInt(), scanner.nextInt(), scanner.nextInt(),
+                                                       scanner.nextInt(), scanner.nextInt(), scanner.nextDouble(),
+                                                       ts);
+                              }
+                          }
+                      },
+                      LineParser::headerNext),
 
         /** Parser for the reference clock over a period. */
-        HEADER_ANALYSIS_CLOCK_REF("^.+ANALYSIS CLK REF( )*$") {
+        ANALYSIS_CLK_REF((header, line) -> header.matchFound(ClockLabel.ANALYSIS_CLK_REF, line),
+                         (line, parseInfo) -> {
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
+                             // First element is the name of the receiver/satellite embedding the reference clock
+                             final int length = parseInfo.file.getHeader().isBefore304() ? 4 : 9;
+                             final String referenceName = ParsingUtils.parseString(line, 0, length);
 
-                    // First element is the name of the receiver/satellite embedding the reference clock
-                    final String referenceName = scanner.next();
+                             // Second element is the reference clock ID
+                             final String clockID = ParsingUtils.parseString(line, length + 1, 20);
 
-                    // Second element is the reference clock ID
-                    final String clockID = scanner.next();
+                             // Optionally, third element is an a priori clock constraint, by default equal to zero
+                             double clockConstraint = ParsingUtils.parseDouble(line, length + 36, 19);
+                             if (Double.isNaN(clockConstraint)) {
+                                 clockConstraint = 0.0;
+                             }
 
-                    // Optionally, third element is an a priori clock constraint, by default equal to zero
-                    double clockConstraint = 0.0;
-                    if (scanner.hasNextDouble()) {
-                        clockConstraint = scanner.nextDouble();
-                    }
-
-                    // Add reference clock to current reference clock list
-                    final ReferenceClock referenceClock = new ReferenceClock(referenceName, clockID, clockConstraint,
-                                                                             pi.referenceClockStartDate, pi.referenceClockEndDate);
-                    pi.pendingReferenceClocks.add(referenceClock);
-
-                }
-            }
-
-        },
+                             // Add reference clock to current reference clock list
+                             final ReferenceClock referenceClock =
+                                 new ReferenceClock(referenceName, clockID, clockConstraint,
+                                                    parseInfo.referenceClockStartDate,
+                                                    parseInfo.referenceClockEndDate);
+                             parseInfo.pendingReferenceClocks.add(referenceClock);
+                         },
+                         LineParser::headerNext),
 
         /** Parser for the number of stations embedded in the file and the related frame. */
-        HEADER_NUMBER_OF_SOLN_STATIONS("^.+SOLN STA / TRF( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    // First element is the number of receivers embedded in the file
-                    scanner.nextInt();
-
-                    // Second element is the frame linked to given receiver positions
-                    final String frameString = scanner.next();
-                    pi.file.setFrameName(frameString);
-                }
-            }
-
-        },
+        NB_OF_SOLN_STA_TRF((header, line) -> header.matchFound(ClockLabel.NB_OF_SOLN_STA_TRF, line),
+                           (line, parseInfo) -> {
+                               final RinexClockHeader header = parseInfo.file.getHeader();
+                               parseInfo.nbStations = ParsingUtils.parseInt(line, 0, 6);
+                               final String complete = ParsingUtils.parseString(line, 10, header.isBefore304() ? 50 : 55);
+                               int first = 0;
+                               while (first < complete.length() && complete.charAt(first) == ' ') {
+                                   ++first;
+                               }
+                               int last = first;
+                               while (last < complete.length() &&
+                                      Character.isLetterOrDigit(complete.charAt(last))) {
+                                   ++last;
+                               }
+                               final String frameName = complete.substring(first, last);
+                               header.setFrameName(frameName);
+                               header.setFrame(parseInfo.frameBuilder.apply(frameName));
+                           },
+                           LineParser::headerNext),
 
         /** Parser for the stations embedded in the file and the related positions. */
-        HEADER_SOLN_STATIONS("^.+SOLN STA NAME / NUM( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-
-                // First element is the receiver designator
-                String designator = line.substring(0, 10).trim();
-
-                // Second element is the receiver identifier
-                String receiverIdentifier = line.substring(10, 30).trim();
-
-                // Third element if X coordinates, in millimeters in the file frame.
-                String xString = "";
-
-                // Fourth element if Y coordinates, in millimeters in the file frame.
-                String yString = "";
-
-                // Fifth element if Z coordinates, in millimeters in the file frame.
-                String zString = "";
-
-                if (pi.file.getFormatVersion() < 3.04) {
-                    designator = line.substring(0, 4).trim();
-                    receiverIdentifier = line.substring(5, 25).trim();
-                    xString = line.substring(25, 36).trim();
-                    yString = line.substring(37, 48).trim();
-                    zString = line.substring(49, 60).trim();
-                } else {
-                    designator = line.substring(0, 10).trim();
-                    receiverIdentifier = line.substring(10, 30).trim();
-                    xString = line.substring(30, 41).trim();
-                    yString = line.substring(42, 53).trim();
-                    zString = line.substring(54, 65).trim();
-                }
-
-                final double x = MILLIMETER * Double.parseDouble(xString);
-                final double y = MILLIMETER * Double.parseDouble(yString);
-                final double z = MILLIMETER * Double.parseDouble(zString);
-
-                final Receiver receiver = new Receiver(designator, receiverIdentifier, x, y, z);
-                pi.file.addReceiver(receiver);
-
-            }
-
-        },
+        SOLN_STA_NAME_NUM((header, line) -> header.matchFound(ClockLabel.SOLN_STA_NAME_NUM, line),
+                          (line, parseInfo) -> {
+                              final int    length     = parseInfo.file.getHeader().isBefore304() ? 4 : 9;
+                              final String designator = ParsingUtils.parseString(line, 0, length);
+                              final String identifier = ParsingUtils.parseString(line, length + 1, 20);
+                              final double x          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 21, 11));
+                              final double y          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 33, 11));
+                              final double z          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 45, 11));
+                              final Receiver receiver = new Receiver(designator, identifier, x, y, z);
+                              parseInfo.file.getHeader().addReceiver(receiver);
+                          },
+                          LineParser::headerNext),
 
         /** Parser for the number of satellites embedded in the file. */
-        HEADER_NUMBER_OF_SOLN_SATS("^.+# OF SOLN SATS( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-
-                    // Only element in the line is number of satellites, not used here.
-                    // Do nothing...
-            }
-
-        },
+        NB_OF_SOLN_SATS((header, line) -> header.matchFound(ClockLabel.NB_OF_SOLN_SATS, line),
+                        (line, parseInfo) -> parseInfo.nbSatellites = ParsingUtils.parseInt(line, 0, 6),
+                        LineParser::headerNext),
 
         /** Parser for the satellites embedded in the file. */
-        HEADER_PRN_LIST("^.+PRN LIST( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
-
-                    // Only PRN numbers are stored in these lines
-                    // Initialize first PRN number
-                    String prn = scanner.next();
-
-                    // Browse the line until its end
-                    while (!prn.equals("PRN")) {
-                        pi.file.addSatellite(prn);
-                        prn = scanner.next();
-                    }
-                }
-            }
-
-        },
+        PRN_LIST((header, line) -> header.matchFound(ClockLabel.PRN_LIST, line),
+                 (line, parseInfo) -> {
+                     final RinexClockHeader header = parseInfo.file.getHeader();
+                     final int nMax = header.isBefore304() ? 15 : 16;
+                     for (int i = 0; i < nMax; ++i) {
+                         final String prn = ParsingUtils.parseString(line, 4 * i, 3);
+                         if (prn.isEmpty()) {
+                             break;
+                         } else {
+                             header.addSatellite(new SatInSystem(prn));
+                         }
+                     }
+                 },
+                 LineParser::headerNext),
 
         /** Parser for the end of header. */
-        HEADER_END("^.+END OF HEADER( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                if (!pi.pendingReferenceClocks.isEmpty()) {
-                    // Modify time span map of the reference clocks to accept the pending reference clock
-                    pi.file.addReferenceClockList(pi.pendingReferenceClocks, pi.referenceClockStartDate);
-                }
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Iterable<LineParser> allowedNext() {
-                return Collections.singleton(CLOCK_DATA);
-            }
-        },
+        HEADER_END((header, line) -> header.matchFound(CommonLabel.END, line),
+                   (line, parseInfo) -> {
+                       final RinexClockHeader header = parseInfo.file.getHeader();
+                       if (!parseInfo.pendingReferenceClocks.isEmpty()) {
+                           // Modify time span map of the reference clocks to accept the pending reference clock
+                           header.addReferenceClockList(parseInfo.pendingReferenceClocks,
+                                                        parseInfo.referenceClockStartDate,
+                                                        parseInfo.referenceClockEndDate);
+                       }
+                       if (header.getTimeSystem() == null) {
+                           if (header.getMergedSystem() == null ||
+                               header.getMergedSystem() == SatelliteSystem.MIXED) {
+                               if (header.getFormatVersion() >= 3.0) {
+                                   throw new OrekitException(OrekitMessages.MISSING_TIME_SYSTEM_DEFINITION, parseInfo.name);
+                               }
+                           } else {
+                               // we force the systems using the satellite list
+                               header.setTimeSystem(PredefinedTimeSystem.
+                                                    parseOneLetterCode(String.valueOf(header.getMergedSystem().getKey())));
+                               header.setTimeScale(header.getTimeSystem().getTimeScale(parseInfo.timeScales));
+                           }
+                       }
+                       if (parseInfo.nbStations != header.getNumberOfReceivers()) {
+                           throw new OrekitException(OrekitMessages.WRONG_STATIONS_NUMBER,
+                                                     parseInfo.name, parseInfo.nbStations,
+                                                     header.getNumberOfReceivers());
+                       }
+                       if (parseInfo.nbSatellites != header.getNumberOfSatellites()) {
+                           throw new OrekitException(OrekitMessages.WRONG_SATELLITES_NUMBER,
+                                                     parseInfo.name, parseInfo.nbSatellites,
+                                                     header.getNumberOfSatellites());
+                       }
+                       parseInfo.headerCompleted = true;
+                   },
+                   LineParser::headerEndNext),
 
         /** Parser for a clock data line. */
-        CLOCK_DATA("(^AR |^AS |^CR |^DR |^MS ).+$") {
+        CLOCK_DATA((header, line) -> line.charAt(0) != ' ',
+                   (line, parseInfo) -> {
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
+                       final RinexClockHeader header = parseInfo.file.getHeader();
+                       try {
+                           parseInfo.currentDataType = ClockDataType.valueOf(line.substring(0, 2));
+                       } catch (IllegalArgumentException iae) {
+                           throw new OrekitException(OrekitMessages.UNKNOWN_CLOCK_DATA_TYPE, line.substring(0, 2));
+                       }
 
-                    // Initialise current values
-                    pi.currentDataValues = new double[6];
+                       // Second element is receiver/satellite name
+                       final int length = header.isBefore304() ? 4 : 9;
+                       parseInfo.currentName = ParsingUtils.parseString(line, 3, length);
 
-                    // First element is clock data type
-                    pi.currentDataType = ClockDataType.parseClockDataType(scanner.next());
+                       // Third element is data epoch
+                       final int startI = header.isBefore304() ?  8 : 13;
+                       final int startD = header.isBefore304() ? 24 : 29;
+                       parseInfo.date =
+                               new AbsoluteDate(ParsingUtils.parseInt(line, startI, 4),
+                                                ParsingUtils.parseInt(line, startI +  4, 4),
+                                                ParsingUtils.parseInt(line, startI +  7, 3),
+                                                ParsingUtils.parseInt(line, startI + 10, 3),
+                                                ParsingUtils.parseInt(line, startI + 13, 3),
+                                                ParsingUtils.parseDouble(line, startD, 10),
+                                                header.getTimeScale());
 
-                    // Second element is receiver/satellite name
-                    pi.currentName = scanner.next();
+                       // Fourth element is number of data values
+                       parseInfo.totalValues = ParsingUtils.parseInt(line, startD + 11, 2);
+                       parseInfo.valueIndex  = 0;
 
-                    // Third element is data epoch
-                    final int year   = scanner.nextInt();
-                    final int month  = scanner.nextInt();
-                    final int day    = scanner.nextInt();
-                    final int hour   = scanner.nextInt();
-                    final int min    = scanner.nextInt();
-                    final double sec = scanner.nextDouble();
-                    pi.currentDateComponents = new DateComponents(year, month, day);
-                    pi.currentTimeComponents = new TimeComponents(hour, min, sec);
+                       // Get the values in this line
+                       Arrays.fill(parseInfo.values, 0.0);
+                       int start = header.isBefore304() ?  40 : 45;
+                       while (parseInfo.valueIndex < FastMath.min(2, parseInfo.totalValues)) {
+                           parseInfo.values[parseInfo.valueIndex++] = ParsingUtils.parseDouble(line, start, 19);
+                           start += header.isBefore304() ? 20 : 21;
+                       }
 
-                    // Fourth element is number of data values
-                    pi.currentNumberOfValues = scanner.nextInt();
-
-                    // Get the values in this line, there are at most 2.
-                    // Some entries claim less values than there actually are.
-                    // All values are added to the set, regardless of their claimed number.
-                    int i = 0;
-                    while (scanner.hasNextDouble()) {
-                        pi.currentDataValues[i++] = scanner.nextDouble();
-                    }
-
-                    // Check if continuation line is required
-                    if (pi.currentNumberOfValues <= 2) {
-                        // No continuation line is required
-                        pi.file.addClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
-                                                                                       pi.currentName,
-                                                                                       pi.currentDateComponents,
-                                                                                       pi.currentTimeComponents,
-                                                                                       pi.currentNumberOfValues,
-                                                                                       pi.currentDataValues[0],
-                                                                                       pi.currentDataValues[1],
-                                                                                       0.0, 0.0, 0.0, 0.0));
-                    }
-                }
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(CLOCK_DATA, CLOCK_DATA_CONTINUATION);
-            }
-        },
+                       // Check if continuation line is required
+                       if (parseInfo.valueIndex == parseInfo.totalValues) {
+                           // No continuation line is required
+                           parseInfo.file.addClockData(parseInfo.currentName,
+                                                       new ClockDataLine(parseInfo.currentDataType,
+                                                                         parseInfo.currentName,
+                                                                         parseInfo.date,
+                                                                         parseInfo.totalValues,
+                                                                         parseInfo.values[0],
+                                                                         parseInfo.values[1],
+                                                                         parseInfo.values[2],
+                                                                         parseInfo.values[3],
+                                                                         parseInfo.values[4],
+                                                                         parseInfo.values[5]));
+                       }
+                   },
+                   LineParser::dataNext),
 
         /** Parser for a continuation clock data line. */
-        CLOCK_DATA_CONTINUATION("^   .+") {
+        CLOCK_DATA_CONTINUATION((header, line) -> true,
+                                (line, parseInfo) -> {
+                                    final RinexClockHeader header = parseInfo.file.getHeader();
+                                    int start = header.isBefore304() ? 0 : 3;
+                                    while (parseInfo.valueIndex < parseInfo.totalValues) {
+                                        parseInfo.values[parseInfo.valueIndex++] =
+                                            ParsingUtils.parseDouble(line, start, 19);
+                                        start += header.isBefore304() ? 20 : 21;
+                                    }
+                                    parseInfo.file.addClockData(parseInfo.currentName,
+                                                                new ClockDataLine(parseInfo.currentDataType,
+                                                                                  parseInfo.currentName, parseInfo.date,
+                                                                                  parseInfo.totalValues,
+                                                                                  parseInfo.values[0],
+                                                                                  parseInfo.values[1],
+                                                                                  parseInfo.values[2],
+                                                                                  parseInfo.values[3],
+                                                                                  parseInfo.values[4],
+                                                                                  parseInfo.values[5]));
+                                },
+                                LineParser::dataNext);
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
+        /** Predicate for identifying lines that can be parsed. */
+        private final BiFunction<RinexClockHeader, String, Boolean> canHandle;
 
-                    // Get the values in this continuation line.
-                    // Some entries claim less values than there actually are.
-                    // All values are added to the set, regardless of their claimed number.
-                    int i = 2;
-                    while (scanner.hasNextDouble()) {
-                        pi.currentDataValues[i++] = scanner.nextDouble();
-                    }
+        /** Parsing method. */
+        private final ParsingMethod parsingMethod;
 
-                    // Add clock data line
-                    pi.file.addClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
-                                                                                   pi.currentName,
-                                                                                   pi.currentDateComponents,
-                                                                                   pi.currentTimeComponents,
-                                                                                   pi.currentNumberOfValues,
-                                                                                   pi.currentDataValues[0],
-                                                                                   pi.currentDataValues[1],
-                                                                                   pi.currentDataValues[2],
-                                                                                   pi.currentDataValues[3],
-                                                                                   pi.currentDataValues[4],
-                                                                                   pi.currentDataValues[5]));
-
-                }
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Iterable<LineParser> allowedNext() {
-                return Collections.singleton(CLOCK_DATA);
-            }
-        };
-
-        /** Pattern for identifying line. */
-        private final Pattern pattern;
+        /** Provider for next line parsers. */
+        private final Function<ParseInfo, Iterable<LineParser>> allowedNextProvider;
 
         /** Simple constructor.
-         * @param lineRegexp regular expression for identifying line
+         * @param canHandle predicate for identifying lines that can be parsed
+         * @param parsingMethod parsing method
+         * @param allowedNextProvider supplier for allowed parsers for next line
          */
-        LineParser(final String lineRegexp) {
-            pattern = Pattern.compile(lineRegexp);
+        LineParser(final BiFunction<RinexClockHeader, String, Boolean> canHandle,
+                   final ParsingMethod parsingMethod,
+                   final Function<ParseInfo, Iterable<LineParser>> allowedNextProvider) {
+            this.canHandle           = canHandle;
+            this.parsingMethod       = parsingMethod;
+            this.allowedNextProvider = allowedNextProvider;
         }
 
-        /** Parse a line.
-         * @param line line to parse
-         * @param pi holder for transient data
-         */
-        public abstract void parse(String line, ParseInfo pi);
-
-        /** Get the allowed parsers for next line.
-         * <p>
-         * Because the standard only recommends an order for header keys,
-         * the default implementation of the method returns all the
-         * header keys. Specific implementations must overrides the method.
-         * </p>
+        /** Get the allowed parsers for next lines while parsing Rinex header.
+         * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        public Iterable<LineParser> allowedNext() {
-            return Arrays.asList(HEADER_PROGRAM, HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_SYSTEM_OBS_CONTINUATION, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS,
-                                 HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_STATIONS_NAME, HEADER_STATION_CLOCK_REF,
-                                 HEADER_ANALYSIS_CENTER, HEADER_NUMBER_OF_CLOCK_REF, HEADER_ANALYSIS_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS,
-                                 HEADER_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS, HEADER_PRN_LIST, HEADER_END);
-        }
-
-        /** Check if parser can handle line.
-         * @param line line to parse
-         * @return true if parser can handle the specified line
-         */
-        public boolean canHandle(final String line) {
-            return pattern.matcher(line).matches();
-        }
-
-        /** Parse existing date - time - zone formats.
-         * If zone field is not missing, a proper Orekit date can be created and set into clock file object.
-         * This feature depends on the date format.
-         * @param dateString the whole date - time - zone string
-         * @param pi holder for transient data
-         */
-        private static void parseDateTimeZone(final String dateString, final ParseInfo pi) {
-
-            String date = "";
-            String time = "";
-            String zone = "";
-            DateComponents dateComponents = null;
-            TimeComponents timeComponents = null;
-
-            if (DATE_PATTERN_1.matcher(dateString).matches()) {
-
-                date = dateString.substring(0, 10).trim();
-                time = dateString.substring(11, 16).trim();
-                zone = dateString.substring(16).trim();
-
-            } else if (DATE_PATTERN_2.matcher(dateString).matches()) {
-
-                date = dateString.substring(0, 8).trim();
-                time = dateString.substring(9, 16).trim();
-                zone = dateString.substring(16).trim();
-
-                if (!zone.isEmpty()) {
-                    // Get date and time components
-                    dateComponents = new DateComponents(Integer.parseInt(date.substring(0, 4)),
-                                                        Integer.parseInt(date.substring(4, 6)),
-                                                        Integer.parseInt(date.substring(6, 8)));
-                    timeComponents = new TimeComponents(Integer.parseInt(time.substring(0, 2)),
-                                                        Integer.parseInt(time.substring(2, 4)),
-                                                        Integer.parseInt(time.substring(4, 6)));
-
-                }
-
-            } else if (DATE_PATTERN_3.matcher(dateString).matches()) {
-
-                date = dateString.substring(0, 11).trim();
-                time = dateString.substring(11, 17).trim();
-                zone = dateString.substring(17).trim();
-
-            } else if (DATE_PATTERN_4.matcher(dateString).matches()) {
-
-                date = dateString.substring(0, 9).trim();
-                time = dateString.substring(9, 15).trim();
-                zone = dateString.substring(15).trim();
-
-            } else if (DATE_PATTERN_5.matcher(dateString).matches()) {
-
-                date = dateString.substring(0, 11).trim();
-                time = dateString.substring(11, 20).trim();
-
+        private static Iterable<LineParser> headerNext(final ParseInfo parseInfo) {
+            if (parseInfo.file.getHeader().isBefore304()) {
+                return Arrays.asList(PROGRAM, COMMENT, SYS_NB_TYPES_OF_OBSERV, TIME_SYSTEM_ID,
+                                     LEAP_SECONDS, SYS_DCBS_APPLIED, SYS_PCVS_APPLIED,
+                                     NB_TYPES_OF_DATA, STATION_NAME_NUM, STATION_CLK_REF,
+                                     ANALYSIS_CENTER, NB_OF_CLK_REF, ANALYSIS_CLK_REF,
+                                     NB_OF_SOLN_STA_TRF, SOLN_STA_NAME_NUM, NB_OF_SOLN_SATS,
+                                     PRN_LIST, HEADER_END);
             } else {
-                // Format is not handled or date is missing. Do nothing...
-            }
-
-            pi.file.setCreationDateString(date);
-            pi.file.setCreationTimeString(time);
-            pi.file.setCreationTimeZoneString(zone);
-
-            if (dateComponents != null) {
-                pi.file.setCreationDate(new AbsoluteDate(dateComponents,
-                                                         timeComponents,
-                                                         TimeSystem.parseTimeSystem(zone).getTimeScale(pi.timeScales)));
+                return Arrays.asList(PROGRAM, COMMENT, SYS_NB_TYPES_OF_OBSERV, TIME_SYSTEM_ID,
+                                     LEAP_SECONDS, LEAP_SECONDS_GNSS, SYS_DCBS_APPLIED, SYS_PCVS_APPLIED,
+                                     NB_TYPES_OF_DATA, STATION_NAME_NUM, STATION_CLK_REF,
+                                     ANALYSIS_CENTER, NB_OF_CLK_REF, ANALYSIS_CLK_REF,
+                                     NB_OF_SOLN_STA_TRF, SOLN_STA_NAME_NUM, NB_OF_SOLN_SATS,
+                                     PRN_LIST, HEADER_END);
             }
         }
+
+        /** Get the allowed parsers for next lines while parsing comments.
+         * @param parseInfo holder for transient data
+         * @return allowed parsers for next line
+         */
+        private static Iterable<LineParser> commentNext(final ParseInfo parseInfo) {
+            return parseInfo.headerCompleted ? headerEndNext(parseInfo) : headerNext(parseInfo);
+        }
+
+        /** Get the allowed parsers for next lines while parsing types of observations.
+         * @param parseInfo holder for transient data
+         * @return allowed parsers for next line
+         */
+        private static Iterable<LineParser> sysObsTypesNext(final ParseInfo parseInfo) {
+            return parseInfo.remainingObsTypes > 0 ?
+                   Collections.singletonList(SYS_NB_TYPES_OF_OBSERV) :
+                   headerNext(parseInfo);
+        }
+
+
+        /** Get the allowed parsers for next lines while parsing header end.
+         * @param parseInfo holder for transient data
+         * @return allowed parsers for next line
+         */
+        private static Iterable<LineParser> headerEndNext(final ParseInfo parseInfo) {
+            return Collections.singleton(CLOCK_DATA);
+        }
+
+        /** Get the allowed parsers for next lines while parsing data.
+         * @param parseInfo holder for transient data
+         * @return allowed parsers for next line
+         */
+        private static Iterable<LineParser> dataNext(final ParseInfo parseInfo) {
+            return parseInfo.valueIndex < parseInfo.totalValues ?
+                   Collections.singleton(LineParser.CLOCK_DATA_CONTINUATION) :
+                   Collections.singleton(LineParser.CLOCK_DATA);
+        }
+
+    }
+
+    /** Parsing method. */
+    @FunctionalInterface
+    private interface ParsingMethod {
+        /** Parse a line.
+         * @param line line to parse
+         * @param parseInfo holder for transient data
+         */
+        void parse(String line, ParseInfo parseInfo);
     }
 
 }

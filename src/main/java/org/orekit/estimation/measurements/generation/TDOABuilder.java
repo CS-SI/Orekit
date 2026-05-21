@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,52 +16,56 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.GroundStation;
+import java.util.Map;
+
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.TDOA;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link TDOA} measurements.
  * @author Pascal Parraud
  * @since 11.2
  */
-public class TDOABuilder extends AbstractMeasurementBuilder<TDOA> {
-
-    /** Prime ground station. */
-    private final GroundStation primeStation;
-
-    /** Second ground station. */
-    private final GroundStation secondStation;
+public class TDOABuilder extends AbstractBireceiverBuilder<TDOA> {
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param primeStation ground station that gives the date of the measurement
-     * @param secondStation ground station that gives the measurement
+     * @param primeObserver observer that gives the date of the measurement
+     * @param secondObserver observer that gives the measurement value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
-    public TDOABuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                       final GroundStation primeStation,
-                       final GroundStation secondStation,
+    public TDOABuilder(final Observer primeObserver, final Observer secondObserver,
                        final double sigma, final double baseWeight,
                        final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, satellite);
-        this.primeStation  = primeStation;
-        this.secondStation = secondStation;
+        this(primeObserver, secondObserver, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Simple constructor.
+     * @param primeObserver observer that gives the date of the measurement
+     * @param secondObserver observer that gives the measurement value
+     * @param measurementQuality measurement quality as used in estimation
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public TDOABuilder(final Observer primeObserver, final Observer secondObserver,
+                       final MeasurementQuality measurementQuality,
+                       final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(primeObserver, secondObserver, measurementQuality, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
     @Override
     protected TDOA buildObserved(final AbsoluteDate date,
                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new TDOA(primeStation, secondStation, date, Double.NaN,
-                        getTheoreticalStandardDeviation()[0],
-                        getBaseWeight()[0], getSatellites()[0]);
+        return new TDOA(getPrimeObserver(), getSecondObserver(), date, Double.NaN, getMeasurementQuality(),
+                getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

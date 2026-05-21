@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 
 /**
@@ -35,13 +34,16 @@ import org.orekit.propagation.events.FieldEventDetectionSettings;
  */
 abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElement<T>> extends FieldAbstractCartesianCost<T> {
 
-    /** Detection settings for singularity detection. */
+    /**
+     * Detection settings for singularity detection.
+     */
     private final FieldEventDetectionSettings<T> eventDetectionSettings;
 
     /**
      * Constructor.
-     * @param name name
-     * @param massFlowRateFactor mass flow rate factor
+     *
+     * @param name                   name
+     * @param massFlowRateFactor     mass flow rate factor
      * @param eventDetectionSettings settings for singularity detections
      */
     protected FieldCartesianEnergyConsideringMass(final String name, final T massFlowRateFactor,
@@ -52,13 +54,16 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
 
     /**
      * Getter for event detection settings.
+     *
      * @return detection settings.
      */
     public FieldEventDetectionSettings<T> getEventDetectionSettings() {
         return eventDetectionSettings;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public FieldVector3D<T> getFieldThrustAccelerationVector(final T[] adjointVariables, final T mass) {
         return getFieldThrustDirection(adjointVariables).scalarMultiply(getFieldThrustForceNorm(adjointVariables, mass).divide(mass));
@@ -66,6 +71,7 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
 
     /**
      * Computes the direction of thrust.
+     *
      * @param adjointVariables adjoint vector
      * @return thrust direction
      */
@@ -75,13 +81,16 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
 
     /**
      * Computes the Euclidean norm of the thrust force.
+     *
      * @param adjointVariables adjoint vector
-     * @param mass mass
+     * @param mass             mass
      * @return norm of thrust
      */
     protected abstract T getFieldThrustForceNorm(T[] adjointVariables, T mass);
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
         if (getAdjointDimension() > 6) {
@@ -90,52 +99,30 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public T getFieldHamiltonianContribution(final T[] adjointVariables, final T mass) {
         final FieldVector3D<T> thrustForce = getFieldThrustAccelerationVector(adjointVariables, mass).scalarMultiply(mass);
-        return thrustForce.getNormSq().multiply(-1. / 2.);
+        return thrustForce.getNorm2Sq().multiply(-1. / 2.);
     }
 
     /**
-     * Field event detector for singularities in adjoint dynamics.
+     * Event detector for control non-differentiability.
+     *
+     * @param detectionValue critical value
+     * @return switch function
      */
-    class FieldSingularityDetector extends FieldControlSwitchDetector<T> {
-
-        /** Value to detect. */
-        private final T detectionValue;
-
-        /**
-         * Constructor.
-         * @param detectionSettings detection settings
-         * @param detectionValue value to detect
-         */
-        FieldSingularityDetector(final FieldEventDetectionSettings<T> detectionSettings, final T detectionValue) {
-            super(detectionSettings);
-            this.detectionValue = detectionValue;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public T g(final FieldSpacecraftState<T> state) {
-            final T[] adjoint = state.getAdditionalState(getAdjointName());
-            return evaluateVariablePart(adjoint, state.getMass()).subtract(detectionValue);
-        }
-
-        /**
-         * Evaluate variable part of singularity function.
-         * @param adjointVariables adjoint vector
-         * @param mass mass
-         * @return singularity function without the constant part
-         */
-        private T evaluateVariablePart(final T[] adjointVariables, final T mass) {
+    protected FieldSwitchFunction buildSwitchFunction(final T detectionValue) {
+        return new FieldSwitchFunction(state -> {
+            final T[] adjointVariables = state.getAdditionalState(getAdjointName());
             final T adjointVelocityNorm = getFieldAdjointVelocityNorm(adjointVariables);
-            T variablePart = adjointVelocityNorm.divide(mass);
+            T variablePart = adjointVelocityNorm.divide(state.getMass());
             if (getAdjointDimension() > 6) {
                 variablePart = variablePart.subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
             }
-            return variablePart;
-        }
-
+            return variablePart.subtract(detectionValue);
+        });
     }
 }

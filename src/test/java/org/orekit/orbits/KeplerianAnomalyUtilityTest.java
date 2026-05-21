@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-public class KeplerianAnomalyUtilityTest {
+class KeplerianAnomalyUtilityTest {
 
     @ParameterizedTest
     @EnumSource(PositionAngleType.class)
@@ -56,7 +56,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testEllipticMeanToTrue() {
+    void testEllipticMeanToTrue() {
         final double e = 0.231;
         final double M = 2.045;
         final double v = KeplerianAnomalyUtility.ellipticMeanToTrue(e, M);
@@ -64,7 +64,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testEllipticTrueToMean() {
+    void testEllipticTrueToMean() {
         final double e = 0.487;
         final double v = 1.386;
         final double M = KeplerianAnomalyUtility.ellipticTrueToMean(e, v);
@@ -72,7 +72,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testEllipticEccentricToTrue() {
+    void testEllipticEccentricToTrue() {
         final double e = 0.687;
         final double E = 4.639;
         final double v = KeplerianAnomalyUtility.ellipticEccentricToTrue(e, E);
@@ -80,7 +80,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testEllipticTrueToEccentric() {
+    void testEllipticTrueToEccentric() {
         final double e = 0.527;
         final double v = 0.768;
         final double E = KeplerianAnomalyUtility.ellipticTrueToEccentric(e, v);
@@ -88,7 +88,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testEllipticMeanToEccentric() {
+    void testEllipticMeanToEccentric() {
         final double e1 = 0.726;
         final double M1 = 0.;
         final double E1 = KeplerianAnomalyUtility.ellipticMeanToEccentric(e1, M1);
@@ -111,7 +111,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testEllipticEccentricToMean() {
+    void testEllipticEccentricToMean() {
         final double e = 0.192;
         final double E = 2.052;
         final double M = KeplerianAnomalyUtility.ellipticEccentricToMean(e, E);
@@ -119,7 +119,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testHyperbolicMeanToTrue() {
+    void testHyperbolicMeanToTrue() {
         final double e = 1.027;
         final double M = 1.293;
         final double v = KeplerianAnomalyUtility.hyperbolicMeanToTrue(e, M);
@@ -127,7 +127,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testHyperbolicTrueToMean() {
+    void testHyperbolicTrueToMean() {
         final double e = 1.161;
         final double v = -2.469;
         final double M = KeplerianAnomalyUtility.hyperbolicTrueToMean(e, v);
@@ -135,7 +135,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testHyperbolicEccentricToTrue() {
+    void testHyperbolicEccentricToTrue() {
         final double e = 2.161;
         final double E = -1.204;
         final double v = KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, E);
@@ -143,7 +143,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testHyperbolicTrueToEccentric() {
+    void testHyperbolicTrueToEccentric() {
         final double e = 1.595;
         final double v = 0.298;
         final double E = KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, v);
@@ -151,7 +151,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testHyperbolicMeanToEccentric() {
+    void testHyperbolicMeanToEccentric() {
         final double e1 = 1.201;
         final double M1 = 0.0;
         final double E1 = KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e1, M1);
@@ -195,7 +195,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testHyperbolicEccentricToMean() {
+    void testHyperbolicEccentricToMean() {
         final double e = 1.801;
         final double E = 3.287;
         final double M = KeplerianAnomalyUtility.hyperbolicEccentricToMean(e, E);
@@ -203,7 +203,7 @@ public class KeplerianAnomalyUtilityTest {
     }
 
     @Test
-    public void testIssue544() {
+    void testIssue544() {
         // Initial parameters
         // In order to test the issue, we voluntarily set the anomaly at Double.NaN.
         double e = 0.7311;

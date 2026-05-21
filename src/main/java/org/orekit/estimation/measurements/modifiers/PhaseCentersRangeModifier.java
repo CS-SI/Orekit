@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.utils.ParameterDriver;
@@ -46,6 +47,12 @@ public class PhaseCentersRangeModifier
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Observer getObserver(final EstimatedMeasurementBase<Range> estimated) {
+        return estimated.getObservedMeasurement().getObserver();
     }
 
     /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -113,16 +113,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     private FieldBLModel<T> initialModel;
 
     /** All models. */
-    private transient FieldTimeSpanMap<FieldBLModel<T>, T> models;
+    private FieldTimeSpanMap<FieldBLModel<T>, T> models;
 
     /** Reference radius of the central body attraction model (m). */
-    private double referenceRadius;
+    private final double referenceRadius;
 
     /** Central attraction coefficient (m³/s²). */
-    private T mu;
+    private final T mu;
 
     /** Un-normalized zonal coefficients. */
-    private double[] ck0;
+    private final double[] ck0;
 
     /** Empirical coefficient used in the drag modeling. */
     private final ParameterDriver M2Driver;

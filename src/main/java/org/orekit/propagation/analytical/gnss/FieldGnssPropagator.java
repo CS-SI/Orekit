@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,9 +91,9 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param provider Attitude provider
      * @param mass Satellite mass (kg)
      */
-    FieldGnssPropagator(final FieldGnssOrbitalElements<T, ?> orbitalElements,
-                        final Frame eci, final Frame ecef,
-                        final AttitudeProvider provider, final T mass) {
+    public FieldGnssPropagator(final FieldGnssOrbitalElements<T, ?> orbitalElements,
+                               final Frame eci, final Frame ecef,
+                               final AttitudeProvider provider, final T mass) {
         super(orbitalElements.getDate().getField(), provider);
         // Stores the GNSS orbital elements
         this.orbitalElements = orbitalElements;
@@ -123,9 +123,9 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param provider             attitude provider
      * @param mass                 spacecraft mass
      */
-    FieldGnssPropagator(final FieldSpacecraftState<T> initialState,
-                        final FieldGnssOrbitalElements<T, ?> nonKeplerianElements,
-                        final Frame ecef, final AttitudeProvider provider, final T mass) {
+    public FieldGnssPropagator(final FieldSpacecraftState<T> initialState,
+                               final FieldGnssOrbitalElements<T, ?> nonKeplerianElements,
+                               final Frame ecef, final AttitudeProvider provider, final T mass) {
         this(buildOrbitalElements(initialState, nonKeplerianElements, ecef, provider, mass),
              initialState.getFrame(), ecef, provider, initialState.getMass());
     }
@@ -135,15 +135,18 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      */
     private T[] defaultParameters() {
         final T[] parameters = MathArrays.buildArray(orbitalElements.getDate().getField(), GNSSOrbitalElements.SIZE);
-        parameters[GNSSOrbitalElements.TIME_INDEX]      = getMU().newInstance(orbitalElements.getTime());
-        parameters[GNSSOrbitalElements.I_DOT_INDEX]     = getMU().newInstance(orbitalElements.getIDot());
-        parameters[GNSSOrbitalElements.OMEGA_DOT_INDEX] = getMU().newInstance(orbitalElements.getOmegaDot());
-        parameters[GNSSOrbitalElements.CUC_INDEX]       = getMU().newInstance(orbitalElements.getCuc());
-        parameters[GNSSOrbitalElements.CUS_INDEX]       = getMU().newInstance(orbitalElements.getCus());
-        parameters[GNSSOrbitalElements.CRC_INDEX]       = getMU().newInstance(orbitalElements.getCrc());
-        parameters[GNSSOrbitalElements.CRS_INDEX]       = getMU().newInstance(orbitalElements.getCrs());
-        parameters[GNSSOrbitalElements.CIC_INDEX]       = getMU().newInstance(orbitalElements.getCic());
-        parameters[GNSSOrbitalElements.CIS_INDEX]       = getMU().newInstance(orbitalElements.getCis());
+        parameters[GNSSOrbitalElements.TIME_INDEX]         = getMU().newInstance(orbitalElements.getTime());
+        parameters[GNSSOrbitalElements.A_DOT_INDEX]        = getMU().newInstance(orbitalElements.getADot());
+        parameters[GNSSOrbitalElements.DELTA_N0_INDEX]     = getMU().newInstance(orbitalElements.getDeltaN0());
+        parameters[GNSSOrbitalElements.DELTA_N0_DOT_INDEX] = getMU().newInstance(orbitalElements.getDeltaN0Dot());
+        parameters[GNSSOrbitalElements.I_DOT_INDEX]        = getMU().newInstance(orbitalElements.getIDot());
+        parameters[GNSSOrbitalElements.OMEGA_DOT_INDEX]    = getMU().newInstance(orbitalElements.getOmegaDot());
+        parameters[GNSSOrbitalElements.CUC_INDEX]          = getMU().newInstance(orbitalElements.getCuc());
+        parameters[GNSSOrbitalElements.CUS_INDEX]          = getMU().newInstance(orbitalElements.getCus());
+        parameters[GNSSOrbitalElements.CRC_INDEX]          = getMU().newInstance(orbitalElements.getCrc());
+        parameters[GNSSOrbitalElements.CRS_INDEX]          = getMU().newInstance(orbitalElements.getCrs());
+        parameters[GNSSOrbitalElements.CIC_INDEX]          = getMU().newInstance(orbitalElements.getCic());
+        parameters[GNSSOrbitalElements.CIS_INDEX]          = getMU().newInstance(orbitalElements.getCis());
         return parameters;
     }
 
@@ -210,10 +213,11 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
                                                                                   date.getField().getZero());
 
         // Semi-major axis
-        final FieldUnivariateDerivative2<T> ak = tk.multiply(orbitalElements.getADot()).add(orbitalElements.getSma());
+        final FieldUnivariateDerivative2<T> ak = tk.multiply(parameters[GNSSOrbitalElements.A_DOT_INDEX]).
+                                                 add(orbitalElements.getSma());
         // Mean motion
-        final FieldUnivariateDerivative2<T> nA = tk.multiply(orbitalElements.getDeltaN0Dot().multiply(0.5)).
-                                                 add(orbitalElements.getDeltaN0()).
+        final FieldUnivariateDerivative2<T> nA = tk.multiply(parameters[GNSSOrbitalElements.DELTA_N0_DOT_INDEX].multiply(0.5)).
+                                                 add(parameters[GNSSOrbitalElements.DELTA_N0_INDEX]).
                                                  add(orbitalElements.getMeanMotion0());
         // Mean anomaly
         final FieldUnivariateDerivative2<T> mk = tk.multiply(nA).add(orbitalElements.getM0());
@@ -449,7 +453,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
         // recover eccentricity and anomaly
         final T mu = initialState.getOrbit().getMu();
-        final T rV2OMu           = rk.multiply(v.getNormSq()).divide(mu);
+        final T rV2OMu           = rk.multiply(v.getNorm2Sq()).divide(mu);
         final T sma              = rk.divide(rV2OMu.negate().add(2));
         final T eCosE            = rV2OMu.subtract(1);
         final T eSinE            = FieldVector3D.dotProduct(p, v).divide(FastMath.sqrt(mu.multiply(sma)));

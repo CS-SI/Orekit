@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,7 @@ import java.util.Map;
  */
 class AssociatedLegendreFunction {
 
-    static final Map<Integer, List<Dfp[]>> LEGENDRE_POLYNOMIALS = new HashMap<Integer, List<Dfp[]>>();
+    static final Map<Integer, List<Dfp[]>> LEGENDRE_POLYNOMIALS = new HashMap<>();
     final int m;
     final Dfp[] polynomial;
     final Dfp normalization;
@@ -44,7 +44,7 @@ class AssociatedLegendreFunction {
         // get (or create) the list of polynomials for the specified field
         List<Dfp[]> list = LEGENDRE_POLYNOMIALS.get(dfpField.getRadixDigits());
         if (list == null) {
-            list = new ArrayList<Dfp[]>();
+            list = new ArrayList<>();
             list.add(new Dfp[] {
                 dfpField.getOne()                     // P0(X) = 1
             });

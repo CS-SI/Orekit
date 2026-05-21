@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,19 @@ package org.orekit.propagation.events;
 
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.SpacecraftState;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 class EnablingPredicateTest {
+
+    @Test
+    void TestDependsOnMainVariablesOnly() {
+        // GIVEN
+        final EnablingPredicate truePredicate = ((state, detector, g) -> true);
+        // WHEN & THEN
+        assertFalse(truePredicate.dependsOnMainVariablesOnly());
+    }
 
     @Test
     void testOrCombine() {
@@ -43,12 +51,35 @@ class EnablingPredicateTest {
         // GIVEN
         final SpacecraftState mockedState = mock();
         final EventDetector mockedDetector = mock();
-        final EnablingPredicate truePredicate = ((state, detector, g) -> true);
-        final EnablingPredicate falsePredicate = ((state, detector, g) -> false);
         // WHEN
-        final EnablingPredicate combined = EnablingPredicate.andCombine(truePredicate, falsePredicate);
+        final EnablingPredicate combined = EnablingPredicate.andCombine(new AlwaysTruePredicate(), new AlwaysFalsePredicate());
         // THEN
         final boolean actual = combined.eventIsEnabled(mockedState, mockedDetector, 0.);
         assertFalse(actual);
+        assertTrue(combined.dependsOnMainVariablesOnly());
+    }
+
+    private static class AlwaysTruePredicate implements EnablingPredicate {
+        @Override
+        public boolean eventIsEnabled(SpacecraftState state, EventDetector detector, double g) {
+            return true;
+        }
+
+        @Override
+        public boolean dependsOnMainVariablesOnly() {
+            return true;
+        }
+    }
+
+    private static class AlwaysFalsePredicate implements EnablingPredicate {
+        @Override
+        public boolean eventIsEnabled(SpacecraftState state, EventDetector detector, double g) {
+            return false;
+        }
+
+        @Override
+        public boolean dependsOnMainVariablesOnly() {
+            return true;
+        }
     }
 }

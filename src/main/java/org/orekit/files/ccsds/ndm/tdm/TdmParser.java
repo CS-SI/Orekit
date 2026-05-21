@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
-import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
@@ -81,31 +80,6 @@ public class TdmParser extends AbstractConstituentParser<TdmHeader, Tdm, TdmPars
 
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
-
-    /** Complete constructor.
-     * <p>
-     * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildTdmParser()
-     * parserBuilder.buildTdmParser()}.
-     * </p>
-     * @param conventions IERS Conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
-     * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
-     * are no range observations in {@link RangeUnits#RU Range Units})
-     * @param filters filters to apply to parse tokens
-     * @since 12.0
-     * @deprecated in favor of {@link #TdmParser(IERSConventions, boolean, DataContext,
-     * ParsedUnitsBehavior, RangeUnitsConverter, Function[], CcsdsFrameMapper)}.
-     */
-    @Deprecated
-    public TdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final ParsedUnitsBehavior parsedUnitsBehavior, final RangeUnitsConverter converter,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
-        this(conventions, simpleEOP, dataContext, parsedUnitsBehavior, converter, filters,
-                new OrekitCcsdsFrameMapper());
-    }
 
     /** Complete constructor.
      * <p>

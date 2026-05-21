@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -251,7 +251,7 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
         // Weights
         final double[] weights = new double[6];
         final double velocityWeight = initialized.getVelocity().getNorm() *
-                                      initialized.getPVCoordinates().getPosition().getNormSq() / initialized.getMu();
+                                      initialized.getPVCoordinates().getPosition().getNorm2Sq() / initialized.getMu();
         for (int i = 0; i < 3; i++) {
             weights[i] = 1.0;
             weights[i + 3] = velocityWeight;

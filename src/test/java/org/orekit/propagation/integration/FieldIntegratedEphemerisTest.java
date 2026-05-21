@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -269,7 +269,7 @@ public class FieldIntegratedEphemerisTest {
         DormandPrince853FieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 1.0e-6, 10.0, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0e-3);
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         final DerivativesProvider<T> provider1 = new DerivativesProvider<>(field, "provider-1", 3);
         propagator.addAdditionalDerivativesProvider(provider1);
         final DerivativesProvider<T> provider2 = new DerivativesProvider<>(field, "provider-2", 1);
@@ -350,7 +350,7 @@ public class FieldIntegratedEphemerisTest {
         OrbitType type = OrbitType.EQUINOCTIAL;
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 500, absTolerance, relTolerance);
         integrator.setInitialStepSize(100);
-        FieldNumericalPropagator<T> numericalPropagator = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> numericalPropagator = new FieldNumericalPropagator<>(integrator);
         numericalPropagator.setOrbitType(type);
         return numericalPropagator;
     }

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,18 +18,20 @@ package org.orekit.estimation.measurements.generation;
 
 import java.util.Map;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 
 /** Builder for {@link OneWayGNSSPhase} measurements.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNSSPhase> {
+public class OneWayGNSSPhaseBuilder extends AbstractSignalBasedBuilder<OneWayGNSSPhase> {
 
     /** Cache for ambiguities.
      * @since 12.1
@@ -39,26 +41,42 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
-    /** Satellite which simply emits the signal. */
-    private final ObservableSatellite remote;
+    /** Observer which simply emits the signal. */
+    private final Observer satellite;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
-     * @param remote satellite which simply emits the signal
+     * @param remote observer which simply emits the signal
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param cache from which ambiguity drive should come
      * @since 12.1
      */
-    public OneWayGNSSPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                  final ObservableSatellite local, final ObservableSatellite remote,
+    public OneWayGNSSPhaseBuilder(final ObservableSatellite local, final Observer remote,
                                   final double wavelength, final double sigma, final double baseWeight,
                                   final AmbiguityCache cache) {
-        super(noiseSource, sigma, baseWeight, local, remote);
+        this(local, remote, wavelength, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), cache);
+    }
+
+
+    /** Simple constructor.
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote observer which simply emits the signal
+     * @param wavelength phase observed value wavelength (m)
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @param cache from which ambiguity drive should come
+     * @since 14.0
+     */
+    public OneWayGNSSPhaseBuilder(final ObservableSatellite local, final Observer remote,
+                                  final double wavelength, final MeasurementQuality measurementQuality,
+                                  final SignalTravelTimeModel signalTravelTimeModel,
+                                  final AmbiguityCache cache) {
+        super(measurementQuality, signalTravelTimeModel, local);
+        this.satellite  = remote;
         this.wavelength = wavelength;
-        this.remote     = remote;
         this.cache      = cache;
     }
 
@@ -66,12 +84,8 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
     @Override
     protected OneWayGNSSPhase buildObserved(final AbsoluteDate date,
                                             final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new OneWayGNSSPhase(interpolators.get(remote),
-                                   remote.getName(), remote.getQuadraticClockModel(),
-                                   date, Double.NaN, wavelength,
-                                   getTheoreticalStandardDeviation()[0],
-                                   getBaseWeight()[0], getSatellites()[0],
-                                   cache);
+        return new OneWayGNSSPhase(satellite, date, Double.NaN, wavelength, getMeasurementQuality(),
+                getSignalTravelTimeModel(), getSatellites()[0], cache);
     }
 
 }

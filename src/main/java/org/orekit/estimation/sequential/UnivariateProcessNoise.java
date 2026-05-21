@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.StateCovariance;
+import org.orekit.propagation.covariance.StateCovariance;
 
 /** Provider for a temporal evolution of the process noise matrix.
  * All parameters (orbital or propagation) are time dependent and provided as {@link UnivariateFunction}.

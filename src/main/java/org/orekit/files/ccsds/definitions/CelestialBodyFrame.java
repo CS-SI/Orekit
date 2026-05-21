@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -417,6 +417,51 @@ public enum CelestialBodyFrame {
             return dataContext.getFrames().getTOD(conventions, simpleEOP);
         }
 
+    },
+
+    /** Fixed Earth frame (alias for ITRF).
+     * @since 14.0
+     */
+    FIXED_EARTH {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return ITRF.getFrame(conventions, simpleEOP, dataContext);
+        }
+
+    },
+
+    /** WGS84 frame (alias for ITRF).
+     * @since 14.0
+     */
+    WGS84 {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return ITRF.getFrame(conventions, simpleEOP, dataContext);
+        }
+
+    },
+
+    /** True of Date Earth frame (alias for TOD).
+     * @since 14.0
+     */
+    TOD_EARTH {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return TOD.getFrame(conventions, simpleEOP, dataContext);
+        }
+
     };
 
     /** Pattern for dash. */
@@ -479,8 +524,8 @@ public enum CelestialBodyFrame {
             // should handle J2000, GCRF, TEME, and some frames created by OEMParser.
             return CelestialBodyFrame.valueOf(name);
         } catch (IllegalArgumentException iae) {
-            if (frame instanceof ModifiedFrame) {
-                return ((ModifiedFrame) frame).getRefFrame();
+            if (frame instanceof ModifiedFrame modifiedFrame) {
+                return modifiedFrame.getRefFrame();
             } else if ((CelestialBodyFactory.MARS + INERTIAL_FRAME_SUFFIX).equals(name)) {
                 return MCI;
             } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + INERTIAL_FRAME_SUFFIX).equals(name)) {
@@ -491,9 +536,9 @@ public enum CelestialBodyFrame {
                 return TOD;
             } else if (name.contains("Equinox") && name.contains(ITRF_SUBSTRING)) {
                 return GRC;
-            } else if (frame instanceof VersionedITRF) {
+            } else if (frame instanceof VersionedITRF rF) {
                 try {
-                    final ITRFVersion itrfVersion = ((VersionedITRF) frame).getITRFVersion();
+                    final ITRFVersion itrfVersion = rF.getITRFVersion();
                     return CelestialBodyFrame.valueOf(itrfVersion.name().replace("_", ""));
                 } catch (IllegalArgumentException iae2) {
                     // this should never happen
@@ -501,6 +546,8 @@ public enum CelestialBodyFrame {
                 }
             } else if (name.contains("CIO") && name.contains(ITRF_SUBSTRING)) {
                 return ITRF2014;
+            } else if (name.endsWith("/ICRF")) {
+                return ICRF;
             }
             throw new OrekitException(iae, OrekitMessages.CCSDS_INVALID_FRAME, name);
         }

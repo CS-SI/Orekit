@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@
 package org.orekit.propagation.events;
 
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.models.earth.GeoMagneticField;
 import org.orekit.models.earth.GeoMagneticFieldFactory;
@@ -59,7 +59,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
     private final FieldModel model;
 
     /** Earth body shape. */
-    private final OneAxisEllipsoid body;
+    private final BodyShape body;
 
     /** Current data context. */
     private final DataContext dataContext;
@@ -78,10 +78,10 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param limit threshold value for magnetic field detection, in Teslas
      * @param model magnetic field model
      * @param body  Earth body shape
-     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, OneAxisEllipsoid, boolean, DataContext)
+     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, BodyShape, boolean, DataContext)
      */
     @DefaultDataContext
-    public MagneticFieldDetector(final double limit, final FieldModel model, final OneAxisEllipsoid body) {
+    public MagneticFieldDetector(final double limit, final FieldModel model, final BodyShape body) {
         this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, limit, model, body, false);
     }
 
@@ -98,11 +98,11 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param model    magnetic field model
      * @param body     Earth body shape
      * @param atSeaLevel switch for calculating field intensity at sea level (true) or satellite altitude (false)
-     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, OneAxisEllipsoid, boolean, DataContext)
+     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, BodyShape, boolean, DataContext)
      */
     @DefaultDataContext
     public MagneticFieldDetector(final double limit, final FieldModel model,
-                                 final OneAxisEllipsoid body, final boolean atSeaLevel) {
+                                 final BodyShape body, final boolean atSeaLevel) {
         this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, limit, model, body, atSeaLevel);
     }
 
@@ -116,11 +116,11 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param model      magnetic field model
      * @param body       Earth body shape
      * @param atSeaLevel switch for calculating field intensity at sea level (true) or satellite altitude (false)
-     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, OneAxisEllipsoid, boolean, DataContext)
+     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, BodyShape, boolean, DataContext)
      */
     @DefaultDataContext
     public MagneticFieldDetector(final double maxCheck, final double threshold, final double limit,
-                                 final FieldModel model, final OneAxisEllipsoid body, final boolean atSeaLevel) {
+                                 final FieldModel model, final BodyShape body, final boolean atSeaLevel) {
         this(maxCheck, threshold, limit, model, body, atSeaLevel, DataContext.getDefault());
     }
 
@@ -140,7 +140,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
                                  final double threshold,
                                  final double limit,
                                  final FieldModel model,
-                                 final OneAxisEllipsoid body,
+                                 final BodyShape body,
                                  final boolean atSeaLevel,
                                  final DataContext dataContext) {
         this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(),
@@ -163,7 +163,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @since 13.0
      */
     protected MagneticFieldDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
-                                    final double limit, final FieldModel model, final OneAxisEllipsoid body,
+                                    final double limit, final FieldModel model, final BodyShape body,
                                     final boolean atSeaLevel, final DataContext dataContext) {
         super(detectionSettings, handler);
         this.limit       = limit;

@@ -1,0 +1,115 @@
+/* Copyright 2022-2026 Thales Alenia Space
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.time.clocks;
+
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
+
+/** Container for time stamped clock offset.
+ * <p>
+ * Instances of this class are immutable
+ * </p>
+ * @author Luc Maisonobe
+ * @since 12.1
+ */
+public class ClockOffset implements TimeStamped {
+
+    /** Date. */
+    private final AbsoluteDate date;
+
+    /** Clock bias. */
+    private final double bias;
+
+    /** Clock rate. */
+    private final double rate;
+
+    /** Clock acceleration. */
+    private final double acceleration;
+
+    /** Simple constructor.
+     * @param date   date
+     * @param bias clock bias
+     * @param rate   clock rate (can be set to {@code Double.NaN} if unknown)
+     * @param acceleration clock acceleration (can be set to {@code Double.NaN} if unknown)
+     */
+    public ClockOffset(final AbsoluteDate date, final double bias,
+                       final double rate, final double acceleration) {
+        this.date         = date;
+        this.bias         = bias;
+        this.rate         = rate;
+        this.acceleration = acceleration;
+    }
+
+    /** Add another offset to the instance.
+     * <p>
+     * The instance is not modified, a new instance is created
+     * </p>
+     * @param other offset to add (date part will be ignored)
+     * @return instance + other, at instance date
+     * @since 14.0
+     */
+    public ClockOffset add(final ClockOffset other) {
+        return new ClockOffset(date,
+                               bias         + other.bias,
+                               rate         + other.rate,
+                               acceleration + other.acceleration);
+    }
+
+    /** Subtract another offset from the instance.
+     * <p>
+     * The instance is not modified, a new instance is created
+     * </p>
+     * @param other offset to subtract (date part will be ignored)
+     * @return instance - other, at instance date
+     * @since 14.0
+     */
+    public ClockOffset subtract(final ClockOffset other) {
+        return new ClockOffset(date,
+                               bias         - other.bias,
+                               rate         - other.rate,
+                               acceleration - other.acceleration);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return date;
+    }
+
+    /** Get bias.
+     * @return bias
+     * @since 14.0
+     */
+    public double getBias() {
+        return bias;
+    }
+
+    /** Get rate.
+     * @return rate ({@code Double.NaN} if unknown)
+     */
+    public double getRate() {
+        return rate;
+    }
+
+    /** Get acceleration.
+     * @return acceleration ({@code Double.NaN} if unknown)
+     */
+    public double getAcceleration() {
+        return acceleration;
+    }
+
+}

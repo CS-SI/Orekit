@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.bodies;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,10 +46,17 @@ import org.orekit.utils.Constants;
 abstract class PredefinedIAUPoles implements IAUPole {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20200130L;
 
     /** Time scales. */
     private final TimeScales timeScales;
+    /**
+     * {@code true} iff this is GCRF aligned.
+     *
+     * @since 14.0
+     */
+    private final boolean isGcrf;
 
     /**
      * Simple constructor.
@@ -56,13 +64,28 @@ abstract class PredefinedIAUPoles implements IAUPole {
      * @param timeScales to use when computing the pole, including TDB and J2000.0.
      */
     PredefinedIAUPoles(final TimeScales timeScales) {
+        this(timeScales, false);
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param timeScales to use when computing the pole, including TDB and
+     *                   J2000.0.
+     * @param isGcrf     {@code true} iff this is GCRF aligned.
+     * @since 14.0
+     */
+    PredefinedIAUPoles(final TimeScales timeScales,
+                       final boolean isGcrf) {
         this.timeScales = timeScales;
+        this.isGcrf = isGcrf;
     }
 
     /** IAU pole and prime meridian model for Sun. */
     private static class Sun extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the prime meridian. */
@@ -110,6 +133,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Mercury extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -226,6 +250,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Venus extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the prime meridian. */
@@ -273,6 +298,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Earth extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -348,6 +374,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Moon extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -651,6 +678,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Mars extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -710,6 +738,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Jupiter extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -876,6 +905,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Saturn extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -935,6 +965,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Uranus extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the prime meridian. */
@@ -982,6 +1013,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Neptune extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
@@ -1054,6 +1086,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class Pluto extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the prime meridian. */
@@ -1107,6 +1140,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     private static class GcrfAligned extends PredefinedIAUPoles {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 20200130L;
 
         /**
@@ -1115,7 +1149,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
          * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
         GcrfAligned(final TimeScales timeScales) {
-            super(timeScales);
+            super(timeScales, true);
         }
 
         /** {@inheritDoc} */
@@ -1161,32 +1195,20 @@ abstract class PredefinedIAUPoles implements IAUPole {
     public static PredefinedIAUPoles getIAUPole(final EphemerisType body,
                                                 final TimeScales timeScales) {
 
-        switch (body) {
-            case SUN :
-                return new Sun(timeScales);
-            case MERCURY :
-                return new Mercury(timeScales);
-            case VENUS :
-                return new Venus(timeScales);
-            case EARTH :
-                return new Earth(timeScales);
-            case MOON :
-                return new Moon(timeScales);
-            case MARS :
-                return new Mars(timeScales);
-            case JUPITER :
-                return new Jupiter(timeScales);
-            case SATURN :
-                return new Saturn(timeScales);
-            case URANUS :
-                return new Uranus(timeScales);
-            case NEPTUNE :
-                return new Neptune(timeScales);
-            case PLUTO :
-                return new Pluto(timeScales);
-            default :
-                return new GcrfAligned(timeScales);
-        }
+        return switch (body) {
+            case SUN  -> new Sun(timeScales);
+            case MERCURY  -> new Mercury(timeScales);
+            case VENUS  -> new Venus(timeScales);
+            case EARTH  -> new Earth(timeScales);
+            case MOON  -> new Moon(timeScales);
+            case MARS  -> new Mars(timeScales);
+            case JUPITER  -> new Jupiter(timeScales);
+            case SATURN  -> new Saturn(timeScales);
+            case URANUS  -> new Uranus(timeScales);
+            case NEPTUNE  -> new Neptune(timeScales);
+            case PLUTO  -> new Pluto(timeScales);
+            default  -> new GcrfAligned(timeScales);
+        };
     }
 
     /**
@@ -1250,6 +1272,11 @@ abstract class PredefinedIAUPoles implements IAUPole {
         final FieldAbsoluteDate<T> j2000Epoch =
                 new FieldAbsoluteDate<>(date.getField(), timeScales.getJ2000Epoch());
         return date.offsetFrom(j2000Epoch, timeScales.getTDB()).divide(Constants.JULIAN_DAY);
+    }
+
+    @Override
+    public boolean isGcrfAligned() {
+        return isGcrf;
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,8 +59,7 @@ import org.orekit.utils.ExtendedPositionProvider;
  * but also needs space weather data : mean and daily solar flux, retrieved through
  * different indices, and planetary geomagnetic indices.<br>
  * More information on these indices can be found on the <a
- * href="http://sol.spacenvironment.net/~JB2008/indices.html">
- * official JB2008 website.</a>
+ * href="https://spacewx.com/JB2008/"> official JB2008 website.</a>
  * </p>
  *
  * @author Bruce R Bowman (HQ AFSPC, Space Analysis Division), 2008: FORTRAN routine
@@ -315,31 +314,31 @@ public class JB2008 extends AbstractJacchiaBowmanModel {
     private static class LocalProvider implements JB2008InputParameters {
 
         /** 10.7-cm Solar flux. */
-        private double f10;
+        private final double f10;
 
         /** 10.7-cm Solar Flux, averaged 81-day centered on the input time. */
-        private double f10B;
+        private final double f10B;
 
         /** EUV index (26-34 nm) scaled to F10. */
-        private double s10;
+        private final double s10;
 
         /** UV 81-day averaged centered index. */
-        private double s10B;
+        private final double s10B;
 
         /** MG2 index scaled to F10. */
-        private double xm10;
+        private final double xm10;
 
         /** MG2 81-day ave. centered index. */
-        private double xm10B;
+        private final double xm10B;
 
         /** Solar X-Ray &amp; Lya index scaled to F10. */
-        private double y10;
+        private final double y10;
 
         /** Solar X-Ray &amp; Lya 81-day ave. centered index. */
-        private double y10B;
+        private final double y10B;
 
         /** Temperature change computed from Dst index. */
-        private double dstdtc;
+        private final double dstdtc;
 
         /** Constructor.
          * @param f10 10.7-cm Solar flux (1e<sup>-22</sup>*Watt/(m²*Hertz))<br>

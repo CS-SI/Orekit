@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -336,7 +336,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // compute inclination
         final FieldVector3D<T> momentum = pvCoordinates.getMomentum();
-        final T m2 = momentum.getNormSq();
+        final T m2 = momentum.getNorm2Sq();
 
         i = FieldVector3D.angle(momentum, PLUS_K);
         // compute right ascension of ascending node
@@ -346,9 +346,9 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldVector3D<T> pvV     = pvCoordinates.getVelocity();
         final FieldVector3D<T> pvA     = pvCoordinates.getAcceleration();
 
-        final T   r2      = pvP.getNormSq();
+        final T   r2      = pvP.getNorm2Sq();
         final T   r       = r2.sqrt();
-        final T   V2      = pvV.getNormSq();
+        final T   V2      = pvV.getNorm2Sq();
         final T   rV2OnMu = r.multiply(V2).divide(mu);
 
         // compute semi-major axis (will be negative for hyperbolic orbits)
@@ -564,17 +564,14 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return true anomaly (rad)
      */
     public T getTrueAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(e, cachedAnomaly) :
+        return switch (cachedPositionAngleType) {
+            case MEAN -> (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(e, cachedAnomaly) :
                     FieldKeplerianAnomalyUtility.ellipticMeanToTrue(e, cachedAnomaly);
-
-            case TRUE: return cachedAnomaly;
-
-            case ECCENTRIC: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+            case TRUE -> cachedAnomaly;
+            case ECCENTRIC ->
+                    (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, cachedAnomaly) :
+                            FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, cachedAnomaly);
+        };
     }
 
     /** Get the true anomaly derivative.
@@ -610,21 +607,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return eccentric anomaly (rad)
      */
     public T getEccentricAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN:
-                return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, cachedAnomaly) :
+        return switch (cachedPositionAngleType) {
+            case MEAN -> (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, cachedAnomaly) :
                     FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, cachedAnomaly);
-
-            case ECCENTRIC:
-                return cachedAnomaly;
-
-            case TRUE:
-                return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, cachedAnomaly) :
+            case ECCENTRIC -> cachedAnomaly;
+            case TRUE -> (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, cachedAnomaly) :
                     FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(e, cachedAnomaly);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        };
     }
 
     /** Get the eccentric anomaly derivative.
@@ -660,17 +649,14 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return mean anomaly (rad)
      */
     public T getMeanAnomaly() {
-        switch (cachedPositionAngleType) {
-            case ECCENTRIC: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, cachedAnomaly);
-
-            case MEAN: return cachedAnomaly;
-
-            case TRUE: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(e, cachedAnomaly) :
+        return switch (cachedPositionAngleType) {
+            case ECCENTRIC ->
+                    (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, cachedAnomaly) :
+                            FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, cachedAnomaly);
+            case MEAN -> cachedAnomaly;
+            case TRUE -> (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(e, cachedAnomaly) :
                     FieldKeplerianAnomalyUtility.ellipticTrueToMean(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+        };
     }
 
     /** Get the mean anomaly derivative.
@@ -1063,7 +1049,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         computePVWithoutA();
 
         // acceleration
-        final T r2 = partialPV.getPosition().getNormSq();
+        final T r2 = partialPV.getPosition().getNorm2Sq();
         final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(FastMath.sqrt(r2)).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
         final FieldVector3D<T> acceleration = hasNonKeplerianRates() ?
@@ -1195,7 +1181,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         this.computePVWithoutA();
         final FieldVector3D<T> fixedP = new FieldVector3D<>(getOne(), this.partialPV.getPosition(),
                                                             dt.square().multiply(0.5), nonKeplerianAcceleration);
-        final T fixedR2 = fixedP.getNormSq();
+        final T fixedR2 = fixedP.getNorm2Sq();
         final T fixedR  = fixedR2.sqrt();
         final FieldVector3D<T> fixedV = new FieldVector3D<>(getOne(), this.partialPV.getVelocity(),
                                                             dt, nonKeplerianAcceleration);
@@ -1237,8 +1223,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldVector3D<T> position = partialPV.getPosition();
         final FieldVector3D<T> velocity = partialPV.getVelocity();
         final FieldVector3D<T> momentum = partialPV.getMomentum();
-        final T v2         = velocity.getNormSq();
-        final T r2         = position.getNormSq();
+        final T v2         = velocity.getNorm2Sq();
+        final T r2         = position.getNorm2Sq();
         final T r          = r2.sqrt();
         final T r3         = r.multiply(r2);
 
@@ -1377,7 +1363,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldVector3D<T> position = partialPV.getPosition();
         final FieldVector3D<T> velocity = partialPV.getVelocity();
         final FieldVector3D<T> momentum = partialPV.getMomentum();
-        final T r2         = position.getNormSq();
+        final T r2         = position.getNorm2Sq();
         final T r          = r2.sqrt();
         final T r3         = r.multiply(r2);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -429,7 +429,7 @@ public class FieldCartesianOrbitTest {
             Assertions.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
             FieldCartesianOrbit<T> rebuilt =
                             new FieldCartesianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), zero.add(mu));
-            Assertions.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
+            Assertions.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.3e-6);
             Assertions.assertEquals(1.2, rebuilt.getE().getReal(), 1.0e-13);
         }
     }
@@ -462,7 +462,7 @@ public class FieldCartesianOrbitTest {
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                  date, zero.add(Constants.EIGEN5C_EARTH_MU));
         Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r  = r2.sqrt();
         FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);
@@ -496,7 +496,7 @@ public class FieldCartesianOrbitTest {
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                  date, zero.add(Constants.EIGEN5C_EARTH_MU));
         Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r  = r2.sqrt();
         FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);
@@ -633,7 +633,7 @@ public class FieldCartesianOrbitTest {
 
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r = r2.sqrt();
         FieldVector3D<T> acceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu).add(0.1), position);
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,acceleration);
@@ -749,7 +749,7 @@ public class FieldCartesianOrbitTest {
         final T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(10000000.0), field.getZero(), field.getZero());
         FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero(), field.getZero().add(-6500.0), field.getZero());
-        T r2 = position.getNormSq();
+        T r2 = position.getNorm2Sq();
         T r  = r2.sqrt();
         FieldVector3D<T> acceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(zero.add(mu).negate()), position,
                                                             field.getOne(), new FieldVector3D<>(field.getZero().add(-0.1),

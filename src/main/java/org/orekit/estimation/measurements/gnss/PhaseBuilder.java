@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,33 +18,33 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.Map;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.generation.AbstractMeasurementBuilder;
+import org.orekit.estimation.measurements.Observer;
+import org.orekit.estimation.measurements.generation.AbstractSignalBasedBuilder;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 
 /** Builder for {@link Phase} measurements.
  * @author Luc Maisonobe
  * @since 10.1
  */
-public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
+public class PhaseBuilder extends AbstractSignalBasedBuilder<Phase> {
 
     /** Cache for ambiguities.
      * @since 12.1
      */
     private final AmbiguityCache cache;
 
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
+    /** Observer from which measurement is performed. */
+    private final Observer observer;
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param station ground station from which measurement is performed
+     * @param observer observer from which measurement is performed
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
@@ -52,13 +52,29 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
      * @param cache from which ambiguity drive should come
      * @since 12.1
      */
-    public PhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                        final GroundStation station, final double wavelength,
+    public PhaseBuilder(final Observer observer, final double wavelength,
                         final double sigma, final double baseWeight,
                         final ObservableSatellite satellite,
                         final AmbiguityCache cache) {
-        super(noiseSource, sigma, baseWeight, satellite);
-        this.station    = station;
+        this(observer, wavelength, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(),
+                satellite, cache);
+    }
+
+    /** Simple constructor.
+     * @param observer observer from which measurement is performed
+     * @param wavelength phase observed value wavelength (m)
+     * @param measurementQuality measurement quality data as used in orbit determination
+     * @param signalTravelTimeModel signal model
+     * @param satellite satellite related to this builder
+     * @param cache from which ambiguity drive should come
+     * @since 14.0
+     */
+    public PhaseBuilder(final Observer observer, final double wavelength,
+                        final MeasurementQuality measurementQuality, final SignalTravelTimeModel signalTravelTimeModel,
+                        final ObservableSatellite satellite,
+                        final AmbiguityCache cache) {
+        super(measurementQuality, signalTravelTimeModel, satellite);
+        this.observer   = observer;
         this.wavelength = wavelength;
         this.cache      = cache;
     }
@@ -67,9 +83,8 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
     @Override
     protected Phase buildObserved(final AbsoluteDate date,
                                   final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new Phase(station, date, Double.NaN, wavelength,
-                         getTheoreticalStandardDeviation()[0],
-                         getBaseWeight()[0], getSatellites()[0], cache);
+        return new Phase(observer, date, Double.NaN, wavelength, getMeasurementQuality(),
+                getSignalTravelTimeModel(), getSatellites()[0], cache);
     }
 
 }

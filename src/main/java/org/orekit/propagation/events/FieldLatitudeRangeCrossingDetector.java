@@ -1,4 +1,4 @@
-/* Copyright 2023-2025 Alberto Ferrero
+/* Copyright 2023-2026 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,11 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
-import org.orekit.bodies.FieldGeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.bodies.BodyShape;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.AbstractGeodeticEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
 import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
@@ -35,12 +37,7 @@ import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
  * @param <T> type of the field elements
  */
 public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<T>>
-        extends FieldAbstractDetector<FieldLatitudeRangeCrossingDetector<T>, T> {
-
-    /**
-     * Body on which the latitude is defined.
-     */
-    private final OneAxisEllipsoid body;
+        extends FieldAbstractGeographicalDetector<FieldLatitudeRangeCrossingDetector<T>, T> {
 
     /**
      * Fixed latitude to be crossed, lower boundary in radians.
@@ -53,11 +50,6 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
     private final double toLatitude;
 
     /**
-     * Sign, to get reversed inclusion latitude range (lower > upper).
-     */
-    private final double sign;
-
-    /**
      * Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
      * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
@@ -68,7 +60,7 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
      * @param toLatitude   latitude to be crossed, upper range boundary
      */
     public FieldLatitudeRangeCrossingDetector(final Field<T> field,
-                                              final OneAxisEllipsoid body,
+                                              final BodyShape body,
                                               final double fromLatitude,
                                               final double toLatitude) {
         this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
@@ -88,7 +80,7 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
      * @param toLatitude   latitude to be crossed, upper range boundary
      */
     public FieldLatitudeRangeCrossingDetector(final T maxCheck, final T threshold,
-                                              final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
+                                              final BodyShape body, final double fromLatitude, final double toLatitude) {
         this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER),
                 new FieldStopOnIncreasing<>(), body, fromLatitude, toLatitude);
     }
@@ -110,14 +102,13 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
      */
     protected FieldLatitudeRangeCrossingDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                                  final FieldEventHandler<T> handler,
-                                                 final OneAxisEllipsoid body,
+                                                 final BodyShape body,
                                                  final double fromLatitude,
                                                  final double toLatitude) {
-        super(detectionSettings, handler);
-        this.body = body;
+        super(new LocalEventFunction(body, FastMath.min(fromLatitude, toLatitude), FastMath.max(fromLatitude, toLatitude)),
+                detectionSettings, handler, body);
         this.fromLatitude = fromLatitude;
         this.toLatitude = toLatitude;
-        this.sign = FastMath.signum(toLatitude - fromLatitude);
     }
 
     /**
@@ -127,16 +118,7 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
     protected FieldLatitudeRangeCrossingDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                            final FieldEventHandler<T> newHandler) {
         return new FieldLatitudeRangeCrossingDetector<>(detectionSettings, newHandler,
-            body, fromLatitude, toLatitude);
-    }
-
-    /**
-     * Get the body on which the geographic zone is defined.
-     *
-     * @return body on which the geographic zone is defined
-     */
-    public OneAxisEllipsoid getBody() {
-        return body;
+            getBodyShape(), fromLatitude, toLatitude);
     }
 
     /**
@@ -169,17 +151,43 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
      * @return positive if spacecraft inside the range
      */
     public T g(final FieldSpacecraftState<T> s) {
-
-        // convert state to geodetic coordinates
-        final FieldGeodeticPoint<T> gp = body.transform(s.getPVCoordinates().getPosition(),
-            s.getFrame(), s.getDate());
-
-        // point latitude
-        final T latitude = gp.getLatitude();
-
-        // inside or outside latitude range
-        return latitude.subtract(fromLatitude).multiply(latitude.negate().add(toLatitude)).multiply(sign);
-
+        return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public LatitudeRangeCrossingDetector toEventDetector(final EventHandler eventHandler) {
+        return new LatitudeRangeCrossingDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,
+                getBodyShape(), getFromLatitude(), getToLatitude());
+    }
+
+    /**
+     * Local event function.
+     * @since 14.0
+     */
+    private static class LocalEventFunction extends AbstractGeodeticEventFunction {
+
+        /** Lower bound latitude. */
+        private final double minLatitude;
+        /** Upper bound latitude. */
+        private final double maxLatitude;
+
+        LocalEventFunction(final BodyShape body, final double minLatitude, final double maxLatitude) {
+            super(body);
+            this.minLatitude = minLatitude;
+            this.maxLatitude = maxLatitude;
+        }
+
+        @Override
+        public double value(final SpacecraftState state) {
+            final double latitude = transformToGeodeticPoint(state).getLatitude();
+            return (latitude - minLatitude) * (maxLatitude - latitude);
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> T value(final FieldSpacecraftState<T> fieldState) {
+            final T latitude = transformToGeodeticPoint(fieldState).getLatitude();
+            return (latitude.subtract(minLatitude)).multiply(latitude.negate().add(maxLatitude));
+        }
+    }
 }

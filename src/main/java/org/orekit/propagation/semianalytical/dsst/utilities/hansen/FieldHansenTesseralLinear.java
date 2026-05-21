@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -99,7 +99,7 @@ public class FieldHansenTesseralLinear <T extends CalculusFieldElement<T>> {
         //Ensure that only the needed terms are computed
         this.hansenInit = (FieldHansenCoefficientsBySeries<T>[]) Array.newInstance(FieldHansenCoefficientsBySeries.class, maxRoots);
         for (int i = 0; i < maxRoots; i++) {
-            this.hansenInit[i] = new FieldHansenCoefficientsBySeries<>(N0 - i + 3, s, j, maxHansen, field);
+            this.hansenInit[i] = new FieldHansenCoefficientsBySeries<>(N0 - i + 3, s, j, maxHansen);
         }
 
         // The first 4 values are computed with series. No linear combination is needed.
@@ -268,14 +268,13 @@ public class FieldHansenTesseralLinear <T extends CalculusFieldElement<T>> {
         /**
          * Class constructor.
          *
-         * @param mnm1 -n-1 value
-         * @param s s value
-         * @param j j value
+         * @param mnm1      -n-1 value
+         * @param s         s value
+         * @param j         j value
          * @param maxHansen max power of e² in series expansion
-         * @param field field for the function parameters and value
          */
         FieldHansenCoefficientsBySeries(final int mnm1, final int s,
-                                          final int j, final int maxHansen, final Field<T> field) {
+                                        final int j, final int maxHansen) {
             this.mnm1 = mnm1;
             this.s = s;
             this.j = j;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -153,9 +153,9 @@ public class GeometryFreeCycleSlipDetectorTest {
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
         //According to excel graph, cycle-slip occur at 1 h 59m 43s
         AbsoluteDate trueDate = new AbsoluteDate(2016, 2, 13, 1, 59, 43, TimeScalesFactory.getUTC());
-        final int size = results.get(0).getCycleSlipMap().get(PredefinedGnssSignal.G01).size();
+        final int size = results.getFirst().getCycleSlipMap().get(PredefinedGnssSignal.G01).size();
         Assertions.assertEquals(1, size);
-        final AbsoluteDate computedDate = results.get(0).getCycleSlipMap().get(PredefinedGnssSignal.G01).get(0);
+        final AbsoluteDate computedDate = results.getFirst().getCycleSlipMap().get(PredefinedGnssSignal.G01).getFirst();
         Assertions.assertEquals(0.0, trueDate.durationFrom(computedDate),  1e-9);
    }
 

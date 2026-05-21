@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,17 +25,11 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.frames.FieldStaticTransform;
-import org.orekit.frames.Frame;
-import org.orekit.frames.StaticTransform;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.models.earth.ionosphere.IonosphericDelayModel;
-import org.orekit.models.earth.ionosphere.IonosphericModel;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.models.earth.ionosphere.AbstractIonosphericModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -55,7 +49,7 @@ import org.orekit.utils.units.Unit;
  *
  * @since 10.1
  */
-public abstract class NeQuickModel implements IonosphericModel, IonosphericDelayModel {
+public abstract class NeQuickModel extends AbstractIonosphericModel {
 
     /** Mean Earth radius in m (Ref Table 2.5.2). */
     public static final double RE = 6371200.0;
@@ -76,10 +70,12 @@ public abstract class NeQuickModel implements IonosphericModel, IonosphericDelay
     private final TimeScale utc;
 
     /** Simple constructor.
+     * @param earth earth body shape
      * @param utc UTC time scale
-     * @since 13.0
+     * @since 14.0
      */
-    protected NeQuickModel(final TimeScale utc) {
+    protected NeQuickModel(final OneAxisEllipsoid earth, final TimeScale utc) {
+        super(earth);
 
         this.utc = utc;
 
@@ -99,83 +95,73 @@ public abstract class NeQuickModel implements IonosphericModel, IonosphericDelay
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
-                            final double frequency, final double[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double pathDelay(final SpacecraftState state,
+    public double pathDelay(final Vector3D localP1, final Vector3D localP2,
                             final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
                             final double frequency, final double[] parameters) {
 
-        // Reference body shape
-        final BodyShape ellipsoid = baseFrame.getParentShape();
+        final double baseAlt   = baseFrame.getPoint().getAltitude();
 
-        // we use transform from body frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final Frame           bodyFrame  = ellipsoid.getBodyFrame();
-        final StaticTransform body2Inert = bodyFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final Vector3D        position   = body2Inert.getInverse().transformPosition(state.getPosition());
+        // Lambda function for calculating path delay for each side of the link
+        final DelayCalculator calculateDelay = position -> {
 
-        // Point
-        final GeodeticPoint recPoint = baseFrame.getPoint();
-        // Date
-        final AbsoluteDate date = state.getDate();
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
 
-        // Satellite geodetic coordinates
-        final GeodeticPoint satPoint = ellipsoid.transform(position, bodyFrame, state.getDate());
+                // Point
+                final GeodeticPoint recPoint = baseFrame.getPoint();
 
-        // Total Electron Content
-        final double tec = stec(date, recPoint, satPoint);
+                // Satellite geodetic coordinates
+                final GeodeticPoint satPoint = getEarth().transform(position, baseFrame, receptionDate);
 
-        // Ionospheric delay
-        final double factor = DELAY_FACTOR / (frequency * frequency);
-        return factor * tec;
+                // Total Electron Content
+                final double tec = stec(receptionDate, recPoint, satPoint);
+
+                // Ionospheric delay
+                final double factor = DELAY_FACTOR / (frequency * frequency);
+                return factor * tec;
+
+            }
+
+            return 0.0;
+        };
+
+        return calculateDelay.apply(localP1) + calculateDelay.apply(localP2);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
-                                                           final TopocentricFrame baseFrame,
-                                                           final double frequency,
-                                                           final T[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldVector3D<T> localP1, final FieldVector3D<T> localP2,
+                                                           final TopocentricFrame baseFrame, final FieldAbsoluteDate<T> receptionDate,
+                                                           final double frequency, final T[] parameters) {
 
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
-                                                           final TopocentricFrame baseFrame,
-                                                           final FieldAbsoluteDate<T> receptionDate,
-                                                           final double frequency,
-                                                           final T[] parameters) {
-        // Reference body shape
-        final BodyShape ellipsoid = baseFrame.getParentShape();
+        final double baseAlt   = baseFrame.getPoint().getAltitude();
 
-        // we use transform from body frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final Frame                   bodyFrame  = ellipsoid.getBodyFrame();
-        final FieldStaticTransform<T> body2Inert = bodyFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final FieldVector3D<T>        position   = body2Inert.getInverse().transformPosition(state.getPosition());
+        // Lambda function for calculating path delay for each side of the link
+        final FieldDelayCalculator<T> calculateFieldDelay = position -> {
 
-        // Date
-        final FieldAbsoluteDate<T> date = state.getDate();
-        // Point
-        final FieldGeodeticPoint<T> recPoint = baseFrame.getPoint(date.getField());
+            // Elevation of object in radians w.r.t. minimum altitude point
+            final T elevation = position.getDelta();
 
-        // Satellite geodetic coordinates
-        final FieldGeodeticPoint<T> satPoint = ellipsoid.transform(position, bodyFrame, state.getDate());
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
 
-        // Total Electron Content
-        final T tec = stec(date, recPoint, satPoint);
+                // Point
+                final FieldGeodeticPoint<T> recPoint = baseFrame.getPoint(receptionDate.getField());
 
-        // Ionospheric delay
-        final double factor = DELAY_FACTOR / (frequency * frequency);
-        return tec.multiply(factor);
+                // Satellite geodetic coordinates
+                final FieldGeodeticPoint<T> satPoint = getEarth().transform(position, baseFrame, receptionDate);
+
+                // Total Electron Content
+                final T tec = stec(receptionDate, recPoint, satPoint);
+
+                // Ionospheric delay
+                final double factor = DELAY_FACTOR / (frequency * frequency);
+                return tec.multiply(factor);
+
+            }
+            return elevation.getField().getZero();
+        };
+
+        return calculateFieldDelay.apply(localP1).add( calculateFieldDelay.apply(localP2) );
+
     }
 
     /** {@inheritDoc} */

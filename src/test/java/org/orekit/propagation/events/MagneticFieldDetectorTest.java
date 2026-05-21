@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -268,7 +268,7 @@ public class MagneticFieldDetectorTest {
     private PolygonsSet generateGeomagneticMap(GeoMagneticField field, double altitude, double threshold, double width) {
 
         //Find a polygon corresponding to the threshold field line
-        ArrayList<Double[]> points = new ArrayList<Double[]>();
+        ArrayList<Double[]> points = new ArrayList<>();
 
         for(int latitude = -89; latitude < 90; latitude++) {
             for(int longitude = -179; longitude < 180; longitude++) {
@@ -347,7 +347,7 @@ public class MagneticFieldDetectorTest {
         Vector2D mid = new Vector2D(midLon, midLat);
 
         // Convert lon/lat vector in norm/angle defined from the center of the SAA
-        ArrayList<Vector2D> angularVerticesList = new ArrayList<Vector2D>();
+        ArrayList<Vector2D> angularVerticesList = new ArrayList<>();
         Vector2D ref = new Vector2D(1, 0);
         Vector2D angularVertice;
         Vector2D centeredVertice;
@@ -393,7 +393,7 @@ public class MagneticFieldDetectorTest {
      */
     private class CustomEventHandler implements EventHandler {
 
-        ArrayList<SpacecraftState> events = new ArrayList<SpacecraftState>();
+        ArrayList<SpacecraftState> events = new ArrayList<>();
 
         @Override
         public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {

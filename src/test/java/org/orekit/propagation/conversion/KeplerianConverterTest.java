@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,7 +71,7 @@ class KeplerianConverterTest {
         {
 
         Propagator p = new KeplerianPropagator(orbit);
-        List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
+        List<SpacecraftState> sample = new ArrayList<>();
         for (double dt = 0; dt < duration; dt += stepSize) {
             sample.add(p.propagate(orbit.getDate().shiftedBy(dt)));
         }

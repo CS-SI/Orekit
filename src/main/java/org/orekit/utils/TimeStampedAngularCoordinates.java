@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,11 +32,18 @@ import org.orekit.time.TimeStamped;
  */
 public class TimeStampedAngularCoordinates extends AngularCoordinates implements TimeStamped {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140723L;
-
     /** The date. */
     private final AbsoluteDate date;
+
+    /** Builds a rotation/rotation rate pair.
+     * @param date coordinates date
+     * @param coordinates coordinates
+     * @since 14.0
+     */
+    public TimeStampedAngularCoordinates(final AbsoluteDate date,
+                                         final AngularCoordinates coordinates) {
+        this(date, coordinates.getRotation(), coordinates.getRotationRate(), coordinates.getRotationAcceleration());
+    }
 
     /** Builds a rotation/rotation rate pair.
      * @param date coordinates date
@@ -126,11 +133,9 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @return a new pair whose effect is the reverse of the effect
      * of the instance
      */
+    @Override
     public TimeStampedAngularCoordinates revert() {
-        return new TimeStampedAngularCoordinates(date,
-                                                 getRotation().revert(),
-                                                 getRotation().applyInverseTo(getRotationRate().negate()),
-                                                 getRotation().applyInverseTo(getRotationAcceleration().negate()));
+        return new TimeStampedAngularCoordinates(date, super.revert());
     }
 
     /** Get a time-shifted state.
@@ -143,6 +148,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public TimeStampedAngularCoordinates shiftedBy(final double dt) {
         final AngularCoordinates sac = super.shiftedBy(dt);
         return new TimeStampedAngularCoordinates(date.shiftedBy(dt),
@@ -161,6 +167,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @return a new state, shifted with respect to the instance (which is immutable)
      * @since 13.0
      */
+    @Override
     public TimeStampedAngularCoordinates shiftedBy(final TimeOffset dt) {
         final AngularCoordinates sac = super.shiftedBy(dt);
         return new TimeStampedAngularCoordinates(date.shiftedBy(dt),

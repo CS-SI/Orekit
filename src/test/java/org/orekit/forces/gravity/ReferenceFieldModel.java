@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -145,15 +145,15 @@ class ReferenceFieldModel {
      * @return a raw provider wrapping {@code provider}.
      */
     private RawSphericalHarmonicsProvider raw(final SphericalHarmonicsProvider provider) {
-        if (provider instanceof RawSphericalHarmonicsProvider) {
-            return (RawSphericalHarmonicsProvider) provider;
-        } else if (provider instanceof NormalizedSphericalHarmonicsProvider) {
+        if (provider instanceof RawSphericalHarmonicsProvider harmonicsProvider2) {
+            return harmonicsProvider2;
+        } else if (provider instanceof NormalizedSphericalHarmonicsProvider harmonicsProvider1) {
             return new RawerSphericalHarmonicsProvider(provider) {
                 @Override
                 public RawSphericalHarmonics onDate(final AbsoluteDate date)
                         {
                     final NormalizedSphericalHarmonics normalized =
-                            ((NormalizedSphericalHarmonicsProvider) provider).onDate(date);
+                            harmonicsProvider1.onDate(date);
                     return new RawSphericalHarmonics() {
                         @Override
                         public double getRawCnm(int n, int m) {
@@ -172,13 +172,13 @@ class ReferenceFieldModel {
                     };
                 }
             };
-        } else if (provider instanceof UnnormalizedSphericalHarmonicsProvider) {
+        } else if (provider instanceof UnnormalizedSphericalHarmonicsProvider harmonicsProvider) {
             return new RawerSphericalHarmonicsProvider(provider) {
                 @Override
                 public RawSphericalHarmonics onDate(final AbsoluteDate date)
                         {
                     final UnnormalizedSphericalHarmonics unnormalized =
-                            ((UnnormalizedSphericalHarmonicsProvider) provider).onDate(date);
+                            harmonicsProvider.onDate(date);
                     return new RawSphericalHarmonics() {
                         @Override
                         public double getRawCnm(int n, int m) {
@@ -214,7 +214,7 @@ class ReferenceFieldModel {
          *
          * @param provider the provider to delegate to
          */
-        public RawerSphericalHarmonicsProvider(SphericalHarmonicsProvider provider) {
+        protected RawerSphericalHarmonicsProvider(SphericalHarmonicsProvider provider) {
             this.provider = provider;
         }
 

@@ -1,4 +1,4 @@
-/* Copyright 2023-2025 Alberto Ferrero
+/* Copyright 2023-2026 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -32,6 +33,8 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -40,6 +43,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 /** Unit tests for {@link FieldLatitudeRangeCrossingDetector}. */
 public class FieldLatitudeRangeCrossingDetectorTest {
@@ -151,7 +157,7 @@ public class FieldLatitudeRangeCrossingDetectorTest {
                                           Constants.EIGEN5C_EARTH_C50,
                                           Constants.EIGEN5C_EARTH_C60);
 
-        FieldEventsLogger<Binary64> logger = new FieldEventsLogger<Binary64>();
+        FieldEventsLogger<Binary64> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(d));
 
         propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
@@ -167,6 +173,21 @@ public class FieldLatitudeRangeCrossingDetectorTest {
      */
     private static Binary64 v(double value) {
         return new Binary64(value);
+    }
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldLatitudeRangeCrossingDetector<Binary64> fieldDetector = new FieldLatitudeRangeCrossingDetector<>(Binary64Field.getInstance(),
+                mock(BodyShape.class), 0., 1.);
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final LatitudeRangeCrossingDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getBodyShape(), detector.getBodyShape());
+        assertEquals(fieldDetector.getToLatitude(), detector.getToLatitude());
+        assertEquals(fieldDetector.getFromLatitude(), detector.getFromLatitude());
     }
 
     @BeforeEach

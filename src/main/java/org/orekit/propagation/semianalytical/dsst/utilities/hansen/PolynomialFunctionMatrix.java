@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.hipparchus.analysis.polynomials.PolynomialFunction;
 public class PolynomialFunctionMatrix {
 
     /** The order of the matrix. */
-    private int order;
+    private final int order;
     /** The elements of the matrix. */
     private PolynomialFunction[][] elements;
 

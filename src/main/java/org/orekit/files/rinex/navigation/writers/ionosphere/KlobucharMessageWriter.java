@@ -1,0 +1,78 @@
+/* Copyright 2022-2026 Thales Alenia Space
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.files.rinex.navigation.writers.ionosphere;
+
+import org.orekit.files.rinex.navigation.IonosphereKlobucharMessage;
+import org.orekit.files.rinex.navigation.RecordType;
+import org.orekit.files.rinex.navigation.RinexNavigationHeader;
+import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
+import org.orekit.gnss.SatelliteSystem;
+
+import java.io.IOException;
+
+/** Writer for Klobuchar model ionospheric messages.
+ * @author Luc Maisonobe
+ * @since 14.0
+ */
+public class KlobucharMessageWriter extends NavigationMessageWriter<IonosphereKlobucharMessage> {
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeMessage(final String identifier, final IonosphereKlobucharMessage message,
+                             final RinexNavigationHeader header, final RinexNavigationWriter writer)
+        throws IOException {
+
+        // TYPE / SV / MSG
+        if (message.getSystem() == SatelliteSystem.BEIDOU && header.getFormatVersion() >= 4.02) {
+            final String subType = message.getRegionCode() == null ? "" : message.getRegionCode().getStringId();
+            writeTypeSvMsg(RecordType.ION, message.getIdentifier(),
+                           new IonosphereKlobucharMessage(message.getSystem(), message.getPrn(),
+                                                          message.getNavigationMessageType(),
+                                                          subType),
+                           header, writer);
+        } else {
+            writeTypeSvMsg(RecordType.ION, message.getIdentifier(), message, header, writer);
+        }
+
+        // ION MESSAGE LINE - 0
+        writer.indentLine(header);
+        writer.writeDate(message.getTransmitTime(), message.getSystem());
+        writer.writeDouble(message.getAlpha()[0], IonosphereKlobucharMessage.S_PER_SC_N0);
+        writer.writeDouble(message.getAlpha()[1], IonosphereKlobucharMessage.S_PER_SC_N1);
+        writer.writeDouble(message.getAlpha()[2], IonosphereKlobucharMessage.S_PER_SC_N2);
+        writer.finishLine();
+
+        // ION MESSAGE LINE - 1
+        writer.indentLine(header);
+        writer.writeDouble(message.getAlpha()[3], IonosphereKlobucharMessage.S_PER_SC_N3);
+        writer.writeDouble(message.getBeta()[0], IonosphereKlobucharMessage.S_PER_SC_N0);
+        writer.writeDouble(message.getBeta()[1], IonosphereKlobucharMessage.S_PER_SC_N1);
+        writer.writeDouble(message.getBeta()[2], IonosphereKlobucharMessage.S_PER_SC_N2);
+        writer.finishLine();
+
+        // ION MESSAGE LINE - 2
+        writer.indentLine(header);
+        writer.writeDouble(message.getBeta()[3], IonosphereKlobucharMessage.S_PER_SC_N3);
+        if (header.getFormatVersion() < 4.015) {
+            writer.writeInt(message.getRegionCode().getIntegerId());
+        }
+        writer.finishLine();
+
+    }
+
+}

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.special.Erf;
-import org.hipparchus.util.FastMath;;
+import org.hipparchus.util.FastMath;
 
 /** Bootstrapping engine for ILS problem solving.
  * This method is base on the following paper: <a
@@ -47,7 +47,7 @@ import org.hipparchus.util.FastMath;;
 public class IntegerBootstrapping extends LambdaMethod {
 
     /** Minimum probability for acceptance. */
-    private double minProb;
+    private final double minProb;
 
     /** Upperbound of the probability. */
     private boolean boostrapUse;

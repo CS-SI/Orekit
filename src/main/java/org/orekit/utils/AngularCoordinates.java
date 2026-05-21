@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.utils;
-
-import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -56,16 +54,13 @@ import org.orekit.time.TimeShiftable;
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
  */
-public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Serializable {
+public class AngularCoordinates implements TimeShiftable<AngularCoordinates> {
 
     /** Fixed orientation parallel with reference frame
      * (identity rotation, zero rotation rate and acceleration).
      */
     public static final AngularCoordinates IDENTITY =
             new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140414L;
 
     /** Rotation. */
     private final Rotation rotation;
@@ -80,7 +75,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * <p> Sets the Coordinates to default : Identity, Ω = (0 0 0), dΩ/dt = (0 0 0).</p>
      */
     public AngularCoordinates() {
-        this(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        this(Rotation.IDENTITY, Vector3D.ZERO);
     }
 
     /** Builds a rotation/rotation rate pair.
@@ -253,9 +248,9 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                                                  final double tolerance)
         throws MathIllegalArgumentException {
 
-        final double v12 = v1.getNormSq();
+        final double v12 = v1.getNorm2Sq();
         final double v1n = FastMath.sqrt(v12);
-        final double v22 = v2.getNormSq();
+        final double v22 = v2.getNorm2Sq();
         final double v2n = FastMath.sqrt(v22);
         final double threshold = tolerance * FastMath.max(v1n, v2n);
 
@@ -291,9 +286,9 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             if (miae.getSpecifier() == LocalizedCoreFormats.SINGULAR_MATRIX) {
 
                 // handle some special cases for which we can compute a solution
-                final double c12 = c1.getNormSq();
+                final double c12 = c1.getNorm2Sq();
                 final double c1n = FastMath.sqrt(c12);
-                final double c22 = c2.getNormSq();
+                final double c22 = c2.getNorm2Sq();
                 final double c2n = FastMath.sqrt(c22);
 
                 if (c1n <= threshold && c2n <= threshold) {

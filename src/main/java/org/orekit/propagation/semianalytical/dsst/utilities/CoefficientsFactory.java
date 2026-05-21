@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class CoefficientsFactory {
 
     /** Internal storage of the polynomial values. Reused for further computation. */
-    private static SortedMap<NSKey, Double> VNS = new ConcurrentSkipListMap<>();
+    private static final SortedMap<NSKey, Double> VNS = new ConcurrentSkipListMap<>();
 
     /** Last computed order for V<sub>ns</sub> coefficients. */
     private static int         LAST_VNS_ORDER = 2;
@@ -322,8 +322,8 @@ public class CoefficientsFactory {
                 return true;
             }
 
-            if (key instanceof NSKey) {
-                return n == ((NSKey) key).n && s == ((NSKey) key).s;
+            if (key instanceof NSKey sKey) {
+                return n == sKey.n && s == sKey.s;
             }
 
             return false;

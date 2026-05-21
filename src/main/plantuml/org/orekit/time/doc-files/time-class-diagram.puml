@@ -1,0 +1,149 @@
+' Copyright 2002-2026 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit.time #ECEBD8 {
+
+    interface TimeStamped {
+      +AbsoluteDate getDate()
+    }
+
+    interface "TimeShiftable<T>" as TimeShiftable_T_ {
+      +T shiftedBy(double dt)
+    }
+
+    interface "TimeInterpolator<T extends TimeStamped>" as TimeInterpolator_T_ {
+      +T interpolate(AbsoluteDate date, Stream<T> sample)
+      +T interpolate(AbsoluteDate date, Collection<T> sample)
+    }
+
+    class AbsoluteDate {
+      +AbsoluteDate JULIAN_EPOCH
+      +AbsoluteDate MODIFIED_JULIAN_EPOCH
+      +AbsoluteDate FIFTIES_EPOCH
+      +AbsoluteDate CCSDS_EPOCH
+      +AbsoluteDate GALILEO_EPOCH
+      +AbsoluteDate GPS_EPOCH
+      +AbsoluteDate J2000_EPOCH
+      +AbsoluteDate JAVA_EPOCH
+      +AbsoluteDate PAST_INFINITY
+      +AbsoluteDate FUTURE_INFINITY
+      +AbsoluteDate(String location, TimeScale timeScale)
+      +AbsoluteDate(DateTimeComponents location, TimeScale timeScale)
+      +AbsoluteDate(AbsoluteDate since, double elapsedDuration)
+      +AbsoluteDate(AbsoluteDate reference, double apparentOffset, TimeScale timeScale)
+      +AbsoluteDate parseCCSD...(...)
+      +AbsoluteDate createGPSDate(int weekNumber, double milliInWeek)
+      +AbsoluteDate shiftedBy(double dt)
+      +double durationFrom(AbsoluteDate instant)
+      +double offsetFrom(AbsoluteDate instant, TimeScale timeScale)
+      +double timeScalesOffset(TimeScale scale1, TimeScale scale2)
+      +boolean isAfter(Timestamped other)
+      +boolean isAfterOrEqualTo(Timestamped other)
+      +boolean isBefore(Timestamped other)
+      +boolean isBeforeOrEqualTo(Timestamped other)
+      +boolean isBetween(Timestamped boundary1, Timestamped boundary2)
+      +boolean isBetweenOrEqualTo(Timestamped boundary1, Timestamped boundary2)
+      +boolean isCloseTo(Timestamped other, double tolerance)
+      +boolean isEqualTo(Timestamped other)
+    }
+    note top
+      numerous constructor ommitted
+      for clarity
+    end note
+
+    interface "Comparable<AbsoluteDate>" as Comparable_AbsoluteDate_ {
+      +int compareTo(AbsoluteDate)
+    }
+
+    interface "Comparator<TimeStamped>" as Comparator_TimeStamped_ {
+      +int  compare(TimeStamped, TimeStamped)
+    }
+
+    class DateTimeComponents
+    class DateComponents
+    class TimeComponents
+
+    interface TimeScale {
+      +double offsetFromTAI(AbsoluteDate date)
+      +double offsetToTAI(DateComponents date, TimeComponents time)
+      +String getName()
+    }
+
+    class TimeScalesFactory {
+      +TAIScale getTAI()
+      +UTCScale getUTC()
+      +UT1Scale getUT1()
+      +TTScale getTT()
+      +GalileoScale getGST()
+      +GPSScale getGPS()
+      +TCGScale getTCG()
+      +TDBScale getTDB()
+      +TCBScale getTCB()
+      +GMSTScale getGMST()
+      +GLONASSScale getGLONASS()
+      +QZSSScale getQZSS()
+    }
+
+    class TAIScale
+    class UTCScale
+    class UT1Scale
+    class TTScale
+    class GalileoScale
+    class "...Scale" as DummyScale
+    note bottom
+      numerous times scales ommitted
+      for clarity
+    end note
+
+    TimeStamped               <|.. AbsoluteDate
+    TimeShiftable_T_          <|.. AbsoluteDate
+    TimeScalesFactory         *-down-> TimeScale : creates
+    Comparable_AbsoluteDate_  <|..     AbsoluteDate
+    Comparator_TimeStamped_   <-up-    ChronologicalComparator
+    ChronologicalComparator   -right-> TimeStamped
+    Comparator_TimeStamped_   <-up-    TimeStamped
+
+    DateComponents            <--*     DateTimeComponents
+    TimeComponents            <--*     DateTimeComponents
+    AbsoluteDate              -down->  DateTimeComponents
+    AbsoluteDate              -down->  DateComponents
+    AbsoluteDate              -down->  TimeComponents
+    AbsoluteDate              -down->  TimeScale
+
+    TimeScale  <|-- TTScale
+    TimeScale  <|-- GalileoScale
+    TimeScale  <|-- TAIScale
+    TimeScale  <|-- UTCScale
+    TimeScale  <|-- UT1Scale
+    TimeScale  <|-- DummyScale
+
+    UTCScale <--* GLONASSScale
+
+  }
+@enduml

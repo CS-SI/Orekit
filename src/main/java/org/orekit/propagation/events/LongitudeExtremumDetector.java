@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,9 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.FieldGeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.LongitudeExtremumEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 
@@ -30,10 +28,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremumDetector> {
-
-    /** Body on which the longitude is defined. */
-    private OneAxisEllipsoid body;
+public class LongitudeExtremumDetector extends AbstractGeographicalDetector<LongitudeExtremumDetector> {
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
@@ -41,7 +36,7 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the longitude is defined
      */
-    public LongitudeExtremumDetector(final OneAxisEllipsoid body) {
+    public LongitudeExtremumDetector(final BodyShape body) {
         this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body);
     }
 
@@ -50,10 +45,17 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      * @param threshold convergence threshold (s)
      * @param body body on which the longitude is defined
      */
-    public LongitudeExtremumDetector(final double maxCheck, final double threshold,
-                                    final OneAxisEllipsoid body) {
-        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(),
-             body);
+    public LongitudeExtremumDetector(final double maxCheck, final double threshold, final BodyShape body) {
+        this(new LongitudeExtremumEventFunction(body), new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER),
+                new StopOnIncreasing());
+    }
+
+    /** Constructor with event function.
+     * @param longitudeExtremumEventFunction event function
+     * @since 14.0
+     */
+    public LongitudeExtremumDetector(final LongitudeExtremumEventFunction longitudeExtremumEventFunction) {
+        this(longitudeExtremumEventFunction, EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing());
     }
 
     /** Protected constructor with full parameters.
@@ -62,29 +64,22 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
+     * @param longitudeExtremumEventFunction event function
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
-     * @param body body on which the longitude is defined
-     * @since 13.0
+     * @since 14.0
      */
-    protected LongitudeExtremumDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
-                                        final OneAxisEllipsoid body) {
-        super(detectionSettings, handler);
-        this.body = body;
+    protected LongitudeExtremumDetector(final LongitudeExtremumEventFunction longitudeExtremumEventFunction,
+                                        final EventDetectionSettings detectionSettings, final EventHandler handler) {
+        super(longitudeExtremumEventFunction, detectionSettings, handler, longitudeExtremumEventFunction.getBodyShape());
     }
 
     /** {@inheritDoc} */
     @Override
     protected LongitudeExtremumDetector create(final EventDetectionSettings detectionSettings,
                                                final EventHandler newHandler) {
-        return new LongitudeExtremumDetector(detectionSettings, newHandler, body);
-    }
-
-    /** Get the body on which the geographic zone is defined.
-     * @return body on which the geographic zone is defined
-     */
-    public BodyShape getBody() {
-        return body;
+        return new LongitudeExtremumDetector((LongitudeExtremumEventFunction) getEventFunction(), detectionSettings,
+                newHandler);
     }
 
     /** Compute the value of the detection function.
@@ -95,14 +90,7 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      * @return spacecraft longitude time derivative
      */
     public double g(final SpacecraftState s) {
-
-        // convert state to geodetic coordinates
-        final FieldGeodeticPoint<UnivariateDerivative2> gp =
-                        body.transform(s.getPVCoordinates(), s.getFrame(), s.getDate());
-
-        // longitude time derivative
-        return gp.getLongitude().getFirstDerivative();
-
+        return getEventFunction().value(s);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.util.MathArrays;
@@ -40,11 +39,9 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
@@ -151,9 +148,6 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     /** Force models used during the extrapolation of the FieldOrbit<T>, without Jacobians. */
     private final List<ForceModel> forceModels;
 
-    /** Field used by this class.*/
-    private final Field<T> field;
-
     /** boolean to ignore or not the creation of a NewtonianAttraction. */
     private boolean ignoreCentralAttraction = false;
 
@@ -162,7 +156,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      */
     private boolean needFullAttitudeForDerivatives = true;
 
-    /** Create a new instance of NumericalPropagator, based on orbit definition mu.
+    /**
+     * Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
@@ -175,15 +170,15 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @param integrator numerical integrator to use for propagation.
-     * @param field Field used by default
-     * @see #FieldNumericalPropagator(Field, FieldODEIntegrator, AttitudeProvider)
+     * @see #FieldNumericalPropagator(FieldODEIntegrator, AttitudeProvider)
      */
     @DefaultDataContext
-    public FieldNumericalPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator) {
-        this(field, integrator, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    public FieldNumericalPropagator(final FieldODEIntegrator<T> integrator) {
+        this(integrator, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
     }
 
-    /** Create a new instance of NumericalPropagator, based on orbit definition mu.
+    /**
+     * Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
@@ -192,20 +187,18 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * for {@link #setOrbitType(OrbitType) propagation
      * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
-     * @param field Field used by default
-     * @param integrator numerical integrator to use for propagation.
+     *
+     * @param integrator       numerical integrator to use for propagation.
      * @param attitudeProvider attitude law to use.
      * @since 10.1
      */
-    public FieldNumericalPropagator(final Field<T> field,
-                                    final FieldODEIntegrator<T> integrator,
+    public FieldNumericalPropagator(final FieldODEIntegrator<T> integrator,
                                     final AttitudeProvider attitudeProvider) {
-        super(field, integrator, PropagationType.OSCULATING);
-        this.field = field;
+        super(integrator.getCurrentSignedStepsize().getField(), integrator, PropagationType.OSCULATING);
         forceModels = new ArrayList<>();
-        initMapper(field);
+        initMapper(getField());
         setAttitudeProvider(attitudeProvider);
-        setMu(field.getZero().add(Double.NaN));
+        setMu(getField().getZero().add(Double.NaN));
         clearStepHandlers();
         setOrbitType(NumericalPropagator.DEFAULT_ORBIT_TYPE);
         setPositionAngleType(NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
@@ -270,18 +263,18 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
             try {
                 // ensure we are notified of any mu change
-                model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
+                model.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().newInstance(driver.getValue(date)));
+                        superSetMu(getField().getZero().newInstance(driver.getValue(date)));
                     }
                     /** {@inheritDoc} */
                     @Override
                     public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().newInstance(driver.getValue()));
+                        superSetMu(getField().getZero().newInstance(driver.getValue()));
                     }
                 });
             } catch (OrekitException oe) {
@@ -400,9 +393,10 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
+    @Override
     protected FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
-                                       final OrbitType orbitType, final PositionAngleType positionAngleType,
-                                       final AttitudeProvider attitudeProvider, final Frame frame) {
+                                               final OrbitType orbitType, final PositionAngleType positionAngleType,
+                                               final AttitudeProvider attitudeProvider, final Frame frame) {
         return new FieldOsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
     }
 
@@ -430,11 +424,13 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         }
 
         /** {@inheritDoc} */
+        @Override
         public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final T[] yDot,
                                                        final PropagationType type) {
             // the parameter type is ignored for the Numerical Propagator
 
             final T mass = y[6];
+            final T massRate = yDot == null ? mass.getField().getZero() : yDot[6];
             if (mass.getReal() <= 0.0) {
                 throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass.getReal());
             }
@@ -453,16 +449,17 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 }
 
                 final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(absPva, date, getFrame());
-                return new FieldSpacecraftState<>(absPva, attitude).withMass(mass);
+                return new FieldSpacecraftState<>(absPva, attitude).withMassRate(massRate).withMass(mass);
             } else {
                 // propagation uses regular orbits
                 final FieldOrbit<T> orbit       = superGetOrbitType().mapArrayToOrbit(y, yDot, super.getPositionAngleType(), date, getMu(), getFrame());
                 final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
-                return new FieldSpacecraftState<>(orbit, attitude).withMass(mass);
+                return new FieldSpacecraftState<>(orbit, attitude).withMassRate(massRate).withMass(mass);
             }
         }
 
         /** {@inheritDoc} */
+        @Override
         public void mapStateToArray(final FieldSpacecraftState<T> state, final T[] y, final T[] yDot) {
             if (superGetOrbitType() == null) {
                 // propagation uses absolute position-velocity-acceleration
@@ -474,17 +471,17 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 y[3] = v.getX();
                 y[4] = v.getY();
                 y[5] = v.getZ();
-                y[6] = state.getMass();
             }
             else {
                 superGetOrbitType().mapOrbitToArray(state.getOrbit(), super.getPositionAngleType(), y, yDot);
-                y[6] = state.getMass();
             }
+            y[6] = state.getMass();
         }
 
     }
 
     /** {@inheritDoc} */
+    @Override
     protected MainStateEquations<T> getMainStateEquations(final FieldODEIntegrator<T> integrator) {
         return new Main(integrator);
     }
@@ -540,7 +537,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 if (numberOfForces > 1) {
                     recomputingJacobian = true;
                 } else {
-                    recomputingJacobian = !(forceModels.get(0) instanceof NewtonianAttraction);
+                    recomputingJacobian = !(forceModels.getFirst() instanceof NewtonianAttraction);
                 }
             } else {
                 recomputingJacobian = false;
@@ -587,7 +584,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 if (mu.getReal() > 0) {
                     // velocity derivative is Newtonian acceleration
                     final FieldVector3D<T> position = currentState.getPosition();
-                    final T r2         = position.getNormSq();
+                    final T r2         = position.getNorm2Sq();
                     final T coeff      = r2.multiply(r2.sqrt()).reciprocal().negate().multiply(mu);
                     yDot[3] = yDot[3].add(coeff.multiply(position.getX()));
                     yDot[4] = yDot[4].add(coeff.multiply(position.getY()));
@@ -620,70 +617,6 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             yDot[6] = yDot[6].add(q);
         }
 
-    }
-
-    /** Estimate tolerance vectors for integrators.
-     * <p>
-     * The errors are estimated from partial derivatives properties of orbits,
-     * starting from a scalar position error specified by the user.
-     * Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
-     * we get at constant energy (i.e. on a Keplerian trajectory):
-     * <pre>
-     * V r² |dV| = mu |dr|
-     * </pre>
-     * So we deduce a scalar velocity error consistent with the position error.
-     * From here, we apply orbits Jacobians matrices to get consistent errors
-     * on orbital parameters.
-     * <p>
-     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
-     * are only local estimates, not global ones. So some care must be taken when using
-     * these tolerances. Setting 1mm as a position error does NOT mean the tolerances
-     * will guarantee a 1mm error position after several orbits integration.
-     * </p>
-     * @param dP user specified position error
-     * @param orbit reference orbit
-     * @param type propagation type for the meaning of the tolerance vectors elements
-     * (it may be different from {@code orbit.getType()})
-     * @return a two rows array, row 0 being the absolute tolerance error and row 1
-     * being the relative tolerance error
-     * @param <T> elements type
-     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit,
-                                                                            final OrbitType type) {
-
-        return ToleranceProvider.getDefaultToleranceProvider(dP.getReal()).getTolerances(orbit, type, PositionAngleType.TRUE);
-    }
-
-    /** Estimate tolerance vectors for integrators when propagating in orbits.
-     * <p>
-     * The errors are estimated from partial derivatives properties of orbits,
-     * starting from scalar position and velocity errors specified by the user.
-     * <p>
-     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
-     * are only local estimates, not global ones. So some care must be taken when using
-     * these tolerances. Setting 1mm as a position error does NOT mean the tolerances
-     * will guarantee a 1mm error position after several orbits integration.
-     * </p>
-     * @param <T> elements type
-     * @param dP user specified position error
-     * @param dV user specified velocity error
-     * @param orbit reference orbit
-     * @param type propagation type for the meaning of the tolerance vectors elements
-     * (it may be different from {@code orbit.getType()})
-     * @return a two rows array, row 0 being the absolute tolerance error and row 1
-     * being the relative tolerance error
-     * @since 10.3
-     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
-                                                                            final FieldOrbit<T> orbit,
-                                                                            final OrbitType type) {
-
-        return ToleranceProvider.of(CartesianToleranceProvider.of(dP.getReal(), dV.getReal(),
-                CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
 }

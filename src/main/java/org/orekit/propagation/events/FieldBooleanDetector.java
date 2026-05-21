@@ -24,10 +24,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.BooleanEventFunction;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
@@ -68,26 +69,21 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
     /** Original detectors: the operands. */
     private final List<FieldEventDetector<T>> detectors;
 
-    /** The composition function. Should be associative for predictable behavior. */
-    private final Operator operator;
-
     /**
      * Private constructor with all the parameters.
      *
      * @param detectors    the operands.
-     * @param operator     reduction operator to apply to value of the g function of the
-     *                     operands.
+     * @param eventFunction reduced event function.
      * @param detectionSettings event detection settings.
      * @param newHandler   event handler.
-     * @since 13.0
+     * @since 14.0
      */
     protected FieldBooleanDetector(final List<FieldEventDetector<T>> detectors,
-                                   final Operator operator,
+                                   final BooleanEventFunction eventFunction,
                                    final FieldEventDetectionSettings<T> detectionSettings,
                                    final FieldEventHandler<T> newHandler) {
-        super(detectionSettings, newHandler);
+        super(eventFunction, detectionSettings, newHandler);
         this.detectors = detectors;
-        this.operator = operator;
     }
 
     /**
@@ -135,14 +131,17 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
      * @see #orCombine(Collection)
      * @see #notCombine(FieldEventDetector)
      */
-    @SuppressWarnings("unchecked")
     public static <T extends CalculusFieldElement<T>> FieldBooleanDetector<T> andCombine(final Collection<? extends FieldEventDetector<T>> detectors) {
+        @SuppressWarnings("unchecked")
+        final FieldAdaptableInterval<T> fai = FieldAdaptableInterval.of(Double.POSITIVE_INFINITY,
+                                                                        detectors.stream()
+                                                                                 .map(FieldEventDetector::getMaxCheckInterval)
+                                                                                 .toArray(FieldAdaptableInterval[]::new));
+        final T       threshold = detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get();
+        final Integer maxIters  = detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get();
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
-                                          Operator.AND,
-                                          new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
-                                                  .map(FieldEventDetector::getMaxCheckInterval).toArray(FieldAdaptableInterval[]::new)),
-                                          detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get(),
-                                          detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
+                                          BooleanEventFunction.andCombine(detectors.stream().map(FieldEventDetector::getEventFunction).collect(Collectors.toList())),
+                                          new FieldEventDetectionSettings<>(fai, threshold, maxIters),
                                           new FieldContinueOnEvent<>());
     }
 
@@ -191,14 +190,17 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
      * @see #andCombine(Collection)
      * @see #notCombine(FieldEventDetector)
      */
-    @SuppressWarnings("unchecked")
     public static <T extends CalculusFieldElement<T>> FieldBooleanDetector<T> orCombine(final Collection<? extends FieldEventDetector<T>> detectors) {
+        @SuppressWarnings("unchecked")
+        final FieldAdaptableInterval<T> fai = FieldAdaptableInterval.of(Double.POSITIVE_INFINITY,
+                                                                        detectors.stream()
+                                                                                 .map(FieldEventDetector::getMaxCheckInterval)
+                                                                                 .toArray(FieldAdaptableInterval[]::new));
+        final T       threshold = detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get();
+        final Integer maxIters  = detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get();
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
-                                          Operator.OR,
-                                          new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
-                                                  .map(FieldEventDetector::getMaxCheckInterval).toArray(FieldAdaptableInterval[]::new)),
-                                          detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get(),
-                                          detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
+                BooleanEventFunction.orCombine(detectors.stream().map(FieldEventDetector::getEventFunction).collect(Collectors.toList())),
+                                          new FieldEventDetectionSettings<>(fai, threshold, maxIters),
                                           new FieldContinueOnEvent<>());
     }
 
@@ -223,34 +225,15 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
         return new FieldNegateDetector<>(detector);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnTimeOnly() {
-        return getDetectors().stream().allMatch(FieldEventDetector::dependsOnTimeOnly);
-    }
-
     @Override
     public T g(final FieldSpacecraftState<T> s) {
-        // can't use stream/lambda here because g(s) throws a checked exception
-        // so write out and combine the map and reduce loops
-        T ret = s.getDate().getField().getZero().newInstance(Double.NaN); // return value
-        boolean first = true;
-        for (final FieldEventDetector<T> detector : detectors) {
-            if (first) {
-                ret = detector.g(s);
-                first = false;
-            } else {
-                ret = operator.combine(ret, detector.g(s));
-            }
-        }
-        // return the result of applying the operator to all operands
-        return ret;
+        return getEventFunction().value(s);
     }
 
     @Override
     protected FieldBooleanDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                              final FieldEventHandler<T> newHandler) {
-        return new FieldBooleanDetector<>(detectors, operator, detectionSettings, newHandler);
+        return new FieldBooleanDetector<>(detectors, (BooleanEventFunction) getEventFunction(), detectionSettings, newHandler);
     }
 
     @Override
@@ -284,41 +267,6 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
      */
     public List<FieldEventDetector<T>> getDetectors() {
         return new ArrayList<>(detectors);
-    }
-
-    /** Local class for operator. */
-    private enum Operator {
-
-        /** And operator. */
-        AND() {
-
-            @Override
-            /** {@inheritDoc} */
-            public <T extends CalculusFieldElement<T>> T combine(final T g1, final T g2) {
-                return FastMath.min(g1, g2);
-            }
-
-        },
-
-        /** Or operator. */
-        OR() {
-
-            @Override
-            /** {@inheritDoc} */
-            public <T extends CalculusFieldElement<T>> T combine(final T g1, final T g2) {
-                return FastMath.max(g1, g2);
-            }
-
-        };
-
-        /** Combine two g functions evaluations.
-         * @param <T> type of the field elements
-         * @param g1 first evaluation
-         * @param g2 second evaluation
-         * @return combined evaluation
-         */
-        public abstract <T extends CalculusFieldElement<T>> T combine(T g1, T g2);
-
     }
 
     /** Comparator for field elements.

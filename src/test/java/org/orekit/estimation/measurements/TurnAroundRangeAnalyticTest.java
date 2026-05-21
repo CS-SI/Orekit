@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -93,7 +93,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    7.2e-9, 2.5e-8, 3.5e-7, 8.0e-5, 3.0e-4, 7.3e-3);
+                                    1.2e-8, 4.4e-8, 6.3e-7, 8.0e-5, 3.4e-4, 1.4e-2);
     }
 
     /**
@@ -129,7 +129,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    3.1e-8, 9.9e-8, 1.8e-6, 8.5e-5, 3.2e-4, 1.2e-2);
+                                    3.1e-8, 9.9e-8, 1.8e-6, 8.5e-5, 3.4e-4, 1.4e-2);
     }
 
     /**
@@ -226,7 +226,7 @@ public class TurnAroundRangeAnalyticTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -271,8 +271,8 @@ public class TurnAroundRangeAnalyticTest {
             if (printResults) {
                 final AbsoluteDate measurementDate = measurement.getDate();
 
-                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
-                String secondaryStationName = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryObserver().getName();
+                String secondaryStationName = ((TurnAroundRange) measurement).getSecondaryObserver().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17.6f  %17.6f  %13.6e %13.6e%n",
                                   primaryStationName, secondaryStationName, measurementDate, date,
                                  TARobserved, TARestimated,
@@ -301,14 +301,14 @@ public class TurnAroundRangeAnalyticTest {
 
         // Assert statistical errors
         Assertions.assertEquals(0.0, absErrorsMedian, 8.5e-08);
-        Assertions.assertEquals(0.0, absErrorsMin,    1.1e-07);
+        Assertions.assertEquals(0.0, absErrorsMin,    9.7e-08);
         Assertions.assertEquals(0.0, absErrorsMax,    2.0e-07);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.1e-15);
         Assertions.assertEquals(0.0, relErrorsMax,    1.2e-14);
  
         // Test measurement type
         final TurnAroundRangeAnalytic taRangeAnalytic =
-                        new TurnAroundRangeAnalytic((TurnAroundRange) measurements.get(0));
+                        new TurnAroundRangeAnalytic((TurnAroundRange) measurements.getFirst());
         Assertions.assertEquals(TurnAroundRangeAnalytic.MEASUREMENT_TYPE, taRangeAnalytic.getMeasurementType());
     }
 
@@ -328,7 +328,7 @@ public class TurnAroundRangeAnalyticTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range2 measurements
@@ -427,8 +427,8 @@ public class TurnAroundRangeAnalyticTest {
             }
             // Print results on the console ? Print the Jacobian
             if (printResults) {
-                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
-                String secondaryStationName  = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryObserver().getName();
+                String secondaryStationName  = ((TurnAroundRange) measurement).getSecondaryObserver().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
                                 "%10.3e  %10.3e  %10.3e  " +
                                 "%10.3e  %10.3e  %10.3e  " +
@@ -484,18 +484,18 @@ public class TurnAroundRangeAnalyticTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect TAR measurements
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    primaryStation = entry.getKey();
             final GroundStation    secondaryStation  = entry.getValue();
-            primaryStation.getClockOffsetDriver().setSelected(false);
+            primaryStation.getClockBiasDriver().setSelected(false);
             primaryStation.getEastOffsetDriver().setSelected(true);
             primaryStation.getNorthOffsetDriver().setSelected(true);
             primaryStation.getZenithOffsetDriver().setSelected(true);
-            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getClockBiasDriver().setSelected(false);
             secondaryStation.getEastOffsetDriver().setSelected(true);
             secondaryStation.getNorthOffsetDriver().setSelected(true);
             secondaryStation.getZenithOffsetDriver().setSelected(true);
@@ -540,8 +540,8 @@ public class TurnAroundRangeAnalyticTest {
             }
 
             // parameter corresponding to station position offset
-            final GroundStation primaryStationParameter = ((TurnAroundRange) measurement).getPrimaryStation();
-            final GroundStation secondaryStationParameter = ((TurnAroundRange) measurement).getSecondaryStation();
+            final GroundStation primaryStationParameter = (GroundStation) ((TurnAroundRange) measurement).getPrimaryObserver();
+            final GroundStation secondaryStationParameter = (GroundStation) ((TurnAroundRange) measurement).getSecondaryObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

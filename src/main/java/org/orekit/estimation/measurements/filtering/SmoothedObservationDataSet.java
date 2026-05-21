@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,10 +29,10 @@ import org.orekit.files.rinex.observation.ObservationDataSet;
 public class SmoothedObservationDataSet {
 
     /** Smoothed observation data. */
-    private ObservationData smoothedObsData;
+    private final ObservationData smoothedObsData;
 
     /** Original observation data set used to compute the smoothed observation data. */
-    private ObservationDataSet obsDataSet;
+    private final ObservationDataSet obsDataSet;
 
     /**
      * Simple constructor.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,348 +16,638 @@
  */
 package org.orekit.control.heuristics.lambert;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.KeplerianMotionCartesianUtility;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVCoordinates;
 
 /**
- * Lambert solver, assuming Keplerian motion.
+ * Lambert position-based Initial Orbit Determination (IOD) algorithm, assuming Keplerian motion.
+ * The method is also used for trajectory design, specially in interplanetary missions.
+ * This solver combines Dario Izzo's algorithm with Gim Der design to find all possible solutions.
  * <p>
  * An orbit is determined from two position vectors.
- * </p>
- * <p>
+ *
  * References:
  *  Battin, R.H., An Introduction to the Mathematics and Methods of Astrodynamics, AIAA Education, 1999.
  *  Lancaster, E.R. and Blanchard, R.C., A Unified Form of Lambert’s Theorem, Goddard Space Flight Center, 1968.
+ *  Dario Izzo. Revisiting Lambert’s problem. Celestial Mechanics and Dynamical Astronomy, 2015. https://arxiv.org/abs/1403.2705
+ *  Gim J. Der. The Superior Lambert Algorithm. Advanced Maui Optical and Space Surveillance Technologies, 2011. https://amostech.com/TechnicalPapers/2011/Poster/DER.pdf
  * </p>
  * @author Joris Olympio
  * @author Romain Serra
- * @see LambertBoundaryConditions
- * @see LambertBoundaryVelocities
- * @since 13.1
+ * @author Rafael Ayala
+ * @since 14.0
  */
 public class LambertSolver {
 
     /** gravitational constant. */
     private final double mu;
 
-    /** Creator.
+    /** parameters for the Householder solver. */
+    private final HouseholderParameters householderParameters;
+
+    /** auxiliary variable x. */
+    private double x;
+
+    /** auxiliary variable y. */
+    private double y;
+
+    /** auxiliary variable sigma. */
+    private double sigma;
+
+    /** auxiliary variable rho. */
+    private double rho;
+
+    /** auxiliary variable zeta. */
+    private double zeta;
+
+    /** auxiliary variable gamma. */
+    private double gamma;
+
+    /** time of flight variable. */
+    private double tau;
+
+    /** time of flight for minimum energy path variable. */
+    private double tauME;
+
+    /** geometry vector ir1. */
+    private Vector3D ir1;
+
+    /** geometry vector ir2. */
+    private Vector3D ir2;
+
+    /** geometry vector it1. */
+    private Vector3D it1;
+
+    /** geometry vector it2. */
+    private Vector3D it2;
+
+    /** orbit type. */
+    private LambertOrbitType orbitType;
+
+    /** path type for the shortest transfer with 0 complete revolutions. */
+    private LambertPathType shortestPathType;
+
+    /** maximum possible number of revolutions for the given time of transfer. */
+    private int nMax;
+
+    /** Constructor from Householder parameters object.
+     *
+     * @param mu gravitational constant
+     * @param householderParameters parameters for the Householder solver
+     */
+    public LambertSolver(final double mu, final HouseholderParameters householderParameters) {
+        this.mu = mu;
+        this.householderParameters = householderParameters;
+        this.x = 0.0;
+        this.y = 0.0;
+        this.sigma = 0.0;
+        this.rho = 0.0;
+        this.zeta = 0.0;
+        this.gamma = 0.0;
+        this.tau = 0.0;
+        this.tauME = 0.0;
+        this.ir1 = Vector3D.ZERO;
+        this.ir2 = Vector3D.ZERO;
+        this.it1 = Vector3D.ZERO;
+        this.it2 = Vector3D.ZERO;
+        this.orbitType = LambertOrbitType.ELLIPTIC;
+        this.shortestPathType = LambertPathType.LOW_PATH;
+    }
+
+    /** Constructor from direct Householder parameter values.
+     *
+     * @param mu gravitational constant
+     * @param householderMaxIterations maximum number of iterations for the Householder solver
+     * @param householderAtol absolute tolerance for the Householder solver
+     * @param householderRtol relative tolerance for the Householder solver
+     */
+    public LambertSolver(final double mu, final int householderMaxIterations,
+                         final double householderAtol, final double householderRtol) {
+        this(mu, new HouseholderParameters(householderMaxIterations, householderAtol, householderRtol));
+    }
+
+    /** Constructor with default Householder solver parameters.
      *
      * @param mu gravitational constant
      */
     public LambertSolver(final double mu) {
-        this.mu = mu;
+        this(mu, 2000, 1.0e-5, 1.0e-7);
     }
 
-    /** Solve for the corresponding velocity vectors given two position vectors and a duration.
-     * <p>
-     * The logic for setting {@code posigrade} and {@code nRev} is that the
-     * sweep angle Δυ travelled by the object between {@code t1} and {@code t2} is
-     * 2π {@code nRev +1} - α if {@code posigrade} is false and 2π {@code nRev} + α
-     * if {@code posigrade} is true, where α is the separation angle between
-     * {@code p1} and {@code p2}, which is always computed between 0 and π
-     * (because in 3D without a normal reference, vector angles cannot go past π).
-     * </p>
-     * <p>
-     * This implies that {@code posigrade} should be set to true if {@code p2} is
-     * located in the half orbit starting at {@code p1} and it should be set to
-     * false if {@code p2} is located in the half orbit ending at {@code p1},
-     * regardless of the number of periods between {@code t1} and {@code t2},
-     * and {@code nRev} should be set accordingly.
-     * </p>
-     * <p>
-     * As an example, if {@code t2} is less than half a period after {@code t1},
-     * then {@code posigrade} should be {@code true} and {@code nRev} should be 0.
-     * If {@code t2} is more than half a period after {@code t1} but less than
-     * one period after {@code t1}, {@code posigrade} should be {@code false} and
-     * {@code nRev} should be 0.
-     * </p>
-     * <p>
-     * If solving fails completely, null is returned.
-     * If only the computation of terminal velocity fails, a partial pair of velocities is returned (with some NaNs).
-     * </p>
+    /** Lambert's solver.
      * @param posigrade flag indicating the direction of motion
-     * @param nRev      number of revolutions
-     * @param boundaryConditions Lambert problem boundary conditions
-     * @return boundary velocity vectors
+     * @param boundaryConditions LambertBoundaryConditions holding the boundary conditions
+     * @return a list of solutions
      */
-    public LambertBoundaryVelocities solve(final boolean posigrade, final int nRev,
-                                           final LambertBoundaryConditions boundaryConditions) {
-        final Vector3D p1 = boundaryConditions.getInitialPosition();
-        final Vector3D p2 = boundaryConditions.getTerminalPosition();
-        final double r1 = p1.getNorm();
-        final double r2 = p2.getNorm();
-        final double tau = boundaryConditions.getTerminalDate().durationFrom(boundaryConditions.getInitialDate());
-
+    public List<LambertSolution> solve(final boolean posigrade,
+                           final LambertBoundaryConditions boundaryConditions) {
+        final int maxIterations = this.householderParameters.getMaxIterations();
+        final double atol = this.householderParameters.getAbsoluteTolerance();
+        final double rtol = this.householderParameters.getRelativeTolerance();
+        initialSetup(posigrade, boundaryConditions);
         // deal with backward case recursively
         if (tau < 0.0) {
             final LambertBoundaryConditions backwardConditions = new LambertBoundaryConditions(boundaryConditions.getTerminalDate(),
                     boundaryConditions.getTerminalPosition(), boundaryConditions.getInitialDate(), boundaryConditions.getInitialPosition(),
                     boundaryConditions.getReferenceFrame());
-            final LambertBoundaryVelocities solutionForward = solve(posigrade, nRev, backwardConditions);
-            if (solutionForward != null) {
-                return new LambertBoundaryVelocities(solutionForward.getTerminalVelocity(),
-                        solutionForward.getInitialVelocity());
-            } else {
-                return null;
+            final List<LambertSolution> solutionsForward = solve(posigrade, backwardConditions);
+            final ArrayList<LambertSolution> solutionsForwardReversed = new ArrayList<>();
+            for (final LambertSolution solutionForward : solutionsForward) {
+                final LambertSolution reversed = new LambertSolution(solutionForward.getNRev(),
+                        solutionForward.getPathType(), solutionForward.getOrbitType(),
+                        posigrade,
+                        boundaryConditions,
+                        solutionForward.getBoundaryVelocities().getTerminalVelocity(),
+                        solutionForward.getBoundaryVelocities().getInitialVelocity());
+                solutionsForwardReversed.add(reversed);
+            }
+            return solutionsForwardReversed;
+        }
+        final ArrayList<LambertSolution> solutions = new ArrayList<>();
+        boolean lowPath = shortestPathType.equals(LambertPathType.LOW_PATH);
+        double x0 = initialGuessX(tau, sigma, 0, lowPath);
+        x = householderSolver(x0, tau, sigma, 0, maxIterations, atol, rtol);
+        y = calculateY(x, sigma);
+        final Vector3D p1 = boundaryConditions.getInitialPosition();
+        final Vector3D p2 = boundaryConditions.getTerminalPosition();
+        final double r1 = p1.getNorm();
+        final double r2 = p2.getNorm();
+        double[] vrvt = reconstructVrVt(x, y, r1, r2, sigma, gamma, rho, zeta);
+        Vector3D v1 = ir1.scalarMultiply(vrvt[0]).add(it1.scalarMultiply(vrvt[1]));
+        Vector3D v2 = ir2.scalarMultiply(vrvt[2]).add(it2.scalarMultiply(vrvt[3]));
+        // we create the solution and add it to the list
+        LambertSolution solution = new LambertSolution(0, shortestPathType, orbitType, posigrade, boundaryConditions, v1, v2);
+        solutions.add(solution);
+        if (nMax >= 1) {
+            // then we need to iterate over every value from 1 to nMax, both included:
+            for (int nRevs = 1; nRevs <= nMax; nRevs++) {
+                // first for the low path
+                lowPath = true;
+                x0 = initialGuessX(tau, sigma, nRevs, lowPath);
+                x = householderSolver(x0, tau, sigma, nRevs, maxIterations, atol, rtol);
+                y = calculateY(x, sigma);
+                vrvt = reconstructVrVt(x, y, r1, r2, sigma, gamma, rho, zeta);
+                v1 = ir1.scalarMultiply(vrvt[0]).add(it1.scalarMultiply(vrvt[1]));
+                v2 = ir2.scalarMultiply(vrvt[2]).add(it2.scalarMultiply(vrvt[3]));
+                // we create the solution and add it to the list
+                solution = new LambertSolution(nRevs, LambertPathType.LOW_PATH, orbitType, posigrade, boundaryConditions, v1, v2);
+                solutions.add(solution);
+                // and now for the high path
+                lowPath = false;
+                x0 = initialGuessX(tau, sigma, nRevs, lowPath);
+                x = householderSolver(x0, tau, sigma, nRevs, maxIterations, atol, rtol);
+                y = calculateY(x, sigma);
+                vrvt = reconstructVrVt(x, y, r1, r2, sigma, gamma, rho, zeta);
+                v1 = ir1.scalarMultiply(vrvt[0]).add(it1.scalarMultiply(vrvt[1]));
+                v2 = ir2.scalarMultiply(vrvt[2]).add(it2.scalarMultiply(vrvt[3]));
+                // we create the solution and add it to the list
+                solution = new LambertSolution(nRevs, LambertPathType.HIGH_PATH, orbitType, posigrade, boundaryConditions, v1, v2);
+                solutions.add(solution);
             }
         }
+        return solutions;
+    }
 
-        // normalizing constants
-        final double R = FastMath.max(r1, r2); // in m
-        final double V = FastMath.sqrt(mu / R);  // in m/s
-        final double T = R / V; // in seconds
+    /** Lambert's solver, with user provided number of complete revolutions.
+     * @param posigrade flag indicating the direction of motion
+     * @param nRevs number of complete revolutions
+     * @param boundaryConditions LambertBoundaryConditions holding the boundary conditions
+     * @return  a list of solutions
+     */
+    public List<LambertSolution> solve(final boolean posigrade, final int nRevs,
+                           final LambertBoundaryConditions boundaryConditions) {
+        final int maxIterations = this.householderParameters.getMaxIterations();
+        final double atol = this.householderParameters.getAbsoluteTolerance();
+        final double rtol = this.householderParameters.getRelativeTolerance();
+        initialSetup(posigrade, boundaryConditions);
+        // deal with backward case recursively
+        if (tau < 0.0) {
+            final LambertBoundaryConditions backwardConditions = new LambertBoundaryConditions(boundaryConditions.getTerminalDate(),
+                    boundaryConditions.getTerminalPosition(), boundaryConditions.getInitialDate(), boundaryConditions.getInitialPosition(),
+                    boundaryConditions.getReferenceFrame());
+            final List<LambertSolution> solutionsForward = solve(posigrade, backwardConditions);
+            final ArrayList<LambertSolution> solutionsForwardReversed = new ArrayList<>();
+            for (final LambertSolution solutionForward : solutionsForward) {
+                final LambertSolution reversed = new LambertSolution(solutionForward.getNRev(),
+                        solutionForward.getPathType(), solutionForward.getOrbitType(),
+                        posigrade,
+                        boundaryConditions,
+                        solutionForward.getBoundaryVelocities().getTerminalVelocity(),
+                        solutionForward.getBoundaryVelocities().getInitialVelocity());
+                solutionsForwardReversed.add(reversed);
+            }
+            return solutionsForwardReversed;
+        }
+        if (nRevs > nMax) {
+            throw new OrekitException(OrekitMessages.LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS, nRevs, nMax);
+        }
+        final ArrayList<LambertSolution> solutions = new ArrayList<>();
+        final Vector3D p1 = boundaryConditions.getInitialPosition();
+        final Vector3D p2 = boundaryConditions.getTerminalPosition();
+        final double r1 = p1.getNorm();
+        final double r2 = p2.getNorm();
+        double x0;
+        double[] vrvt;
+        Vector3D v1;
+        Vector3D v2;
+        LambertSolution solution;
+        if (nRevs == 0) {
+            // then there is a single solution
+            final boolean lowPath = shortestPathType.equals(LambertPathType.LOW_PATH);
+            x0 = initialGuessX(tau, sigma, 0, lowPath);
+            x = householderSolver(x0, tau, sigma, 0, maxIterations, atol, rtol);
+            y = calculateY(x, sigma);
+            vrvt = reconstructVrVt(x, y, r1, r2, sigma, gamma, rho, zeta);
+            v1 = ir1.scalarMultiply(vrvt[0]).add(it1.scalarMultiply(vrvt[1]));
+            v2 = ir2.scalarMultiply(vrvt[2]).add(it2.scalarMultiply(vrvt[3]));
+            // we create the single solution and add it to the list
+            solution = new LambertSolution(0, shortestPathType, orbitType, posigrade, boundaryConditions, v1, v2);
+            solutions.add(solution);
+        } else {
+            // then we have two solutions, one for the high path and one for the low path
+            // first for the low path
+            x0 = initialGuessX(tau, sigma, nRevs, true);
+            x = householderSolver(x0, tau, sigma, nRevs, maxIterations, atol, rtol);
+            y = calculateY(x, sigma);
+            vrvt = reconstructVrVt(x, y, r1, r2, sigma, gamma, rho, zeta);
+            v1 = ir1.scalarMultiply(vrvt[0]).add(it1.scalarMultiply(vrvt[1]));
+            v2 = ir2.scalarMultiply(vrvt[2]).add(it2.scalarMultiply(vrvt[3]));
+            solution = new LambertSolution(nRevs, LambertPathType.LOW_PATH, orbitType, posigrade, boundaryConditions, v1, v2);
+            solutions.add(solution);
+            // and now for the high path
+            x0 = initialGuessX(tau, sigma, nRevs, false);
+            x = householderSolver(x0, tau, sigma, nRevs, maxIterations, atol, rtol);
+            y = calculateY(x, sigma);
+            vrvt = reconstructVrVt(x, y, r1, r2, sigma, gamma, rho, zeta);
+            v1 = ir1.scalarMultiply(vrvt[0]).add(it1.scalarMultiply(vrvt[1]));
+            v2 = ir2.scalarMultiply(vrvt[2]).add(it2.scalarMultiply(vrvt[3]));
+            solution = new LambertSolution(nRevs, LambertPathType.HIGH_PATH, orbitType, posigrade, boundaryConditions, v1, v2);
+            solutions.add(solution);
+        }
+        return solutions;
+    }
 
-        // sweep angle
-        double dth = Vector3D.angle(p1, p2);
-        // compute the number of revolutions
+    /** Initial set up of geometry and auxiliary variables.
+     * @param posigrade flag indicating the direction of motion
+     * @param boundaryConditions LambertBoundaryConditions holding the boundary conditions
+     */
+    public void initialSetup(final boolean posigrade,
+                             final LambertBoundaryConditions boundaryConditions) {
+        final AbsoluteDate t1 = boundaryConditions.getInitialDate();
+        final AbsoluteDate t2 = boundaryConditions.getTerminalDate();
+        final Vector3D p1 = boundaryConditions.getInitialPosition();
+        final Vector3D p2 = boundaryConditions.getTerminalPosition();
+        final double r1 = p1.getNorm();
+        final double r2 = p2.getNorm();
+        final double timeDiff = t2.durationFrom(t1);
+        final double distance = p2.subtract(p1).getNorm();
+        final double s = (r1 + r2 + distance) / 2.0;
+        ir1 = p1.normalize();
+        ir2 = p2.normalize();
+        final Vector3D ih = ir1.crossProduct(ir2).normalize();
+        sigma = FastMath.sqrt(1.0 - FastMath.min(1.0, distance / s));
+        final int sign = (int) FastMath.signum(ih.getZ());
+        if (sign < 0) {
+            sigma *= -1;
+            it1 = ir1.crossProduct(ih);
+            it2 = ir2.crossProduct(ih);
+        } else {
+            it1 = ih.crossProduct(ir1);
+            it2 = ih.crossProduct(ir2);
+        }
         if (!posigrade) {
-            dth = 2 * FastMath.PI - dth;
+            sigma *= -1;
+            it1 = it1.negate();
+            it2 = it2.negate();
         }
-
-        // call Lambert's problem solver in the orbital plane, in the R-T frame
-        final Vector2D vDep = solveNormalized2D(r1 / R, r2 / R, dth, tau / T, nRev);
-
-        if (vDep != Vector2D.NaN) {
-            final double[] Vdep = vDep.toArray();
-            // basis vectors
-            // normal to the orbital arc plane
-            final Vector3D Pn = p1.crossProduct(p2);
-            // perpendicular to the radius vector, in the orbital arc plane
-            final Vector3D Pt = Pn.crossProduct(p1);
-
-            // tangential velocity norm
-            double RT = Pt.getNorm();
-            if (!posigrade) {
-                RT = -RT;
-            }
-
-            // velocity vector at P1
-            final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1, V * Vdep[1] / RT, Pt);
-
-            // propagate to get terminal velocity
-            Vector3D terminalVelocity;
-            try {
-                final PVCoordinates pv2 = KeplerianMotionCartesianUtility.predictPositionVelocity(tau, p1, Vel1, mu);
-                terminalVelocity = pv2.getVelocity();
-            } catch (final MathIllegalStateException exception) {  // failure can happen for hyperbolic orbits
-                terminalVelocity = Vector3D.NaN;
-            }
-
-            // form output
-            return new LambertBoundaryVelocities(Vel1, terminalVelocity);
+        tauME = FastMath.acos(sigma) + sigma * FastMath.sqrt(1.0 - sigma * sigma);
+        tau = FastMath.sqrt(2 * mu / (s * s * s)) * timeDiff;
+        gamma = FastMath.sqrt(mu * s / 2.0);
+        rho = (r1 - r2) / distance;
+        // note that the following variable zeta is sigma from Izzo's algorithm, and sigma is lambda
+        zeta = FastMath.sqrt(1.0 - rho * rho);
+        final double tauParabolic = 2.0 / 3.0 * (1.0 - (sigma * sigma * sigma));
+        final double diffTauParabolic = tau - tauParabolic;
+        if (FastMath.abs(diffTauParabolic) <= Precision.EPSILON) {
+            orbitType = LambertOrbitType.PARABOLIC;
+        } else if (diffTauParabolic > 0) {
+            orbitType = LambertOrbitType.ELLIPTIC;
+        } else {
+            orbitType = LambertOrbitType.HYPERBOLIC;
         }
-
-        return null;
+        nMax = orbitType.equals(LambertOrbitType.ELLIPTIC) ? (int) FastMath.floor(tau / FastMath.PI) : 0;
+        // when tau falls below the time of flight at x = 0 for nMax revolutions, the actual
+        // minimum time of flight may exceed tau so nMax has to be adjusted (Algorithm 2 in Izzo's paper)
+        if (nMax > 0 && tau < tauME + nMax * FastMath.PI) {
+            final double tauMin = calculateTauMin(sigma, nMax,
+                    householderParameters.getMaxIterations(),
+                    householderParameters.getAbsoluteTolerance(),
+                    householderParameters.getRelativeTolerance());
+            if (tauMin > tau) {
+                nMax--;
+            }
+        }
+        if (FastMath.abs(tauME - tau) <= Precision.EPSILON) {
+            shortestPathType = LambertPathType.MIN_ENERGY_PATH;
+        } else if (tau < tauME) {
+            shortestPathType = LambertPathType.LOW_PATH;
+        } else {
+            shortestPathType = LambertPathType.HIGH_PATH;
+        }
     }
 
-    /** Lambert's solver for the historical, planar problem.
-     * Assume mu=1.
-     *
-     * @param r1 radius 1
-     * @param r2  radius 2
-     * @param dth sweep angle
-     * @param tau time of flight
-     * @param mRev number of revs
-     * @return velocity at departure in (T, N) basis. Is Vector2D.NaN if solving fails
-     */
-    public static Vector2D solveNormalized2D(final double r1, final double r2, final double dth, final double tau,
-                                             final int mRev) {
-        // decide whether to use the left or right branch (for multi-revolution
-        // problems), and the long- or short way.
-        final boolean leftbranch = dth < FastMath.PI;
-        int longway = 1;
-        if (dth > FastMath.PI) {
-            longway = -1;
-        }
-
-        final int m = FastMath.abs(mRev);
-        final double rtof = FastMath.abs(tau);
-
-        // non-dimensional chord ||r2-r1||
-        final double chord = FastMath.sqrt(r1 * r1 + r2 * r2 - 2 * r1 * r2 * FastMath.cos(dth));
-
-        // non-dimensional semi-perimeter of the triangle
-        final double speri = 0.5 * (r1 + r2 + chord);
-
-        // minimum energy ellipse semi-major axis
-        final double minSma = speri / 2.;
-
-        // lambda parameter (Eq 7.6)
-        final double lambda = longway * FastMath.sqrt(1 - chord / speri);
-
-        // reference tof value for the Newton solver
-        final double logt = FastMath.log(rtof);
-
-        // initialisation of the iterative root finding process (secant method)
-        // initial values
-        //  -1 < x < 1  =>  Elliptical orbits
-        //  x = 1           Parabolic orbit
-        //  x > 1           Hyperbolic orbits
-        final double in1;
-        final double in2;
-        double x1;
-        double x2;
-        if (m == 0) {
-            // one revolution, one solution. Define the left and right asymptotes.
-            in1 = -0.6523333;
-            in2 = 0.6523333;
-            x1   = FastMath.log(1 + in1);
-            x2   = FastMath.log(1 + in2);
-        } else {
-            // select initial values, depending on the branch
-            if (!leftbranch) {
-                in1 = -0.523334;
-                in2 = -0.223334;
+    /** Initial guess for x0.
+    * @param tau value of tau
+    * @param sigma value of sigma
+    * @param nRevs number of complete revolutions
+    * @param lowPath flag indicating low path
+    * @return initial guess for x0
+    */
+    public static double initialGuessX(final double tau, final double sigma,
+                                  final int nRevs, final boolean lowPath) {
+        final double x0;
+        if (nRevs == 0) {
+            final double tau0 = FastMath.acos(sigma) + sigma * FastMath.sqrt(1.0 - sigma * sigma);
+            final double tau1 = 2.0 * (1.0 - (sigma * sigma * sigma)) / 3.0;
+            if (tau >= tau0) {
+                x0 = FastMath.pow(tau0 / tau, 2.0 / 3.0) - 1.0;
+            } else if (tau < tau1) {
+                x0 = 2.5 * tau1 / tau * (tau1 - tau) / (1.0 - FastMath.pow(sigma, 5)) + 1.0;
             } else {
-                in1 = 0.723334;
-                in2 = 0.523334;
+                x0 = FastMath.exp(FastMath.log(tau / tau0) / FastMath.log(tau1 / tau0) * FastMath.log(2.0)) - 1.0;
             }
-            x1 = FastMath.tan(in1 * 0.5 * FastMath.PI);
-            x2 = FastMath.tan(in2 * 0.5 * FastMath.PI);
-        }
-
-        // initial estimates for the tof
-        final double tof1 = timeOfFlight(in1, longway, m, minSma, speri, chord);
-        final double tof2 = timeOfFlight(in2, longway, m, minSma, speri, chord);
-
-        // initial bounds for y
-        double y1;
-        double y2;
-        if (m == 0) {
-            y1 = FastMath.log(tof1) - logt;
-            y2 = FastMath.log(tof2) - logt;
         } else {
-            y1 = tof1 - rtof;
-            y2 = tof2 - rtof;
-        }
-
-        // Solve for x with the secant method
-        double err = 1e20;
-        int iterations = 0;
-        final double tol = 1e-13;
-        final int maxiter = 50;
-        double xnew = 0;
-        while (err > tol && iterations < maxiter) {
-            // new x
-            xnew = (x1 * y2 - y1 * x2) / (y2 - y1);
-
-            // evaluate new time of flight
-            final double x;
-            if (m == 0) {
-                x = FastMath.exp(xnew) - 1;
+            final double x0l = (FastMath.pow((nRevs * FastMath.PI + FastMath.PI) / (8.0 * tau), 2.0 / 3.0) - 1.0) /
+                (FastMath.pow((nRevs * FastMath.PI + FastMath.PI) / (8.0 * tau), 2.0 / 3.0) + 1.0);
+            final double x0r = (FastMath.pow((8.0 * tau) / (nRevs * FastMath.PI), 2.0 / 3.0) - 1.0) /
+                (FastMath.pow((8.0 * tau) / (nRevs * FastMath.PI), 2.0 / 3.0) + 1.0);
+            if (lowPath) {
+                x0 = FastMath.max(x0l, x0r);
             } else {
-                x = FastMath.atan(xnew) * 2 / FastMath.PI;
+                x0 = FastMath.min(x0l, x0r);
             }
-
-            final double tof = timeOfFlight(x, longway, m, minSma, speri, chord);
-
-            // new value of y
-            final double ynew;
-            if (m == 0) {
-                ynew = FastMath.log(tof) - logt;
-            } else {
-                ynew = tof - rtof;
-            }
-
-            // save previous and current values for the next iteration
-            x1 = x2;
-            x2 = xnew;
-            y1 = y2;
-            y2 = ynew;
-
-            // update error
-            err = FastMath.abs(x1 - xnew);
-
-            // increment number of iterations
-            ++iterations;
         }
-
-        // failure to converge
-        if (err > tol) {
-            return Vector2D.NaN;
-        }
-
-        // convert converged value of x
-        final double x;
-        if (m == 0) {
-            x = FastMath.exp(xnew) - 1;
-        } else {
-            x = FastMath.atan(xnew) * 2 / FastMath.PI;
-        }
-
-        // Solution for the semi-major axis (Eq. 7.20)
-        final double sma = minSma / (1 - x * x);
-
-        // compute velocities
-        final double eta;
-        if (x < 1) {
-            // ellipse, Eqs. 7.7, 7.17
-            final double alfa = 2 * FastMath.acos(x);
-            final double beta = longway * 2 * FastMath.asin(FastMath.sqrt((speri - chord) / (2. * sma)));
-            final double psi  = (alfa - beta) / 2;
-            // Eq. 7.21
-            final double sinPsi = FastMath.sin(psi);
-            final double etaSq = 2 * sma * sinPsi * sinPsi / speri;
-            eta  = FastMath.sqrt(etaSq);
-        } else {
-            // hyperbola
-            final double gamma = 2 * FastMath.acosh(x);
-            final double delta = longway * 2 * FastMath.asinh(FastMath.sqrt((chord - speri) / (2 * sma)));
-            //
-            final double psi  = (gamma - delta) / 2.;
-            final double sinhPsi = FastMath.sinh(psi);
-            final double etaSq = -2 * sma * sinhPsi * sinhPsi / speri;
-            eta  = FastMath.sqrt(etaSq);
-        }
-
-        // radial and tangential directions for departure velocity (Eq. 7.36)
-        final double VR1 = (1. / eta) * FastMath.sqrt(1. / minSma) * (2 * lambda * minSma / r1 - (lambda + x * eta));
-        final double VT1 = (1. / eta) * FastMath.sqrt(1. / minSma) * FastMath.sqrt(r2 / r1) * FastMath.sin(dth / 2);
-        return new Vector2D(VR1, VT1);
+        return x0;
     }
 
-    /** Compute the time of flight of a given arc of orbit.
-     * The time of flight is evaluated via the Lagrange expression.
-     *
-     * @param x          x
-     * @param longway    solution number; the long way or the short war
-     * @param mrev       number of revolutions of the arc of orbit
-     * @param minSma     minimum possible semi-major axis
-     * @param speri      semi-parameter of the arc of orbit
-     * @param chord      chord of the arc of orbit
-     * @return the time of flight for the given arc of orbit
-     */
-    private static double timeOfFlight(final double x, final int longway, final int mrev, final double minSma,
-                                       final double speri, final double chord) {
+    /** Calculate value of y from x (and sigma).
+    * @param x value of x
+    * @param sigma value of sigma
+    * @return value of y
+    */
+    public static double calculateY(final double x, final double sigma) {
+        return FastMath.sqrt(1.0 - sigma * sigma * (1.0 - x * x));
+    }
 
-        final double a = minSma / (1 - x * x);
+    /** Householder solver for the Lambert problem.
+    * @param x0 initial guess for x
+    * @param tau0 value of tau0
+    * @param sigma value of sigma
+    * @param nRevs number of complete revolutions
+    * @param maxIterations maximum number of iterations
+    * @param atol absolute tolerance for convergence
+    * @param rtol relative tolerance for convergence
+    * @return value of x
+    */
+    public static double householderSolver(final double x0,
+                                final double tau0,
+                                final double sigma,
+                                final int nRevs,
+                                final int maxIterations,
+                                final double atol,
+                                final double rtol) {
+        double x = x0;
+        for (int iteration = 0; iteration < maxIterations; iteration++) {
+            final double y  = calculateY(x, sigma);
+            final double F0 = calculateF0(x, y, nRevs, tau0, sigma);
+            final double F0plusTau0 = F0 + tau0;
+            final double F1 = calculateF1(x, y, F0plusTau0, sigma);
+            final double F2 = calculateF2(x, y, F0plusTau0, F1, sigma);
+            final double F3 = calculateF3(x, y, F1, F2, sigma);
 
-        final double tof;
-        if (FastMath.abs(x) < 1) {
-            // Lagrange form of the time of flight equation Eq. (7.9)
-            // elliptical orbit (note: mu = 1)
-            final double beta = longway * 2 * FastMath.asin(FastMath.sqrt((speri - chord) / (2. * a)));
-            final double alfa = 2 * FastMath.acos(x);
-            tof = a * FastMath.sqrt(a) * ((alfa - FastMath.sin(alfa)) - (beta - FastMath.sin(beta)) + 2 * FastMath.PI * mrev);
+            // Independent variable update
+            final double numerator   = F1 * F1 - (F0 * F2 / 2.0);
+            final double denominator = F1 * (F1 * F1 - F0 * F2) + (F3 * F0 * F0 / 6.0);
+            final double xNew        = x - F0 * (numerator / denominator);
+
+            // Convergence check
+            if (FastMath.abs(xNew - x) < (rtol * FastMath.abs(x) + atol)) {
+                return xNew;
+            }
+            x = xNew;
+        }
+        throw new OrekitException(OrekitMessages.LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE, maxIterations);
+    }
+
+    /** Calculate the value of F0 (estimate of TOF).
+    * @param x value of x
+    * @param y value of y
+    * @param nRevs number of complete revolutions
+    * @param tau value of tau
+    * @param sigma value of sigma
+    * @return value of F0
+    */
+    private static double calculateF0(final double x, final double y,
+                                    final int nRevs, final double tau,
+                                    final double sigma) {
+        final double F0;
+        if (nRevs == 0 && x > FastMath.sqrt(0.6) && x < FastMath.sqrt(1.4)) {
+            final double eta = y - sigma * x;
+            final double S1 = (1.0 - sigma - x * eta) / 2.0;
+            final double Q = (4.0 / 3.0) * hyperg2F1(3.0, 1.0, 2.5, S1, Precision.EPSILON, 30000);
+            F0 = (eta * eta * eta * Q + 4.0 * sigma * eta) / 2.0 - tau;
         } else {
-            // hyperbolic orbit
-            final double alfa = 2 * FastMath.acosh(x);
-            final double beta = longway * 2 * FastMath.asinh(FastMath.sqrt((speri - chord) / (-2. * a)));
-            tof = -a * FastMath.sqrt(-a) * ((FastMath.sinh(alfa) - alfa) - (FastMath.sinh(beta) - beta));
+            final double psi = calculatePsi(x, y, sigma);
+            F0 = ( (psi + nRevs * FastMath.PI) / (FastMath.sqrt(FastMath.abs(1.0 - x * x))) - x + sigma * y) / (1.0 - x * x) - tau;
+        }
+        return F0;
+    }
+
+    /**
+     * Calculate the value of F1.
+     * @param x value of x
+     * @param y value of y
+     * @param F0 value of F0
+     * @param sigma value of sigma
+     * @return value of F1
+     */
+    private static double calculateF1(final double x, final double y,
+                                    final double F0, final double sigma) {
+        return (3.0 * F0 * x - 2.0 + 2.0 * sigma * sigma * sigma * (x / y)) / (1.0 - x * x);
+    }
+
+    /**
+     * Calculate the value of F2.
+     * @param x value of x
+     * @param y value of y
+     * @param F0 value of F0
+     * @param F1 value of F1
+     * @param sigma value of sigma
+     * @return value of F2
+     */
+    private static double calculateF2(final double x, final double y,
+                                    final double F0, final double F1,
+                                    final double sigma) {
+        return (3.0 * F0 + 5.0 * x * F1 + 2.0 * (1.0 - sigma * sigma) * FastMath.pow(sigma / y, 3)) / (1.0 - x * x);
+    }
+
+    /**
+     * Calculate the value of F3.
+     * @param x value of x
+     * @param y value of y
+     * @param F1 value of F1
+     * @param F2 value of F2
+     * @param sigma value of sigma
+     * @return value of F3
+     */
+    private static double calculateF3(final double x, final double y,
+                                    final double F1, final double F2,
+                                    final double sigma) {
+        return (7.0 * x * F2 + 8.0 * F1 - 6.0 * (1.0 - sigma * sigma) * FastMath.pow(sigma / y, 5) * x) / (1.0 - x * x);
+    }
+
+    /** Find the minimum time of flight required to complete the given number of revolutions.
+     * Halley iterations locate the x for which the first derivative of tau with respect to x
+     * vanishes, starting from x = 0.
+     * @param sigma value of sigma
+     * @param nRevs number of complete revolutions
+     * @param maxIterations maximum number of iterations
+     * @param atol absolute tolerance for convergence
+     * @param rtol relative tolerance for convergence
+     * @return minimum value of tau for the given number of revolutions
+     */
+    private static double calculateTauMin(final double sigma, final int nRevs,
+                                          final int maxIterations,
+                                          final double atol, final double rtol) {
+        double x = 0.1;
+        for (int iteration = 0; iteration < maxIterations; iteration++) {
+            final double y    = calculateY(x, sigma);
+            final double tauX = calculateF0(x, y, nRevs, 0.0, sigma);
+            final double F1   = calculateF1(x, y, tauX, sigma);
+            final double F2   = calculateF2(x, y, tauX, F1, sigma);
+            final double F3   = calculateF3(x, y, F1, F2, sigma);
+            final double xNew = x - 2.0 * F1 * F2 / (2.0 * F2 * F2 - F1 * F3);
+            if (FastMath.abs(xNew - x) < rtol * FastMath.abs(x) + atol) {
+                final double yNew = calculateY(xNew, sigma);
+                return calculateF0(xNew, yNew, nRevs, 0.0, sigma);
+            }
+            x = xNew;
+        }
+        throw new OrekitException(OrekitMessages.LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE, maxIterations);
+    }
+
+    /** Calculate the value of psi.
+    * @param x value of x
+    * @param y value of y
+    * @param sigma value of sigma
+    * @return value of psi
+    */
+    private static double calculatePsi(final double x, final double y, final double sigma) {
+        if (x >= -1.0 && x < 1.0) {
+            return FastMath.acos(x * y + sigma * (1.0 - x * x));
+        } else if (x > 1.0) {
+            return FastMath.asinh((y - x * sigma) * FastMath.sqrt(x * x - 1.0));
+        } else {
+            return 0.0;
+        }
+    }
+
+    /** Reconstruct the values of Vr and Vt (radial and transversal components of velocity).
+     * These are used together with the ir and it vectors to compute the velocity vectors at
+     * the beginning and end of the transfer.
+     * @param x value of x
+     * @param y value of y
+     * @param r1 value of r1
+     * @param r2 value of r2
+     * @param sigma value of sigma
+     * @param gamma value of gamma
+     * @param rho value of rho
+     * @param zeta value of zeta
+     * @return an array containing the values of Vr and Vt at the begginning and end of the transfer
+     */
+    public static double[] reconstructVrVt(final double x, final double y,
+                                final double r1, final double r2,
+                                final double sigma, final double gamma,
+                                final double rho, final double zeta) {
+        final double Vr1 = gamma * ((sigma * y - x) - rho * (sigma * y + x)) / r1;
+        final double Vr2 = -gamma * ((sigma * y - x) + rho * (sigma * y + x)) / r2;
+        final double Vt1 = gamma * zeta * (y + sigma * x) / r1;
+        final double Vt2 = gamma * zeta * (y + sigma * x) / r2;
+        return new double[] {Vr1, Vt1, Vr2, Vt2};
+    }
+
+    /**
+    * Calculate the value of Gaussian hypergeometric function 2F1.
+    * Currently we use the raw series expansion. This means we have the following
+    * constraints: |z| smaller than 1, c larger than 0, c != 0.
+    * Implementation based on Taylor series expansion method (a) in John Pearson's thesis
+    * https://people.maths.ox.ac.uk/porterm/research/pearson_final.pdf , page 31.
+    * @param a value of a
+    * @param b value of b
+    * @param c value of c
+    * @param z value of z (|z| smaller than 1)
+    * @param eps convergence threshold
+    * @param maxIter maximum number of iterations
+    * @return value of the 2F1 hypergeometric function
+    */
+    public static double hyperg2F1(final double a, final double b, final double c, final double z,
+                            final double eps, final int maxIter) {
+
+        if (FastMath.abs(z) >= 1.0) {
+            throw new IllegalArgumentException("abs(z) must be < 1");
+        }
+        if (c <= 0.0 || FastMath.abs(c) < Precision.EPSILON) {
+            throw new IllegalArgumentException("c must be positive and non-zero");
         }
 
-        return tof;
+        double c0 = 1.0;      // C0
+        double s0 = c0;       // S0
+
+        // we have to keep track of the last 3 terms to apply Pearson's convergence criterion
+        double prevC1 = 0.0;  // C(j-1)
+        double prevC2 = 0.0;  // C(j-2)
+        double prevS1 = 0.0;  // S(j-1)
+        double prevS2 = 0.0;  // S(j-2)
+
+        for (int j = 1; j < maxIter; j++) {
+            final double numerator = (a + j - 1) * (b + j - 1);
+            final double denominator = (c + j - 1) * j;
+            c0 *= (numerator / denominator) * z;
+            final double Sj1 = s0 + c0;
+
+            // we have to check 3 ratios for convergence
+            if (j >= 3) {
+                final double r1 = FastMath.abs(c0 / s0);
+                final double r2 = FastMath.abs(prevC1 / prevS1);
+                final double r3 = FastMath.abs(prevC2 / prevS2);
+
+                if (r1 < eps && r2 < eps && r3 < eps) {
+                    return Sj1;
+                }
+            }
+
+            prevC2 = prevC1;
+            prevC1 = c0;
+            prevS2 = prevS1;
+            prevS1 = s0;
+            s0 = Sj1;
+        }
+        throw new ArithmeticException("Hypergeometric function 2F1 did not converge after max iterations");
     }
 
     /**
@@ -370,14 +660,12 @@ public class LambertSolver {
      * High Order Expansion of the Solution of Two-Point Boundary Value Problems using Differential Algebra:
      * Applications to Spacecraft Dynamics.
      * </p>
-     * @param posigrade direction flag
-     * @param nRev number of revolutions
      * @param boundaryConditions Lambert boundary conditions
+     * @param velocities velocities of a Lambert solution to compute the Jacobian for
      * @return Jacobian matrix
      */
-    public RealMatrix computeJacobian(final boolean posigrade, final int nRev,
-                                      final LambertBoundaryConditions boundaryConditions) {
-        final LambertBoundaryVelocities velocities = solve(posigrade, nRev, boundaryConditions);
+    public RealMatrix computeJacobian(final LambertBoundaryConditions boundaryConditions,
+                                      final LambertBoundaryVelocities velocities) {
         if (velocities != null) {
             return computeNonTrivialCase(boundaryConditions, velocities);
         } else {
@@ -394,7 +682,7 @@ public class LambertSolver {
     /**
      * Compute Jacobian matrix assuming there is a solution.
      * @param boundaryConditions Lambert boundary conditions
-     * @param velocities Lambert solution
+     * @param velocities velocities of a Lambert solution
      * @return Jacobian matrix
      */
     private RealMatrix computeNonTrivialCase(final LambertBoundaryConditions boundaryConditions,
@@ -434,5 +722,10 @@ public class LambertSolver {
         final DecompositionSolver solver = new LUDecomposition(matrixToInvert).getSolver();
         final RealMatrix inverse = solver.getInverse();
         return intermediate.multiply(inverse);
+    }
+
+    /* Get the gravitational constant. */
+    public double getMu() {
+        return mu;
     }
 }

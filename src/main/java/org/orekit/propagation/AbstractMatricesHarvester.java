@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,11 +29,6 @@ import org.orekit.utils.DoubleArrayDictionary;
  * @since 11.1
  */
 public abstract class AbstractMatricesHarvester implements MatricesHarvester {
-
-    /** State dimension, fixed to 6.
-     * @deprecated as of 13.1, use DEFAULT_STATE_DIMENSION */
-    @Deprecated
-    public static final int STATE_DIMENSION = 6;
 
     /** Default state dimension, equivalent to position and velocity vectors. */
     public static final int DEFAULT_STATE_DIMENSION = 6;

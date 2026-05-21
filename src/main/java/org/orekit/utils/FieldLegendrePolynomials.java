@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ import org.hipparchus.util.MathArrays;
 public class FieldLegendrePolynomials<T extends CalculusFieldElement<T>> {
 
     /** Array for the Legendre polynomials. */
-    private T[][] pCoef;
+    private final T[][] pCoef;
 
     /** Create Legendre polynomials for the given degree and order.
      * @param degree degree of the spherical harmonics

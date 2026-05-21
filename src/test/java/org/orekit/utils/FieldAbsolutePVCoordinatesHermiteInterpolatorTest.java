@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,10 @@
  */
 
 package org.orekit.utils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -35,10 +39,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
 
@@ -140,7 +140,7 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
                         new FieldVector3D<>(one.multiply(px.value(dt)), one.multiply(py.value(dt)),
                                             one.multiply(pz.value(dt)));
                 sample.add(new FieldAbsolutePVCoordinates<>(frame, t0.shiftedBy(one.multiply(dt)), position,
-                                                            FieldVector3D.getZero(field), FieldVector3D.getZero(field)));
+                                                            FieldVector3D.getZero(field)));
             }
 
             // Create interpolator

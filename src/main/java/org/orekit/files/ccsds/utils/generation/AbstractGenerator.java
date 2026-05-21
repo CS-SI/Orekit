@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Parser;
 import org.orekit.utils.units.PowerTerm;
@@ -77,9 +76,9 @@ public abstract class AbstractGenerator implements Generator {
      * @param formatter how to format date and double to string.
      * @param writeUnits if true, units must be written
      */
-    public AbstractGenerator(final Appendable output, final String outputName,
-                             final double maxRelativeOffset, final boolean writeUnits,
-                             final Formatter formatter) {
+    protected AbstractGenerator(final Appendable output, final String outputName,
+                                final double maxRelativeOffset, final boolean writeUnits,
+                                final Formatter formatter) {
         this.output            = output;
         this.outputName        = outputName;
         this.maxRelativeOffset = maxRelativeOffset;
@@ -87,21 +86,6 @@ public abstract class AbstractGenerator implements Generator {
         this.sections          = new ArrayDeque<>();
         this.siToCcsds         = new HashMap<>();
         this.formatter = formatter;
-    }
-
-    /** Simple constructor.
-     * @param output destination of generated output
-     * @param outputName output name for error messages
-     * @param maxRelativeOffset maximum offset in seconds to use relative dates
-     * (if a date is too far from reference, it will be displayed as calendar elements)
-     * @param writeUnits if true, units must be written
-     * @deprecated since 13.0, since does not allow user to specify formatter. This defaults to {@link AccurateFormatter}
-     * Use {@link AbstractGenerator#AbstractGenerator(Appendable, String, double, boolean, Formatter)} instead.
-     */
-    @Deprecated
-    public AbstractGenerator(final Appendable output, final String outputName,
-                             final double maxRelativeOffset, final boolean writeUnits) {
-        this(output, outputName, maxRelativeOffset, writeUnits, new AccurateFormatter());
     }
 
     /** {@inheritDoc} */
@@ -191,7 +175,7 @@ public abstract class AbstractGenerator implements Generator {
     /** {@inheritDoc} */
     @Override
     public void writeEntry(final String key, final Double value, final Unit unit, final boolean mandatory) throws IOException {
-        writeEntry(key, value == null ? (String) null : doubleToString(unit.fromSI(value.doubleValue())), unit, mandatory);
+        writeEntry(key, value == null ? null : doubleToString(unit.fromSI(value.doubleValue())), unit, mandatory);
     }
 
     /** {@inheritDoc} */

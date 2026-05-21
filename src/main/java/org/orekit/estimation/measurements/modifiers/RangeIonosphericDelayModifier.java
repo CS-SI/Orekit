@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.SpacecraftState;
@@ -58,10 +58,10 @@ public class RangeIonosphericDelayModifier extends BaseRangeIonosphericDelayModi
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
 
-        final Range         measurement = estimated.getObservedMeasurement();
-        final GroundStation station     = measurement.getStation();
+        final Range    measurement = estimated.getObservedMeasurement();
+        final Observer observer     = measurement.getObserver();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated, station,
+        RangeModifierUtil.modifyWithoutDerivatives(estimated, observer,
                                                    this::rangeErrorIonosphericModel,
                                                    this);
 
@@ -72,12 +72,12 @@ public class RangeIonosphericDelayModifier extends BaseRangeIonosphericDelayModi
     public void modify(final EstimatedMeasurement<Range> estimated) {
 
         final Range           measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        observer    = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeModifierUtil.modify(estimated, getIonoModel(),
                                  new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
-                                 station,
+                                 observer,
                                  this::rangeErrorIonosphericModel,
                                  this::rangeErrorIonosphericModel,
                                  this);

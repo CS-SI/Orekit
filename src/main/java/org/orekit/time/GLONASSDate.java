@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,10 +47,10 @@ public class GLONASSDate implements TimeStamped {
     private final double secInNa;
 
     /** Current Julian date JD0. */
-    private double jd0;
+    private final double jd0;
 
     /** Greenwich Mean Sidereal Time (rad). */
-    private double gmst;
+    private final double gmst;
 
     /** Corresponding date. */
     private final AbsoluteDate date;

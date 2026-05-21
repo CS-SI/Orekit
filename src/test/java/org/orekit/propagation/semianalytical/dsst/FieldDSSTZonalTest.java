@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -153,7 +153,7 @@ public class FieldDSSTZonalTest {
 	    final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
 	
 	    // Set the force models
-	    final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
+	    final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
 	
 	    zonal.registerAttitudeProvider(null);
 	    shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(field)));
@@ -275,7 +275,7 @@ public class FieldDSSTZonalTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute state Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
         shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
                                 converter.getParametersAtStateDate(dsState, zonal)));
         zonal.updateShortPeriodTerms(converter.getParameters(dsState, zonal), dsState);
@@ -396,7 +396,7 @@ public class FieldDSSTZonalTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
         shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
                                 converter.getParametersAtStateDate(dsState, zonal)));
         zonal.updateShortPeriodTerms(converter.getParameters(dsState, zonal), dsState);
@@ -443,7 +443,7 @@ public class FieldDSSTZonalTest {
             }
         }
 
-        ParameterDriver selected = bound.getDrivers().get(0);
+        ParameterDriver selected = bound.getDrivers().getFirst();
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
       
@@ -623,7 +623,7 @@ public class FieldDSSTZonalTest {
         final ClassicalRungeKuttaFieldIntegrator<T> integrator =
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.newInstance(step));
 
-        final FieldNumericalPropagator<T> numProp = new FieldNumericalPropagator<>(field, integrator);
+        final FieldNumericalPropagator<T> numProp = new FieldNumericalPropagator<>(integrator);
         numProp.setOrbitType(oscOrbit0.getType());
         numProp.setInitialState(oscState0);
         numProp.setAttitudeProvider(attProvider);
@@ -633,7 +633,7 @@ public class FieldDSSTZonalTest {
         // DSST prop: max step could be much higher but made explicitly equal to numerical to rule out a step difference
         final ClassicalRungeKuttaFieldIntegrator<T> integratorDsst =
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.newInstance(step));
-        final FieldDSSTPropagator<T> dsstProp = new FieldDSSTPropagator<T>(field, integratorDsst, PropagationType.OSCULATING);
+        final FieldDSSTPropagator<T> dsstProp = new FieldDSSTPropagator<>(integratorDsst, PropagationType.OSCULATING);
         dsstProp.setInitialState(oscState0, PropagationType.OSCULATING); // Initial state is OSCULATING
         dsstProp.setAttitudeProvider(attProvider);
         final DSSTForceModel zonal = new DSSTZonal(bodyFixedFrame, unnormalized); // J2-only with custom Earth-fixed frame
@@ -694,7 +694,7 @@ public class FieldDSSTZonalTest {
 
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
-        List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
         shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
         force.updateShortPeriodTerms(force.getParametersAllValues(), state);
         

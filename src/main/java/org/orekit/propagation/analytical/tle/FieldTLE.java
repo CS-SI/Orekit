@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.propagation.conversion.osc2mean.TLETheory;
@@ -190,6 +189,15 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     @DefaultDataContext
     public FieldTLE(final Field<T> field, final String line1, final String line2) {
         this(field, line1, line2, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /** Constructor from non-Field object.
+     * @param field field utilized by default
+     * @param tle Two-Line Element
+     * @since 14.0
+     */
+    public FieldTLE(final Field<T> field, final TLE tle) {
+        this(field, tle.getLine1(), tle.getLine2(), tle.getUtc());
     }
 
     /** Simple constructor from unparsed two lines using the given time scale as UTC.
@@ -722,23 +730,6 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         } catch (OrekitException oe) {
             throw new OrekitInternalError(oe);
         }
-    }
-
-    /**
-     * Convert Spacecraft State into TLE.
-     *
-     * @param state Spacecraft State to convert into TLE
-     * @param templateTLE only used to get identifiers like satellite number, launch year, etc. In other words, the keplerian elements contained in the generated TLE are based on the provided state and not the template TLE.
-     * @param generationAlgorithm TLE generation algorithm
-     * @param <T> type of the element
-     * @return a generated TLE
-     * @since 12.0
-     * @deprecated As of release 13.0, use {@link #stateToTLE(FieldSpacecraftState, FieldTLE, OsculatingToMeanConverter)} instead.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
-                                                                             final TleGenerationAlgorithm generationAlgorithm) {
-        return generationAlgorithm.generate(state, templateTLE);
     }
 
     /**

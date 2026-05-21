@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,15 @@ import org.orekit.utils.ExtendedPositionProvider;
  * @see CelestialBodyFactory
  */
 public interface CelestialBody extends ExtendedPositionProvider {
+
+    /**
+     * Get the body centered ICRF aligned frame. For example, for Earth this
+     * would return GCRF.
+     *
+     * @return body centered, ICRF aligned frame.
+     * @since 14.0
+     */
+    Frame getIcrfAlignedFrame();
 
     /** Get an inertially oriented, body centered frame.
      * <p>The frame is always bound to the body center, and its axes have a

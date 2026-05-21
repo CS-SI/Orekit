@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Collections;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -34,7 +31,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class PV extends AbstractMeasurement<PV> {
+public class PV extends PseudoMeasurement<PV> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "PV";
@@ -55,9 +52,6 @@ public class PV extends AbstractMeasurement<PV> {
             0, 0, 0, 0, 0, 1
         }
     };
-
-    /** Covariance matrix of the PV measurement (size 6x6). */
-    private final double[][] covarianceMatrix;
 
     /** Constructor with two double for the standard deviations.
      * <p>The first double is the position's standard deviation, common to the 3 position's components.
@@ -105,9 +99,7 @@ public class PV extends AbstractMeasurement<PV> {
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double[] sigmaPosition, final double[] sigmaVelocity,
               final double baseWeight, final ObservableSatellite satellite) {
-        this(date, position, velocity,
-             buildPvCovarianceMatrix(sigmaPosition, sigmaVelocity),
-             baseWeight, satellite);
+        this(date, position, velocity, buildPvCovarianceMatrix(sigmaPosition, sigmaVelocity), baseWeight, satellite);
     }
 
     /** Constructor with one vector for the standard deviations.
@@ -123,7 +115,8 @@ public class PV extends AbstractMeasurement<PV> {
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double[] sigmaPV, final double baseWeight, final ObservableSatellite satellite) {
-        this(date, position, velocity, buildPvCovarianceMatrix(sigmaPV), baseWeight, satellite);
+        this(date, position, velocity, new MeasurementQuality(sigmaPV, new double[] {baseWeight, baseWeight, baseWeight,
+            baseWeight, baseWeight, baseWeight}), satellite);
     }
 
     /**
@@ -143,8 +136,7 @@ public class PV extends AbstractMeasurement<PV> {
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double[][] positionCovarianceMatrix, final double[][] velocityCovarianceMatrix,
               final double baseWeight, final ObservableSatellite satellite) {
-        this(date, position, velocity,
-             buildPvCovarianceMatrix(positionCovarianceMatrix, velocityCovarianceMatrix),
+        this(date, position, velocity, buildPvCovarianceMatrix(positionCovarianceMatrix, velocityCovarianceMatrix),
              baseWeight, satellite);
     }
 
@@ -161,16 +153,27 @@ public class PV extends AbstractMeasurement<PV> {
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double[][] covarianceMatrix, final double baseWeight, final ObservableSatellite satellite) {
+        this(date, position, velocity, new MeasurementQuality(covarianceMatrix,
+              new double[] { baseWeight, baseWeight, baseWeight, baseWeight, baseWeight, baseWeight }), satellite);
+    }
+
+    /** Constructor with full covariance matrix and all inputs.
+     * <p>The fact that the covariance matrix is symmetric and positive definite is not checked.</p>
+     * <p>The measurement must be in the orbit propagation frame.</p>
+     * @param date date of the measurement
+     * @param position position
+     * @param velocity velocity
+     * @param measurementQuality measurement quality data
+     * @param satellite satellite related to this measurement
+     * @since 14.0
+     */
+    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
+              final MeasurementQuality measurementQuality, final ObservableSatellite satellite) {
         super(date,
-              new double[] {
-                  position.getX(), position.getY(), position.getZ(),
-                  velocity.getX(), velocity.getY(), velocity.getZ()
-              }, extractSigmas(covarianceMatrix),
-              new double[] {
-                  baseWeight, baseWeight, baseWeight,
-                  baseWeight, baseWeight, baseWeight
-              }, Collections.singletonList(satellite));
-        this.covarianceMatrix = covarianceMatrix.clone();
+                new double[] {
+                        position.getX(), position.getY(), position.getZ(),
+                        velocity.getX(), velocity.getY(), velocity.getZ()
+                }, measurementQuality, satellite);
     }
 
     /** Get the position.
@@ -187,40 +190,6 @@ public class PV extends AbstractMeasurement<PV> {
     public Vector3D getVelocity() {
         final double[] pv = getObservedValue();
         return new Vector3D(pv[3], pv[4], pv[5]);
-    }
-
-    /** Get the covariance matrix.
-     * @return the covariance matrix
-     */
-    public double[][] getCovarianceMatrix() {
-        return covarianceMatrix.clone();
-    }
-
-    /** Get the correlation coefficients matrix.
-     * <p>This is the 6x6 matrix M such that:
-     * <p>Mij = Pij/(σi.σj)
-     * <p>Where:
-     * <ul>
-     * <li>P is the covariance matrix
-     * <li>σi is the i-th standard deviation (σi² = Pii)
-     * </ul>
-     * @return the correlation coefficient matrix (6x6)
-     */
-    public double[][] getCorrelationCoefficientsMatrix() {
-
-        // Get the standard deviations
-        final double[] sigmas = getTheoreticalStandardDeviation();
-
-        // Initialize the correlation coefficients matric to the covariance matrix
-        final double[][] corrCoefMatrix = new double[sigmas.length][sigmas.length];
-
-        // Divide by the standard deviations
-        for (int i = 0; i < sigmas.length; i++) {
-            for (int j = 0; j < sigmas.length; j++) {
-                corrCoefMatrix[i][j] = covarianceMatrix[i][j] / (sigmas[i] * sigmas[j]);
-            }
-        }
-        return corrCoefMatrix;
     }
 
     /** {@inheritDoc} */
@@ -257,29 +226,6 @@ public class PV extends AbstractMeasurement<PV> {
         return estimated;
     }
 
-    /** Extract standard deviations from a 6x6 PV covariance matrix.
-     * Check the size of the PV covariance matrix first.
-     * @param pvCovarianceMatrix the 6x6 PV covariance matrix
-     * @return the standard deviations (6-sized vector), they are
-     * the square roots of the diagonal elements of the covariance matrix in input.
-     */
-    private static double[] extractSigmas(final double[][] pvCovarianceMatrix) {
-
-        // Check the size of the covariance matrix, should be 6x6
-        if (pvCovarianceMatrix.length != 6 || pvCovarianceMatrix[0].length != 6) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
-                                      pvCovarianceMatrix.length, pvCovarianceMatrix[0],
-                                      6, 6);
-        }
-
-        // Extract the standard deviations (square roots of the diagonal elements)
-        final double[] sigmas = new double[6];
-        for (int i = 0; i < sigmas.length; i++) {
-            sigmas[i] = FastMath.sqrt(pvCovarianceMatrix[i][i]);
-        }
-        return sigmas;
-    }
-
     /** Build a 6x6 PV covariance matrix from two 3x3 matrices (covariances in position and velocity).
      * Check the size of the matrices first.
      * @param positionCovarianceMatrix the 3x3 covariance matrix in position
@@ -291,13 +237,13 @@ public class PV extends AbstractMeasurement<PV> {
         // Check the sizes of the matrices first
         if (positionCovarianceMatrix.length != 3 || positionCovarianceMatrix[0].length != 3) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
-                                      positionCovarianceMatrix.length, positionCovarianceMatrix[0],
-                                      3, 3);
+                    positionCovarianceMatrix.length, positionCovarianceMatrix[0],
+                    3, 3);
         }
         if (velocityCovarianceMatrix.length != 3 || velocityCovarianceMatrix[0].length != 3) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
-                                      velocityCovarianceMatrix.length, velocityCovarianceMatrix[0],
-                                      3, 3);
+                    velocityCovarianceMatrix.length, velocityCovarianceMatrix[0],
+                    3, 3);
         }
 
         // Build the PV 6x6 covariance matrix
@@ -307,27 +253,6 @@ public class PV extends AbstractMeasurement<PV> {
                 pvCovarianceMatrix[i][j]         = positionCovarianceMatrix[i][j];
                 pvCovarianceMatrix[i + 3][j + 3] = velocityCovarianceMatrix[i][j];
             }
-        }
-        return pvCovarianceMatrix;
-    }
-
-    /** Build a 6x6 PV covariance matrix from a 6-sized vector (position and velocity standard deviations).
-     * Check the size of the vector first.
-     * @param sigmaPV 6-sized vector with position standard deviations on the first 3 elements
-     * and velocity standard deviations on the last 3 elements
-     * @return the 6x6 PV covariance matrix
-     */
-    private static double[][] buildPvCovarianceMatrix(final double[] sigmaPV) {
-        // Check the size of the vector first
-        if (sigmaPV.length != 6) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, sigmaPV.length, 6);
-
-        }
-
-        // Build the PV 6x6 covariance matrix
-        final double[][] pvCovarianceMatrix = new double[6][6];
-        for (int i = 0; i < sigmaPV.length; i++) {
-            pvCovarianceMatrix[i][i] =  sigmaPV[i] * sigmaPV[i];
         }
         return pvCovarianceMatrix;
     }

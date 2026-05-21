@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1820,7 +1820,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         private final String coefficientsKeyPrefix;
 
         /** All coefficients slots. */
-        private final transient TimeSpanMap<Slot> slots;
+        private final TimeSpanMap<Slot> slots;
 
         /**
          * Constructor.
@@ -2010,6 +2010,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getCoefficientsKeyPrefix() {
             return coefficientsKeyPrefix;
         }
@@ -2092,7 +2093,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         private final String coefficientsKeyPrefix;
 
         /** All coefficients slots. */
-        private final transient FieldTimeSpanMap<FieldSlot<T>, T> slots;
+        private final FieldTimeSpanMap<FieldSlot<T>, T> slots;
 
         /**
          * Constructor.
@@ -2285,6 +2286,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getCoefficientsKeyPrefix() {
             return coefficientsKeyPrefix;
         }

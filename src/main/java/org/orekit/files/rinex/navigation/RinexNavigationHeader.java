@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,12 @@ package org.orekit.files.rinex.navigation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexBaseHeader;
 import org.orekit.files.rinex.utils.RinexFileType;
+import org.orekit.files.rinex.utils.ParsingUtils;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
 
 /** Header for Rinex Navigation.
  * @author Luc Maisonobe
@@ -28,41 +32,74 @@ import org.orekit.files.rinex.utils.RinexFileType;
  */
 public class RinexNavigationHeader extends RinexBaseHeader {
 
-    /** Ionospheric correction type. */
-    private IonosphericCorrectionType ionosphericCorrectionType;
+    /** Index of label in header lines. */
+    public static final int LABEL_INDEX = 60;
+
+    /** Ionospheric corrections. */
+    private final List<IonosphericCorrection> ionosphericCorrections;
 
     /** List of time system corrections. */
-    private List<TimeSystemCorrection> timeSystemCorrections;
+    private final List<TimeSystemCorrection> timeSystemCorrections;
 
     /** Number of merged files. */
     private int mergedFiles;
-
-    /** Current number of leap seconds. */
-    private int numberOfLeapSeconds;
 
     /** Simple constructor.
      */
     public RinexNavigationHeader() {
         super(RinexFileType.NAVIGATION);
-        this.timeSystemCorrections = new ArrayList<>();
-        this.mergedFiles           = -1;
-        this.numberOfLeapSeconds   = -1;
+        this.ionosphericCorrections = new ArrayList<>();
+        this.timeSystemCorrections  = new ArrayList<>();
+        this.mergedFiles            = -1;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SatelliteSystem parseSatelliteSystem(final String line, final SatelliteSystem defaultSatelliteSystem) {
+        if (getFormatVersion() < 3.0) {
+            // the satellite system is hidden within the entry, with GPS as default
+
+            // look if default is overridden somewhere in the entry
+            final String entry = line.substring(0, 80).toUpperCase();
+            for (final SatelliteSystem satelliteSystem : SatelliteSystem.values()) {
+                if (entry.contains(satelliteSystem.name())) {
+                    // we found a satellite system hidden in the middle of the line
+                    return satelliteSystem;
+                }
+            }
+
+            // return default value
+            return defaultSatelliteSystem;
+
+        } else {
+            // the satellite system is in column 40 for 3.X and later
+            return SatelliteSystem.parseSatelliteSystem(line.substring(40, 41), defaultSatelliteSystem);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void parseProgramRunByDate(final String line, final TimeScales timeScales) {
+        parseProgramRunByDate(ParsingUtils.parseString(line, 0, 20),
+                              ParsingUtils.parseString(line, 20, 20),
+                              ParsingUtils.parseString(line, 40, 20),
+                              timeScales);
     }
 
     /**
-     * Getter for the ionospheric correction type.
-     * @return the ionospheric correction type
+     * Getter for the ionospheric corrections.
+     * @return the ionospheric corrections
      */
-    public IonosphericCorrectionType getIonosphericCorrectionType() {
-        return ionosphericCorrectionType;
+    public List<IonosphericCorrection> getIonosphericCorrections() {
+        return ionosphericCorrections;
     }
 
     /**
-     * Setter for the ionospheric correction type.
-     * @param ionosphericCorrectionType the ionospheric correction type to set
+     * Add a ionospheric correction.
+     * @param ionosphericCorrection the ionospheric correction type to add
      */
-    public void setIonosphericCorrectionType(final IonosphericCorrectionType ionosphericCorrectionType) {
-        this.ionosphericCorrectionType = ionosphericCorrectionType;
+    public void addIonosphericCorrection(final IonosphericCorrection ionosphericCorrection) {
+        this.ionosphericCorrections.add(ionosphericCorrection);
     }
 
     /**
@@ -100,20 +137,22 @@ public class RinexNavigationHeader extends RinexBaseHeader {
         this.mergedFiles = mergedFiles;
     }
 
-    /**
-     * Getter for the current number of leap seconds.
-     * @return the current number of leap seconds
-     */
-    public int getNumberOfLeapSeconds() {
-        return numberOfLeapSeconds;
+    /** {@inheritDoc} */
+    @Override
+    public void checkType(final String line, final String name) {
+        checkType(line, 20, name);
     }
 
-    /**
-     * Setter for the current number of leap seconds.
-     * @param numberOfLeapSeconds the number of leap seconds to set
-     */
-    public void setNumberOfLeapSeconds(final int numberOfLeapSeconds) {
-        this.numberOfLeapSeconds = numberOfLeapSeconds;
+    /** {@inheritDoc} */
+    @Override
+    public int getLabelIndex() {
+        return LABEL_INDEX;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean matchFound(final Label label, final String line) {
+        return label.matches(line.substring(getLabelIndex()).trim());
     }
 
 }

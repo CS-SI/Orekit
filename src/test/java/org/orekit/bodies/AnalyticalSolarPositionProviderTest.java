@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 
 package org.orekit.bodies;
 
-import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
 import org.hipparchus.complex.Complex;
@@ -110,9 +109,8 @@ class AnalyticalSolarPositionProviderTest {
         // GIVEN
         final CelestialBody sun = CelestialBodyFactory.getSun();
         final ExtendedPositionProvider positionProvider = new AnalyticalSolarPositionProvider();
-        final CelestialBody body = createCelestialBody(sun.getGM(), positionProvider);
         // WHEN
-        final NumericalPropagator propagator = createPropagator(body);
+        final NumericalPropagator propagator = createPropagator(positionProvider);
         final AbsoluteDate terminalDate = propagator.getInitialState().getDate().shiftedBy(1e6);
         final SpacecraftState actualState = propagator.propagate(terminalDate);
         // THEN
@@ -121,48 +119,14 @@ class AnalyticalSolarPositionProviderTest {
         Assertions.assertEquals(0., expectedState.getPosition().subtract(actualState.getPosition()).getNorm(), 1e-1);
     }
 
-    private static CelestialBody createCelestialBody(final double mu, final ExtendedPositionProvider positionProvider) {
-        return new CelestialBody() {
-            @Override
-            public Frame getInertiallyOrientedFrame() {
-                return null;
-            }
-
-            @Override
-            public Frame getBodyOrientedFrame() {
-                return null;
-            }
-
-            @Override
-            public String getName() {
-                return "";
-            }
-
-            @Override
-            public double getGM() {
-                return mu;
-            }
-
-            @Override
-            public Vector3D getPosition(AbsoluteDate date, Frame frame) {
-                return positionProvider.getPosition(date, frame);
-            }
-
-            @Override
-            public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(FieldAbsoluteDate<T> date, Frame frame) {
-                return null;
-            }
-        };
-    }
-
-    private static NumericalPropagator createPropagator(final CelestialBody celestialBody) {
+    private static NumericalPropagator createPropagator(final ExtendedPositionProvider positionProvider) {
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
         final AbsoluteDate date = new AbsoluteDate(new DateTimeComponents(2000, 1, 1, 0, 0, 0),
                 TimeScalesFactory.getUTC());
         final EquinoctialOrbit orbit = new EquinoctialOrbit(Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 1000.e3,
                 0.1, 0.2, 0.3, 0.4, 5., PositionAngleType.ECCENTRIC, FramesFactory.getGCRF(), date, Constants.EGM96_EARTH_MU);
         propagator.setInitialState(new SpacecraftState(orbit));
-        propagator.addForceModel(new ThirdBodyAttraction(celestialBody));
+        propagator.addForceModel(new ThirdBodyAttraction(positionProvider, "", Constants.JPL_SSD_SUN_GM));
         return propagator;
     }
  }

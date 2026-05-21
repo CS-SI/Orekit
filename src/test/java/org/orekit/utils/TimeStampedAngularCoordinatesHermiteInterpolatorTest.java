@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,9 +47,9 @@ import java.util.List;
 class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
 
     @Test
-    public void testInterpolationAroundPI() {
+    void testInterpolationAroundPI() {
 
-        List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
 
         // add angular coordinates at t0: 179.999 degrees rotation along X axis
         AbsoluteDate t0 = new AbsoluteDate("2012-01-01T00:00:00.000", TimeScalesFactory.getTAI());
@@ -84,7 +84,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolationWithoutAcceleration() {
+    void testInterpolationWithoutAcceleration() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.05 * FastMath.PI;
@@ -100,7 +100,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolationWithAcceleration() {
+    void testInterpolationWithAcceleration() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.05 * FastMath.PI;
@@ -118,7 +118,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolationNeedOffsetWrongRate() {
+    void testInterpolationNeedOffsetWrongRate() {
         AbsoluteDate date  = AbsoluteDate.GALILEO_EPOCH;
         double       omega = 2.0 * FastMath.PI;
         TimeStampedAngularCoordinates reference =
@@ -127,7 +127,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
 
-        List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
         for (double dt : new double[] { 0.0, 0.25, 0.5, 0.75, 1.0 }) {
             TimeStampedAngularCoordinates shifted = reference.shiftedBy(dt);
             sample.add(new TimeStampedAngularCoordinates(shifted.getDate(),
@@ -150,7 +150,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolationRotationOnly() {
+    void testInterpolationRotationOnly() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.5 * FastMath.PI;
@@ -161,7 +161,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
 
-        List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
         for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
             Rotation r = reference.shiftedBy(dt).getRotation();
             sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(dt), r, Vector3D.ZERO, Vector3D.ZERO));
@@ -187,7 +187,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
      * by zero in the interpolation code.
      */
     @Test
-    public void testInterpolationSmallSample() {
+    void testInterpolationSmallSample() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.5 * FastMath.PI;
@@ -198,7 +198,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
 
-        List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
         Rotation                            r      = reference.shiftedBy(0.2).getRotation();
         sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(0.2), r, Vector3D.ZERO, Vector3D.ZERO));
 
@@ -222,14 +222,14 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolationGTODIssue() {
+    void testInterpolationGTODIssue() {
         AbsoluteDate t0 = new AbsoluteDate("2004-04-06T19:59:28.000", TimeScalesFactory.getTAI());
         double[][] params = new double[][] {
                 { 0.0, -0.3802356750911964, -0.9248896320037013, 7.292115030462892e-5 },
                 { 4.0, 0.1345716955788532, -0.990903859488413, 7.292115033301528e-5 },
                 { 8.0, -0.613127541102373, 0.7899839354960061, 7.292115037371062e-5 }
         };
-        List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
         for (double[] row : params) {
             AbsoluteDate t = t0.shiftedBy(row[0] * 3600.0);
             Rotation     r = new Rotation(row[1], 0.0, 0.0, row[2], false);
@@ -242,7 +242,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
                 new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), 18200, AngularDerivativesFilter.USE_RR);
 
         for (double dt = 0; dt < 29000; dt += 120) {
-            TimeStampedAngularCoordinates shifted      = sample.get(0).shiftedBy(dt);
+            TimeStampedAngularCoordinates shifted      = sample.getFirst().shiftedBy(dt);
             TimeStampedAngularCoordinates interpolated = interpolator.interpolate(t0.shiftedBy(dt), sample);
             Assertions.assertEquals(0.0,
                                     Rotation.distance(shifted.getRotation(), interpolated.getRotation()),
@@ -273,7 +273,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
                 };
             }
         };
-        final List<TimeStampedAngularCoordinates> complete   = new ArrayList<TimeStampedAngularCoordinates>();
+        final List<TimeStampedAngularCoordinates> complete   = new ArrayList<>();
         ODEIntegrator                             integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
         integrator.addStepHandler(new StepNormalizer(dt / 2000, new ODEFixedStepHandler() {
             public void handleStep(ODEStateAndDerivative state, boolean isLast) {
@@ -295,10 +295,10 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
         };
         integrator.integrate(ode, new ODEState(0, y), dt);
 
-        List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
-        sample.add(complete.get(0));
+        List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
+        sample.add(complete.getFirst());
         sample.add(complete.get(complete.size() / 2));
-        sample.add(complete.get(complete.size() - 1));
+        sample.add(complete.getLast());
 
         // Create interpolator
         final TimeInterpolator<TimeStampedAngularCoordinates> interpolator =

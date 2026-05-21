@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,6 +59,19 @@ class ExtendedPositionProviderTest {
         Assertions.assertEquals(expectedPosition, pvCoordinates.getPosition());
         Assertions.assertEquals(1., pvCoordinates.getVelocity().getX());
         Assertions.assertEquals(0., pvCoordinates.getAcceleration().getNorm());
+    }
+
+    @Test
+    void testGetVelocityField() {
+        // GIVEN
+        final TestExtendedPositionProvider positionProvider = new TestExtendedPositionProvider();
+        final Frame frame = Mockito.mock(Frame.class);
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getJ2000Epoch(ComplexField.getInstance());
+        // WHEN
+        final FieldVector3D<Complex> actualVelocity = positionProvider.getVelocity(date, frame);
+        // THEN
+        final FieldVector3D<Complex> expectedVelocity = positionProvider.getPVCoordinates(date, frame).getVelocity();
+        Assertions.assertEquals(expectedVelocity, actualVelocity);
     }
 
     @Test

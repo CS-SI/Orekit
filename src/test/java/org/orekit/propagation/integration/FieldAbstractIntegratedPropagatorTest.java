@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,8 +58,7 @@ class FieldAbstractIntegratedPropagatorTest {
         final Orbit initialOrbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
         final Binary64Field field = Binary64Field.getInstance();
         final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), initialOrbit);
-        final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(field,
-                new ClassicalRungeKuttaFieldIntegrator<>(field,
+        final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(new ClassicalRungeKuttaFieldIntegrator<>(field,
                 fieldOrbit.getDate().getField().getZero().newInstance(100.)));
         propagator.setInitialState(new FieldSpacecraftState<>(fieldOrbit));
         final TestDetector detector = new TestDetector(fieldOrbit.getDate().shiftedBy(10.));
@@ -136,8 +135,7 @@ class FieldAbstractIntegratedPropagatorTest {
 
         // Init numerical propagator
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(startOrbit);
-        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field,
-                        new ClassicalRungeKuttaFieldIntegrator<T>(field, zero.newInstance(300.)));
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(new ClassicalRungeKuttaFieldIntegrator<>(field, zero.newInstance(300.)));
         propagator.setInitialState(state);
 
         // WHEN

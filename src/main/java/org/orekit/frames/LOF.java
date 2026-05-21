@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,7 @@ import org.orekit.utils.PVCoordinates;
  * Interface for local orbital frame.
  *
  * @author Vincent Cucchietti
+ * @author Jérôme Tabeaud
  */
 public interface LOF {
 
@@ -145,7 +146,7 @@ public interface LOF {
                                                                                  final FieldPVCoordinates<T> pv) {
 
         // First compute the rotation from the input LOF to the pivot inertial
-        final FieldRotation<T> fromLOFToInertial = fromLOF.rotationFromInertial(field, date, pv).revert();
+        final FieldRotation<T> fromLOFToInertial = fromLOF.rotationToInertial(field, date, pv);
 
         // Then compute the rotation from the pivot inertial to the output LOF
         final FieldRotation<T> inertialToThis = this.rotationFromInertial(field, date, pv);
@@ -171,7 +172,7 @@ public interface LOF {
                                                                                    final FieldPVCoordinates<T> pv) {
 
         // Get transform from input local orbital frame to inertial
-        final FieldTransform<T> fromLOFToInertial = fromLOF.transformFromInertial(date, pv).getInverse();
+        final FieldTransform<T> fromLOFToInertial = fromLOF.transformToInertial(date, pv);
 
         // Get transform from inertial to output local orbital frame
         final FieldTransform<T> inertialToLOFOut = this.transformFromInertial(date, pv);
@@ -207,7 +208,7 @@ public interface LOF {
             final FieldVector3D<T> p        = pv.getPosition();
             final FieldVector3D<T> momentum = pv.getMomentum();
             final FieldTransform<T> rotation = new FieldTransform<>(date, r,
-                    new FieldVector3D<>(p.getNormSq().reciprocal(), r.applyTo(momentum)));
+                    new FieldVector3D<>(p.getNorm2Sq().reciprocal(), r.applyTo(momentum)));
 
             return new FieldTransform<>(date, translation, rotation);
 
@@ -226,6 +227,22 @@ public interface LOF {
             return new FieldTransform<>(date, new FieldTransform<>(date, pv.negate()),
                 new FieldTransform<>(date, fieldAngularCoordinates));
         }
+    }
+
+    /**
+     *  Get the transform from the local orbital frame to the inertial frame.
+     *
+     * @param date current date
+     * @param pv position-velocity of the spacecraft in the inertial frame
+     * @param <T> type of the fields elements
+     *
+     * @return transform from local orbital frame to the corresponding inertial frame.
+     *
+     * @since 14.0
+     */
+    default <T extends CalculusFieldElement<T>> FieldTransform<T> transformToInertial(final FieldAbsoluteDate<T> date,
+                                                                                        final FieldPVCoordinates<T> pv) {
+        return transformFromInertial(date, pv).getInverse();
     }
 
     /**
@@ -249,6 +266,28 @@ public interface LOF {
                                                                               FieldPVCoordinates<T> pv);
 
     /**
+     * Get the rotation from local orbital frame to inertial frame.
+     * <p>
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
+     * the full {@link #transformToInertial(AbsoluteDate, PVCoordinates) transformFromInertial} method must be called and
+     * the complete rotation transform must be extracted from it.</p>
+     *
+     * @param field field to which the elements belong
+     * @param date date of the rotation
+     * @param pv position-velocity of the spacecraft in some inertial frame
+     * @param <T> type of the field elements
+     *
+     * @return rotation from local orbital frame to inertial frame
+     *
+     * @since 14.0
+     */
+    default <T extends CalculusFieldElement<T>> FieldRotation<T> rotationToInertial(final Field<T> field,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final FieldPVCoordinates<T> pv) {
+        return rotationFromInertial(field, date, pv).revert();
+    }
+
+    /**
      * Get the rotation from input {@link LOF local orbital frame} to the instance.
      * <p>
      * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
@@ -266,7 +305,7 @@ public interface LOF {
     default Rotation rotationFromLOF(final LOF fromLOF, final AbsoluteDate date, final PVCoordinates pv) {
 
         // First compute the rotation from the input LOF to the pivot inertial
-        final Rotation fromLOFToInertial = fromLOF.rotationFromInertial(date, pv).revert();
+        final Rotation fromLOFToInertial = fromLOF.rotationToInertial(date, pv);
 
         // Then compute the rotation from the pivot inertial to the output LOF
         final Rotation inertialToThis = this.rotationFromInertial(date, pv);
@@ -289,7 +328,7 @@ public interface LOF {
     default Transform transformFromLOF(final LOF fromLOF, final AbsoluteDate date, final PVCoordinates pv) {
 
         // First compute the rotation from the input LOF to the pivot inertial
-        final Transform fromLOFToInertial = fromLOF.transformFromInertial(date, pv).getInverse();
+        final Transform fromLOFToInertial = fromLOF.transformToInertial(date, pv);
 
         // Then compute the rotation from the pivot inertial to the output LOF
         final Transform inertialToThis = this.transformFromInertial(date, pv);
@@ -316,7 +355,7 @@ public interface LOF {
             final Vector3D  p        = pv.getPosition();
             final Vector3D  momentum = pv.getMomentum();
             final AngularCoordinates angularCoordinates = new AngularCoordinates(r,
-                new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
+                new Vector3D(1.0 / p.getNorm2Sq(), r.applyTo(momentum)));
 
             return new Transform(date, pv.negate(), angularCoordinates);
 
@@ -338,11 +377,25 @@ public interface LOF {
     }
 
     /**
+     *  Get the transform from the local orbital frame to the inertial frame.
+     *
+     * @param date current date
+     * @param pv position-velocity of the spacecraft in the inertial frame
+     *
+     * @return transform from local orbital frame to the corresponding inertial frame.
+     *
+     * @since 14.0
+     */
+    default Transform transformToInertial(final AbsoluteDate date, final PVCoordinates pv) {
+        return transformFromInertial(date, pv).getInverse();
+    }
+
+    /**
      * Get the rotation from inertial frame to local orbital frame.
      * <p>
      * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
      * the full {@link #transformFromInertial(AbsoluteDate, PVCoordinates) transformFromInertial} method must be called and
-     * the complete rotation transform must be extracted from it.
+     * the complete rotation transform must be extracted from it.</p>
      *
      * @param date date of the rotation
      * @param pv position-velocity of the spacecraft in some inertial frame
@@ -350,6 +403,25 @@ public interface LOF {
      * @return rotation from inertial frame to local orbital frame
      */
     Rotation rotationFromInertial(AbsoluteDate date, PVCoordinates pv);
+
+    /**
+     * Get the rotation from local orbital frame to inertial frame.
+     * <p>
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
+     * the full {@link #transformToInertial(AbsoluteDate, PVCoordinates) transformFromInertial} method must be called and
+     * the complete rotation transform must be extracted from it.</p>
+     *
+     * @param date date of the rotation
+     * @param pv position-velocity of the spacecraft in some inertial frame
+     *
+     * @return rotation from local orbital frame to inertial frame
+     *
+     * @since 14.0
+     */
+    default Rotation rotationToInertial(final AbsoluteDate date,
+                                        final PVCoordinates pv) {
+        return rotationFromInertial(date, pv).revert();
+    }
 
     /** Get flag that indicates if current local orbital frame shall be treated as pseudo-inertial.
      * @return flag that indicates if current local orbital frame shall be treated as pseudo-inertial

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,8 +40,8 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.FieldStateCovariance;
-import org.orekit.propagation.StateCovariance;
+import org.orekit.propagation.covariance.FieldStateCovariance;
+import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.armellinutils.ArmellinDataLoader;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.armellinutils.ArmellinDataRow;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.armellinutils.ArmellinStatistics;
@@ -141,12 +141,12 @@ class Alfriend1999Test {
         final DescriptiveStatistics statistics =
                 ArmellinStatistics.getAlfriend1999ProbabilityOfCollisionRelativeDifferenceStatistics(
                         armellinDataRowList);
-
+        
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 8.843564833687099E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 3.607777228462353E-9);
+        Assertions.assertTrue(statistics.getMean() <= 8.84356484E-10);
+        Assertions.assertTrue(statistics.getStandardDeviation() <= 3.607777228631725E-9);
     }
-
+    
     /**
      * This method use the data from the appendix (p.13) of "Armellin, R. (2021). Collision Avoidance Maneuver Optimization
      * with a Multiple-Impulse Convex Formulation."

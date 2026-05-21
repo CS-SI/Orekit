@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 package org.orekit.attitudes;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -57,12 +61,8 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-
-public class TabulatedLofOffsetTest {
+class TabulatedLofOffsetTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -121,7 +121,7 @@ public class TabulatedLofOffsetTest {
 
         // create a sample from Yaw compensation law
         final LOFType type = LOFType.VNC;
-        final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        final List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
         final AttitudeProvider yawCompensLaw =
                 new YawCompensation(orbit.getFrame(), new NadirPointing(orbit.getFrame(), earth));
         final Propagator originalPropagator = new KeplerianPropagator(orbit);
@@ -190,7 +190,7 @@ public class TabulatedLofOffsetTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
 
             Utils.setDataRoot("regular-data");
@@ -226,7 +226,7 @@ public class TabulatedLofOffsetTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         itrf = null;
         earth = null;

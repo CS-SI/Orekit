@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,10 @@
  */
 package org.orekit.control.indirect.shooting;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -31,8 +35,8 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider;
-import org.orekit.control.indirect.adjoint.cost.ControlSwitchDetector;
-import org.orekit.control.indirect.adjoint.cost.FieldControlSwitchDetector;
+import org.orekit.control.indirect.adjoint.cost.ControlSwitchFunction;
+import org.orekit.control.indirect.adjoint.cost.FieldAbstractCartesianCost;
 import org.orekit.control.indirect.shooting.propagation.AdjointDynamicsProvider;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
 import org.orekit.forces.ForceModel;
@@ -42,6 +46,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -50,10 +55,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Abstract class for indirect single shooting methods with fixed initial Cartesian state.
@@ -117,6 +118,22 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
      */
     public abstract int getMaximumIterationCount();
 
+    /**
+     * Create numerical propagator with input initial adjoint vector and mass.
+     * @param adjoint initial adjoint variables
+     * @param mass initial mass
+     * @return numerical propagator ready for use
+     * @since 14.0
+     */
+    public NumericalPropagator buildPropagator(final double[] adjoint, final double mass) {
+        final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
+        final SpacecraftState initialState = createInitialStateWithMass(mass).addAdditionalData(adjointName, adjoint);
+        final NumericalPropagator propagator = buildBasicPropagator(initialState);
+        final AdjointDynamicsProvider derivativesProvider = getPropagationSettings().getAdjointDynamicsProvider();
+        propagator.addAdditionalDerivativesProvider(derivativesProvider.buildAdditionalDerivativesProvider());
+        return propagator;
+    }
+
     /** {@inheritDoc} */
     @Override
     public ShootingBoundaryOutput solve(final double initialMass, final double[] initialGuess) {
@@ -145,8 +162,8 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
 
     /** {@inheritDoc} */
     @Override
-    protected NumericalPropagator buildPropagator(final SpacecraftState initialState) {
-        final NumericalPropagator propagator = super.buildPropagator(initialState);
+    protected NumericalPropagator buildInternalPropagator(final SpacecraftState initialState) {
+        final NumericalPropagator propagator = super.buildInternalPropagator(initialState);
         propagator.setStepHandler(propagationStepRecorder);
         final CartesianAdjointDerivativesProvider derivativesProvider = (CartesianAdjointDerivativesProvider)
             getPropagationSettings().getAdjointDynamicsProvider().buildAdditionalDerivativesProvider();
@@ -162,7 +179,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
      * @param iterationCount iteration count
      * @return candidate solution
      */
-    public abstract ShootingBoundaryOutput computeCandidateSolution(SpacecraftState initialState, int iterationCount);
+    protected abstract ShootingBoundaryOutput computeCandidateSolution(SpacecraftState initialState, int iterationCount);
 
     /**
      * Iterate on initial guess to solve boundary problem.
@@ -220,10 +237,11 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
             if (!loggedEvents.isEmpty()) {
                 for (final EventsLogger.LoggedEvent loggedEvent: loggedEvents) {
                     final SpacecraftState loggedState = loggedEvent.getState();
-                    if (loggedEvent.getEventDetector() instanceof ControlSwitchDetector && loggedState.getDate().isEqualTo(stepDate)) {
-                        final ControlSwitchDetector switchDetector = (ControlSwitchDetector) loggedEvent.getEventDetector();
+                    if (loggedEvent.getEventDetector().getEventFunction() instanceof ControlSwitchFunction &&
+                            loggedState.getDate().isEqualTo(stepDate)) {
+                        final EventFunction switchFunction = loggedEvent.getEventDetector().getEventFunction();
                         integrationState = findSwitchEventAndUpdateState(date, integrationState,
-                                initialDate.toAbsoluteDate(), switchDetector, dynamicsProvider);
+                                initialDate.toAbsoluteDate(), switchFunction, dynamicsProvider);
                     }
                 }
             }
@@ -406,19 +424,20 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
     /**
      * Iterate over field switch detectors and find the one that was triggered in the non-Field propagation.
      * Then, use it to update the gradient.
-     * @param date date
+     *
+     * @param date             date
      * @param integrationState integration variables
-     * @param referenceDate date at start of propagation
-     * @param switchDetector switch detector
+     * @param referenceDate    date at start of propagation
+     * @param switchFunction   switch detector
      * @param dynamicsProvider adjoint dynamics provider
      * @return update integration state
      */
     private Gradient[] findSwitchEventAndUpdateState(final AbsoluteDate date, final Gradient[] integrationState,
                                                      final AbsoluteDate referenceDate,
-                                                     final ControlSwitchDetector switchDetector,
+                                                     final EventFunction switchFunction,
                                                      final AdjointDynamicsProvider dynamicsProvider) {
         final FieldSpacecraftState<Gradient> fieldState = formatFromArray(date, integrationState);
-        final double expectedG = switchDetector.g(fieldState.toSpacecraftState());
+        final double expectedG = switchFunction.value(fieldState.toSpacecraftState());
         final int shootingVariables = dynamicsProvider.getDimension();
         final int increasedVariables = shootingVariables + 1;
         final GradientField increasedVariablesField = GradientField.getField(increasedVariables);
@@ -427,7 +446,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
         final List<FieldEventDetector<Gradient>> fieldEventDetectors = fieldDerivativesProvider.getCost()
                 .getFieldEventDetectors(increasedVariablesField).collect(Collectors.toList());
         for (final FieldEventDetector<Gradient> fieldEventDetector : fieldEventDetectors) {
-            if (fieldEventDetector instanceof FieldControlSwitchDetector) {
+            if (fieldEventDetector.getEventFunction() instanceof FieldAbstractCartesianCost.FieldSwitchFunction) {
                 final double actualG = fieldEventDetector.g(fieldState).getReal();
                 if (FastMath.abs(actualG - expectedG) < 1e-10) {
                     return updateStateWithTaylorMapInversion(date, integrationState, referenceDate, fieldEventDetector);

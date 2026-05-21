@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,14 +40,16 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
                                                      O extends AbstractNavigationMessage<O>>
     extends FieldAbstractAlmanac<T, O> {
 
-    /** Mean Motion Difference from Computed Value. */
-    private T deltaN0;
-
     /** Time of clock epoch. */
     private FieldAbsoluteDate<T> epochToc;
 
     /** Transmission time. */
     private T transmissionTime;
+
+    /** Message type.
+     * @since 14.0
+     */
+    private final String type;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -55,9 +57,9 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      */
     protected FieldAbstractNavigationMessage(final Field<T> field, final O original) {
         super(field, original);
-        setDeltaN0(field.getZero().newInstance(original.getDeltaN0()));
         setEpochToc(new FieldAbsoluteDate<>(field, original.getEpochToc()));
         setTransmissionTime(field.getZero().newInstance(original.getTransmissionTime()));
+        this.type = original.getNavigationMessageType();
     }
 
     /** Constructor from different field instance.
@@ -68,9 +70,17 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
     protected <V extends CalculusFieldElement<V>> FieldAbstractNavigationMessage(final Function<V, T> converter,
                                                                                  final FieldAbstractNavigationMessage<V, O> original) {
         super(converter, original);
-        setDeltaN0(converter.apply(original.getDeltaN0()));
         setEpochToc(new FieldAbsoluteDate<>(getMu().getField(), original.getEpochToc().toAbsoluteDate()));
         setTransmissionTime(converter.apply(original.getTransmissionTime()));
+        this.type = original.getNavigationMessageType();
+    }
+
+    /** Get navigation message type.
+     * @return the navigation message type
+     * @since 14.0
+     */
+    public String getNavigationMessageType() {
+        return type;
     }
 
     /**
@@ -90,20 +100,6 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      */
     public void setSqrtA(final T sqrtA) {
         setSma(sqrtA.square());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public T getDeltaN0() {
-        return deltaN0;
-    }
-
-    /**
-     * Setter for the delta of satellite mean motion.
-     * @param deltaN0 the value to set
-     */
-    public void setDeltaN0(final T deltaN0) {
-        this.deltaN0 = deltaN0;
     }
 
     /**

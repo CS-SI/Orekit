@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,12 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.bodies.FieldGeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
+import org.hipparchus.Field;
+import org.orekit.bodies.BodyShape;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.LatitudeValueCrossingFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
 import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
@@ -34,10 +35,7 @@ import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
  * @param <T> type of the field elements
  */
 public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
-        extends FieldAbstractDetector<FieldLatitudeCrossingDetector<T>, T> {
-
-    /** Body on which the latitude is defined. */
-    private final OneAxisEllipsoid body;
+        extends FieldAbstractGeographicalDetector<FieldLatitudeCrossingDetector<T>, T> {
 
     /** Fixed latitude to be crossed. */
     private final double latitude;
@@ -51,7 +49,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
      * @param latitude latitude to be crossed
      */
     public FieldLatitudeCrossingDetector(final Field<T> field,
-                                         final OneAxisEllipsoid body,
+                                         final BodyShape body,
                                          final double latitude) {
         this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
                 new FieldStopOnIncreasing<>(), body, latitude);
@@ -65,10 +63,25 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
      */
     public FieldLatitudeCrossingDetector(final T maxCheck,
                                          final T threshold,
-                                         final OneAxisEllipsoid body,
+                                         final BodyShape body,
                                          final double latitude) {
         this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER),
                 new FieldStopOnIncreasing<>(), body, latitude);
+    }
+
+    /** Constructor with input detection setting and handler.
+     * @param detectionSettings event detection settings
+     * @param handler event handler to call at event occurrences
+     * @param body body on which the latitude is defined
+     * @param latitude latitude to be crossed
+     * @since 13.0
+     */
+    public FieldLatitudeCrossingDetector(
+            final FieldEventDetectionSettings<T> detectionSettings,
+            final FieldEventHandler<T> handler,
+            final BodyShape body,
+            final double latitude) {
+        this(new LatitudeValueCrossingFunction(body, latitude), detectionSettings, handler, body);
     }
 
     /** Protected constructor with full parameters.
@@ -77,35 +90,27 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
+     * @param eventFunction event function
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
-     * @param latitude latitude to be crossed
-     * @since 13.0
+     * @since 14.0
      */
     protected FieldLatitudeCrossingDetector(
+            final LatitudeValueCrossingFunction eventFunction,
             final FieldEventDetectionSettings<T> detectionSettings,
             final FieldEventHandler<T> handler,
-            final OneAxisEllipsoid body,
-            final double latitude) {
-        super(detectionSettings, handler);
-        this.body     = body;
-        this.latitude = latitude;
+            final BodyShape body) {
+        super(eventFunction, detectionSettings, handler, body);
+        this.latitude = eventFunction.getCriticalLatitude();
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldLatitudeCrossingDetector<T> create(
-            final FieldEventDetectionSettings<T> detectionSettings,
-            final FieldEventHandler<T> newHandler) {
-        return new FieldLatitudeCrossingDetector<>(detectionSettings, newHandler, body, latitude);
-    }
-
-    /** Get the body on which the geographic zone is defined.
-     * @return body on which the geographic zone is defined
-     */
-    public OneAxisEllipsoid getBody() {
-        return body;
+    protected FieldLatitudeCrossingDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                                      final FieldEventHandler<T> newHandler) {
+        return new FieldLatitudeCrossingDetector<>((LatitudeValueCrossingFunction) getEventFunction(),
+                detectionSettings, newHandler, getBodyShape());
     }
 
     /** Get the fixed latitude to be crossed (radians).
@@ -125,16 +130,13 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
      * @return spacecraft latitude minus the fixed latitude to be crossed
      */
     public T g(final FieldSpacecraftState<T> s) {
-
-        // convert state to geodetic coordinates
-        final FieldGeodeticPoint<T> gp = body.transform(
-                s.getPosition(),
-                s.getFrame(),
-                s.getDate());
-
-        // latitude difference
-        return gp.getLatitude().subtract(latitude);
-
+        return getEventFunction().value(s);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public LatitudeCrossingDetector toEventDetector(final EventHandler eventHandler) {
+        return new LatitudeCrossingDetector((LatitudeValueCrossingFunction) getEventFunction(),
+                getDetectionSettings().toEventDetectionSettings(), eventHandler, getBodyShape());
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,22 +32,22 @@ public class AbstractGaussianContributionContext extends ForceModelContext {
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** 2 / (n² * a) . */
-    protected double ton2a;
+    protected final double ton2a;
 
     /** 1 / A . */
-    protected double ooA;
+    protected final double ooA;
 
     /** 1 / (A * B) . */
-    protected double ooAB;
+    protected final double ooAB;
 
     /** C / (2 * A * B) . */
-    protected double co2AB;
+    protected final double co2AB;
 
     /** 1 / (1 + B) . */
-    protected double ooBpo;
+    protected final double ooBpo;
 
     /** 1 / μ . */
-    protected double ooMu;
+    protected final double ooMu;
 
     /** A = sqrt(μ * a). */
     private final double A;
@@ -56,7 +56,7 @@ public class AbstractGaussianContributionContext extends ForceModelContext {
     private final double n;
 
     /** Central attraction coefficient. */
-    private double mu;
+    private final double mu;
 
     // CHECKSTYLE: resume VisibilityModifier check
 

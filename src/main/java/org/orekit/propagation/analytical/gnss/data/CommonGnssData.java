@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,9 +73,9 @@ public abstract class CommonGnssData<O extends CommonGnssData<O>>
     protected CommonGnssData(final double mu, final double angularVelocity, final int weeksInCycle,
                              final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
-        this.af0Driver = createDriver(AF0);
-        this.af1Driver = createDriver(AF1);
-        this.af2Driver = createDriver(AF2);
+        this.af0Driver = createDriver(AF0, -26);
+        this.af1Driver = createDriver(AF1, -42);
+        this.af2Driver = createDriver(AF2, -58);
     }
 
     /** Constructor from field instance.
@@ -86,9 +86,9 @@ public abstract class CommonGnssData<O extends CommonGnssData<O>>
     protected <T extends CalculusFieldElement<T>,
                A extends CommonGnssData<A>> CommonGnssData(final FieldCommonGnssData<T, A> original) {
         super(original);
-        this.af0Driver = createDriver(AF0);
-        this.af1Driver = createDriver(AF1);
-        this.af2Driver = createDriver(AF2);
+        this.af0Driver = createDriver(AF0, -26);
+        this.af1Driver = createDriver(AF1, -42);
+        this.af2Driver = createDriver(AF2, -58);
         setAf0(original.getAf0().getReal());
         setAf1(original.getAf1().getReal());
         setAf2(original.getAf2().getReal());

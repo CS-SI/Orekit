@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,8 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.AltitudeEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
@@ -34,13 +33,10 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
+public class AltitudeDetector extends AbstractGeographicalDetector<AltitudeDetector> {
 
     /** Threshold altitude value (m). */
     private final double altitude;
-
-    /** Body shape with respect to which altitude should be evaluated. */
-    private final BodyShape bodyShape;
 
     /** Build a new altitude detector.
      * <p>This simple constructor takes default values for maximal checking
@@ -100,15 +96,14 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
     protected AltitudeDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                final double altitude,
                                final BodyShape bodyShape) {
-        super(detectionSettings, handler);
+        super(new AltitudeEventFunction(bodyShape, altitude), detectionSettings, handler, bodyShape);
         this.altitude  = altitude;
-        this.bodyShape = bodyShape;
     }
 
     /** {@inheritDoc} */
     @Override
     protected AltitudeDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
-        return new AltitudeDetector(detectionSettings, newHandler, altitude, bodyShape);
+        return new AltitudeDetector(detectionSettings, newHandler, altitude, getBodyShape());
     }
 
     /** Get the threshold altitude value.
@@ -118,13 +113,6 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
         return altitude;
     }
 
-    /** Get the body shape.
-     * @return the body shape
-     */
-    public BodyShape getBodyShape() {
-        return bodyShape;
-    }
-
     /** Compute the value of the switching function.
      * This function measures the difference between the current altitude
      * and the threshold altitude.
@@ -132,9 +120,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        final Frame bodyFrame      = bodyShape.getBodyFrame();
-        final GeodeticPoint point  = bodyShape.transform(s.getPosition(bodyFrame), bodyFrame, s.getDate());
-        return point.getAltitude() - altitude;
+        return getEventFunction().value(s);
     }
 
 }

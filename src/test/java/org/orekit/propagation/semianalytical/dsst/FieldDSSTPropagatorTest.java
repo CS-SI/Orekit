@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -114,7 +114,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-public class FieldDSSTPropagatorTest {
+class FieldDSSTPropagatorTest {
 
     /** Test designed after fixing issue 1907.
      * It tests that using an apside detector with an osculating DSST propagation doesn't lead to an hyperbolic orbit anymore.
@@ -144,7 +144,7 @@ public class FieldDSSTPropagatorTest {
         // Set up DSST propagator
         final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
         final AdaptiveStepsizeFieldIntegrator<Binary64> integrator = new DormandPrince853FieldIntegrator<>(field, 60.0, 3600.0, tol[0], tol[1]);
-        final FieldDSSTPropagator<Binary64> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        final FieldDSSTPropagator<Binary64> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.OSCULATING);
         for (DSSTForceModel force : forceModels) {
             propagator.addForceModel(force);
         }
@@ -163,7 +163,6 @@ public class FieldDSSTPropagatorTest {
             return Action.RESET_STATE;
         }
     }
-
     /**
      * Test issue #1029 about DSST short period terms computation.
      * Issue #1029 is a regression introduced in version 10.0
@@ -194,7 +193,7 @@ public class FieldDSSTPropagatorTest {
         // create propagator
         final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(equinoctial, OrbitType.EQUINOCTIAL);
         final AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 3600.0, 86400.0, tol[0], tol[1]);
-        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.OSCULATING);
 
         // add force models
         final Frame ecefFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -777,7 +776,7 @@ public class FieldDSSTPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10.).getReal());
-        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.MEAN);
+        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.MEAN);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getGTOD(false));
@@ -835,7 +834,7 @@ public class FieldDSSTPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10.).getReal());
-        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getGTOD(false));
@@ -899,7 +898,7 @@ public class FieldDSSTPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep.getReal(), maxStep.getReal(), tol[0], tol[1]);
 
         // build the propagator for the propagation of the mean elements
-        FieldDSSTPropagator<T> prop = new FieldDSSTPropagator<>(field, integrator, PropagationType.MEAN);
+        FieldDSSTPropagator<T> prop = new FieldDSSTPropagator<>(integrator, PropagationType.MEAN);
 
         final UnnormalizedSphericalHarmonicsProvider provider =
                         GravityFieldFactory.getUnnormalizedProvider(4, 0);
@@ -996,7 +995,7 @@ public class FieldDSSTPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10).getReal());
-        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getGTOD(false));
@@ -1206,7 +1205,7 @@ public class FieldDSSTPropagatorTest {
         // Set up DSST propagator
         final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
         final FieldODEIntegrator<T> integrator = new DormandPrince54FieldIntegrator<>(field, 60.0, 3600.0, tol[0], tol[1]);
-        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.OSCULATING);
         for (DSSTForceModel force : forceModels) {
             propagator.addForceModel(force);
         }
@@ -1222,36 +1221,6 @@ public class FieldDSSTPropagatorTest {
         Assertions.assertEquals(finalState.getOrbit().getMu().getReal(), 3.986004415E14, Double.MIN_VALUE);
     }
 
-    @Deprecated
-    @Test
-    void testIssue704() {
-        doTestIssue704(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestIssue704(final Field<T> field) {
-
-        // Coordinates
-        final FieldOrbit<T>         orbit = getLEOState(field).getOrbit();
-        final FieldPVCoordinates<T> pv    = orbit.getPVCoordinates();
-
-        // dP
-        final T dP = field.getZero().add(10.0);
-
-        // Computes dV
-        final T r2 = pv.getPosition().getNormSq();
-        final T v  = pv.getVelocity().getNorm();
-        final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
-
-        // Verify
-        final double[][] tol1 = FieldDSSTPropagator.tolerances(dP, orbit);
-        final double[][] tol2 = FieldDSSTPropagator.tolerances(dP, dV, orbit);
-        for (int i = 0; i < tol1.length; i++) {
-            Assertions.assertArrayEquals(tol1[i], tol2[i], Double.MIN_VALUE);
-        }
-
-    }
-
-    /** This test is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
     @Test
     void testIssue670() {
         doTestIssue670(Binary64Field.getInstance());
@@ -1313,7 +1282,7 @@ public class FieldDSSTPropagatorTest {
         final T maxStep = minStep.multiply(100.);
         final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(initialState.getOrbit(), OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep.getReal(), maxStep.getReal(), tol[0], tol[1]);
-        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.OSCULATING);
         propagator.setInitialState(initialState, PropagationType.OSCULATING);
         propagator.addForceModel(new DSSTZonal(provider));
         propagator.addForceModel(new DSSTTesseral(earthFrame,
@@ -1364,7 +1333,7 @@ public class FieldDSSTPropagatorTest {
         final ClassicalRungeKuttaFieldIntegrator<T> integrator = new ClassicalRungeKuttaFieldIntegrator<>(field, zero.newInstance(step));
         
         // DSST is configured to propagate in MEAN elements
-        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.MEAN);
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.MEAN);
         
         // The initial state is OSCULATING
         propagator.setInitialState(initialState, PropagationType.OSCULATING);
@@ -1553,7 +1522,7 @@ public class FieldDSSTPropagatorTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
@@ -1574,7 +1543,7 @@ public class FieldDSSTPropagatorTest {
         OrbitType propagationType = OrbitType.EQUINOCTIAL;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance.getReal()).getTolerances(osculatingOrbit, propagationType);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep, maxstep, tolerances[0], tolerances[1]);
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setOrbitType(propagationType);
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);

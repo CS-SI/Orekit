@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,13 +21,13 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.FieldAbsoluteDate;
+import static org.mockito.Mockito.when;
 
 class FieldDetectorModifierTest {
 
@@ -37,7 +37,7 @@ class FieldDetectorModifierTest {
         // GIVEN
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
         final FieldEventDetectionSettings detectionSettings = Mockito.mock(FieldEventDetectionSettings.class);
-        Mockito.when(detector.getDetectionSettings()).thenReturn(detectionSettings);
+        when(detector.getDetectionSettings()).thenReturn(detectionSettings);
         final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
         final FieldEventDetectionSettings<?> actualSettings = modifierDetector.getDetectionSettings();
@@ -45,17 +45,17 @@ class FieldDetectorModifierTest {
         Assertions.assertEquals(detectionSettings, actualSettings);
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void testDependsOnlyOnTime(final boolean value) {
+    @Test
+    void testGetEventFunction() {
         // GIVEN
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(detector.dependsOnTimeOnly()).thenReturn(value);
+        final EventFunction eventFunction = state -> 0.;
+        when(detector.getEventFunction()).thenReturn(eventFunction);
         final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
-        final boolean actual = modifierDetector.dependsOnTimeOnly();
+        final EventFunction actual = modifierDetector.getEventFunction();
         // THEN
-        Assertions.assertEquals(value, actual);
+        Assertions.assertEquals(eventFunction, actual);
     }
 
     @Test
@@ -64,7 +64,7 @@ class FieldDetectorModifierTest {
         // GIVEN
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
         final FieldEventHandler handler = Mockito.mock(FieldEventHandler.class);
-        Mockito.when(detector.getHandler()).thenReturn(handler);
+        when(detector.getHandler()).thenReturn(handler);
         final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
         final FieldEventHandler<?> actualHandler = modifierDetector.getHandler();
@@ -77,7 +77,7 @@ class FieldDetectorModifierTest {
     void testInit() {
         // GIVEN
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(detector.getHandler()).thenReturn(new FieldStopOnEvent<>());
+        when(detector.getHandler()).thenReturn(new FieldStopOnEvent<>());
         final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
         final FieldAbsoluteDate mockedDate = Mockito.mock(FieldAbsoluteDate.class);
         final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
@@ -92,7 +92,7 @@ class FieldDetectorModifierTest {
     void testReset() {
         // GIVEN
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(detector.getHandler()).thenReturn(new FieldStopOnEvent<>());
+        when(detector.getHandler()).thenReturn(new FieldStopOnEvent<>());
         final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
         final FieldAbsoluteDate mockedDate = Mockito.mock(FieldAbsoluteDate.class);
         final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
@@ -110,7 +110,8 @@ class FieldDetectorModifierTest {
         final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
         final FieldEventDetector<Binary64> detector = new FieldDateDetector<>(date);
         final FieldSpacecraftState<Binary64> mockedState = Mockito.mock(FieldSpacecraftState.class);
-        Mockito.when(mockedState.getDate()).thenReturn(date);
+        when(mockedState.getDate()).thenReturn(date);
+        when(mockedState.getMass()).thenReturn(Binary64.ONE);
         final TestFieldDetector<Binary64> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
         final double actualG = modifierDetector.g(mockedState).getReal();
@@ -123,25 +124,13 @@ class FieldDetectorModifierTest {
     void testFinish() {
         // GIVEN
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(detector.getHandler()).thenReturn(new FieldStopOnEvent<>());
+        when(detector.getHandler()).thenReturn(new FieldStopOnEvent<>());
         final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
         final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
         modifierDetector.finish(mockedState);
         // THEN
         Mockito.verify(detector).finish(mockedState);
-    }
-
-    @Deprecated
-    @Test
-    void testAdapterDetector() {
-        // GIVEN
-        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(Binary64Field.getInstance());
-        // WHEN
-        final FieldAdapterDetector<Binary64> adapterDetector = new FieldAdapterDetector<>(detector);
-        // THEN
-        final TestFieldDetector<Binary64> detectorModifier = new TestFieldDetector<>(detector);
-        Assertions.assertEquals(detectorModifier.getDetector(), adapterDetector.getDetector());
     }
 
     private static class TestFieldDetector<T extends CalculusFieldElement<T>> implements FieldDetectorModifier<T> {

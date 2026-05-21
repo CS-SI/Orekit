@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -191,9 +191,10 @@ public enum SatelliteSystem {
      */
     public static SatelliteSystem parseSatelliteSystem(final String s)
         throws OrekitIllegalArgumentException {
-        final SatelliteSystem satelliteSystem = KEYS_MAP.get(s.charAt(0));
+        final SatelliteSystem satelliteSystem = (s == null || s.isEmpty()) ? null : KEYS_MAP.get(s.charAt(0));
         if (satelliteSystem == null) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_SATELLITE_SYSTEM, s.charAt(0));
+            throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_SATELLITE_SYSTEM,
+                                                     s == null || s.isEmpty() ? "\" \"" : s.charAt(0));
         }
         return satelliteSystem;
     }
@@ -203,11 +204,13 @@ public enum SatelliteSystem {
      * The string first character must be the satellite system, or empty to get GPS as default
      * </p>
      * @param s string to parse
+     * @param defaultSatelliteSystem satellite system to use if string is null or empty
      * @return the satellite system
-     * @since 12.0
+     * @since 14.0
      */
-    public static SatelliteSystem parseSatelliteSystemWithGPSDefault(final String s) {
-        return s.isEmpty() ? SatelliteSystem.GPS : parseSatelliteSystem(s);
+    public static SatelliteSystem parseSatelliteSystem(final String s,
+                                                       final SatelliteSystem defaultSatelliteSystem) {
+        return (s == null || s.isEmpty()) ? defaultSatelliteSystem : parseSatelliteSystem(s);
     }
 
     /** Get observation time scale for satellite system.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,7 @@ import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.StateCovariance;
+import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -407,36 +407,35 @@ public class TestUtils {
      * @return if the object contains any NaNs.
      */
     public static boolean isAnyNan(Object o) {
-        if (o instanceof Double) {
-            return Double.isNaN((Double) o);
-        } else if (o instanceof double[]) {
-            for (double v : (double[]) o) {
+        if (o instanceof Double double1) {
+            return Double.isNaN(double1);
+        } else if (o instanceof double[] doubles) {
+            for (double v : doubles) {
                 if (Double.isNaN(v)) {
                     return true;
                 }
             }
-        } else if (o instanceof Object[]) {
-            for (Object object : (Object[]) o) {
+        } else if (o instanceof Object[] object1s) {
+            for (Object object : object1s) {
                 if (isAnyNan(object)) {
                     return true;
                 }
             }
-        } else if (o instanceof Collection) {
-            for (Object object : (Collection<?>) o) {
+        } else if (o instanceof Collection<?> collection) {
+            for (Object object : collection) {
                 if (isAnyNan(object)) {
                     return true;
                 }
             }
-        } else if (o instanceof CalculusFieldElement) {
-            CalculusFieldElement<?> cfe = (CalculusFieldElement<?>) o;
+        } else if (o instanceof CalculusFieldElement<?> cfe) {
             if (cfe.isNaN()) {
                 return true;
             }
-            if (cfe instanceof Gradient) {
-                return isAnyNan(((Gradient) cfe).getGradient());
+            if (cfe instanceof Gradient gradient) {
+                return isAnyNan(gradient.getGradient());
             }
-            if (cfe instanceof DerivativeStructure) {
-                return isAnyNan(((DerivativeStructure) cfe).getAllDerivatives());
+            if (cfe instanceof DerivativeStructure structure) {
+                return isAnyNan(structure.getAllDerivatives());
             }
         }
         return false;

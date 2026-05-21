@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,9 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.FieldTimeSpanMap;
@@ -45,7 +47,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
 
 
     /** All states. */
-    private transient FieldTimeSpanMap<FieldSpacecraftState<T>, T> states;
+    private FieldTimeSpanMap<FieldSpacecraftState<T>, T> states;
 
     /** Build a propagator from orbit only.
      * <p>The central attraction coefficient μ is set to the same value used
@@ -190,14 +192,12 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     @Override
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
                                         final T[] parameters) {
-        // propagate orbit
-        FieldOrbit<T> orbit = states.get(date).getOrbit();
-        do {
-            // we use a loop here to compensate for very small date shifts error
-            // that occur with long propagation time
-            orbit = orbit.shiftedBy(date.durationFrom(orbit.getDate()));
-        } while (!date.equals(orbit.getDate()));
-        return orbit;
+        final FieldOrbit<T> closestOrbit = states.get(date).getOrbit();
+        final AbsoluteDate epoch = closestOrbit.getDate().toAbsoluteDate();
+        final TimeOffset durationWithoutField = date.toAbsoluteDate().accurateDurationFrom(epoch);
+        final FieldOrbit<T> orbit = closestOrbit.shiftedBy(durationWithoutField);
+        final T fieldShift = date.durationFrom(epoch).getAddendum();
+        return orbit.shiftedBy(fieldShift);
     }
 
     /** {@inheritDoc}*/

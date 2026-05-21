@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -95,5 +95,20 @@ public interface TimeInterval {
                 return otherDate;
             }
         };
+    }
+
+    /**
+     * Create instance from two dates in arbitrary order.
+     * @param date start (or end) date
+     * @param duration duration, in seconds (if positive, time interval is from date to date + duration,
+     *                 if negative, the time interval will be from date - duration to date)
+     * @return time interval
+     * @since 14.0
+     */
+    static TimeInterval of(final AbsoluteDate date, final double duration) {
+        if (duration < 0.0) {
+            return of(date.shiftedBy(duration), date);
+        }
+        return of(date, date.shiftedBy(duration));
     }
 }

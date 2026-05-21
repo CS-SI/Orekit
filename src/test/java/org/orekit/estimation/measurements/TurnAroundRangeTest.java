@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -156,7 +156,7 @@ public class TurnAroundRangeTest {
         double refErrorQMMedian = 1.3e-8;
         double refErrorQMMean   = 8.9e-8;
         double refErrorQMMax    = 5.1e-6;
-        double refErrorQSMedian = 3.4e-8;
+        double refErrorQSMedian = 3.6e-8;
         double refErrorQSMean   = 1.9e-5;
         double refErrorQSMax    = 2.2e-4;
         this.genericTestParameterDerivatives(isModifier, printResults,
@@ -174,7 +174,7 @@ public class TurnAroundRangeTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -225,8 +225,8 @@ public class TurnAroundRangeTest {
             if (printResults) {
                 final AbsoluteDate measurementDate = measurement.getDate();
 
-                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
-                String secondaryStationName = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryObserver().getName();
+                String secondaryStationName = ((TurnAroundRange) measurement).getSecondaryObserver().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17.6f  %17.6f  %13.6e %13.6e%n",
                                   primaryStationName, secondaryStationName, measurementDate, date,
                                  TARobserved, TARestimated,
@@ -261,7 +261,7 @@ public class TurnAroundRangeTest {
         Assertions.assertEquals(0.0, relErrorsMax , 2.9e-14);
         
         // Test measurement type
-        Assertions.assertEquals(TurnAroundRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(TurnAroundRange.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
@@ -272,7 +272,7 @@ public class TurnAroundRangeTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range2 measurements
@@ -355,8 +355,8 @@ public class TurnAroundRangeTest {
             }
             // Print results on the console ? Print the Jacobian
             if (printResults) {
-                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
-                String secondaryStationName  = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryObserver().getName();
+                String secondaryStationName  = ((TurnAroundRange) measurement).getSecondaryObserver().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
                                   "%10.3e  %10.3e  %10.3e  " +
                                   "%10.3e  %10.3e  %10.3e  " +
@@ -404,18 +404,18 @@ public class TurnAroundRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect TAR measurements
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    primaryStation = entry.getKey();
             final GroundStation    secondaryStation  = entry.getValue();
-            primaryStation.getClockOffsetDriver().setSelected(true);
+            primaryStation.getClockBiasDriver().setSelected(true);
             primaryStation.getEastOffsetDriver().setSelected(true);
             primaryStation.getNorthOffsetDriver().setSelected(true);
             primaryStation.getZenithOffsetDriver().setSelected(true);
-            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getClockBiasDriver().setSelected(false);
             secondaryStation.getEastOffsetDriver().setSelected(true);
             secondaryStation.getNorthOffsetDriver().setSelected(true);
             secondaryStation.getZenithOffsetDriver().setSelected(true);
@@ -460,8 +460,8 @@ public class TurnAroundRangeTest {
           }
 
             // parameter corresponding to station position offset
-            final GroundStation primaryStationParameter = ((TurnAroundRange) measurement).getPrimaryStation();
-            final GroundStation secondaryStationParameter = ((TurnAroundRange) measurement).getSecondaryStation();
+            final GroundStation primaryStationParameter = (GroundStation) ((TurnAroundRange) measurement).getPrimaryObserver();
+            final GroundStation secondaryStationParameter = (GroundStation) ((TurnAroundRange) measurement).getSecondaryObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

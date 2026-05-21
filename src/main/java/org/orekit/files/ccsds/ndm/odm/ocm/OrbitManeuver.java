@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ public class OrbitManeuver implements TimeStamped {
     private double deltaMass;
 
     /** Acceleration. */
-    private double[] acceleration;
+    private final double[] acceleration;
 
     /** Interpolation mode between current and next acceleration line. */
     private OnOff accelerationInterpolation;
@@ -50,7 +50,7 @@ public class OrbitManeuver implements TimeStamped {
     private double accelerationDirectionSigma;
 
     /** Velocity increment. */
-    private double[] dV;
+    private final double[] dV;
 
     /** One σ percent error on ΔV magnitude. */
     private double dvMagSigma;
@@ -59,7 +59,7 @@ public class OrbitManeuver implements TimeStamped {
     private double dvDirSigma;
 
     /** Thrust. */
-    private double[] thrust;
+    private final double[] thrust;
 
     /** Thrust efficiency η typically between 0.0 and 1.0. */
     private double thrustEfficiency;
@@ -80,7 +80,7 @@ public class OrbitManeuver implements TimeStamped {
     private String deployId;
 
     /** Velocity increment of deployed "child" object. */
-    private double[] deployDv;
+    private final double[] deployDv;
 
     /** Decrement in host mass as a result of deployment (shall be ≤ 0). */
     private double deployMass;

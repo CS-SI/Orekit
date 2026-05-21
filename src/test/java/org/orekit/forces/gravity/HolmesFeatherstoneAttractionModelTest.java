@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -491,7 +491,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setPositionAngleType(PositionAngleType.TRUE);
         FNP.setInitialState(initialState);
@@ -560,7 +560,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
@@ -1253,7 +1253,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         final FieldVector3D<Gradient> accelerationVector = model.acceleration(stateMock, new Gradient[] { dummyGm });
 
         // THEN
-        final double[] derivatives = accelerationVector.getNormSq().getGradient();
+        final double[] derivatives = accelerationVector.getNorm2Sq().getGradient();
         Assertions.assertNotEquals(0., MatrixUtils.createRealVector(derivatives).getNorm());
     }
 

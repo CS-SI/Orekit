@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -245,9 +245,9 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
                                                                                          final double tolerance)
         throws MathIllegalArgumentException {
 
-        final T v12 = v1.getNormSq();
+        final T v12 = v1.getNorm2Sq();
         final T v1n = v12.sqrt();
-        final T v22 = v2.getNormSq();
+        final T v22 = v2.getNorm2Sq();
         final T v2n = v22.sqrt();
         final T threshold;
         if (v1n.getReal() >= v2n.getReal()) {
@@ -292,9 +292,9 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
             if (miae.getSpecifier() == LocalizedCoreFormats.SINGULAR_MATRIX) {
 
                 // handle some special cases for which we can compute a solution
-                final T c12 = c1.getNormSq();
+                final T c12 = c1.getNorm2Sq();
                 final T c1n = c12.sqrt();
-                final T c22 = c2.getNormSq();
+                final T c22 = c2.getNorm2Sq();
                 final T c2n = c22.sqrt();
                 if (c1n.getReal() <= threshold.getReal() && c2n.getReal() <= threshold.getReal()) {
                     // simple special case, velocities are cancelled

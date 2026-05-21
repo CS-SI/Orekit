@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -328,7 +328,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialState.getOrbit(), orbitType);
         AdaptiveStepsizeFieldIntegrator<S> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
-        final FieldNumericalPropagator<S> propagator = new FieldNumericalPropagator<>(field, integrator);
+        final FieldNumericalPropagator<S> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setOrbitType(orbitType);
         propagator.setInitialState(initialState);
         propagator.setAttitudeProvider(attitudeProvider);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
     private final LOF type;
 
     /** Cached attitude table. */
-    private final transient ImmutableTimeStampedCache<? extends TimeStampedAngularCoordinates> table;
+    private final ImmutableTimeStampedCache<? extends TimeStampedAngularCoordinates> table;
 
     /** Filter for derivatives from the sample to use in interpolation. */
     private final AngularDerivativesFilter filter;
@@ -83,7 +83,7 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
     public TabulatedLofOffset(final Frame inertialFrame, final LOF lof,
                               final List<? extends TimeStampedAngularCoordinates> table,
                               final int n, final AngularDerivativesFilter filter) {
-        this(inertialFrame, lof, table, n, filter, table.get(0).getDate(), table.get(table.size() - 1).getDate());
+        this(inertialFrame, lof, table, n, filter, table.getFirst().getDate(), table.getLast().getDate());
     }
 
     /** Creates new instance.

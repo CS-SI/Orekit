@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,9 +67,9 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
         final FieldVector3D<Gradient> centralToBodyFV = new FieldVector3D<>(new Gradient[] {fpx, fpy, fpz});
 
 
-        final Gradient                r2Central = centralToBodyFV.getNormSq();
+        final Gradient                r2Central = centralToBodyFV.getNorm2Sq();
         final FieldVector3D<Gradient> satToBody = centralToBodyFV.subtract(s.getPosition());
-        final Gradient                r2Sat     = satToBody.getNormSq();
+        final Gradient                r2Sat     = satToBody.getNorm2Sq();
 
         return new FieldVector3D<>(gm, satToBody.scalarMultiply(r2Sat.multiply(r2Sat.sqrt()).reciprocal()),
                                   -gm, centralToBodyFV.scalarMultiply(r2Central.multiply(r2Central.sqrt()).reciprocal()));

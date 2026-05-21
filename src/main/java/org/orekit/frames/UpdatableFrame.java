@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -177,7 +177,7 @@ public class UpdatableFrame extends Frame {
     private static class UpdatableProvider implements TransformProvider {
 
         /** Current transform. */
-        private AtomicReference<Transform> transform;
+        private final AtomicReference<Transform> transform;
 
         /** Simple constructor.
          * @param transform initial value of the transform

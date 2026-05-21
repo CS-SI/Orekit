@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,13 +49,40 @@ public class EventsLogger {
     /** List of occurred events. */
     private final List<LoggedEvent> log;
 
+    /** Flag to save reset states. */
+    private final boolean logResetStates;
+
+    /** Constructor from existing log with flag to keep reset states.
+     * @param logResetStates flag to turn on the storage of reset states (if false, getter in event is set to null)
+     * @param inputLog log to be kept at start
+     * <p>
+     * Build an non-empty logger for events detectors.
+     * </p>
+     * @since 14.0
+     */
+    public EventsLogger(final boolean logResetStates, final List<LoggedEvent> inputLog) {
+        this.logResetStates = logResetStates;
+        this.log = new ArrayList<>(inputLog);
+    }
+
+    /** Constructor from existing log.
+     * @param inputLog log to be kept at start
+     * <p>
+     * Build an non-empty logger for events detectors.
+     * </p>
+     * @since 14.0
+     */
+    public EventsLogger(final List<LoggedEvent> inputLog) {
+        this(inputLog.stream().anyMatch(loggedEvent -> loggedEvent.getResetState() != null), inputLog);
+    }
+
     /** Simple constructor.
      * <p>
      * Build an empty logger for events detectors.
      * </p>
      */
     public EventsLogger() {
-        log = new ArrayList<>();
+        this(true, new ArrayList<>());
     }
 
     /** Monitor an event detector.
@@ -117,20 +144,25 @@ public class EventsLogger {
         /** State after reset if any, otherwise same than triggering state. */
         private final SpacecraftState resetState;
 
+        /** Action registered by event handler. */
+        private final Action action;
+
         /** Constructor.
          * @param detector detector for event that was triggered
          * @param state state at event trigger date
          * @param resetState state after reset if any, otherwise same as event state
          * @param increasing indicator if the event switching function was increasing
          * or decreasing at event occurrence date
-         * @since 13.1
+         * @param action action from handler
+         * @since 14.0
          */
         private LoggedEvent(final EventDetector detector, final SpacecraftState state,
-                            final SpacecraftState resetState, final boolean increasing) {
+                            final SpacecraftState resetState, final boolean increasing, final Action action) {
             this.detector   = detector;
             this.state      = state;
             this.resetState = resetState;
             this.increasing = increasing;
+            this.action     = action;
         }
 
         /** Get the event detector triggered.
@@ -154,7 +186,7 @@ public class EventsLogger {
             return state;
         }
 
-        /** Get the reset state.
+        /** Get the reset state. Can be null if not stored.
          * @return reset state
          * @see EventHandler#resetState(EventDetector, SpacecraftState)
          * @since 13.1
@@ -171,6 +203,14 @@ public class EventsLogger {
             return increasing;
         }
 
+        /**
+         * Getter for the action from handler.
+         * @return action
+         * @since 14.0
+         */
+        public Action getAction() {
+            return action;
+        }
     }
 
     /** Internal wrapper for events detectors. */
@@ -188,11 +228,13 @@ public class EventsLogger {
 
         /** Log an event.
          * @param state state at event trigger date
-         * @param resetState state after reset if any, otherwise event state
+         * @param resetState state after reset if any, otherwise event state and null if not logged
          * @param increasing indicator if the event switching function was increasing
+         * @param action action from handler
          */
-        void logEvent(final SpacecraftState state, final SpacecraftState resetState, final boolean increasing) {
-            log.add(new LoggedEvent(getDetector(), state, resetState, increasing));
+        void logEvent(final SpacecraftState state, final SpacecraftState resetState, final boolean increasing,
+                      final Action action) {
+            log.add(new LoggedEvent(getDetector(), state, resetState, increasing, action));
         }
 
         /** {@inheritDoc} */
@@ -208,42 +250,29 @@ public class EventsLogger {
 
             return new EventHandler() {
 
-                private SpacecraftState lastTriggeringState = null;
-                private SpacecraftState lastResetState = null;
-
-                /** {@inheritDoc} */
                 @Override
-                public void init(final SpacecraftState initialState, final AbsoluteDate target,
-                                 final EventDetector detector) {
-                    EventHandler.super.init(initialState, target, detector);
-                    lastTriggeringState = null;
-                    lastResetState = null;
+                public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
+                    handler.init(initialState, target, getDetector());
                 }
 
                 /** {@inheritDoc} */
                 @Override
                 public Action eventOccurred(final SpacecraftState s, final EventDetector d, final boolean increasing) {
                     final Action action = handler.eventOccurred(s, getDetector(), increasing);
-                    if (action == Action.RESET_STATE) {
-                        lastResetState = resetState(getDetector(), s);
-                    } else {
-                        lastResetState = s;
-                    }
-                    lastTriggeringState = s;
-                    logEvent(s, lastResetState, increasing);
+                    final boolean resettingState = action == Action.RESET_STATE;
+                    logEvent(s, logResetStates && resettingState ? resetState(getDetector(), s) : null, increasing, action);
                     return action;
                 }
 
-                /** {@inheritDoc} */
                 @Override
-                public SpacecraftState resetState(final EventDetector d, final SpacecraftState oldState) {
-                    if (lastTriggeringState != oldState) {
-                        lastTriggeringState = oldState;
-                        lastResetState = handler.resetState(getDetector(), oldState);
-                    }
-                    return lastResetState;
+                public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+                    return handler.resetState(getDetector(), oldState);
                 }
 
+                @Override
+                public void finish(final SpacecraftState finalState, final EventDetector detector) {
+                    handler.finish(finalState, getDetector());
+                }
             };
         }
 
