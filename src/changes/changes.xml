@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="fix" issue="1961">
+              Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
+          </action>
           <action dev="vcucchie" type="update" issue="1954">
               Upgrade to JUnit 6.
           </action>
@@ -366,7 +369,7 @@
         </action>
     </release>
     <release version="13.1.4" date="2026-02-08" description="Orekit 13.1.4 is a patch release. It fixes bugs related to DSST, parsing, time and interpolation">
-        <action dev="lebihanbastien" type="fix" issue="1907">
+      <action dev="lebihanbastien" type="fix" issue="1907">
           Fixed DSST propagation to only update short periods once per step and avoid wrongly
           computed osculating orbit with events handling.
       </action>

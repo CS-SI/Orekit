@@ -139,15 +139,84 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Offset between J2000 epoch and modified julian day epoch. */
     private static final int MJD_TO_J2000 = 51544;
 
+    /** Partial pattern for date start.
+     * @since 13.1.6
+     */
+    private static final String START = "^";
 
-    /** Basic and extended format calendar date. */
-    private static final Pattern CALENDAR_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d)-?(\\d\\d)$");
+    /** Partial pattern for date end.
+     * @since 13.1.6
+     */
+    private static final String END = "$";
 
-    /** Basic and extended format ordinal date. */
-    private static final Pattern ORDINAL_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d\\d)$");
+    /** Partial pattern for signed number with 4 digits.
+     * @since 13.1.6
+     */
+    private static final String SIGNED_4 = "(-?\\d\\d\\d\\d)";
 
-    /** Basic and extended format week date. */
-    private static final Pattern WEEK_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?W(\\d\\d)-?(\\d)$");
+    /** Partial pattern for signed number with any number of digits.
+     * @since 13.1.6
+     */
+    private static final String SIGNED_ANY = "(-?\\d+)";
+
+    /** Partial pattern for positive number with 3 digits.
+     * @since 13.1.6
+     */
+    private static final String POSITIVE_3 = "(\\d\\d\\d)";
+
+    /** Partial pattern for positive number with 2 digits.
+     * @since 13.1.6
+     */
+    private static final String POSITIVE_2 = "(\\d\\d)";
+
+    /** Partial pattern for positive number with 1 digit.
+     * @since 13.1.6
+     */
+    private static final String POSITIVE_1 = "(\\d)";
+
+    /** Partial pattern for dash.
+     * @since 13.1.6
+     */
+    private static final String DASH = "-";
+
+    /** Partial pattern for week marker.
+     * @since 13.1.6
+     */
+    private static final String WEEK = "W";
+
+    /** Pattern for basic and extended calendar date with dashes (allows any number of digits in years).
+     * @since 13.1.6
+     */
+    private static final Pattern CALENDAR_WITH_DASHES =
+        Pattern.compile(START + SIGNED_ANY + DASH + POSITIVE_2 + DASH + POSITIVE_2 + END);
+
+    /** Pattern for basic and extended calendar date without dashes (mandates 4 digits years).
+     * @since 13.1.6
+     */
+    private static final Pattern CALENDAR_WITHOUT_DASHES =
+        Pattern.compile(START + SIGNED_4 + POSITIVE_2 + POSITIVE_2 + END);
+
+    /** Pattern for ordinal date with dashes (allows any number of digits in years).
+     * @since 13.1.6
+     */
+    private static final Pattern ORDINAL_WITH_DASHES =
+        Pattern.compile(START + SIGNED_ANY + DASH + POSITIVE_3 + END);
+
+    /** Pattern for ordinal date without dashes (mandates 4 digits years).
+     * @since 13.1.6
+     */
+    private static final Pattern ORDINAL_WITHOUT_DASHES =
+        Pattern.compile(START + SIGNED_4 + POSITIVE_3 + END);
+
+    /** Pattern for extended format week date wit dashes (allows any number of digits in years).
+     * @since 13.1.6
+     */
+    private static final Pattern WEEK_WITH_DASHES =
+        Pattern.compile(START + SIGNED_ANY + DASH + WEEK + POSITIVE_2 + DASH + POSITIVE_1 + END);
+
+    /** Pattern for extended format week date without dashes (mandates 4 digits years). */
+    private static final Pattern WEEK_WITHOUT_DASHES =
+        Pattern.compile(START + SIGNED_4 + WEEK + POSITIVE_2 + POSITIVE_1 + END);
 
     static {
         // this static statement makes sure the reference epoch are initialized
@@ -341,26 +410,43 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     public static  DateComponents parseDate(final String string) {
 
         // is the date a calendar date ?
-        final Matcher calendarMatcher = CALENDAR_FORMAT.matcher(string);
-        if (calendarMatcher.matches()) {
-            return new DateComponents(Integer.parseInt(calendarMatcher.group(1)),
-                                      Integer.parseInt(calendarMatcher.group(2)),
-                                      Integer.parseInt(calendarMatcher.group(3)));
+        final Matcher calendarMatcherWith = CALENDAR_WITH_DASHES.matcher(string);
+        if (calendarMatcherWith.matches()) {
+            return new DateComponents(Integer.parseInt(calendarMatcherWith.group(1)),
+                                      Integer.parseInt(calendarMatcherWith.group(2)),
+                                      Integer.parseInt(calendarMatcherWith.group(3)));
+        }
+        final Matcher calendarMatcherWithout = CALENDAR_WITHOUT_DASHES.matcher(string);
+        if (calendarMatcherWithout.matches()) {
+            return new DateComponents(Integer.parseInt(calendarMatcherWithout.group(1)),
+                                      Integer.parseInt(calendarMatcherWithout.group(2)),
+                                      Integer.parseInt(calendarMatcherWithout.group(3)));
         }
 
         // is the date an ordinal date ?
-        final Matcher ordinalMatcher = ORDINAL_FORMAT.matcher(string);
-        if (ordinalMatcher.matches()) {
-            return new DateComponents(Integer.parseInt(ordinalMatcher.group(1)),
-                                      Integer.parseInt(ordinalMatcher.group(2)));
+        final Matcher ordinalMatcherWith = ORDINAL_WITH_DASHES.matcher(string);
+        if (ordinalMatcherWith.matches()) {
+            return new DateComponents(Integer.parseInt(ordinalMatcherWith.group(1)),
+                                      Integer.parseInt(ordinalMatcherWith.group(2)));
+        }
+        final Matcher ordinalMatcherWithout = ORDINAL_WITHOUT_DASHES.matcher(string);
+        if (ordinalMatcherWithout.matches()) {
+            return new DateComponents(Integer.parseInt(ordinalMatcherWithout.group(1)),
+                                      Integer.parseInt(ordinalMatcherWithout.group(2)));
         }
 
         // is the date a week date ?
-        final Matcher weekMatcher = WEEK_FORMAT.matcher(string);
-        if (weekMatcher.matches()) {
-            return createFromWeekComponents(Integer.parseInt(weekMatcher.group(1)),
-                                            Integer.parseInt(weekMatcher.group(2)),
-                                            Integer.parseInt(weekMatcher.group(3)));
+        final Matcher weekMatcherWith = WEEK_WITH_DASHES.matcher(string);
+        if (weekMatcherWith.matches()) {
+            return createFromWeekComponents(Integer.parseInt(weekMatcherWith.group(1)),
+                                            Integer.parseInt(weekMatcherWith.group(2)),
+                                            Integer.parseInt(weekMatcherWith.group(3)));
+        }
+        final Matcher weekMatcherWithout = WEEK_WITHOUT_DASHES.matcher(string);
+        if (weekMatcherWithout.matches()) {
+            return createFromWeekComponents(Integer.parseInt(weekMatcherWithout.group(1)),
+                                            Integer.parseInt(weekMatcherWithout.group(2)),
+                                            Integer.parseInt(weekMatcherWithout.group(3)));
         }
 
         throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_DATE, string);
