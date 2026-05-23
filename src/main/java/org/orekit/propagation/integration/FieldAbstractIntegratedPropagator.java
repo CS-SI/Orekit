@@ -720,6 +720,24 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
+    /**
+     * Reset the state prior to continue propagation.
+     * <p>
+     * As the new state will be used for the next integration step,
+     * it shall be consistent with propagator needs. A typical example
+     * is that DSST only integrates mean elements, not osculating ones.
+     * </p>
+     * @param handler event handler
+     * @param detector event detector
+     * @param oldState old state (previous one)
+     * @return new state
+     * @since 13.1.6
+     */
+    protected FieldSpacecraftState<T> resetIntegrationStateAtEvent(final FieldEventHandler<T> handler, final FieldEventDetector<T> detector,
+                                                                   final FieldSpacecraftState<T> oldState) {
+        return handler.resetState(detector, oldState);
+    }
+
     /** Differential equations for the main state (orbit, attitude and mass).
      * @param <T> type of the field element
      */
@@ -1038,7 +1056,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                                                    final FieldODEStateAndDerivative<T> s) {
 
                     final FieldSpacecraftState<T> oldState = convertToOrekit(s);
-                    final FieldSpacecraftState<T> newState = handler.resetState(detector, oldState);
+                    final FieldSpacecraftState<T> newState = resetIntegrationStateAtEvent(handler, detector, oldState);
                     stateChanged(newState);
 
                     // main part

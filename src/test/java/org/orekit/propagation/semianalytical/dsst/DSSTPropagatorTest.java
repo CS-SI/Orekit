@@ -63,6 +63,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
@@ -86,7 +87,13 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.*;
+import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.AltitudeDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
@@ -1823,6 +1830,37 @@ public class DSSTPropagatorTest {
         propagator.propagate(initialState.getDate().shiftedBy(timeOfFlight));
         // THEN
         Assertions.assertEquals(1, countAndContinue.getCount());
+    }
+
+    @Test
+    public void testIssue1957() {
+        // GIVEN
+        final LazyLoadedDataContext dataContext = new LazyLoadedDataContext();
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                dataContext.getGravityFields().getUnnormalizedProvider(2, 2);
+        final AbsoluteDate start = new AbsoluteDate(2020, 1, 1, 0, 0, 0.0,
+                dataContext.getTimeScales().getUTC());
+        final Frame frame = dataContext.getFrames().getEME2000();
+        final CircularOrbit initialOrbit = new CircularOrbit(7000.0e3, 0.0, 0.001,
+                FastMath.toRadians(97.0), 0.0, 0.0, PositionAngleType.MEAN,
+                frame, start, provider.getMu());
+
+        // WHEN
+        final DSSTPropagator dsst = new DSSTPropagator(
+                new ClassicalRungeKuttaIntegrator(60.0),
+                PropagationType.OSCULATING,
+                Propagator.getDefaultLaw(dataContext.getFrames()));
+        dsst.addForceModel(new DSSTZonal(dataContext.getFrames().getGTOD(true), provider));
+        dsst.setInitialState(new SpacecraftState(initialOrbit));
+        dsst.addEventDetector(new DateDetector(start.shiftedBy(10.0))
+                .withHandler((s, detector, increasing) -> Action.RESET_STATE));
+
+        final SpacecraftState beforeReset = dsst.propagate(start.shiftedBy(9.99));
+        final SpacecraftState afterReset  = dsst.propagate(start.shiftedBy(10.01));
+
+        // THEN
+        // Less than 1cm difference in SMA after the fix. Before it was about 10km
+        Assertions.assertEquals(beforeReset.getOrbit().getA(), afterReset.getOrbit().getA(), 0.01);
     }
 
     private static class TestAttitudeProvider implements AttitudeProviderModifier {
