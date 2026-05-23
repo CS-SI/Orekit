@@ -341,7 +341,7 @@ libraries, all released under business friendly FOSS licenses.
 
 ### Test-time dependencies
 
-* [JUnit 5](https://junit.org/), a widely used unit test framework released
+* [JUnit 6](https://junit.org/), a widely used unit test framework released
   under the Eclipse Public License, version 1.0.
 
 * [Mockito](https://site.mockito.org/), a mocking framework for unit tests,
