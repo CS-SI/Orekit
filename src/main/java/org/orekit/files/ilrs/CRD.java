@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
@@ -1399,7 +1398,7 @@ public class CRD {
                 nextParam     = previousParam;
             } else {
                 // Current date is between first and last date
-                final List<MeteorologicalMeasurement> neighbors = meteo.getNeighbors(date).collect(Collectors.toList());
+                final List<MeteorologicalMeasurement> neighbors = meteo.getNeighbors(date).toList();
                 previousParam = neighbors.getFirst();
                 nextParam     = neighbors.get(1);
             }

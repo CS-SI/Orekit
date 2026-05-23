@@ -16,6 +16,12 @@
  */
 package org.orekit.models.earth.displacement;
 
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -31,12 +37,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class OceanLoadingTest {
 
@@ -284,7 +284,7 @@ public class OceanLoadingTest {
             mapField.setAccessible(true);
             @SuppressWarnings("unchecked")
             Map<Tide, Double> map = (Map<Tide, Double>) mapField.get(null);
-            return map.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList());
+            return map.keySet().stream().collect(Collectors.toList());
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
             Assertions.fail(e.getLocalizedMessage());
             return null;

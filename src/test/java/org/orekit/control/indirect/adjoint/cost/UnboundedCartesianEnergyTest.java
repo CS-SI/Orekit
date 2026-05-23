@@ -17,7 +17,6 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -46,7 +45,7 @@ class UnboundedCartesianEnergyTest {
         // WHEN
         final Stream<EventDetector> eventDetectorStream = unboundedCartesianEnergy.getEventDetectors();
         // THEN
-        final List<EventDetector> eventDetectors = eventDetectorStream.collect(Collectors.toList());
+        final List<EventDetector> eventDetectors = eventDetectorStream.toList();
         Assertions.assertEquals(1, eventDetectors.size());
         Assertions.assertInstanceOf(CartesianEnergyConsideringMass.SingularitySwitchFunction.class, eventDetectors.getFirst().getEventFunction());
         Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, eventDetectors.getFirst().getHandler());

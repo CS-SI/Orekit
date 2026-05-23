@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64;
@@ -293,7 +292,7 @@ public class ImmutableFieldTimeStampedCacheTest {
 
     private void checkNeighbors(final ImmutableFieldTimeStampedCache<FieldAbsoluteDate<Binary64>, Binary64> nonLinearCache,
                                                                     final double offset) {
-        List<FieldAbsoluteDate<Binary64>> s = nonLinearCache.getNeighbors(date.shiftedBy(offset)).collect(Collectors.toList());
+        List<FieldAbsoluteDate<Binary64>> s = nonLinearCache.getNeighbors(date.shiftedBy(offset)).toList();
         Assertions.assertEquals(2, s.size());
         Assertions.assertTrue(s.getFirst().durationFrom(date).getReal() <= offset);
         Assertions.assertTrue(s.get(1).durationFrom(date).getReal() >  offset);

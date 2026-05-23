@@ -16,6 +16,15 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.random.RandomGenerator;
@@ -38,15 +47,6 @@ import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 
 public class GenericTimeStampedCacheTest {
@@ -373,7 +373,7 @@ public class GenericTimeStampedCacheTest {
                         duplicatingGenerator);
 
         final AbsoluteDate start = AbsoluteDate.GALILEO_EPOCH;
-        final List<AbsoluteDate> firstSet = cache.getNeighbors(start).collect(Collectors.toList());
+        final List<AbsoluteDate> firstSet = cache.getNeighbors(start).toList();
         Assertions.assertEquals(5, firstSet.size());
         Assertions.assertEquals(4, cache.getGenerateCalls());
         Assertions.assertEquals(8, cache.getEntries());
@@ -381,7 +381,7 @@ public class GenericTimeStampedCacheTest {
             Assertions.assertEquals(step, firstSet.get(i).durationFrom(firstSet.get(i - 1)), 1.0e-10);
         }
 
-        final List<AbsoluteDate> secondSet = cache.getNeighbors(cache.getLatest().shiftedBy(10 * step)).collect(Collectors.toList());
+        final List<AbsoluteDate> secondSet = cache.getNeighbors(cache.getLatest().shiftedBy(10 * step)).toList();
         Assertions.assertEquals(5, secondSet.size());
         Assertions.assertEquals(7, cache.getGenerateCalls());
         Assertions.assertEquals(20, cache.getEntries());
@@ -463,7 +463,7 @@ public class GenericTimeStampedCacheTest {
         final double step = ((Generator) cache.getGenerator()).getStep();
 
         for (final AbsoluteDate central : centralDates) {
-            final List<AbsoluteDate> neighbors = cache.getNeighbors(central).collect(Collectors.toList());
+            final List<AbsoluteDate> neighbors = cache.getNeighbors(central).toList();
             Assertions.assertEquals(n, neighbors.size());
             for (final AbsoluteDate date : neighbors) {
                 Assertions.assertTrue(date.durationFrom(central) >= -(n + 1) * step);

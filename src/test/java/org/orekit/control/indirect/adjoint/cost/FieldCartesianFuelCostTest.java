@@ -16,6 +16,9 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.complex.Complex;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -39,10 +42,6 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 class FieldCartesianFuelCostTest {
 
@@ -130,8 +129,8 @@ class FieldCartesianFuelCostTest {
         // WHEN
         final Stream<FieldEventDetector<Binary64>> detectorStream = cartesianFuel.getFieldEventDetectors(field);
         // THEN
-        final List<FieldEventDetector<Binary64>> fieldDetectorList = detectorStream.collect(Collectors.toList());
-        final List<EventDetector> detectorList = cartesianFuel.toCartesianCost().getEventDetectors().collect(Collectors.toList());
+        final List<FieldEventDetector<Binary64>> fieldDetectorList = detectorStream.toList();
+        final List<EventDetector> detectorList = cartesianFuel.toCartesianCost().getEventDetectors().toList();
         Assertions.assertEquals(detectorList.size(), fieldDetectorList.size());
         final EventDetector detector = detectorList.getFirst();
         final FieldEventDetector<Binary64> fieldEventDetector = fieldDetectorList.getFirst();

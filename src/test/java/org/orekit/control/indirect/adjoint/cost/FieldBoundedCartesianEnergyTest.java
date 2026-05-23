@@ -17,7 +17,6 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -71,7 +70,7 @@ class FieldBoundedCartesianEnergyTest {
         // WHEN
         final Stream<FieldEventDetector<Complex>> eventDetectorStream = boundedCartesianEnergy.getFieldEventDetectors(field);
         // THEN
-        final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.collect(Collectors.toList());
+        final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.toList();
         Assertions.assertEquals(2, eventDetectors.size());
         for (final FieldEventDetector<Complex> eventDetector : eventDetectors) {
             Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, eventDetector.getEventFunction());
