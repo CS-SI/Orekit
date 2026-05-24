@@ -171,7 +171,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
         /** Base parser for EOP C04 lines.
          * @since 12.0
          */
-        private abstract class LineParser {
+        private abstract static class LineParser {
 
             /** Pattern for ITRF version. */
             private final Pattern itrfVersionPattern;

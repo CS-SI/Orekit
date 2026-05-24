@@ -18,7 +18,6 @@ package org.orekit.control.indirect.shooting;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -228,7 +227,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
         // step-by-step integration
         final List<EventsLogger.LoggedEvent> loggedEvents = eventsLogger.getLoggedEvents();
         final List<AbsoluteDate> stepDates = propagationStepRecorder.copyStates().stream().map(SpacecraftState::getDate)
-                .collect(Collectors.toList());
+                .toList();
         for (final AbsoluteDate stepDate: stepDates) {
             final Gradient time = initialDate.durationFrom(date).negate();
             final Gradient nextTime = initialDate.durationFrom(stepDate).negate();
@@ -444,7 +443,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
         final FieldCartesianAdjointDerivativesProvider<Gradient> fieldDerivativesProvider =
                 (FieldCartesianAdjointDerivativesProvider<Gradient>) dynamicsProvider.buildFieldAdditionalDerivativesProvider(increasedVariablesField);
         final List<FieldEventDetector<Gradient>> fieldEventDetectors = fieldDerivativesProvider.getCost()
-                .getFieldEventDetectors(increasedVariablesField).collect(Collectors.toList());
+                .getFieldEventDetectors(increasedVariablesField).toList();
         for (final FieldEventDetector<Gradient> fieldEventDetector : fieldEventDetectors) {
             if (fieldEventDetector.getEventFunction() instanceof FieldAbstractCartesianCost.FieldSwitchFunction) {
                 final double actualG = fieldEventDetector.g(fieldState).getReal();

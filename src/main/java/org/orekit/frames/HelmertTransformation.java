@@ -454,7 +454,7 @@ public class HelmertTransformation implements TransformProvider {
                             of(HelmertTransformation.Predefined.values()).
                             filter(p -> p.getOrigin().getYear() == origin && p.getDestination().getYear() == destination).
                             findFirst();
-            return optional.isPresent() ? optional.get() : null;
+            return optional.orElse(null);
         }
 
     }

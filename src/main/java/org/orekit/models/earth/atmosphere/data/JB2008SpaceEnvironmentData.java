@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.Serial;
 import java.text.ParseException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.annotation.DefaultDataContext;
@@ -239,7 +238,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
             return;
         }
 
-        final List<SOLFSMYDataLoader.LineParameters> neigbors = dataSOL.getNeighbors(date).collect(Collectors.toList());
+        final List<SOLFSMYDataLoader.LineParameters> neigbors = dataSOL.getNeighbors(date).toList();
         previousParamSOL = neigbors.getFirst();
         nextParamSOL = neigbors.get(1);
 
@@ -268,7 +267,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
             return;
         }
 
-        final List<DtcDataLoader.LineParameters> neigbors = dataDTC.getNeighbors(date).collect(Collectors.toList());
+        final List<DtcDataLoader.LineParameters> neigbors = dataDTC.getNeighbors(date).toList();
         previousParamDTC = neigbors.getFirst();
         nextParamDTC = neigbors.get(1);
 

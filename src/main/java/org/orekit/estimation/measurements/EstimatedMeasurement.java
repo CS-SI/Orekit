@@ -27,8 +27,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class holding an estimated theoretical value associated to an {@link ObservedMeasurement observed measurement}.
  * @param <T> the type of the measurement
@@ -117,7 +117,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> extends Esti
      * @since 9.0
      */
     public Stream<ParameterDriver> getDerivativesDrivers() {
-        return parametersDerivatives.entrySet().stream().map(Map.Entry::getKey);
+        return parametersDerivatives.keySet().stream();
     }
 
     /** Get the partial derivatives of the {@link #getEstimatedValue()

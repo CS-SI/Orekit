@@ -466,11 +466,11 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
             driver.addSpanAtDate(t0);
         }
         
-        detectors      = solidTidesModel.getEventDetectors().collect(Collectors.toList());
+        detectors      = solidTidesModel.getEventDetectors().toList();
         DateDetector dateDetector = (DateDetector) detectors.getFirst();
         List<TimeStamped> dates = dateDetector.getDates();
         
-        fieldDetectors = solidTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
+        fieldDetectors = solidTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).toList();
         FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.getFirst();
         FieldAbsoluteDate<Binary64> fieldDate = fieldDateDetector.getDate();
         

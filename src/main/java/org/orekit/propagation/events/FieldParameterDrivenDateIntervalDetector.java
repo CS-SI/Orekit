@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -151,7 +150,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
                                                  getObservers().
                                                  stream().
                                                  filter(observer -> observer instanceof FieldParameterDrivenDateIntervalDetector.BindingObserver).
-                                                 collect(Collectors.toList());
+                toList();
         original.forEach(driver::removeObserver);
 
         driver.addObserver(bindingObserver);

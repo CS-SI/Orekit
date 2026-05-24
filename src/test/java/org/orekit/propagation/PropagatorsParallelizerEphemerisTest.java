@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -51,10 +54,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 public class PropagatorsParallelizerEphemerisTest {
@@ -128,7 +127,7 @@ public class PropagatorsParallelizerEphemerisTest {
         final AbsoluteDate endDate = startDate.shiftedBy(3600);
 
         List<Propagator> propagators = Arrays.asList(buildNumerical(), buildNumerical(), buildDSST(), buildEcksteinHechler());
-        List<EphemerisGenerator> generators = propagators.stream().map(Propagator::getEphemerisGenerator).collect(Collectors.toList());
+        List<EphemerisGenerator> generators = propagators.stream().map(Propagator::getEphemerisGenerator).toList();
         PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, interpolators -> {
             // Do nothing
         });
@@ -154,9 +153,9 @@ public class PropagatorsParallelizerEphemerisTest {
 
         // Add new instance of event with same date. DateDetector behaviour at event is stop.
         AbsoluteDate detectorDate = startDate.shiftedBy(1800);
-        propagators.stream().forEach(propagator -> propagator.addEventDetector(new DateDetector(detectorDate)));
+        propagators.forEach(propagator -> propagator.addEventDetector(new DateDetector(detectorDate)));
 
-        List<EphemerisGenerator> generators = propagators.stream().map(Propagator::getEphemerisGenerator).collect(Collectors.toList());
+        List<EphemerisGenerator> generators = propagators.stream().map(Propagator::getEphemerisGenerator).toList();
         PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, interpolators -> {
             // Do nothing
         });

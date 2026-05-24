@@ -16,6 +16,17 @@
  */
 package org.orekit.models.earth.atmosphere.data;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serial;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
@@ -29,17 +40,6 @@ import org.orekit.time.TimeStamped;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serial;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Abstract class for solar activity data.
@@ -262,7 +262,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
                                           date.durationFrom(lastDate));
             }
 
-            final List<L> neighbours = cache.getNeighbors(date).collect(Collectors.toList());
+            final List<L> neighbours = cache.getNeighbors(date).toList();
 
             this.currentDate   = date;
             this.previousParam = neighbours.getFirst();
@@ -346,7 +346,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
             AbsoluteDate  latestNeighbourDate = neighbours.get(1).getDate();
             final List<L> params              = new ArrayList<>(neighbours);
             while (latestNeighbourDate.isBefore(latest)) {
-                neighbours = data.getNeighbors(latestNeighbourDate.shiftedBy(STEP)).collect(Collectors.toList());
+                neighbours = data.getNeighbors(latestNeighbourDate.shiftedBy(STEP)).toList();
                 params.add(neighbours.get(1));
                 latestNeighbourDate = neighbours.get(1).getDate();
             }

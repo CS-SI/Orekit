@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -151,7 +150,7 @@ public interface EventDetectorsProvider {
         final DateDetector dateDetector = new DateDetector().withMaxCheck(maxCheck).withMinGap(minGap).
                 withThreshold(DATATION_ACCURACY).withHandler(new ResetDerivativesOnEvent());
         final SortedSet<AbsoluteDate> sortedDates = new TreeSet<>(new ChronologicalComparator());
-        sortedDates.addAll(Arrays.stream(timeStampeds).map(TimeStamped::getDate).collect(Collectors.toList()));
+        sortedDates.addAll(Arrays.stream(timeStampeds).map(TimeStamped::getDate).toList());
         for (final AbsoluteDate date : sortedDates) {
             dateDetector.addEventDate(date);
         }
@@ -177,7 +176,7 @@ public interface EventDetectorsProvider {
                 withHandler(new FieldResetDerivativesOnEvent<>()).withMaxCheck(maxCheck).withMinGap(minGap).
                 withThreshold(field.getZero().newInstance(DATATION_ACCURACY));
         final SortedSet<AbsoluteDate> sortedDates = new TreeSet<>(new ChronologicalComparator());
-        sortedDates.addAll(Arrays.stream(timeStampeds).map(TimeStamped::getDate).collect(Collectors.toList()));
+        sortedDates.addAll(Arrays.stream(timeStampeds).map(TimeStamped::getDate).toList());
         for (final AbsoluteDate date : sortedDates) {
             fieldDateDetector.addEventDate(new FieldAbsoluteDate<>(field, date));
         }

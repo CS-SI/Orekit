@@ -320,7 +320,7 @@ public class ImmutableTimeStampedCacheTest {
 
     private void checkNeighbors(final ImmutableTimeStampedCache<AbsoluteDate> nonLinearCache,
                                 final double offset) {
-        List<AbsoluteDate> s = nonLinearCache.getNeighbors(date.shiftedBy(offset)).collect(Collectors.toList());
+        List<AbsoluteDate> s = nonLinearCache.getNeighbors(date.shiftedBy(offset)).toList();
         Assertions.assertEquals(2, s.size());
         Assertions.assertTrue(s.getFirst().durationFrom(date) <= offset);
         Assertions.assertTrue(s.get(1).durationFrom(date) >  offset);

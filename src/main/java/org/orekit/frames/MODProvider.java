@@ -41,9 +41,6 @@ import org.orekit.utils.IERSConventions;
  */
 class MODProvider implements TransformProvider {
 
-    /** Conventions. */
-    private final IERSConventions conventions;
-
     /** Function computing the precession angles. */
     private final TimeVectorFunction precessionFunction;
 
@@ -58,7 +55,6 @@ class MODProvider implements TransformProvider {
      * @param timeScales used to define this frame.
      */
     MODProvider(final IERSConventions conventions, final TimeScales timeScales) {
-        this.conventions        = conventions;
         this.precessionFunction = conventions.getPrecessionFunction(timeScales);
         final TimeScalarFunction epsilonAFunction =
                 conventions.getMeanObliquityFunction(timeScales);
