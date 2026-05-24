@@ -50,15 +50,6 @@ import org.orekit.utils.SecularAndHarmonic;
  */
 public class PredictedEOPHistory extends EOPHistory {
 
-    /** Raw EOP history to extend. */
-    private final EOPHistory rawHistory;
-
-    /** Duration of the extension period (s). */
-    private final double extensionDuration;
-
-    /** Fitter for all Earth Orientation Parameters. */
-    private final EOPFitter fitter;
-
     /** Simple constructor.
      * @param rawHistory raw EOP history to extend.
      * @param extensionDuration duration of the extension period (s)
@@ -69,9 +60,6 @@ public class PredictedEOPHistory extends EOPHistory {
         super(rawHistory.getConventions(), rawHistory.getInterpolationDegree(),
               extendHistory(rawHistory, extensionDuration, fitter),
               rawHistory.isSimpleEop(), rawHistory.getTimeScales());
-        this.rawHistory        = rawHistory;
-        this.extensionDuration = extensionDuration;
-        this.fitter            = fitter;
     }
 
     /** Extends raw history.

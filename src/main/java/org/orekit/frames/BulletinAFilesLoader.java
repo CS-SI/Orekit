@@ -448,14 +448,10 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                      section = nextSection(remaining, reader)) {
 
                     final EopDataType eopDataType = switch (section) {
-                        case EOP_FINAL_VALUES:
-                        case POLE_OFFSETS_IAU_1980_FINAL_VALUES:
-                        case POLE_OFFSETS_IAU_2000_FINAL_VALUES: yield EopDataType.FINAL;
-                        case EOP_RAPID_SERVICE:
-                        case POLE_OFFSETS_IAU_1980_RAPID_SERVICE:
-                        case POLE_OFFSETS_IAU_2000_RAPID_SERVICE: yield EopDataType.RAPID;
-                        case EOP_PREDICTION: yield EopDataType.PREDICTED;
-                        default: yield EopDataType.UNKNOWN;
+                        case EOP_FINAL_VALUES, POLE_OFFSETS_IAU_1980_FINAL_VALUES, POLE_OFFSETS_IAU_2000_FINAL_VALUES -> EopDataType.FINAL;
+                        case EOP_RAPID_SERVICE, POLE_OFFSETS_IAU_1980_RAPID_SERVICE,
+                             POLE_OFFSETS_IAU_2000_RAPID_SERVICE -> EopDataType.RAPID;
+                        case EOP_PREDICTION -> EopDataType.PREDICTED;
                     };
 
                     switch (section) {

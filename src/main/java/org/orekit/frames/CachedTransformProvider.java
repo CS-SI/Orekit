@@ -16,12 +16,12 @@
  */
 package org.orekit.frames;
 
-import org.orekit.time.AbsoluteDate;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
+
+import org.orekit.time.AbsoluteDate;
 
 /** Thread-safe cached provider for frame transforms.
  * <p>
@@ -90,8 +90,10 @@ public class CachedTransformProvider {
         this.lock               = new ReentrantLock();
 
         // cache for full transforms
-        this.fullCache = new LinkedHashMap<AbsoluteDate, Transform>(cacheSize, 0.75f, true) {
-            /** {@inheritDoc} */
+        this.fullCache = new LinkedHashMap<>(cacheSize, 0.75f, true) {
+            /**
+             * {@inheritDoc}
+             */
             @Override
             protected boolean removeEldestEntry(final Map.Entry<AbsoluteDate, Transform> eldest) {
                 return size() > cacheSize;
@@ -99,8 +101,10 @@ public class CachedTransformProvider {
         };
 
         // cache for kinematic transforms
-        this.kinematicCache = new LinkedHashMap<AbsoluteDate, KinematicTransform>(cacheSize, 0.75f, true) {
-            /** {@inheritDoc} */
+        this.kinematicCache = new LinkedHashMap<>(cacheSize, 0.75f, true) {
+            /**
+             * {@inheritDoc}
+             */
             @Override
             protected boolean removeEldestEntry(final Map.Entry<AbsoluteDate, KinematicTransform> eldest) {
                 return size() > cacheSize;
@@ -108,8 +112,10 @@ public class CachedTransformProvider {
         };
 
         // cache for static transforms
-        this.staticCache = new LinkedHashMap<AbsoluteDate, StaticTransform>(cacheSize, 0.75f, true) {
-            /** {@inheritDoc} */
+        this.staticCache = new LinkedHashMap<>(cacheSize, 0.75f, true) {
+            /**
+             * {@inheritDoc}
+             */
             @Override
             protected boolean removeEldestEntry(final Map.Entry<AbsoluteDate, StaticTransform> eldest) {
                 return size() > cacheSize;

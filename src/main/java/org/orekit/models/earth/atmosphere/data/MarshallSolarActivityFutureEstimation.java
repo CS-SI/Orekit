@@ -19,7 +19,6 @@ package org.orekit.models.earth.atmosphere.data;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
@@ -350,7 +349,7 @@ public class MarshallSolarActivityFutureEstimation
 
     public double getAverageFlux(final AbsoluteDate date) {
         // Extract closest neighbours average
-        final List<TimeStampedDouble> neighbors = averageFluxCache.getNeighbors(date).collect(Collectors.toList());
+        final List<TimeStampedDouble> neighbors = averageFluxCache.getNeighbors(date).toList();
 
         // Create linear interpolating function
         final double[] x = new double[] { 0, 1 };

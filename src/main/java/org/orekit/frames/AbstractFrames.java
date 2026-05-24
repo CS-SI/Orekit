@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -676,58 +677,22 @@ public abstract class AbstractFrames implements Frames {
         return timeScales;
     }
 
-    /** Local class for different ITRF versions keys.
+    /**
+     * Local record for different ITRF versions keys.
+     *
+     * @param version     ITRF version.
+     * @param conventions IERS conventions to apply.
+     * @param simpleEOP   Tidal effects flag.
      * @since 9.2
      */
-    private static class ITRFKey implements Serializable {
+    private record ITRFKey(ITRFVersion version, IERSConventions conventions,
+                           boolean simpleEOP) implements Serializable {
 
-        /** Serialized UID. */
-        private static final long serialVersionUID = 20180412L;
-
-        /** ITRF version. */
-        private final ITRFVersion version;
-
-        /** IERS conventions to apply. */
-        private final IERSConventions conventions;
-
-        /** Tidal effects flag. */
-        private final boolean simpleEOP;
-
-        /** Simple constructor.
-         * @param version ITRF version
-         * @param conventions IERS conventions to apply
-         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+        /**
+         * Serialized UID.
          */
-        ITRFKey(final ITRFVersion version, final IERSConventions conventions, final boolean simpleEOP) {
-            this.version     = version;
-            this.conventions = conventions;
-            this.simpleEOP   = simpleEOP;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public int hashCode() {
-            return (version.ordinal()     << 5) +
-                    (conventions.ordinal() << 1) +
-                    (simpleEOP ? 0 : 1);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean equals(final Object other) {
-
-            if (this == other) {
-                return true;
-            }
-
-            if (other instanceof ITRFKey key) {
-                return version     == key.version     &&
-                       conventions == key.conventions &&
-                       simpleEOP   == key.simpleEOP;
-            }
-
-            return false;
-        }
+        @Serial
+        private static final long serialVersionUID = 20180412L;
 
     }
 }

@@ -16,6 +16,17 @@
  */
 package org.orekit.models.earth.atmosphere.data;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -57,19 +68,6 @@ import org.orekit.time.TimeStampedDouble;
 import org.orekit.utils.Constants;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.IERSConventions;
-
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.pvCloseTo;
@@ -636,8 +634,7 @@ public class MarshallSolarActivityFutureEstimationTest {
         try {
             service.invokeAll(tasks);
             results.get().sort(Comparator.comparing(TimeStampedDouble::getDate));
-            final List<Double> sortedComputedResults = results.get().stream().map(TimeStampedDouble::getValue).collect(
-                    Collectors.toList());
+            final List<Double> sortedComputedResults = results.get().stream().map(TimeStampedDouble::getValue).toList();
 
             // THEN
             // Compare to expected result

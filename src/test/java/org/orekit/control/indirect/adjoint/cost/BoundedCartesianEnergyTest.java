@@ -17,7 +17,6 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -39,7 +38,7 @@ class BoundedCartesianEnergyTest {
         // WHEN
         final Stream<EventDetector> eventDetectorStream = boundedCartesianEnergy.getEventDetectors();
         // THEN
-        final List<EventDetector> eventDetectors = eventDetectorStream.collect(Collectors.toList());
+        final List<EventDetector> eventDetectors = eventDetectorStream.toList();
         Assertions.assertEquals(2, eventDetectors.size());
         for (final EventDetector eventDetector : eventDetectors) {
             Assertions.assertInstanceOf(CartesianEnergyConsideringMass.SingularitySwitchFunction.class, eventDetector.getEventFunction());

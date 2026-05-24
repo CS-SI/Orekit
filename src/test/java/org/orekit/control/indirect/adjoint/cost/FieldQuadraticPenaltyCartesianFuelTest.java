@@ -16,6 +16,8 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
@@ -38,9 +40,6 @@ import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 class FieldQuadraticPenaltyCartesianFuelTest {
 
@@ -108,7 +107,7 @@ class FieldQuadraticPenaltyCartesianFuelTest {
                 ADJOINT_NAME, Binary64.ONE, Binary64.PI, new Binary64(0.5));
         // WHEN
         final List<FieldEventDetector<Binary64>> actualDetectors = penalizedCartesianFuel
-                .getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
+                .getFieldEventDetectors(Binary64Field.getInstance()).toList();
         // THEN
         Assertions.assertEquals(2, actualDetectors.size());
         final SpacecraftState state = buildState(10);

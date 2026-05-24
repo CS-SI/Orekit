@@ -16,6 +16,9 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -25,10 +28,6 @@ import org.mockito.Mockito;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 class CartesianFuelCostTest {
 
@@ -104,7 +103,7 @@ class CartesianFuelCostTest {
         // WHEN
         final Stream<EventDetector> detectorStream = cartesianFuel.getEventDetectors();
         // THEN
-        final List<EventDetector> detectorList = detectorStream.collect(Collectors.toList());
+        final List<EventDetector> detectorList = detectorStream.toList();
         Assertions.assertEquals(1, detectorList.size());
         Assertions.assertEquals(mockedDetectionSettings, detectorList.getFirst().getDetectionSettings());
         Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, detectorList.getFirst().getHandler());
