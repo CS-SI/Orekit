@@ -23,6 +23,9 @@
       <action dev="luc" type="fix" issue="1961">
           Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
       </action>
+      <action dev="bryan" type="fix" issue="1957">
+          Fixed computation of resetted integration state for DSST propagation
+      </action>
       <action dev="bryan" type="fix" issue="1513">
           Fixed OPM parser silently skipping maneuvers with missing optional fields (duration and delta mass).
       </action>
