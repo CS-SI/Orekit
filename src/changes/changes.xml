@@ -23,6 +23,11 @@
       <action dev="luc" type="fix" issue="1961">
           Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
       </action>
+      <action dev="vcucchie" type="fix" issue="1958">
+          Reduced per-call overhead in (Field)TimeInterpolator.interpolate(...) by removing
+          the defensive copy, cache wrapper, and Stream pipeline. The sample must now be in
+          chronological order (previously copied and sorted silently).
+      </action>
       <action dev="bryan" type="fix" issue="1513">
           Fixed OPM parser silently skipping maneuvers with missing optional fields (duration and delta mass).
       </action>
