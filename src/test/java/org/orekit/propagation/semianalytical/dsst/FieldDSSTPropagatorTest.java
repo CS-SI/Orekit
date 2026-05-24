@@ -55,6 +55,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
@@ -70,6 +71,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.HarrisPriester;
+import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -83,6 +85,7 @@ import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.EventDetector;
@@ -1614,6 +1617,42 @@ public class FieldDSSTPropagatorTest {
         propagator.setInitialState(new FieldSpacecraftState<>(osculatingOrbit));
 
         return propagator.propagate(new FieldAbsoluteDate<>(initialDate, 1800.));
+    }
+
+    @Test
+    public void testIssue1957() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final LazyLoadedDataContext dataContext = new LazyLoadedDataContext();
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                dataContext.getGravityFields().getUnnormalizedProvider(2, 2);
+        final AbsoluteDate startDate = new AbsoluteDate(2020, 1, 1, 0, 0, 0.0,
+                dataContext.getTimeScales().getUTC());
+        final Frame frame = dataContext.getFrames().getEME2000();
+        final FieldAbsoluteDate<Binary64> start = new FieldAbsoluteDate<>(field, startDate);
+        final FieldCircularOrbit<Binary64> initialOrbit = new FieldCircularOrbit<>(field,
+                new CircularOrbit(7000.0e3, 0.0, 0.001,
+                        FastMath.toRadians(97.0), 0.0, 0.0, PositionAngleType.MEAN,
+                        frame, startDate, provider.getMu()));
+
+        // WHEN
+        final ClassicalRungeKuttaFieldIntegrator<Binary64> integrator =
+                new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().newInstance(60.0));
+        final FieldDSSTPropagator<Binary64> dsst = new FieldDSSTPropagator<>(field, integrator,
+                PropagationType.OSCULATING,
+                Propagator.getDefaultLaw(dataContext.getFrames()));
+        dsst.addForceModel(new DSSTZonal(dataContext.getFrames().getGTOD(true), provider));
+        dsst.setInitialState(new FieldSpacecraftState<>(initialOrbit));
+        dsst.addEventDetector(new FieldDateDetector<>(field, start.shiftedBy(10.0))
+                .withHandler((s, detector, increasing) -> Action.RESET_STATE));
+
+        final FieldSpacecraftState<Binary64> beforeReset = dsst.propagate(start.shiftedBy(9.99));
+        final FieldSpacecraftState<Binary64> afterReset  = dsst.propagate(start.shiftedBy(10.01));
+
+        // THEN
+        // Less than 1cm difference in SMA after the fix. Before it was about 10km
+        Assertions.assertEquals(beforeReset.getOrbit().getA().getReal(),
+                afterReset.getOrbit().getA().getReal(), 0.01);
     }
 
 }
