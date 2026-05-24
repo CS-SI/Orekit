@@ -21,6 +21,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ImmutableTimeStampedCache;
+import org.orekit.utils.SortedListTrimmer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -81,13 +82,23 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The stream must hold elements in chronological order.
+     */
     @Override
     public T interpolate(final AbsoluteDate interpolationDate, final Stream<T> sample) {
         return interpolate(interpolationDate, sample.collect(Collectors.toList()));
     }
 
-    /** {@inheritDoc}. */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <strong>Precondition:</strong> {@code sample} must be sorted in chronological order. Passing an unsorted
+     * sample yields undefined neighbors and may throw
+     * {@link org.orekit.errors.TimeStampedCacheException}.
+     */
     @Override
     public T interpolate(final AbsoluteDate interpolationDate, final Collection<T> sample) {
         final InterpolationData interpolationData = new InterpolationData(interpolationDate, sample);
@@ -236,42 +247,53 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
         private final List<T> neighborList;
 
         /**
-         * Constructor.
+         * Constructor (Collection variant).
+         * <p>
+         * If {@code sample} is already a {@link List}, it is used directly; otherwise it is copied into a new
+         * {@link ArrayList}. Forwards to {@link #InterpolationData(AbsoluteDate, List)} — see that constructor for
+         * the sorted-sample precondition.
          *
          * @param interpolationDate interpolation date
-         * @param sample time stamped sample
+         * @param sample            time stamped sample (chronologically sorted)
          */
         protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<T> sample) {
-            // Handle specific case not handled by the immutable time stamped cache constructor
-            if (sample.isEmpty()) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, 0);
-            }
+            this(interpolationDate, (sample instanceof List) ? (List<T>) sample : new ArrayList<>(sample));
+        }
 
-            // TODO performance: create neighborsList without copying sample.
+        /**
+         * Constructor.
+         * <p>
+         * <strong>Precondition:</strong> {@code sample} must be sorted in chronological order. Passing an unsorted
+         * sample yields undefined neighbors and may throw
+         * {@link org.orekit.errors.TimeStampedCacheException}. Prior implementations silently sorted the input;
+         * this is no longer the case.
+         *
+         * @param interpolationDate interpolation date
+         * @param sample            time stamped sample (chronologically sorted)
+         */
+        protected InterpolationData(final AbsoluteDate interpolationDate, final List<T> sample) {
+
+            // Check if there is enough sample points
             final int nbInterpolationPoints = getNbInterpolationPoints();
-            if (sample.size() == nbInterpolationPoints) {
-                // shortcut for simple case
-                // copy list to make neighborList immutable
-                this.neighborList = Collections.unmodifiableList(new ArrayList<>(sample));
-            } else {
-                // else, select sample.
-
-                // Create immutable time stamped cache
-                final ImmutableTimeStampedCache<T> cachedSamples =
-                        new ImmutableTimeStampedCache<>(nbInterpolationPoints, sample);
-
-                // Find neighbors
-                final AbsoluteDate central = AbstractTimeInterpolator.getCentralDate(
-                        interpolationDate,
-                        cachedSamples,
-                        extrapolationThreshold);
-                final Stream<T> neighborsStream = cachedSamples.getNeighbors(central);
-
-                // Convert to unmodifiable list
-                this.neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
+            if (sample.size() < nbInterpolationPoints) {
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
+                                                         sample.size(), nbInterpolationPoints);
             }
 
-            // Store interpolation date
+            // Shortcut to see if sample size is equal to number of interpolation points
+            if (sample.size() == nbInterpolationPoints) {
+                this.neighborList = Collections.unmodifiableList(sample);
+            } else {
+                final AbsoluteDate central = getCentralDate(interpolationDate,
+                                                            sample.get(0).getDate(),
+                                                            sample.get(sample.size() - 1).getDate(),
+                                                            extrapolationThreshold);
+
+                // Trimmer returns a sublist view, so wrap (don't copy) for immutability.
+                final SortedListTrimmer trimmer = new SortedListTrimmer(nbInterpolationPoints);
+                this.neighborList = Collections.unmodifiableList(trimmer.getNeighborsSubList(central, sample));
+            }
+
             this.interpolationDate = interpolationDate;
         }
 
