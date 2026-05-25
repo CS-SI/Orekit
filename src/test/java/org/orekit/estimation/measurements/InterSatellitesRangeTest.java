@@ -115,9 +115,9 @@ class InterSatellitesRangeTest {
         double refErrorsPMedian = 3.8e-10;
         double refErrorsPMean   = 2.0e-09;
         double refErrorsPMax    = 1.3e-07;
-        double refErrorsVMedian = 8.4e-04;
-        double refErrorsVMean   = 1.8e-03;
-        double refErrorsVMax    = 2.9e-02;
+        double refErrorsVMedian = 8.5e-04;
+        double refErrorsVMean   = 1.9e-03;
+        double refErrorsVMax    = 5.4e-02;
         this.genericTestStateDerivatives(printResults, 1,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);

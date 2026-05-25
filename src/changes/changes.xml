@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="serrof" type="ad" issue="1956">
+              Add stand-alone Keplerian element converter.
+          </action>
           <action dev="luc" type="fix" issue="1961">
               Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
           </action>
