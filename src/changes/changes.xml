@@ -71,6 +71,10 @@
           <action dev="rafa" type="add" issue="1925">
               Add constructors with custom Love numbers in SolidTides.
           </action>
+          <action dev="bryan" type="add" issue="1928">
+              Added IAU 2015 nominal equatorial and polar radius constants for
+              all solar system planets (Mercury, Venus, Mars, Saturn, Uranus, Neptune).
+          </action>
           <action dev="vcucchie" type="add" issue="1927">
               Add class and sequence diagrams specific to PropagatorsParallelizer.
           </action>
