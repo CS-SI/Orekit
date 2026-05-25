@@ -30,7 +30,8 @@ extend this interface), some specific frames (spacecraft frame and topocentric f
 both implement this interface) or celestial bodies that can be retrieved from ephemerides.
 
 The `Constants` interface only defines useful constants like Julian day duration,
-standard gravity or Earth physical parameters for several models, it does not define
+standard gravity, Earth physical parameters for several models, and IAU 2015 nominal
+equatorial and polar radii for all solar system planets, it does not define
 any processing method.
 
 The `SecularAndHarmonic` class is a utility used for fitting orbital parameters

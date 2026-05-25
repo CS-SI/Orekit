@@ -87,6 +87,9 @@
         +double JPL_SSD_ASTRONOMICAL_UNIT
         +double JPL_SSD_...
         +double G0_STANDARD_GRAVITY
+        +double IAU_2015_NOMINAL_EARTH_EQUATORIAL_RADIUS
+        +double IAU_2015_NOMINAL_MARS_EQUATORIAL_RADIUS
+        +double IAU_2015_NOMINAL_...
       }
 
       enum IERSConventions {
