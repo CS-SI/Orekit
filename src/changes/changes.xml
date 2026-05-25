@@ -309,6 +309,9 @@
           <action dev="afossa" type="fix" issue="1642">
               Change algorithm in KeplerianMotionCartesianUtility.predictPVHyperbolic() to fix numerical issues.
           </action>
+          <action dev="bryan" type="add" issue="1636">
+              Added wind-up effect modifier for one-way GNSS phase measurements.
+          </action>
           <action dev="vcucchie" type="fix" issue="1521">
               Fixed state covariance interpolator getSubInterpolators method.
           </action>
