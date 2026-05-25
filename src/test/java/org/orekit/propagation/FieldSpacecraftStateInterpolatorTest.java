@@ -737,6 +737,12 @@ class FieldSpacecraftStateInterpolatorTest {
         @SuppressWarnings("unchecked")
         final FieldTimeInterpolator<FieldOrbit<Binary64>, Binary64> orbitInterpolatorMock =
                 Mockito.mock(FieldTimeInterpolator.class);
+        // Stub so FieldSpacecraftStateInterpolator.getNbInterpolationPoints() can resolve to a positive value
+        // (the empty sample is now rejected by the size-vs-nbInterpolationPoints check).
+        Mockito.when(orbitInterpolatorMock.getSubInterpolators())
+                .thenReturn(Collections.singletonList(orbitInterpolatorMock));
+        Mockito.when(orbitInterpolatorMock.getNbInterpolationPoints())
+                .thenReturn(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS);
 
         final FieldTimeInterpolator<FieldSpacecraftState<Binary64>, Binary64> interpolator =
                 new FieldSpacecraftStateInterpolator<>(2, 1.0e-3, inertialFrame, orbitInterpolatorMock, null, null, null, null);
@@ -745,8 +751,10 @@ class FieldSpacecraftStateInterpolatorTest {
         OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
                                                                         interpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS, thrown.getSpecifier());
         Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                ((Integer) thrown.getParts()[1]).intValue());
 
     }
 
@@ -766,6 +774,12 @@ class FieldSpacecraftStateInterpolatorTest {
         @SuppressWarnings("unchecked")
         final FieldTimeInterpolator<FieldOrbit<Binary64>, Binary64> orbitInterpolatorMock =
                 Mockito.mock(FieldTimeInterpolator.class);
+        // Stub so FieldSpacecraftStateInterpolator.getNbInterpolationPoints() can resolve to a positive value
+        // (the empty sample is now rejected by the size-vs-nbInterpolationPoints check).
+        Mockito.when(orbitInterpolatorMock.getSubInterpolators())
+                .thenReturn(Collections.singletonList(orbitInterpolatorMock));
+        Mockito.when(orbitInterpolatorMock.getNbInterpolationPoints())
+                .thenReturn(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS);
 
         final FieldTimeInterpolator<FieldSpacecraftState<Binary64>, Binary64> interpolator =
                 new FieldSpacecraftStateInterpolator<>(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
@@ -777,8 +791,10 @@ class FieldSpacecraftStateInterpolatorTest {
         OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
                                                                         interpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS, thrown.getSpecifier());
         Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                ((Integer) thrown.getParts()[1]).intValue());
 
     }
 
