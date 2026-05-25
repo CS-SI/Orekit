@@ -566,6 +566,12 @@ class SpacecraftStateInterpolatorTest {
 
         // Create interpolator
         @SuppressWarnings("unchecked") final TimeInterpolator<Orbit> orbitInterpolatorMock = Mockito.mock(TimeInterpolator.class);
+        // Stub so SpacecraftStateInterpolator.getNbInterpolationPoints() can resolve to a positive value
+        // (the empty sample is now rejected by the size-vs-nbInterpolationPoints check).
+        Mockito.when(orbitInterpolatorMock.getSubInterpolators())
+                .thenReturn(Collections.singletonList(orbitInterpolatorMock));
+        Mockito.when(orbitInterpolatorMock.getNbInterpolationPoints())
+                .thenReturn(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS);
 
         final TimeInterpolator<SpacecraftState> interpolator =
                 new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
@@ -576,8 +582,10 @@ class SpacecraftStateInterpolatorTest {
         OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
                 interpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS, thrown.getSpecifier());
         Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                ((Integer) thrown.getParts()[1]).intValue());
 
     }
 
