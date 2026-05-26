@@ -29,7 +29,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.FieldStaticTransform;
@@ -534,7 +533,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     public FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
-        final FieldPVCoordinates<T> pv = getPVCoordinates(otherDate, otherFrame);
+        final FieldPVCoordinates<T> pv = getPVCoordinates(otherDate, frame);
         if (otherFrame == getFrame()) {
             return pv.getVelocity();
         }
@@ -662,6 +661,18 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public abstract FieldOrbit<T> shiftedBy(double dt);
 
+    /** Get a time-shifted orbit.
+     * <p>
+     * The orbit can be slightly shifted to close dates. This shift is based on
+     * a simple Keplerian model. It is <em>not</em> intended as a replacement
+     * for proper orbit and attitude propagation but should be sufficient for
+     * small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new orbit, shifted with respect to the instance (which is immutable)
+     */
+    public abstract FieldOrbit<T> shiftedBy(TimeOffset dt);
+
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
@@ -676,31 +687,29 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
 
         final T[][] cachedJacobian;
         synchronized (this) {
-            switch (type) {
-                case MEAN :
+            cachedJacobian = switch (type) {
+                case MEAN -> {
                     if (jacobianMeanWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianMeanWrtCartesian = computeJacobianMeanWrtCartesian();
                     }
-                    cachedJacobian = jacobianMeanWrtCartesian;
-                    break;
-                case ECCENTRIC :
+                    yield jacobianMeanWrtCartesian;
+                }
+                case ECCENTRIC -> {
                     if (jacobianEccentricWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianEccentricWrtCartesian = computeJacobianEccentricWrtCartesian();
                     }
-                    cachedJacobian = jacobianEccentricWrtCartesian;
-                    break;
-                case TRUE :
+                    yield jacobianEccentricWrtCartesian;
+                }
+                case TRUE -> {
                     if (jacobianTrueWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianTrueWrtCartesian = computeJacobianTrueWrtCartesian();
                     }
-                    cachedJacobian = jacobianTrueWrtCartesian;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
+                    yield jacobianTrueWrtCartesian;
+                }
+            };
         }
 
         // fill the user provided array
@@ -724,31 +733,29 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
 
         final T[][] cachedJacobian;
         synchronized (this) {
-            switch (type) {
-                case MEAN :
+            cachedJacobian = switch (type) {
+                case MEAN -> {
                     if (jacobianWrtParametersMean == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersMean = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersMean;
-                    break;
-                case ECCENTRIC :
+                    yield jacobianWrtParametersMean;
+                }
+                case ECCENTRIC -> {
                     if (jacobianWrtParametersEccentric == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersEccentric = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersEccentric;
-                    break;
-                case TRUE :
+                    yield jacobianWrtParametersEccentric;
+                }
+                case TRUE -> {
                     if (jacobianWrtParametersTrue == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersTrue = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersTrue;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
+                    yield jacobianWrtParametersTrue;
+                }
+            };
         }
 
         // fill the user-provided array

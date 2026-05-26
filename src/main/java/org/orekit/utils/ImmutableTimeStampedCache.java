@@ -120,7 +120,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
     /** {@inheritDoc} */
     public T getEarliest() {
-        return this.data.get(0);
+        return this.data.getFirst();
     }
 
     /** {@inheritDoc} */

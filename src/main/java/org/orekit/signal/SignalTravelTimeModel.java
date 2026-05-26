@@ -106,8 +106,8 @@ public class SignalTravelTimeModel {
      * @param emitter signal emitter
      * @return (positive) time delay
      */
-    public SignalTravelTimeAdjustableEmitter getAdjustableEmitterComputer(final PVCoordinatesProvider emitter) {
-        return new SignalTravelTimeAdjustableEmitter(emitter, convergenceChecker);
+    public AdjustableEmitterSignalTimer getAdjustableEmitterComputer(final PVCoordinatesProvider emitter) {
+        return new AdjustableEmitterSignalTimer(emitter, convergenceChecker);
     }
 
     /**
@@ -115,8 +115,8 @@ public class SignalTravelTimeModel {
      * @param receiver signal emitter
      * @return (positive) time delay
      */
-    public SignalTravelTimeAdjustableReceiver getAdjustableReceiverComputer(final PVCoordinatesProvider receiver) {
-        return new SignalTravelTimeAdjustableReceiver(receiver, convergenceChecker);
+    public AdjustableReceiverSignalTimer getAdjustableReceiverComputer(final PVCoordinatesProvider receiver) {
+        return new AdjustableReceiverSignalTimer(receiver, convergenceChecker);
     }
 
     /**
@@ -126,9 +126,9 @@ public class SignalTravelTimeModel {
      * @param emitter signal emitter
      * @return (positive) time delay
      */
-    public <T extends CalculusFieldElement<T>> FieldSignalTravelTimeAdjustableEmitter<T> getFieldAdjustableEmitterComputer(final Field<T> field,
-                                                                                                                           final FieldPVCoordinatesProvider<T> emitter) {
-        return new FieldSignalTravelTimeAdjustableEmitter<>(emitter, fieldConvergenceCheckerProvider.getChecker(field));
+    public <T extends CalculusFieldElement<T>> FieldAdjustableEmitterSignalTimer<T> getFieldAdjustableEmitterComputer(final Field<T> field,
+                                                                                                                      final FieldPVCoordinatesProvider<T> emitter) {
+        return new FieldAdjustableEmitterSignalTimer<>(emitter, fieldConvergenceCheckerProvider.getChecker(field));
     }
 
     /**
@@ -138,8 +138,8 @@ public class SignalTravelTimeModel {
      * @param receiver signal receiver
      * @return (positive) time delay
      */
-    public <T extends CalculusFieldElement<T>> FieldSignalTravelTimeAdjustableReceiver<T> getFieldAdjustableReceiverComputer(final Field<T> field,
-                                                                                                                             final FieldPVCoordinatesProvider<T> receiver) {
-        return new FieldSignalTravelTimeAdjustableReceiver<>(receiver, fieldConvergenceCheckerProvider.getChecker(field));
+    public <T extends CalculusFieldElement<T>> FieldAdjustableReceiverSignalTimer<T> getFieldAdjustableReceiverComputer(final Field<T> field,
+                                                                                                                        final FieldPVCoordinatesProvider<T> receiver) {
+        return new FieldAdjustableReceiverSignalTimer<>(receiver, fieldConvergenceCheckerProvider.getChecker(field));
     }
 }

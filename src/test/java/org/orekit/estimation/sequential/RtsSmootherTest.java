@@ -65,7 +65,7 @@ public class RtsSmootherTest {
         Assertions.assertThrows(MathIllegalStateException.class, rtsSmoother::backwardsSmooth);
 
         // Single measurement processed - should be OK
-        kalman.estimationStep(measurements.get(0));
+        kalman.estimationStep(measurements.getFirst());
         Assertions.assertDoesNotThrow(rtsSmoother::backwardsSmooth);
     }
 }

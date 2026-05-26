@@ -96,9 +96,7 @@ public class OceanTidesFieldTest {
         double[][][] triangular = new double[degree + 1][][];
         for (int i = 0; i <= degree; ++i) {
             triangular[i] = new double[FastMath.min(i, order) + 1][4];
-        };
-
-        // filter waves
+        }// filter waves
         List<OceanTidesWave> filtered = new ArrayList<>(doodson.length);
         for (final int d : doodson) {
             for (final OceanTidesWave wave : complete) {

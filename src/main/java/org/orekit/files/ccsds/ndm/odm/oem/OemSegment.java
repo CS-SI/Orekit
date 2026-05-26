@@ -80,23 +80,6 @@ public class OemSegment extends Segment<OemMetadata, OemData>
         return getMetadata().getFrame();
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * This implementation returns {@link #getFrame() defining frame}
-     * if it is {@link Frame#isPseudoInertial() pseudo-inertial}, or
-     * its closest {@link Frame#getParent() ancestor} that is
-     * pseudo-inertial.
-     * </p>
-     */
-    @Override
-    public Frame getInertialFrame() {
-        Frame frame = getFrame();
-        while (!frame.isPseudoInertial()) {
-            frame = frame.getParent();
-        }
-        return frame;
-    }
-
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {

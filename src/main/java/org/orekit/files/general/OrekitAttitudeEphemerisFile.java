@@ -168,8 +168,8 @@ public class OrekitAttitudeEphemerisFile
                         interpolationSamples);
             }
 
-            final AbsoluteDate start = states.get(0).getDate();
-            final AbsoluteDate stop = states.get(states.size() - 1).getDate();
+            final AbsoluteDate start = states.getFirst().getDate();
+            final AbsoluteDate stop = states.getLast().getDate();
 
             if (this.startDate == null || start.compareTo(this.startDate) < 0) {
                 this.startDate = start;
@@ -186,7 +186,7 @@ public class OrekitAttitudeEphemerisFile
 
             final OrekitAttitudeEphemerisSegment newSeg =
                             new OrekitAttitudeEphemerisSegment(attitudeDataLines, interpolationMethod, interpolationSamples,
-                                                               states.get(0).getFrame(), availableDerivatives);
+                                                               states.getFirst().getFrame(), availableDerivatives);
             this.segments.add(newSeg);
             return newSeg;
         }
@@ -251,13 +251,13 @@ public class OrekitAttitudeEphemerisFile
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
-            return attitudeDataLines.get(0).getDate();
+            return attitudeDataLines.getFirst().getDate();
         }
 
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStop() {
-            return attitudeDataLines.get(attitudeDataLines.size() - 1).getDate();
+            return attitudeDataLines.getLast().getDate();
         }
 
         /** {@inheritDoc} */

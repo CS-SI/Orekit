@@ -23,10 +23,12 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
@@ -123,11 +125,24 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      */
     private final DataContext dataContext;
 
-    /** Simple constructor.
-     * @param epochT0 T0 epoch from file metadata
-     * @param dataContext data context
+    /**
+     * Used to create a {@link Frame} from the CCSDS specification.
+     *
+     * @since 13.1.5
      */
-    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
+    private final CcsdsFrameMapper frameMapper;
+
+    /**
+     * Simple constructor.
+     *
+     * @param epochT0     T0 epoch from file metadata
+     * @param dataContext data context
+     * @param frameMapper for building an Orekit {@link Frame}.
+     * @since 13.1.5
+     */
+    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0,
+                                          final DataContext dataContext,
+                                          final CcsdsFrameMapper frameMapper) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         trajBasis           = null;
@@ -145,7 +160,34 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         orbRevNumBasis      = -1;
 
         this.dataContext    = dataContext;
+        this.frameMapper    = frameMapper;
+    }
 
+    /**
+     * Get the frame mapper used to create a {@link Frame} from {@link #getCenter()},
+     * {@link #getTrajReferenceFrame()}, and {@link #getTrajFrameEpoch()}.
+     *
+     * @return the frame mapper.
+     * @see #getFrame()
+     * @since 13.1.5
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Use the {@link #getFrameMapper()} to create a {@link Frame} from
+     * {@link #getCenter()}, {@link #getTrajReferenceFrame()}, and
+     * {@link #getTrajFrameEpoch()}.
+     *
+     * @return the frame for this trajectory state history.
+     * @since 13.1.5
+     */
+    public Frame getFrame() {
+        return getFrameMapper().buildCcsdsFrame(
+                getCenter(),
+                getTrajReferenceFrame(),
+                getTrajFrameEpoch());
     }
 
     /** {@inheritDoc} */
@@ -213,8 +255,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         final int    index    = end < original.length() ? Integer.parseInt(original.substring(end)) : 0;
 
         // build offset index, taking care to use at least the same number of digits
-        final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
-                                              index + 1);
+        final String newIndex = "%%0%dd".formatted(original.length() - end).formatted(
+                index + 1);
 
         return prefix + newIndex;
 
@@ -513,7 +555,10 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         checkMandatoryEntriesExceptOrbitsCounter(version);
 
         // allocate new instance
-        final TrajectoryStateHistoryMetadata copy = new TrajectoryStateHistoryMetadata(trajFrameEpoch, dataContext);
+        final TrajectoryStateHistoryMetadata copy = new TrajectoryStateHistoryMetadata(
+                trajFrameEpoch,
+                dataContext,
+                getFrameMapper());
 
         // copy comments
         for (String comment : getComments()) {

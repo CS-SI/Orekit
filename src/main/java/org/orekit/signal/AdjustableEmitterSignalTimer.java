@@ -29,7 +29,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public class SignalTravelTimeAdjustableEmitter extends AbstractSignalTravelTime {
+public class AdjustableEmitterSignalTimer extends AbstractSignalTravelTime {
 
     /** Position/velocity provider of emitter. */
     private final PVCoordinatesProvider adjustableEmitterPVProvider;
@@ -38,7 +38,7 @@ public class SignalTravelTimeAdjustableEmitter extends AbstractSignalTravelTime 
      * Constructor with default iteration settings.
      * @param adjustableEmitterPVProvider adjustable emitter
      */
-    public SignalTravelTimeAdjustableEmitter(final PVCoordinatesProvider adjustableEmitterPVProvider) {
+    public AdjustableEmitterSignalTimer(final PVCoordinatesProvider adjustableEmitterPVProvider) {
         this(adjustableEmitterPVProvider, getDefaultConvergenceChecker());
     }
 
@@ -47,10 +47,23 @@ public class SignalTravelTimeAdjustableEmitter extends AbstractSignalTravelTime 
      * @param adjustableEmitterPVProvider adjustable emitter
      * @param checker convergence checker for fixed-point algorithm
      */
-    public SignalTravelTimeAdjustableEmitter(final PVCoordinatesProvider adjustableEmitterPVProvider,
-                                             final ConvergenceChecker<Double> checker) {
+    public AdjustableEmitterSignalTimer(final PVCoordinatesProvider adjustableEmitterPVProvider,
+                                        final ConvergenceChecker<Double> checker) {
         super(checker);
         this.adjustableEmitterPVProvider = adjustableEmitterPVProvider;
+    }
+
+    /** Compute the signal emission condition on a link leg (typically downlink or uplink).
+     * @param approxEmissionDate approximate emission date
+     * @param receptionCondition signal reception condition
+     * @return emission condition
+     */
+    public SignalEmissionCondition computeEmissionCondition(final SignalReceptionCondition receptionCondition,
+                                                            final AbsoluteDate approxEmissionDate) {
+        final double delay = computeDelay(receptionCondition, approxEmissionDate);
+        final AbsoluteDate emissionDate = receptionCondition.receptionDate().shiftedBy(-delay);
+        final Frame frame = receptionCondition.referenceFrame();
+        return new SignalEmissionCondition(emissionDate, adjustableEmitterPVProvider.getPosition(emissionDate, frame), frame);
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
@@ -58,14 +71,13 @@ public class SignalTravelTimeAdjustableEmitter extends AbstractSignalTravelTime 
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
     public double computeDelay(final SignalReceptionCondition receptionCondition) {
-        final Frame frame = receptionCondition.getReferenceFrame();
-        final AbsoluteDate signalArrivalDate = receptionCondition.getReceptionDate();
-        final Vector3D emitterPosition = adjustableEmitterPVProvider.getPosition(receptionCondition.getReceptionDate(),
-                receptionCondition.getReferenceFrame());
-        final Vector3D receiverPosition = receptionCondition.getReceiverPosition();
+        final AbsoluteDate signalArrivalDate = receptionCondition.receptionDate();
+        final Vector3D emitterPosition = adjustableEmitterPVProvider.getPosition(receptionCondition.receptionDate(),
+                receptionCondition.referenceFrame());
+        final Vector3D receiverPosition = receptionCondition.receiverPosition();
         final double distance = receiverPosition.subtract(emitterPosition).getNorm();
         final AbsoluteDate approxEmissionDate = signalArrivalDate.shiftedBy(-distance * C_RECIPROCAL);
-        return computeDelay(new SignalReceptionCondition(signalArrivalDate, receiverPosition, frame), approxEmissionDate);
+        return computeDelay(receptionCondition, approxEmissionDate);
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink).
@@ -76,10 +88,10 @@ public class SignalTravelTimeAdjustableEmitter extends AbstractSignalTravelTime 
     public double computeDelay(final SignalReceptionCondition receptionCondition, final AbsoluteDate approxEmissionDate) {
 
         // initialize emission date search loop assuming the state is already correct
-        final double offset = receptionCondition.getReceptionDate().durationFrom(approxEmissionDate);
+        final double offset = receptionCondition.receptionDate().durationFrom(approxEmissionDate);
 
-        return compute(adjustableEmitterPVProvider, offset, receptionCondition.getReceiverPosition(), approxEmissionDate,
-                receptionCondition.getReferenceFrame());
+        return compute(adjustableEmitterPVProvider, offset, receptionCondition.receiverPosition(), approxEmissionDate,
+                receptionCondition.referenceFrame());
     }
 
     @Override

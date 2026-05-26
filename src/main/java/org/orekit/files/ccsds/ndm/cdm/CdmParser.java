@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
@@ -34,6 +35,7 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
+import org.orekit.frames.Frame;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -112,7 +114,6 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
     /** CDM user defined logical block being read. */
     private UserDefined userDefinedBlock;
 
-
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
@@ -124,12 +125,15 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
-     * @since 12.0
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
     public CdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
-        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
+        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP,
+                dataContext, parsedUnitsBehavior, filters, frameMapper);
         this.doRelativeMetadata = true;
         this.isDatafinished = false;
     }
@@ -200,7 +204,7 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
             relativeMetadata = new CdmRelativeMetadata();
             relativeMetadata.setTimeSystem(TimeSystem.UTC);
         }
-        metadata  = new CdmMetadata(getDataContext());
+        metadata  = new CdmMetadata(getDataContext(), getFrameMapper());
         metadata.setRelativeMetadata(relativeMetadata);
 
         // As no time system is defined in CDM because all dates are given in UTC,
@@ -603,7 +607,7 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
      */
     private boolean processAdditionalParametersToken(final ParseToken token) {
         if (addParameters == null) {
-            addParameters = new AdditionalParameters();
+            addParameters = new AdditionalParameters(getFrameMapper());
         }
         if (moveCommentsIfEmpty(odParameters, addParameters)) {
             // get rid of the empty logical block

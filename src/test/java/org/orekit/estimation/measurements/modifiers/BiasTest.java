@@ -99,7 +99,7 @@ public class BiasTest {
                                               biasedRange,
                                               range.getTheoreticalStandardDeviation()[0],
                                               range.getBaseWeight()[0],
-                                              range.getSatellites().get(0));
+                                              range.getSatellites().getFirst());
                     m.addModifier((Bias<Range>) stationsRangeBiases[i]);
                     estimator.addMeasurement(m);
                 }
@@ -124,7 +124,7 @@ public class BiasTest {
                                      0.0,  2.6e-10);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assertions.assertEquals(realStationsBiases[i],
-                                stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),
+                                stationsRangeBiases[i].getParametersDrivers().getFirst().getValue(),
                                 3.3e-6);
         }
 

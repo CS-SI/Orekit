@@ -242,7 +242,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
                 new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), 18200, AngularDerivativesFilter.USE_RR);
 
         for (double dt = 0; dt < 29000; dt += 120) {
-            TimeStampedAngularCoordinates shifted      = sample.get(0).shiftedBy(dt);
+            TimeStampedAngularCoordinates shifted      = sample.getFirst().shiftedBy(dt);
             TimeStampedAngularCoordinates interpolated = interpolator.interpolate(t0.shiftedBy(dt), sample);
             Assertions.assertEquals(0.0,
                                     Rotation.distance(shifted.getRotation(), interpolated.getRotation()),
@@ -296,9 +296,9 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
         integrator.integrate(ode, new ODEState(0, y), dt);
 
         List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
-        sample.add(complete.get(0));
+        sample.add(complete.getFirst());
         sample.add(complete.get(complete.size() / 2));
-        sample.add(complete.get(complete.size() - 1));
+        sample.add(complete.getLast());
 
         // Create interpolator
         final TimeInterpolator<TimeStampedAngularCoordinates> interpolator =

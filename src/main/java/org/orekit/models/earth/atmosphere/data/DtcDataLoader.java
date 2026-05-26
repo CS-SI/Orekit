@@ -203,8 +203,8 @@ public class DtcDataLoader implements DataLoader {
         }
 
         try {
-            firstDate = set.first().getDate();
-            lastDate = set.last().getDate();
+            firstDate = set.getFirst().getDate();
+            lastDate = set.getLast().getDate();
         } catch (NoSuchElementException nse) {
             throw new OrekitException(nse, OrekitMessages.NO_DATA_IN_FILE, name);
         }

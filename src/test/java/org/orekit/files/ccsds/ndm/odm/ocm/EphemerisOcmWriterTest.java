@@ -139,8 +139,8 @@ public class EphemerisOcmWriterTest {
         final Ocm ocm = parser.parseMessage(source);
         EphemerisOcmWriter writer = new EphemerisOcmWriter(new WriterBuilder().buildOcmWriter(),
                                                            ocm.getHeader(),
-                                                           ocm.getSegments().get(0).getMetadata(),
-                                                           ocm.getSegments().get(0).getData().getTrajectoryBlocks().get(0).getMetadata(),
+                                                           ocm.getSegments().getFirst().getMetadata(),
+                                                           ocm.getSegments().getFirst().getData().getTrajectoryBlocks().getFirst().getMetadata(),
                                                            FileFormat.KVN, "dummy",
                                                            Constants.JULIAN_DAY, 0);
         try {
@@ -252,11 +252,11 @@ public class EphemerisOcmWriterTest {
 
     static void compareOcms(Ocm file1, Ocm file2) {
         Assertions.assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
-        Assertions.assertEquals(file1.getSegments().get(0).getData().getTrajectoryBlocks().size(),
-                                file2.getSegments().get(0).getData().getTrajectoryBlocks().size());
-        for (int i = 0; i < file1.getSegments().get(0).getData().getTrajectoryBlocks().size(); i++) {
-            compareOcmEphemerisBlocks(file1.getSegments().get(0).getData().getTrajectoryBlocks().get(i),
-                                      file2.getSegments().get(0).getData().getTrajectoryBlocks().get(i));
+        Assertions.assertEquals(file1.getSegments().getFirst().getData().getTrajectoryBlocks().size(),
+                                file2.getSegments().getFirst().getData().getTrajectoryBlocks().size());
+        for (int i = 0; i < file1.getSegments().getFirst().getData().getTrajectoryBlocks().size(); i++) {
+            compareOcmEphemerisBlocks(file1.getSegments().getFirst().getData().getTrajectoryBlocks().get(i),
+                                      file2.getSegments().getFirst().getData().getTrajectoryBlocks().get(i));
         }
     }
 
@@ -305,7 +305,7 @@ public class EphemerisOcmWriterTest {
     }
 
     private OcmMetadata dummyMetadata() {
-        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault());
+        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault(), null);
         metadata.addComment("dummy metadata comment");
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setInternationalDesignator("9999-999ZZZ");
@@ -318,7 +318,7 @@ public class EphemerisOcmWriterTest {
 
     private TrajectoryStateHistoryMetadata dummyTrajectoryMetadata() {
         final AbsoluteDate t0 = new AbsoluteDate(2003, 5, 7, 19, 43, 56.75, TimeScalesFactory.getUTC());
-        TrajectoryStateHistoryMetadata metadata = new TrajectoryStateHistoryMetadata(t0, DataContext.getDefault());
+        TrajectoryStateHistoryMetadata metadata = new TrajectoryStateHistoryMetadata(t0, DataContext.getDefault(), null);
         metadata.addComment("dummy trajectory comment");
         metadata.setTrajID("traj 17");
         metadata.setTrajBasis("PREDICTED");

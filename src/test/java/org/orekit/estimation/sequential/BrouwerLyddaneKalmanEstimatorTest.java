@@ -57,7 +57,7 @@ public class BrouwerLyddaneKalmanEstimatorTest {
         final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
-        final Orbit refOrbit = referencePropagator.propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+        final Orbit refOrbit = referencePropagator.propagate(measurements.getLast().getDate()).getOrbit();
 
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {

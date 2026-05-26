@@ -351,6 +351,17 @@ public class LambertSolver {
             orbitType = LambertOrbitType.HYPERBOLIC;
         }
         nMax = orbitType.equals(LambertOrbitType.ELLIPTIC) ? (int) FastMath.floor(tau / FastMath.PI) : 0;
+        // when tau falls below the time of flight at x = 0 for nMax revolutions, the actual
+        // minimum time of flight may exceed tau so nMax has to be adjusted (Algorithm 2 in Izzo's paper)
+        if (nMax > 0 && tau < tauME + nMax * FastMath.PI) {
+            final double tauMin = calculateTauMin(sigma, nMax,
+                    householderParameters.getMaxIterations(),
+                    householderParameters.getAbsoluteTolerance(),
+                    householderParameters.getRelativeTolerance());
+            if (tauMin > tau) {
+                nMax--;
+            }
+        }
         if (FastMath.abs(tauME - tau) <= Precision.EPSILON) {
             shortestPathType = LambertPathType.MIN_ENERGY_PATH;
         } else if (tau < tauME) {
@@ -508,6 +519,36 @@ public class LambertSolver {
                                     final double F1, final double F2,
                                     final double sigma) {
         return (7.0 * x * F2 + 8.0 * F1 - 6.0 * (1.0 - sigma * sigma) * FastMath.pow(sigma / y, 5) * x) / (1.0 - x * x);
+    }
+
+    /** Find the minimum time of flight required to complete the given number of revolutions.
+     * Halley iterations locate the x for which the first derivative of tau with respect to x
+     * vanishes, starting from x = 0.
+     * @param sigma value of sigma
+     * @param nRevs number of complete revolutions
+     * @param maxIterations maximum number of iterations
+     * @param atol absolute tolerance for convergence
+     * @param rtol relative tolerance for convergence
+     * @return minimum value of tau for the given number of revolutions
+     */
+    private static double calculateTauMin(final double sigma, final int nRevs,
+                                          final int maxIterations,
+                                          final double atol, final double rtol) {
+        double x = 0.1;
+        for (int iteration = 0; iteration < maxIterations; iteration++) {
+            final double y    = calculateY(x, sigma);
+            final double tauX = calculateF0(x, y, nRevs, 0.0, sigma);
+            final double F1   = calculateF1(x, y, tauX, sigma);
+            final double F2   = calculateF2(x, y, tauX, F1, sigma);
+            final double F3   = calculateF3(x, y, F1, F2, sigma);
+            final double xNew = x - 2.0 * F1 * F2 / (2.0 * F2 * F2 - F1 * F3);
+            if (FastMath.abs(xNew - x) < rtol * FastMath.abs(x) + atol) {
+                final double yNew = calculateY(xNew, sigma);
+                return calculateF0(xNew, yNew, nRevs, 0.0, sigma);
+            }
+            x = xNew;
+        }
+        throw new OrekitException(OrekitMessages.LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE, maxIterations);
     }
 
     /** Calculate the value of psi.

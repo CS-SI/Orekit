@@ -91,8 +91,7 @@ class LinearKeplerianCovarianceMapper {
      * @return position angle type
      */
     private PositionAngleType findPositionAngleType() {
-        if (orbit instanceof PositionAngleBased<?>) {
-            final PositionAngleBased<?> positionAngleBased = (PositionAngleBased<?>) orbit;
+        if (orbit instanceof PositionAngleBased<?> positionAngleBased) {
             return positionAngleBased.getCachedPositionAngleType();
         } else {
             // Cartesian

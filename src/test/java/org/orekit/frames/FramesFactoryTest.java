@@ -231,7 +231,7 @@ public class FramesFactoryTest {
         Transform t = icrf.getTransformTo(FramesFactory.getGCRF(),
                                           new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
         Assertions.assertEquals(0.0, t.getRotation().getAngle(), 1.0e-15);
-        Assertions.assertEquals(CelestialBodyFactory.EARTH_MOON + "/inertial", icrf.getParent().getName());
+        Assertions.assertEquals(CelestialBodyFactory.EARTH_MOON + "/ICRF", icrf.getParent().getName());
         Assertions.assertEquals(Predefined.GCRF.getName(), icrf.getParent().getParent().getName());
     }
 
@@ -383,8 +383,8 @@ public class FramesFactoryTest {
         Utils.setLoaders(IERSConventions.IERS_2010, converted);
         Frame todConvertedCorrection  = FramesFactory.getTOD(IERSConventions.IERS_2010, false);
 
-        for (AbsoluteDate date = forced.get(0).getDate();
-             date.compareTo(forced.get(forced.size() - 1).getDate()) < 0;
+        for (AbsoluteDate date = forced.getFirst().getDate();
+             date.compareTo(forced.getLast().getDate()) < 0;
              date = date.shiftedBy(3600)) {
             Transform tNoCorrection =
                     FramesFactory.getNonInterpolatingTransform(todNoCorrection, cirf, date);

@@ -199,7 +199,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                 if(i == 0) {
                     final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(PredefinedGnssSignal.G02);
                     Assertions.assertEquals(3, computedDateOnL2.size());
-                    Assertions.assertEquals(0.0, computedDateOnL2.get(0).durationFrom(dateL2[i]), 0.0);
+                    Assertions.assertEquals(0.0, computedDateOnL2.getFirst().durationFrom(dateL2[i]), 0.0);
                 } else {
                     final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(PredefinedGnssSignal.G02);
                     Assertions.assertEquals(0, computedDateOnL2.size());

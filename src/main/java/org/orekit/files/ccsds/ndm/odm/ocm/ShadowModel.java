@@ -32,6 +32,6 @@ public enum ShadowModel {
     CONE,
 
     /** Cone model, penumbra and umbra. */
-    DUAL_CONE;
+    DUAL_CONE
 
 }

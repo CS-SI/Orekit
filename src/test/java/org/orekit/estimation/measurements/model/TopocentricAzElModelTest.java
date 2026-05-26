@@ -44,6 +44,8 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.signal.FieldSignalReceptionCondition;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -126,8 +128,9 @@ class TopocentricAzElModelTest {
         final Vector3D lineOfSightInGcrf = topocentricToInertial.transformVector(lineOfSightInTopocentric);
         final RaDecModel raDecModel = new RaDecModel(frame, signalTravelTimeModel);
         final StaticTransform staticTransform = bodyShape.getBodyFrame().getStaticTransformTo(frame, date);
-        final double[] raDec = raDecModel.value(frame, staticTransform.transformPosition(bodyShape.transform(geodeticPoint)),
-                absolutePVCoordinates.getDate(), absolutePVCoordinates, absolutePVCoordinates.getDate());
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(absolutePVCoordinates.getDate(),
+                staticTransform.transformPosition(bodyShape.transform(geodeticPoint)), frame);
+        final double[] raDec = raDecModel.value(receptionCondition, absolutePVCoordinates, absolutePVCoordinates.getDate());
         assertEquals(lineOfSightInGcrf.getAlpha(), raDec[0], 1e-12);
         assertEquals(lineOfSightInGcrf.getDelta(), raDec[1], 1e-12);
     }
@@ -159,8 +162,9 @@ class TopocentricAzElModelTest {
         final FieldVector3D<Gradient> lineOfSightInGcrf = topocentricToInertial.transformVector(lineOfSightInTopocentric);
         final RaDecModel raDecModel = new RaDecModel(frame, signalTravelTimeModel);
         final FieldStaticTransform<Gradient> staticTransform = bodyShape.getBodyFrame().getStaticTransformTo(frame, fieldAPV.getDate());
-        final Gradient[] raDec = raDecModel.value(frame, staticTransform.transformPosition(bodyShape.transform(fieldGeodeticPoint)),
-                fieldAPV.getDate(), fieldAPV, fieldAPV.getDate());
+        final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(fieldAPV.getDate(),
+                staticTransform.transformPosition(bodyShape.transform(fieldGeodeticPoint)), frame);
+        final Gradient[] raDec = raDecModel.value(receptionCondition, fieldAPV, fieldAPV.getDate());
         assertEquals(lineOfSightInGcrf.getAlpha().getValue(), raDec[0].getValue(), 1e-15);
         assertEquals(lineOfSightInGcrf.getDelta().getValue(), raDec[1].getValue(), 1e-15);
         assertArrayEquals(lineOfSightInGcrf.getDelta().getGradient(), raDec[1].getGradient(), 1e-16);

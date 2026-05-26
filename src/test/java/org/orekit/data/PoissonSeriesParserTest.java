@@ -70,8 +70,10 @@ public class PoissonSeriesParserTest {
     @Test
     public void testMissingTermData() {
         Assertions.assertThrows(OrekitException.class, () -> {
-            buildData("  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n"
-                    + "j = 0  Nb of terms = 1\n");
+            buildData("""
+                      0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5
+                    j = 0  Nb of terms = 1
+                    """);
         });
     }
 
@@ -100,13 +102,15 @@ public class PoissonSeriesParserTest {
     public void testMissingSeries() {
         try {
             String data =
-                    "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
-                    + "j = 0  Nb of terms = 1\n"
-                    + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n"
-                    + "j = 1  Nb of terms = 1\n"
-                    + "2 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n"
-                    + "j = 3  Nb of terms = 1\n"
-                    + "3 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+                    """
+                      0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5
+                    j = 0  Nb of terms = 1
+                    1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+                    j = 1  Nb of terms = 1
+                    2 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+                    j = 3  Nb of terms = 1
+                    3 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+                    """;
             new PoissonSeriesParser(17).
                 withPolynomialPart('x', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
@@ -125,14 +129,16 @@ public class PoissonSeriesParserTest {
     public void testMissingTerms() {
         try {
             String data =
-                    "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
-                    + "j = 0  Nb of terms = 1\n"
-                    + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n"
-                    + "j = 1  Nb of terms = 3\n"
-                    + "2 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n"
-                    + "3 1.0 0.0 0 0 0 0 0 2 0 0 0 0 0 0 0 0\n"
-                    + "j = 2  Nb of terms = 1\n"
-                    + "4 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+                    """
+                      0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5
+                    j = 0  Nb of terms = 1
+                    1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+                    j = 1  Nb of terms = 3
+                    2 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+                    3 1.0 0.0 0 0 0 0 0 2 0 0 0 0 0 0 0 0
+                    j = 2  Nb of terms = 1
+                    4 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+                    """;
             new PoissonSeriesParser(17).
                 withPolynomialPart('x', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
@@ -148,9 +154,11 @@ public class PoissonSeriesParserTest {
     @Test
     public void testSmall() {
         String data =
-            "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
-            + "j = 0  Nb of terms = 1\n"
-            + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+            """
+              0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5
+            j = 0  Nb of terms = 1
+            1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+            """;
         PoissonSeries nd = new PoissonSeriesParser(17).
                                withPolynomialPart('x', PolynomialParser.Unit.NO_UNITS).
                                withFirstDelaunay(4).
@@ -163,9 +171,11 @@ public class PoissonSeriesParserTest {
     @Test
     public void testSecondsMarkers() {
         String data =
-            "  0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5\n"
-            + "j = 0  Nb of terms = 1\n"
-            + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+            """
+              0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5
+            j = 0  Nb of terms = 1
+            1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+            """;
         PoissonSeries nd = new PoissonSeriesParser(17).
                                withFirstPlanetary(9).
                                withSinCos(0, 2, 1.0, 3, 1.0).
@@ -178,63 +188,65 @@ public class PoissonSeriesParserTest {
     @Test
     public void testExtract() {
         String data =
-            "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
-            + "precession-nutation model\n"
-            + "\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "X = polynomial part + non-polynomial part\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "Polynomial part (unit microarcsecond)\n"
-            + "\n"
-            + "  -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "Non-polynomial part (unit microarcsecond)\n"
-            + "(ARG being for various combination of the fundamental arguments of the nutation theory)\n"
-            + "\n"
-            + "  Sum_i[a_{s,0})_i * sin(ARG) + a_{c,0})_i * cos(ARG)] \n"
-            + "\n"
-            + "+ Sum_i)j=1,4 [a_{s,j})_i * t^j * sin(ARG) + a_{c,j})_i * cos(ARG)] * t^j]\n"
-            + "\n"
-            + "The Table below provides the values for a_{s,j})_i and a_{c,j})_i\n"
-            + "\n"
-            + "The expressions for the fundamental arguments appearing in columns 4 to 8 (luni-solar part) \n"
-            + "and in columns 6 to 17 (planetary part) are those of the IERS Conventions 2000\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "    i    a_{s,j})_i      a_{c,j})_i    l    l'   F    D   Om L_Me L_Ve  L_E L_Ma  L_J L_Sa  L_U L_Ne  p_A\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "-16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5\n"
-            + "j = 0  Nb of terms = 2\n"
-            + "\n"
-            + "   1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n"
-            + "   2           0.11           0.00    0    0    4   -4    4    0    0    0    0    0    0    0    0    0\n"
-            + "\n"
-            + "j = 1  Nb of terms = 2\n"
-            + "\n"
-            + "   3       -3328.48      205833.15    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n"
-            + "   4           0.00          -0.10    1   -1   -2   -2   -1    0    0    0    0    0    0    0    0    0\n"
-            + "\n"
-            + " j = 2  Nb of terms = 2\n"
-            + "\n"
-            + "   5        2038.00          82.26    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n"
-            + "   6          -0.12           0.00    1    0   -2   -2   -1    0    0    0    0    0    0    0    0    0\n"
-            + "  \n"
-            + " j = 3  Nb of terms = 2\n"
-            + "\n"
-            + "   7           1.76         -20.39    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n"
-            + "   8           0.00           0.20    0    0    0    0    2    0    0    0    0    0    0    0    0    0\n"
-            + "\n"
-            + " j = 4  Nb of terms = 1\n"
-            + "       \n"
-            + "   9          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
+            """
+            Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A
+            precession-nutation model
+            
+            
+            ----------------------------------------------------------------------
+            
+            X = polynomial part + non-polynomial part
+            
+            ----------------------------------------------------------------------
+            
+            Polynomial part (unit microarcsecond)
+            
+              -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5
+            
+            ----------------------------------------------------------------------
+            
+            Non-polynomial part (unit microarcsecond)
+            (ARG being for various combination of the fundamental arguments of the nutation theory)
+            
+              Sum_i[a_{s,0})_i * sin(ARG) + a_{c,0})_i * cos(ARG)]\s
+            
+            + Sum_i)j=1,4 [a_{s,j})_i * t^j * sin(ARG) + a_{c,j})_i * cos(ARG)] * t^j]
+            
+            The Table below provides the values for a_{s,j})_i and a_{c,j})_i
+            
+            The expressions for the fundamental arguments appearing in columns 4 to 8 (luni-solar part)\s
+            and in columns 6 to 17 (planetary part) are those of the IERS Conventions 2000
+            
+            ----------------------------------------------------------------------
+            
+                i    a_{s,j})_i      a_{c,j})_i    l    l'   F    D   Om L_Me L_Ve  L_E L_Ma  L_J L_Sa  L_U L_Ne  p_A
+            
+            ----------------------------------------------------------------------
+            -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5
+            j = 0  Nb of terms = 2
+            
+               1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+               2           0.11           0.00    0    0    4   -4    4    0    0    0    0    0    0    0    0    0
+            
+            j = 1  Nb of terms = 2
+            
+               3       -3328.48      205833.15    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+               4           0.00          -0.10    1   -1   -2   -2   -1    0    0    0    0    0    0    0    0    0
+            
+             j = 2  Nb of terms = 2
+            
+               5        2038.00          82.26    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+               6          -0.12           0.00    1    0   -2   -2   -1    0    0    0    0    0    0    0    0    0
+             \s
+             j = 3  Nb of terms = 2
+            
+               7           1.76         -20.39    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+               8           0.00           0.20    0    0    0    0    2    0    0    0    0    0    0    0    0    0
+            
+             j = 4  Nb of terms = 1
+                  \s
+               9          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+            """;
         // despite there are 9 data lines above, there are only 5 different terms,
         // as some terms share the same Delaunay and planetary coefficients and are
         // therefore grouped together. The Delaunay arguments for the 5 terms are:
@@ -251,63 +263,65 @@ public class PoissonSeriesParserTest {
     @Test
     public void testWrongIndex() {
         String data =
-            "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
-            + "precession-nutation model\n"
-            + "\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "X = polynomial part + non-polynomial part\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "Polynomial part (unit microarcsecond)\n"
-            + "\n"
-            + "  -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "Non-polynomial part (unit microarcsecond)\n"
-            + "(ARG being for various combination of the fundamental arguments of the nutation theory)\n"
-            + "\n"
-            + "  Sum_i[a_{s,0})_i * sin(ARG) + a_{c,0})_i * cos(ARG)] \n"
-            + "\n"
-            + "+ Sum_i)j=1,4 [a_{s,j})_i * t^j * sin(ARG) + a_{c,j})_i * cos(ARG)] * t^j]\n"
-            + "\n"
-            + "The Table below provides the values for a_{s,j})_i and a_{c,j})_i\n"
-            + "\n"
-            + "The expressions for the fundamental arguments appearing in columns 4 to 8 (luni-solar part) \n"
-            + "and in columns 6 to 17 (planetary part) are those of the IERS Conventions 2000\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "    i    a_{s,j})_i      a_{c,j})_i    l    l'   F    D   Om L_Me L_Ve  L_E L_Ma  L_J L_Sa  L_U L_Ne  p_A\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "-16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5\n"
-            + "j = 0  Nb of terms = 2\n"
-            + "\n"
-            + "   1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n"
-            + "   2           0.11           0.00    0    0    4   -4    4    0    0    0    0    0    0    0    0    0\n"
-            + "\n"
-            + "j = 1  Nb of terms = 2\n"
-            + "\n"
-            + "   3       -3328.48      205833.15    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n"
-            + "   4           0.00          -0.10    1   -1   -2   -2   -1    0    0    0    0    0    0    0    0    0\n"
-            + "\n"
-            + " j = 2  Nb of terms = 2\n"
-            + "\n"
-            + "   5        2038.00          82.26    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n"
-            + "   6          -0.12           0.00    1    0   -2   -2   -1    0    0    0    0    0    0    0    0    0\n"
-            + "  \n"
-            + " j = 3  Nb of terms = 2\n"
-            + "\n"
-            + "   7           1.76         -20.39    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n"
-            + " 999           0.00           0.20    0    0    0    0    2    0    0    0    0    0    0    0    0    0\n"
-            + "\n"
-            + " j = 4  Nb of terms = 1\n"
-            + "       \n"
-            + "   9          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
+            """
+            Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A
+            precession-nutation model
+            
+            
+            ----------------------------------------------------------------------
+            
+            X = polynomial part + non-polynomial part
+            
+            ----------------------------------------------------------------------
+            
+            Polynomial part (unit microarcsecond)
+            
+              -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5
+            
+            ----------------------------------------------------------------------
+            
+            Non-polynomial part (unit microarcsecond)
+            (ARG being for various combination of the fundamental arguments of the nutation theory)
+            
+              Sum_i[a_{s,0})_i * sin(ARG) + a_{c,0})_i * cos(ARG)]\s
+            
+            + Sum_i)j=1,4 [a_{s,j})_i * t^j * sin(ARG) + a_{c,j})_i * cos(ARG)] * t^j]
+            
+            The Table below provides the values for a_{s,j})_i and a_{c,j})_i
+            
+            The expressions for the fundamental arguments appearing in columns 4 to 8 (luni-solar part)\s
+            and in columns 6 to 17 (planetary part) are those of the IERS Conventions 2000
+            
+            ----------------------------------------------------------------------
+            
+                i    a_{s,j})_i      a_{c,j})_i    l    l'   F    D   Om L_Me L_Ve  L_E L_Ma  L_J L_Sa  L_U L_Ne  p_A
+            
+            ----------------------------------------------------------------------
+            -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5
+            j = 0  Nb of terms = 2
+            
+               1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+               2           0.11           0.00    0    0    4   -4    4    0    0    0    0    0    0    0    0    0
+            
+            j = 1  Nb of terms = 2
+            
+               3       -3328.48      205833.15    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+               4           0.00          -0.10    1   -1   -2   -2   -1    0    0    0    0    0    0    0    0    0
+            
+             j = 2  Nb of terms = 2
+            
+               5        2038.00          82.26    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+               6          -0.12           0.00    1    0   -2   -2   -1    0    0    0    0    0    0    0    0    0
+             \s
+             j = 3  Nb of terms = 2
+            
+               7           1.76         -20.39    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+             999           0.00           0.20    0    0    0    0    2    0    0    0    0    0    0    0    0    0
+            
+             j = 4  Nb of terms = 1
+                  \s
+               9          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+            """;
         try {
             new PoissonSeriesParser(17).
                 withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
@@ -326,48 +340,50 @@ public class PoissonSeriesParserTest {
     @Test
     public void testTruncated() {
         String data =
-            "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
-            + "precession-nutation model\n"
-            + "\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "X = polynomial part + non-polynomial part\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "Polynomial part (unit microarcsecond)\n"
-            + "\n"
-            + "  -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "Non-polynomial part (unit microarcsecond)\n"
-            + "(ARG being for various combination of the fundamental arguments of the nutation theory)\n"
-            + "\n"
-            + "  Sum_i[a_{s,0})_i * sin(ARG) + a_{c,0})_i * cos(ARG)] \n"
-            + "\n"
-            + "+ Sum_i)j=1,4 [a_{s,j})_i * t^j * sin(ARG) + a_{c,j})_i * cos(ARG)] * t^j]\n"
-            + "\n"
-            + "The Table below provides the values for a_{s,j})_i and a_{c,j})_i\n"
-            + "\n"
-            + "The expressions for the fundamental arguments appearing in columns 4 to 8 (luni-solar part) \n"
-            + "and in columns 6 to 17 (planetary part) are those of the IERS Conventions 2000\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "\n"
-            + "    i    a_{s,j})_i      a_{c,j})_i    l    l'   F    D   Om L_Me L_Ve  L_E L_Ma  L_J L_Sa  L_U L_Ne  p_A\n"
-            + "\n"
-            + "----------------------------------------------------------------------\n"
-            + "-16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5\n"
-            + "j = 0  Nb of terms = 2\n"
-            + "\n"
-            + "   1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n"
-            + "   2           0.11           0.00    0    0    4   -4    4    0    0    0    0    0    0    0    0    0\n"
-            + "\n"
-            + "j = 1  Nb of terms = 2\n"
-            + "\n"
-            + "   3       -3328.48      205833.15    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
+            """
+            Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A
+            precession-nutation model
+            
+            
+            ----------------------------------------------------------------------
+            
+            X = polynomial part + non-polynomial part
+            
+            ----------------------------------------------------------------------
+            
+            Polynomial part (unit microarcsecond)
+            
+              -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5
+            
+            ----------------------------------------------------------------------
+            
+            Non-polynomial part (unit microarcsecond)
+            (ARG being for various combination of the fundamental arguments of the nutation theory)
+            
+              Sum_i[a_{s,0})_i * sin(ARG) + a_{c,0})_i * cos(ARG)]\s
+            
+            + Sum_i)j=1,4 [a_{s,j})_i * t^j * sin(ARG) + a_{c,j})_i * cos(ARG)] * t^j]
+            
+            The Table below provides the values for a_{s,j})_i and a_{c,j})_i
+            
+            The expressions for the fundamental arguments appearing in columns 4 to 8 (luni-solar part)\s
+            and in columns 6 to 17 (planetary part) are those of the IERS Conventions 2000
+            
+            ----------------------------------------------------------------------
+            
+                i    a_{s,j})_i      a_{c,j})_i    l    l'   F    D   Om L_Me L_Ve  L_E L_Ma  L_J L_Sa  L_U L_Ne  p_A
+            
+            ----------------------------------------------------------------------
+            -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5
+            j = 0  Nb of terms = 2
+            
+               1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+               2           0.11           0.00    0    0    4   -4    4    0    0    0    0    0    0    0    0    0
+            
+            j = 1  Nb of terms = 2
+            
+               3       -3328.48      205833.15    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+            """;
         try {
             new PoissonSeriesParser(17).
                 withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).

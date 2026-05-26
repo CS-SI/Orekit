@@ -102,7 +102,7 @@ public class IIRVFileWriter implements EphemerisFileWriter {
         }
 
         final StreamingIIRVFileWriter streamingWriter = new StreamingIIRVFileWriter(writer, includeMessageMetadataSetting);
-        final IIRVMessage iirvMessage = builder.buildIIRVMessage(segments.get(0).getCoordinates());
+        final IIRVMessage iirvMessage = builder.buildIIRVMessage(segments.getFirst().getCoordinates());
         streamingWriter.writeIIRVMessage(iirvMessage);
     }
 }

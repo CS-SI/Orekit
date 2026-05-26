@@ -144,7 +144,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * @return a propagator for all the data in this ephemeris file.
          */
         default BoundedPropagator getPropagator() {
-            return getPropagator(new FrameAlignedProvider(getSegments().get(0).getInertialFrame()));
+            return getPropagator(new FrameAlignedProvider(getSegments().getFirst().getInertialFrame()));
         }
 
         /**
@@ -212,21 +212,22 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * Get the inertial reference frame for this ephemeris segment. Defines the
          * propagation frame for {@link #getPropagator(AttitudeProvider)}.
          *
-         * <p>The default implementation returns {@link #getFrame()} if it is inertial.
-         * Otherwise it returns {@link Frame#getRoot()}. Implementors are encouraged to
-         * override this default implementation if a more suitable inertial frame is
-         * available.
+         * <p>This implementation returns {@link #getFrame()}
+         * if it is {@link Frame#isPseudoInertial() pseudo-inertial}, or its closest
+         * {@link Frame#getParent() ancestor} that is pseudo-inertial. Implementors are
+         * encouraged to override this default implementation if a more suitable inertial
+         * frame is available.
          *
-         * @return an reference frame that is inertial, i.e. {@link
-         * Frame#isPseudoInertial()} is {@code true}. May be the same as {@link
-         * #getFrame()} if it is inertial.
+         * @return an reference frame that is inertial, i.e.
+         * {@link Frame#isPseudoInertial()} is {@code true}. May be the same as
+         * {@link #getFrame()} if it is inertial.
          */
         default Frame getInertialFrame() {
-            final Frame frame = getFrame();
-            if (frame.isPseudoInertial()) {
-                return frame;
+            Frame frame = getFrame();
+            while (!frame.isPseudoInertial()) {
+                frame = frame.getParent();
             }
-            return Frame.getRoot();
+            return frame;
         }
 
         /**

@@ -70,9 +70,9 @@ public class NdmParserTest {
         final DataSource source = new DataSource(name, () -> NdmParserTest.class.getResourceAsStream(name));
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         Assertions.assertEquals(1, ndm.getComments().size());
-        Assertions.assertEquals("NDM with only one constituent: an OPM", ndm.getComments().get(0));
+        Assertions.assertEquals("NDM with only one constituent: an OPM", ndm.getComments().getFirst());
         Assertions.assertEquals(1, ndm.getConstituents().size());
-        Opm opm = (Opm) ndm.getConstituents().get(0);
+        Opm opm = (Opm) ndm.getConstituents().getFirst();
         Assertions.assertEquals("OSPREY 5", opm.getMetadata().getObjectName());
         Assertions.assertEquals(3000.0, opm.getData().getSpacecraftParametersBlock().getMass(), 1.0e-10);
     }
@@ -83,9 +83,9 @@ public class NdmParserTest {
         final DataSource source = new DataSource(name, () -> NdmParserTest.class.getResourceAsStream(name));
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         Assertions.assertEquals(1, ndm.getComments().size());
-        Assertions.assertEquals("NDM with two constituents: an OCM and an APM", ndm.getComments().get(0));
+        Assertions.assertEquals("NDM with two constituents: an OCM and an APM", ndm.getComments().getFirst());
         Assertions.assertEquals(2, ndm.getConstituents().size());
-        Ocm ocm = (Ocm) ndm.getConstituents().get(0);
+        Ocm ocm = (Ocm) ndm.getConstituents().getFirst();
         Assertions.assertEquals("1998-999A", ocm.getMetadata().getInternationalDesignator());
         Assertions.assertEquals("WGS-84", ocm.getData().getUserDefinedBlock().getParameters().get("EARTH_MODEL"));
         Apm apm = (Apm) ndm.getConstituents().get(1);

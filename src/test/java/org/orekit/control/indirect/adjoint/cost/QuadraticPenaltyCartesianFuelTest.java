@@ -16,6 +16,9 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -31,10 +34,6 @@ import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 class QuadraticPenaltyCartesianFuelTest {
 
@@ -83,10 +82,10 @@ class QuadraticPenaltyCartesianFuelTest {
         // WHEN
         final Stream<EventDetector> actual = penalizedCartesianFuel.getEventDetectors();
         // THEN
-        final List<EventDetector> eventDetectorList = actual.collect(Collectors.toList());
+        final List<EventDetector> eventDetectorList = actual.toList();
         Assertions.assertEquals(2, eventDetectorList.size());
         final SpacecraftState state = buildState(new double[] {0, 0, 0, 1, 2, 3, 4}, 10);
-        final double g1 = eventDetectorList.get(0).g(state);
+        final double g1 = eventDetectorList.getFirst().g(state);
         final double g2 = eventDetectorList.get(1).g(state);
         Assertions.assertEquals(penalizedCartesianFuel.getMaximumThrustMagnitude(), FastMath.abs(g2 - g1));
     }

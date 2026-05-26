@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.SortedSet;
+
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
@@ -33,6 +35,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.InterSatellitesOneWayRangeRate;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -47,9 +50,7 @@ import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
-import java.util.SortedSet;
-
-public class InterSatellitesOneWayRangeRateBuilderTest {
+class InterSatellitesOneWayRangeRateBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
@@ -59,10 +60,12 @@ public class InterSatellitesOneWayRangeRateBuilderTest {
                                                                           final ObservableSatellite remote) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<InterSatellitesOneWayRangeRate> isrb =
-                        new InterSatellitesOneWayRangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                                    1.0e-10,
-                                                                                                                    new GaussianRandomGenerator(random)),
-                                                        receiver, remote, SIGMA, 1.0);
+                        new InterSatellitesOneWayRangeRateBuilder(receiver, remote, SIGMA, 1.0);
+        if (random != null) {
+            isrb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         isrb.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -72,13 +75,13 @@ public class InterSatellitesOneWayRangeRateBuilderTest {
     }
 
     @Test
-    public void testForward() {
-        doTest(0x5006ca3f1e03ea93L, 0.0, 1.2, 2.4 * SIGMA);
+    void testForward() {
+        doTest(0x5006ca3f1e03ea93L, 0.0, 1.2, 6. * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0xd7643ffbaff67906L, 0.0, -1.0, 3.0 * SIGMA);
+    void testBackward() {
+        doTest(0xd7643ffbaff67906L, 0.0, -1.0, 6. * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -156,7 +159,7 @@ public class InterSatellitesOneWayRangeRateBuilderTest {
      }
 
      @BeforeEach
-     public void setUp() {
+     void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

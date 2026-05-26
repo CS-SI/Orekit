@@ -22,6 +22,8 @@ import java.util.function.Function;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.acm.AcmParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmParser;
@@ -35,6 +37,7 @@ import org.orekit.files.ccsds.ndm.tdm.RangeUnits;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnitsConverter;
 import org.orekit.files.ccsds.ndm.tdm.TdmParser;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -69,6 +72,13 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @since 12.0
      */
     private final Function<ParseToken, List<ParseToken>>[] filters;
+
+    /**
+     * Maps CCSDS center and frame to a {@link Frame}.
+     *
+     * @since 13.1.5
+     */
+    private final CcsdsFrameMapper frameMapper;
 
     /**
      * Simple constructor.
@@ -116,7 +126,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
         this(IERSConventions.IERS_2010, Double.NaN, Double.NaN, dataContext,
              null, new IdentityConverter(), true, Double.NaN, Double.NaN,
              1, ParsedUnitsBehavior.CONVERT_COMPATIBLE,
-             (Function<ParseToken, List<ParseToken>>[]) Array.newInstance(Function.class, 0));
+             (Function<ParseToken, List<ParseToken>>[]) Array.newInstance(Function.class, 0),
+                new OrekitCcsdsFrameMapper());
     }
 
     /** Complete constructor.
@@ -132,7 +143,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @param defaultInterpolationDegree default interpolation degree
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
-     * @since 12.0
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
      */
     private ParserBuilder(final IERSConventions conventions,
                           final double equatorialRadius, final double flattening,
@@ -141,7 +153,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
                           final boolean simpleEOP, final double mu,
                           final double defaultMass, final int defaultInterpolationDegree,
                           final ParsedUnitsBehavior parsedUnitsBehavior,
-                          final Function<ParseToken, List<ParseToken>>[] filters) {
+                          final Function<ParseToken, List<ParseToken>>[] filters,
+                          final CcsdsFrameMapper frameMapper) {
         super(conventions, equatorialRadius, flattening, dataContext, missionReferenceDate, rangeUnitsConverter);
         this.simpleEOP                  = simpleEOP;
         this.mu                         = mu;
@@ -149,6 +162,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
         this.defaultInterpolationDegree = defaultInterpolationDegree;
         this.parsedUnitsBehavior        = parsedUnitsBehavior;
         this.filters                    = filters.clone();
+        this.frameMapper                = frameMapper;
     }
 
     /** {@inheritDoc} */
@@ -159,7 +173,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
                                    final AbsoluteDate newMissionReferenceDate, final RangeUnitsConverter newRangeUnitsConverter) {
         return new ParserBuilder(newConventions, newEquatorialRadius, newFlattening, newDataContext,
                                  newMissionReferenceDate, newRangeUnitsConverter, simpleEOP, mu,
-                                 defaultMass, defaultInterpolationDegree, parsedUnitsBehavior, filters);
+                                 defaultMass, defaultInterpolationDegree, parsedUnitsBehavior, filters,
+                                 getFrameMapper());
     }
 
     /** Set up flag for ignoring tidal effects when interpolating EOP.
@@ -169,7 +184,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public ParserBuilder withSimpleEOP(final boolean newSimpleEOP) {
         return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
                                  getMissionReferenceDate(), getRangeUnitsConverter(), newSimpleEOP, getMu(), getDefaultMass(),
-                                 getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters());
+                                 getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters(),
+                                 getFrameMapper());
     }
 
     /** Check if tidal effects are ignored when interpolating EOP.
@@ -186,7 +202,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public ParserBuilder withMu(final double newMu) {
         return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
                                  getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), newMu, getDefaultMass(),
-                                 getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters());
+                                 getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters(),
+                                 getFrameMapper());
     }
 
     /** Get the gravitational coefficient.
@@ -206,7 +223,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public ParserBuilder withDefaultMass(final double newDefaultMass) {
         return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
                                  getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), getMu(), newDefaultMass,
-                                 getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters());
+                                 getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters(),
+                                 getFrameMapper());
     }
 
     /** Get the default mass.
@@ -227,7 +245,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public ParserBuilder withDefaultInterpolationDegree(final int newDefaultInterpolationDegree) {
         return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
                                  getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), getMu(), getDefaultMass(),
-                                 newDefaultInterpolationDegree, getParsedUnitsBehavior(), getFilters());
+                                 newDefaultInterpolationDegree, getParsedUnitsBehavior(), getFilters(),
+                                 getFrameMapper());
     }
 
     /** Get the default interpolation degree.
@@ -244,7 +263,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public ParserBuilder withParsedUnitsBehavior(final ParsedUnitsBehavior newParsedUnitsBehavior) {
         return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
                                  getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), getMu(), getDefaultMass(),
-                                 getDefaultInterpolationDegree(), newParsedUnitsBehavior, getFilters());
+                                 getDefaultInterpolationDegree(), newParsedUnitsBehavior, getFilters(),
+                                 getFrameMapper());
     }
 
     /** Get the behavior to adopt for handling parsed units.
@@ -345,7 +365,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
         return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
                                  getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), getMu(), getDefaultMass(),
                                  getDefaultInterpolationDegree(), getParsedUnitsBehavior(),
-                                 newFilters);
+                                 newFilters, getFrameMapper());
 
     }
 
@@ -355,6 +375,32 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public Function<ParseToken, List<ParseToken>>[] getFilters() {
         return filters.clone();
+    }
+
+    /**
+     * Get the mapping between CCSDS NDM center and frame and a {@link Frame}.
+     *
+     * @return the frame mapper.
+     * @since 13.1.5
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Set the mapping between CCSDS NDM center and frame and a {@link Frame}.
+     *
+     * @param newFrameMapper the frame mapper.
+     * @return a new builder with updated configuration (the instance is not
+     * changed)
+     * @since 13.1.5
+     */
+    public ParserBuilder withFrameMapper(final CcsdsFrameMapper newFrameMapper) {
+        return new ParserBuilder(getConventions(), getEquatorialRadius(),
+                getFlattening(), getDataContext(), getMissionReferenceDate(),
+                getRangeUnitsConverter(), isSimpleEOP(), getMu(),
+                getDefaultMass(), getDefaultInterpolationDegree(),
+                getParsedUnitsBehavior(), getFilters(), newFrameMapper);
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.Ndm Navigation Data Messages}.
@@ -369,7 +415,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public OpmParser buildOpmParser() {
         return new OpmParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getMu(), getDefaultMass(), getParsedUnitsBehavior(), getFilters());
+                             getMu(), getDefaultMass(), getParsedUnitsBehavior(), getFilters(),
+                             getFrameMapper());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.omm.Omm Orbit Mean elements Messages}.
@@ -377,7 +424,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public OmmParser buildOmmParser() {
         return new OmmParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getMu(), getDefaultMass(), getParsedUnitsBehavior(), getFilters());
+                             getMu(), getDefaultMass(), getParsedUnitsBehavior(), getFilters(),
+                             getFrameMapper());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.oem.Oem Orbit Ephemeris Messages}.
@@ -385,7 +433,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public OemParser buildOemParser() {
         return new OemParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getMu(), getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters());
+                             getMu(), getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters(),
+                             getFrameMapper());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.ocm.Ocm Orbit Comprehensive Messages}.
@@ -394,7 +443,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public OcmParser buildOcmParser() {
         return new OcmParser(getConventions(), getEquatorialRadius(), getFlattening(),
                              isSimpleEOP(), getDataContext(), getMu(),
-                             getParsedUnitsBehavior(), getFilters());
+                             getParsedUnitsBehavior(), getFilters(),
+                             getFrameMapper());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.apm.Apm Attitude Parameters Messages}.
@@ -402,7 +452,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public ApmParser buildApmParser() {
         return new ApmParser(getConventions(), isSimpleEOP(), getDataContext(),
-                             getMissionReferenceDate(), getParsedUnitsBehavior(), getFilters());
+                             getMissionReferenceDate(), getParsedUnitsBehavior(), getFilters(),
+                             getFrameMapper());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.aem.Aem Attitude Ephemeris Messages}.
@@ -410,7 +461,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public AemParser buildAemParser() {
         return new AemParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters());
+                             getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters(),
+                             getFrameMapper());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.acm.Acm Attitude Comprehensive Messages}.
@@ -419,7 +471,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public AcmParser buildAcmParser() {
         return new AcmParser(getConventions(), isSimpleEOP(), getDataContext(),
-                             getParsedUnitsBehavior(), getFilters());
+                             getParsedUnitsBehavior(), getFilters(),
+                             getFrameMapper());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.tdm.Tdm Tracking Data Messages}.
@@ -427,7 +480,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public TdmParser buildTdmParser() {
         return new TdmParser(getConventions(), isSimpleEOP(), getDataContext(),
-                             getParsedUnitsBehavior(), getRangeUnitsConverter(), getFilters());
+                             getParsedUnitsBehavior(), getRangeUnitsConverter(), getFilters(),
+                             getFrameMapper());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.cdm.Cdm Conjunction Data Messages}.
@@ -435,7 +489,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public CdmParser buildCdmParser() {
         return new CdmParser(getConventions(), isSimpleEOP(), getDataContext(),
-                             getParsedUnitsBehavior(), getFilters());
+                             getParsedUnitsBehavior(), getFilters(),
+                             getFrameMapper());
     }
 
 }

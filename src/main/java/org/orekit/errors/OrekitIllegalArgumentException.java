@@ -16,6 +16,7 @@
  */
 package org.orekit.errors;
 
+import java.io.Serial;
 import java.text.MessageFormat;
 import java.util.Locale;
 
@@ -27,6 +28,7 @@ import org.hipparchus.exception.Localizable;
 public class OrekitIllegalArgumentException extends IllegalArgumentException implements LocalizedException {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20150611L;
 
     /** Format specifier (to be translated). */

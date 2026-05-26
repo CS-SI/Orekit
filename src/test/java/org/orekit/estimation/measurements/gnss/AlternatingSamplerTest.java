@@ -67,9 +67,7 @@ public class AlternatingSamplerTest {
                       Assertions.assertTrue(sampler.getCurrent() >= a - r);
                       Assertions.assertTrue(sampler.getCurrent() <= a + r);
                       sampler.generateNext();
-                  };
-
-                  // once range has been exceeded, all generated numbers
+                  }// once range has been exceeded, all generated numbers
                   // are out of range
                   Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();
@@ -99,9 +97,7 @@ public class AlternatingSamplerTest {
                       Assertions.assertTrue(sampler.getCurrent() >= a - r);
                       Assertions.assertTrue(sampler.getCurrent() <= a + r);
                       sampler.generateNext();
-                  };
-
-                  // once range has been exceeded, all generated numbers
+                  }// once range has been exceeded, all generated numbers
                   // are out of range
                   Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();

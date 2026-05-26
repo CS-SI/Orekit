@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -26,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -62,15 +66,21 @@ public class CelestialBodyFrameTest {
                 // CCSDS allows both J2000 and EME2000 names
                 // Orekit chose to use EME2000 when guessing name from frame instance
                 MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.EME2000));
-            } else  if (ccsdsFrame == CelestialBodyFrame.TDR) {
-                // CCSDS allows both GTOD (in ADM section A3) and
-                // TDR (in ODM table 5-3 and section A2) names
-                // Orekit chose to use GTOD when guessing name from frame instance
-                MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.GTOD));
-            }
-            else if (ccsdsFrame == CelestialBodyFrame.ITRF) {
-                Assertions.assertEquals(LATEST_ITRF_FRAME, actual);
-            }
+             } else  if (ccsdsFrame == CelestialBodyFrame.TDR) {
+                  // CCSDS allows both GTOD (in ADM section A3) and
+                  // TDR (in ODM table 5-3 and section A2) names
+                  // Orekit chose to use GTOD when guessing name from frame instance
+                  MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.GTOD));
+              }
+              else if (ccsdsFrame == CelestialBodyFrame.ITRF ||
+                       ccsdsFrame == CelestialBodyFrame.FIXED_EARTH ||
+                       ccsdsFrame == CelestialBodyFrame.WGS84) {
+                  Assertions.assertEquals(LATEST_ITRF_FRAME, actual);
+              }
+              else if (ccsdsFrame == CelestialBodyFrame.TOD_EARTH) {
+                  // TOD_EARTH aliases to TOD
+                  MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.TOD));
+              }
             else {
                 MatcherAssert.assertThat(actual, CoreMatchers.is(ccsdsFrame));
             }
@@ -96,7 +106,7 @@ public class CelestialBodyFrameTest {
 
         // check that guessed name loses the IERS conventions and simpleEOP flag
         for (ITRFVersion version : ITRFVersion.values()) {
-            final String name = version.getName().replaceAll("-", "");
+            final String name = version.getName().replace("-", "");
             for (final IERSConventions conventions : IERSConventions.values()) {
                 MatcherAssert.assertThat(CelestialBodyFrame.map(FramesFactory.getITRF(version, conventions, true)).name(),
                                          CoreMatchers.is(name));
@@ -112,6 +122,10 @@ public class CelestialBodyFrameTest {
         MatcherAssert.assertThat(CelestialBodyFrame.map(CelestialBodyFactory.getSolarSystemBarycenter().
                                  getInertiallyOrientedFrame()),
                                  CoreMatchers.is(CelestialBodyFrame.ICRF));
+        MatcherAssert.assertThat(
+                CelestialBodyFrame.map(CelestialBodyFactory.getSolarSystemBarycenter().
+                        getIcrfAlignedFrame()),
+                CoreMatchers.is(CelestialBodyFrame.ICRF));
         // check some special CCSDS frames
         ModifiedFrame frame = new ModifiedFrame(FramesFactory.getEME2000(),
                                                           CelestialBodyFrame.EME2000,
@@ -139,6 +153,31 @@ public class CelestialBodyFrameTest {
         Frame fakeICRF = new Frame(FramesFactory.getGCRF(), Transform.IDENTITY,
                                    CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial");
         MatcherAssert.assertThat(CelestialBodyFrame.map(fakeICRF), CoreMatchers.is(CelestialBodyFrame.ICRF));
+
+        // check celestial body centered ICRF
+        List<CelestialBody> bodies = Arrays.asList(
+                CelestialBodyFactory.getSolarSystemBarycenter(),
+                CelestialBodyFactory.getMercury(),
+                CelestialBodyFactory.getVenus(),
+                CelestialBodyFactory.getEarthMoonBarycenter(),
+                CelestialBodyFactory.getMoon(),
+                CelestialBodyFactory.getMars(),
+                CelestialBodyFactory.getJupiter(),
+                CelestialBodyFactory.getSaturn(),
+                CelestialBodyFactory.getUranus(),
+                CelestialBodyFactory.getNeptune(),
+                CelestialBodyFactory.getPluto());
+        for (CelestialBody body : bodies) {
+            MatcherAssert.assertThat(
+                    CelestialBodyFrame.map(body.getIcrfAlignedFrame()),
+                    CoreMatchers.is(CelestialBodyFrame.ICRF));
+        }
+        // Earth ICRF is GCRF
+        final CelestialBody earth = CelestialBodyFactory.getEarth();
+        MatcherAssert.assertThat(
+                CelestialBodyFrame.map(earth.getIcrfAlignedFrame()),
+                CoreMatchers.is(CelestialBodyFrame.GCRF));
+
     }
 
     @Test
@@ -165,12 +204,36 @@ public class CelestialBodyFrameTest {
         Assertions.assertEquals(CelestialBodyFrame.ITRF2014, CelestialBodyFrame.parse("ITRF2014"));
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, CelestialBodyFrame.parse("ITRF97"));
         Assertions.assertEquals(CelestialBodyFrame.ITRF, CelestialBodyFrame.parse("ITRF"));
+        Assertions.assertEquals(CelestialBodyFrame.FIXED_EARTH, CelestialBodyFrame.parse("FIXED_EARTH"));
+        Assertions.assertEquals(CelestialBodyFrame.WGS84, CelestialBodyFrame.parse("WGS84"));
+        Assertions.assertEquals(CelestialBodyFrame.TOD_EARTH, CelestialBodyFrame.parse("TOD_EARTH"));
         try {
             Assertions.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("ITRF00"));
             Assertions.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             Assertions.assertTrue(iae.getMessage().contains("ITRF00"));
         }
+    }
+
+    @Test
+    public void testAliasFrames() {
+        // Test that aliases return the same frame as their referenced frames
+        final IERSConventions conventions = IERSConventions.IERS_2010;
+        final DataContext dataContext = DataContext.getDefault();
+
+        // ITRF aliases
+        Frame itrfFrame = CelestialBodyFrame.ITRF.getFrame(conventions, true, dataContext);
+        Frame fixedEarthFrame = CelestialBodyFrame.FIXED_EARTH.getFrame(conventions, true, dataContext);
+        Frame wgs84Frame = CelestialBodyFrame.WGS84.getFrame(conventions, true, dataContext);
+
+        Assertions.assertEquals(itrfFrame.getName(), fixedEarthFrame.getName());
+        Assertions.assertEquals(itrfFrame.getName(), wgs84Frame.getName());
+
+        // TOD aliases
+        Frame todFrame = CelestialBodyFrame.TOD.getFrame(conventions, true, dataContext);
+        Frame todEarthFrame = CelestialBodyFrame.TOD_EARTH.getFrame(conventions, true, dataContext);
+
+        Assertions.assertEquals(todFrame.getName(), todEarthFrame.getName());
     }
 
     /**

@@ -77,6 +77,6 @@ abstract class AbstractCloseEventsNumericalTest extends CloseEventsAbstractTest 
         propagator.propagate(terminalDate);
         final List<RecordAndContinue.Event> expectedList = recorder.getEvents();
         assertEquals(expectedList.size(), eventList.size());
-        assertEquals(expectedList.get(0).getState().getDate(), eventList.get(0).getState().getDate());
+        assertEquals(expectedList.getFirst().getState().getDate(), eventList.getFirst().getState().getDate());
     }
 }

@@ -106,8 +106,8 @@ public class StepHandlerMultiplexerTest {
         multiplexer.add(counterVar);
         multiplexer.add(10, counter10);
         Assertions.assertEquals(3, multiplexer.getHandlers().size());
-        Assertions.assertInstanceOf(FixedCounter.class, ((OrekitStepNormalizer) multiplexer.getHandlers().get(0)).getFixedStepHandler());
-        Assertions.assertEquals(60.0, ((OrekitStepNormalizer) multiplexer.getHandlers().get(0)).getFixedTimeStep(), 1.0e-15);
+        Assertions.assertInstanceOf(FixedCounter.class, ((OrekitStepNormalizer) multiplexer.getHandlers().getFirst()).getFixedStepHandler());
+        Assertions.assertEquals(60.0, ((OrekitStepNormalizer) multiplexer.getHandlers().getFirst()).getFixedTimeStep(), 1.0e-15);
         Assertions.assertInstanceOf(FixedCounter.class, ((OrekitStepNormalizer) multiplexer.getHandlers().get(2)).getFixedStepHandler());
         Assertions.assertEquals(10.0, ((OrekitStepNormalizer) multiplexer.getHandlers().get(2)).getFixedTimeStep(), 1.0e-15);
 

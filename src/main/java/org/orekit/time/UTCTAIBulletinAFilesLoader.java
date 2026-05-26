@@ -153,13 +153,12 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
             // make sure we stop the linear drift that was used before 1972
             final DateComponents dc1972 = new DateComponents(1972, 1, 1);
             if (offsets.isEmpty()) {
-                offsets.add(0, new OffsetModel(dc1972, taiUtc.get(taiUtc.firstKey())));
+                offsets.addFirst(new OffsetModel(dc1972, taiUtc.get(taiUtc.firstKey())));
             } else {
-                if (offsets.get(0).getStart().getYear() > 1972) {
-                    offsets.add(0,
-                                new OffsetModel(dc1972,
+                if (offsets.getFirst().getStart().getYear() > 1972) {
+                    offsets.addFirst(new OffsetModel(dc1972,
                                                 dc1972.getMJD(),
-                                                offsets.get(0).getOffset().subtract(TimeOffset.SECOND),
+                                                offsets.getFirst().getOffset().subtract(TimeOffset.SECOND),
                                                 0));
                 }
             }

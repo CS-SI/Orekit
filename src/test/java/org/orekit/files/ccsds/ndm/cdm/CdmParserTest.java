@@ -32,12 +32,16 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.PocMethodType;
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
@@ -379,7 +383,7 @@ public class CdmParserTest {
         Assertions.assertEquals("EGM-96", file.getMetadataObject1().getGravityModel());
         Assertions.assertEquals(36, file.getMetadataObject1().getGravityDegree(), 0);
         Assertions.assertEquals(36, file.getMetadataObject1().getGravityOrder(), 0);
-        Assertions.assertEquals("MOON", file.getMetadataObject1().getNBodyPerturbations().get(0).getName());
+        Assertions.assertEquals("MOON", file.getMetadataObject1().getNBodyPerturbations().getFirst().getName());
         Assertions.assertEquals("SUN", file.getMetadataObject1().getNBodyPerturbations().get(1).getName());
         Assertions.assertEquals("NO", file.getMetadataObject1().getSolarRadiationPressure().name());
         Assertions.assertEquals("NO", file.getMetadataObject1().getEarthTides().name());
@@ -1470,7 +1474,7 @@ public class CdmParserTest {
         Assertions.assertEquals("ATT_MSG_35132.txt", file.getMetadataObject1().getAdmMsgLink(),"ADM_MSG_LINK");   
 
         // Check OBS_BEFORE_NEXT_MESSAGE is correctly read
-        Assertions.assertEquals(YesNoUnknown.YES, file.getMetadataObject1().getObsBeforeNextMessage(), "OBS_BEFORE_NEXT_MESSAGE");  
+        Assertions.assertEquals(YesNoUnknown.YES, file.getMetadataObject1().getObsBeforeNextMessage(), "OBS_BEFORE_NEXT_MESSAGE");
 
         // Check COVARIANCE_SOURCE is correctly read
         Assertions.assertEquals("HAC Covariance", file.getMetadataObject1().getCovarianceSource(), "COVARIANCE_SOURCE");
@@ -1640,7 +1644,7 @@ public class CdmParserTest {
         // OBJECT 2 - Eigenvector covariance block
         Assertions.assertEquals(AltCovarianceType.CSIG3EIGVEC3, file.getMetadataObject2().getAltCovType(), "ALT_COV_TYPE");
         Assertions.assertEquals("Object2 Covariance in the Sigma / eigenvector format",
-                                file.getDataObject2().getSig3EigVec3CovarianceBlock().getComments().get(0));
+                                file.getDataObject2().getSig3EigVec3CovarianceBlock().getComments().getFirst());
         Assertions.assertEquals(12,  file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3().length);
         for (int i=0; i<12; i++) {
             Assertions.assertEquals(i+1, file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3()[i],
@@ -1670,7 +1674,7 @@ public class CdmParserTest {
         // User defined parameters
 
         Assertions.assertEquals(1, file.getUserDefinedParameters().getComments().size());
-        Assertions.assertEquals("User Parameters", file.getUserDefinedParameters().getComments().get(0));
+        Assertions.assertEquals("User Parameters", file.getUserDefinedParameters().getComments().getFirst());
         Assertions.assertEquals(1, file.getUserDefinedParameters().getParameters().size());
         Assertions.assertEquals("2020-01-29T13:30:00", file.getUserDefinedParameters().getParameters().get("OBJ1_TIME_LASTOB_START"));
 
@@ -1970,4 +1974,51 @@ public class CdmParserTest {
         }
     }
 
+    /** Unit tests for parsing a CDM with a custom frame mapper. */
+    @Test
+    public void testFrameMapper() {
+        // setup
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2003, false);
+        Frame myItrf = new Frame(itrf, Transform.IDENTITY, "MyItrf");
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if ("ITRF".equals(orientation.getName()) && null == epoch) {
+                    return myItrf;
+                }
+                throw new IllegalArgumentException(" " + orientation + " " + epoch);
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate frameEpoch) {
+                if ("EARTH".equals(center.getName()) &&
+                        "ITRF".equals(orientation.getName()) &&
+                        null == frameEpoch) {
+                    return myItrf;
+                }
+                throw new IllegalArgumentException(
+                        center + " " + orientation + " " + frameEpoch);
+            }
+        };
+        final CdmParser parser = new ParserBuilder().withFrameMapper(mapper).buildCdmParser();
+        String name = "/ccsds/cdm/CDM-frame-mapper.txt";
+        DataSource source =
+                new DataSource(name, () -> getClass().getResourceAsStream(name));
+
+        // action
+        Cdm cdm = parser.parseMessage(source);
+
+        // verify object reference frames (ignore screen volume frames, these are local orbital frames and
+        // not using FrameFacade)
+        MatcherAssert.assertThat(cdm.getMetadataObject1().getFrame(), Matchers.sameInstance(myItrf));
+        MatcherAssert.assertThat(cdm.getMetadataObject2().getFrame(), Matchers.sameInstance(myItrf));
+        // verify altcovariance reference frames
+        MatcherAssert.assertThat(cdm.getMetadataObject1().getAltCovFrame(),
+                Matchers.sameInstance(myItrf));
+        MatcherAssert.assertThat(
+                cdm.getDataObject1().getAdditionalParametersBlock().getOebParent(),
+                Matchers.sameInstance(myItrf));
+    }
 }

@@ -52,7 +52,7 @@ public abstract class Record {
             if (i > 0 && chunks[i - 1].endsWith(QUOTE) &&
                 i < chunks.length && chunks[i].startsWith(QUOTE)) {
                 // chunks i-1 and i belong to the same field, with an embedded quoted separator
-                final String before = fields.remove(fields.size() - 1);
+                final String before = fields.removeLast();
                 fields.add(before.substring(0, before.length() - 1) +
                            SEPARATOR +
                            chunks[i].substring(1));

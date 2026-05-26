@@ -77,7 +77,7 @@ class DifferencesOfSignalArrivalTest {
 
     @ParameterizedTest
     @ValueSource(doubles = {-1e3, 1e2, 1e4, 1e6})
-    void testComputeField(final double position) {
+    void testComputeVersusField(final double position) {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -99,5 +99,30 @@ class DifferencesOfSignalArrivalTest {
         final double[] delays = differencesOfSignalArrival.computeDelays(receptionCondition, secondary, emitter);
         assertEquals(delays[0], fieldDelays[0].getValue());
         assertEquals(delays[1], fieldDelays[1].getValue());
+    }
+
+    @Test
+    void testComputeFieldGuess() {
+        // GIVEN
+        final Frame frame = FramesFactory.getGCRF();
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        final DifferencesOfSignalArrival differencesOfSignalArrival = new DifferencesOfSignalArrival(new SignalTravelTimeModel());
+        final Vector3D receiverPosition = Vector3D.PLUS_I.scalarMultiply(1e3);
+        final PVCoordinates pvSecondary = new PVCoordinates(new Vector3D(1e5, 1e6, -1e4), Vector3D.MINUS_J);
+        final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(2e5, -3e4, 1e5), new Vector3D(1, 2, 3));
+        final GradientField field = GradientField.getField(1);
+        final FieldAbsolutePVCoordinates<Gradient> secondary = new FieldAbsolutePVCoordinates<>(field,
+                new AbsolutePVCoordinates(frame, date, pvSecondary));
+        final FieldAbsolutePVCoordinates<Gradient> emitter = new FieldAbsolutePVCoordinates<>(field,
+                new AbsolutePVCoordinates(frame, date, pvEmitter));
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
+        final FieldSignalReceptionCondition<Gradient> fieldCondition = new FieldSignalReceptionCondition<>(fieldDate,
+                new FieldVector3D<>(field, receiverPosition), frame);
+        // WHEN
+        final Gradient[] fieldDelays = differencesOfSignalArrival.computeDelays(fieldCondition, secondary, emitter);
+        // THEN
+        final Gradient[] delays = differencesOfSignalArrival.computeDelays(fieldCondition, secondary, fieldDate, emitter, fieldDate);
+        assertEquals(delays[0], fieldDelays[0]);
+        assertEquals(delays[1], fieldDelays[1]);
     }
 }

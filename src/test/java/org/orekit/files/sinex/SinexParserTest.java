@@ -434,11 +434,11 @@ public class SinexParserTest {
         assertEquals(2, psdAntuco.getSpansNumber());
         final List<PsdCorrection> corr2010 = psdAntuco.getFirstNonNullSpan().getData();
         assertEquals(5, corr2010.size());
-        assertEquals(0, corr2010.get(0).getEarthquakeDate().durationFrom(date2010));
-        assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.get(0).getEvolution());
-        assertEquals(PsdCorrection.Axis.EAST, corr2010.get(0).getAxis());
-        assertEquals(-1.28699198121674e-01, corr2010.get(0).getAmplitude(), 1.0e-14);
-        assertEquals(8.08455225832410e-01, corr2010.get(0).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        assertEquals(0, corr2010.getFirst().getEarthquakeDate().durationFrom(date2010));
+        assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.getFirst().getEvolution());
+        assertEquals(PsdCorrection.Axis.EAST, corr2010.getFirst().getAxis());
+        assertEquals(-1.28699198121674e-01, corr2010.getFirst().getAmplitude(), 1.0e-14);
+        assertEquals(8.08455225832410e-01, corr2010.getFirst().getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
         assertEquals(0, corr2010.get(1).getEarthquakeDate().durationFrom(date2010));
         assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.get(1).getEvolution());
         assertEquals(PsdCorrection.Axis.EAST, corr2010.get(1).getAxis());
@@ -468,18 +468,18 @@ public class SinexParserTest {
         assertEquals(3, psdAtkaIsland.getSpansNumber());
         final List<PsdCorrection> corr2013 = psdAtkaIsland.getFirstNonNullSpan().getData();
         assertEquals(1, corr2013.size());
-        assertEquals(0, corr2013.get(0).getEarthquakeDate().durationFrom(date2013));
-        assertEquals(PsdCorrection.TimeEvolution.EXP, corr2013.get(0).getEvolution());
-        assertEquals(PsdCorrection.Axis.NORTH, corr2013.get(0).getAxis());
-        assertEquals(-1.16779196624443e-02, corr2013.get(0).getAmplitude(), 1.0e-14);
-        assertEquals(5.02510982822891e-01, corr2013.get(0).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        assertEquals(0, corr2013.getFirst().getEarthquakeDate().durationFrom(date2013));
+        assertEquals(PsdCorrection.TimeEvolution.EXP, corr2013.getFirst().getEvolution());
+        assertEquals(PsdCorrection.Axis.NORTH, corr2013.getFirst().getAxis());
+        assertEquals(-1.16779196624443e-02, corr2013.getFirst().getAmplitude(), 1.0e-14);
+        assertEquals(5.02510982822891e-01, corr2013.getFirst().getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
         final List<PsdCorrection> corr2016 = psdAtkaIsland.getFirstNonNullSpan().next().getData();
         assertEquals(1, corr2016.size());
-        assertEquals(0, corr2016.get(0).getEarthquakeDate().durationFrom(date2016));
-        assertEquals(PsdCorrection.TimeEvolution.EXP, corr2016.get(0).getEvolution());
-        assertEquals(PsdCorrection.Axis.NORTH, corr2016.get(0).getAxis());
-        assertEquals(-1.31981162574364e-02, corr2016.get(0).getAmplitude(), 1.0e-14);
-        assertEquals(1.02131561331021e+00, corr2016.get(0).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        assertEquals(0, corr2016.getFirst().getEarthquakeDate().durationFrom(date2016));
+        assertEquals(PsdCorrection.TimeEvolution.EXP, corr2016.getFirst().getEvolution());
+        assertEquals(PsdCorrection.Axis.NORTH, corr2016.getFirst().getAxis());
+        assertEquals(-1.31981162574364e-02, corr2016.getFirst().getAmplitude(), 1.0e-14);
+        assertEquals(1.02131561331021e+00, corr2016.getFirst().getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
 
     }
 

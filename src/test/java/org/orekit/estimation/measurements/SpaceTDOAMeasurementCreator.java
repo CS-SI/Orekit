@@ -16,15 +16,10 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.Context;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.Arrays;
@@ -43,13 +38,39 @@ public class SpaceTDOAMeasurementCreator extends MeasurementCreator {
 
     public SpaceTDOAMeasurementCreator(final Context context) {
         this.context = context;
-        this.primary = context.satellites.get(0);
+        this.primary = context.satellites.getFirst();
         this.secondary = context.satellites.get(1);
         this.satellite = new ObservableSatellite(0);
     }
 
+    public SpaceTDOAMeasurementCreator(final Context context, final double primaryBias, final double primaryDrift,
+            final double secondaryBias, final double secondaryDrift) {
+        this.context = context;
+        this.primary = context.satellites.getFirst();
+        this.secondary = context.satellites.get(1);
+        this.satellite = new ObservableSatellite(0);
+
+        primary.getClockBiasDriver().setValue(primaryBias);
+        primary.getClockDriftDriver().setValue(primaryDrift);
+        secondary.getClockBiasDriver().setValue(secondaryBias);
+        secondary.getClockDriftDriver().setValue(secondaryDrift);
+
+        primary.getClockBiasDriver().setReferenceDate(context.initialOrbit.getDate());
+        primary.getClockDriftDriver().setReferenceDate(context.initialOrbit.getDate());
+        secondary.getClockBiasDriver().setReferenceDate(context.initialOrbit.getDate());
+        secondary.getClockDriftDriver().setReferenceDate(context.initialOrbit.getDate());
+    }
+
     public ObservableSatellite getSatellite() {
         return satellite;
+    }
+
+    public ObserverSatellite getPrimary() {
+        return primary;
+    }
+
+    public ObserverSatellite getSecondary() {
+        return secondary;
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
@@ -66,8 +87,6 @@ public class SpaceTDOAMeasurementCreator extends MeasurementCreator {
     public void handleStep(final SpacecraftState currentState) {
 
         final AbsoluteDate date = currentState.getDate();
-        final Frame inertial = currentState.getFrame();
-        final Vector3D position = currentState.getPosition();
 
         final Vector3D p1 = currentState.getPVCoordinates(context.getEarth().getBodyFrame()).getPosition();
         final Vector3D p2 = primary.getPVCoordinatesProvider().getPosition(date, context.getEarth().getBodyFrame());
@@ -80,32 +99,21 @@ public class SpaceTDOAMeasurementCreator extends MeasurementCreator {
         // 30°
         if (minAltitude1 > 1e5 && minAltitude2 > 1e5) {
 
-            // The solver used
-            final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
-
             // Signal time of flight to primary station
-            final double referenceDelay = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) {
-                    final Vector3D pos = primary.getPVCoordinatesProvider().getPosition(date.shiftedBy(x), inertial);
-                    final double d = Vector3D.distance(position, pos);
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }
-            }, -1.0, 1.0);
+            final double referenceDelay = solveDownlinkDelay(primary, currentState, Vector3D.ZERO);
             final AbsoluteDate receptionDate = date.shiftedBy(referenceDelay);
 
             // Signal time of flight to secondary station
-            final double relativeDelay = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) {
-                    final Vector3D pos = secondary.getPVCoordinatesProvider().getPosition(date.shiftedBy(x), inertial);
-                    final double d = Vector3D.distance(position, pos);
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }
-            }, -1.0, 1.0);
+            final double relativeDelay = solveDownlinkDelay(secondary, currentState, Vector3D.ZERO);
 
             // time difference on arrival
-            final double tdoa = referenceDelay - relativeDelay;
+            final double primaryOffset = primary.getOffsetValue(receptionDate);
+            final double secondaryOffset = secondary.getOffsetValue(receptionDate);
+            final double tdoa = (referenceDelay + primaryOffset) - (relativeDelay + secondaryOffset);
 
-            addMeasurement(new TDOA(primary, secondary, receptionDate, tdoa, 1.0, 10, satellite));
+            // Final measurement
+            final double clockOffset = primary.getOffsetValue(receptionDate);
+            addMeasurement(new TDOA(primary, secondary, receptionDate.shiftedBy(clockOffset), tdoa, 1.0, 10, satellite));
 
         }
 

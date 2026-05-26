@@ -57,14 +57,14 @@ public class Apm extends NdmConstituent<AdmHeader, Segment<AdmMetadata, ApmData>
      * @return file metadata
      */
     public AdmMetadata getMetadata() {
-        return getSegments().get(0).getMetadata();
+        return getSegments().getFirst().getMetadata();
     }
 
     /** Get the file data.
      * @return file data
      */
     public ApmData getData() {
-        return getSegments().get(0).getData();
+        return getSegments().getFirst().getData();
     }
 
     /** Get the attitude.

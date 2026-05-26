@@ -775,15 +775,13 @@ public class FramesFactory {
 
             boolean peeling = true;
             while (peeling) {
-                if (peeled instanceof InterpolatingTransformProvider) {
-                    peeled = ((InterpolatingTransformProvider) peeled).getRawProvider();
-                } else if (peeled instanceof ShiftingTransformProvider) {
-                    peeled = ((ShiftingTransformProvider) peeled).getRawProvider();
-                } else if (peeled instanceof EOPBasedTransformProvider &&
-                           ((EOPBasedTransformProvider) peeled).getEOPHistory() != null) {
-                    return ((EOPBasedTransformProvider) peeled).getEOPHistory();
-                } else {
-                    peeling = false;
+                switch (peeled) {
+                    case InterpolatingTransformProvider provider2 -> peeled = provider2.getRawProvider();
+                    case ShiftingTransformProvider provider1 -> peeled = provider1.getRawProvider();
+                    case EOPBasedTransformProvider provider when provider.getEOPHistory() != null -> {
+                        return provider.getEOPHistory();
+                    }
+                    default -> peeling = false;
                 }
             }
 
@@ -804,16 +802,13 @@ public class FramesFactory {
 
         boolean peeling = true;
         while (peeling) {
-            if (peeled instanceof InterpolatingTransformProvider) {
-                peeled = ((InterpolatingTransformProvider) peeled).getRawProvider();
-            } else if (peeled instanceof ShiftingTransformProvider) {
-                peeled = ((ShiftingTransformProvider) peeled).getRawProvider();
-            } else if (peeled instanceof EOPBasedTransformProvider &&
-                       ((EOPBasedTransformProvider) peeled).getEOPHistory() != null &&
-                       ((EOPBasedTransformProvider) peeled).getEOPHistory().cachesTidalCorrection()) {
-                peeled = ((EOPBasedTransformProvider) peeled).getNonInterpolatingProvider();
-            } else {
-                peeling = false;
+            switch (peeled) {
+                case InterpolatingTransformProvider transformProvider2 -> peeled = transformProvider2.getRawProvider();
+                case ShiftingTransformProvider transformProvider1 -> peeled = transformProvider1.getRawProvider();
+                case EOPBasedTransformProvider transformProvider
+                        when transformProvider.getEOPHistory() != null && transformProvider.getEOPHistory().cachesTidalCorrection() ->
+                    peeled = transformProvider.getNonInterpolatingProvider();
+                default -> peeling = false;
             }
         }
 

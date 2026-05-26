@@ -43,7 +43,6 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
@@ -82,7 +81,10 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         implements CelestialBodyLoader {
 
     /** Default supported files name pattern for JPL DE files. */
-    public static final String DEFAULT_DE_SUPPORTED_NAMES = "^[lu]nx([mp](\\d\\d\\d\\d))+\\.(?:4\\d\\d)$";
+    public static final String DEFAULT_DE_SUPPORTED_NAMES = "^[lu]nx([mp](\\d{4,5}))+\\.(?:4\\d\\d)$";
+
+    /** Default supported files name pattern for JPL DE files. */
+    public static final String DEFAULT_DE_2021_SUPPORTED_NAMES = "^linux_([mp](\\d{4,5}))+\\.(?:4\\d\\d)$";
 
     /** Default supported files name pattern for IMCCE INPOP files. */
     public static final String DEFAULT_INPOP_SUPPORTED_NAMES = "^inpop.*\\.dat$";
@@ -242,6 +244,9 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     /** The GCRF implementation. */
     private final Frame gcrf;
 
+    /** Used to retrieve ICRF and EMB frames for building other bodies. */
+    private final CelestialBodies celestialBodies;
+
     /** Current file start epoch. */
     private AbsoluteDate startEpoch;
 
@@ -281,33 +286,47 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
      * @param supportedNames regular expression for supported files names
      * @param generateType ephemeris type to generate
      * @see #JPLEphemeridesLoader(String, EphemerisType, DataProvidersManager, TimeScales,
-     * Frame)
+     * Frame, CelestialBodies)
      */
     @DefaultDataContext
     public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType) {
         this(supportedNames, generateType,
                 DataContext.getDefault().getDataProvidersManager(),
                 DataContext.getDefault().getTimeScales(),
-                DataContext.getDefault().getFrames().getGCRF());
+                DataContext.getDefault().getFrames().getGCRF(),
+                DataContext.getDefault().getCelestialBodies());
     }
 
-    /** Create a loader for JPL ephemerides binary files.
-     * @param supportedNames regular expression for supported files names
-     * @param generateType ephemeris type to generate
+    /**
+     * Create a loader for JPL ephemerides binary files.
+     *
+     * <p>Requiring {@code celestialBodies} to be passed to this constructor is
+     * not a great design when this class is used to load the data for
+     * {@code celestialBodies}. But this loader needs to know the ICRF and Earth
+     * Moon Barycenter frames used by {@code celestialBodies} to avoid creating
+     * duplicate frames, as was done in Orekit 13 and before.
+     *
+     * @param supportedNames       regular expression for supported files names
+     * @param generateType         ephemeris type to generate
      * @param dataProvidersManager provides access to the ephemeris files.
-     * @param timeScales used to access the TCB and TDB time scales while loading data.
-     * @param gcrf Earth centered frame aligned with ICRF.
-     * @since 10.1
+     * @param timeScales           used to access the TCB and TDB time scales
+     *                             while loading data.
+     * @param gcrf                 Earth centered frame aligned with ICRF.
+     * @param celestialBodies      used to load the ICRF and Earth-Moon
+     *                             Barycenter frames.
+     * @since 14.0
      */
     public JPLEphemeridesLoader(final String supportedNames,
                                 final EphemerisType generateType,
                                 final DataProvidersManager dataProvidersManager,
                                 final TimeScales timeScales,
-                                final Frame gcrf) {
+                                final Frame gcrf,
+                                final CelestialBodies celestialBodies) {
         super(supportedNames, dataProvidersManager);
 
         this.timeScales = timeScales;
         this.gcrf = gcrf;
+        this.celestialBodies = celestialBodies;
         constants = new AtomicReference<>();
 
         this.generateType  = generateType;
@@ -332,6 +351,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
      * @param name name of the celestial body
      * @return loaded celestial body
      */
+    @Override
     public CelestialBody loadCelestialBody(final String name) {
 
         final double gm       = getLoadedGravitationalCoefficient(generateType);
@@ -340,23 +360,13 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         final double scale;
         final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;
-        String inertialFrameName = null;
-        String bodyOrientedFrameName = null;
         switch (generateType) {
             case SOLAR_SYSTEM_BARYCENTER : {
                 scale = -1.0;
-                final JPLEphemeridesLoader parentLoader = new JPLEphemeridesLoader(
-                        getSupportedNames(),
-                        EphemerisType.EARTH_MOON,
-                        getDataProvidersManager(),
-                        timeScales,
-                        gcrf);
-                final CelestialBody parentBody =
-                        parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
-                definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
+                definingFrameAlignedWithICRF = celestialBodies
+                        .getBody(CelestialBodyFactory.EARTH_MOON)
+                        .getIcrfAlignedFrame();
                 rawPVProvider = new EphemerisRawPVProvider();
-                inertialFrameName = Predefined.ICRF.getName();
-                bodyOrientedFrameName = null;
                 break;
             }
             case EARTH_MOON :
@@ -376,23 +386,16 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 break;
             default : {
                 scale = 1.0;
-                final JPLEphemeridesLoader parentLoader = new JPLEphemeridesLoader(
-                        getSupportedNames(),
-                        EphemerisType.SOLAR_SYSTEM_BARYCENTER,
-                        getDataProvidersManager(),
-                        timeScales,
-                        gcrf);
-                final CelestialBody parentBody =
-                        parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
-                definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
+                definingFrameAlignedWithICRF = celestialBodies
+                        .getBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER)
+                        .getIcrfAlignedFrame();
                 rawPVProvider = new EphemerisRawPVProvider();
             }
         }
 
         // build the celestial body
         return new JPLCelestialBody(name, getSupportedNames(), generateType, rawPVProvider,
-                                    gm, scale, iauPole, definingFrameAlignedWithICRF,
-                                    inertialFrameName, bodyOrientedFrameName);
+                                    gm, scale, iauPole, definingFrameAlignedWithICRF);
 
     }
 
@@ -967,8 +970,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 return true;
             } else {
                 // if the requested range is already filled, we do not need to look further
-                return !(entries.first().getDate().compareTo(start) < 0 &&
-                         entries.last().getDate().compareTo(end)    > 0);
+                return !(entries.getFirst().getDate().compareTo(start) < 0 &&
+                         entries.getLast().getDate().compareTo(end)    > 0);
             }
 
         }
@@ -1166,7 +1169,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     }
 
     /** Raw position-velocity provider providing always zero. */
-    private static class ZeroRawPVProvider implements RawPVProvider {
+    static class ZeroRawPVProvider implements RawPVProvider {
 
         /** {@inheritDoc} */
         public PVCoordinates getRawPV(final AbsoluteDate date) {

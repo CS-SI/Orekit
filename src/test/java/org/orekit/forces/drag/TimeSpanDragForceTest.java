@@ -221,8 +221,8 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(2,  drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
         Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
         Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
 
@@ -230,8 +230,8 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         IsotropicDrag isoDrag = (IsotropicDrag) forceModel.getDragSensitive(date);
         drivers = isoDrag.getDragParametersDrivers();
         Assertions.assertEquals(2, drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
         Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
         Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
 
@@ -251,9 +251,9 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Extract the drivers and check their values and names
         drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(6,  drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
         Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(utc),
-                            drivers.get(0).getName());
+                            drivers.getFirst().getName());
         Assertions.assertEquals(dragCd2,  drivers.get(1).getValue(), 0.);
         Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(utc),
                             drivers.get(1).getName());
@@ -285,7 +285,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // ------------
         double dragCd3 = 3.;
         IsotropicDrag isoDrag3 = new IsotropicDrag(dragArea, dragCd3);
-        isoDrag3.getDragParametersDrivers().get(0).setName("custom-fact");
+        isoDrag3.getDragParametersDrivers().getFirst().setName("custom-fact");
         isoDrag3.getDragParametersDrivers().get(1).setName("custom-Cd");
         forceModel.addDragSensitiveValidAfter(isoDrag3, date.shiftedBy(2. * dt));
         drivers = forceModel.getParametersDrivers();
@@ -337,7 +337,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Initialize force model (first coef is valid at all epochs)
         final double dragCd  = 1.2;
         final IsotropicDrag isotropicDrag = new IsotropicDrag(dragArea, dragCd);
-        isotropicDrag.getDragParametersDrivers().get(0).setName("Cd");
+        isotropicDrag.getDragParametersDrivers().getFirst().setName("Cd");
         final TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, isotropicDrag, TimeScalesFactory.getUTC());
 
 
@@ -346,7 +346,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final double dt2 = 4 * 3600.;
         final AbsoluteDate date2 = date.shiftedBy(dt2);
         final IsotropicDrag isotropicDrag2 = new IsotropicDrag(dragArea, dragCd2);
-        isotropicDrag2.getDragParametersDrivers().get(0).setName("Cd2");
+        isotropicDrag2.getDragParametersDrivers().getFirst().setName("Cd2");
         forceModel.addDragSensitiveValidAfter(isotropicDrag2, date2);
 
         // Before t3 = t - 1day
@@ -354,7 +354,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final double dt3 = -86400.;
         final AbsoluteDate date3 = date.shiftedBy(dt3);
         final IsotropicDrag isotropicDrag3 = new IsotropicDrag(dragArea, dragCd3);
-        isotropicDrag3.getDragParametersDrivers().get(0).setName("Cd3");
+        isotropicDrag3.getDragParametersDrivers().getFirst().setName("Cd3");
         forceModel.addDragSensitiveValidBefore(isotropicDrag3, date3);
 
 
@@ -403,7 +403,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Initialize force model (first coef is valid at all epochs)
         final double dragCd  = 1.2;
         final IsotropicDrag isotropicDrag = new IsotropicDrag(dragArea, dragCd);
-        isotropicDrag.getDragParametersDrivers().get(0).setName("Cd");
+        isotropicDrag.getDragParametersDrivers().getFirst().setName("Cd");
         final TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, isotropicDrag, TimeScalesFactory.getUTC());
 
 
@@ -412,7 +412,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final double dt2 = 4 * 3600.;
         final AbsoluteDate date2 = date.shiftedBy(dt2);
         final IsotropicDrag isotropicDrag2 = new IsotropicDrag(dragArea, dragCd2);
-        isotropicDrag2.getDragParametersDrivers().get(0).setName("Cd2");
+        isotropicDrag2.getDragParametersDrivers().getFirst().setName("Cd2");
         forceModel.addDragSensitiveValidAfter(isotropicDrag2, date2);
 
         // Before t3 = t - 1day
@@ -420,7 +420,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final double dt3 = -86400.;
         final AbsoluteDate date3 = date.shiftedBy(dt3);
         final IsotropicDrag isotropicDrag3 = new IsotropicDrag(dragArea, dragCd3);
-        isotropicDrag3.getDragParametersDrivers().get(0).setName("Cd3");
+        isotropicDrag3.getDragParametersDrivers().getFirst().setName("Cd3");
         forceModel.addDragSensitiveValidBefore(isotropicDrag3, date3);
 
 
@@ -538,15 +538,15 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(1,  drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
 
         // Extract drag model at an arbitrary epoch and check it is the one added
         BoxAndSolarArraySpacecraft box = (BoxAndSolarArraySpacecraft) forceModel.getDragSensitive(date);
         drivers = box.getDragParametersDrivers();
         Assertions.assertEquals(1, drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
 
         // 3 BoxAndSolarArraySpacecraft models added, with one "default" in the middle
         // ----------------------------------------------
@@ -569,9 +569,9 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Extract the drivers and check their values and names
         drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(3,  drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
         Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(utc),
-                                drivers.get(0).getName());
+                                drivers.getFirst().getName());
 
         Assertions.assertEquals(1.0,  drivers.get(1).getValue(), 0.);
         Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(1).getName());
@@ -600,7 +600,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                                                                          sun, 20.0, Vector3D.PLUS_J,
                                                                          dragCd3, 0.0,
                                                                          0.7, 0.2);
-        box3.getDragParametersDrivers().get(0).setName("custom-Cd");
+        box3.getDragParametersDrivers().getFirst().setName("custom-Cd");
         forceModel.addDragSensitiveValidAfter(box3, date.shiftedBy(2. * dt));
         drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(4,  drivers.size());
@@ -635,15 +635,15 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(1,  drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
 
         // Extract drag model at an arbitrary epoch and check it is the one added
         BoxAndSolarArraySpacecraft box = (BoxAndSolarArraySpacecraft) forceModel.getDragSensitive(date);
         drivers = box.getDragParametersDrivers();
         Assertions.assertEquals(1, drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
 
         // 3 BoxAndSolarArraySpacecraft models added, with one "default" in the middle
         // ----------------------------------------------
@@ -668,9 +668,9 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Extract the drivers and check their values and names
         drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(3,  drivers.size());
-        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
         Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(utc),
-                                drivers.get(0).getName());
+                                drivers.getFirst().getName());
 
         Assertions.assertEquals(1.0,  drivers.get(1).getValue(), 0.);
         Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(1).getName());
@@ -701,7 +701,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                                                                          sun, 20.0, Vector3D.PLUS_J,
                                                                          dragCd3, dragCl3,
                                                                          0.7, 0.2);
-        box3.getDragParametersDrivers().get(0).setName("custom-Cd");
+        box3.getDragParametersDrivers().getFirst().setName("custom-Cd");
         forceModel.addDragSensitiveValidAfter(box3, date.shiftedBy(2. * dt));
         drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(4,  drivers.size());
@@ -748,7 +748,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final BoxAndSolarArraySpacecraft box2 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8,
                                                                                sun, 20.0, Vector3D.PLUS_J,
                                                                                dragCd2, dragCl2, 0.7, 0.2);
-        box2.getDragParametersDrivers().get(0).setName("factor2");
+        box2.getDragParametersDrivers().getFirst().setName("factor2");
         forceModel.addDragSensitiveValidAfter(box2, date2);
 
         // Before t3 = 1day
@@ -759,7 +759,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final BoxAndSolarArraySpacecraft box3 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8,
                                                                                sun, 20.0, Vector3D.PLUS_J,
                                                                                dragCd3, dragCl3, 0.7, 0.2);
-        box3.getDragParametersDrivers().get(0).setName("factor3");
+        box3.getDragParametersDrivers().getFirst().setName("factor3");
         forceModel.addDragSensitiveValidBefore(box3, date3);
 
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
@@ -820,7 +820,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final BoxAndSolarArraySpacecraft box2 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8,
                                                                                sun, 20.0, Vector3D.PLUS_J,
                                                                                dragCd2, dragCl2, 0.7, 0.2);
-        box2.getDragParametersDrivers().get(0).setName("factor2");
+        box2.getDragParametersDrivers().getFirst().setName("factor2");
         forceModel.addDragSensitiveValidAfter(box2, date2);
 
         // Before t3 = 1day
@@ -831,7 +831,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final BoxAndSolarArraySpacecraft box3 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8,
                                                                                sun, 20.0, Vector3D.PLUS_J,
                                                                                dragCd3, dragCl3, 0.7, 0.2);
-        box3.getDragParametersDrivers().get(0).setName("factor3");
+        box3.getDragParametersDrivers().getFirst().setName("factor3");
         forceModel.addDragSensitiveValidBefore(box3, date3);
 
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());

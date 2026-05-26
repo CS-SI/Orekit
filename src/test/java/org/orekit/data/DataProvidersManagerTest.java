@@ -47,7 +47,7 @@ public class DataProvidersManagerTest {
         DataContext.getDefault().getDataProvidersManager().clearProviders();
         Assertions.assertFalse(DataContext.getDefault().getDataProvidersManager().isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assertions.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
-        Assertions.assertEquals(20, crawler.getCount());
+        Assertions.assertEquals(22, crawler.getCount());
     }
 
     @Test
@@ -64,12 +64,12 @@ public class DataProvidersManagerTest {
         Assertions.assertEquals(0, manager.getLoadedDataNames().size());
         CountingLoader txtCounter = new CountingLoader(false);
         Assertions.assertTrue(manager.feed(".*\\.txt$", txtCounter));
-        Assertions.assertEquals(6, txtCounter.getCount());
-        Assertions.assertEquals(6, manager.getLoadedDataNames().size());
+        Assertions.assertEquals(7, txtCounter.getCount());
+        Assertions.assertEquals(7, manager.getLoadedDataNames().size());
         CountingLoader de405Counter = new CountingLoader(false);
         Assertions.assertTrue(manager.feed(".*\\.405$", de405Counter));
         Assertions.assertEquals(4, de405Counter.getCount());
-        Assertions.assertEquals(10, manager.getLoadedDataNames().size());
+        Assertions.assertEquals(11, manager.getLoadedDataNames().size());
         manager.clearLoadedDataNames();
         Assertions.assertEquals(0, manager.getLoadedDataNames().size());
     }
@@ -85,7 +85,7 @@ public class DataProvidersManagerTest {
         } catch (OrekitException oe) {
             // expected
         }
-        Assertions.assertEquals(20, crawler.getCount());
+        Assertions.assertEquals(22, crawler.getCount());
     }
 
     @Test
@@ -143,7 +143,7 @@ public class DataProvidersManagerTest {
         for (DataProvider provider : providers) {
             Assertions.assertTrue(manager.isSupported(provider));
         }
-        Assertions.assertNotNull(manager.removeProvider(providers.get(0)));
+        Assertions.assertNotNull(manager.removeProvider(providers.getFirst()));
         Assertions.assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
             public boolean feed(Pattern supported, DataLoader visitor, DataProvidersManager manager) {
@@ -162,7 +162,7 @@ public class DataProvidersManagerTest {
             }
         }));
         Assertions.assertEquals(1, manager.getProviders().size());
-        Assertions.assertNotNull(manager.removeProvider(manager.getProviders().get(0)));
+        Assertions.assertNotNull(manager.removeProvider(manager.getProviders().getFirst()));
         Assertions.assertEquals(0, manager.getProviders().size());
     }
 
@@ -206,9 +206,9 @@ public class DataProvidersManagerTest {
         DataContext.getDefault().getDataProvidersManager().getFiltersManager().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assertions.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
-        Assertions.assertEquals(20, crawler.getCount());
-        Assertions.assertEquals(20, filter.getFilteredCount());
-        Assertions.assertEquals(20, filter.getOpenedCount());
+        Assertions.assertEquals(22, crawler.getCount());
+        Assertions.assertEquals(22, filter.getFilteredCount());
+        Assertions.assertEquals(22, filter.getOpenedCount());
     }
 
     @Test
@@ -219,8 +219,8 @@ public class DataProvidersManagerTest {
         DataContext.getDefault().getDataProvidersManager().getFiltersManager().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assertions.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
-        Assertions.assertEquals(20, crawler.getCount());
-        Assertions.assertEquals(20 * layers, filter.getOpenedCount());
+        Assertions.assertEquals(22, crawler.getCount());
+        Assertions.assertEquals(22 * layers, filter.getOpenedCount());
     }
 
     private static class CountingLoader implements DataLoader {

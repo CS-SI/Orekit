@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.orekit.time.AbsoluteDate;
@@ -27,6 +28,7 @@ import org.orekit.time.TimeStamped;
 public class EOPEntry implements TimeStamped, Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20231017L;
 
     /** Entry date (modified julian day, 00h00 UTC scale). */

@@ -16,6 +16,8 @@
  */
 package org.orekit.bodies;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -24,10 +26,14 @@ import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -257,7 +263,7 @@ class CelestialBodyFactoryTest {
                                            earth.getInertiallyOrientedFrame());
 
         AbsoluteDate date = new AbsoluteDate(1969, 7, 23, TimeScalesFactory.getTT());
-        final double refDistance = bodyDistance(sun, earthMoonBarycenter, date, frames.get(0));
+        final double refDistance = bodyDistance(sun, earthMoonBarycenter, date, frames.getFirst());
         for (Frame frame : frames) {
             Assertions.assertEquals(refDistance,
                                 bodyDistance(sun, earthMoonBarycenter, date, frame),
@@ -349,4 +355,114 @@ class CelestialBodyFactoryTest {
         final Vector3D expectedVelocity = moon.getVelocity(date.toAbsoluteDate(), frame);
         Assertions.assertEquals(expectedVelocity, fieldVelocity.toVector3D());
     }
+
+    /**
+     * Check ICRF aligned frames are aligned and centered as expected. Check
+     * special cases for GCRF and ICRF.
+     */
+    @Test
+    public void testIcrfFrames() {
+        // setup
+        DataContext context = DataContext.getDefault();
+        final CelestialBodies celestialBodies = context.getCelestialBodies();
+        final Frames frames = context.getFrames();
+        final Frame icrf = frames.getICRF();
+        final Frame gcrf = frames.getGCRF();
+        // date in time frame of ephemerides files
+        AbsoluteDate testDate = context.getTimeScales().getJ2000Epoch()
+                .shiftedBy(5 * 30 * Constants.JULIAN_DAY);
+
+        // action & verify
+        final CelestialBody ssb = celestialBodies.getSolarSystemBarycenter();
+        MatcherAssert.assertThat(
+                ssb.getIcrfAlignedFrame(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                ssb.getInertiallyOrientedFrame(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                ssb.getBodyOrientedFrame(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                celestialBodies.getEarth().getIcrfAlignedFrame(),
+                Matchers.sameInstance(gcrf));
+        final CelestialBody emb = celestialBodies.getEarthMoonBarycenter();
+        MatcherAssert.assertThat(
+                emb.getInertiallyOrientedFrame(),
+                Matchers.sameInstance(emb.getIcrfAlignedFrame()));
+        MatcherAssert.assertThat(
+                emb.getBodyOrientedFrame(),
+                Matchers.sameInstance(emb.getIcrfAlignedFrame()));
+
+        MatcherAssert.assertThat(
+                celestialBodies.getMercury().getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                celestialBodies.getVenus().getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                emb.getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(gcrf));
+        MatcherAssert.assertThat(
+                celestialBodies.getMoon().getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(gcrf));
+        MatcherAssert.assertThat(
+                celestialBodies.getMars().getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                celestialBodies.getJupiter().getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                celestialBodies.getSaturn().getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                celestialBodies.getUranus().getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                celestialBodies.getNeptune().getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(icrf));
+        MatcherAssert.assertThat(
+                celestialBodies.getPluto().getIcrfAlignedFrame().getParent(),
+                Matchers.sameInstance(icrf));
+
+        // check position and orientation
+        List<CelestialBody> bodies = Arrays.asList(
+                ssb,
+                celestialBodies.getMercury(),
+                celestialBodies.getVenus(),
+                celestialBodies.getEarth(),
+                emb,
+                celestialBodies.getMoon(),
+                celestialBodies.getMars(),
+                celestialBodies.getJupiter(),
+                celestialBodies.getSaturn(),
+                celestialBodies.getUranus(),
+                celestialBodies.getNeptune(),
+                celestialBodies.getPluto());
+        for (CelestialBody body : bodies) {
+            final Frame actual = body.getIcrfAlignedFrame();
+            MatcherAssert.assertThat(actual.isPseudoInertial(), Matchers.is(true));
+            final Transform toIcrf = actual.getTransformTo(icrf, testDate);
+            MatcherAssert.assertThat(toIcrf.getRotation(),
+                    OrekitMatchers.distanceIs(Rotation.IDENTITY, Matchers.closeTo(0.0, 0.0)));
+            MatcherAssert.assertThat(toIcrf.getRotationRate(), Matchers.is(Vector3D.ZERO));
+            MatcherAssert.assertThat(toIcrf.getRotationAcceleration(), Matchers.is(Vector3D.ZERO));
+            TimeStampedPVCoordinates pv = body.getPVCoordinates(testDate, icrf);
+            MatcherAssert.assertThat(toIcrf.getTranslation(), Matchers.is(pv.getPosition()));
+            MatcherAssert.assertThat(toIcrf.getVelocity(), Matchers.is(pv.getVelocity()));
+            MatcherAssert.assertThat(toIcrf.getAcceleration(), Matchers.is(pv.getAcceleration()));
+            // check ICRF and inertial frames don't require a translation
+            final Frame inertial = body.getInertiallyOrientedFrame();
+            MatcherAssert.assertThat(inertial.isPseudoInertial(), Matchers.is(true));
+            final Frame inertialParent = inertial.getParent();
+            MatcherAssert.assertThat(actual,
+                    Matchers.either(Matchers.sameInstance(inertialParent))
+                            .or(Matchers.sameInstance(inertial)));
+            Transform toInertial = actual.getTransformTo(inertial, testDate);
+            MatcherAssert.assertThat(toInertial.getTranslation(), Matchers.is(Vector3D.ZERO));
+            MatcherAssert.assertThat(toInertial.getVelocity(), Matchers.is(Vector3D.ZERO));
+            MatcherAssert.assertThat(toInertial.getAcceleration(), Matchers.is(Vector3D.ZERO));
+        }
+    }
+
 }

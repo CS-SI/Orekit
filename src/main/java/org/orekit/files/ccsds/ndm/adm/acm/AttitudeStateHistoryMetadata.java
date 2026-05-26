@@ -20,8 +20,10 @@ package org.orekit.files.ccsds.ndm.adm.acm;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 
 /** Metadata for attitude state history.
  * <p>
@@ -70,10 +72,14 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
     /** Attitude rate element set type. */
     private RateElementsType rateType;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
      */
-    public AttitudeStateHistoryMetadata() {
-        endpoints = new AttitudeEndpoints();
+    public AttitudeStateHistoryMetadata(final CcsdsFrameMapper frameMapper) {
+        endpoints = new AttitudeEndpoints(frameMapper);
     }
 
     /** {@inheritDoc} */

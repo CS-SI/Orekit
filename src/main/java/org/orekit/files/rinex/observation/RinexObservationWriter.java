@@ -561,7 +561,7 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
         // check header has already been written
         checkHeaderWritten();
 
-        if (!pending.isEmpty() && observationDataSet.durationFrom(pending.get(0).getDate()) > EPS_DATE) {
+        if (!pending.isEmpty() && observationDataSet.durationFrom(pending.getFirst().getDate()) > EPS_DATE) {
             // the specified observation belongs to the next batch
             // we must process the current batch of pending observations
             processPending();
@@ -598,7 +598,7 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
      */
     public void writePendingRinex2Observations() throws IOException {
 
-        final ObservationDataSet first = pending.get(0);
+        final ObservationDataSet first = pending.getFirst();
 
         // EPOCH/SAT
         final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);
@@ -674,7 +674,7 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
      */
     public void writePendingRinex34Observations() throws IOException {
 
-        final ObservationDataSet first = pending.get(0);
+        final ObservationDataSet first = pending.getFirst();
 
         // EPOCH/SAT
         final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);

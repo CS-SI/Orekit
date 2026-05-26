@@ -41,6 +41,6 @@ public enum ManBasis {
     SIMULATED,
 
     /** Other bases. */
-    OTHER;
+    OTHER
 
 }

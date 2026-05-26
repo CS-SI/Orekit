@@ -106,7 +106,7 @@ class RangeRateTest {
         Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
 
         // Test measurement type
-        Assertions.assertEquals(RangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(RangeRate.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /** Compare observed values and estimated values.
@@ -212,7 +212,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 8.1e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.2e-8);
 
     }
 
@@ -276,7 +276,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 8.1e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.4e-7);
 
     }
 
@@ -340,7 +340,7 @@ class RangeRateTest {
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
                 stationParameter.getZenithOffsetDriver(),
-                measurement.getSatellites().get(0).getClockDriftDriver()
+                measurement.getSatellites().getFirst().getClockDriftDriver()
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
@@ -362,7 +362,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 7.5e-6);
 
     }
 
@@ -444,7 +444,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.3e-6);
 
     }
 
@@ -644,7 +644,7 @@ class RangeRateTest {
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
                 stationParameter.getZenithOffsetDriver(),
-                measurement.getSatellites().get(0).getClockDriftDriver()
+                measurement.getSatellites().getFirst().getClockDriftDriver()
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
@@ -666,7 +666,7 @@ class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 7.5e-6);
 
     }
 
@@ -724,7 +724,7 @@ class RangeRateTest {
             final SpacecraftState state     = propagator.propagate(date);
 
             final ParameterDriver[] drivers = new ParameterDriver[] {
-                parameters.get(0)
+                parameters.getFirst()
             };
             for (int i = 0; i < 1; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);

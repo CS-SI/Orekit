@@ -29,10 +29,12 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
+import org.opentest4j.AssertionFailedError;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.definitions.PocMethodFacade;
@@ -87,20 +89,20 @@ public class NdmTestUtils {
                    original instanceof Integer   ||
                    original instanceof Enum) {
             return original.equals(rebuilt);
-        } else if (original instanceof Double) {
-            checkDouble((Double) original, (Double) rebuilt);
+        } else if (original instanceof Double double1) {
+            checkDouble(double1, (Double) rebuilt);
             return true;
-        } else if (original instanceof int[]) {
-            checkIntArray((int[]) original, (int[]) rebuilt);
+        } else if (original instanceof int[] ints) {
+            checkIntArray(ints, (int[]) rebuilt);
             return true;
-        } else if (original instanceof double[]) {
-            checkDoubleArray((double[]) original, (double[]) rebuilt);
+        } else if (original instanceof double[] doubles) {
+            checkDoubleArray(doubles, (double[]) rebuilt);
             return true;
-        } else if (original instanceof List) {
-            checkList((List<?>) original, (List<?>) rebuilt);
+        } else if (original instanceof List<?> list) {
+            checkList(list, (List<?>) rebuilt);
             return true;
-        } else if (original instanceof Map) {
-            checkMap((Map<?, ?>) original, (Map<?, ?>) rebuilt);
+        } else if (original instanceof Map<?, ?> map) {
+            checkMap(map, (Map<?, ?>) rebuilt);
             return true;
         } else if (original instanceof NdmConstituent            ||
                    original instanceof Segment                   ||
@@ -128,43 +130,46 @@ public class NdmTestUtils {
                    original instanceof AcmSatelliteEphemeris) {
             checkContainer(original, rebuilt);
             return true;
-        } else if (original instanceof FrameFacade) {
-            checkFrameFacade((FrameFacade) original, (FrameFacade) rebuilt);
+        } else if (original instanceof FrameFacade facade3) {
+            checkFrameFacade(facade3, (FrameFacade) rebuilt);
             return true;
-        } else if (original instanceof BodyFacade) {
-            checkBodyFacade((BodyFacade) original, (BodyFacade) rebuilt);
+        } else if (original instanceof BodyFacade facade2) {
+            checkBodyFacade(facade2, (BodyFacade) rebuilt);
             return true;
-        } else if (original instanceof OdMethodFacade) {
-            checkOdMethodFacade((OdMethodFacade) original, (OdMethodFacade) rebuilt);
+        } else if (original instanceof OdMethodFacade facade1) {
+            checkOdMethodFacade(facade1, (OdMethodFacade) rebuilt);
             return true;
-        } else if (original instanceof PocMethodFacade) {
-            checkPocMethodFacade((PocMethodFacade) original, (PocMethodFacade) rebuilt);
+        } else if (original instanceof PocMethodFacade facade) {
+            checkPocMethodFacade(facade, (PocMethodFacade) rebuilt);
             return true;
-        } else if (original instanceof TrajectoryStateHistory) {
-            checkOrbitStateHistory((TrajectoryStateHistory) original, (TrajectoryStateHistory) rebuilt);
+        } else if (original instanceof TrajectoryStateHistory history) {
+            checkOrbitStateHistory(history, (TrajectoryStateHistory) rebuilt);
             return true;
         } else if (original instanceof DataContext) {
             return true;
-        } else if (original instanceof Frame) {
-            checkFrame((Frame) original, (Frame) rebuilt);
+        } else if (original instanceof Frame frame) {
+            checkFrame(frame, (Frame) rebuilt);
             return true;
-        } else if (original instanceof AbsoluteDate) {
-            checkDate((AbsoluteDate) original, (AbsoluteDate) rebuilt);
+        } else if (original instanceof AbsoluteDate date) {
+            checkDate(date, (AbsoluteDate) rebuilt);
             return true;
-        } else if (original instanceof Unit) {
-            checkUnit((Unit) original, (Unit) rebuilt);
+        } else if (original instanceof Unit unit) {
+            checkUnit(unit, (Unit) rebuilt);
             return true;
-        } else if (original instanceof Vector3D) {
-            checkVector3D((Vector3D) original, (Vector3D) rebuilt);
+        } else if (original instanceof Vector3D vector3D) {
+            checkVector3D(vector3D, (Vector3D) rebuilt);
             return true;
-        } else if (original instanceof Quaternion) {
-            checkQuaternion((Quaternion) original, (Quaternion) rebuilt);
+        } else if (original instanceof Quaternion quaternion) {
+            checkQuaternion(quaternion, (Quaternion) rebuilt);
             return true;
-        } else if (original instanceof RealMatrix) {
-            checkRealMatrix((RealMatrix) original, (RealMatrix) rebuilt);
+        } else if (original instanceof RealMatrix matrix) {
+            checkRealMatrix(matrix, (RealMatrix) rebuilt);
             return true;
-        } else if (original instanceof Rotation) {
-            checkRotation((Rotation) original, (Rotation) rebuilt);
+        } else if (original instanceof Rotation rotation) {
+            checkRotation(rotation, (Rotation) rebuilt);
+            return true;
+        } else if (original instanceof CcsdsFrameMapper) {
+            Assertions.assertEquals(original, rebuilt);
             return true;
         } else {
             return false;
@@ -186,17 +191,20 @@ public class NdmTestUtils {
                     m.getParameterCount() == 0).
         forEach(getter -> {
             try {
-                Assertions.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)));
+                Assertions.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)),
+                        "failed to compare " + getter.getReturnType() + " from "
+                                + getter.getName());
             } catch (InvocationTargetException e) {
                 if (!((getter.getName().equals("getFrame") ||
                        getter.getName().equals("getReferenceFrame") ||
                        getter.getName().equals("getInertialFrame") ||
+                       getter.getReturnType().equals(Frame.class) ||
                        getter.getName().equals("getAngularCoordinates")) &&
                       e.getCause() instanceof OrekitException &&
                       (((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY ||
                        ((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.CCSDS_INVALID_FRAME ||
                        ((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE))) {
-                    Assertions.fail(e.getCause().getLocalizedMessage());
+                    throw new Error("failed to invoke getter: " + e.getLocalizedMessage(), e);
                 }
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 Assertions.fail(e.getLocalizedMessage());

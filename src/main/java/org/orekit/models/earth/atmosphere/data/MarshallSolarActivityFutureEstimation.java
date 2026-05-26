@@ -16,9 +16,9 @@
  */
 package org.orekit.models.earth.atmosphere.data;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
@@ -90,6 +90,7 @@ public class MarshallSolarActivityFutureEstimation
             "\\p{Alpha}\\p{Lower}\\p{Lower}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}(?:f|F)10(?:[-_]prd)?\\.(?:txt|TXT)";
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = -5212198874900835369L;
 
     /** Selected strength level of activity. */
@@ -348,7 +349,7 @@ public class MarshallSolarActivityFutureEstimation
 
     public double getAverageFlux(final AbsoluteDate date) {
         // Extract closest neighbours average
-        final List<TimeStampedDouble> neighbors = averageFluxCache.getNeighbors(date).collect(Collectors.toList());
+        final List<TimeStampedDouble> neighbors = averageFluxCache.getNeighbors(date).toList();
 
         // Create linear interpolating function
         final double[] x = new double[] { 0, 1 };
@@ -358,7 +359,7 @@ public class MarshallSolarActivityFutureEstimation
         final UnivariateFunction interpolatingFunction = interpolator.interpolate(x, y);
 
         // Interpolate
-        final AbsoluteDate previousDate = neighbors.get(0).getDate();
+        final AbsoluteDate previousDate = neighbors.getFirst().getDate();
         final AbsoluteDate nextDate     = neighbors.get(1).getDate();
 
         // TODO Temporary fix for issue 1719 until GenericTimeStampedCache is fixed

@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public class TwoLeggedSignalTravelTimer {
+public class TwoLeggedSignalTimer {
 
     /** Signal travel time model. */
     private final SignalTravelTimeModel signalTravelTimeModel;
@@ -41,7 +41,7 @@ public class TwoLeggedSignalTravelTimer {
      * Constructor.
      * @param signalTravelTimeModel time delay computer
      */
-    public TwoLeggedSignalTravelTimer(final SignalTravelTimeModel signalTravelTimeModel) {
+    public TwoLeggedSignalTimer(final SignalTravelTimeModel signalTravelTimeModel) {
         this.signalTravelTimeModel = signalTravelTimeModel;
     }
 
@@ -59,8 +59,8 @@ public class TwoLeggedSignalTravelTimer {
                                   final PVCoordinatesProvider relay, final AbsoluteDate approxRelayDate,
                                   final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
         final double secondLegTravelTime = computeTravelTime(endReceptionCondition, relay, approxRelayDate);
-        final AbsoluteDate relayDate = endReceptionCondition.getReceptionDate().shiftedBy(-secondLegTravelTime);
-        final Frame frame = endReceptionCondition.getReferenceFrame();
+        final AbsoluteDate relayDate = endReceptionCondition.receptionDate().shiftedBy(-secondLegTravelTime);
+        final Frame frame = endReceptionCondition.referenceFrame();
         final Vector3D relayPosition = relay.getPosition(relayDate, frame);
         final SignalReceptionCondition relayCondition = new SignalReceptionCondition(relayDate, relayPosition, frame);
         final double firstLegTravelTime = computeTravelTime(relayCondition, emitter, approxEmissionDate);
@@ -77,10 +77,10 @@ public class TwoLeggedSignalTravelTimer {
      */
     public double[] computeDelays(final SignalReceptionCondition endReceptionCondition,
                                   final PVCoordinatesProvider relay, final PVCoordinatesProvider emitter) {
-        final AbsoluteDate receptionDate = endReceptionCondition.getReceptionDate();
+        final AbsoluteDate receptionDate = endReceptionCondition.receptionDate();
         final double secondLegTravelTime = computeTravelTime(endReceptionCondition, relay, receptionDate);
         final AbsoluteDate relayDate = receptionDate.shiftedBy(-secondLegTravelTime);
-        final Frame frame = endReceptionCondition.getReferenceFrame();
+        final Frame frame = endReceptionCondition.referenceFrame();
         final Vector3D relayPosition = relay.getPosition(relayDate, frame);
         final SignalReceptionCondition relayCondition = new SignalReceptionCondition(relayDate, relayPosition, frame);
         final double firstLegTravelTime = computeTravelTime(relayCondition, emitter, relayDate);
@@ -103,11 +103,12 @@ public class TwoLeggedSignalTravelTimer {
                                                                  final FieldPVCoordinatesProvider<T> emitter,
                                                                  final FieldAbsoluteDate<T> approxEmissionDate) {
         final T secondLegTravelTime = computeTravelTime(endReceptionCondition, relay, approxRelayDate);
-        final FieldAbsoluteDate<T> relayDate = endReceptionCondition.getReceptionDate().shiftedBy(secondLegTravelTime.negate());
-        final Frame frame = endReceptionCondition.getReferenceFrame();
+        final FieldAbsoluteDate<T> relayDate = endReceptionCondition.receptionDate().shiftedBy(secondLegTravelTime.negate());
+        final Frame frame = endReceptionCondition.referenceFrame();
         final FieldVector3D<T> relayPosition = relay.getPosition(relayDate, frame);
-        final T firstLegTravelTime = computeTravelTime(new FieldSignalReceptionCondition<T>(relayDate,
-                relayPosition, frame), emitter, approxEmissionDate);
+        final FieldSignalReceptionCondition<T> relayCondition = new FieldSignalReceptionCondition<>(relayDate,
+                relayPosition, frame);
+        final T firstLegTravelTime = computeTravelTime(relayCondition, emitter, approxEmissionDate);
         final T[] output = MathArrays.buildArray(relayDate.getField(), 2);
         output[0] = firstLegTravelTime;
         output[1] = secondLegTravelTime;
@@ -125,13 +126,14 @@ public class TwoLeggedSignalTravelTimer {
     public <T extends CalculusFieldElement<T>> T[] computeDelays(final FieldSignalReceptionCondition<T> endReceptionCondition,
                                                                  final FieldPVCoordinatesProvider<T> relay,
                                                                  final FieldPVCoordinatesProvider<T> emitter) {
-        final FieldAbsoluteDate<T> receptionDate = endReceptionCondition.getReceptionDate();
+        final FieldAbsoluteDate<T> receptionDate = endReceptionCondition.receptionDate();
         final T secondLegTravelTime = computeTravelTime(endReceptionCondition, relay, receptionDate);
         final FieldAbsoluteDate<T> relayDate = receptionDate.shiftedBy(secondLegTravelTime.negate());
-        final Frame frame = endReceptionCondition.getReferenceFrame();
+        final Frame frame = endReceptionCondition.referenceFrame();
         final FieldVector3D<T> relayPosition = relay.getPosition(relayDate, frame);
-        final T firstLegTravelTime = computeTravelTime(new FieldSignalReceptionCondition<>(relayDate, relayPosition, frame),
-                emitter, relayDate);
+        final FieldSignalReceptionCondition<T> relayCondition = new FieldSignalReceptionCondition<>(relayDate,
+                relayPosition, frame);
+        final T firstLegTravelTime = computeTravelTime(relayCondition, emitter, relayDate);
         final T[] output = MathArrays.buildArray(receptionDate.getField(), 2);
         output[0] = firstLegTravelTime;
         output[1] = secondLegTravelTime;
@@ -162,7 +164,7 @@ public class TwoLeggedSignalTravelTimer {
     private <T extends CalculusFieldElement<T>> T computeTravelTime(final FieldSignalReceptionCondition<T> receptionCondition,
                                                                     final FieldPVCoordinatesProvider<T> emitter,
                                                                     final FieldAbsoluteDate<T> guessEmissionDate) {
-        final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
+        final FieldAbsoluteDate<T> receptionDate = receptionCondition.receptionDate();
         return signalTravelTimeModel.getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter)
                 .computeDelay(receptionCondition, guessEmissionDate);
     }

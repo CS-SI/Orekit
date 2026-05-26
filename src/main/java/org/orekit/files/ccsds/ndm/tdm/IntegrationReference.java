@@ -29,6 +29,6 @@ public enum IntegrationReference {
     MIDDLE,
 
     /** Time tag at integration interval end. */
-    END;
+    END
 
 }

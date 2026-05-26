@@ -29,10 +29,10 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.SignalBasedMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -150,7 +150,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         // local and remote satellites
         final Frame                    frame          = states[0].getFrame();
         final TimeStampedPVCoordinates pvaLocal       = states[0].getPVCoordinates(frame);
-        final ClockOffset              localClock     = getSatellites().get(0).
+        final ClockOffset              localClock     = getSatellites().getFirst().
                                                         getQuadraticClockModel().getOffset(getDate());
         final double                   localClockBias = localClock.getBias();
         final PVCoordinatesProvider    remotePV       = getRemotePV(states[1]);
@@ -161,7 +161,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         // Downlink delay
         final double deltaT = arrivalDate.durationFrom(states[0]);
         final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel().getAdjustableEmitterComputer(remotePV);
+        final AdjustableEmitterSignalTimer signalTimeOfFlight = getSignalTravelTimeModel().getAdjustableEmitterComputer(remotePV);
         final double tauD = signalTimeOfFlight.computeDelay(new SignalReceptionCondition(arrivalDate,
                 pvaDownlink.getPosition(), frame), arrivalDate);
 
@@ -206,7 +206,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
 
         // local and remote satellites
         final TimeStampedFieldPVCoordinates<Gradient> pvaLocal         = getCoordinates(states[0], 0, nbParams);
-        final QuadraticFieldClockModel<Gradient>      localClock       = getSatellites().get(0).getQuadraticClockModel().
+        final QuadraticFieldClockModel<Gradient>      localClock       = getSatellites().getFirst().getQuadraticClockModel().
                                                                          toGradientModel(nbParams, paramIndices, getDate());
         final FieldClockOffset<Gradient>              localClockOffset = localClock.getOffset(gDate);
         final FieldPVCoordinatesProvider<Gradient>    remotePV         = getRemotePV(states[1], nbParams);
@@ -217,7 +217,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         // Downlink delay
         final Gradient deltaT = arrivalDate.durationFrom(states[0].getDate());
         final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(deltaT.getField(), remotePV);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(arrivalDate,
                 pvaDownlink.getPosition(), frame);

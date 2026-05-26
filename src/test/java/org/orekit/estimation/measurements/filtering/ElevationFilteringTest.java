@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.measurements.filtering;
 
+import java.util.ArrayList;
+import java.util.SortedSet;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -42,6 +45,7 @@ import org.orekit.estimation.measurements.generation.Generator;
 import org.orekit.estimation.measurements.generation.MeasurementBuilder;
 import org.orekit.estimation.measurements.generation.RangeBuilder;
 import org.orekit.estimation.measurements.generation.SignSemantic;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.Frame;
@@ -61,9 +65,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.ArrayList;
-import java.util.SortedSet;
 
 public class ElevationFilteringTest {
 
@@ -87,8 +88,9 @@ public class ElevationFilteringTest {
     private MeasurementBuilder<Range> getBuilder(final RandomGenerator random, final GroundStation groundStation,
                                                  final ObservableSatellite satellite, final double noise) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { noise });
-        return new RangeBuilder(new CorrelatedRandomVectorGenerator(covariance, 1.0e-10, new GaussianRandomGenerator(random)),
-                                groundStation, false, 1.0, 1.0, satellite);
+        final RangeBuilder builder = new RangeBuilder(groundStation, false, 1.0, 1.0, satellite);
+        builder.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance, 1.0e-10, new GaussianRandomGenerator(random))));
+        return builder;
     }
 
     private ElevationDetector getElevationDetector(final TopocentricFrame topo, final double minElevation) {

@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64;
@@ -137,7 +136,7 @@ public class ImmutableFieldTimeStampedCacheTest {
 
         // before fist data
         try {
-            cache.getNeighbors(data.get(0).shiftedBy(-1));
+            cache.getNeighbors(data.getFirst().shiftedBy(-1));
             Assertions.fail("Expected Exception");
         }
         catch (TimeStampedCacheException e) {
@@ -146,10 +145,10 @@ public class ImmutableFieldTimeStampedCacheTest {
         }
 
         // on fist date
-        Assertions.assertArrayEquals(cache.getNeighbors(data.get(0)).toArray(), data
+        Assertions.assertArrayEquals(cache.getNeighbors(data.getFirst()).toArray(), data
                 .subList(0, 3).toArray());
         // between fist and second date
-        Assertions.assertArrayEquals(cache.getNeighbors(data.get(0).shiftedBy(0.5))
+        Assertions.assertArrayEquals(cache.getNeighbors(data.getFirst().shiftedBy(0.5))
                                           .toArray(), data.subList(0, 3).toArray());
         // in the middle on a date
         Assertions.assertArrayEquals(cache.getNeighbors(data.get(2)).toArray(), data
@@ -189,7 +188,7 @@ public class ImmutableFieldTimeStampedCacheTest {
      */
     @Test
     public void testGetEarliest() {
-        Assertions.assertEquals(cache.getEarliest(), data.get(0));
+        Assertions.assertEquals(cache.getEarliest(), data.getFirst());
     }
 
     /**
@@ -197,7 +196,7 @@ public class ImmutableFieldTimeStampedCacheTest {
      */
     @Test
     public void testGetLatest() {
-        Assertions.assertEquals(cache.getLatest(), data.get(data.size() - 1));
+        Assertions.assertEquals(cache.getLatest(), data.getLast());
     }
 
     /**
@@ -293,9 +292,9 @@ public class ImmutableFieldTimeStampedCacheTest {
 
     private void checkNeighbors(final ImmutableFieldTimeStampedCache<FieldAbsoluteDate<Binary64>, Binary64> nonLinearCache,
                                                                     final double offset) {
-        List<FieldAbsoluteDate<Binary64>> s = nonLinearCache.getNeighbors(date.shiftedBy(offset)).collect(Collectors.toList());
+        List<FieldAbsoluteDate<Binary64>> s = nonLinearCache.getNeighbors(date.shiftedBy(offset)).toList();
         Assertions.assertEquals(2, s.size());
-        Assertions.assertTrue(s.get(0).durationFrom(date).getReal() <= offset);
+        Assertions.assertTrue(s.getFirst().durationFrom(date).getReal() <= offset);
         Assertions.assertTrue(s.get(1).durationFrom(date).getReal() >  offset);
     }
     

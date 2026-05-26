@@ -737,7 +737,7 @@ public class CdmRelativeMetadata {
      * @param collisionPercentile the collisionPercentile to set
      */
     public void setCollisionPercentile(final int[] collisionPercentile) {
-        this.collisionPercentile = collisionPercentile == null ? null : collisionPercentile.clone();;
+        this.collisionPercentile = collisionPercentile == null ? null : collisionPercentile.clone();
     }
 
     /** Get the ID of previous CDM issued for event identified by CONJUNCTION_ID.

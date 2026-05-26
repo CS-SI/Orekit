@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.generation;
 
 import java.util.Map;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.BistaticRange;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -35,22 +34,19 @@ import org.orekit.time.AbsoluteDate;
 public class BistaticRangeBuilder extends AbstractBistaticBuilder<BistaticRange> {
 
     /** Constructor with default signal travel time model.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param emitter emitter observer
      * @param receiver receiver observer, from which measurement is performed
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
-    public BistaticRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                final Observer emitter, final Observer receiver,
+    public BistaticRangeBuilder(final Observer emitter, final Observer receiver,
                                 final double sigma, final double baseWeight,
                                 final ObservableSatellite satellite) {
-        this(noiseSource, emitter, receiver, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
+        this(emitter, receiver, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
     }
 
     /** Constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param emitter emitter observer
      * @param receiver receiver observer, from which measurement is performed
      * @param measurementQuality measurement quality as used in estimation
@@ -58,11 +54,10 @@ public class BistaticRangeBuilder extends AbstractBistaticBuilder<BistaticRange>
      * @param satellite satellite related to this builder
      * @since 14.0
      */
-    public BistaticRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                final Observer emitter, final Observer receiver,
+    public BistaticRangeBuilder(final Observer emitter, final Observer receiver,
                                 final MeasurementQuality measurementQuality,
                                 final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, emitter, receiver, measurementQuality, signalTravelTimeModel, satellite);
+        super(emitter, receiver, measurementQuality, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */

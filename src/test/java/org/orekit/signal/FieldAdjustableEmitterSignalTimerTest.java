@@ -41,17 +41,18 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class FieldSignalTravelTimeAdjustableEmitterTest {
+class FieldAdjustableEmitterSignalTimerTest {
 
     @Test
     void testGetter() {
         // GIVEN
         final ConvergenceChecker<Binary64> convergenceChecker = (iteration, previous, current) -> true;
         // WHEN
-        final FieldSignalTravelTimeAdjustableEmitter<Binary64> emitter = new FieldSignalTravelTimeAdjustableEmitter<>(null, convergenceChecker);
+        final FieldAdjustableEmitterSignalTimer<Binary64> emitter = new FieldAdjustableEmitterSignalTimer<>(null, convergenceChecker);
         // THEN
         assertEquals(convergenceChecker, emitter.getConvergenceChecker());
     }
@@ -68,14 +69,14 @@ class FieldSignalTravelTimeAdjustableEmitterTest {
         final FieldAbsolutePVCoordinates<Complex> absolutePVCoordinates = new FieldAbsolutePVCoordinates<>(frame, receptionDate, fieldPVCoordinates);
         final Vector3D receiverPositionDouble = new Vector3D(1e2, 1e3, 1e4);
         final FieldVector3D<Complex> receiverPosition = new FieldVector3D<>(field, receiverPositionDouble);
-        final FieldSignalTravelTimeAdjustableEmitter<Complex> signalTimeOfFlight = new FieldSignalTravelTimeAdjustableEmitter<>(absolutePVCoordinates);
+        final FieldAdjustableEmitterSignalTimer<Complex> signalTimeOfFlight = new FieldAdjustableEmitterSignalTimer<>(absolutePVCoordinates);
         final FieldSignalReceptionCondition<Complex> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate, receiverPosition, frame);
         // WHEN
         final Complex actual = signalTimeOfFlight.computeDelay(receptionCondition);
         // THEN
         final FieldAbsolutePVCoordinates<Complex> reversed = new FieldAbsolutePVCoordinates<>(frame, receptionDate,
                 new FieldPVCoordinates<>(receiverPosition, FieldVector3D.getZero(field)));
-        final FieldSignalTravelTimeAdjustableReceiver<Complex> signalTimeOfFlightAdjustableReceiver = new FieldSignalTravelTimeAdjustableReceiver<>(reversed);
+        final FieldAdjustableReceiverSignalTimer<Complex> signalTimeOfFlightAdjustableReceiver = new FieldAdjustableReceiverSignalTimer<>(reversed);
         final FieldAbsoluteDate<Complex> emissionDate = receptionDate.shiftedBy(actual.negate());
         final Complex expected = signalTimeOfFlightAdjustableReceiver.computeDelay(new FieldSignalEmissionCondition<>(emissionDate,
                 emitterPosition, frame));
@@ -88,7 +89,7 @@ class FieldSignalTravelTimeAdjustableEmitterTest {
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
         final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(orbit);
         final Binary64Field field = Binary64Field.getInstance();
-        final FieldSignalTravelTimeAdjustableEmitter<Binary64> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(positionProvider.toFieldPVCoordinatesProvider(field));
+        final FieldAdjustableEmitterSignalTimer<Binary64> fieldComputer = new FieldAdjustableEmitterSignalTimer<>(positionProvider.toFieldPVCoordinatesProvider(field));
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         final Vector3D receiver = new Vector3D(-1e3, 2e2, 2e4);
         final FieldVector3D<Binary64> fieldReceiver = new FieldVector3D<>(field, receiver);
@@ -98,7 +99,7 @@ class FieldSignalTravelTimeAdjustableEmitterTest {
         // THEN
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(fieldDate.toAbsoluteDate(),
                 receiver, orbit.getFrame());
-        final double expected = new SignalTravelTimeAdjustableEmitter(positionProvider).computeDelay(receptionCondition);
+        final double expected = new AdjustableEmitterSignalTimer(positionProvider).computeDelay(receptionCondition);
         assertEquals(expected, actual.getReal());
     }
 
@@ -113,7 +114,7 @@ class FieldSignalTravelTimeAdjustableEmitterTest {
         final FieldPVCoordinates<Gradient> emitterrPV = new FieldPVCoordinates<>(FieldVector3D.getMinusI(field)
                 .scalarMultiply(new Gradient(0., 1)), FieldVector3D.getPlusK(field).scalarMultiply(speed));
         final FieldAbsolutePVCoordinates<Gradient> absolutePVCoordinates = new FieldAbsolutePVCoordinates<>(frame, emissionDate, emitterrPV);
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> signalTimeOfFlight = new FieldSignalTravelTimeAdjustableEmitter<>(absolutePVCoordinates);
+        final FieldAdjustableEmitterSignalTimer<Gradient> signalTimeOfFlight = new FieldAdjustableEmitterSignalTimer<>(absolutePVCoordinates);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(emissionDate, receiverPosition, frame);
         // WHEN
         final Gradient actual = signalTimeOfFlight.computeDelay(receptionCondition);
@@ -134,7 +135,7 @@ class FieldSignalTravelTimeAdjustableEmitterTest {
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
         final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(orbit);
         final Binary64Field field = Binary64Field.getInstance();
-        final FieldSignalTravelTimeAdjustableEmitter<Binary64> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(positionProvider.toFieldPVCoordinatesProvider(field));
+        final FieldAdjustableEmitterSignalTimer<Binary64> fieldComputer = new FieldAdjustableEmitterSignalTimer<>(positionProvider.toFieldPVCoordinatesProvider(field));
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         final FieldAbsoluteDate<Binary64> guessDate = fieldDate.shiftedBy(1);
         final Vector3D receiver = new Vector3D(1e3, 2e4, 0);
@@ -145,9 +146,31 @@ class FieldSignalTravelTimeAdjustableEmitterTest {
         // THEN
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(fieldDate.toAbsoluteDate(),
                 receiver, orbit.getFrame());
-        final double expected = new SignalTravelTimeAdjustableEmitter(positionProvider).computeDelay(receptionCondition,
+        final double expected = new AdjustableEmitterSignalTimer(positionProvider).computeDelay(receptionCondition,
                 guessDate.toAbsoluteDate());
         assertEquals(expected, actual.getReal());
+    }
+
+    @Test
+    void testComputeEmissionCondition() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(orbit);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldPVCoordinatesProvider<Binary64> fieldProvider = positionProvider.toFieldPVCoordinatesProvider(field);
+        final FieldAdjustableEmitterSignalTimer<Binary64> fieldComputer = new FieldAdjustableEmitterSignalTimer<>(fieldProvider);
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final Vector3D receiver = new Vector3D(-1e3, 2e2, 2e4);
+        final FieldVector3D<Binary64> fieldReceiver = new FieldVector3D<>(field, receiver);
+        final FieldSignalReceptionCondition<Binary64> fieldCondition = new FieldSignalReceptionCondition<>(fieldDate, fieldReceiver, orbit.getFrame());
+        // WHEN
+        final FieldSignalEmissionCondition<Binary64> emissionCondition = fieldComputer.computeEmissionCondition(fieldCondition,
+                fieldDate);
+        // THEN
+        final FieldAbsoluteDate<Binary64> emissionDate = emissionCondition.emissionDate();
+        final Binary64 delay = fieldComputer.computeDelay(fieldCondition, fieldDate);
+        assertEquals(delay, fieldDate.durationFrom(emissionDate));
+        assertEquals(fieldProvider.getPosition(emissionDate, orbit.getFrame()), emissionCondition.emitterPosition());
     }
 
 }

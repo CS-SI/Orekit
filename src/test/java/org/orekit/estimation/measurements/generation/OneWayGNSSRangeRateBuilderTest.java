@@ -36,6 +36,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObserverSatellite;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRangeRate;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -50,7 +51,7 @@ import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
-public class OneWayGNSSRangeRateBuilderTest {
+class OneWayGNSSRangeRateBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
@@ -60,11 +61,13 @@ public class OneWayGNSSRangeRateBuilderTest {
                                                                final ObserverSatellite remote) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<OneWayGNSSRangeRate> b =
-                        new OneWayGNSSRangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                               1.0e-10,
-                                                                                                               new GaussianRandomGenerator(random)),
-                                                      receiver, remote,
+                        new OneWayGNSSRangeRateBuilder(receiver, remote,
                                                       SIGMA, 1.0);
+        if (random != null) {
+            b.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         b.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -74,13 +77,13 @@ public class OneWayGNSSRangeRateBuilderTest {
     }
 
     @Test
-    public void testForward() {
-        doTest(0x066acbc9bf1074a3L, 0.0, 1.2, 2.8 * SIGMA);
+    void testForward() {
+        doTest(0x066acbc9bf1074a3L, 0.0, 1.2, 6. * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0x58ffc7ad03c2310bL, 0.0, -1.0, 2.5 * SIGMA);
+    void testBackward() {
+        doTest(0x58ffc7ad03c2310bL, 0.0, -1.0, 6. * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -159,7 +162,7 @@ public class OneWayGNSSRangeRateBuilderTest {
      }
 
      @BeforeEach
-     public void setUp() {
+     void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

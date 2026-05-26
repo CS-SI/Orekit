@@ -300,32 +300,19 @@ public class CR3BPSystem {
      */
     public Vector3D getLPosition(final LagrangianPoints lagrangianPoint) {
 
-        final Vector3D lPosition;
+        return switch (lagrangianPoint) {
 
-        switch (lagrangianPoint) {
+            case L1 -> l1Position;
 
-            case L1:
-                lPosition = l1Position;
-                break;
+            case L3 -> l3Position;
 
-            case L3:
-                lPosition = l3Position;
-                break;
+            case L4 -> l4Position;
 
-            case L4:
-                lPosition = l4Position;
-                break;
+            case L5 -> l5Position;
 
-            case L5:
-                lPosition = l5Position;
-                break;
+            default -> l2Position;
 
-            default:
-                lPosition = l2Position;
-                break;
-
-        }
-        return lPosition;
+        };
     }
 
     /**
@@ -335,26 +322,16 @@ public class CR3BPSystem {
      */
     public double getGamma(final LagrangianPoints lagrangianPoint) {
 
-        final double gamma;
+        return switch (lagrangianPoint) {
 
-        switch (lagrangianPoint) {
+            case L1 -> gamma1;
 
-            case L1:
-                gamma = gamma1;
-                break;
+            case L2 -> gamma2;
 
-            case L2:
-                gamma = gamma2;
-                break;
+            case L3 -> gamma3;
 
-            case L3:
-                gamma = gamma3;
-                break;
-
-            default:
-                gamma = 0;
-        }
-        return gamma;
+            default -> 0;
+        };
     }
 
     /** Get the PVCoordinates from normalized units to standard units in an output frame.

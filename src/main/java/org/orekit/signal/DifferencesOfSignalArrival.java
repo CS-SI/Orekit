@@ -61,14 +61,14 @@ public class DifferencesOfSignalArrival {
                                   final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
         final double primaryDelay = signalTravelTimeModel.getAdjustableEmitterComputer(emitter)
                 .computeDelay(primaryReceptionCondition, approxEmissionDate);
-        final AbsoluteDate emissionDate = primaryReceptionCondition.getReceptionDate().shiftedBy(-primaryDelay);
-        final SignalTravelTimeAdjustableReceiver signalTravelTimeAdjustableReceiver = signalTravelTimeModel
+        final AbsoluteDate emissionDate = primaryReceptionCondition.receptionDate().shiftedBy(-primaryDelay);
+        final AdjustableReceiverSignalTimer adjustableReceiverSignalTimer = signalTravelTimeModel
                 .getAdjustableReceiverComputer(secondaryReceiver);
-        final Frame frame = primaryReceptionCondition.getReferenceFrame();
+        final Frame frame = primaryReceptionCondition.referenceFrame();
         final Vector3D emissionPosition = emitter.getPosition(emissionDate, frame);
         final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emissionPosition,
                 frame);
-        final double secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionCondition,
+        final double secondaryDelay = adjustableReceiverSignalTimer.computeDelay(emissionCondition,
                 approxSecondaryReception);
         return new double[] { primaryDelay, secondaryDelay };
     }
@@ -86,14 +86,14 @@ public class DifferencesOfSignalArrival {
                                   final PVCoordinatesProvider emitter) {
         final double primaryDelay = signalTravelTimeModel.getAdjustableEmitterComputer(emitter)
                 .computeDelay(primaryReceptionCondition);
-        final AbsoluteDate emissionDate = primaryReceptionCondition.getReceptionDate().shiftedBy(-primaryDelay);
-        final SignalTravelTimeAdjustableReceiver signalTravelTimeAdjustableReceiver = signalTravelTimeModel
+        final AbsoluteDate emissionDate = primaryReceptionCondition.receptionDate().shiftedBy(-primaryDelay);
+        final AdjustableReceiverSignalTimer adjustableReceiverSignalTimer = signalTravelTimeModel
                 .getAdjustableReceiverComputer(secondaryReceiver);
-        final Frame frame = primaryReceptionCondition.getReferenceFrame();
+        final Frame frame = primaryReceptionCondition.referenceFrame();
         final Vector3D emissionPosition = emitter.getPosition(emissionDate, frame);
         final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(emissionDate, emissionPosition,
                 frame);
-        final double secondaryDelay = signalTravelTimeAdjustableReceiver.computeDelay(emissionCondition);
+        final double secondaryDelay = adjustableReceiverSignalTimer.computeDelay(emissionCondition);
         return new double[] { primaryDelay, secondaryDelay };
     }
 
@@ -112,13 +112,13 @@ public class DifferencesOfSignalArrival {
                                                                  final FieldAbsoluteDate<T> approxSecondaryReception,
                                                                  final FieldPVCoordinatesProvider<T> emitter,
                                                                  final FieldAbsoluteDate<T> approxEmissionDate) {
-        final FieldAbsoluteDate<T> receptionDate = primaryReceptionCondition.getReceptionDate();
+        final FieldAbsoluteDate<T> receptionDate = primaryReceptionCondition.receptionDate();
         final Field<T> field = receptionDate.getField();
-        final Frame frame = primaryReceptionCondition.getReferenceFrame();
+        final Frame frame = primaryReceptionCondition.referenceFrame();
         final T primaryDelay = signalTravelTimeModel.getFieldAdjustableEmitterComputer(field, emitter)
             .computeDelay(primaryReceptionCondition, approxEmissionDate);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(primaryDelay.negate());
-        final FieldSignalTravelTimeAdjustableReceiver<T> signalTravelTimeAdjustableReceiver = signalTravelTimeModel
+        final FieldAdjustableReceiverSignalTimer<T> signalTravelTimeAdjustableReceiver = signalTravelTimeModel
                 .getFieldAdjustableReceiverComputer(field, secondaryReceiver);
         final FieldVector3D<T> emissionPosition = emitter.getPosition(emissionDate, frame);
         final FieldSignalEmissionCondition<T> emissionCondition = new FieldSignalEmissionCondition<>(emissionDate,
@@ -141,13 +141,13 @@ public class DifferencesOfSignalArrival {
     public <T extends CalculusFieldElement<T>> T[] computeDelays(final FieldSignalReceptionCondition<T> primaryReceptionCondition,
                                                                  final FieldPVCoordinatesProvider<T> secondaryReceiver,
                                                                  final FieldPVCoordinatesProvider<T> emitter) {
-        final FieldAbsoluteDate<T> receptionDate = primaryReceptionCondition.getReceptionDate();
-        final Frame frame = primaryReceptionCondition.getReferenceFrame();
+        final FieldAbsoluteDate<T> receptionDate = primaryReceptionCondition.receptionDate();
+        final Frame frame = primaryReceptionCondition.referenceFrame();
         final Field<T> field = receptionDate.getField();
         final T primaryDelay = signalTravelTimeModel.getFieldAdjustableEmitterComputer(field, emitter)
                 .computeDelay(primaryReceptionCondition);
         final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(primaryDelay.negate());
-        final FieldSignalTravelTimeAdjustableReceiver<T> signalTravelTimeAdjustableReceiver = signalTravelTimeModel
+        final FieldAdjustableReceiverSignalTimer<T> signalTravelTimeAdjustableReceiver = signalTravelTimeModel
                 .getFieldAdjustableReceiverComputer(field, secondaryReceiver);
         final FieldVector3D<T> emissionPosition = emitter.getPosition(emissionDate, frame);
         final FieldSignalEmissionCondition<T> emissionCondition = new FieldSignalEmissionCondition<>(emissionDate,

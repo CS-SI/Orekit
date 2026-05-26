@@ -20,7 +20,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.special.Erf;
-import org.hipparchus.util.FastMath;;
+import org.hipparchus.util.FastMath;
 
 /** Bootstrapping engine for ILS problem solving.
  * This method is base on the following paper: <a

@@ -19,6 +19,7 @@ package org.orekit.signal;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.optim.ConvergenceChecker;
+import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
@@ -27,10 +28,10 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
  * The delay is calculated via a fixed-point algorithm with customizable settings (even enabling instantaneous transmission).
  * Note that a couple of iterations are usually enough for Earth orbits.
  * @since 14.0
- * @see SignalTravelTimeAdjustableReceiver
+ * @see AdjustableReceiverSignalTimer
  * @author Romain Serra
  */
-public class FieldSignalTravelTimeAdjustableReceiver<T extends CalculusFieldElement<T>>
+public class FieldAdjustableReceiverSignalTimer<T extends CalculusFieldElement<T>>
         extends FieldAbstractSignalTravelTime<T> {
 
     /** Position/velocity provider of emitter. */
@@ -40,7 +41,7 @@ public class FieldSignalTravelTimeAdjustableReceiver<T extends CalculusFieldElem
      * Constructor with default iteration settings.
      * @param adjustableReceiverPVProvider adjustable receiver
      */
-    public FieldSignalTravelTimeAdjustableReceiver(final FieldPVCoordinatesProvider<T> adjustableReceiverPVProvider) {
+    public FieldAdjustableReceiverSignalTimer(final FieldPVCoordinatesProvider<T> adjustableReceiverPVProvider) {
         this(adjustableReceiverPVProvider, getDefaultConvergenceChecker());
     }
 
@@ -49,10 +50,24 @@ public class FieldSignalTravelTimeAdjustableReceiver<T extends CalculusFieldElem
      * @param adjustableReceiverPVProvider adjustable receiver
      * @param convergenceChecker convergence checker for fixed-point algorithm
      */
-    public FieldSignalTravelTimeAdjustableReceiver(final FieldPVCoordinatesProvider<T> adjustableReceiverPVProvider,
-                                                   final ConvergenceChecker<T> convergenceChecker) {
+    public FieldAdjustableReceiverSignalTimer(final FieldPVCoordinatesProvider<T> adjustableReceiverPVProvider,
+                                              final ConvergenceChecker<T> convergenceChecker) {
         super(convergenceChecker);
         this.adjustableReceiverPVProvider = adjustableReceiverPVProvider;
+    }
+
+
+    /** Compute signal reception condition on a link leg (typically downlink or uplink).
+     * @param emissionCondition signal emission conditions
+     * @param approxReceptionDate approximate reception date
+     * @return reception condition
+     */
+    public FieldSignalReceptionCondition<T> computeReceptionCondition(final FieldSignalEmissionCondition<T> emissionCondition,
+                                                                      final FieldAbsoluteDate<T> approxReceptionDate) {
+        final T delay = computeDelay(emissionCondition, approxReceptionDate);
+        final FieldAbsoluteDate<T> receptionDate = approxReceptionDate.shiftedBy(delay);
+        final Frame frame = emissionCondition.referenceFrame();
+        return new FieldSignalReceptionCondition<>(receptionDate, adjustableReceiverPVProvider.getPosition(receptionDate, frame), frame);
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
@@ -60,10 +75,10 @@ public class FieldSignalTravelTimeAdjustableReceiver<T extends CalculusFieldElem
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
     public T computeDelay(final FieldSignalEmissionCondition<T> emissionCondition) {
-        final FieldAbsoluteDate<T> emissionDate = emissionCondition.getEmissionDate();
+        final FieldAbsoluteDate<T> emissionDate = emissionCondition.emissionDate();
         final FieldVector3D<T> receiverPosition = adjustableReceiverPVProvider.getPosition(emissionDate,
-                emissionCondition.getReferenceFrame());
-        final T distance = receiverPosition.subtract(emissionCondition.getEmitterPosition()).getNorm();
+                emissionCondition.referenceFrame());
+        final T distance = receiverPosition.subtract(emissionCondition.emitterPosition()).getNorm();
         final FieldAbsoluteDate<T> approxReceptionDate = emissionDate.shiftedBy(distance.multiply(C_RECIPROCAL));
         return computeDelay(emissionCondition, approxReceptionDate);
     }
@@ -76,10 +91,10 @@ public class FieldSignalTravelTimeAdjustableReceiver<T extends CalculusFieldElem
     public T computeDelay(final FieldSignalEmissionCondition<T> emissionCondition,
                           final FieldAbsoluteDate<T> approxReceptionDate) {
         // initialize reception date search loop assuming the state is already correct
-        final T offset = approxReceptionDate.durationFrom(emissionCondition.getEmissionDate());
+        final T offset = approxReceptionDate.durationFrom(emissionCondition.emissionDate());
 
-        return compute(adjustableReceiverPVProvider, offset, emissionCondition.getEmitterPosition(), approxReceptionDate,
-                emissionCondition.getReferenceFrame());
+        return compute(adjustableReceiverPVProvider, offset, emissionCondition.emitterPosition(), approxReceptionDate,
+                emissionCondition.referenceFrame());
     }
 
     @Override

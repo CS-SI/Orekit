@@ -91,7 +91,7 @@ public class FieldTransformGenerator<T extends CalculusFieldElement<T>> implemen
                 // backward generation
                 do {
                     t = t.shiftedBy(-step);
-                    generated.add(0, provider.getTransform(t));
+                    generated.addFirst(provider.getTransform(t));
                 } while (t.compareTo(fieldDate) >= 0);
             }
 

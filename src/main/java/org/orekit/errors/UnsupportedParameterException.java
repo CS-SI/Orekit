@@ -16,6 +16,7 @@
  */
 package org.orekit.errors;
 
+import java.io.Serial;
 import java.util.List;
 
 import org.orekit.utils.ParameterDriver;
@@ -36,6 +37,7 @@ public class UnsupportedParameterException extends OrekitException {
     public static final String COMMA_SEP = ", ";
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID =  -1363569710782876135L;
 
     /** Constructor.

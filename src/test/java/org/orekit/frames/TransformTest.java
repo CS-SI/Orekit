@@ -1135,7 +1135,7 @@ class TransformTest {
              dt.compareTo(TimeOffset.MILLISECOND.multiply(3100)) < 0;
              dt = dt.add(TimeOffset.MILLISECOND.multiply(100))) {
             Transform reference = evolvingTransform(t0, dt);
-            Transform interpolated = sample.get(0).interpolate(reference.getDate(), sample.stream());
+            Transform interpolated = sample.getFirst().interpolate(reference.getDate(), sample.stream());
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
             Assertions.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           2.0e-15);
             Assertions.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           6.0e-15);

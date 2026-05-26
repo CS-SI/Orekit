@@ -29,8 +29,12 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.LazyLoadedDataContext;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -207,18 +211,31 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     void testInpopvsJPL() {
-        Utils.setDataRoot("regular-data:inpop");
+        // EMW 2026-03-31 Modified to separate data contexts to prevent one
+        // file's ICRF from being used as the basis for another file's Mars
+        final LazyLoadedDataContext jpl = Utils.newDataContext("regular-data");
+        jpl.getCelestialBodies().addDefaultCelestialBodyLoader("^unxp(\\d\\d\\d\\d)\\.405$");
+        final LazyLoadedDataContext inpopTdb = Utils.newDataContext("inpop");
+        inpopTdb.getCelestialBodies().addDefaultCelestialBodyLoader("^inpop.*_TDB_.*_bigendian\\.dat$");
+        final LazyLoadedDataContext inpopTcb = Utils.newDataContext("inpop");
+        inpopTcb.getCelestialBodies().addDefaultCelestialBodyLoader("^inpop.*_TCB_.*_bigendian\\.dat$");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
-        JPLEphemeridesLoader loaderDE405 =
-                new JPLEphemeridesLoader("^unxp(\\d\\d\\d\\d)\\.405$", type);
-        CelestialBody bodysDE405 = loaderDE405.loadCelestialBody(CelestialBodyFactory.MARS);
+        CelestialBody bodysDE405 = jpl.getCelestialBodies().getMars();
         JPLEphemeridesLoader loaderInpopTDBBig =
-                new JPLEphemeridesLoader("^inpop.*_TDB_.*_bigendian\\.dat$", type);
-        CelestialBody bodysInpopTDBBig = loaderInpopTDBBig.loadCelestialBody(CelestialBodyFactory.MARS);
+                new JPLEphemeridesLoader("^inpop.*_TDB_.*_bigendian\\.dat$", type,
+                        inpopTdb.getDataProvidersManager(),
+                        inpopTdb.getTimeScales(),
+                        inpopTdb.getFrames().getGCRF(),
+                        inpopTdb.getCelestialBodies());
+        CelestialBody bodysInpopTDBBig = inpopTdb.getCelestialBodies().getMars();
         Assertions.assertEquals(0.0, loaderInpopTDBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         JPLEphemeridesLoader loaderInpopTCBBig =
-                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type);
-        CelestialBody bodysInpopTCBBig = loaderInpopTCBBig.loadCelestialBody(CelestialBodyFactory.MARS);
+                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type,
+                        inpopTcb.getDataProvidersManager(),
+                        inpopTcb.getTimeScales(),
+                        inpopTcb.getFrames().getGCRF(),
+                        inpopTcb.getCelestialBodies());
+        CelestialBody bodysInpopTCBBig = inpopTcb.getCelestialBodies().getMars();
         Assertions.assertEquals(1.0, loaderInpopTCBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         AbsoluteDate t0 = new AbsoluteDate(1969, 7, 17, 10, 43, 23.4, TimeScalesFactory.getTT());
         Frame eme2000   = FramesFactory.getEME2000();
@@ -305,6 +322,31 @@ public class JPLEphemeridesLoaderTest {
         MatcherAssert.assertThat(nChecked, Matchers.is(11));
     }
 
+    /**
+     * Test parsing of 2021 format against a truncated version of de440-ephemerides.
+     *
+     * @param ephemerisType type of ephemeris to load.
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/work_items/1938">Issue 1938</a>
+     */
+    @ParameterizedTest
+    @EnumSource(JPLEphemeridesLoader.EphemerisType.class)
+    public void Test2021FormatParsing(final JPLEphemeridesLoader.EphemerisType ephemerisType) {
+
+        // GIVEN
+        Utils.setDataRoot("regular-data/de440-ephemerides");
+
+        // WHEN
+        JPLEphemeridesLoader loaderWithout2021Format =
+                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES, ephemerisType);
+
+        JPLEphemeridesLoader loaderWith2021Format =
+                        new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_2021_SUPPORTED_NAMES, ephemerisType);
+
+        // THEN
+        Assertions.assertThrows(OrekitException.class, loaderWithout2021Format::getLoadedAstronomicalUnit);
+        Assertions.assertDoesNotThrow(loaderWith2021Format::getLoadedAstronomicalUnit);
+    }
+
     @Test
     void testJPLLoadLibration() {
         Utils.setDataRoot("regular-data/de431-ephemerides");
@@ -338,9 +380,10 @@ public class JPLEphemeridesLoaderTest {
 
         int i = 0;
         // 431  1999.12.01 2451513.5  8 11  2      -23.03253618370120000000
-        try(InputStream is = this.getClass().getResourceAsStream(name)) {
-            final Scanner scanner = new Scanner(is, "UTF-8");
-            scanner.useLocale(Locale.US);
+        try(InputStream is = this.getClass().getResourceAsStream(name);
+            final Scanner scanner = new Scanner(is, "UTF-8"))
+        {
+            scanner.useLocale(Locale.ROOT);
             while (scanner.hasNext()) {
                 final int version = scanner.nextInt();
                 final String dateString = scanner.next().replace('.', '-');
@@ -436,37 +479,22 @@ public class JPLEphemeridesLoaderTest {
                        12-Solar System Barycenter, 13-Earth-Moon Barycenter
                        14-Nutations, 15-Librations)
          */
-        switch (body) {
-            case 1:
-                return CelestialBodyFactory.MERCURY;
-            case 2:
-                return CelestialBodyFactory.VENUS;
-            case 3:
-                return CelestialBodyFactory.EARTH;
-            case 4:
-                return CelestialBodyFactory.MARS;
-            case 5:
-                return CelestialBodyFactory.JUPITER;
-            case 6:
-                return CelestialBodyFactory.SATURN;
-            case 7:
-                return CelestialBodyFactory.URANUS;
-            case 8:
-                return CelestialBodyFactory.NEPTUNE;
-            case 9:
-                return CelestialBodyFactory.PLUTO;
-            case 10:
-                return CelestialBodyFactory.MOON;
-            case 11:
-                return CelestialBodyFactory.SUN;
-            case 12:
-                return CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER;
-            case 13:
-                return CelestialBodyFactory.EARTH_MOON;
-            default:
-                // nutations and librations not implemented
-                return null;
-        }
+        return switch (body) {
+            case 1 -> CelestialBodyFactory.MERCURY;
+            case 2 -> CelestialBodyFactory.VENUS;
+            case 3 -> CelestialBodyFactory.EARTH;
+            case 4 -> CelestialBodyFactory.MARS;
+            case 5 -> CelestialBodyFactory.JUPITER;
+            case 6 -> CelestialBodyFactory.SATURN;
+            case 7 -> CelestialBodyFactory.URANUS;
+            case 8 -> CelestialBodyFactory.NEPTUNE;
+            case 9 -> CelestialBodyFactory.PLUTO;
+            case 10 -> CelestialBodyFactory.MOON;
+            case 11 -> CelestialBodyFactory.SUN;
+            case 12 -> CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER;
+            case 13 -> CelestialBodyFactory.EARTH_MOON;
+            default -> null;
+        };
     }
 
     private void checkDerivative(String supportedNames, AbsoluteDate date, double maxChunkDuration)

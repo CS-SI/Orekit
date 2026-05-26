@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 /** Container associating a name with a stream or reader that can be opened <em>lazily</em>.
  * <p>
@@ -90,7 +90,7 @@ public class DataSource {
      * @since 11.0
      */
     public DataSource(final String fileName) {
-        this(Paths.get(fileName).toFile());
+        this(Path.of(fileName).toFile());
     }
 
     /** Build an instance from a file on the local file system.
@@ -106,7 +106,7 @@ public class DataSource {
      * @since 11.0
      */
     public DataSource(final URI uri) {
-        this(Paths.get(uri).toFile());
+        this(Path.of(uri).toFile());
     }
 
     /** Get the name of the data.
@@ -209,32 +209,32 @@ public class DataSource {
 
     }
 
-    /** Opener based on a binary stream. */
-    private static class BinaryBasedOpener implements Opener {
+    /**
+     * Opener based on a binary stream.
+     *
+     * @param streamOpener Opener for the data stream.
+     */
+    private record BinaryBasedOpener(StreamOpener streamOpener) implements Opener {
 
-        /** Opener for the data stream. */
-        private final StreamOpener streamOpener;
-
-        /** Simple constructor.
-         * @param streamOpener opener for the data stream
+        /**
+         * {@inheritDoc}
          */
-        BinaryBasedOpener(final StreamOpener streamOpener) {
-            this.streamOpener = streamOpener;
-        }
-
-        /** {@inheritDoc} */
         @Override
         public boolean rawDataIsBinary() {
             return true;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public InputStream openStreamOnce() throws IOException {
             return streamOpener.openOnce();
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Reader openReaderOnce() throws IOException {
             // convert bytes to characters
@@ -244,29 +244,29 @@ public class DataSource {
 
     }
 
-    /** Opener based on a reader. */
-    private static class ReaderBasedOpener implements Opener {
+    /**
+     * Opener based on a reader.
+     *
+     * @param readerOpener Opener for characters reader.
+     */
+    private record ReaderBasedOpener(ReaderOpener readerOpener) implements Opener {
 
-        /** Size of the characters buffer. */
+        /**
+         * Size of the characters buffer.
+         */
         private static final int BUFFER_SIZE = 4096;
 
-        /** Opener for characters reader. */
-        private final ReaderOpener readerOpener;
-
-        /** Simple constructor.
-         * @param readerOpener opener for characters reader
+        /**
+         * {@inheritDoc}
          */
-        ReaderBasedOpener(final ReaderOpener readerOpener) {
-            this.readerOpener = readerOpener;
-        }
-
-        /** {@inheritDoc} */
         @Override
         public boolean rawDataIsBinary() {
             return false;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public InputStream openStreamOnce() throws IOException {
 
@@ -310,7 +310,9 @@ public class DataSource {
             };
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Reader openReaderOnce() throws IOException {
             return readerOpener.openOnce();

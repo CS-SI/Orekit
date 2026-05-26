@@ -80,7 +80,7 @@ abstract class MeasurementLog<T extends ObservedMeasurement<T>> implements Evalu
             final StreamingStatistics stats = createStatisticsSummary();
 
             // Display statistics
-            final String name = evaluations.first().getObservedMeasurement().getClass().getSimpleName();
+            final String name = evaluations.getFirst().getObservedMeasurement().getClass().getSimpleName();
             logStream.println("Measurements type: " + name);
             logStream.println("   number of measurements: " + stats.getN() + "/" + evaluations.size());
             logStream.println("   residuals min  value  : " + stats.getMin());

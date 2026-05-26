@@ -413,7 +413,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
             try {
                 // ensure we are notified of any mu change
-                force.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
+                force.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {

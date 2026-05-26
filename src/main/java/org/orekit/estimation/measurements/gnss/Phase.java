@@ -34,10 +34,10 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -168,7 +168,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         final PVCoordinatesProvider pvCoordinatesProvider = AbstractParticipant.extractPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay / determine time of emission of signal by ObservableSatellite
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel()
+        final AdjustableEmitterSignalTimer signalTimeOfFlight = getSignalTravelTimeModel()
                 .getAdjustableEmitterComputer(pvCoordinatesProvider);
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(downlinkDate,
                 satelliteDownlink.getPosition(), frame);
@@ -189,9 +189,10 @@ public class Phase extends SignalBasedMeasurement<Phase> {
                                                        });
 
         // Clock offsets
-        final ObservableSatellite satellite = getSatellites().get(0);
-        final double              dts       = satellite.getClockBiasDriver().getValue(state.getDate());
-        final double              dtg       = getObserver().getClockBiasDriver().getValue(getDate());
+        final ObservableSatellite satellite = getSatellites().getFirst();
+
+        final double dts = satellite.getOffsetValue(state.getDate());
+        final double dtg = getObserver().getOffsetValue(getDate());
 
         // Phase value
         final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
@@ -234,7 +235,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, fieldPVCoordinatesProvider);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(downlinkDate,
                 satelliteDownlink.getPosition(), frame);
@@ -256,9 +257,10 @@ public class Phase extends SignalBasedMeasurement<Phase> {
                                         satelliteDownlink.toTimeStampedPVCoordinates()});
 
         // Clock offsets
-        final ObservableSatellite satellite = getSatellites().get(0);
-        final Gradient            dts       = satellite.getClockBiasDriver().getValue(nbParams, paramIndices, state.getDate());
-        final Gradient            dtg       = getObserver().getClockBiasDriver().getValue(nbParams, paramIndices, getDate());
+        final ObservableSatellite satellite = getSatellites().getFirst();
+
+        final Gradient dts = satellite.getFieldOffsetValue(nbParams, state.getDate(), paramIndices);
+        final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, getDate(), paramIndices);
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;

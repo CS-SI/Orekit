@@ -657,32 +657,20 @@ public class BatchLSEstimator implements ParameterEstimator {
 
     }
 
-    /** Validator for estimated parameters. */
-    private static class Validator implements ParameterValidator {
+    /**
+     * Validator for estimated parameters.
+     *
+     * @param estimatedOrbitalParameters      Estimated orbital parameters.
+     * @param estimatedPropagatorParameters   Estimated propagator parameters.
+     * @param estimatedMeasurementsParameters Estimated measurements parameters.
+     */
+    private record Validator(ParameterDriversList estimatedOrbitalParameters,
+                             ParameterDriversList estimatedPropagatorParameters,
+                             ParameterDriversList estimatedMeasurementsParameters) implements ParameterValidator {
 
-        /** Estimated orbital parameters. */
-        private final ParameterDriversList estimatedOrbitalParameters;
-
-        /** Estimated propagator parameters. */
-        private final ParameterDriversList estimatedPropagatorParameters;
-
-        /** Estimated measurements parameters. */
-        private final ParameterDriversList estimatedMeasurementsParameters;
-
-        /** Simple constructor.
-         * @param estimatedOrbitalParameters estimated orbital parameters
-         * @param estimatedPropagatorParameters estimated propagator parameters
-         * @param estimatedMeasurementsParameters estimated measurements parameters
+        /**
+         * {@inheritDoc}
          */
-        Validator(final ParameterDriversList estimatedOrbitalParameters,
-                  final ParameterDriversList estimatedPropagatorParameters,
-                  final ParameterDriversList estimatedMeasurementsParameters) {
-            this.estimatedOrbitalParameters      = estimatedOrbitalParameters;
-            this.estimatedPropagatorParameters   = estimatedPropagatorParameters;
-            this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
-        }
-
-        /** {@inheritDoc} */
         @Override
         public RealVector validate(final RealVector params) {
             int i = updateParameterValuesAndDrivers(params, estimatedOrbitalParameters, 0);
@@ -693,9 +681,10 @@ public class BatchLSEstimator implements ParameterEstimator {
 
         /**
          * Method updating the parameters' drivers and values, whilst keeping track of their index.
-         * @param params parameters value
+         *
+         * @param params               parameters value
          * @param parameterDriversList drivers
-         * @param startIndex index of first component to consider
+         * @param startIndex           index of first component to consider
          * @return index of last considered component
          * @since 14.0
          */

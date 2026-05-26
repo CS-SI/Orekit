@@ -71,9 +71,8 @@ class IAUPoleFactory {
      * for barycenters
      */
     public static OldIAUPole getIAUPole(final JPLEphemeridesLoader.EphemerisType body) {
-        switch (body) {
-            case SUN:
-                return new OldIAUPole() {
+        return switch (body) {
+            case SUN -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 5715331729495237139L;
@@ -90,8 +89,7 @@ class IAUPoleFactory {
                     }
 
                 };
-            case MERCURY:
-                return new OldIAUPole() {
+            case MERCURY -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = -5769710119654037007L;
@@ -129,8 +127,7 @@ class IAUPoleFactory {
                         };
                     }
                 };
-            case VENUS:
-                return new OldIAUPole() {
+            case VENUS -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 7030506277976648896L;
@@ -147,8 +144,7 @@ class IAUPoleFactory {
                     }
 
                 };
-            case EARTH:
-                return new OldIAUPole() {
+            case EARTH -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 6912325697192667056L;
@@ -166,8 +162,7 @@ class IAUPoleFactory {
                     }
 
                 };
-            case MOON:
-                return new OldIAUPole() {
+            case MOON -> new OldIAUPole() {
 
 
                     /** Serializable UID. */
@@ -225,8 +220,7 @@ class IAUPoleFactory {
                     }
 
                 };
-            case MARS:
-                return new OldIAUPole() {
+            case MARS -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 1471983418540015411L;
@@ -244,8 +238,7 @@ class IAUPoleFactory {
                     }
 
                 };
-            case JUPITER:
-                return new OldIAUPole() {
+            case JUPITER -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 6959753758673537524L;
@@ -280,8 +273,7 @@ class IAUPoleFactory {
                     }
 
                 };
-            case SATURN:
-                return new OldIAUPole() {
+            case SATURN -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = -1082211873912149774L;
@@ -299,8 +291,7 @@ class IAUPoleFactory {
                     }
 
                 };
-            case URANUS:
-                return new OldIAUPole() {
+            case URANUS -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 362792230470085154L;
@@ -317,8 +308,7 @@ class IAUPoleFactory {
                     }
 
                 };
-            case NEPTUNE:
-                return new OldIAUPole() {
+            case NEPTUNE -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 560614555734665287L;
@@ -337,8 +327,7 @@ class IAUPoleFactory {
                     }
 
                 };
-            case PLUTO:
-                return new OldIAUPole() {
+            case PLUTO -> new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = -1277113129327018062L;
@@ -355,9 +344,8 @@ class IAUPoleFactory {
                     }
 
                 };
-            default:
-                return new GCRFAligned();
-        }
+            default -> new GCRFAligned();
+        };
     }
 
     /** Compute the interval in julian centuries from standard epoch.

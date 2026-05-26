@@ -93,7 +93,7 @@ public class IIRVSegment implements EphemerisFile.EphemerisSegment<TimeStampedPV
     @Override
     @DefaultDataContext
     public Frame getFrame() {
-        return iirvMessage.getVectors().get(0).getFrame();
+        return iirvMessage.getVectors().getFirst().getFrame();
     }
 
     /** {@inheritDoc} */
@@ -111,7 +111,7 @@ public class IIRVSegment implements EphemerisFile.EphemerisSegment<TimeStampedPV
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return getCoordinates().get(0).getDate();
+        return getCoordinates().getFirst().getDate();
     }
 
     /** {@inheritDoc} */
@@ -127,7 +127,7 @@ public class IIRVSegment implements EphemerisFile.EphemerisSegment<TimeStampedPV
         final List<IIRVVector> iirvVectors = iirvMessage.getVectors();
 
         final ArrayList<TimeStampedPVCoordinates> coordinates = new ArrayList<>();
-        coordinates.add(iirvVectors.get(0).getTimeStampedPVCoordinates(year));
+        coordinates.add(iirvVectors.getFirst().getTimeStampedPVCoordinates(year));
 
         for (int i = 1; i < iirvVectors.size(); i++) {
             final IIRVVector prev = iirvVectors.get(i - 1);

@@ -17,6 +17,9 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
+import java.io.Serial;
+
+
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
@@ -51,6 +54,7 @@ public class CssiSpaceWeatherData extends AbstractSolarActivityData<LineParamete
     public static final String DEFAULT_SUPPORTED_NAMES = "^S(?:pace)?W(?:eather)?-(?:All)?.*\\.txt$";
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 4249411710645968978L;
 
     /** Date of last data before the prediction starts. */

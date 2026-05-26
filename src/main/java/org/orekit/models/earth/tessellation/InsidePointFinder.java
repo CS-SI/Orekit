@@ -89,7 +89,7 @@ class InsidePointFinder implements BSPTreeVisitor<Sphere2D, S2Point, Circle, Sub
 
             // extract the start of the single loop boundary of the convex cell
             final List<Vertex> boundary = convex.getBoundaryLoops();
-            final Vertex start = boundary.get(0);
+            final Vertex start = boundary.getFirst();
             int n = 0;
 
             // Initialize centroid coordinates

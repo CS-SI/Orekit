@@ -21,11 +21,13 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -70,13 +72,16 @@ public abstract class AdmParser<T extends NdmConstituent<AdmHeader, ?>, P extend
      * (may be null if time system is absolute)
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
-     * @since 12.0
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
     protected AdmParser(final String root, final String formatVersionKey, final IERSConventions conventions,
                         final boolean simpleEOP, final DataContext dataContext,
                         final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior,
-                        final Function<ParseToken, List<ParseToken>>[] filters) {
-        super(root, formatVersionKey, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
+                        final Function<ParseToken, List<ParseToken>>[] filters,
+                        final CcsdsFrameMapper frameMapper) {
+        super(root, formatVersionKey, conventions, simpleEOP, dataContext,
+                parsedUnitsBehavior, filters, frameMapper);
         this.missionReferenceDate = missionReferenceDate;
     }
 

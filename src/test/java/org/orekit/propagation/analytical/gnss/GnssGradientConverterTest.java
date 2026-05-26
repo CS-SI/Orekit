@@ -142,7 +142,7 @@ class GnssGradientConverterTest {
 
         // harvester sorts the columns lexicographically, and wraps them as SpanXxx##
         Assertions.assertEquals(2, harvester.getJacobiansColumnsNames().size());
-        Assertions.assertEquals("Span" + CommonGnssData.RADIUS_COSINE + "0", harvester.getJacobiansColumnsNames().get(0));
+        Assertions.assertEquals("Span" + CommonGnssData.RADIUS_COSINE + "0", harvester.getJacobiansColumnsNames().getFirst());
         Assertions.assertEquals("Span" + CommonGnssData.RADIUS_SINE   + "0", harvester.getJacobiansColumnsNames().get(1));
 
         // propagate orbit

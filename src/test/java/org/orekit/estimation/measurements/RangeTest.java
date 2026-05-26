@@ -23,6 +23,8 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
@@ -40,6 +42,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -58,21 +61,23 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.AdjustableReceiverSignalTimer;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldAdjustableReceiverSignalTimer;
 import org.orekit.signal.FieldSignalEmissionCondition;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableReceiver;
 import org.orekit.signal.SignalEmissionCondition;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
-import org.orekit.signal.SignalTravelTimeAdjustableReceiver;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.QuadraticFieldClockModel;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -80,8 +85,14 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class RangeTest {
 
@@ -217,7 +228,7 @@ class RangeTest {
     }
 
     @Test
-    public void testSignalTimeOfFlight() {
+    void testSignalTimeOfFlight() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -245,7 +256,7 @@ class RangeTest {
             // adjust emitter, double version
             final TimeStampedPVCoordinates staPV = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).
                                                    transformPVCoordinates(new TimeStampedPVCoordinates(datemeas, PVCoordinates.ZERO));
-            final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(state.getOrbit());
+            final AdjustableEmitterSignalTimer signalTimeOfFlight = new AdjustableEmitterSignalTimer(state.getOrbit());
             final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(datemeas, staPV.getPosition(), state.getFrame());
             final double    downDelayE = signalTimeOfFlight.computeDelay(receptionCondition, state.getDate());
             final Vector3D satPosE = propagator2.propagate(datemeas.shiftedBy(-downDelayE)).getPosition();
@@ -256,7 +267,7 @@ class RangeTest {
             final FieldAbsoluteDate<Binary64> datemeasF = new FieldAbsoluteDate<>(field, datemeas);
             final FieldSpacecraftState<Binary64> stateF = new FieldSpacecraftState<>(field, state);
             final TimeStampedFieldPVCoordinates<Binary64> staPVF = new TimeStampedFieldPVCoordinates<>(field, staPV);
-            final FieldSignalTravelTimeAdjustableEmitter<Binary64> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(new FieldAbsolutePVCoordinates<>(stateF.getFrame(), stateF.getPVCoordinates()));
+            final FieldAdjustableEmitterSignalTimer<Binary64> fieldComputer = new FieldAdjustableEmitterSignalTimer<>(new FieldAbsolutePVCoordinates<>(stateF.getFrame(), stateF.getPVCoordinates()));
             final FieldSignalReceptionCondition<Binary64> fieldSignalReceptionCondition = new FieldSignalReceptionCondition<>(datemeasF,
                     staPVF.getPosition(), state.getFrame());
             final Binary64    downDelayEF = fieldComputer.computeDelay(fieldSignalReceptionCondition, staPVF.getDate());
@@ -267,7 +278,7 @@ class RangeTest {
                                     2.0e-7);
 
             // adjust receiver, double version
-            final SignalTravelTimeAdjustableReceiver computer = new SignalTravelTimeAdjustableReceiver(new AbsolutePVCoordinates(state.getFrame(), staPV));
+            final AdjustableReceiverSignalTimer computer = new AdjustableReceiverSignalTimer(new AbsolutePVCoordinates(state.getFrame(), staPV));
             final SignalEmissionCondition emissionCondition = new SignalEmissionCondition(datemeas, state.getPosition(), state.getFrame());
             final double    downDelayR = computer.computeDelay(emissionCondition, state.getDate());
             final Vector3D staPosR = stationParameter.
@@ -277,7 +288,7 @@ class RangeTest {
                                     downDelayR * Constants.SPEED_OF_LIGHT, 2.0e-7);
 
             // adjust receiver, field version
-            final FieldSignalTravelTimeAdjustableReceiver<Binary64> fieldAdjustableReceiverComputer = new FieldSignalTravelTimeAdjustableReceiver<>(new FieldAbsolutePVCoordinates<Binary64>(state.getFrame(),
+            final FieldAdjustableReceiverSignalTimer<Binary64> fieldAdjustableReceiverComputer = new FieldAdjustableReceiverSignalTimer<>(new FieldAbsolutePVCoordinates<Binary64>(state.getFrame(),
                     staPVF));
             final FieldSignalEmissionCondition<Binary64> fieldSignalEmissionCondition = new FieldSignalEmissionCondition<>(datemeasF,
                     stateF.getPosition(), state.getFrame());
@@ -397,7 +408,7 @@ class RangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -436,7 +447,7 @@ class RangeTest {
         Assertions.assertEquals(0.0, relErrorsMax,    3.0e-14);
 
         // Test measurement type
-        Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
@@ -556,7 +567,7 @@ class RangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -708,7 +719,7 @@ class RangeTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
@@ -773,7 +784,7 @@ class RangeTest {
                         driver.setSelected(true);
                     }
 
-                    parameters.get(0).setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
+                    parameters.getFirst().setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
                     final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(tropoModel);
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
@@ -790,7 +801,7 @@ class RangeTest {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        parameters.get(0)
+                        parameters.getFirst()
                     };
 
                     if (printResults) {
@@ -850,7 +861,7 @@ class RangeTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
@@ -871,6 +882,43 @@ class RangeTest {
         Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
         Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
 
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testGetPVCoordinatesProvider(final boolean twoWay) {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final Observer mockedObserver = mockObserverWithException(epoch);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN & THEN
+        final Range range = new Range(mockedObserver, twoWay, epoch, 0., 1., 1., satellite);
+        assertDoesNotThrow(() -> range.estimate(0, 0, state));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Observer mockObserverWithException(final AbsoluteDate epoch) {
+        final Observer observer = mock();
+        final GradientField field = GradientField.getField(6);
+        final Gradient zero = field.getZero();
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, epoch);
+        when(observer.getQuadraticFieldClock(anyInt(), any(), anyMap())).thenReturn(new QuadraticFieldClockModel<>(fieldDate, zero, zero, zero));
+        when(observer.getFieldOffsetValue(anyInt(), any(), anyMap())).thenReturn(zero);
+        when(observer.getPVCoordinatesProvider()).thenReturn(new AbsolutePVCoordinates(FramesFactory.getEME2000(), epoch, PVCoordinates.ZERO));
+        final FieldPVCoordinatesProvider<Gradient> provider = mock(FieldPVCoordinatesProvider.class);
+        when(provider.getPosition(any(FieldAbsoluteDate.class), any(Frame.class))).thenReturn(FieldVector3D.getZero(field));
+        when(provider.getPVCoordinates(any(FieldAbsoluteDate.class), any(Frame.class)))
+                .thenThrow(mock(OrekitException.class));  // for performance, this should not be called
+        when(observer.getFieldPVCoordinatesProvider(anyInt(), anyMap())).thenReturn(provider);
+        return observer;
     }
 
     @ParameterizedTest

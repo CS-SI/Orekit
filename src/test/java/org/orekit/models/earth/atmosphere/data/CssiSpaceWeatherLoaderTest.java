@@ -19,11 +19,6 @@
 package org.orekit.models.earth.atmosphere.data;
 
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Timeout.ThreadMode.SEPARATE_THREAD;
-import static org.orekit.OrekitMatchers.closeTo;
-import static org.orekit.OrekitMatchers.pvCloseTo;
-
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,7 +30,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -79,6 +73,10 @@ import org.orekit.time.TimeStampedDouble;
 import org.orekit.utils.Constants;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.IERSConventions;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Timeout.ThreadMode.SEPARATE_THREAD;
+import static org.orekit.OrekitMatchers.closeTo;
+import static org.orekit.OrekitMatchers.pvCloseTo;
 
 /**
  *
@@ -406,8 +404,7 @@ public class CssiSpaceWeatherLoaderTest {
         try {
             service.invokeAll(tasks);
             results.get().sort(Comparator.comparing(TimeStampedDouble::getDate));
-            final List<Double> sortedComputedResults = results.get().stream().map(TimeStampedDouble::getValue).collect(
-                    Collectors.toList());
+            final List<Double> sortedComputedResults = results.get().stream().map(TimeStampedDouble::getValue).toList();
 
             // Compare to expected result
             for (int i = 0; i < sampleSize + 1; i++) {

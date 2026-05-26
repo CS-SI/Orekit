@@ -76,7 +76,7 @@ class SecondaryEventLoggerTest {
         // THEN
         final List<Pair<AbsolutePVCoordinates, PVCoordinates>> logs = secondaryEventLogger.copyLogs();
         Assertions.assertEquals(1, logs.size());
-        final Pair<AbsolutePVCoordinates, PVCoordinates> log = logs.get(0);
+        final Pair<AbsolutePVCoordinates, PVCoordinates> log = logs.getFirst();
         Assertions.assertEquals(state.getDate(), log.getKey().getDate());
     }
 
@@ -95,7 +95,7 @@ class SecondaryEventLoggerTest {
         // WHEN
         secondaryEventLogger.eventOccurred(primaryState, detector, true);
         // THEN
-        final Pair<AbsolutePVCoordinates, PVCoordinates> log = secondaryEventLogger.copyLogs().get(0);
+        final Pair<AbsolutePVCoordinates, PVCoordinates> log = secondaryEventLogger.copyLogs().getFirst();
         final AbsolutePVCoordinates primaryPVCoordinates = log.getKey();
         final PVCoordinates secondaryPVCoordinates = log.getValue();
         Assertions.assertEquals(primaryState.getDate(), primaryPVCoordinates.getDate());
@@ -149,7 +149,7 @@ class SecondaryEventLoggerTest {
         // THEN
         final List<Pair<AbsolutePVCoordinates, PVCoordinates>> logs = secondaryEventLogger.copyLogs();
         Assertions.assertEquals(1, logs.size());
-        final Pair<AbsolutePVCoordinates, PVCoordinates> log = logs.get(0);
+        final Pair<AbsolutePVCoordinates, PVCoordinates> log = logs.getFirst();
         Assertions.assertEquals(state.getDate(), log.getKey().getDate());
     }
 

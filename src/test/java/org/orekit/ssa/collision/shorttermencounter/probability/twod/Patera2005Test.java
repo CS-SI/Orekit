@@ -371,10 +371,12 @@ class Patera2005Test {
         Assertions.assertEquals(1.0038e-1, result.getValue(), 1e-5);
     }
 
-    @Disabled("Alfano test case 5 (Patera2005 method) : This test is numerically unstable and is ignored as it doesn't " +
-            "use realistic values. More info about this case in Romain SERRA thesis : \"Romain Serra. Opérations de proximité en orbite :\n"
-            + " * évaluation du risque de collision et calcul de manoeuvres optimales pour l’évitement et le rendez-vous. Automatique /\n"
-            + " * Robotique. INSA de Toulouse, 2015. Français. NNT : 2015ISAT0035. tel-01261497\"")
+    @Disabled("""
+            Alfano test case 5 (Patera2005 method) : This test is numerically unstable and is ignored as it doesn't \
+            use realistic values. More info about this case in Romain SERRA thesis : "Romain Serra. Opérations de proximité en orbite :
+             * évaluation du risque de collision et calcul de manoeuvres optimales pour l’évitement et le rendez-vous. Automatique /
+             * Robotique. INSA de Toulouse, 2015. Français. NNT : 2015ISAT0035. tel-01261497"\
+            """)
     @Test
     @DisplayName("Alfano test case 5")
     void AlfanoTestCase5() {
@@ -770,11 +772,12 @@ class Patera2005Test {
     }
 
     @Disabled(
-            "Alfano test case 5 (field version) (Patera2005 method) : This test is numerically unstable and is ignored as it doesn't "
-                    +
-                    "use realistic values. More info about this case in Romain SERRA thesis : \"Romain Serra. Opérations de proximité en orbite :\n"
-                    + " * évaluation du risque de collision et calcul de manoeuvres optimales pour l’évitement et le rendez-vous. Automatique /\n"
-                    + " * Robotique. INSA de Toulouse, 2015. Français. NNT : 2015ISAT0035. tel-01261497\"")
+            """
+            Alfano test case 5 (field version) (Patera2005 method) : This test is numerically unstable and is ignored as it doesn't \
+            use realistic values. More info about this case in Romain SERRA thesis : "Romain Serra. Opérations de proximité en orbite :
+             * évaluation du risque de collision et calcul de manoeuvres optimales pour l’évitement et le rendez-vous. Automatique /
+             * Robotique. INSA de Toulouse, 2015. Français. NNT : 2015ISAT0035. tel-01261497"\
+            """)
     @Test
     @DisplayName("Alfano test case 5 Field version")
     void AlfanoTestCase5Field() {

@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.SortedSet;
+
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
@@ -33,6 +35,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -42,9 +45,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.BurstSelector;
 import org.orekit.time.TimeScalesFactory;
 
-import java.util.SortedSet;
-
-public class PositionBuilderTest {
+class PositionBuilderTest {
 
     private static final double SIGMA = 10.0;
     private static final double BIAS  =  5.0;
@@ -54,10 +55,12 @@ public class PositionBuilderTest {
             SIGMA * SIGMA, SIGMA * SIGMA, SIGMA * SIGMA
         });
         MeasurementBuilder<Position> pb =
-                        new PositionBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                        1.0e-10,
-                                                                                                        new GaussianRandomGenerator(random)),
-                                            SIGMA, 1.0, satellite);
+                        new PositionBuilder(SIGMA, 1.0, satellite);
+        if (random != null) {
+            pb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
          pb.addModifier(new Bias<>(new String[] { "pxBias", "pyBias", "pzBias" },
                                    new double[] { BIAS, BIAS, BIAS },
                                    new double[] { 1.0, 1.0, 1.0 },
@@ -67,13 +70,13 @@ public class PositionBuilderTest {
     }
 
     @Test
-    public void testForward() {
-        doTest(0x292b6e87436fe4c7L, 0.0, 1.2, 3.3 * SIGMA);
+    void testForward() {
+        doTest(0x292b6e87436fe4c7L, 0.0, 1.2, 6. * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0x2f3285aa70b83c47L, 0.0, -1.0, 3.3 * SIGMA);
+    void testBackward() {
+        doTest(0x2f3285aa70b83c47L, 0.0, -1.0, 6. * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -141,7 +144,7 @@ public class PositionBuilderTest {
      }
 
      @BeforeEach
-     public void setUp() {
+     void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

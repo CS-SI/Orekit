@@ -239,10 +239,10 @@ public class DateTimeComponentsTest {
 
                 double deltaInTimeUnit = ns / (double) timeUnit.toNanos(1);
                 Assertions.assertEquals(FastMath.round(deltaInTimeUnit), reference.offsetFrom(minus, timeUnit),
-                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+                        "TimeUnit: %s, ns: %d".formatted(timeUnit, ns));
 
                 Assertions.assertEquals(FastMath.round(-deltaInTimeUnit), reference.offsetFrom(plus, timeUnit),
-                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+                        "TimeUnit: %s, ns: %d".formatted(timeUnit, ns));
             }
 
 

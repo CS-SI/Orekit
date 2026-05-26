@@ -19,8 +19,6 @@ package org.orekit.estimation.iod;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.euclidean.twod.Vector2D;
-import org.hipparchus.util.FastMath;
 import org.orekit.control.heuristics.lambert.LambertBoundaryConditions;
 import org.orekit.control.heuristics.lambert.LambertBoundaryVelocities;
 import org.orekit.control.heuristics.lambert.LambertSolution;
@@ -30,7 +28,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
@@ -194,7 +191,7 @@ public class IodLambert {
             velocities = solutionsList.get(1).getBoundaryVelocities();
         } else {
             // then we are getting either the only solution (case nRev = 0) or the low path solution for a multi-revolution, posigrade transfer problem
-            velocities = solutionsList.get(0).getBoundaryVelocities();
+            velocities = solutionsList.getFirst().getBoundaryVelocities();
         }
         if (velocities == null) {
             return null;
@@ -202,48 +199,5 @@ public class IodLambert {
             return new CartesianOrbit(new TimeStampedPVCoordinates(t1, p1, velocities.getInitialVelocity()),
                     frame, mu);
         }
-    }
-
-    /**
-     * Lambert's solver for the historical, planar problem.
-     * Assume mu=1.
-     *
-     * @param r1 radius 1
-     * @param r2 radius 2
-     * @param dth sweep angle
-     * @param tau time of flight
-     * @param mRev number of revs
-     * @param V1 velocity at departure in (T, N) basis
-     * @return exit flag
-     * @deprecated as of 13.1, use {@link LambertSolver}
-     */
-    boolean solveLambertPb(final double r1, final double r2, final double dth, final double tau,
-                        final int mRev, final double[] V1) {
-        // Solve the Lambert's problem using the instance solver
-        // Work with non-dimensional units (MU=1)
-        final Vector3D P1 = new Vector3D(r1, 0.0, 0.0);
-        final Vector3D P2 = new Vector3D(r2 * FastMath.cos(dth), r2 * FastMath.sin(dth), 0.0);
-        final AbsoluteDate date1 = AbsoluteDate.ARBITRARY_EPOCH;
-        final AbsoluteDate date2 = date1.shiftedBy(tau);
-        // Reduce dth to the range [0, 2pi]
-        final double dthNormalized = ((dth % (2 * FastMath.PI)) + 2 * FastMath.PI) % (2 * FastMath.PI);
-        final boolean posigrade = dthNormalized <= FastMath.PI;
-        final Frame frame = FramesFactory.getGCRF();
-        final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(date1, P1, date2, P2, frame);
-        // Use the local solver
-        final List<LambertSolution> solutions = lambertSolver.solve(posigrade, mRev, boundaryConditions);
-        // Select the first solution (unique one for mRev=0, low path for mRev>0)
-        final LambertSolution selectedSolution = solutions.get(0);
-        // Extract velocity components
-        final LambertBoundaryVelocities velocities = selectedSolution.getBoundaryVelocities();
-        final Vector3D v1 = velocities.getInitialVelocity();
-        final Vector2D v1Planar = new Vector2D(v1.getX(), v1.getY());
-        if (v1Planar == Vector2D.NaN) {
-            return false;  // No valid solution
-        }
-        // Since P1 is at (r1, 0, 0), radial velocity is X component, tangential velocity is Y component
-        V1[0] = v1Planar.getX();
-        V1[1] = v1Planar.getY();
-        return true;
     }
 }

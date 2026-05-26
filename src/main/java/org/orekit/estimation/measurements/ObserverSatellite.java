@@ -83,9 +83,9 @@ public class ObserverSatellite extends AbstractParticipant implements Observer {
                                                                               final Map<String, Integer> parameterIndices) {
 
         // If a FieldPVCoordinatesProvider<Gradient> already exists, use it
-        if (pvCoordsProvider instanceof ExtendedPositionProvider) {
+        if (pvCoordsProvider instanceof ExtendedPositionProvider provider) {
             final Field<Gradient> check = GradientField.getField(freeParameters);
-            return ((ExtendedPositionProvider) pvCoordsProvider).toFieldPVCoordinatesProvider(check);
+            return provider.toFieldPVCoordinatesProvider(check);
         }
 
         // Otherwise, convert the PVCoordinatesProvider to a FieldPVCoordinatesProvider<Gradient>
@@ -116,7 +116,7 @@ public class ObserverSatellite extends AbstractParticipant implements Observer {
         // take clock offset into account
         final AbsoluteDate offsetCompensatedDate = clockOffsetAlreadyApplied ?
                                                    date :
-                                                   new AbsoluteDate(date, -getClockBiasDriver().getValue());
+                                                   new AbsoluteDate(date, -getOffsetValue(date));
 
         // Return transform that will give PV coords of emitter when pos = 0, vel = 0 is entered
         final PVCoordinates coords = getPVCoordinatesProvider().getPVCoordinates(offsetCompensatedDate, inertial);

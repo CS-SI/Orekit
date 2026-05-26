@@ -38,8 +38,8 @@ class FieldSignalEmissionConditionTest {
         // WHEN
         final SignalEmissionCondition actualCondition = fieldCondition.toEmissionCondition();
         // THEN
-        assertEquals(expectedCondition.getEmissionDate(), actualCondition.getEmissionDate());
-        assertEquals(expectedCondition.getEmitterPosition(), actualCondition.getEmitterPosition());
-        assertEquals(frame, actualCondition.getReferenceFrame());
+        assertEquals(expectedCondition.emissionDate(), actualCondition.emissionDate());
+        assertEquals(expectedCondition.emitterPosition(), actualCondition.emitterPosition());
+        assertEquals(frame, actualCondition.referenceFrame());
     }
 }

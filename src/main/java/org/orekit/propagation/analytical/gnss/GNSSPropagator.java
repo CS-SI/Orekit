@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
@@ -49,10 +53,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /** Common handling of {@link AbstractAnalyticalPropagator} methods for GNSS propagators.
  * <p>
@@ -475,8 +475,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         final double aop              = phi - eccentricAnomaly;
         final double meanAnomaly      = KeplerianAnomalyUtility.ellipticEccentricToMean(e, eccentricAnomaly);
 
-        return new KeplerianOrbit(sma, e, i0, aop, om0, meanAnomaly, PositionAngleType.MEAN,
-                                  PositionAngleType.MEAN, frozenEcef,
+        return new KeplerianOrbit(sma, e, i0, aop, om0, meanAnomaly, PositionAngleType.MEAN, frozenEcef,
                                   initialState.getDate(), mu);
 
     }

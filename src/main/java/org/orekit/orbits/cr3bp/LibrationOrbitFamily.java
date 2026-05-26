@@ -31,5 +31,5 @@ public enum LibrationOrbitFamily {
     NORTHERN,
 
     /** Southern. */
-    SOUTHERN;
+    SOUTHERN
 }

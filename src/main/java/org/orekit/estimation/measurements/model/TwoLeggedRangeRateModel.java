@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.signal.FieldSignalReceptionCondition;
 import org.orekit.signal.SignalReceptionCondition;
-import org.orekit.signal.TwoLeggedSignalTravelTimer;
+import org.orekit.signal.TwoLeggedSignalTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -39,13 +39,13 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class TwoLeggedRangeRateModel {
 
     /** Signal travel time model. */
-    private final TwoLeggedSignalTravelTimer twoWayTimer;
+    private final TwoLeggedSignalTimer twoWayTimer;
 
     /**
      * Constructor.
      * @param twoWayTimer two-way time delay computer
      */
-    public TwoLeggedRangeRateModel(final TwoLeggedSignalTravelTimer twoWayTimer) {
+    public TwoLeggedRangeRateModel(final TwoLeggedSignalTimer twoWayTimer) {
         this.twoWayTimer = twoWayTimer;
     }
 
@@ -115,7 +115,7 @@ public class TwoLeggedRangeRateModel {
                                                        final FieldVector3D<T> receiverVelocity,
                                                        final FieldPVCoordinatesProvider<T> relay,
                                                        final FieldPVCoordinatesProvider<T> emitter) {
-        final FieldAbsoluteDate<T> receptionDate = receptionCondition.getReceptionDate();
+        final FieldAbsoluteDate<T> receptionDate = receptionCondition.receptionDate();
         return value(receptionCondition, receiverVelocity, relay, receptionDate, emitter, receptionDate);
     }
     /**
@@ -138,16 +138,16 @@ public class TwoLeggedRangeRateModel {
         // Compute relay and emission dates
         final T[] delays = twoWayTimer.computeDelays(receptionCondition, relay,
                 approxRelayDate, emitter, approxEmissionDate);
-        final FieldAbsoluteDate<T> relayDate = receptionCondition.getReceptionDate().shiftedBy(delays[1].negate());
+        final FieldAbsoluteDate<T> relayDate = receptionCondition.receptionDate().shiftedBy(delays[1].negate());
         final FieldAbsoluteDate<T> emissionDate = relayDate.shiftedBy(delays[0].negate());
 
         // Compute position and velocity of interest
-        final Frame frame = receptionCondition.getReferenceFrame();
+        final Frame frame = receptionCondition.referenceFrame();
         final FieldPVCoordinates<T> relayPV = relay.getPVCoordinates(relayDate, frame);
         final FieldPVCoordinates<T> emitterPV = emitter.getPVCoordinates(emissionDate, frame);
 
         // Range-rate components
-        final FieldVector3D<T> receiverPosition = receptionCondition.getReceiverPosition();
+        final FieldVector3D<T> receiverPosition = receptionCondition.receiverPosition();
         final FieldVector3D<T> receiverRelativePosition = receiverPosition.subtract(relayPV.getPosition());
         final FieldVector3D<T> emitterRelativePosition = emitterPV.getPosition().subtract(relayPV.getPosition());
         final FieldVector3D<T> receiverRelativeVelocity = receiverVelocity.subtract(relayPV.getVelocity());

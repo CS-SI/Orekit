@@ -75,7 +75,7 @@ public class SinexParserEopTest {
         Assertions.assertEquals(4, history.size());
 
         // Test if the values are correctly extracted
-        EOPEntry firstEntry = history.first();
+        EOPEntry firstEntry = history.getFirst();
         Assertions.assertEquals(unitConvRad.convert(0.101379061387836E+03), firstEntry.getX(), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(0.274820464392703E+03), firstEntry.getY(), 1e-15);
         Assertions.assertEquals(-0.172036907064256E+03, firstEntry.getUT1MinusUTC() * 1000, 1e-15);
@@ -131,7 +131,7 @@ public class SinexParserEopTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 43185.0);
 
         // Test if the values are correctly extracted
-        EOPEntry firstEntry = history.first();
+        EOPEntry firstEntry = history.getFirst();
         double xPo = unitConvRad.convert(7.68783442726072E+01);
         double yPo = unitConvRad.convert(3.47286203337827E+02);
         double nutX = unitConvRad.convert(-1.10122731910265E+03);
@@ -175,7 +175,7 @@ public class SinexParserEopTest {
         // Setting up the date
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(43185);
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
-        EOPEntry firstEntry = history.first();
+        EOPEntry firstEntry = history.getFirst();
 
         Assertions.assertEquals(unitConvRad.convert(7.68783442726072E+01), firstEntry.getX(), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(3.47286203337827E+02), firstEntry.getY(), 1e-15);
@@ -216,7 +216,7 @@ public class SinexParserEopTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(43185);
         double[] nro = converter.toNonRotating(date, unitConvRad.convert(-1.10122731910265E+03), unitConvRad.convert(-4.00387630903350E+03));
 
-        EOPEntry firstEntry = history.first();
+        EOPEntry firstEntry = history.getFirst();
 
         Assertions.assertEquals(unitConvRad.convert(7.68783442726072E+01), firstEntry.getX(), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(3.47286203337827E+02), firstEntry.getY(), 1e-15);
@@ -269,7 +269,7 @@ public class SinexParserEopTest {
 
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
 
-        EOPEntry firstEntry = history.first();
+        EOPEntry firstEntry = history.getFirst();
 
         Assertions.assertEquals(unitConvRad.convert(7.68783442726072E+01), firstEntry.getX(), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(3.47286203337827E+02), firstEntry.getY(), 1e-15);

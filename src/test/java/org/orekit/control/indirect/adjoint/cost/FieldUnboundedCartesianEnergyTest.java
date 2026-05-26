@@ -17,7 +17,6 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -106,9 +105,9 @@ class FieldUnboundedCartesianEnergyTest {
         // WHEN
         final Stream<FieldEventDetector<Complex>> eventDetectorStream = unboundedCartesianEnergy.getFieldEventDetectors(field);
         // THEN
-        final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.collect(Collectors.toList());
+        final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.toList();
         Assertions.assertEquals(1, eventDetectors.size());
-        final FieldEventDetector<Complex> eventDetector = eventDetectors.get(0);
+        final FieldEventDetector<Complex> eventDetector = eventDetectors.getFirst();
         Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, eventDetector.getEventFunction());
         Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, eventDetector.getHandler());
     }
@@ -126,15 +125,15 @@ class FieldUnboundedCartesianEnergyTest {
         // WHEN
         final Stream<FieldEventDetector<Complex>> fieldEventDetectorStream = unboundedCartesianEnergy.getFieldEventDetectors(field);
         // THEN
-        final List<FieldEventDetector<Complex>> fieldEventDetectors = fieldEventDetectorStream.collect(Collectors.toList());
+        final List<FieldEventDetector<Complex>> fieldEventDetectors = fieldEventDetectorStream.toList();
         Assertions.assertEquals(1, fieldEventDetectors.size());
-        Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, fieldEventDetectors.get(0).getEventFunction());
+        Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, fieldEventDetectors.getFirst().getEventFunction());
         final FieldAbstractCartesianCost.FieldSwitchFunction fieldSingularityFunction =
-                (FieldAbstractCartesianCost.FieldSwitchFunction) fieldEventDetectors.get(0).getEventFunction();
+                (FieldAbstractCartesianCost.FieldSwitchFunction) fieldEventDetectors.getFirst().getEventFunction();
         final Complex gValue = fieldSingularityFunction.value(new FieldSpacecraftState<>(field, state));
-        final List<EventDetector> eventDetectors = unboundedCartesianEnergy.toCartesianCost().getEventDetectors().collect(Collectors.toList());
+        final List<EventDetector> eventDetectors = unboundedCartesianEnergy.toCartesianCost().getEventDetectors().toList();
         final CartesianEnergyConsideringMass.SingularitySwitchFunction singularitySwitchFunction =
-                (CartesianEnergyConsideringMass.SingularitySwitchFunction) eventDetectors.get(0).getEventFunction();
+                (CartesianEnergyConsideringMass.SingularitySwitchFunction) eventDetectors.getFirst().getEventFunction();
         Assertions.assertFalse(singularitySwitchFunction.dependsOnMainVariablesOnly());
         final double expectedG = singularitySwitchFunction.value(state);
         Assertions.assertEquals(expectedG, gValue.getReal());

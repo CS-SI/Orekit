@@ -35,6 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
@@ -50,6 +51,7 @@ public class AttitudeTypeTest {
 
     private static final double QUATERNION_PRECISION = 1.0e-5;
     private static final double ANGLE_PRECISION = 1.0e-3;
+    private static final OrekitCcsdsFrameMapper FRAME_MAPPER = new OrekitCcsdsFrameMapper();
 
     AemMetadata metadata;
     ContextBinding context;
@@ -58,7 +60,7 @@ public class AttitudeTypeTest {
     public void setUp()
         throws Exception {
         Utils.setDataRoot("regular-data");
-        metadata = new AemMetadata(4);
+        metadata = new AemMetadata(4, FRAME_MAPPER);
         context  =  new ContextBinding(() -> IERSConventions.IERS_2010,
                                        () -> true, () -> DataContext.getDefault(),
                                        () -> ParsedUnitsBehavior.STRICT_COMPLIANCE, () -> null,
@@ -107,7 +109,7 @@ public class AttitudeTypeTest {
                                 ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -190,7 +192,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -234,7 +236,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.setIsFirst(true);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
@@ -288,7 +290,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(FastMath.toRadians(3.79), rebuiltAngles[2].getFirstDerivative(), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -334,7 +336,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -362,7 +364,7 @@ public class AttitudeTypeTest {
         // Initialize the attitude type
         final AttitudeType eulerAngleRate = AttitudeType.parseType("EULER_ANGLE/RATE");
 
-        AemMetadata mdWithoutRateFrame = new AemMetadata(4);
+        AemMetadata mdWithoutRateFrame = new AemMetadata(4, FRAME_MAPPER);
         mdWithoutRateFrame.setTimeSystem(TimeSystem.TAI);
         mdWithoutRateFrame.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                                     null, null, "GCRF"));
@@ -411,7 +413,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(1.112, FastMath.toDegrees(angles[2].getFirstDerivative()), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -563,7 +565,7 @@ public class AttitudeTypeTest {
                                                     () -> true, () -> DataContext.getDefault(),
                                                     () -> ParsedUnitsBehavior.STRICT_COMPLIANCE, () -> null,
                                                     () -> TimeSystem.UTC, () -> 0.0, () -> 1.0);
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,

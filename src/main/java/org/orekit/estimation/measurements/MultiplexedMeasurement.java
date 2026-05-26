@@ -76,7 +76,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
      * @since 10.1
      */
     public MultiplexedMeasurement(final List<ObservedMeasurement<?>> measurements) {
-        super(measurements.get(0).getDate(),
+        super(measurements.getFirst().getDate(),
               multiplex(measurements, ComparableMeasurement::getObservedValue),
               multiplexMeasurementQuality(measurements), multiplex(measurements));
 
@@ -259,7 +259,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         multiplexed.setEstimatedValue(value);
 
         // combine derivatives
-        final int                            stateSize             = estimatedMeasurements.get(0).getStateSize();
+        final int                            stateSize             = estimatedMeasurements.getFirst().getStateSize();
         final double[]                       zeroDerivative        = new double[stateSize];
         final double[][][]                   stateDerivatives      = new double[nbSat][dimension][];
         for (final double[][] m : stateDerivatives) {

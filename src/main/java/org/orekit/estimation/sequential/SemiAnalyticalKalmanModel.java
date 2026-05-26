@@ -330,8 +330,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
             // Sort the measurement
             observedMeasurements.sort(new ChronologicalComparator());
-            final AbsoluteDate tStart             = observedMeasurements.get(0).getDate();
-            final AbsoluteDate tEnd               = observedMeasurements.get(observedMeasurements.size() - 1).getDate();
+            final AbsoluteDate tStart             = observedMeasurements.getFirst().getDate();
+            final AbsoluteDate tEnd               = observedMeasurements.getLast().getDate();
             final double       overshootTimeRange = FastMath.nextAfter(tEnd.durationFrom(tStart),
                                                     Double.POSITIVE_INFINITY);
 

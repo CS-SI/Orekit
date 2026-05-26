@@ -36,24 +36,24 @@ public class GlonassUserRangeAccuracy implements AccuracyProvider {
     /** {@inheritDoc} */
     @Override
     public double getAccuracy() {
-        switch (glonassUraIndex) {
-            case 0  : return 1.0;
-            case 1  : return 2.0;
-            case 2  : return 2.5;
-            case 3  : return 4.0;
-            case 4  : return 5.0;
-            case 5  : return 7.0;
-            case 6  : return 10.0;
-            case 7  : return 12.0;
-            case 8  : return 14.0;
-            case 9  : return 16.0;
-            case 10 : return 32.0;
-            case 11 : return 64.0;
-            case 12 : return 128.0;
-            case 13 : return 256.0;
-            case 14 : return 512.0;
-            default : return 1024.0; // Data shall not be used
-        }
+        return switch (glonassUraIndex) {
+            case 0   -> 1.0;
+            case 1   -> 2.0;
+            case 2   -> 2.5;
+            case 3   -> 4.0;
+            case 4   -> 5.0;
+            case 5   -> 7.0;
+            case 6   -> 10.0;
+            case 7   -> 12.0;
+            case 8   -> 14.0;
+            case 9   -> 16.0;
+            case 10  -> 32.0;
+            case 11  -> 64.0;
+            case 12  -> 128.0;
+            case 13  -> 256.0;
+            case 14  -> 512.0;
+            default  -> 1024.0; // Data shall not be used
+        };
     }
 
 }

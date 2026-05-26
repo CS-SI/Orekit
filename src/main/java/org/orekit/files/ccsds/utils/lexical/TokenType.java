@@ -40,6 +40,6 @@ public enum TokenType {
     STOP,
 
     /** Raw line token. */
-    RAW_LINE;
+    RAW_LINE
 
 }

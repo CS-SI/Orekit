@@ -20,13 +20,13 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
+import org.orekit.files.ccsds.section.CommentsContainer;
 
 /** Inertia.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class Inertia extends CommonPhysicalProperties {
+public class Inertia extends CommentsContainer {
 
     /** Inertia reference frame. */
     private FrameFacade frame;

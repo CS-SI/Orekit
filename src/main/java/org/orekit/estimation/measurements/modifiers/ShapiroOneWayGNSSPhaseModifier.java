@@ -16,14 +16,8 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modifying theoretical one-way GNSS phase measurement with Shapiro time delay.
  * <p>
@@ -32,32 +26,28 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class ShapiroOneWayGNSSPhaseModifier extends AbstractShapiroBaseModifier implements EstimationModifier<OneWayGNSSPhase> {
+public class ShapiroOneWayGNSSPhaseModifier extends AbstractShapiroPhaseModifier<OneWayGNSSPhase> {
 
-    /** Simple constructor.
+    /** Simple constructor from gravitational constant.
      * @param gm gravitational constant for main body in signal path vicinity.
      */
     public ShapiroOneWayGNSSPhaseModifier(final double gm) {
-        super(gm);
+        this(new ShapiroModel(gm));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
+    /** Constructor.
+     * @param shapiroModel Shapiro delay computer
+     * @since 14.0
+     */
+    public ShapiroOneWayGNSSPhaseModifier(final ShapiroModel shapiroModel) {
+        super(shapiroModel);
     }
 
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSPhase> estimated) {
-        // Compute correction
-        final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-        final double phaseCorrection = shapiroCorrection(participants[0], participants[1]);
-        // Update estimated value taking into account the Shapiro time delay.
         final double wavelength = estimated.getObservedMeasurement().getWavelength();
-        final double[] newValue = estimated.getEstimatedValue().clone();
-        newValue[0] = newValue[0] + (phaseCorrection / wavelength);
-        estimated.modifyEstimatedValue(this, newValue);
+        modifyWithoutDerivatives(estimated, wavelength);
     }
 
 }

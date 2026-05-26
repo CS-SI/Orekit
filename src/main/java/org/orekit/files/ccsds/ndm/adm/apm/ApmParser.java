@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
@@ -38,6 +39,7 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ErrorState;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -118,13 +120,15 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * (may be null if time system is absolute)
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
-     * @since 12.0
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
     public ApmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
         super(Apm.ROOT, Apm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, parsedUnitsBehavior, filters);
+              missionReferenceDate, parsedUnitsBehavior, filters, frameMapper);
     }
 
     /** {@inheritDoc} */
@@ -182,7 +186,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
         if (metadata != null) {
             return false;
         }
-        metadata  = new AdmMetadata();
+        metadata  = new AdmMetadata(getFrameMapper());
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
@@ -415,7 +419,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processQuaternionToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (quaternionBlock == null) {
-            quaternionBlock = new ApmQuaternion();
+            quaternionBlock = new ApmQuaternion(getFrameMapper());
         }
         anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
                        this::processEulerToken : this::processDataSubStructureToken);
@@ -435,7 +439,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processEulerToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (eulerBlock == null) {
-            eulerBlock = new Euler();
+            eulerBlock = new Euler(getFrameMapper());
             if (moveCommentsIfEmpty(quaternionBlock, eulerBlock)) {
                 // get rid of the empty logical block
                 quaternionBlock = null;
@@ -460,7 +464,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processAngularVelocityToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (angularVelocityBlock == null) {
-            angularVelocityBlock = new AngularVelocity();
+            angularVelocityBlock = new AngularVelocity(getFrameMapper());
             if (moveCommentsIfEmpty(eulerBlock, angularVelocityBlock)) {
                 // get rid of the empty logical block
                 eulerBlock = null;
@@ -484,7 +488,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processSpinStabilizedToken(final ParseToken token) {
         commentsBlock.refuseFurtherComments();
         if (spinStabilizedBlock == null) {
-            spinStabilizedBlock = new SpinStabilized();
+            spinStabilizedBlock = new SpinStabilized(getFrameMapper());
             if (moveCommentsIfEmpty(angularVelocityBlock, spinStabilizedBlock)) {
                 // get rid of the empty logical block
                 angularVelocityBlock = null;

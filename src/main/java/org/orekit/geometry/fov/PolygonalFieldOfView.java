@@ -214,7 +214,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
 
                     // add the point in front of the list
                     // (to ensure the loop will be in trigonometric orientation)
-                    loop.add(0, gp);
+                    loop.addFirst(gp);
 
                 }
             }

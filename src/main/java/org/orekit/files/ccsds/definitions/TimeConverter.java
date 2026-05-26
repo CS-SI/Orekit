@@ -53,9 +53,9 @@ public class TimeConverter {
 
             // relative date
             final double delta = Double.parseDouble(s);
-            if (timeScale instanceof SatelliteClockScale) {
+            if (timeScale instanceof SatelliteClockScale scale) {
                 // satellite clock scale handles drifts internally
-                return ((SatelliteClockScale) timeScale).dateAtCount(delta);
+                return scale.dateAtCount(delta);
             } else {
                 // regular relative date from a known reference
                 return referenceDate.shiftedBy(delta);

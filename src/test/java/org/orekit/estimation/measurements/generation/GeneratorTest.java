@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.SortedSet;
+
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,14 +39,12 @@ import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-import java.util.SortedSet;
-
-public class GeneratorTest {
+class GeneratorTest {
 
     @Test
-    public void testIssue557() {
+    void testIssue557() {
 
-        final EventDetector detector = EstimationTestUtils.getElevationDetector(context.stations.get(0).getBaseFrame(),
+        final EventDetector detector = EstimationTestUtils.getElevationDetector(context.stations.getFirst().getBaseFrame(),
                                                                                 FastMath.toRadians(0.0));
 
         double[] azElError = new double[] {
@@ -59,8 +59,8 @@ public class GeneratorTest {
         double rangeSigma = 40.0;
         double rangeBW = 1;
         ObservableSatellite obs = new ObservableSatellite(0);
-        RangeBuilder rB = new RangeBuilder(null, context.stations.get(0), false, rangeSigma, rangeBW,obs);
-        AngularAzElBuilder aAEB = new AngularAzElBuilder(null, context.stations.get(0), azElError, baseweight, obs);
+        RangeBuilder rB = new RangeBuilder(context.stations.getFirst(), false, rangeSigma, rangeBW,obs);
+        AngularAzElBuilder aAEB = new AngularAzElBuilder(context.stations.getFirst(), azElError, baseweight, obs);
         double  timeToEnd = Constants.JULIAN_DAY;
 
         AbsoluteDate initialDate = context.initialOrbit.getDate();
@@ -97,7 +97,7 @@ public class GeneratorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

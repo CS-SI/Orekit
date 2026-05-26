@@ -1146,6 +1146,10 @@ class NRLMSISE00Test {
         @Override
         public String getName() { return "SUN"; }
         @Override
+        public Frame getIcrfAlignedFrame() {
+            return j2000.getParent();
+        }
+        @Override
         public Frame getInertiallyOrientedFrame() { return j2000; }
         @Override
         public double getGM() { return Constants.JPL_SSD_SUN_GM; }

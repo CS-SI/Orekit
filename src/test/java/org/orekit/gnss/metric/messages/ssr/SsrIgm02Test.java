@@ -76,7 +76,7 @@ public class SsrIgm02Test {
         Assertions.assertEquals(1,                            igm02.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G12
-        final SsrIgm02Data r12 = igm02.getSsrIgm02Data().get("R12").get(0);
+        final SsrIgm02Data r12 = igm02.getSsrIgm02Data().get("R12").getFirst();
         Assertions.assertEquals(12,                           r12.getSatelliteID());
         Assertions.assertEquals(96.6527,                      r12.getClockCorrection().getDeltaClockC0(), eps);
         Assertions.assertEquals(0.483263,                     r12.getClockCorrection().getDeltaClockC1(), eps);
@@ -126,7 +126,7 @@ public class SsrIgm02Test {
         Assertions.assertEquals(1,                            igm02.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
-        final SsrIgm02Data e01 = igm02.getSsrIgm02Data().get("E01").get(0);
+        final SsrIgm02Data e01 = igm02.getSsrIgm02Data().get("E01").getFirst();
         Assertions.assertEquals(1,                            e01.getSatelliteID());
         Assertions.assertEquals(96.6527,                      e01.getClockCorrection().getDeltaClockC0(), eps);
         Assertions.assertEquals(0.483263,                     e01.getClockCorrection().getDeltaClockC1(), eps);

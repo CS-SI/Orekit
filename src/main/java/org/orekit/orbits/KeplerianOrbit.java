@@ -119,14 +119,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
     private PVCoordinates partialPV;
 
     /** Creates a new instance.
-     * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity (positive or equal to 0)
-     * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param anomaly mean, eccentric or true anomaly (rad)
-     * @param type type of anomaly
-     * @param cachedPositionAngleType type of cached anomaly
+     * @param keplerianParameters Keplerian elements
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
@@ -134,16 +127,14 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
      * or v is out of range for hyperbolic orbits
-     * @since 12.1
+     * @since 14.0
      */
-    public KeplerianOrbit(final double a, final double e, final double i,
-                          final double pa, final double raan, final double anomaly,
-                          final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
-                          final Frame frame, final AbsoluteDate date, final double mu)
+    public KeplerianOrbit(final KeplerianParameters keplerianParameters, final Frame frame, final AbsoluteDate date,
+                          final double mu)
             throws IllegalArgumentException {
-        this(a, e, i, pa, raan, anomaly,
-                0., 0., 0., 0., 0., computeKeplerianAnomalyDot(type, a, e, mu, anomaly, type),
-                type, cachedPositionAngleType, frame, date, mu);
+        this(keplerianParameters, 0., 0., 0., 0., 0.,
+                computeKeplerianAnomalyDot(keplerianParameters.positionAngleType(), keplerianParameters.a(), keplerianParameters.e(), mu, keplerianParameters.anomaly(), keplerianParameters.positionAngleType()),
+                keplerianParameters.positionAngleType(), frame, date, mu);
     }
 
     /** Creates a new instance without derivatives and with cached position angle same as value inputted.
@@ -162,28 +153,21 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
      * or v is out of range for hyperbolic orbits
      */
-    public KeplerianOrbit(final double a, final double e, final double i,
-                          final double pa, final double raan, final double anomaly,
-                          final PositionAngleType type,
-                          final Frame frame, final AbsoluteDate date, final double mu)
+    public KeplerianOrbit(final double a, final double e, final double i, final double pa, final double raan,
+                          final double anomaly, final PositionAngleType type, final Frame frame,
+                          final AbsoluteDate date, final double mu)
             throws IllegalArgumentException {
-        this(a, e, i, pa, raan, anomaly, type, type, frame, date, mu);
+        this(new KeplerianParameters(a, e, i, pa, raan, anomaly, type), frame, date, mu);
     }
 
     /** Creates a new instance.
-     * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity (positive or equal to 0)
-     * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param anomaly mean, eccentric or true anomaly (rad)
+     * @param keplerianParameters Keplerian elements
      * @param aDot  semi-major axis derivative (m/s)
      * @param eDot eccentricity derivative
      * @param iDot inclination derivative (rad/s)
      * @param paDot perigee argument derivative (rad/s)
      * @param raanDot right ascension of ascending node derivative (rad/s)
-     * @param anomalyDot mean, eccentric or true anomaly derivative (rad/s)
-     * @param type type of input anomaly
+     * @param anomalyDot mean, eccentric or true anomaly derivative, with same type than elements (rad/s)
      * @param cachedPositionAngleType type of cached anomaly
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
@@ -192,18 +176,19 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
      * or v is out of range for hyperbolic orbits
-     * @since 12.1
+     * @since 14.0
      */
-    public KeplerianOrbit(final double a, final double e, final double i,
-                          final double pa, final double raan, final double anomaly,
+    public KeplerianOrbit(final KeplerianParameters keplerianParameters,
                           final double aDot, final double eDot, final double iDot,
                           final double paDot, final double raanDot, final double anomalyDot,
-                          final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
+                          final PositionAngleType cachedPositionAngleType,
                           final Frame frame, final AbsoluteDate date, final double mu)
             throws IllegalArgumentException {
         super(frame, date, mu);
         this.cachedPositionAngleType = cachedPositionAngleType;
 
+        this.a = keplerianParameters.a();
+        this.e = keplerianParameters.e();
         if (a * (1 - e) < 0) {
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
         }
@@ -211,18 +196,17 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
         // Checking eccentricity range
         checkParameterRangeInclusive(ECCENTRICITY, e, 0.0, Double.POSITIVE_INFINITY);
 
-        this.a       = a;
         this.aDot    = aDot;
-        this.e       = e;
         this.eDot    = eDot;
-        this.i       = i;
+        this.i       = keplerianParameters.i();
         this.iDot    = iDot;
-        this.pa      = pa;
+        this.pa      = keplerianParameters.pa();
         this.paDot   = paDot;
-        this.raan    = raan;
+        this.raan    = keplerianParameters.raan();
         this.raanDot = raanDot;
 
-        final UnivariateDerivative1 cachedAnomalyUD = initializeCachedAnomaly(anomaly, anomalyDot, type);
+        final UnivariateDerivative1 cachedAnomalyUD = initializeCachedAnomaly(keplerianParameters.anomaly(), anomalyDot,
+                keplerianParameters.positionAngleType());
         this.cachedAnomaly = cachedAnomalyUD.getValue();
         this.cachedAnomalyDot = cachedAnomalyUD.getFirstDerivative();
 
@@ -270,7 +254,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
                           final PositionAngleType type,
                           final Frame frame, final AbsoluteDate date, final double mu)
             throws IllegalArgumentException {
-        this(a, e, i, pa, raan, anomaly, aDot, eDot, iDot, paDot, raanDot, anomalyDot, type, type,
+        this(new KeplerianParameters(a, e, i, pa, raan, anomaly, type), aDot, eDot, iDot, paDot, raanDot, anomalyDot, type,
                 frame, date, mu);
     }
 
@@ -315,52 +299,19 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
             throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
 
-        // compute inclination
-        final Vector3D momentum = pvCoordinates.getMomentum();
-        final double m2 = momentum.getNorm2Sq();
-        i = Vector3D.angle(momentum, Vector3D.PLUS_K);
-
-        // compute right ascension of ascending node
-        raan = Vector3D.crossProduct(Vector3D.PLUS_K, momentum).getAlpha();
-
-        // preliminary computations for parameters depending on orbit shape (elliptic or hyperbolic)
-        final Vector3D pvP     = pvCoordinates.getPosition();
-        final Vector3D pvV     = pvCoordinates.getVelocity();
-        final Vector3D pvA     = pvCoordinates.getAcceleration();
-        final double   r2      = pvP.getNorm2Sq();
-        final double   r       = FastMath.sqrt(r2);
-        final double   V2      = pvV.getNorm2Sq();
-        final double   rV2OnMu = r * V2 / mu;
-
-        // compute semi-major axis (will be negative for hyperbolic orbits)
-        a = r / (2 - rV2OnMu);
-        final double muA = mu * a;
-
-        // compute cached anomaly
-        if (isElliptical()) {
-            // elliptic or circular orbit
-            final double eSE = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
-            final double eCE = rV2OnMu - 1;
-            e = FastMath.sqrt(eSE * eSE + eCE * eCE);
-            this.cachedPositionAngleType = PositionAngleType.ECCENTRIC;
-            cachedAnomaly = FastMath.atan2(eSE, eCE);
-        } else {
-            // hyperbolic orbit
-            final double eSH = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(-muA);
-            final double eCH = rV2OnMu - 1;
-            e = FastMath.sqrt(1 - m2 / muA);
-            this.cachedPositionAngleType = PositionAngleType.TRUE;
-            cachedAnomaly = KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, FastMath.log((eCH + eSH) / (eCH - eSH)) / 2);
-        }
+        // convert Cartesian to Keplerian elements
+        final KeplerianParametersConverter converter = new KeplerianParametersConverter(mu);
+        cachedPositionAngleType = PositionAngleType.ECCENTRIC;
+        final KeplerianParameters element = converter.toParameters(pvCoordinates, cachedPositionAngleType);
+        a = element.a();
+        e = element.e();
+        i = element.i();
+        raan = element.raan();
+        pa = element.pa();
+        cachedAnomaly = element.anomaly();
 
         // Checking eccentricity range
         checkParameterRangeInclusive(ECCENTRICITY, e, 0.0, Double.POSITIVE_INFINITY);
-
-        // compute perigee argument
-        final Vector3D node = new Vector3D(raan, 0.0);
-        final double px = Vector3D.dotProduct(pvP, node);
-        final double py = Vector3D.dotProduct(pvP, Vector3D.crossProduct(momentum, node)) / FastMath.sqrt(m2);
-        pa = FastMath.atan2(py, px) - getTrueAnomaly();
 
         partialPV = pvCoordinates;
 
@@ -370,7 +321,11 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
             final double[][] jacobian = new double[6][6];
             getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
+            final Vector3D pvP     = pvCoordinates.getPosition();
+            final double   r2      = pvP.getNorm2Sq();
+            final double   r       = FastMath.sqrt(r2);
             final Vector3D keplerianAcceleration    = new Vector3D(-mu / (r * r2), pvP);
+            final Vector3D pvA     = pvCoordinates.getAcceleration();
             final Vector3D nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
             final double   aX                       = nonKeplerianAcceleration.getX();
             final double   aY                       = nonKeplerianAcceleration.getY();
@@ -387,17 +342,10 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
                     jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
             final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
             final UnivariateDerivative1 MUD = new UnivariateDerivative1(getMeanAnomaly(), MDot);
-            if (cachedPositionAngleType == PositionAngleType.ECCENTRIC) {
-                final UnivariateDerivative1 EUD = (a < 0) ?
-                        FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD, MUD) :
-                        FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD, MUD);
-                cachedAnomalyDot = EUD.getFirstDerivative();
-            } else { // TRUE
-                final UnivariateDerivative1 vUD = (a < 0) ?
-                        FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
-                        FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
-                cachedAnomalyDot = vUD.getFirstDerivative();
-            }
+            final UnivariateDerivative1 EUD = (a < 0) ?
+                    FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD, MUD) :
+                    FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD, MUD);
+            cachedAnomalyDot = EUD.getFirstDerivative();
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -529,67 +477,41 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @return true anomaly (rad)
      */
     public double getTrueAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN: return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicMeanToTrue(e, cachedAnomaly) :
-                    KeplerianAnomalyUtility.ellipticMeanToTrue(e, cachedAnomaly);
-
-            case TRUE: return cachedAnomaly;
-
-            case ECCENTRIC: return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, cachedAnomaly) :
-                    KeplerianAnomalyUtility.ellipticEccentricToTrue(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+        return getAnomaly(PositionAngleType.TRUE);
     }
 
     /** Get the true anomaly derivative.
      * @return true anomaly derivative (rad/s)
      */
     public double getTrueAnomalyDot() {
-        switch (cachedPositionAngleType) {
-            case MEAN:
+        return switch (cachedPositionAngleType) {
+            case MEAN -> {
                 final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
                 final UnivariateDerivative1 MUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
                 final UnivariateDerivative1 vUD = (a < 0) ?
                         FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
                         FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
-                return vUD.getFirstDerivative();
+                yield vUD.getFirstDerivative();
+            }
 
-            case TRUE:
-                return cachedAnomalyDot;
+            case TRUE -> cachedAnomalyDot;
 
-            case ECCENTRIC:
+            case ECCENTRIC -> {
                 final UnivariateDerivative1 eUD2 = new UnivariateDerivative1(e, eDot);
                 final UnivariateDerivative1 EUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
                 final UnivariateDerivative1 vUD2 = (a < 0) ?
                         FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(eUD2, EUD) :
                         FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(eUD2, EUD);
-                return vUD2.getFirstDerivative();
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+                yield vUD2.getFirstDerivative();
+            }
+        };
     }
 
     /** Get the eccentric anomaly.
      * @return eccentric anomaly (rad)
      */
     public double getEccentricAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN:
-                return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, cachedAnomaly) :
-                    KeplerianAnomalyUtility.ellipticMeanToEccentric(e, cachedAnomaly);
-
-            case ECCENTRIC:
-                return cachedAnomaly;
-
-            case TRUE:
-                return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, cachedAnomaly) :
-                    KeplerianAnomalyUtility.ellipticTrueToEccentric(e, cachedAnomaly);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return getAnomaly(PositionAngleType.ECCENTRIC);
     }
 
     /** Get the eccentric anomaly derivative.
@@ -597,46 +519,34 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @since 9.0
      */
     public double getEccentricAnomalyDot() {
-        switch (cachedPositionAngleType) {
-            case ECCENTRIC:
-                return cachedAnomalyDot;
+        return switch (cachedPositionAngleType) {
+            case ECCENTRIC -> cachedAnomalyDot;
 
-            case TRUE:
+            case TRUE -> {
                 final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
                 final UnivariateDerivative1 vUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
                 final UnivariateDerivative1 EUD = (a < 0) ?
                         FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(eUD, vUD) :
                         FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(eUD, vUD);
-                return EUD.getFirstDerivative();
+                yield EUD.getFirstDerivative();
+            }
 
-            case MEAN:
+            case MEAN -> {
                 final UnivariateDerivative1 eUD2 = new UnivariateDerivative1(e, eDot);
                 final UnivariateDerivative1 MUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
                 final UnivariateDerivative1 EUD2 = (a < 0) ?
                         FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD2, MUD) :
                         FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD2, MUD);
-                return EUD2.getFirstDerivative();
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+                yield EUD2.getFirstDerivative();
+            }
+        };
     }
 
     /** Get the mean anomaly.
      * @return mean anomaly (rad)
      */
     public double getMeanAnomaly() {
-        switch (cachedPositionAngleType) {
-            case ECCENTRIC: return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicEccentricToMean(e, cachedAnomaly) :
-                    KeplerianAnomalyUtility.ellipticEccentricToMean(e, cachedAnomaly);
-
-            case MEAN: return cachedAnomaly;
-
-            case TRUE: return (a < 0.) ? KeplerianAnomalyUtility.hyperbolicTrueToMean(e, cachedAnomaly) :
-                    KeplerianAnomalyUtility.ellipticTrueToMean(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+        return getAnomaly(PositionAngleType.MEAN);
     }
 
     /** Get the mean anomaly derivative.
@@ -644,29 +554,27 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @since 9.0
      */
     public double getMeanAnomalyDot() {
-        switch (cachedPositionAngleType) {
-            case MEAN:
-                return cachedAnomalyDot;
+        return switch (cachedPositionAngleType) {
+            case MEAN -> cachedAnomalyDot;
 
-            case ECCENTRIC:
+            case ECCENTRIC -> {
                 final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
                 final UnivariateDerivative1 EUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
                 final UnivariateDerivative1 MUD = (a < 0) ?
                         FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(eUD, EUD) :
                         FieldKeplerianAnomalyUtility.ellipticEccentricToMean(eUD, EUD);
-                return MUD.getFirstDerivative();
+                yield MUD.getFirstDerivative();
+            }
 
-            case TRUE:
+            case TRUE -> {
                 final UnivariateDerivative1 eUD2 = new UnivariateDerivative1(e, eDot);
                 final UnivariateDerivative1 vUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
                 final UnivariateDerivative1 MUD2 = (a < 0) ?
                         FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(eUD2, vUD) :
                         FieldKeplerianAnomalyUtility.ellipticTrueToMean(eUD2, vUD);
-                return MUD2.getFirstDerivative();
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+                yield MUD2.getFirstDerivative();
+            }
+        };
     }
 
     /** Get the anomaly.
@@ -674,9 +582,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @return anomaly (rad)
      */
     public double getAnomaly(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getMeanAnomaly() :
-                ((type == PositionAngleType.ECCENTRIC) ? getEccentricAnomaly() :
-                        getTrueAnomaly());
+        return getKeplerianParameters().withPositionAngleType(type).anomaly();
     }
 
     /** Get the anomaly derivative.
@@ -685,9 +591,20 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @since 9.0
      */
     public double getAnomalyDot(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getMeanAnomalyDot() :
-                ((type == PositionAngleType.ECCENTRIC) ? getEccentricAnomalyDot() :
-                        getTrueAnomalyDot());
+        return switch (type) {
+            case MEAN -> getMeanAnomalyDot();
+            case ECCENTRIC -> getEccentricAnomalyDot();
+            case TRUE -> getTrueAnomalyDot();
+        };
+    }
+
+    /**
+     * Method providing with the Keplerian elements, using the cached type for the anomaly.
+     * @return Keplerian elements
+     * @since 14.0
+     */
+    public KeplerianParameters getKeplerianParameters() {
+        return new KeplerianParameters(a, e, i, pa, raan, cachedAnomaly, cachedPositionAngleType);
     }
 
     /** {@inheritDoc} */
@@ -886,35 +803,6 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
 
     }
 
-    /** Compute reference axes.
-     * @return reference axes
-     * @since 12.0
-     */
-    private Vector3D[] referenceAxes() {
-        // preliminary variables
-        final SinCos scRaan  = FastMath.sinCos(raan);
-        final SinCos scPa    = FastMath.sinCos(pa);
-        final SinCos scI     = FastMath.sinCos(i);
-        final double cosRaan = scRaan.cos();
-        final double sinRaan = scRaan.sin();
-        final double cosPa   = scPa.cos();
-        final double sinPa   = scPa.sin();
-        final double cosI    = scI.cos();
-        final double sinI    = scI.sin();
-
-        final double crcp    = cosRaan * cosPa;
-        final double crsp    = cosRaan * sinPa;
-        final double srcp    = sinRaan * cosPa;
-        final double srsp    = sinRaan * sinPa;
-
-        // reference axes defining the orbital plane
-        return new Vector3D[] {
-            new Vector3D( crcp - cosI * srsp,  srcp + cosI * crsp, sinI * sinPa),
-            new Vector3D(-crsp - cosI * srcp, -srsp + cosI * crcp, sinI * cosPa)
-        };
-
-    }
-
     /** Compute position and velocity but not acceleration.
      */
     private void computePVWithoutA() {
@@ -924,52 +812,8 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
             return;
         }
 
-        final Vector3D[] axes = referenceAxes();
-
-        if (isElliptical()) {
-
-            // elliptical case
-
-            // elliptic eccentric anomaly
-            final double uME2   = (1 - e) * (1 + e);
-            final double s1Me2  = FastMath.sqrt(uME2);
-            final SinCos scE    = FastMath.sinCos(getEccentricAnomaly());
-            final double cosE   = scE.cos();
-            final double sinE   = scE.sin();
-
-            // coordinates of position and velocity in the orbital plane
-            final double x      = a * (cosE - e);
-            final double y      = a * sinE * s1Me2;
-            final double factor = FastMath.sqrt(getMu() / a) / (1 - e * cosE);
-            final double xDot   = -sinE * factor;
-            final double yDot   =  cosE * s1Me2 * factor;
-
-            final Vector3D position = new Vector3D(x, axes[0], y, axes[1]);
-            final Vector3D velocity = new Vector3D(xDot, axes[0], yDot, axes[1]);
-            partialPV = new PVCoordinates(position, velocity);
-
-        } else {
-
-            // hyperbolic case
-
-            // compute position and velocity factors
-            final SinCos scV       = FastMath.sinCos(getTrueAnomaly());
-            final double sinV      = scV.sin();
-            final double cosV      = scV.cos();
-            final double f         = a * (1 - e * e);
-            final double posFactor = f / (1 + e * cosV);
-            final double velFactor = FastMath.sqrt(getMu() / f);
-
-            final double   x            =  posFactor * cosV;
-            final double   y            =  posFactor * sinV;
-            final double   xDot         = -velFactor * sinV;
-            final double   yDot         =  velFactor * (e + cosV);
-
-            final Vector3D position = new Vector3D(x, axes[0], y, axes[1]);
-            final Vector3D velocity = new Vector3D(xDot, axes[0], yDot, axes[1]);
-            partialPV = new PVCoordinates(position, velocity);
-
-        }
+        final KeplerianParametersConverter converter = new KeplerianParametersConverter(getMu());
+        partialPV = converter.toCartesian(getKeplerianParameters());
 
     }
 
@@ -977,7 +821,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
     @Override
     protected Vector3D initPosition() {
 
-        final Vector3D[] axes = referenceAxes();
+        final Vector3D[] axes = KeplerianParametersConverter.referenceAxes(i, pa, raan);
 
         if (isElliptical()) {
 
@@ -1065,9 +909,10 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
         final double dtS = dt.toDouble();
 
         // use Keplerian-only motion
-        final KeplerianOrbit keplerianShifted = new KeplerianOrbit(a, e, i, pa, raan,
-                getMeanAnomaly() + getKeplerianMeanMotion() * dtS, PositionAngleType.MEAN,
-                cachedPositionAngleType, getFrame(), getDate().shiftedBy(dt), getMu());
+        final KeplerianParameters shiftedElements = new KeplerianParameters(a, e, i, pa, raan, getMeanAnomaly() + getKeplerianMeanMotion() * dtS,
+                PositionAngleType.MEAN).withPositionAngleType(cachedPositionAngleType);
+        final KeplerianOrbit keplerianShifted = new KeplerianOrbit(shiftedElements, getFrame(),
+                getDate().shiftedBy(dt), getMu());
 
         if (dtS != 0. && hasNonKeplerianAcceleration()) {
 
@@ -1542,12 +1387,12 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
 
     /**
      * Compute rate of argument of latitude.
-     * @param type position angle type of rate
+     * @param type position angle type of output rate
      * @param a semi major axis
      * @param e eccentricity
      * @param mu mu
      * @param anomaly anomaly
-     * @param cachedType position angle type of passed anomaly
+     * @param cachedType position angle type of input anomaly
      * @return first-order time derivative for anomaly
      * @since 12.2
      */
@@ -1571,14 +1416,14 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @return a string representation of this object
      */
     public String toString() {
-        return new StringBuilder().append("Keplerian parameters: ").append('{').
-                append("a: ").append(a).
-                append("; e: ").append(e).
-                append("; i: ").append(FastMath.toDegrees(i)).
-                append("; pa: ").append(FastMath.toDegrees(pa)).
-                append("; raan: ").append(FastMath.toDegrees(raan)).
-                append("; v: ").append(FastMath.toDegrees(getTrueAnomaly())).
-                append(";}").toString();
+        return "Keplerian parameters: " + '{' +
+                "a: " + a +
+                "; e: " + e +
+                "; i: " + FastMath.toDegrees(i) +
+                "; pa: " + FastMath.toDegrees(pa) +
+                "; raan: " + FastMath.toDegrees(raan) +
+                "; v: " + FastMath.toDegrees(getTrueAnomaly()) +
+                ";}";
     }
 
     /** {@inheritDoc} */
@@ -1596,9 +1441,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
     /** {@inheritDoc} */
     @Override
     public KeplerianOrbit withKeplerianRates() {
-        final PositionAngleType positionAngleType = getCachedPositionAngleType();
-        return new KeplerianOrbit(a, e, i, pa, raan, cachedAnomaly, positionAngleType, positionAngleType,
-                getFrame(), getDate(), getMu());
+        return new KeplerianOrbit(getKeplerianParameters(), getFrame(), getDate(), getMu());
     }
 
     /** Check if the given parameter is within an acceptable range.

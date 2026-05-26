@@ -31,6 +31,6 @@ public enum InterpolationMethod {
     LINEAR,
 
     /** Propagation. */
-    PROPAGATE;
+    PROPAGATE
 
 }

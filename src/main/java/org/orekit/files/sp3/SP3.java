@@ -200,7 +200,7 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
         sorted.addAll(sp3);
 
         // prepare spliced file
-        final SP3 first   = sorted.first();
+        final SP3 first   = sorted.getFirst();
         final SP3 spliced = new SP3(first.mu, first.interpolationSamples, first.frame);
         spliced.header.setVersion(first.header.getVersion());
         spliced.header.setFilter(first.header.getFilter());

@@ -22,11 +22,11 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
+import org.orekit.signal.AdjustableEmitterSignalTimer;
+import org.orekit.signal.FieldAdjustableEmitterSignalTimer;
 import org.orekit.signal.FieldSignalReceptionCondition;
-import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
@@ -60,19 +60,15 @@ public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> ex
 
     /**
      * Compute the signal emission date.
-     * @param frame frame where to perform signal propagation
-     * @param receiverPosition signal receiver position at reception
-     * @param receptionDate reception date
+     * @param receptionCondition signal reception condition
      * @param emitter signal emitter
      * @return emission date
      */
-    protected AbsoluteDate computeEmissionDate(final Frame frame, final Vector3D receiverPosition,
-                                               final AbsoluteDate receptionDate, final PVCoordinatesProvider emitter) {
-        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate,
-                receiverPosition, frame);
-        final double signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
-                .computeDelay(receptionCondition, receptionDate);
-        return receptionDate.shiftedBy(-signalTravelTime);
+    protected AbsoluteDate computeEmissionDate(final SignalReceptionCondition receptionCondition,
+                                               final PVCoordinatesProvider emitter) {
+        final AdjustableEmitterSignalTimer signalTimer = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter);
+        final double signalTravelTime = signalTimer.computeDelay(receptionCondition);
+        return receptionCondition.receptionDate().shiftedBy(-signalTravelTime);
     }
 
     /**
@@ -87,11 +83,11 @@ public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> ex
                                                                    final FieldVector3D<Gradient> receiverPosition,
                                                                    final FieldAbsoluteDate<Gradient> receptionDate,
                                                                    final FieldPVCoordinatesProvider<Gradient> emitter) {
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldSignalTravelTimeAdjustableEmitter = getSignalTravelTimeModel().
+        final FieldAdjustableEmitterSignalTimer<Gradient> fieldAdjustableEmitterSignalTimer = getSignalTravelTimeModel().
                 getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter);
         final FieldSignalReceptionCondition<Gradient> receptionCondition = new FieldSignalReceptionCondition<>(receptionDate,
                 receiverPosition, frame);
-        final Gradient signalTravelTime = fieldSignalTravelTimeAdjustableEmitter.computeDelay(receptionCondition,
+        final Gradient signalTravelTime = fieldAdjustableEmitterSignalTimer.computeDelay(receptionCondition,
                 receptionDate);
         return receptionDate.shiftedBy(signalTravelTime.negate());
     }

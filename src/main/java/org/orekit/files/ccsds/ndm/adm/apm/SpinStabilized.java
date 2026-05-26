@@ -18,8 +18,10 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 
 /**
  * Container for Attitude Parameter Message data lines.
@@ -81,10 +83,14 @@ public class SpinStabilized extends CommentsContainer {
      */
     private double nutationVel;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
      */
-    public SpinStabilized() {
-        endpoints      = new AttitudeEndpoints();
+    public SpinStabilized(final CcsdsFrameMapper frameMapper) {
+        endpoints      = new AttitudeEndpoints(frameMapper);
         spinAlpha      = Double.NaN;
         spinDelta      = Double.NaN;
         spinAngle      = Double.NaN;

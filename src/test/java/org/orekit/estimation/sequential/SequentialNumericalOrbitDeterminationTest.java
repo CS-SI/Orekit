@@ -223,12 +223,12 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.043891,  0.044723,  -0.037798 };
+        final double[] stationOffSet = { 0.043893,  0.044721,  -0.037797 };
         final double rangeBias = 0.041171;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -5.910601, 3.306715, -0.037126, 1.454295 };
+        final double[] refStatRange = { -5.910601, 3.306617, -0.037131, 1.454304 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
                 smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,
@@ -391,7 +391,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         final List<DelegatingDriver> list = new ArrayList<>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
-        Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), parametersAccuracy);
+        Assertions.assertEquals(stationOffSet[0], list.getFirst().getValue(), parametersAccuracy);
         Assertions.assertEquals(stationOffSet[1], list.get(1).getValue(), parametersAccuracy);
         Assertions.assertEquals(stationOffSet[2], list.get(2).getValue(), parametersAccuracy);
         Assertions.assertEquals(rangeBias,        list.get(3).getValue(), parametersAccuracy);
@@ -420,13 +420,13 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Batch LS results
         // final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
         // final double   CastleRangeBias = 11274.4677;
-        final double[] castleAzElBias  = { 0.086136, -0.032682};
+        final double[] castleAzElBias  = { 0.086129, -0.032682};
         final double   castleRangeBias = 11473.6163;
 
         // Batch LS results
         // final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
         // final double   FucRangeBias = 13467.8256;
-        final double[] fucAzElBias  = { -0.067443, 0.064581 };
+        final double[] fucAzElBias  = { -0.067443, 0.064578 };
         final double   fucRangeBias = 13468.9624;
 
         // Batch LS results
@@ -438,7 +438,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Batch LS results
         // final double[] PreAzElBias = { 0.030201539, 0.009747877 };
         // final double PreRangeBias = 13594.11889;
-        final double[] preAzElBias = { 0.029973, 0.011140 };
+        final double[] preAzElBias = { 0.029971, 0.011135 };
         final double   preRangeBias = 13370.1890;
 
         // Batch LS results
@@ -454,7 +454,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         final double[] refStatAzi = { -0.024691, 0.020452, -0.001111, 0.006750 };
 
         //statistics for the elevation residual (min, max, mean, std)
-        final double[] refStatEle = { -0.030255, 0.026288, 0.002044, 0.007260 };
+        final double[] refStatEle = { -0.030255, 0.026307, 0.002044, 0.007260 };
 
         // Expected covariance
         final double dragVariance = 0.999722;
@@ -556,7 +556,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         // Test on propagator parameters
         // -----------------------------
         final ParameterDriversList propagatorParameters = kalmanW3B.getPropagatorParameters();
-        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-4);
+        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().getFirst().getValue(), 1e-4);
         final Vector3D leakAcceleration0 =
                         new Vector3D(propagatorParameters.getDrivers().get(1).getValue(),
                                      propagatorParameters.getDrivers().get(3).getValue(),
@@ -576,7 +576,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         sortParametersChanges(list);
 
         // Station CastleRock
-        Assertions.assertEquals(castleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
+        Assertions.assertEquals(castleAzElBias[0], FastMath.toDegrees(list.getFirst().getValue()), angleAccuracy);
         Assertions.assertEquals(castleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
         Assertions.assertEquals(castleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 

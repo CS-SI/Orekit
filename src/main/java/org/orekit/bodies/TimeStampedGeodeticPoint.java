@@ -73,8 +73,7 @@ public class TimeStampedGeodeticPoint extends GeodeticPoint implements TimeStamp
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof TimeStampedGeodeticPoint) {
-            final TimeStampedGeodeticPoint other = (TimeStampedGeodeticPoint) object;
+        if (object instanceof TimeStampedGeodeticPoint other) {
             return other.date.isEqualTo(date) && super.equals(other);
         } else {
             return false;

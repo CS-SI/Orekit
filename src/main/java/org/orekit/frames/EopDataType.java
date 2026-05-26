@@ -31,6 +31,6 @@ public enum EopDataType {
     RAPID,
 
     /** Predicted data. */
-    PREDICTED;
+    PREDICTED
 
 }

@@ -121,7 +121,7 @@ class GroundAtNightDetectorTest {
         } else {
             Assertions.assertEquals(2, events.size());
             Assertions.assertEquals(expectedDuration,
-                                events.get(1).getState().getDate().durationFrom(events.get(0).getState().getDate()),
+                                events.get(1).getState().getDate().durationFrom(events.getFirst().getState().getDate()),
                                 1.0e-3);
         }
 

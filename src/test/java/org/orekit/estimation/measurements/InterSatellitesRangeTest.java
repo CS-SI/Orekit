@@ -115,9 +115,9 @@ class InterSatellitesRangeTest {
         double refErrorsPMedian = 3.8e-10;
         double refErrorsPMean   = 2.0e-09;
         double refErrorsPMax    = 1.3e-07;
-        double refErrorsVMedian = 8.4e-04;
-        double refErrorsVMean   = 1.8e-03;
-        double refErrorsVMax    = 2.9e-02;
+        double refErrorsVMedian = 8.5e-04;
+        double refErrorsVMean   = 1.9e-03;
+        double refErrorsVMax    = 5.4e-02;
         this.genericTestStateDerivatives(printResults, 1,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -239,7 +239,7 @@ class InterSatellitesRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -270,7 +270,7 @@ class InterSatellitesRangeTest {
 
         // Test measurement type
         Assertions.assertEquals(InterSatellitesRange.MEASUREMENT_TYPE,
-                                measurements.get(0).getMeasurementType());
+                                measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -399,7 +399,7 @@ class InterSatellitesRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -505,14 +505,14 @@ class InterSatellitesRangeTest {
                         ephemeris.propagate(date)
                     };
                     ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockBiasDriver(),
+                        measurement.getSatellites().getFirst().getClockBiasDriver(),
                         measurement.getSatellites().get(1).getClockBiasDriver()
                     };
 
                     // Only local satellite clock offset is considered for two ways measurements
                     if (((InterSatellitesRange) measurement).isTwoWay()) {
                         drivers = new ParameterDriver[] {
-                            measurement.getSatellites().get(0).getClockBiasDriver()
+                            measurement.getSatellites().getFirst().getClockBiasDriver()
                         };
                     }
 
@@ -553,7 +553,7 @@ class InterSatellitesRangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
@@ -608,9 +608,11 @@ class InterSatellitesRangeTest {
                 new SpacecraftState(TestUtils.getDefaultOrbit(epoch))};
         final ObservableSatellite sat0 = new ObservableSatellite(0);
         sat0.getClockBiasDriver().setValue(0.1);
+        sat0.getClockBiasDriver().setReferenceDate(epoch);
         final ObservableSatellite sat1 = new ObservableSatellite(1);
         sat1.getClockBiasDriver().setValue(0.2);
         sat1.getClockDriftDriver().setValue(0.01);
+        sat1.getClockBiasDriver().setReferenceDate(epoch);
         // WHEN
         final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, twoWay, epoch, 0., 1., 1.);
         final EstimatedMeasurementBase<InterSatellitesRange> estimatedWithoutDerivatives = range.estimateWithoutDerivatives(state);

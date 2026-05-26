@@ -22,7 +22,9 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.frames.Frame;
 
 /** This class gathers the meta-data present in the Navigation Data Message (ADM, ODM and TDM).
  * <p>
@@ -50,11 +52,30 @@ public class Metadata extends CommentsContainer {
     /** Time System: used for metadata, orbit state and covariance data. */
     private TimeSystem timeSystem;
 
-    /** Simple constructor.
+    /** For creating a {@link Frame}. */
+    private final CcsdsFrameMapper frameMapper;
+
+    /**
+     * Simple constructor.
+     *
      * @param defaultTimeSystem default time system (may be null)
+     * @param frameMapper       for creating a {@link Frame}.
+     * @since 13.1.5
      */
-    protected Metadata(final TimeSystem defaultTimeSystem) {
+    protected Metadata(final TimeSystem defaultTimeSystem,
+                       final CcsdsFrameMapper frameMapper) {
         this.timeSystem = defaultTimeSystem;
+        this.frameMapper = frameMapper;
+    }
+
+    /**
+     * Get the mapping between a CCSDS frame and a {@link Frame}.
+     *
+     * @return the frame mapper.
+     * @since 13.1.5
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
     }
 
     /** {@inheritDoc} */

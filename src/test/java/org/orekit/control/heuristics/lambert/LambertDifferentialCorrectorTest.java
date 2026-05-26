@@ -375,7 +375,7 @@ class LambertDifferentialCorrectorTest {
         final LambertSolution solutionToRefine = iod.solve(
             true,
             0,
-            boundaryConditions).get(0);
+            boundaryConditions).getFirst();
 
         final Vector3D unrefinedSolutionExpectedVelocity1 = new Vector3D(8.79257809, 0.27867677, 0.02581527).scalarMultiply(1000.0);
         final Vector3D unrefinedSolutionExpectedVelocity2 = new Vector3D(-8.68383320, -0.28592643, -0.03453010).scalarMultiply(1000.0);

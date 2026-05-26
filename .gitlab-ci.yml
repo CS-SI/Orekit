@@ -6,7 +6,7 @@ stages:
 
 default:
   # Default image
-  image: registry.orekit.org/orekit/ci-utils/maven:3.9.6-eclipse-temurin-11
+  image: registry.orekit.org/orekit/ci-utils/maven:3.9.11-eclipse-temurin-21
   # Cache downloaded dependencies and plugins between builds.
   # To keep cache across branches add 'key: "$CI_JOB_REF_NAME"'
   cache:
@@ -192,8 +192,10 @@ tutorials:
   # Don't fail the build if this doesn't work
   allow_failure: true
   needs:
-    - job: deploy:artifacts
+    - job: deploy:site
       artifacts: false
+  inherit:
+    variables: false
   trigger: orekit/orekit-tutorials
   rules:
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "develop"

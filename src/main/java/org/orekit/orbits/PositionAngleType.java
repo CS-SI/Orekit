@@ -35,6 +35,6 @@ public enum PositionAngleType {
     ECCENTRIC,
 
     /** True angle. */
-    TRUE;
+    TRUE
 
 }

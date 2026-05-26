@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Comparator;
 
@@ -27,6 +28,7 @@ import java.util.Comparator;
 public class IntegerLeastSquareComparator implements Comparator<IntegerLeastSquareSolution>, Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20210813;
 
     /** Simple constructor.

@@ -92,7 +92,7 @@ class FieldEphemerisTest {
         // THEN
         assertEquals(state.getFrame(), fieldEphemeris.getFrame());
         assertTrue(fieldEphemeris.getParametersDrivers().isEmpty());
-        assertEquals(spacecraftStates.get(0).getDate(), fieldEphemeris.getMinDate());
+        assertEquals(spacecraftStates.getFirst().getDate(), fieldEphemeris.getMinDate());
         assertEquals(spacecraftStates.get(1).getDate(), fieldEphemeris.getMaxDate());
         assertInstanceOf(FieldSpacecraftStateInterpolator.class, fieldEphemeris.getStateInterpolator());
     }

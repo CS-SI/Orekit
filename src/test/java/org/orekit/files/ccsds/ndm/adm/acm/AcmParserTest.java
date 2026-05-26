@@ -20,8 +20,14 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.util.FastMath;
@@ -33,7 +39,10 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.AdMethodType;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CenterName;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame.BaseEquipment;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
@@ -41,8 +50,12 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.KvnLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.XmlLexicalAnalyzer;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
@@ -201,7 +214,7 @@ public class AcmParserTest {
 
         // attitude data
         Assertions.assertEquals(1, acm.getData().getAttitudeBlocks().size());
-        AttitudeStateHistory history = acm.getData().getAttitudeBlocks().get(0);
+        AttitudeStateHistory history = acm.getData().getAttitudeBlocks().getFirst();
         Assertions.assertTrue(history.getMetadata().getComments().isEmpty());
         Assertions.assertNull(history.getMetadata().getAttID());
         Assertions.assertNull(history.getMetadata().getAttPrevID());
@@ -216,12 +229,12 @@ public class AcmParserTest {
         List<AttitudeState> states = history.getAttitudeStates();
         Assertions.assertEquals(3, states.size());
 
-        Assertions.assertEquals(0.0, states.get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        Assertions.assertEquals(4,   states.get(0).getElements().length);
-        Assertions.assertEquals( 0.73566,  states.get(0).getElements()[0], 1.0e-15);
-        Assertions.assertEquals(-0.50547,  states.get(0).getElements()[1], 1.0e-15);
-        Assertions.assertEquals( 0.41309,  states.get(0).getElements()[2], 1.0e-15);
-        Assertions.assertEquals( 0.180707, states.get(0).getElements()[3], 1.0e-15);
+        Assertions.assertEquals(0.0, states.getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        Assertions.assertEquals(4,   states.getFirst().getElements().length);
+        Assertions.assertEquals( 0.73566,  states.getFirst().getElements()[0], 1.0e-15);
+        Assertions.assertEquals(-0.50547,  states.getFirst().getElements()[1], 1.0e-15);
+        Assertions.assertEquals( 0.41309,  states.getFirst().getElements()[2], 1.0e-15);
+        Assertions.assertEquals( 0.180707, states.getFirst().getElements()[3], 1.0e-15);
 
         Assertions.assertEquals(0.25, states.get(1).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
         Assertions.assertEquals(4,    states.get(1).getElements().length);
@@ -237,11 +250,11 @@ public class AcmParserTest {
         Assertions.assertEquals( 0.41441,  states.get(2).getElements()[2], 1.0e-15);
         Assertions.assertEquals( 0.181610, states.get(2).getElements()[3], 1.0e-15);
 
-        Assertions.assertNull(acm.getSegments().get(0).getData().getPhysicBlock());
-        Assertions.assertNull(acm.getSegments().get(0).getData().getCovarianceBlocks());
-        Assertions.assertNull(acm.getSegments().get(0).getData().getManeuverBlocks());
-        Assertions.assertNull(acm.getSegments().get(0).getData().getAttitudeDeterminationBlock());
-        Assertions.assertNull(acm.getSegments().get(0).getData().getUserDefinedBlock());
+        Assertions.assertNull(acm.getSegments().getFirst().getData().getPhysicBlock());
+        Assertions.assertNull(acm.getSegments().getFirst().getData().getCovarianceBlocks());
+        Assertions.assertNull(acm.getSegments().getFirst().getData().getManeuverBlocks());
+        Assertions.assertNull(acm.getSegments().getFirst().getData().getAttitudeDeterminationBlock());
+        Assertions.assertNull(acm.getSegments().getFirst().getData().getUserDefinedBlock());
 
     }
 
@@ -271,9 +284,9 @@ public class AcmParserTest {
 
         // attitude data
         Assertions.assertEquals(1, acm.getData().getAttitudeBlocks().size());
-        AttitudeStateHistory history = acm.getData().getAttitudeBlocks().get(0);
+        AttitudeStateHistory history = acm.getData().getAttitudeBlocks().getFirst();
         Assertions.assertEquals("OBC Attitude and Bias during momentum management maneuver",
-                                history.getMetadata().getComments().get(0));
+                                history.getMetadata().getComments().getFirst());
         Assertions.assertNull(history.getMetadata().getAttID());
         Assertions.assertNull(history.getMetadata().getAttPrevID());
         Assertions.assertNull(history.getMetadata().getAttBasis());
@@ -287,19 +300,19 @@ public class AcmParserTest {
         List<AttitudeState> states = history.getAttitudeStates();
         Assertions.assertEquals(4, states.size());
 
-        Assertions.assertEquals(0.0, states.get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        Assertions.assertEquals(7,   states.get(0).getElements().length);
-        Assertions.assertEquals( 0.1153,    states.get(0).getElements()[0], 1.0e-15);
-        Assertions.assertEquals(-0.1424,    states.get(0).getElements()[1], 1.0e-15);
-        Assertions.assertEquals( 0.8704,    states.get(0).getElements()[2], 1.0e-15);
-        Assertions.assertEquals( 0.4571,    states.get(0).getElements()[3], 1.0e-15);
-        Assertions.assertEquals( 2.271e-06, FastMath.toDegrees(states.get(0).getElements()[4]), 1.0e-15);
-        Assertions.assertEquals(-4.405e-06, FastMath.toDegrees(states.get(0).getElements()[5]), 1.0e-15);
-        Assertions.assertEquals(-3.785e-06, FastMath.toDegrees(states.get(0).getElements()[6]), 1.0e-15);
+        Assertions.assertEquals(0.0, states.getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        Assertions.assertEquals(7,   states.getFirst().getElements().length);
+        Assertions.assertEquals( 0.1153,    states.getFirst().getElements()[0], 1.0e-15);
+        Assertions.assertEquals(-0.1424,    states.getFirst().getElements()[1], 1.0e-15);
+        Assertions.assertEquals( 0.8704,    states.getFirst().getElements()[2], 1.0e-15);
+        Assertions.assertEquals( 0.4571,    states.getFirst().getElements()[3], 1.0e-15);
+        Assertions.assertEquals( 2.271e-06, FastMath.toDegrees(states.getFirst().getElements()[4]), 1.0e-15);
+        Assertions.assertEquals(-4.405e-06, FastMath.toDegrees(states.getFirst().getElements()[5]), 1.0e-15);
+        Assertions.assertEquals(-3.785e-06, FastMath.toDegrees(states.getFirst().getElements()[6]), 1.0e-15);
 
         Assertions.assertEquals(1, acm.getData().getManeuverBlocks().size());
-        AttitudeManeuver man = acm.getData().getManeuverBlocks().get(0);
-        Assertions.assertEquals("Momentum management maneuver", man.getComments().get(0));
+        AttitudeManeuver man = acm.getData().getManeuverBlocks().getFirst();
+        Assertions.assertEquals("Momentum management maneuver", man.getComments().getFirst());
         Assertions.assertEquals("MOM_DESAT",                    man.getManPurpose());
         Assertions.assertEquals(100.0,                          man.getBeginTime());
         Assertions.assertTrue(Double.isNaN(man.getEndTime()));
@@ -312,7 +325,7 @@ public class AcmParserTest {
         Assertions.assertTrue(Double.isNaN(man.getTargetSpinRate()));
 
         AttitudeDetermination ad = acm.getData().getAttitudeDeterminationBlock();
-        Assertions.assertEquals("SDO Onboard Filter",    ad.getComments().get(0));
+        Assertions.assertEquals("SDO Onboard Filter",    ad.getComments().getFirst());
         Assertions.assertEquals(AdMethodType.EKF,        ad.getMethod());
         Assertions.assertEquals("OBC",                   ad.getSource());
         Assertions.assertEquals(AttitudeElementsType.QUATERNION, ad.getAttitudeStates());
@@ -320,7 +333,7 @@ public class AcmParserTest {
         Assertions.assertEquals(BaseEquipment.SC_BODY,   ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
         Assertions.assertEquals("1",                     ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(4,                       ad.getSensorsUsed().size());
-        Assertions.assertEquals("AST1",                  ad.getSensorsUsed().get(0).getSensorUsed());
+        Assertions.assertEquals("AST1",                  ad.getSensorsUsed().getFirst().getSensorUsed());
         Assertions.assertEquals("AST2",                  ad.getSensorsUsed().get(1).getSensorUsed());
         Assertions.assertEquals("DSS",                   ad.getSensorsUsed().get(2).getSensorUsed());
         Assertions.assertEquals("IMU",                   ad.getSensorsUsed().get(3).getSensorUsed());
@@ -350,7 +363,7 @@ public class AcmParserTest {
 
         Assertions.assertNull(acm.getData().getAttitudeBlocks());
         AttitudePhysicalProperties phys = acm.getData().getPhysicBlock();
-        Assertions.assertEquals("Spacecraft Physical Parameters", phys.getComments().get(0));
+        Assertions.assertEquals("Spacecraft Physical Parameters", phys.getComments().getFirst());
         Assertions.assertEquals(1916.0, phys.getWetMass(), 1.0e-15);
         Assertions.assertEquals( 0.04,  phys.getCenterOfPressure().getX(),      1.0e-15);
         Assertions.assertEquals(-0.78,  phys.getCenterOfPressure().getY(),      1.0e-15);
@@ -390,13 +403,13 @@ public class AcmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2017, 12, 30, 0, 0, 0.0, TimeScalesFactory.getUTC()),
                                 acm.getMetadata().getEpochT0()); 
         Assertions.assertEquals(2,             acm.getMetadata().getAcmDataElements().size());
-        Assertions.assertEquals(AcmElements.COV, acm.getMetadata().getAcmDataElements().get(0));
+        Assertions.assertEquals(AcmElements.COV, acm.getMetadata().getAcmDataElements().getFirst());
         Assertions.assertEquals(AcmElements.AD,  acm.getMetadata().getAcmDataElements().get(1));
 
         // covariance data
         Assertions.assertEquals(1, acm.getData().getCovarianceBlocks().size());
-        AttitudeCovarianceHistory history = acm.getData().getCovarianceBlocks().get(0);
-        Assertions.assertEquals("Diagonal Covariance for LRO Onboard Kalman Filter", history.getMetadata().getComments().get(0));
+        AttitudeCovarianceHistory history = acm.getData().getCovarianceBlocks().getFirst();
+        Assertions.assertEquals("Diagonal Covariance for LRO Onboard Kalman Filter", history.getMetadata().getComments().getFirst());
         Assertions.assertEquals("DETERMINED_OBC", history.getMetadata().getCovBasis());
         Assertions.assertEquals(BaseEquipment.SC_BODY, history.getMetadata().getCovReferenceFrame().asSpacecraftBodyFrame().getBaseEquipment());
         Assertions.assertEquals("1", history.getMetadata().getCovReferenceFrame().asSpacecraftBodyFrame().getLabel());
@@ -404,8 +417,8 @@ public class AcmParserTest {
         List<AttitudeCovariance> covariances = history.getCovariances();
         Assertions.assertEquals(3, covariances.size());
 
-        Assertions.assertEquals(0.0, covariances.get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        DiagonalMatrix m = covariances.get(0).getMatrix();
+        Assertions.assertEquals(0.0, covariances.getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        DiagonalMatrix m = covariances.getFirst().getMatrix();
         Assertions.assertEquals(6,   m.getRowDimension());
         Assertions.assertEquals( 6.74E-11, FastMath.toDegrees(FastMath.toDegrees(m.getEntry(0, 0))), 1.0e-22);
         Assertions.assertEquals( 8.10E-11, FastMath.toDegrees(FastMath.toDegrees(m.getEntry(1, 1))), 1.0e-22);
@@ -415,7 +428,7 @@ public class AcmParserTest {
         Assertions.assertEquals( 1.12E-15, FastMath.toDegrees(FastMath.toDegrees(m.getEntry(5, 5))), 1.0e-22);
 
         AttitudeDetermination ad = acm.getData().getAttitudeDeterminationBlock();
-        Assertions.assertEquals("LRO Onboard Filter, A Multiplicative Extended Kalman Filter", ad.getComments().get(0));
+        Assertions.assertEquals("LRO Onboard Filter, A Multiplicative Extended Kalman Filter", ad.getComments().getFirst());
         Assertions.assertEquals(AdMethodType.EKF,                      ad.getMethod());
         Assertions.assertEquals("OBC",                                 ad.getSource());
         Assertions.assertEquals(7,                                     ad.getNbStates());
@@ -426,7 +439,7 @@ public class AcmParserTest {
         Assertions.assertEquals("1",                                   ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(RateElementsType.GYRO_BIAS,            ad.getRateStates());
         Assertions.assertEquals(3,                                     ad.getSensorsUsed().size());
-        Assertions.assertEquals("AST1",                                ad.getSensorsUsed().get(0).getSensorUsed());
+        Assertions.assertEquals("AST1",                                ad.getSensorsUsed().getFirst().getSensorUsed());
         Assertions.assertEquals("AST2",                                ad.getSensorsUsed().get(1).getSensorUsed());
         Assertions.assertEquals("IMU",                                 ad.getSensorsUsed().get(2).getSensorUsed());
 
@@ -447,7 +460,7 @@ public class AcmParserTest {
         Assertions.assertEquals(2.0, acm.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals(2, acm.getHeader().getComments().size());
         Assertions.assertEquals("This is an arbitrary test file with probably inconsistent data",
-                                acm.getHeader().getComments().get(0));
+                                acm.getHeader().getComments().getFirst());
         Assertions.assertEquals("its purpose is only to exercise all possible entries in ACM files",
                                 acm.getHeader().getComments().get(1));
         Assertions.assertEquals("free to use under Orekit license",  acm.getHeader().getClassification());
@@ -457,7 +470,7 @@ public class AcmParserTest {
         Assertions.assertEquals("a4830b29-a805-4d31-ab6e-06b57c843323", acm.getHeader().getMessageId());
 
         // metadata
-        Assertions.assertEquals("comment at metadata start",    acm.getMetadata().getComments().get(0));
+        Assertions.assertEquals("comment at metadata start",    acm.getMetadata().getComments().getFirst());
         Assertions.assertEquals("Korrigan",                     acm.getMetadata().getObjectName());
         Assertions.assertEquals("1703-999Z",                    acm.getMetadata().getInternationalDesignator());
         Assertions.assertEquals(1703,                           acm.getMetadata().getLaunchYear());
@@ -475,7 +488,7 @@ public class AcmParserTest {
         Assertions.assertEquals("UTC",                          acm.getMetadata().getTimeSystem().name());
         Assertions.assertEquals(t0,                             acm.getMetadata().getEpochT0()); 
         Assertions.assertEquals(17, acm.getMetadata().getAcmDataElements().size());
-        Assertions.assertEquals(AcmElements.ATT,  acm.getMetadata().getAcmDataElements().get( 0));
+        Assertions.assertEquals(AcmElements.ATT,  acm.getMetadata().getAcmDataElements().getFirst());
         Assertions.assertEquals(AcmElements.ATT,  acm.getMetadata().getAcmDataElements().get( 1));
         Assertions.assertEquals(AcmElements.ATT,  acm.getMetadata().getAcmDataElements().get( 2));
         Assertions.assertEquals(AcmElements.ATT,  acm.getMetadata().getAcmDataElements().get( 3));
@@ -503,8 +516,8 @@ public class AcmParserTest {
         Assertions.assertEquals(5, acm.getData().getAttitudeBlocks().size());
 
         // first attitude block
-        AttitudeStateHistory att1 = acm.getData().getAttitudeBlocks().get(0);
-        Assertions.assertEquals("first attitude block",          att1.getMetadata().getComments().get(0));
+        AttitudeStateHistory att1 = acm.getData().getAttitudeBlocks().getFirst();
+        Assertions.assertEquals("first attitude block",          att1.getMetadata().getComments().getFirst());
         Assertions.assertEquals("ATT_1",                         att1.getMetadata().getAttID());
         Assertions.assertEquals("ATT_0",                         att1.getMetadata().getAttPrevID());
         Assertions.assertEquals("SIMULATED",                     att1.getMetadata().getAttBasis());
@@ -516,23 +529,23 @@ public class AcmParserTest {
         Assertions.assertEquals(AttitudeElementsType.QUATERNION, att1.getMetadata().getAttitudeType());
         Assertions.assertEquals(RateElementsType.NONE,           att1.getMetadata().getRateType());
         Assertions.assertEquals(2,                               att1.getAttitudeStates().size());
-        Assertions.assertEquals(0.0,       att1.getAttitudeStates().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        Assertions.assertEquals(4,         att1.getAttitudeStates().get(0).getElements().length);
-        Assertions.assertEquals( 0.73566,  att1.getAttitudeStates().get(0).getElements()[0], 1.0e-15);
-        Assertions.assertEquals(-0.50547,  att1.getAttitudeStates().get(0).getElements()[1], 1.0e-15);
-        Assertions.assertEquals( 0.41309,  att1.getAttitudeStates().get(0).getElements()[2], 1.0e-15);
-        Assertions.assertEquals( 0.180707, att1.getAttitudeStates().get(0).getElements()[3], 1.0e-15);
+        Assertions.assertEquals(0.0,       att1.getAttitudeStates().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        Assertions.assertEquals(4,         att1.getAttitudeStates().getFirst().getElements().length);
+        Assertions.assertEquals( 0.73566,  att1.getAttitudeStates().getFirst().getElements()[0], 1.0e-15);
+        Assertions.assertEquals(-0.50547,  att1.getAttitudeStates().getFirst().getElements()[1], 1.0e-15);
+        Assertions.assertEquals( 0.41309,  att1.getAttitudeStates().getFirst().getElements()[2], 1.0e-15);
+        Assertions.assertEquals( 0.180707, att1.getAttitudeStates().getFirst().getElements()[3], 1.0e-15);
         Assertions.assertEquals(0.25,      att1.getAttitudeStates().get(1).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
         Assertions.assertEquals(4,         att1.getAttitudeStates().get(1).getElements().length);
         Assertions.assertEquals( 0.73529,  att1.getAttitudeStates().get(1).getElements()[0], 1.0e-15);
         Assertions.assertEquals(-0.50531,  att1.getAttitudeStates().get(1).getElements()[1], 1.0e-15);
         Assertions.assertEquals( 0.41375,  att1.getAttitudeStates().get(1).getElements()[2], 1.0e-15);
         Assertions.assertEquals( 0.181158, att1.getAttitudeStates().get(1).getElements()[3], 1.0e-15);
-        Assertions.assertEquals(0.0, att1.getAttitudeStates().get(0).toAngular(RotationOrder.XYZ).getRotationRate().getNorm(), 1.0e-10);
+        Assertions.assertEquals(0.0, att1.getAttitudeStates().getFirst().toAngular(RotationOrder.XYZ).getRotationRate().getNorm(), 1.0e-10);
 
         // second attitude block
         AttitudeStateHistory att2 = acm.getData().getAttitudeBlocks().get(1);
-        Assertions.assertEquals("second attitude block",           att2.getMetadata().getComments().get(0));
+        Assertions.assertEquals("second attitude block",           att2.getMetadata().getComments().getFirst());
         Assertions.assertEquals("ATT_2",                           att2.getMetadata().getAttID());
         Assertions.assertEquals("ATT_1",                           att2.getMetadata().getAttPrevID());
         Assertions.assertEquals("SIMULATED",                       att2.getMetadata().getAttBasis());
@@ -544,14 +557,14 @@ public class AcmParserTest {
         Assertions.assertEquals(AttitudeElementsType.EULER_ANGLES, att2.getMetadata().getAttitudeType());
         Assertions.assertEquals(RateElementsType.ANGVEL,           att2.getMetadata().getRateType());
         Assertions.assertEquals(2,                                 att2.getAttitudeStates().size());
-        Assertions.assertEquals(0.50, att2.getAttitudeStates().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        Assertions.assertEquals(6,    att2.getAttitudeStates().get(0).getElements().length);
-        Assertions.assertEquals( 1.0, FastMath.toDegrees(att2.getAttitudeStates().get(0).getElements()[0]), 1.0e-15);
-        Assertions.assertEquals( 1.2, FastMath.toDegrees(att2.getAttitudeStates().get(0).getElements()[1]), 1.0e-15);
-        Assertions.assertEquals( 1.3, FastMath.toDegrees(att2.getAttitudeStates().get(0).getElements()[2]), 1.0e-15);
-        Assertions.assertEquals(-0.4, FastMath.toDegrees(att2.getAttitudeStates().get(0).getElements()[3]), 1.0e-15);
-        Assertions.assertEquals(-0.5, FastMath.toDegrees(att2.getAttitudeStates().get(0).getElements()[4]), 1.0e-15);
-        Assertions.assertEquals(-0.6, FastMath.toDegrees(att2.getAttitudeStates().get(0).getElements()[5]), 1.0e-15);
+        Assertions.assertEquals(0.50, att2.getAttitudeStates().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        Assertions.assertEquals(6,    att2.getAttitudeStates().getFirst().getElements().length);
+        Assertions.assertEquals( 1.0, FastMath.toDegrees(att2.getAttitudeStates().getFirst().getElements()[0]), 1.0e-15);
+        Assertions.assertEquals( 1.2, FastMath.toDegrees(att2.getAttitudeStates().getFirst().getElements()[1]), 1.0e-15);
+        Assertions.assertEquals( 1.3, FastMath.toDegrees(att2.getAttitudeStates().getFirst().getElements()[2]), 1.0e-15);
+        Assertions.assertEquals(-0.4, FastMath.toDegrees(att2.getAttitudeStates().getFirst().getElements()[3]), 1.0e-15);
+        Assertions.assertEquals(-0.5, FastMath.toDegrees(att2.getAttitudeStates().getFirst().getElements()[4]), 1.0e-15);
+        Assertions.assertEquals(-0.6, FastMath.toDegrees(att2.getAttitudeStates().getFirst().getElements()[5]), 1.0e-15);
         Assertions.assertEquals(0.75, att2.getAttitudeStates().get(1).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
         Assertions.assertEquals(6,    att2.getAttitudeStates().get(1).getElements().length);
         Assertions.assertEquals( 2.0, FastMath.toDegrees(att2.getAttitudeStates().get(1).getElements()[0]), 1.0e-15);
@@ -560,11 +573,11 @@ public class AcmParserTest {
         Assertions.assertEquals(-1.4, FastMath.toDegrees(att2.getAttitudeStates().get(1).getElements()[3]), 1.0e-15);
         Assertions.assertEquals(-1.5, FastMath.toDegrees(att2.getAttitudeStates().get(1).getElements()[4]), 1.0e-15);
         Assertions.assertEquals(-1.6, FastMath.toDegrees(att2.getAttitudeStates().get(1).getElements()[5]), 1.0e-15);
-        Assertions.assertEquals(0.0153152, att2.getAttitudeStates().get(0).toAngular(RotationOrder.XYZ).getRotationRate().getNorm(), 1.0e-7);
+        Assertions.assertEquals(0.0153152, att2.getAttitudeStates().getFirst().toAngular(RotationOrder.XYZ).getRotationRate().getNorm(), 1.0e-7);
 
         // third attitude block
         AttitudeStateHistory att3 = acm.getData().getAttitudeBlocks().get(2);
-        Assertions.assertEquals("third attitude block",           att3.getMetadata().getComments().get(0));
+        Assertions.assertEquals("third attitude block",           att3.getMetadata().getComments().getFirst());
         Assertions.assertEquals("ATT_3",                           att3.getMetadata().getAttID());
         Assertions.assertEquals("ATT_2",                           att3.getMetadata().getAttPrevID());
         Assertions.assertEquals("SIMULATED",                       att3.getMetadata().getAttBasis());
@@ -576,16 +589,16 @@ public class AcmParserTest {
         Assertions.assertEquals(AttitudeElementsType.QUATERNION,   att3.getMetadata().getAttitudeType());
         Assertions.assertEquals(RateElementsType.Q_DOT,            att3.getMetadata().getRateType());
         Assertions.assertEquals(2,                                 att3.getAttitudeStates().size());
-        Assertions.assertEquals(1.0,         att3.getAttitudeStates().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        Assertions.assertEquals(8,           att3.getAttitudeStates().get(0).getElements().length);
-        Assertions.assertEquals( 0.73566,    att3.getAttitudeStates().get(0).getElements()[0], 1.0e-15);
-        Assertions.assertEquals(-0.50547,    att3.getAttitudeStates().get(0).getElements()[1], 1.0e-15);
-        Assertions.assertEquals( 0.41309,    att3.getAttitudeStates().get(0).getElements()[2], 1.0e-15);
-        Assertions.assertEquals( 0.180707,   att3.getAttitudeStates().get(0).getElements()[3], 1.0e-15);
-        Assertions.assertEquals( 0.0073566,  att3.getAttitudeStates().get(0).getElements()[4], 1.0e-15);
-        Assertions.assertEquals(-0.0050547,  att3.getAttitudeStates().get(0).getElements()[5], 1.0e-15);
-        Assertions.assertEquals( 0.0041309,  att3.getAttitudeStates().get(0).getElements()[6], 1.0e-15);
-        Assertions.assertEquals( 0.00180707, att3.getAttitudeStates().get(0).getElements()[7], 1.0e-15);
+        Assertions.assertEquals(1.0,         att3.getAttitudeStates().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        Assertions.assertEquals(8,           att3.getAttitudeStates().getFirst().getElements().length);
+        Assertions.assertEquals( 0.73566,    att3.getAttitudeStates().getFirst().getElements()[0], 1.0e-15);
+        Assertions.assertEquals(-0.50547,    att3.getAttitudeStates().getFirst().getElements()[1], 1.0e-15);
+        Assertions.assertEquals( 0.41309,    att3.getAttitudeStates().getFirst().getElements()[2], 1.0e-15);
+        Assertions.assertEquals( 0.180707,   att3.getAttitudeStates().getFirst().getElements()[3], 1.0e-15);
+        Assertions.assertEquals( 0.0073566,  att3.getAttitudeStates().getFirst().getElements()[4], 1.0e-15);
+        Assertions.assertEquals(-0.0050547,  att3.getAttitudeStates().getFirst().getElements()[5], 1.0e-15);
+        Assertions.assertEquals( 0.0041309,  att3.getAttitudeStates().getFirst().getElements()[6], 1.0e-15);
+        Assertions.assertEquals( 0.00180707, att3.getAttitudeStates().getFirst().getElements()[7], 1.0e-15);
         Assertions.assertEquals(1.25,        att3.getAttitudeStates().get(1).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
         Assertions.assertEquals(8,           att3.getAttitudeStates().get(1).getElements().length);
         Assertions.assertEquals( 0.73529,    att3.getAttitudeStates().get(1).getElements()[0], 1.0e-15);
@@ -596,11 +609,11 @@ public class AcmParserTest {
         Assertions.assertEquals(-0.0050531,  att3.getAttitudeStates().get(1).getElements()[5], 1.0e-15);
         Assertions.assertEquals( 0.0041375,  att3.getAttitudeStates().get(1).getElements()[6], 1.0e-15);
         Assertions.assertEquals( 0.00181158, att3.getAttitudeStates().get(1).getElements()[7], 1.0e-15);
-        Assertions.assertEquals(0.0, att3.getAttitudeStates().get(0).toAngular(RotationOrder.XYZ).getRotationRate().getNorm(), 1.0e-10);
+        Assertions.assertEquals(0.0, att3.getAttitudeStates().getFirst().toAngular(RotationOrder.XYZ).getRotationRate().getNorm(), 1.0e-10);
 
         // fourth attitude block
         AttitudeStateHistory att4 = acm.getData().getAttitudeBlocks().get(3);
-        Assertions.assertEquals("fourth attitude block",           att4.getMetadata().getComments().get(0));
+        Assertions.assertEquals("fourth attitude block",           att4.getMetadata().getComments().getFirst());
         Assertions.assertEquals("ATT_4",                           att4.getMetadata().getAttID());
         Assertions.assertEquals("ATT_3",                           att4.getMetadata().getAttPrevID());
         Assertions.assertEquals("SIMULATED",                       att4.getMetadata().getAttBasis());
@@ -612,21 +625,21 @@ public class AcmParserTest {
         Assertions.assertEquals(AttitudeElementsType.DCM,          att4.getMetadata().getAttitudeType());
         Assertions.assertEquals(RateElementsType.Q_DOT,            att4.getMetadata().getRateType());
         Assertions.assertEquals(2,                                 att4.getAttitudeStates().size());
-        Assertions.assertEquals(1.50, att4.getAttitudeStates().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        Assertions.assertEquals(13,   att4.getAttitudeStates().get(0).getElements().length);
-        Assertions.assertEquals(1.0,  att4.getAttitudeStates().get(0).getElements()[ 0], 1.0e-15);
-        Assertions.assertEquals(0.0,  att4.getAttitudeStates().get(0).getElements()[ 1], 1.0e-15);
-        Assertions.assertEquals(0.0,  att4.getAttitudeStates().get(0).getElements()[ 2], 1.0e-15);
-        Assertions.assertEquals(0.0,  att4.getAttitudeStates().get(0).getElements()[ 3], 1.0e-15);
-        Assertions.assertEquals(1.0,  att4.getAttitudeStates().get(0).getElements()[ 4], 1.0e-15);
-        Assertions.assertEquals(0.0,  att4.getAttitudeStates().get(0).getElements()[ 5], 1.0e-15);
-        Assertions.assertEquals(0.0,  att4.getAttitudeStates().get(0).getElements()[ 6], 1.0e-15);
-        Assertions.assertEquals(0.0,  att4.getAttitudeStates().get(0).getElements()[ 7], 1.0e-15);
-        Assertions.assertEquals(1.0,  att4.getAttitudeStates().get(0).getElements()[ 8], 1.0e-15);
-        Assertions.assertEquals(0.01, att4.getAttitudeStates().get(0).getElements()[ 9], 1.0e-15);
-        Assertions.assertEquals(0.02, att4.getAttitudeStates().get(0).getElements()[10], 1.0e-15);
-        Assertions.assertEquals(0.03, att4.getAttitudeStates().get(0).getElements()[11], 1.0e-15);
-        Assertions.assertEquals(0.04, att4.getAttitudeStates().get(0).getElements()[12], 1.0e-15);
+        Assertions.assertEquals(1.50, att4.getAttitudeStates().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        Assertions.assertEquals(13,   att4.getAttitudeStates().getFirst().getElements().length);
+        Assertions.assertEquals(1.0,  att4.getAttitudeStates().getFirst().getElements()[ 0], 1.0e-15);
+        Assertions.assertEquals(0.0,  att4.getAttitudeStates().getFirst().getElements()[ 1], 1.0e-15);
+        Assertions.assertEquals(0.0,  att4.getAttitudeStates().getFirst().getElements()[ 2], 1.0e-15);
+        Assertions.assertEquals(0.0,  att4.getAttitudeStates().getFirst().getElements()[ 3], 1.0e-15);
+        Assertions.assertEquals(1.0,  att4.getAttitudeStates().getFirst().getElements()[ 4], 1.0e-15);
+        Assertions.assertEquals(0.0,  att4.getAttitudeStates().getFirst().getElements()[ 5], 1.0e-15);
+        Assertions.assertEquals(0.0,  att4.getAttitudeStates().getFirst().getElements()[ 6], 1.0e-15);
+        Assertions.assertEquals(0.0,  att4.getAttitudeStates().getFirst().getElements()[ 7], 1.0e-15);
+        Assertions.assertEquals(1.0,  att4.getAttitudeStates().getFirst().getElements()[ 8], 1.0e-15);
+        Assertions.assertEquals(0.01, att4.getAttitudeStates().getFirst().getElements()[ 9], 1.0e-15);
+        Assertions.assertEquals(0.02, att4.getAttitudeStates().getFirst().getElements()[10], 1.0e-15);
+        Assertions.assertEquals(0.03, att4.getAttitudeStates().getFirst().getElements()[11], 1.0e-15);
+        Assertions.assertEquals(0.04, att4.getAttitudeStates().getFirst().getElements()[12], 1.0e-15);
         Assertions.assertEquals(1.75, att4.getAttitudeStates().get(1).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
         Assertions.assertEquals(13,   att4.getAttitudeStates().get(1).getElements().length);
         Assertions.assertEquals(0.0,  att4.getAttitudeStates().get(1).getElements()[ 0], 1.0e-15);
@@ -642,11 +655,11 @@ public class AcmParserTest {
         Assertions.assertEquals(0.06, att4.getAttitudeStates().get(1).getElements()[10], 1.0e-15);
         Assertions.assertEquals(0.07, att4.getAttitudeStates().get(1).getElements()[11], 1.0e-15);
         Assertions.assertEquals(0.08, att4.getAttitudeStates().get(1).getElements()[12], 1.0e-15);
-        Assertions.assertEquals(0.0748331, att4.getAttitudeStates().get(0).toAngular(RotationOrder.XYZ).getRotationRate().getNorm(), 1.0e-7);
+        Assertions.assertEquals(0.0748331, att4.getAttitudeStates().getFirst().toAngular(RotationOrder.XYZ).getRotationRate().getNorm(), 1.0e-7);
 
         // fifth attitude block
         AttitudeStateHistory att5 = acm.getData().getAttitudeBlocks().get(4);
-        Assertions.assertEquals("fifth attitude block",           att5.getMetadata().getComments().get(0));
+        Assertions.assertEquals("fifth attitude block",           att5.getMetadata().getComments().getFirst());
         Assertions.assertEquals("ATT_5",                           att5.getMetadata().getAttID());
         Assertions.assertEquals("ATT_4",                           att5.getMetadata().getAttPrevID());
         Assertions.assertEquals("SIMULATED",                       att5.getMetadata().getAttBasis());
@@ -658,14 +671,14 @@ public class AcmParserTest {
         Assertions.assertEquals(AttitudeElementsType.EULER_ANGLES, att5.getMetadata().getAttitudeType());
         Assertions.assertEquals(RateElementsType.GYRO_BIAS,        att5.getMetadata().getRateType());
         Assertions.assertEquals(2,                                 att5.getAttitudeStates().size());
-        Assertions.assertEquals(2.00, att5.getAttitudeStates().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        Assertions.assertEquals(6,    att5.getAttitudeStates().get(0).getElements().length);
-        Assertions.assertEquals( 1.0, FastMath.toDegrees(att5.getAttitudeStates().get(0).getElements()[0]), 1.0e-15);
-        Assertions.assertEquals( 1.2, FastMath.toDegrees(att5.getAttitudeStates().get(0).getElements()[1]), 1.0e-15);
-        Assertions.assertEquals( 1.3, FastMath.toDegrees(att5.getAttitudeStates().get(0).getElements()[2]), 1.0e-15);
-        Assertions.assertEquals(-0.4, FastMath.toDegrees(att5.getAttitudeStates().get(0).getElements()[3]), 1.0e-15);
-        Assertions.assertEquals(-0.5, FastMath.toDegrees(att5.getAttitudeStates().get(0).getElements()[4]), 1.0e-15);
-        Assertions.assertEquals(-0.6, FastMath.toDegrees(att5.getAttitudeStates().get(0).getElements()[5]), 1.0e-15);
+        Assertions.assertEquals(2.00, att5.getAttitudeStates().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        Assertions.assertEquals(6,    att5.getAttitudeStates().getFirst().getElements().length);
+        Assertions.assertEquals( 1.0, FastMath.toDegrees(att5.getAttitudeStates().getFirst().getElements()[0]), 1.0e-15);
+        Assertions.assertEquals( 1.2, FastMath.toDegrees(att5.getAttitudeStates().getFirst().getElements()[1]), 1.0e-15);
+        Assertions.assertEquals( 1.3, FastMath.toDegrees(att5.getAttitudeStates().getFirst().getElements()[2]), 1.0e-15);
+        Assertions.assertEquals(-0.4, FastMath.toDegrees(att5.getAttitudeStates().getFirst().getElements()[3]), 1.0e-15);
+        Assertions.assertEquals(-0.5, FastMath.toDegrees(att5.getAttitudeStates().getFirst().getElements()[4]), 1.0e-15);
+        Assertions.assertEquals(-0.6, FastMath.toDegrees(att5.getAttitudeStates().getFirst().getElements()[5]), 1.0e-15);
         Assertions.assertEquals(2.25, att5.getAttitudeStates().get(1).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
         Assertions.assertEquals(6,    att5.getAttitudeStates().get(1).getElements().length);
         Assertions.assertEquals( 2.0, FastMath.toDegrees(att5.getAttitudeStates().get(1).getElements()[0]), 1.0e-15);
@@ -675,7 +688,7 @@ public class AcmParserTest {
         Assertions.assertEquals(-1.5, FastMath.toDegrees(att5.getAttitudeStates().get(1).getElements()[4]), 1.0e-15);
         Assertions.assertEquals(-1.6, FastMath.toDegrees(att5.getAttitudeStates().get(1).getElements()[5]), 1.0e-15);
         try {
-            att5.getAttitudeStates().get(0).toAngular(RotationOrder.XYZ);
+            att5.getAttitudeStates().getFirst().toAngular(RotationOrder.XYZ);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE, oe.getSpecifier());
@@ -683,7 +696,7 @@ public class AcmParserTest {
 
         // physical properties
         AttitudePhysicalProperties phys = acm.getData().getPhysicBlock();
-        Assertions.assertEquals("Spacecraft Physical Parameters", phys.getComments().get(0));
+        Assertions.assertEquals("Spacecraft Physical Parameters", phys.getComments().getFirst());
         Assertions.assertEquals(1.8,    phys.getDragCoefficient(), 1.0e-15);
         Assertions.assertEquals(1916.0, phys.getWetMass(), 1.0e-15);
         Assertions.assertEquals(800.0,  phys.getDryMass(), 1.0e-15);
@@ -708,8 +721,8 @@ public class AcmParserTest {
         Assertions.assertEquals(6, acm.getData().getCovarianceBlocks().size());
 
         // first covariance block
-        AttitudeCovarianceHistory cov1 = acm.getData().getCovarianceBlocks().get(0);
-        Assertions.assertEquals("first covariance block", cov1.getMetadata().getComments().get(0));
+        AttitudeCovarianceHistory cov1 = acm.getData().getCovarianceBlocks().getFirst();
+        Assertions.assertEquals("first covariance block", cov1.getMetadata().getComments().getFirst());
         Assertions.assertEquals("COV_1", cov1.getMetadata().getCovID());
         Assertions.assertEquals("COV_0", cov1.getMetadata().getCovPrevID());
         Assertions.assertEquals("DETERMINED_OBC", cov1.getMetadata().getCovBasis());
@@ -718,8 +731,8 @@ public class AcmParserTest {
         Assertions.assertEquals("1", cov1.getMetadata().getCovReferenceFrame().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(AttitudeCovarianceType.ANGLE_GYROBIAS, cov1.getMetadata().getCovType());
         Assertions.assertEquals(2, cov1.getCovariances().size());
-        Assertions.assertEquals(0.0, cov1.getCovariances().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        DiagonalMatrix m1 = cov1.getCovariances().get(0).getMatrix();
+        Assertions.assertEquals(0.0, cov1.getCovariances().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        DiagonalMatrix m1 = cov1.getCovariances().getFirst().getMatrix();
         Assertions.assertEquals(6,   m1.getRowDimension());
         Assertions.assertEquals( 6.74E-11, FastMath.toDegrees(FastMath.toDegrees(m1.getEntry(0, 0))), 1.0e-22);
         Assertions.assertEquals( 8.10E-11, FastMath.toDegrees(FastMath.toDegrees(m1.getEntry(1, 1))), 1.0e-22);
@@ -730,7 +743,7 @@ public class AcmParserTest {
 
         // second covariance block
         AttitudeCovarianceHistory cov2 = acm.getData().getCovarianceBlocks().get(1);
-        Assertions.assertEquals("second covariance block", cov2.getMetadata().getComments().get(0));
+        Assertions.assertEquals("second covariance block", cov2.getMetadata().getComments().getFirst());
         Assertions.assertEquals("COV_2", cov2.getMetadata().getCovID());
         Assertions.assertEquals("COV_1", cov2.getMetadata().getCovPrevID());
         Assertions.assertEquals("DETERMINED_OBC", cov2.getMetadata().getCovBasis());
@@ -739,8 +752,8 @@ public class AcmParserTest {
         Assertions.assertEquals("1", cov2.getMetadata().getCovReferenceFrame().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(AttitudeCovarianceType.ANGLE, cov2.getMetadata().getCovType());
         Assertions.assertEquals(2, cov2.getCovariances().size());
-        Assertions.assertEquals(0.0, cov2.getCovariances().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        DiagonalMatrix m2 = cov2.getCovariances().get(0).getMatrix();
+        Assertions.assertEquals(0.0, cov2.getCovariances().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        DiagonalMatrix m2 = cov2.getCovariances().getFirst().getMatrix();
         Assertions.assertEquals(3,   m2.getRowDimension());
         Assertions.assertEquals( 6.74E-11, FastMath.toDegrees(FastMath.toDegrees(m2.getEntry(0, 0))), 1.0e-22);
         Assertions.assertEquals( 8.10E-11, FastMath.toDegrees(FastMath.toDegrees(m2.getEntry(1, 1))), 1.0e-22);
@@ -748,7 +761,7 @@ public class AcmParserTest {
 
         // third covariance block
         AttitudeCovarianceHistory cov3 = acm.getData().getCovarianceBlocks().get(2);
-        Assertions.assertEquals("third covariance block", cov3.getMetadata().getComments().get(0));
+        Assertions.assertEquals("third covariance block", cov3.getMetadata().getComments().getFirst());
         Assertions.assertEquals("COV_3", cov3.getMetadata().getCovID());
         Assertions.assertEquals("COV_2", cov3.getMetadata().getCovPrevID());
         Assertions.assertEquals("DETERMINED_OBC", cov3.getMetadata().getCovBasis());
@@ -757,8 +770,8 @@ public class AcmParserTest {
         Assertions.assertEquals("1", cov3.getMetadata().getCovReferenceFrame().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(AttitudeCovarianceType.ANGLE_ANGVEL, cov3.getMetadata().getCovType());
         Assertions.assertEquals(2, cov3.getCovariances().size());
-        Assertions.assertEquals(0.0, cov3.getCovariances().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        DiagonalMatrix m3 = cov3.getCovariances().get(0).getMatrix();
+        Assertions.assertEquals(0.0, cov3.getCovariances().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        DiagonalMatrix m3 = cov3.getCovariances().getFirst().getMatrix();
         Assertions.assertEquals(6,   m3.getRowDimension());
         Assertions.assertEquals( 6.74E-11, FastMath.toDegrees(FastMath.toDegrees(m3.getEntry(0, 0))), 1.0e-22);
         Assertions.assertEquals( 8.10E-11, FastMath.toDegrees(FastMath.toDegrees(m3.getEntry(1, 1))), 1.0e-22);
@@ -769,7 +782,7 @@ public class AcmParserTest {
 
         // fourth covariance block
         AttitudeCovarianceHistory cov4 = acm.getData().getCovarianceBlocks().get(3);
-        Assertions.assertEquals("fourth covariance block", cov4.getMetadata().getComments().get(0));
+        Assertions.assertEquals("fourth covariance block", cov4.getMetadata().getComments().getFirst());
         Assertions.assertEquals("COV_4", cov4.getMetadata().getCovID());
         Assertions.assertEquals("COV_3", cov4.getMetadata().getCovPrevID());
         Assertions.assertEquals("DETERMINED_OBC", cov4.getMetadata().getCovBasis());
@@ -778,8 +791,8 @@ public class AcmParserTest {
         Assertions.assertEquals("1", cov4.getMetadata().getCovReferenceFrame().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(AttitudeCovarianceType.QUATERNION, cov4.getMetadata().getCovType());
         Assertions.assertEquals(2, cov4.getCovariances().size());
-        Assertions.assertEquals(0.0, cov4.getCovariances().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        DiagonalMatrix m4 = cov4.getCovariances().get(0).getMatrix();
+        Assertions.assertEquals(0.0, cov4.getCovariances().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        DiagonalMatrix m4 = cov4.getCovariances().getFirst().getMatrix();
         Assertions.assertEquals(4,   m4.getRowDimension());
         Assertions.assertEquals( 6.74E-11, m4.getEntry(0, 0), 1.0e-22);
         Assertions.assertEquals( 8.10E-11, m4.getEntry(1, 1), 1.0e-22);
@@ -788,7 +801,7 @@ public class AcmParserTest {
 
         // fifth covariance block
         AttitudeCovarianceHistory cov5 = acm.getData().getCovarianceBlocks().get(4);
-        Assertions.assertEquals("fifth covariance block", cov5.getMetadata().getComments().get(0));
+        Assertions.assertEquals("fifth covariance block", cov5.getMetadata().getComments().getFirst());
         Assertions.assertEquals("COV_5", cov5.getMetadata().getCovID());
         Assertions.assertEquals("COV_4", cov5.getMetadata().getCovPrevID());
         Assertions.assertEquals("DETERMINED_OBC", cov5.getMetadata().getCovBasis());
@@ -797,8 +810,8 @@ public class AcmParserTest {
         Assertions.assertEquals("1", cov5.getMetadata().getCovReferenceFrame().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(AttitudeCovarianceType.QUATERNION_GYROBIAS, cov5.getMetadata().getCovType());
         Assertions.assertEquals(2, cov5.getCovariances().size());
-        Assertions.assertEquals(0.0, cov5.getCovariances().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        DiagonalMatrix m5 = cov5.getCovariances().get(0).getMatrix();
+        Assertions.assertEquals(0.0, cov5.getCovariances().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        DiagonalMatrix m5 = cov5.getCovariances().getFirst().getMatrix();
         Assertions.assertEquals(7,   m5.getRowDimension());
         Assertions.assertEquals( 6.74E-11, m5.getEntry(0, 0), 1.0e-22);
         Assertions.assertEquals( 8.10E-11, m5.getEntry(1, 1), 1.0e-22);
@@ -810,7 +823,7 @@ public class AcmParserTest {
 
         // sixth covariance block
         AttitudeCovarianceHistory cov6 = acm.getData().getCovarianceBlocks().get(5);
-        Assertions.assertEquals("sixth covariance block", cov6.getMetadata().getComments().get(0));
+        Assertions.assertEquals("sixth covariance block", cov6.getMetadata().getComments().getFirst());
         Assertions.assertEquals("COV_6", cov6.getMetadata().getCovID());
         Assertions.assertEquals("COV_5", cov6.getMetadata().getCovPrevID());
         Assertions.assertEquals("DETERMINED_OBC", cov6.getMetadata().getCovBasis());
@@ -819,8 +832,8 @@ public class AcmParserTest {
         Assertions.assertEquals("1", cov6.getMetadata().getCovReferenceFrame().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(AttitudeCovarianceType.QUATERNION_ANGVEL, cov6.getMetadata().getCovType());
         Assertions.assertEquals(2, cov6.getCovariances().size());
-        Assertions.assertEquals(0.0, cov6.getCovariances().get(0).getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
-        DiagonalMatrix m6 = cov6.getCovariances().get(0).getMatrix();
+        Assertions.assertEquals(0.0, cov6.getCovariances().getFirst().getDate().durationFrom(acm.getMetadata().getEpochT0()), 1.0e-15);
+        DiagonalMatrix m6 = cov6.getCovariances().getFirst().getMatrix();
         Assertions.assertEquals(7,   m6.getRowDimension());
         Assertions.assertEquals( 6.74E-11, m6.getEntry(0, 0), 1.0e-22);
         Assertions.assertEquals( 8.10E-11, m6.getEntry(1, 1), 1.0e-22);
@@ -833,8 +846,8 @@ public class AcmParserTest {
         Assertions.assertEquals(3, acm.getData().getManeuverBlocks().size());
 
         // first maneuver
-        AttitudeManeuver man1 = acm.getData().getManeuverBlocks().get(0);
-        Assertions.assertEquals("first maneuver",               man1.getComments().get(0));
+        AttitudeManeuver man1 = acm.getData().getManeuverBlocks().getFirst();
+        Assertions.assertEquals("first maneuver",               man1.getComments().getFirst());
         Assertions.assertEquals("MAN_1",                        man1.getID());
         Assertions.assertEquals("MAN_0",                        man1.getPrevID());
         Assertions.assertEquals("MOM_DESAT",                    man1.getManPurpose());
@@ -850,7 +863,7 @@ public class AcmParserTest {
 
         // second maneuver
         AttitudeManeuver man2 = acm.getData().getManeuverBlocks().get(1);
-        Assertions.assertEquals("second maneuver",              man2.getComments().get(0));
+        Assertions.assertEquals("second maneuver",              man2.getComments().getFirst());
         Assertions.assertEquals("MAN_2",                        man2.getID());
         Assertions.assertEquals("MAN_1",                        man2.getPrevID());
         Assertions.assertEquals("ATT_ADJUST",                   man2.getManPurpose());
@@ -867,7 +880,7 @@ public class AcmParserTest {
 
         // third maneuver
         AttitudeManeuver man3 = acm.getData().getManeuverBlocks().get(2);
-        Assertions.assertEquals("third maneuver",               man3.getComments().get(0));
+        Assertions.assertEquals("third maneuver",               man3.getComments().getFirst());
         Assertions.assertEquals("MAN_3",                        man3.getID());
         Assertions.assertEquals("MAN_2",                        man3.getPrevID());
         Assertions.assertEquals("SPIN_RATE_ADJUST",             man3.getManPurpose());
@@ -881,7 +894,7 @@ public class AcmParserTest {
 
         // attitude determi nation
         AttitudeDetermination ad = acm.getData().getAttitudeDeterminationBlock();
-        Assertions.assertEquals("attitude determination block",        ad.getComments().get(0));
+        Assertions.assertEquals("attitude determination block",        ad.getComments().getFirst());
         Assertions.assertEquals("AD_1",                                ad.getId());
         Assertions.assertEquals("AD_0",                                ad.getPrevId());
         Assertions.assertEquals(AdMethodType.Q_METHOD,                 ad.getMethod());
@@ -895,12 +908,12 @@ public class AcmParserTest {
         Assertions.assertEquals("1",                                   ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(RateElementsType.ANGVEL,               ad.getRateStates());
         Assertions.assertEquals(3,                                     ad.getSensorsUsed().size());
-        Assertions.assertEquals(1,                                     ad.getSensorsUsed().get(0).getSensorNumber());
-        Assertions.assertEquals("AST1",                                ad.getSensorsUsed().get(0).getSensorUsed());
-        Assertions.assertEquals( 2,                                    ad.getSensorsUsed().get(0).getNbSensorNoiseCovariance());
-        Assertions.assertEquals(0.0097, FastMath.toDegrees(ad.getSensorsUsed().get(0).getSensorNoiseCovariance()[0]), 1.0e-10);
-        Assertions.assertEquals(0.0098, FastMath.toDegrees(ad.getSensorsUsed().get(0).getSensorNoiseCovariance()[1]), 1.0e-10);
-        Assertions.assertEquals( 5.0, ad.getSensorsUsed().get(0).getSensorFrequency(), 1.0e-10);
+        Assertions.assertEquals(1,                                     ad.getSensorsUsed().getFirst().getSensorNumber());
+        Assertions.assertEquals("AST1",                                ad.getSensorsUsed().getFirst().getSensorUsed());
+        Assertions.assertEquals( 2,                                    ad.getSensorsUsed().getFirst().getNbSensorNoiseCovariance());
+        Assertions.assertEquals(0.0097, FastMath.toDegrees(ad.getSensorsUsed().getFirst().getSensorNoiseCovariance()[0]), 1.0e-10);
+        Assertions.assertEquals(0.0098, FastMath.toDegrees(ad.getSensorsUsed().getFirst().getSensorNoiseCovariance()[1]), 1.0e-10);
+        Assertions.assertEquals( 5.0, ad.getSensorsUsed().getFirst().getSensorFrequency(), 1.0e-10);
         Assertions.assertEquals(2,                                     ad.getSensorsUsed().get(1).getSensorNumber());
         Assertions.assertEquals("AST2",                                ad.getSensorsUsed().get(1).getSensorUsed());
         Assertions.assertEquals( 2,                                    ad.getSensorsUsed().get(1).getNbSensorNoiseCovariance());
@@ -938,4 +951,128 @@ public class AcmParserTest {
 
     }
 
+    @Test
+    public void testFrameMapper() {
+        // setup
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate expectedEpoch = new AbsoluteDate("2016-03-15T00:00:00.0", tai);
+
+        Frame parent = FramesFactory.getEME2000();
+        Frame myJ2000 = new Frame(parent, Transform.IDENTITY, "MyJ2000");
+        Frame scBodyFrame = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 4, Math.PI / 2, Math.PI / 3)), "SC_BODY_1");
+        Frame scBodyFrame2 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 4, Math.PI / 2, Math.PI / 3)), "SC_BODY_1");
+        Frame gyro3 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 3, Math.PI / 4, Math.PI / 2)), "GYRO_3");
+        Frame acc0 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 2, Math.PI / 3, Math.PI / 4)), "ACC_0");
+        Frame ast1 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 2, Math.PI / 3, Math.PI / 4)), "AST_1");
+        Frame css7 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 4, Math.PI / 3, Math.PI / 2)), "CSS_7");
+        Frame esa9 = new Frame(parent, new Transform(expectedEpoch, new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                Math.PI / 3, Math.PI / 2, Math.PI / 4)), "ESA_9_0");
+
+        CcsdsFrameMapper mapper = new CcsdsFrameMapper() {
+            // Dummy override here, not calling this signature with the below test case
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                if (epoch != null) {
+                    throw new IllegalArgumentException("" + epoch);
+                }
+                if ("SC_BODY_1".equals(orientation.getName())) {
+                    return scBodyFrame;
+                } else if ("EME2000".equals(orientation.getName())) {
+                    return myJ2000;
+                } else {
+                    throw new IllegalArgumentException(orientation + " " + epoch);
+                }
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate epoch) {
+                if (epoch != null) {
+                    throw new IllegalArgumentException("" + epoch);
+                }
+                if ("ZZ".equals(center.getName())) {
+                    if ("SC_BODY_1".equals(orientation.getName())) {
+                        return scBodyFrame;
+                    } else if ("SC_BODY_2".equals(orientation.getName())) {
+                        return scBodyFrame2;
+                    } else if ("EME2000".equals(orientation.getName()) || "J2000".equals(orientation.getName())) {
+                        return myJ2000;
+                    } else if ("GYRO_3".equals(orientation.getName())) {
+                        return gyro3;
+                    } else if ("ACC_0".equals(orientation.getName())) {
+                        return acc0;
+                    } else if ("AST_1".equals(orientation.getName())) {
+                        return ast1;
+                    } else if ("CSS_7".equals(orientation.getName())) {
+                        return css7;
+                    } else if ("ESA_9".equals(orientation.getName())) {
+                        return esa9;
+                    } else {
+                        throw new IllegalArgumentException(center + " " + orientation + " " + epoch);
+                    }
+                } else {
+                    throw new IllegalArgumentException(
+                            center + " " + orientation + " " + epoch);
+                }
+            }
+
+        };
+        final String name = "/ccsds/adm/acm/ACM-frame-mapper.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+
+        // action
+        final AcmParser parser = new ParserBuilder().withFrameMapper(mapper).buildAcmParser();
+        final Acm acm = parser.parseMessage(source);
+
+        // verify
+        // blocks: attitude, physical properties, covariance, maneuvers, attitude determination
+        final AcmData data = acm.getData();
+        final BodyFacade center = acm.getMetadata().getCenter();
+        final List<AttitudeStateHistory> attitudes = data.getAttitudeBlocks();
+        final AttitudePhysicalProperties properties = data.getPhysicBlock();
+        final List<AttitudeCovarianceHistory> covariances = data.getCovarianceBlocks();
+        final List<AttitudeManeuver> maneuvers = data.getManeuverBlocks();
+        final AttitudeDetermination attitudeDetermination = data.getAttitudeDeterminationBlock();
+
+        // Attitude
+        for (final AttitudeStateHistory attitudeStateHistory : attitudes) {
+            // FrameFacade.asFrame() subverts mapping
+            MatcherAssert.assertThat(attitudeStateHistory.getReferenceFrame(),
+                    Matchers.sameInstance(myJ2000));
+
+            // REF_FRAME_B mapping for each attitude state history
+            MatcherAssert.assertThat(
+                    attitudeStateHistory.getMetadata().getEndpoints().getExternal(),
+                    Matchers.sameInstance(myJ2000));
+        }
+
+        // Physical properties
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, properties.getCenterOfPressureReferenceFrame(), null),
+                Matchers.sameInstance(scBodyFrame)); // center of pressure frame
+        MatcherAssert.assertThat(mapper.buildCcsdsFrame(center, properties.getInertiaReferenceFrame(), null),
+                            Matchers.sameInstance(scBodyFrame2)); // inertia reference frame
+
+        // Covariance
+        covariances.forEach(covariance -> MatcherAssert.assertThat(
+                            mapper.buildCcsdsFrame(center, covariance.getMetadata().getCovReferenceFrame(), null),
+                            Matchers.sameInstance(scBodyFrame)));
+
+        // Maneuvers
+        maneuvers.stream().filter(maneuver -> maneuver.getTargetMomFrame() != null).
+                    forEach(maneuver -> MatcherAssert.assertThat(
+                            mapper.buildCcsdsFrame(center, maneuver.getTargetMomFrame(), null),
+                            Matchers.sameInstance(myJ2000))); // target momentum frame
+
+        // Attitude Determination
+        MatcherAssert.assertThat(
+                attitudeDetermination.getEndpoints().getExternal(),
+                Matchers.sameInstance(myJ2000));
+    }
 }

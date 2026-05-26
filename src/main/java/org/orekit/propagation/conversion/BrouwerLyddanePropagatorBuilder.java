@@ -283,7 +283,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagato
         // Initialize propagator
         final BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(createInitialOrbit(), getAttitudeProvider(), getMass(),
             provider, newM2);
-        propagator.getParametersDrivers().get(0).setSelected(isSelected);
+        propagator.getParametersDrivers().getFirst().setSelected(isSelected);
         getImpulseManeuvers().forEach(propagator::addEventDetector);
 
         // Return

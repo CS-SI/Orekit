@@ -70,17 +70,16 @@ abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends
      * @param secondObserver        observer from which measurement is performed
      * @param date                  date of the measurement
      * @param value                 observed value
-     * @param sigma                 theoretical standard deviation
-     * @param baseWeight            base weight
+     * @param measurementQuality    measurement quality data as used in orbit determination
      * @param signalTravelTimeModel signal travel time model
      * @param satellite             satellite related to this measurement
      */
     protected DualReceiverMeasurement(final Observer primeObserver, final Observer secondObserver,
-                                      final AbsoluteDate date,
-                                      final double[] value, final double[] sigma, final double[] baseWeight,
+                                      final AbsoluteDate date, final double[] value,
+                                      final MeasurementQuality measurementQuality,
                                       final SignalTravelTimeModel signalTravelTimeModel,
                                       final ObservableSatellite satellite) {
-        super(date, false, value, new MeasurementQuality(sigma, baseWeight), signalTravelTimeModel,
+        super(date, false, value, measurementQuality, signalTravelTimeModel,
                 Collections.singletonList(satellite));
 
         // Add the parameters for the receiver

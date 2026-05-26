@@ -28,10 +28,10 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
  * The delay is calculated via a fixed-point algorithm with customizable settings (even enabling instantaneous transmission).
  * Note that a couple of iterations are usually enough for Earth orbits.
  * @since 14.0
- * @see SignalTravelTimeAdjustableEmitter
+ * @see AdjustableEmitterSignalTimer
  * @author Romain Serra
  */
-public class FieldSignalTravelTimeAdjustableEmitter<T extends CalculusFieldElement<T>>
+public class FieldAdjustableEmitterSignalTimer<T extends CalculusFieldElement<T>>
         extends FieldAbstractSignalTravelTime<T> {
 
     /** Position/velocity provider of emitter. */
@@ -41,7 +41,7 @@ public class FieldSignalTravelTimeAdjustableEmitter<T extends CalculusFieldEleme
      * Constructor with default iteration settings.
      * @param adjustableEmitterPVProvider adjustable emitter
      */
-    public FieldSignalTravelTimeAdjustableEmitter(final FieldPVCoordinatesProvider<T> adjustableEmitterPVProvider) {
+    public FieldAdjustableEmitterSignalTimer(final FieldPVCoordinatesProvider<T> adjustableEmitterPVProvider) {
         this(adjustableEmitterPVProvider, getDefaultConvergenceChecker());
     }
 
@@ -50,10 +50,23 @@ public class FieldSignalTravelTimeAdjustableEmitter<T extends CalculusFieldEleme
      * @param adjustableEmitterPVProvider adjustable emitter
      * @param convergenceChecker convergence checker for fixed-point algorithm
      */
-    public FieldSignalTravelTimeAdjustableEmitter(final FieldPVCoordinatesProvider<T> adjustableEmitterPVProvider,
-                                                  final ConvergenceChecker<T> convergenceChecker) {
+    public FieldAdjustableEmitterSignalTimer(final FieldPVCoordinatesProvider<T> adjustableEmitterPVProvider,
+                                             final ConvergenceChecker<T> convergenceChecker) {
         super(convergenceChecker);
         this.adjustableEmitterPVProvider = adjustableEmitterPVProvider;
+    }
+
+    /** Compute the signal emission condition on a link leg (typically downlink or uplink).
+     * @param approxEmissionDate approximate emission date
+     * @param receptionCondition signal reception condition
+     * @return emission condition
+     */
+    public FieldSignalEmissionCondition<T> computeEmissionCondition(final FieldSignalReceptionCondition<T> receptionCondition,
+                                                                    final FieldAbsoluteDate<T> approxEmissionDate) {
+        final T delay = computeDelay(receptionCondition, approxEmissionDate);
+        final FieldAbsoluteDate<T> emissionDate = receptionCondition.receptionDate().shiftedBy(delay.negate());
+        final Frame frame = receptionCondition.referenceFrame();
+        return new FieldSignalEmissionCondition<>(emissionDate, adjustableEmitterPVProvider.getPosition(emissionDate, frame), frame);
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
@@ -61,9 +74,9 @@ public class FieldSignalTravelTimeAdjustableEmitter<T extends CalculusFieldEleme
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
     public T computeDelay(final FieldSignalReceptionCondition<T> receptionCondition) {
-        final FieldAbsoluteDate<T> signalArrivalDate = receptionCondition.getReceptionDate();
-        final Frame frame = receptionCondition.getReferenceFrame();
-        final FieldVector3D<T> receiverPosition = receptionCondition.getReceiverPosition();
+        final FieldAbsoluteDate<T> signalArrivalDate = receptionCondition.receptionDate();
+        final Frame frame = receptionCondition.referenceFrame();
+        final FieldVector3D<T> receiverPosition = receptionCondition.receiverPosition();
         final FieldVector3D<T> emitterPosition = adjustableEmitterPVProvider.getPosition(signalArrivalDate, frame);
         final T distance = receiverPosition.subtract(emitterPosition).getNorm();
         final FieldAbsoluteDate<T> approxEmissionDate = signalArrivalDate.shiftedBy(distance.multiply(-C_RECIPROCAL));
@@ -79,10 +92,10 @@ public class FieldSignalTravelTimeAdjustableEmitter<T extends CalculusFieldEleme
                           final FieldAbsoluteDate<T> approxEmissionDate) {
 
         // Initialize emission date search loop assuming the emitter PV is almost correct
-        final T offset = receptionCondition.getReceptionDate().durationFrom(approxEmissionDate);
+        final T offset = receptionCondition.receptionDate().durationFrom(approxEmissionDate);
 
-        return compute(adjustableEmitterPVProvider, offset, receptionCondition.getReceiverPosition(), approxEmissionDate,
-                receptionCondition.getReferenceFrame());
+        return compute(adjustableEmitterPVProvider, offset, receptionCondition.receiverPosition(), approxEmissionDate,
+                receptionCondition.referenceFrame());
     }
 
     @Override

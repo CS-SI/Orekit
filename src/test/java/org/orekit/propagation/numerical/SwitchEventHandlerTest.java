@@ -160,7 +160,7 @@ class SwitchEventHandlerTest {
         final SpacecraftState stateAtSwitch = buildAbsoluteState(date, harvester.toArray(stm.getData()))
                 .addAdditionalData(jacobianName, transposedJacobian[0]);
         when(harvester.getParametersJacobian(stateAtSwitch)).thenReturn(MatrixUtils.createRealMatrix(transposedJacobian).transpose());
-        final EventDetector eventDetector = forceWithDetectors.getEventDetectors().collect(Collectors.toList()).get(0);
+        final EventDetector eventDetector = forceWithDetectors.getEventDetectors().toList().getFirst();
         // WHEN
         preprocessSwitchHandler(switchEventHandler, stateAtSwitch, eventDetector);
         final SpacecraftState resetState = switchEventHandler.resetState(eventDetector, stateAtSwitch);
@@ -179,7 +179,7 @@ class SwitchEventHandlerTest {
         final ForceModel forceWithDetectors = getForceModelWithoutSwitch(stateAtSwitch.getPVCoordinates());
         final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(forceWithDetectors, harvester,
                 new ResetDerivativesOnEvent());
-        final EventDetector eventDetector = forceWithDetectors.getEventDetectors().collect(Collectors.toList()).get(0);
+        final EventDetector eventDetector = forceWithDetectors.getEventDetectors().toList().getFirst();
         // WHEN
         preprocessSwitchHandler(switchEventHandler, stateAtSwitch, eventDetector);
         final SpacecraftState resetState = switchEventHandler.resetState(mock(EventDetector.class), stateAtSwitch);

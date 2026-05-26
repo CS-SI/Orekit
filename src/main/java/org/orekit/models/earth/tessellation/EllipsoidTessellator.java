@@ -361,7 +361,7 @@ public class EllipsoidTessellator {
             expanding = false;
             final List<Mesh.Node> boundary = mesh.getTaxicabBoundary(false);
             if (boundary.size() > 1) {
-                Mesh.Node previous = boundary.get(boundary.size() - 1);
+                Mesh.Node previous = boundary.getLast();
                 for (final Mesh.Node node : boundary) {
                     if (meetInside(previous.getS2P(), node.getS2P(), zone)) {
                         // part of the mesh boundary is still inside the zone!
@@ -847,44 +847,22 @@ public class EllipsoidTessellator {
 
     }
 
-    /** Local class for a range of indices to be used for building a tile. */
-    private static class Range {
-
-        /** Lower index. */
-        private final int lower;
-
-        /** Upper index. */
-        private final int upper;
-
-        /** Simple constructor.
-         * @param lower lower index
-         * @param upper upper index
-         */
-        Range(final int lower, final int upper) {
-            this.lower = lower;
-            this.upper = upper;
-        }
-
+    /**
+     * Local class for a range of indices to be used for building a tile.
+     *
+     * @param lower Lower index.
+     * @param upper Upper index.
+     */
+    private record Range(int lower, int upper) {
     }
 
-    /** Local class for a pair of ranges of indices to be used for building a tile. */
-    private static class RangePair {
-
-        /** Across range. */
-        private final Range across;
-
-        /** Along range. */
-        private final Range along;
-
-        /** Simple constructor.
-         * @param across across range
-         * @param along along range
-         */
-        RangePair(final Range across, final Range along) {
-            this.across = across;
-            this.along  = along;
-        }
-
+    /**
+     * Local class for a pair of ranges of indices to be used for building a tile.
+     *
+     * @param across Across range.
+     * @param along  Along range.
+     */
+    private record RangePair(Range across, Range along) {
     }
 
 }

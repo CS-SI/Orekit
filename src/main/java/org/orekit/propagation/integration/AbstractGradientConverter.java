@@ -179,7 +179,7 @@ public abstract class AbstractGradientConverter {
             // it is the first time we need this number of parameters
             // we need to create the state
             final int freeParameters = freeStateParameters + nbParams;
-            final FieldSpacecraftState<Gradient> s0 = gStates.get(0);
+            final FieldSpacecraftState<Gradient> s0 = gStates.getFirst();
             final AbsoluteDate date = s0.getDate().toAbsoluteDate();
 
             // attitude

@@ -35,7 +35,7 @@ public class CommentsContainerTest {
                                     parseMessage(source1);
 
         Assertions.assertEquals(1, original.getMetadata().getComments().size());
-        Assertions.assertEquals(expectedOldComment, original.getMetadata().getComments().get(0));
+        Assertions.assertEquals(expectedOldComment, original.getMetadata().getComments().getFirst());
 
         // Set new comments and check
         List<String> newComments = new ArrayList<>();
@@ -44,7 +44,7 @@ public class CommentsContainerTest {
         original.getMetadata().setComments(newComments);
 
         Assertions.assertEquals(2, original.getMetadata().getComments().size());
-        Assertions.assertEquals(expectedNewComment1, original.getMetadata().getComments().get(0));
+        Assertions.assertEquals(expectedNewComment1, original.getMetadata().getComments().getFirst());
         Assertions.assertEquals(expectedNewComment2, original.getMetadata().getComments().get(1));
     }
 }

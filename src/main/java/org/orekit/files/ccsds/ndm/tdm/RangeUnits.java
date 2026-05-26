@@ -29,6 +29,6 @@ public enum RangeUnits {
     s,
 
     /** Range in "Range Units" with changing frequency. */
-    RU;
+    RU
 
 }

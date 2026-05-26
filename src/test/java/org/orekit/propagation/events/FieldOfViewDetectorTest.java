@@ -137,7 +137,7 @@ public class FieldOfViewDetectorTest {
         final AbsoluteDate tD = new AbsoluteDate("1969-08-28T00:36:13.390275", utc);
 
         List<LoggedEvent>  events = logger.getLoggedEvents();
-        final AbsoluteDate t0     = events.get(0).getState().getDate();
+        final AbsoluteDate t0     = events.getFirst().getState().getDate();
         final AbsoluteDate t1     = events.get(1).getState().getDate();
         Assertions.assertEquals(2, events.size());
         Assertions.assertEquals(0, t0.durationFrom(tB), 1.0e-6);
@@ -300,8 +300,8 @@ public class FieldOfViewDetectorTest {
 
         List<LoggedEvent>  events = logger.getLoggedEvents();
         Assertions.assertEquals(6, events.size());
-        Assertions.assertSame(sunPartial, events.get(0).getEventDetector());
-        Assertions.assertEquals(460.876793, events.get(0).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assertions.assertSame(sunPartial, events.getFirst().getEventDetector());
+        Assertions.assertEquals(460.876793, events.getFirst().getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunCenter, events.get(1).getEventDetector());
         Assertions.assertEquals(488.299210, events.get(1).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunFull, events.get(2).getEventDetector());
@@ -357,7 +357,7 @@ public class FieldOfViewDetectorTest {
             propagator.addEventDetector(logger.monitorDetector(polyDetector));
 
             // find another inner circular fov
-            final Edge     edge   = polyFov.getZone().getBoundaryLoops().get(0).getOutgoing();
+            final Edge     edge   = polyFov.getZone().getBoundaryLoops().getFirst().getOutgoing();
             final Vector3D middle = edge.getPointAt(0.5 * edge.getLength());
             final double   innerRadius = Vector3D.angle(circFov.getCenter(), middle);
             circFov = new CircularFieldOfView(circFov.getCenter(), innerRadius, 0.0);
@@ -411,8 +411,8 @@ public class FieldOfViewDetectorTest {
         List<LoggedEvent>  events = logger.getLoggedEvents();
         Assertions.assertEquals(2, events.size());
 
-        Assertions.assertFalse(events.get(0).isIncreasing());
-        Assertions.assertEquals(881.897, events.get(0).getState().getDate().durationFrom(initDate), 1.0e-3);
+        Assertions.assertFalse(events.getFirst().isIncreasing());
+        Assertions.assertEquals(881.897, events.getFirst().getState().getDate().durationFrom(initDate), 1.0e-3);
         Assertions.assertTrue(events.get(1).isIncreasing());
         Assertions.assertEquals(1242.146, events.get(1).getState().getDate().durationFrom(initDate), 1.0e-3);
 

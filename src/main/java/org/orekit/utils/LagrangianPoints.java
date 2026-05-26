@@ -35,6 +35,6 @@ public enum LagrangianPoints {
     L4,
 
     /** Lagrangian Point L5. */
-    L5;
+    L5
 
 }

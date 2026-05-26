@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,113 +72,59 @@ public abstract class AbstractFrames implements Frames {
 
     @Override
     public Frame getFrame(final Predefined factoryKey) {
-        switch (factoryKey) {
-            case GCRF :
-                return getGCRF();
-            case ICRF :
-                return getICRF();
-            case ECLIPTIC_CONVENTIONS_1996 :
-                return getEcliptic(IERSConventions.IERS_1996);
-            case ECLIPTIC_CONVENTIONS_2003 :
-                return getEcliptic(IERSConventions.IERS_2003);
-            case ECLIPTIC_CONVENTIONS_2010 :
-                return getEcliptic(IERSConventions.IERS_2010);
-            case EME2000 :
-                return getEME2000();
-            case ITRF_CIO_CONV_2010_SIMPLE_EOP :
-                return getITRF(IERSConventions.IERS_2010, true);
-            case ITRF_CIO_CONV_2010_ACCURATE_EOP :
-                return getITRF(IERSConventions.IERS_2010, false);
-            case ITRF_CIO_CONV_2003_SIMPLE_EOP :
-                return getITRF(IERSConventions.IERS_2003, true);
-            case ITRF_CIO_CONV_2003_ACCURATE_EOP :
-                return getITRF(IERSConventions.IERS_2003, false);
-            case ITRF_CIO_CONV_1996_SIMPLE_EOP :
-                return getITRF(IERSConventions.IERS_1996, true);
-            case ITRF_CIO_CONV_1996_ACCURATE_EOP :
-                return getITRF(IERSConventions.IERS_1996, false);
-            case ITRF_EQUINOX_CONV_2010_SIMPLE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_2010, true);
-            case ITRF_EQUINOX_CONV_2010_ACCURATE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_2010, false);
-            case ITRF_EQUINOX_CONV_2003_SIMPLE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_2003, true);
-            case ITRF_EQUINOX_CONV_2003_ACCURATE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_2003, false);
-            case ITRF_EQUINOX_CONV_1996_SIMPLE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_1996, true);
-            case ITRF_EQUINOX_CONV_1996_ACCURATE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_1996, false);
-            case TIRF_CONVENTIONS_2010_SIMPLE_EOP :
-                return getTIRF(IERSConventions.IERS_2010, true);
-            case TIRF_CONVENTIONS_2010_ACCURATE_EOP :
-                return getTIRF(IERSConventions.IERS_2010, false);
-            case TIRF_CONVENTIONS_2003_SIMPLE_EOP :
-                return getTIRF(IERSConventions.IERS_2003, true);
-            case TIRF_CONVENTIONS_2003_ACCURATE_EOP :
-                return getTIRF(IERSConventions.IERS_2003, false);
-            case TIRF_CONVENTIONS_1996_SIMPLE_EOP :
-                return getTIRF(IERSConventions.IERS_1996, true);
-            case TIRF_CONVENTIONS_1996_ACCURATE_EOP :
-                return getTIRF(IERSConventions.IERS_1996, false);
-            case CIRF_CONVENTIONS_2010_ACCURATE_EOP :
-                return getCIRF(IERSConventions.IERS_2010, false);
-            case CIRF_CONVENTIONS_2010_SIMPLE_EOP :
-                return getCIRF(IERSConventions.IERS_2010, true);
-            case CIRF_CONVENTIONS_2003_ACCURATE_EOP :
-                return getCIRF(IERSConventions.IERS_2003, false);
-            case CIRF_CONVENTIONS_2003_SIMPLE_EOP :
-                return getCIRF(IERSConventions.IERS_2003, true);
-            case CIRF_CONVENTIONS_1996_ACCURATE_EOP :
-                return getCIRF(IERSConventions.IERS_1996, false);
-            case CIRF_CONVENTIONS_1996_SIMPLE_EOP :
-                return getCIRF(IERSConventions.IERS_1996, true);
-            case VEIS_1950 :
-                return getVeis1950();
-            case GTOD_WITHOUT_EOP_CORRECTIONS :
-                return getGTOD(IERSConventions.IERS_1996, false, true);
-            case GTOD_CONVENTIONS_2010_ACCURATE_EOP :
-                return getGTOD(IERSConventions.IERS_2010, true, false);
-            case GTOD_CONVENTIONS_2010_SIMPLE_EOP :
-                return getGTOD(IERSConventions.IERS_2010, true, true);
-            case GTOD_CONVENTIONS_2003_ACCURATE_EOP :
-                return getGTOD(IERSConventions.IERS_2003, true, false);
-            case GTOD_CONVENTIONS_2003_SIMPLE_EOP :
-                return getGTOD(IERSConventions.IERS_2003, true, true);
-            case GTOD_CONVENTIONS_1996_ACCURATE_EOP :
-                return getGTOD(IERSConventions.IERS_1996, true, false);
-            case GTOD_CONVENTIONS_1996_SIMPLE_EOP :
-                return getGTOD(IERSConventions.IERS_1996, true, true);
-            case TOD_WITHOUT_EOP_CORRECTIONS :
-                return getTOD(IERSConventions.IERS_1996, false, true);
-            case TOD_CONVENTIONS_2010_ACCURATE_EOP :
-                return getTOD(IERSConventions.IERS_2010, true, false);
-            case TOD_CONVENTIONS_2010_SIMPLE_EOP :
-                return getTOD(IERSConventions.IERS_2010, true, true);
-            case TOD_CONVENTIONS_2003_ACCURATE_EOP :
-                return getTOD(IERSConventions.IERS_2003, true, false);
-            case TOD_CONVENTIONS_2003_SIMPLE_EOP :
-                return getTOD(IERSConventions.IERS_2003, true, true);
-            case TOD_CONVENTIONS_1996_ACCURATE_EOP :
-                return getTOD(IERSConventions.IERS_1996, true, false);
-            case TOD_CONVENTIONS_1996_SIMPLE_EOP :
-                return getTOD(IERSConventions.IERS_1996, true, true);
-            case MOD_WITHOUT_EOP_CORRECTIONS :
-                return getMOD(IERSConventions.IERS_1996, false);
-            case MOD_CONVENTIONS_2010 :
-                return getMOD(IERSConventions.IERS_2010, true);
-            case MOD_CONVENTIONS_2003 :
-                return getMOD(IERSConventions.IERS_2003, true);
-            case MOD_CONVENTIONS_1996 :
-                return getMOD(IERSConventions.IERS_1996, true);
-            case TEME :
-                return getTEME();
-            case PZ90_11 :
-                return getPZ9011(IERSConventions.IERS_2010, true);
-            default :
-                // this should never happen
-                throw new OrekitInternalError(null);
-        }
+        return switch (factoryKey) {
+            case GCRF -> getGCRF();
+            case ICRF -> getICRF();
+            case ECLIPTIC_CONVENTIONS_1996 -> getEcliptic(IERSConventions.IERS_1996);
+            case ECLIPTIC_CONVENTIONS_2003 -> getEcliptic(IERSConventions.IERS_2003);
+            case ECLIPTIC_CONVENTIONS_2010 -> getEcliptic(IERSConventions.IERS_2010);
+            case EME2000 -> getEME2000();
+            case ITRF_CIO_CONV_2010_SIMPLE_EOP -> getITRF(IERSConventions.IERS_2010, true);
+            case ITRF_CIO_CONV_2010_ACCURATE_EOP -> getITRF(IERSConventions.IERS_2010, false);
+            case ITRF_CIO_CONV_2003_SIMPLE_EOP -> getITRF(IERSConventions.IERS_2003, true);
+            case ITRF_CIO_CONV_2003_ACCURATE_EOP -> getITRF(IERSConventions.IERS_2003, false);
+            case ITRF_CIO_CONV_1996_SIMPLE_EOP -> getITRF(IERSConventions.IERS_1996, true);
+            case ITRF_CIO_CONV_1996_ACCURATE_EOP -> getITRF(IERSConventions.IERS_1996, false);
+            case ITRF_EQUINOX_CONV_2010_SIMPLE_EOP -> getITRFEquinox(IERSConventions.IERS_2010, true);
+            case ITRF_EQUINOX_CONV_2010_ACCURATE_EOP -> getITRFEquinox(IERSConventions.IERS_2010, false);
+            case ITRF_EQUINOX_CONV_2003_SIMPLE_EOP -> getITRFEquinox(IERSConventions.IERS_2003, true);
+            case ITRF_EQUINOX_CONV_2003_ACCURATE_EOP -> getITRFEquinox(IERSConventions.IERS_2003, false);
+            case ITRF_EQUINOX_CONV_1996_SIMPLE_EOP -> getITRFEquinox(IERSConventions.IERS_1996, true);
+            case ITRF_EQUINOX_CONV_1996_ACCURATE_EOP -> getITRFEquinox(IERSConventions.IERS_1996, false);
+            case TIRF_CONVENTIONS_2010_SIMPLE_EOP -> getTIRF(IERSConventions.IERS_2010, true);
+            case TIRF_CONVENTIONS_2010_ACCURATE_EOP -> getTIRF(IERSConventions.IERS_2010, false);
+            case TIRF_CONVENTIONS_2003_SIMPLE_EOP -> getTIRF(IERSConventions.IERS_2003, true);
+            case TIRF_CONVENTIONS_2003_ACCURATE_EOP -> getTIRF(IERSConventions.IERS_2003, false);
+            case TIRF_CONVENTIONS_1996_SIMPLE_EOP -> getTIRF(IERSConventions.IERS_1996, true);
+            case TIRF_CONVENTIONS_1996_ACCURATE_EOP -> getTIRF(IERSConventions.IERS_1996, false);
+            case CIRF_CONVENTIONS_2010_ACCURATE_EOP -> getCIRF(IERSConventions.IERS_2010, false);
+            case CIRF_CONVENTIONS_2010_SIMPLE_EOP -> getCIRF(IERSConventions.IERS_2010, true);
+            case CIRF_CONVENTIONS_2003_ACCURATE_EOP -> getCIRF(IERSConventions.IERS_2003, false);
+            case CIRF_CONVENTIONS_2003_SIMPLE_EOP -> getCIRF(IERSConventions.IERS_2003, true);
+            case CIRF_CONVENTIONS_1996_ACCURATE_EOP -> getCIRF(IERSConventions.IERS_1996, false);
+            case CIRF_CONVENTIONS_1996_SIMPLE_EOP -> getCIRF(IERSConventions.IERS_1996, true);
+            case VEIS_1950 -> getVeis1950();
+            case GTOD_WITHOUT_EOP_CORRECTIONS -> getGTOD(IERSConventions.IERS_1996, false, true);
+            case GTOD_CONVENTIONS_2010_ACCURATE_EOP -> getGTOD(IERSConventions.IERS_2010, true, false);
+            case GTOD_CONVENTIONS_2010_SIMPLE_EOP -> getGTOD(IERSConventions.IERS_2010, true, true);
+            case GTOD_CONVENTIONS_2003_ACCURATE_EOP -> getGTOD(IERSConventions.IERS_2003, true, false);
+            case GTOD_CONVENTIONS_2003_SIMPLE_EOP -> getGTOD(IERSConventions.IERS_2003, true, true);
+            case GTOD_CONVENTIONS_1996_ACCURATE_EOP -> getGTOD(IERSConventions.IERS_1996, true, false);
+            case GTOD_CONVENTIONS_1996_SIMPLE_EOP -> getGTOD(IERSConventions.IERS_1996, true, true);
+            case TOD_WITHOUT_EOP_CORRECTIONS -> getTOD(IERSConventions.IERS_1996, false, true);
+            case TOD_CONVENTIONS_2010_ACCURATE_EOP -> getTOD(IERSConventions.IERS_2010, true, false);
+            case TOD_CONVENTIONS_2010_SIMPLE_EOP -> getTOD(IERSConventions.IERS_2010, true, true);
+            case TOD_CONVENTIONS_2003_ACCURATE_EOP -> getTOD(IERSConventions.IERS_2003, true, false);
+            case TOD_CONVENTIONS_2003_SIMPLE_EOP -> getTOD(IERSConventions.IERS_2003, true, true);
+            case TOD_CONVENTIONS_1996_ACCURATE_EOP -> getTOD(IERSConventions.IERS_1996, true, false);
+            case TOD_CONVENTIONS_1996_SIMPLE_EOP -> getTOD(IERSConventions.IERS_1996, true, true);
+            case MOD_WITHOUT_EOP_CORRECTIONS -> getMOD(IERSConventions.IERS_1996, false);
+            case MOD_CONVENTIONS_2010 -> getMOD(IERSConventions.IERS_2010, true);
+            case MOD_CONVENTIONS_2003 -> getMOD(IERSConventions.IERS_2003, true);
+            case MOD_CONVENTIONS_1996 -> getMOD(IERSConventions.IERS_1996, true);
+            case TEME -> getTEME();
+            case PZ90_11 -> getPZ9011(IERSConventions.IERS_2010, true);
+        };
     }
 
     @Override
@@ -194,22 +141,11 @@ public abstract class AbstractFrames implements Frames {
     public Frame getEcliptic(final IERSConventions conventions) {
         synchronized (this) {
 
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = Predefined.ECLIPTIC_CONVENTIONS_1996;
-                    break;
-                case IERS_2003 :
-                    factoryKey = Predefined.ECLIPTIC_CONVENTIONS_2003;
-                    break;
-                case IERS_2010 :
-                    factoryKey = Predefined.ECLIPTIC_CONVENTIONS_2010;
-                    break;
-                default :
-
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
+            final Predefined factoryKey = switch (conventions) {
+                case IERS_1996 -> Predefined.ECLIPTIC_CONVENTIONS_1996;
+                case IERS_2003 -> Predefined.ECLIPTIC_CONVENTIONS_2003;
+                case IERS_2010 -> Predefined.ECLIPTIC_CONVENTIONS_2010;
+            };
             final Frame parent = getMOD(conventions);
 
             // try to find an already built frame
@@ -252,27 +188,17 @@ public abstract class AbstractFrames implements Frames {
         synchronized (this) {
 
             // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = simpleEOP ?
-                            Predefined.ITRF_CIO_CONV_1996_SIMPLE_EOP :
-                            Predefined.ITRF_CIO_CONV_1996_ACCURATE_EOP;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                            Predefined.ITRF_CIO_CONV_2003_SIMPLE_EOP :
-                            Predefined.ITRF_CIO_CONV_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                            Predefined.ITRF_CIO_CONV_2010_SIMPLE_EOP :
-                            Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
+            final Predefined factoryKey = switch (conventions) {
+                case IERS_1996 -> simpleEOP ?
+                        Predefined.ITRF_CIO_CONV_1996_SIMPLE_EOP :
+                        Predefined.ITRF_CIO_CONV_1996_ACCURATE_EOP;
+                case IERS_2003 -> simpleEOP ?
+                        Predefined.ITRF_CIO_CONV_2003_SIMPLE_EOP :
+                        Predefined.ITRF_CIO_CONV_2003_ACCURATE_EOP;
+                case IERS_2010 -> simpleEOP ?
+                        Predefined.ITRF_CIO_CONV_2010_SIMPLE_EOP :
+                        Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP;
+            };
             FactoryManagedFrame frame = frames.get(factoryKey);
 
             if (frame == null) {
@@ -353,27 +279,17 @@ public abstract class AbstractFrames implements Frames {
         synchronized (this) {
 
             // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = simpleEOP ?
-                            Predefined.TIRF_CONVENTIONS_1996_SIMPLE_EOP :
-                            Predefined.TIRF_CONVENTIONS_1996_ACCURATE_EOP;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                            Predefined.TIRF_CONVENTIONS_2003_SIMPLE_EOP :
-                            Predefined.TIRF_CONVENTIONS_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                            Predefined.TIRF_CONVENTIONS_2010_SIMPLE_EOP :
-                            Predefined.TIRF_CONVENTIONS_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
+            final Predefined factoryKey = switch (conventions) {
+                case IERS_1996 -> simpleEOP ?
+                        Predefined.TIRF_CONVENTIONS_1996_SIMPLE_EOP :
+                        Predefined.TIRF_CONVENTIONS_1996_ACCURATE_EOP;
+                case IERS_2003 -> simpleEOP ?
+                        Predefined.TIRF_CONVENTIONS_2003_SIMPLE_EOP :
+                        Predefined.TIRF_CONVENTIONS_2003_ACCURATE_EOP;
+                case IERS_2010 -> simpleEOP ?
+                        Predefined.TIRF_CONVENTIONS_2010_SIMPLE_EOP :
+                        Predefined.TIRF_CONVENTIONS_2010_ACCURATE_EOP;
+            };
             FactoryManagedFrame frame = frames.get(factoryKey);
 
             if (frame == null) {
@@ -400,27 +316,17 @@ public abstract class AbstractFrames implements Frames {
         synchronized (this) {
 
             // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = simpleEOP ?
-                            Predefined.CIRF_CONVENTIONS_1996_SIMPLE_EOP :
-                            Predefined.CIRF_CONVENTIONS_1996_ACCURATE_EOP;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                            Predefined.CIRF_CONVENTIONS_2003_SIMPLE_EOP :
-                            Predefined.CIRF_CONVENTIONS_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                            Predefined.CIRF_CONVENTIONS_2010_SIMPLE_EOP :
-                            Predefined.CIRF_CONVENTIONS_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
+            final Predefined factoryKey = switch (conventions) {
+                case IERS_1996 -> simpleEOP ?
+                        Predefined.CIRF_CONVENTIONS_1996_SIMPLE_EOP :
+                        Predefined.CIRF_CONVENTIONS_1996_ACCURATE_EOP;
+                case IERS_2003 -> simpleEOP ?
+                        Predefined.CIRF_CONVENTIONS_2003_SIMPLE_EOP :
+                        Predefined.CIRF_CONVENTIONS_2003_ACCURATE_EOP;
+                case IERS_2010 -> simpleEOP ?
+                        Predefined.CIRF_CONVENTIONS_2010_SIMPLE_EOP :
+                        Predefined.CIRF_CONVENTIONS_2010_ACCURATE_EOP;
+            };
             FactoryManagedFrame frame = frames.get(factoryKey);
 
             if (frame == null) {
@@ -468,27 +374,17 @@ public abstract class AbstractFrames implements Frames {
         synchronized (this) {
 
             // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = simpleEOP ?
-                            Predefined.ITRF_EQUINOX_CONV_1996_SIMPLE_EOP :
-                            Predefined.ITRF_EQUINOX_CONV_1996_ACCURATE_EOP;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                            Predefined.ITRF_EQUINOX_CONV_2003_SIMPLE_EOP :
-                            Predefined.ITRF_EQUINOX_CONV_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                            Predefined.ITRF_EQUINOX_CONV_2010_SIMPLE_EOP :
-                            Predefined.ITRF_EQUINOX_CONV_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
+            final Predefined factoryKey = switch (conventions) {
+                case IERS_1996 -> simpleEOP ?
+                        Predefined.ITRF_EQUINOX_CONV_1996_SIMPLE_EOP :
+                        Predefined.ITRF_EQUINOX_CONV_1996_ACCURATE_EOP;
+                case IERS_2003 -> simpleEOP ?
+                        Predefined.ITRF_EQUINOX_CONV_2003_SIMPLE_EOP :
+                        Predefined.ITRF_EQUINOX_CONV_2003_ACCURATE_EOP;
+                case IERS_2010 -> simpleEOP ?
+                        Predefined.ITRF_EQUINOX_CONV_2010_SIMPLE_EOP :
+                        Predefined.ITRF_EQUINOX_CONV_2010_ACCURATE_EOP;
+            };
             FactoryManagedFrame frame = frames.get(factoryKey);
 
             if (frame == null) {
@@ -539,26 +435,16 @@ public abstract class AbstractFrames implements Frames {
         synchronized (this) {
 
             // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = applyEOPCorr ?
-                            (simpleEOP ? Predefined.GTOD_CONVENTIONS_1996_SIMPLE_EOP : Predefined.GTOD_CONVENTIONS_1996_ACCURATE_EOP) :
-                            Predefined.GTOD_WITHOUT_EOP_CORRECTIONS;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                            Predefined.GTOD_CONVENTIONS_2003_SIMPLE_EOP :
-                            Predefined.GTOD_CONVENTIONS_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ? Predefined.GTOD_CONVENTIONS_2010_SIMPLE_EOP :
-                            Predefined.GTOD_CONVENTIONS_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
+            final Predefined factoryKey = switch (conventions) {
+                case IERS_1996 -> applyEOPCorr ?
+                        (simpleEOP ? Predefined.GTOD_CONVENTIONS_1996_SIMPLE_EOP : Predefined.GTOD_CONVENTIONS_1996_ACCURATE_EOP) :
+                        Predefined.GTOD_WITHOUT_EOP_CORRECTIONS;
+                case IERS_2003 -> simpleEOP ?
+                        Predefined.GTOD_CONVENTIONS_2003_SIMPLE_EOP :
+                        Predefined.GTOD_CONVENTIONS_2003_ACCURATE_EOP;
+                case IERS_2010 -> simpleEOP ? Predefined.GTOD_CONVENTIONS_2010_SIMPLE_EOP :
+                        Predefined.GTOD_CONVENTIONS_2010_ACCURATE_EOP;
+            };
             FactoryManagedFrame frame = frames.get(factoryKey);
 
             if (frame == null) {
@@ -618,27 +504,17 @@ public abstract class AbstractFrames implements Frames {
         synchronized (this) {
 
             // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = applyEOPCorr ?
-                            (simpleEOP ? Predefined.TOD_CONVENTIONS_1996_SIMPLE_EOP : Predefined.TOD_CONVENTIONS_1996_ACCURATE_EOP) :
-                            Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                            Predefined.TOD_CONVENTIONS_2003_SIMPLE_EOP :
-                            Predefined.TOD_CONVENTIONS_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                            Predefined.TOD_CONVENTIONS_2010_SIMPLE_EOP :
-                            Predefined.TOD_CONVENTIONS_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
+            final Predefined factoryKey = switch (conventions) {
+                case IERS_1996 -> applyEOPCorr ?
+                        (simpleEOP ? Predefined.TOD_CONVENTIONS_1996_SIMPLE_EOP : Predefined.TOD_CONVENTIONS_1996_ACCURATE_EOP) :
+                        Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
+                case IERS_2003 -> simpleEOP ?
+                        Predefined.TOD_CONVENTIONS_2003_SIMPLE_EOP :
+                        Predefined.TOD_CONVENTIONS_2003_ACCURATE_EOP;
+                case IERS_2010 -> simpleEOP ?
+                        Predefined.TOD_CONVENTIONS_2010_SIMPLE_EOP :
+                        Predefined.TOD_CONVENTIONS_2010_ACCURATE_EOP;
+            };
             final int interpolationPoints;
             final int pointsPerDay;
             if (applyEOPCorr) {
@@ -700,28 +576,27 @@ public abstract class AbstractFrames implements Frames {
         synchronized (this) {
 
             final Predefined factoryKey;
-            final Frame parent;
-            switch (conventions) {
-                case IERS_1996 :
+            final Frame parent = switch (conventions) {
+                case IERS_1996 -> {
                     factoryKey = applyEOPCorr ? Predefined.MOD_CONVENTIONS_1996 : Predefined.MOD_WITHOUT_EOP_CORRECTIONS;
-                    parent     = applyEOPCorr ? getGCRF() : getEME2000();
-                    break;
-                case IERS_2003 :
+                    yield applyEOPCorr ? getGCRF() : getEME2000();
+                }
+                case IERS_2003 -> {
                     factoryKey = Predefined.MOD_CONVENTIONS_2003;
                     // in IERS conventions 2003, the precession angles zetaA, thetaA and zA
                     // from equation 33 are computed from EME2000, not from GCRF
-                    parent     = getEME2000();
-                    break;
-                case IERS_2010 :
+                    yield getEME2000();
+                }
+                case IERS_2010 -> {
                     factoryKey = Predefined.MOD_CONVENTIONS_2010;
                     // precession angles epsilon0, psiA, omegaA and chiA
                     // from equations 5.39 and 5.40 are computed from EME2000
-                    parent     = getEME2000();
-                    break;
-                default :
+                    yield getEME2000();
+                }
+                default ->
                     // this should never happen
-                    throw new OrekitInternalError(null);
-            }
+                        throw new OrekitInternalError(null);
+            };
 
             // try to find an already built frame
             FactoryManagedFrame frame = frames.get(factoryKey);
@@ -802,59 +677,22 @@ public abstract class AbstractFrames implements Frames {
         return timeScales;
     }
 
-    /** Local class for different ITRF versions keys.
+    /**
+     * Local record for different ITRF versions keys.
+     *
+     * @param version     ITRF version.
+     * @param conventions IERS conventions to apply.
+     * @param simpleEOP   Tidal effects flag.
      * @since 9.2
      */
-    private static class ITRFKey implements Serializable {
+    private record ITRFKey(ITRFVersion version, IERSConventions conventions,
+                           boolean simpleEOP) implements Serializable {
 
-        /** Serialized UID. */
-        private static final long serialVersionUID = 20180412L;
-
-        /** ITRF version. */
-        private final ITRFVersion version;
-
-        /** IERS conventions to apply. */
-        private final IERSConventions conventions;
-
-        /** Tidal effects flag. */
-        private final boolean simpleEOP;
-
-        /** Simple constructor.
-         * @param version ITRF version
-         * @param conventions IERS conventions to apply
-         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+        /**
+         * Serialized UID.
          */
-        ITRFKey(final ITRFVersion version, final IERSConventions conventions, final boolean simpleEOP) {
-            this.version     = version;
-            this.conventions = conventions;
-            this.simpleEOP   = simpleEOP;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public int hashCode() {
-            return (version.ordinal()     << 5) +
-                    (conventions.ordinal() << 1) +
-                    (simpleEOP ? 0 : 1);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean equals(final Object other) {
-
-            if (this == other) {
-                return true;
-            }
-
-            if (other instanceof ITRFKey) {
-                final ITRFKey key = (ITRFKey) other;
-                return version     == key.version     &&
-                       conventions == key.conventions &&
-                       simpleEOP   == key.simpleEOP;
-            }
-
-            return false;
-        }
+        @Serial
+        private static final long serialVersionUID = 20180412L;
 
     }
 }

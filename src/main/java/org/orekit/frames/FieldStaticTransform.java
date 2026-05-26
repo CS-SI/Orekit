@@ -48,7 +48,7 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
      * @return identity transform.
      */
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getIdentity(final Field<T> field) {
-        return new FieldStaticTransform<T>() {
+        return new FieldStaticTransform<>() {
             @Override
             public FieldVector3D<T> getTranslation() {
                 return  FieldVector3D.getZero(field);
@@ -337,7 +337,7 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> of(final FieldAbsoluteDate<T> date,
                                                                           final FieldVector3D<T> translation,
                                                                           final FieldRotation<T> rotation) {
-        return new FieldStaticTransform<T>() {
+        return new FieldStaticTransform<>() {
 
             @Override
             public FieldStaticTransform<T> getInverse() {

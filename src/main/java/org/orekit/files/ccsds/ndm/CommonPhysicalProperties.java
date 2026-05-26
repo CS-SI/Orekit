@@ -17,10 +17,12 @@
 package org.orekit.files.ccsds.ndm;
 
 import org.hipparchus.complex.Quaternion;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.cdm.AdditionalParameters;
 import org.orekit.files.ccsds.ndm.odm.ocm.OrbitPhysicalProperties;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for common physical properties for both {@link OrbitPhysicalProperties} and {@link AdditionalParameters}.
@@ -42,6 +44,9 @@ import org.orekit.time.AbsoluteDate;
  * @since 11.3
  */
 public class CommonPhysicalProperties extends CommentsContainer {
+
+    /** For creating a {@link Frame}. */
+    private final CcsdsFrameMapper frameMapper;
 
     /** Optimally Enclosing Box parent reference frame. */
     private FrameFacade oebParentFrame;
@@ -94,14 +99,18 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Typical (50th percentile) coefficient of reflectivity. */
     private double reflectance;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
      */
-    public CommonPhysicalProperties() {
-
+    public CommonPhysicalProperties(final CcsdsFrameMapper frameMapper) {
         // 502.0-B-3 (page 6-23) says the default is RSW_ROTATING, but also says,
         // "This keyword shall be provided if OEB_Q1,2,3,4 are specified".
         // Which means it must be specified in the file any time it would be used,
         // which leaves the default without any effect.
+        this.frameMapper         = frameMapper;
         oebParentFrame           = new FrameFacade(null, null, null, null, null);
         // 502.0-B-3 (page 6-23) says the default is EPOCH_TZERO from the OCM metadata.
         oebParentFrameEpoch      = null;
@@ -121,12 +130,6 @@ public class CommonPhysicalProperties extends CommentsContainer {
         vmApparent               = Double.NaN;
         vmApparentMax            = Double.NaN;
         reflectance              = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void validate(final double version) {
-        super.validate(version);
     }
 
     /** Get the Optimally Enclosing Box parent reference frame.
@@ -157,6 +160,32 @@ public class CommonPhysicalProperties extends CommentsContainer {
     public void setOebParentFrameEpoch(final AbsoluteDate oebParentFrameEpoch) {
         refuseFurtherComments();
         this.oebParentFrameEpoch = oebParentFrameEpoch;
+    }
+
+    /**
+     * Get the mapping between a CCSDS frame and a {@link Frame}.
+     *
+     * @return the frame mapper.
+     * @since 13.1.5
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Get the frame OEB parent frame. Note that only the orientation of the
+     * returned frame is significant, the position of the returned frame is
+     * irrelevant and should be ignored.
+     *
+     * @return Orekit frame for this covariance history.
+     * @see #getOebParentFrame()
+     * @see #getOebParentFrameEpoch()
+     * @see #getFrameMapper()
+     * @since 13.1.5
+     */
+    public Frame getOebParent() {
+        return getFrameMapper()
+                .buildCcsdsFrame(getOebParentFrame(), getOebParentFrameEpoch());
     }
 
     /** Get the quaternion defining Optimally Enclosing Box.

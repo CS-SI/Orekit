@@ -85,7 +85,7 @@ class EventsLoggerTest {
         final List<EventsLogger.LoggedEvent> logged = eventsLogger.getLoggedEvents();
         // THEN
         Assertions.assertEquals(events.size(), logged.size());
-        Assertions.assertEquals(event, logged.get(0));
+        Assertions.assertEquals(event, logged.getFirst());
     }
 
     @ParameterizedTest
@@ -105,7 +105,7 @@ class EventsLoggerTest {
         Assertions.assertEquals(Action.CONTINUE, action);
         final List<EventsLogger.LoggedEvent> loggedEvents = eventsLogger.getLoggedEvents();
         Assertions.assertEquals(loggedEvents.size(), counterHandler.getCount());
-        final EventsLogger.LoggedEvent event = loggedEvents.get(0);
+        final EventsLogger.LoggedEvent event = loggedEvents.getFirst();
         Assertions.assertEquals(mockedState, event.getState());
         Assertions.assertNull(event.getResetState());
         Assertions.assertEquals(action, event.getAction());
@@ -166,7 +166,7 @@ class EventsLoggerTest {
         final Action action = detector.getHandler().eventOccurred(mockedState, dateDetector, true);
         // THEN
         Assertions.assertEquals(Action.RESET_STATE, action);
-        Assertions.assertNull(eventsLogger.getLoggedEvents().get(0).getResetState());
+        Assertions.assertNull(eventsLogger.getLoggedEvents().getFirst().getResetState());
     }
 
     private static class FailingResetHandler implements EventHandler {

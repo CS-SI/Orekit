@@ -39,14 +39,14 @@ public class ParserTest {
     public void testOne() {
         final List<PowerTerm> terms = Parser.buildTermsList("1");
         Assertions.assertEquals(1, terms.size());
-        checkTerm(terms.get(0), 1, "1", 1, 1);
+        checkTerm(terms.getFirst(), 1, "1", 1, 1);
     }
 
     @Test
     public void testOneCompositeMultiplication() {
         final List<PowerTerm> terms = Parser.buildTermsList("1×2s");
         Assertions.assertEquals(2, terms.size());
-        checkTerm(terms.get(0), 1, "1", 1, 1);
+        checkTerm(terms.getFirst(), 1, "1", 1, 1);
         checkTerm(terms.get(1), 2, "s", 1, 1);
     }
 
@@ -54,7 +54,7 @@ public class ParserTest {
     public void testOneCompositeDivision() {
         final List<PowerTerm> terms = Parser.buildTermsList("1/2s");
         Assertions.assertEquals(2, terms.size());
-        checkTerm(terms.get(0), 1,   "1",  1, 1);
+        checkTerm(terms.getFirst(), 1,   "1",  1, 1);
         checkTerm(terms.get(1), 0.5, "s", -1, 1);
     }
 
@@ -62,7 +62,7 @@ public class ParserTest {
     public void testNumber() {
         final List<PowerTerm> terms = Parser.buildTermsList("#/y");
         Assertions.assertEquals(2, terms.size());
-        checkTerm(terms.get(0), 1,  "#", 1, 1);
+        checkTerm(terms.getFirst(), 1,  "#", 1, 1);
         checkTerm(terms.get(1), 1, "y", -1, 1);
     }
 
@@ -70,7 +70,7 @@ public class ParserTest {
     public void testIntegerPrefix() {
         final List<PowerTerm> terms = Parser.buildTermsList("2rev/d²");
         Assertions.assertEquals(2, terms.size());
-        checkTerm(terms.get(0), 2, "rev", 1, 1);
+        checkTerm(terms.getFirst(), 2, "rev", 1, 1);
         checkTerm(terms.get(1), 1,  "d", -2, 1);
     }
 
@@ -78,7 +78,7 @@ public class ParserTest {
     public void testSimpleFactor() {
         final List<PowerTerm> terms = Parser.buildTermsList("kg/3s");
         Assertions.assertEquals(2, terms.size());
-        checkTerm(terms.get(0), 1,          "kg", 1, 1);
+        checkTerm(terms.getFirst(), 1,          "kg", 1, 1);
         checkTerm(terms.get(1), 1.0 / 3.0,  "s", -1, 1);
     }
 
@@ -86,7 +86,7 @@ public class ParserTest {
     public void testFinalFactor() {
         final List<PowerTerm> terms = Parser.buildTermsList("kg/3");
         Assertions.assertEquals(2, terms.size());
-        checkTerm(terms.get(0), 1,          "kg", 1, 1);
+        checkTerm(terms.getFirst(), 1,          "kg", 1, 1);
         checkTerm(terms.get(1), 1.0 / 3.0,  "1", -1, 1);
     }
 
@@ -94,7 +94,7 @@ public class ParserTest {
     public void testCompositeFactor() {
         final List<PowerTerm> terms = Parser.buildTermsList("3kg*N/5(s·2A)");
         Assertions.assertEquals(4, terms.size());
-        checkTerm(terms.get(0), 3,          "kg", 1, 1);
+        checkTerm(terms.getFirst(), 3,          "kg", 1, 1);
         checkTerm(terms.get(1), 1,          "N",  1, 1);
         checkTerm(terms.get(2), 1.0 / 5.0,  "s", -1, 1);
         checkTerm(terms.get(3), 1.0 / 2.0,  "A", -1, 1);
@@ -104,7 +104,7 @@ public class ParserTest {
     public void testSquareRoot() {
         final List<PowerTerm> terms = Parser.buildTermsList("abcd¹/1√ef");
         Assertions.assertEquals(2, terms.size());
-        checkTerm(terms.get(0), 1, "abcd", 1, 1);
+        checkTerm(terms.getFirst(), 1, "abcd", 1, 1);
         checkTerm(terms.get(1), 1, "ef", -1, 2);
     }
 
@@ -112,7 +112,7 @@ public class ParserTest {
     public void testChain() {
         final List<PowerTerm> terms = Parser.buildTermsList("kg.m^(3/4)·s⁻¹");
         Assertions.assertEquals(3, terms.size());
-        checkTerm(terms.get(0), 1, "kg", 1, 1);
+        checkTerm(terms.getFirst(), 1, "kg", 1, 1);
         checkTerm(terms.get(1), 1,  "m", 3, 4);
         checkTerm(terms.get(2), 1, "s", -1, 1);
     }
@@ -121,7 +121,7 @@ public class ParserTest {
     public void testExponents() {
         final List<PowerTerm> terms = Parser.buildTermsList("µas^⅖/(h**(2)×8m.√A)³");
         Assertions.assertEquals(4, terms.size());
-        checkTerm(terms.get(0), 1,           "µas", 2, 5);
+        checkTerm(terms.getFirst(), 1,           "µas", 2, 5);
         checkTerm(terms.get(1), 1,            "h", -6, 1);
         checkTerm(terms.get(2), 1.0 / 512.0,  "m", -3, 1);
         checkTerm(terms.get(3), 1,            "A", -3, 2);
@@ -131,7 +131,7 @@ public class ParserTest {
     public void testCompoundInSquareRoot() {
         final List<PowerTerm> terms = Parser.buildTermsList("km/√(kg.s)");
         Assertions.assertEquals(3, terms.size());
-        checkTerm(terms.get(0), 1,  "km", 1, 1);
+        checkTerm(terms.getFirst(), 1,  "km", 1, 1);
         checkTerm(terms.get(1), 1, "kg", -1, 2);
         checkTerm(terms.get(2), 1,  "s", -1, 2);
     }
@@ -140,17 +140,17 @@ public class ParserTest {
     public void testLeftAssociativity() {
         final List<PowerTerm> terms1 = Parser.buildTermsList("(kg/m)/s²");
         Assertions.assertEquals(3, terms1.size());
-        checkTerm(terms1.get(0), 1,  "kg", 1, 1);
+        checkTerm(terms1.getFirst(), 1,  "kg", 1, 1);
         checkTerm(terms1.get(1), 1,  "m", -1, 1);
         checkTerm(terms1.get(2), 1,  "s", -2, 1);
         final List<PowerTerm> terms2 = Parser.buildTermsList("kg/(m/s²)");
         Assertions.assertEquals(3, terms2.size());
-        checkTerm(terms2.get(0), 1,  "kg", 1, 1);
+        checkTerm(terms2.getFirst(), 1,  "kg", 1, 1);
         checkTerm(terms2.get(1), 1,  "m", -1, 1);
         checkTerm(terms2.get(2), 1,   "s", 2, 1);
         final List<PowerTerm> terms3 = Parser.buildTermsList("kg/m/s²");
         Assertions.assertEquals(3, terms3.size());
-        checkTerm(terms3.get(0), 1,  "kg", 1, 1);
+        checkTerm(terms3.getFirst(), 1,  "kg", 1, 1);
         checkTerm(terms3.get(1), 1,  "m", -1, 1);
         checkTerm(terms3.get(2), 1,  "s", -2, 1);
     }
@@ -159,11 +159,11 @@ public class ParserTest {
     public void testCcsdsRoot() {
         final List<PowerTerm> terms1 = Parser.buildTermsList("km**0.5/s");
         Assertions.assertEquals(2, terms1.size());
-        checkTerm(terms1.get(0), 1,  "km", 1, 2);
+        checkTerm(terms1.getFirst(), 1,  "km", 1, 2);
         checkTerm(terms1.get(1), 1,  "s", -1, 1);
         final List<PowerTerm> terms2 = Parser.buildTermsList("km/s**0.5");
         Assertions.assertEquals(2, terms2.size());
-        checkTerm(terms2.get(0), 1,  "km", 1, 1);
+        checkTerm(terms2.getFirst(), 1,  "km", 1, 1);
         checkTerm(terms2.get(1), 1,  "s", -1, 2);
     }
 
@@ -211,7 +211,7 @@ public class ParserTest {
     public void testRootAndParenthesisedPower() {
         final List<PowerTerm> terms = Parser.buildTermsList("km/√(d³)");
         Assertions.assertEquals(2, terms.size());
-        checkTerm(terms.get(0), 1,  "km", 1, 1);
+        checkTerm(terms.getFirst(), 1,  "km", 1, 1);
         checkTerm(terms.get(1), 1,  "d", -3, 2);
     }
 

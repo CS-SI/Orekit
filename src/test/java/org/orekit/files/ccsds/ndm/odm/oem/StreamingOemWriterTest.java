@@ -86,6 +86,8 @@ public class StreamingOemWriterTest {
         for (CenterName centerName : centerNames) {
             CelestialBody body = centerName.getCelestialBody();
             String name = centerName.name().replace('_', ' ');
+            MatcherAssert.assertThat(CenterName.guessCenter(body.getIcrfAlignedFrame()),
+                    CoreMatchers.is(name));
             MatcherAssert.assertThat(CenterName.guessCenter(body.getInertiallyOrientedFrame()),
                                      CoreMatchers.is(name));
             MatcherAssert.assertThat(CenterName.guessCenter(body.getBodyOrientedFrame()),
@@ -130,21 +132,21 @@ public class StreamingOemWriterTest {
             Oem oem = parser.parseMessage(source0);
 
             OemSatelliteEphemeris satellite = oem.getSatellites().values().iterator().next();
-            OemSegment ephemerisBlock = satellite.getSegments().get(0);
+            OemSegment ephemerisBlock = satellite.getSegments().getFirst();
             double step = ephemerisBlock.
                           getMetadata().
                           getStopTime().
                           durationFrom(ephemerisBlock.getMetadata().getStartTime()) /
                           (ephemerisBlock.getCoordinates().size() - 1);
             String originator = oem.getHeader().getOriginator();
-            OemSegment block = oem.getSegments().get(0);
+            OemSegment block = oem.getSegments().getFirst();
             String objectName = block.getMetadata().getObjectName();
             String objectID = block.getMetadata().getObjectID();
-            Frame frame = satellite.getSegments().get(0).getInertialFrame();
+            Frame frame = satellite.getSegments().getFirst().getInertialFrame();
 
             OdmHeader header = new OdmHeader();
             header.setOriginator(originator);
-            OemMetadata metadata = new OemMetadata(1);
+            OemMetadata metadata = new OemMetadata(1, null);
             metadata.setObjectName(objectName);
             metadata.setObjectID(objectID);
             metadata.setTimeSystem(TimeSystem.UTC);
@@ -221,11 +223,11 @@ public class StreamingOemWriterTest {
         final Oem original = oemParser.parse(source);
         final OemSatelliteEphemeris originalEphem =
                 original.getSatellites().values().iterator().next();
-        final Frame frame = originalEphem.getSegments().get(0).getInertialFrame();
+        final Frame frame = originalEphem.getSegments().getFirst().getInertialFrame();
         final BoundedPropagator propagator = originalEphem.getPropagator(new FrameAlignedProvider(frame));
         StringBuilder buffer = new StringBuilder();
         OdmHeader header = original.getHeader();
-        OemMetadata metadata = original.getSegments().get(0).getMetadata();
+        OemMetadata metadata = original.getSegments().getFirst().getMetadata();
         metadata.setTimeSystem(TimeSystem.UTC);
         metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
         metadata.setInterpolationMethod(null);

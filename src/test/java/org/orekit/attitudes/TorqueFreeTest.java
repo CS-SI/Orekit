@@ -19,7 +19,6 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -298,7 +297,7 @@ public class TorqueFreeTest {
     private Stream<Vector3D> permute(final Vector3D v) {
         return CombinatoricsUtils.
                         permutations(Arrays.asList(v.getX(), v.getY(), v.getZ())).
-                        map(a -> new Vector3D(a.get(0), a.get(1), a.get(2)));
+                        map(a -> new Vector3D(a.getFirst(), a.get(1), a.get(2)));
     }
 
     /** Generate all permutations of rotation coordinates.
@@ -308,7 +307,7 @@ public class TorqueFreeTest {
     private Stream<Rotation> permute(final Rotation r) {
         return CombinatoricsUtils.
                         permutations(Arrays.asList(r.getQ0(), r.getQ1(), r.getQ2(), r.getQ3())).
-                        map(a -> new Rotation(a.get(0), a.get(1), a.get(2), a.get(3), false));
+                        map(a -> new Rotation(a.getFirst(), a.get(1), a.get(2), a.get(3), false));
     }
 
     /** Generate all permutations of inertia.
@@ -323,10 +322,10 @@ public class TorqueFreeTest {
             permutations(Arrays.asList(inertia.getInertiaAxis1(), inertia.getInertiaAxis2(), inertia.getInertiaAxis3())).
             forEach(ia ->
                     permuted.addAll(CombinatoricsUtils.permutations(Arrays.asList(0, 1, 2)).
-                                    map(i -> new Inertia(new InertiaAxis(ia.get(i.get(0)).getI(), ia.get(0).getA()),
+                                    map(i -> new Inertia(new InertiaAxis(ia.get(i.getFirst()).getI(), ia.getFirst().getA()),
                                                          new InertiaAxis(ia.get(i.get(1)).getI(), ia.get(1).getA()),
                                                          new InertiaAxis(ia.get(i.get(2)).getI(), ia.get(2).getA()))).
-                                    collect(Collectors.toList())));
+                            toList()));
         return permuted.stream();
     }
 

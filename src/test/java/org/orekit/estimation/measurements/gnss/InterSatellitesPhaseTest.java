@@ -86,7 +86,7 @@ public class InterSatellitesPhaseTest {
         // Run test
         double refErrorsPMedian = 1.7e-09;
         double refErrorsPMean   = 4.7e-09;
-        double refErrorsPMax    = 1.6e-07;
+        double refErrorsPMax    = 1.7e-07;
         double refErrorsVMedian = 4.6e-04;
         double refErrorsVMean   = 1.7e-03;
         double refErrorsVMax    = 1.1e-01;
@@ -249,7 +249,7 @@ public class InterSatellitesPhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -274,12 +274,12 @@ public class InterSatellitesPhaseTest {
 
         Assertions.assertEquals(0.0, absErrorsMedian, 6.2e-7);
         Assertions.assertEquals(0.0, absErrorsMin,    3.3e-6);
-        Assertions.assertEquals(0.0, absErrorsMax,    7.2e-7);
+        Assertions.assertEquals(0.0, absErrorsMax,    7.3e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.2e-12);
         Assertions.assertEquals(0.0, relErrorsMax,    3.0e-10);
 
         // Test measurement type
-        Assertions.assertEquals(InterSatellitesPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(InterSatellitesPhase.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -409,7 +409,7 @@ public class InterSatellitesPhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -500,7 +500,7 @@ public class InterSatellitesPhaseTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().get(0).getClockBiasDriver(),
+                        measurement.getSatellites().getFirst().getClockBiasDriver(),
                         measurement.getSatellites().get(1).getClockBiasDriver()
                     };
 
@@ -559,7 +559,7 @@ public class InterSatellitesPhaseTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();

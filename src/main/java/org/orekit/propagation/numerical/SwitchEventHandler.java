@@ -111,7 +111,7 @@ class SwitchEventHandler implements EventHandler {
     public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
         isForward = initialState.getDate().isBeforeOrEqualTo(target);
         switchFieldDetector = null;
-        final GradientField field = fieldDetectors.get(0).getThreshold().getField();
+        final GradientField field = fieldDetectors.getFirst().getThreshold().getField();
         final FieldAbsoluteDate<Gradient> fieldTarget = new FieldAbsoluteDate<>(field, target);
         final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(field, initialState);
         fieldDetectors.forEach(fieldEventDetector -> fieldEventDetector.init(fieldState, fieldTarget));
@@ -137,7 +137,7 @@ class SwitchEventHandler implements EventHandler {
      * @return Field detector
      */
     private FieldEventDetector<Gradient> findSwitchDetector(final EventDetector detector, final SpacecraftState state) {
-        final GradientField field = fieldDetectors.get(0).getThreshold().getField();
+        final GradientField field = fieldDetectors.getFirst().getThreshold().getField();
         final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(field, state);
         fieldDetectors.forEach(fieldDetector -> fieldDetector.reset(fieldState, fieldState.getDate()));
         final double g = detector.g(state);

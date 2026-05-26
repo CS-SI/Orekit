@@ -222,11 +222,11 @@ public class MultipleShooterTest {
             Assertions.assertEquals(expPva.getVelocity().getZ(), actPva.getVelocity().getZ(), 1e-4);
         }
 
-        Assertions.assertEquals(et0[0] * tc, actualSol.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1e-15);
+        Assertions.assertEquals(et0[0] * tc, actualSol.getFirst().getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1e-15);
         Assertions.assertEquals(et0[9] * tc, actualSol.get(9).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1e-15);
-        Assertions.assertEquals(x0[0][0] * lc, actualSol.get(0).getAbsPVA().getPosition().getX(), 1e-15);
-        Assertions.assertEquals(x0[0][1] * lc, actualSol.get(0).getAbsPVA().getPosition().getY(), 1e-15);
-        Assertions.assertEquals(x0[0][2] * lc, actualSol.get(0).getAbsPVA().getPosition().getZ(), 1e-15);
+        Assertions.assertEquals(x0[0][0] * lc, actualSol.getFirst().getAbsPVA().getPosition().getX(), 1e-15);
+        Assertions.assertEquals(x0[0][1] * lc, actualSol.getFirst().getAbsPVA().getPosition().getY(), 1e-15);
+        Assertions.assertEquals(x0[0][2] * lc, actualSol.getFirst().getAbsPVA().getPosition().getZ(), 1e-15);
         Assertions.assertEquals(x0[5][0] * lc, actualSol.get(5).getAbsPVA().getPosition().getX(), 1e-15);
         Assertions.assertEquals(x0[5][1] * lc, actualSol.get(5).getAbsPVA().getPosition().getY(), 1e-15);
         Assertions.assertEquals(x0[5][2] * lc, actualSol.get(5).getAbsPVA().getPosition().getZ(), 1e-15);

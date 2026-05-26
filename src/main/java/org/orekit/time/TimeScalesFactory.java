@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.orekit.annotation.DefaultDataContext;
@@ -36,6 +37,7 @@ import org.orekit.utils.IERSConventions;
 public class TimeScalesFactory implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20190927L;
 
     /** Private constructor.

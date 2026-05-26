@@ -29,6 +29,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
@@ -47,6 +48,7 @@ import org.orekit.files.ccsds.utils.lexical.UserDefinedXmlTokenBuilder;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.units.Unit;
@@ -145,15 +147,17 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
      * @param mu gravitational coefficient
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
-     * @since 12.0
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
      */
     public OcmParser(final IERSConventions conventions,
                      final double equatorialRadius, final double flattening,
                      final boolean simpleEOP, final DataContext dataContext,
                      final double mu, final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
         super(Ocm.ROOT, Ocm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null,
-              mu, parsedUnitsBehavior, filters);
+              mu, parsedUnitsBehavior, filters, frameMapper);
         this.equatorialRadius = equatorialRadius;
         this.flattening       = flattening;
     }
@@ -232,7 +236,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         if (metadata != null) {
             return false;
         }
-        metadata  = new OcmMetadata(getDataContext());
+        metadata  = new OcmMetadata(getDataContext(), getFrameMapper());
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP, this::getDataContext,
                                        this::getParsedUnitsBehavior, metadata::getEpochT0, metadata::getTimeSystem,
                                        metadata::getSclkOffsetAtEpoch, metadata::getSclkSecPerSISec);
@@ -276,7 +280,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
             final OneAxisEllipsoid body =
                             currentTrajectoryStateHistoryMetadata.getTrajType() == OrbitElementsType.GEODETIC ?
                             new OneAxisEllipsoid(equatorialRadius, flattening,
-                                                 currentTrajectoryStateHistoryMetadata.getTrajReferenceFrame().asFrame()) :
+                                                 currentTrajectoryStateHistoryMetadata.getFrame()) :
                             null;
             trajectoryBlocks = new ArrayList<>(old.size());
             for (final TrajectoryStateHistory osh : old) {
@@ -298,15 +302,17 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                 // this is the first trajectory block, we need to allocate the container
                 trajectoryBlocks = new ArrayList<>();
             }
-            currentTrajectoryStateHistoryMetadata = new TrajectoryStateHistoryMetadata(metadata.getEpochT0(),
-                                                                                       getDataContext());
+            currentTrajectoryStateHistoryMetadata = new TrajectoryStateHistoryMetadata(
+                    metadata.getEpochT0(),
+                    getDataContext(),
+                    getFrameMapper());
             currentTrajectoryStateHistory         = new ArrayList<>();
             anticipateNext(this::processTrajectoryStateToken);
         } else {
             final OneAxisEllipsoid body =
                             currentTrajectoryStateHistoryMetadata.getTrajType() == OrbitElementsType.GEODETIC ?
                             new OneAxisEllipsoid(equatorialRadius, flattening,
-                                                 currentTrajectoryStateHistoryMetadata.getTrajReferenceFrame().asFrame()) :
+                                                 currentTrajectoryStateHistoryMetadata.getFrame()) :
                             null;
             anticipateNext(structureProcessor);
             if (currentTrajectoryStateHistoryMetadata.getCenter().getBody() != null) {
@@ -330,7 +336,9 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         if (starting) {
             if (physicBlock == null) {
                 // this is the first (and unique) physical properties block, we need to allocate the container
-                physicBlock = new OrbitPhysicalProperties(metadata.getEpochT0());
+                physicBlock = new OrbitPhysicalProperties(
+                        metadata.getEpochT0(),
+                        metadata.getFrameMapper());
             }
             anticipateNext(this::processPhysicalPropertyToken);
         } else {
@@ -350,7 +358,9 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                 // this is the first covariance block, we need to allocate the container
                 covarianceBlocks = new ArrayList<>();
             }
-            currentCovarianceHistoryMetadata = new OrbitCovarianceHistoryMetadata(metadata.getEpochT0());
+            currentCovarianceHistoryMetadata = new OrbitCovarianceHistoryMetadata(
+                    metadata.getEpochT0(),
+                    metadata.getFrameMapper());
             currentCovarianceHistory         = new ArrayList<>();
             anticipateNext(this::processCovarianceToken);
         } else {
@@ -374,7 +384,9 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                 // this is the first maneuver block, we need to allocate the container
                 maneuverBlocks = new ArrayList<>();
             }
-            currentManeuverHistoryMetadata = new OrbitManeuverHistoryMetadata(metadata.getEpochT0());
+            currentManeuverHistoryMetadata = new OrbitManeuverHistoryMetadata(
+                    metadata.getEpochT0(),
+                    metadata.getFrameMapper());
             currentManeuverHistory         = new ArrayList<>();
             anticipateNext(this::processManeuverToken);
         } else {
@@ -559,7 +571,9 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
      */
     private boolean processPhysicalPropertyToken(final ParseToken token) {
         if (physicBlock == null) {
-            physicBlock = new OrbitPhysicalProperties(metadata.getEpochT0());
+            physicBlock = new OrbitPhysicalProperties(
+                    metadata.getEpochT0(),
+                    metadata.getFrameMapper());
         }
         anticipateNext(this::processDataSubStructureToken);
         try {

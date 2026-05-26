@@ -18,7 +18,9 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
+import org.orekit.frames.Frame;
 
 /**
  * Container for additional parameters data block.
@@ -75,12 +77,16 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** The method used for the calculation of COV_CONFIDENCE. */
     private String covConfidenceMethod;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
-    public AdditionalParameters() {
+    public AdditionalParameters(final CcsdsFrameMapper frameMapper) {
 
        // Call to CommonPhysicalProperties constructor
-        super();
+        super(frameMapper);
 
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
@@ -97,12 +103,6 @@ public class AdditionalParameters extends CommonPhysicalProperties {
         periapsisAltitude = Double.NaN;
         inclination       = Double.NaN;
         covConfidence       = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void validate(final double version) {
-        super.validate(version);
     }
 
     /**

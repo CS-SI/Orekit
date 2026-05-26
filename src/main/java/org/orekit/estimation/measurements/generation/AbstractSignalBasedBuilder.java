@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -32,32 +31,28 @@ public abstract class AbstractSignalBasedBuilder<T extends ObservedMeasurement<T
     private final SignalTravelTimeModel signalTravelTimeModel;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
      *                           of the covariance matrix are only used by Kalman filters, not least squares)
      * @param signalTravelTimeModel signal travel time model
      * @param satellites satellites related to this builder
      */
-    protected AbstractSignalBasedBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                         final MeasurementQuality measurementQuality,
+    protected AbstractSignalBasedBuilder(final MeasurementQuality measurementQuality,
                                          final SignalTravelTimeModel signalTravelTimeModel,
                                          final ObservableSatellite[] satellites) {
-        super(noiseSource, measurementQuality, satellites);
+        super(measurementQuality, satellites);
         this.signalTravelTimeModel = signalTravelTimeModel;
     }
 
     /** Simple constructor for single observable satellite.
-     * @param noiseSource noise source, may be null for generating perfect measurements
      * @param measurementQuality measurement quality as used in estimation (in Orekit, the crossed-terms
      *                           of the covariance matrix are only used by Kalman filters, not least squares)
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      */
-    protected AbstractSignalBasedBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                         final MeasurementQuality measurementQuality,
+    protected AbstractSignalBasedBuilder(final MeasurementQuality measurementQuality,
                                          final SignalTravelTimeModel signalTravelTimeModel,
                                          final ObservableSatellite satellite) {
-        this(noiseSource, measurementQuality, signalTravelTimeModel, new ObservableSatellite[] {satellite});
+        this(measurementQuality, signalTravelTimeModel, new ObservableSatellite[] {satellite});
     }
 
     /**

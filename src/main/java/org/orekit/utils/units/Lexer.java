@@ -277,34 +277,21 @@ class Lexer {
     private char convertSuperscript(final int index) {
         // we can't do fancy stuff with code points
         // superscripts for 1, 2 and 3 are not in the same range as others
-        switch (unitSpecification.charAt(index)) {
-            case '⁰' :
-                return '0';
-            case '¹' :
-                return '1';
-            case '²' :
-                return '2';
-            case '³' :
-                return '3';
-            case '⁴' :
-                return '4';
-            case '⁵' :
-                return '5';
-            case '⁶' :
-                return '6';
-            case '⁷' :
-                return '7';
-            case '⁸' :
-                return '8';
-            case '⁹' :
-                return '9';
-            case '⁺' :
-                return '+';
-            case '⁻' :
-                return '-';
-            default :
-                return ' ';
-        }
+        return switch (unitSpecification.charAt(index)) {
+            case '⁰'  -> '0';
+            case '¹'  -> '1';
+            case '²'  -> '2';
+            case '³'  -> '3';
+            case '⁴'  -> '4';
+            case '⁵'  -> '5';
+            case '⁶'  -> '6';
+            case '⁷'  -> '7';
+            case '⁸'  -> '8';
+            case '⁹'  -> '9';
+            case '⁺'  -> '+';
+            case '⁻'  -> '-';
+            default  -> ' ';
+        };
 
     }
 

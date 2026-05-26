@@ -28,6 +28,6 @@ public enum RecordType {
     CAS,
 
     /** Networks of data streams. */
-    NET;
+    NET
 
 }

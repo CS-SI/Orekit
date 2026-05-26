@@ -47,6 +47,6 @@ public enum TideSystem {
 
     /** Constant for unknown tide system.
      */
-    UNKNOWN;
+    UNKNOWN
 
 }

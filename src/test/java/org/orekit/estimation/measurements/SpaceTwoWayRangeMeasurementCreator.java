@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.StationDataProvider;
@@ -27,7 +24,6 @@ import org.orekit.frames.Transform;
 import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 public class SpaceTwoWayRangeMeasurementCreator extends MeasurementCreator {
@@ -85,14 +81,9 @@ public class SpaceTwoWayRangeMeasurementCreator extends MeasurementCreator {
 
             // 100 km min altitude
             if (minAltitude > 1.0e5) {
-                final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
-                final double downLinkDelay = solver.solve(1000, new UnivariateFunction() {
-                    public double value(final double x) {
-                        final double d = Vector3D.distance(position, satellite.getPVCoordinatesProvider().getPosition(date, inertial));
-                        return d - x * Constants.SPEED_OF_LIGHT;
-                    }
-                }, -1.0, 1.0);
+                // Solve for the downlink delay
+                final double downLinkDelay = solveDownlinkDelay(satellite, currentState, satelliteMeanPosition);
                 final AbsoluteDate receptionDate = currentState.getDate().shiftedBy(downLinkDelay);
                 final Transform stationToInertReception = satellite.getOffsetToInertial(inertial, receptionDate, true);
                 final Vector3D stationAtReception = satellite.getPVCoordinatesProvider().getPosition(receptionDate, inertial);
@@ -111,13 +102,8 @@ public class SpaceTwoWayRangeMeasurementCreator extends MeasurementCreator {
 
                 final double correctedDownLinkDistance = downLinkDistance + satPCVDown + staPCVDown;
 
-                final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
-                    public double value(final double x) {
-                        final Transform t = satellite.getOffsetToInertial(inertial, date.shiftedBy(-x), true);
-                        final double d = Vector3D.distance(position, t.transformPosition(observerMeanPosition));
-                        return d - x * Constants.SPEED_OF_LIGHT;
-                    }
-                }, -1.0, 1.0);
+                // Solve for the uplink delay
+                final double upLinkDelay = solveUplinkDelay(satellite, currentState, satelliteMeanPosition);
                 final AbsoluteDate emissionDate = currentState.getDate().shiftedBy(-upLinkDelay);
                 final Transform stationToInertEmission = satellite.getOffsetToInertial(inertial, emissionDate, true);
                 final Vector3D stationAtEmission = stationToInertEmission.transformPosition(observerMeanPosition);
@@ -136,7 +122,7 @@ public class SpaceTwoWayRangeMeasurementCreator extends MeasurementCreator {
 
                 final double correctedUpLinkDistance = upLinkDistance + satPCVUp + staPCVUp;
 
-                final double clockOffset = satellite.getClockBiasDriver().getValue(date);
+                final double clockOffset = satellite.getOffsetValue(receptionDate);
                 addMeasurement(new Range(satellite, true, receptionDate.shiftedBy(clockOffset),
                         0.5 * (correctedDownLinkDistance + correctedUpLinkDistance) + bias,
                         1.0, 10, observedSatellite));

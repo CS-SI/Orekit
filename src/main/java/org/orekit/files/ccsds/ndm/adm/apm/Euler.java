@@ -21,8 +21,10 @@ import java.util.Arrays;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 
 /**
  * Container for {@link Euler Euler rotations} entries.
@@ -83,10 +85,14 @@ public class Euler extends CommentsContainer {
     /** Indicator for rotation angles. */
     private boolean inRotationAngles;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
      */
-    public Euler() {
-        this.endpoints        = new AttitudeEndpoints();
+    public Euler(final CcsdsFrameMapper frameMapper) {
+        this.endpoints        = new AttitudeEndpoints(frameMapper);
         this.rotationAngles   = new double[3];
         this.rotationRates    = new double[3];
         this.inRotationAngles = false;

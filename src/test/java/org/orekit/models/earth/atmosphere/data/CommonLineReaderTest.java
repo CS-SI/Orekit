@@ -31,7 +31,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 
 public class CommonLineReaderTest {
@@ -45,7 +45,7 @@ public class CommonLineReaderTest {
     public void testParsing() throws IOException, URISyntaxException {
         final String name = "DTCFILE_CommonLineReaderTest.txt";
         URL url = CommonLineReaderTest.class.getClassLoader().getResource("atmosphere/"+name);
-        DataSource ds = new DataSource(Paths.get(url.toURI()).toString());
+        DataSource ds = new DataSource(Path.of(url.toURI()).toString());
 
         try (InputStream       is  = ds.getOpener().openStreamOnce();
                 InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);

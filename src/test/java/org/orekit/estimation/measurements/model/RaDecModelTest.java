@@ -38,6 +38,8 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.signal.FieldSignalReceptionCondition;
+import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -77,13 +79,15 @@ class RaDecModelTest {
                 });
         final Frame frame = FramesFactory.getGCRF();
         final RaDecModel measurementModel = new RaDecModel(frame, instantaneousSignalModel);
+        assertEquals(instantaneousSignalModel, measurementModel.getSignalTravelTimeModel());
         final Vector3D receiverPosition = Vector3D.MINUS_J;
         final Vector3D emitterPosition = new Vector3D(1, 2, 3);
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, AbsoluteDate.ARBITRARY_EPOCH,
                 new PVCoordinates(emitterPosition));
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(absolutePVCoordinates.getDate(),
+                receiverPosition, frame);
         // WHEN
-        final double[] raDec = measurementModel.value(frame, receiverPosition, absolutePVCoordinates.getDate(),
-                absolutePVCoordinates, absolutePVCoordinates.getDate());
+        final double[] raDec = measurementModel.value(receptionCondition, absolutePVCoordinates, absolutePVCoordinates.getDate());
         // THEN
         final Vector3D lineOfSight = emitterPosition.subtract(receiverPosition).normalize();
         assertArrayEquals(new Vector3D(raDec[0], raDec[1]).toArray(), lineOfSight.toArray(), 1e-12);
@@ -109,9 +113,10 @@ class RaDecModelTest {
                 final GeodeticPoint geodeticPoint = new GeodeticPoint(FastMath.toRadians( -90. + j * 18.),
                         FastMath.toRadians(i * 36.), 0.);
                 final Vector3D position = bodyShape.transform(geodeticPoint);
-                final double[] raDec = measurementModel.value(earthFixedFrame, position, date, orbit);
+                final double[] raDec = measurementModel.value(new SignalReceptionCondition(date, position, earthFixedFrame), orbit);
                 final FieldVector3D<Gradient> fieldPosition = new FieldVector3D<>(field, position);
-                final Gradient[] gradientRaDec = measurementModel.value(earthFixedFrame, fieldPosition, fieldDate, fieldOrbit);
+                final Gradient[] gradientRaDec = measurementModel.value(new FieldSignalReceptionCondition<>(fieldDate,
+                        fieldPosition, earthFixedFrame), fieldOrbit);
                 assertEquals(raDec[0], gradientRaDec[0].getValue(), 1e-12);
                 assertEquals(raDec[1], gradientRaDec[1].getValue(), 1e-12);
             }

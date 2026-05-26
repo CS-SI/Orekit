@@ -23,7 +23,7 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
@@ -38,14 +38,18 @@ import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
+import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.UT1Scale;
 import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
@@ -474,19 +478,38 @@ public class GroundStation extends AbstractParticipant implements Observer {
 
     }
 
+    /**
+     * Get the transform provider associated with the station.
+     * @param frame target frame for the transform provider
+     * @return transform provider
+     * @since 14.0
+     */
+    public TransformProvider getTransformProvider(final Frame frame) {
+        return new GroundStationTransformProvider(frame, baseFrame, eastOffsetDriver, northOffsetDriver,
+                zenithOffsetDriver, estimatedEarthFrameProvider, arguments, displacements);
+    }
+
     /** {@inheritDoc} */
     @Override
     public final PVCoordinatesProvider getPVCoordinatesProvider() {
         return new PVCoordinatesProvider() {
             @Override
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-                return getOffsetToInertial(frame, date, true)
+                final TransformProvider transformProvider = getTransformProvider(frame);
+                return transformProvider.getTransform(date)
                         .transformPVCoordinates(new TimeStampedPVCoordinates(date, PVCoordinates.ZERO));
             }
 
             @Override
+            public Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
+                final TransformProvider transformProvider = getTransformProvider(frame);
+                return transformProvider.getKinematicTransform(date).transformOnlyPV(PVCoordinates.ZERO).getVelocity();
+            }
+
+            @Override
             public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
-                return getOffsetToInertial(frame, date, true).transformPosition(Vector3D.ZERO);
+                final TransformProvider transformProvider = getTransformProvider(frame);
+                return transformProvider.getStaticTransform(date).transformPosition(Vector3D.ZERO);
             }
         };
     }
@@ -499,100 +522,71 @@ public class GroundStation extends AbstractParticipant implements Observer {
             @Override
             public TimeStampedFieldPVCoordinates<Gradient> getPVCoordinates(final FieldAbsoluteDate<Gradient> date,
                                                                             final Frame frame) {
-                return getOffsetToInertial(frame, date, freeParameters, parameterIndices)
-                        .transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(date, FieldPVCoordinates.getZero(date.getField())));
+                // take Earth offsets into account
+                final FieldTransform<Gradient> intermediateToBody = estimatedEarthFrameProvider.getTransform(date,
+                        freeParameters, parameterIndices).getInverse();
+
+                // take station offsets into account
+                final FieldVector3D<Gradient> origin = getOrigin(date, parameterIndices);
+
+                // Earth-fixed Earth-centered to target (with linear approximation for performance)
+                final Transform bodyToInertNonField = baseFrame.getParent().getTransformTo(frame, date.toAbsoluteDate());
+                final FieldTransform<Gradient> bodyToInert = new FieldTransform<>(date.getField(),
+                        bodyToInertNonField).shiftedBy(date.durationFrom(date.toAbsoluteDate()));
+
+                final TimeStampedFieldPVCoordinates<Gradient> zeroPV = new TimeStampedFieldPVCoordinates<>(date,
+                        new FieldPVCoordinates<>(origin, FieldVector3D.getZero(date.getField())));
+                return new FieldTransform<>(date, intermediateToBody, bodyToInert).transformPVCoordinates(zeroPV);
             }
 
             @Override
             public FieldVector3D<Gradient> getPosition(final FieldAbsoluteDate<Gradient> date, final Frame frame) {
-                return getOffsetToInertial(frame, date, freeParameters, parameterIndices)
-                        .transformPosition(FieldVector3D.getZero(date.getField()));
+                // take Earth offsets into account
+                final FieldRotation<Gradient> bodyToIntermediateRotation = estimatedEarthFrameProvider.getStaticTransform(date,
+                        freeParameters, parameterIndices).getRotation();
+
+                // take station offsets into account
+                final FieldVector3D<Gradient> origin = getOrigin(date, parameterIndices);
+
+                // Earth-fixed Earth-centered to target (with linear approximation for performance)
+                final KinematicTransform bodyToInertNonField = baseFrame.getParent().getKinematicTransformTo(frame,
+                        date.toAbsoluteDate());
+                final FieldStaticTransform<Gradient> bodyToInert = shiftKinematicTransform(bodyToInertNonField,
+                        date.durationFrom(date.toAbsoluteDate()));
+
+                // combine by hand for performance reasons
+                final FieldRotation<Gradient> rotation = bodyToIntermediateRotation.composeInverse(bodyToInert.getRotation(),
+                        RotationConvention.FRAME_TRANSFORM);
+                return rotation.applyTo(bodyToInert.getTranslation().add(origin));
             }
         };
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate date, final boolean clockOffsetAlreadyApplied) {
-
-        // take clock offset into account
-        final AbsoluteDate offsetCompensatedDate = clockOffsetAlreadyApplied ?
-                                                   date :
-                                                   new AbsoluteDate(date, -getClockBiasDriver().getValue());
-
-        // take Earth offsets into account
-        final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(offsetCompensatedDate).getInverse();
-
-        // take station offsets into account
-        final BodyShape baseShape = baseFrame.getParentShape();
-        final Vector3D  origin    = getOrigin(date);
-
-        final GeodeticPoint originGP = baseShape.transform(origin, baseShape.getBodyFrame(), offsetCompensatedDate);
-        final Transform offsetToIntermediate =
-                        new Transform(offsetCompensatedDate,
-                                      new Transform(offsetCompensatedDate,
-                                                    new Rotation(Vector3D.PLUS_I, Vector3D.PLUS_K,
-                                                                 originGP.getEast(), originGP.getZenith()),
-                                                    Vector3D.ZERO),
-                                      new Transform(offsetCompensatedDate, origin));
-
-        // combine all transforms together
-        final Transform bodyToInert = baseFrame.getParent().getTransformTo(inertial, offsetCompensatedDate);
-
-        return new Transform(offsetCompensatedDate, offsetToIntermediate, new Transform(offsetCompensatedDate, intermediateToBody, bodyToInert));
-
-    }
-
     /**
-     * Retrieve station's position in body shape frame.
-     * @param date date
-     * @return origin position
+     * Shift a kinematic transform by a Gradient time into a FieldStaticTransform<Gradient>.
+     * @param kinematicTransform kinematic transform to shift
+     * @param dt time to shift by
+     * @return Field static transform shifted by dt
+     * @since 14.0
      */
-    private Vector3D getOrigin(final AbsoluteDate date) {
-        final double    x          = eastOffsetDriver.getValue(date);
-        final double    y          = northOffsetDriver.getValue(date);
-        final double    z          = zenithOffsetDriver.getValue(date);
-        final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
-        final StaticTransform staticTopoToBody = baseFrame.getStaticTransformTo(bodyFrame, date);
-        final Vector3D        originBeforeDisplacement     = staticTopoToBody.transformPosition(new Vector3D(x, y, z));
-        return originBeforeDisplacement.add(computeDisplacement(date, originBeforeDisplacement));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
-                                                        final FieldAbsoluteDate<Gradient> offsetCompensatedDate,
-                                                        final int freeParameters,
-                                                        final Map<String, Integer> indices) {
-
-        final Field<Gradient>         field = offsetCompensatedDate.getField();
-        final FieldVector3D<Gradient> zero  = FieldVector3D.getZero(field);
-        final FieldVector3D<Gradient> plusI = FieldVector3D.getPlusI(field);
-        final FieldVector3D<Gradient> plusK = FieldVector3D.getPlusK(field);
-
-        // take Earth offsets into account
-        final FieldTransform<Gradient> intermediateToBody =
-                        estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
-
-        // take station offsets into account
-        final BodyShape                      baseShape  = baseFrame.getParentShape();
-        final FieldVector3D<Gradient> origin = getOrigin(offsetCompensatedDate, indices);
-        final FieldGeodeticPoint<Gradient> originGP = baseShape.transform(origin, baseShape.getBodyFrame(), offsetCompensatedDate);
-        final FieldTransform<Gradient> offsetToIntermediate =
-                        new FieldTransform<>(offsetCompensatedDate,
-                                             new FieldTransform<>(offsetCompensatedDate,
-                                                                  new FieldRotation<>(plusI, plusK,
-                                                                                      originGP.getEast(), originGP.getZenith()),
-                                                                  zero),
-                                             new FieldTransform<>(offsetCompensatedDate, origin));
-
-        // combine all transforms together
-        final FieldTransform<Gradient> bodyToInert = baseFrame.getParent().getTransformTo(inertial, offsetCompensatedDate);
-
-        return new FieldTransform<>(offsetCompensatedDate,
-                                    offsetToIntermediate,
-                                    new FieldTransform<>(offsetCompensatedDate, intermediateToBody, bodyToInert));
-
+    private FieldStaticTransform<Gradient> shiftKinematicTransform(final KinematicTransform kinematicTransform,
+                                                                   final Gradient dt) {
+        // shift translation
+        final Field<Gradient> field = dt.getField();
+        final AbsoluteDate date = kinematicTransform.getDate();
+        final FieldVector3D<Gradient> fieldVelocity = new FieldVector3D<>(field, kinematicTransform.getVelocity());
+        final FieldVector3D<Gradient> shiftedTranslation = fieldVelocity.scalarMultiply(dt).add(kinematicTransform.getTranslation());
+        // shift rotation
+        final FieldAngularCoordinates<Gradient> fieldAngularCoordinates = new FieldAngularCoordinates<>(field,
+                new AngularCoordinates(kinematicTransform.getRotation(), kinematicTransform.getRotationRate()));
+        final FieldVector3D<Gradient> rotationRate = fieldAngularCoordinates.getRotationRate();
+        final Gradient rate = rotationRate.getNorm();
+        final FieldRotation<Gradient> shiftedRotation = (rate.getReal() == 0.0) ?
+                fieldAngularCoordinates.getRotation() :
+                new FieldRotation<>(rotationRate, rate.multiply(dt), RotationConvention.FRAME_TRANSFORM)
+                .compose(fieldAngularCoordinates.getRotation(), RotationConvention.VECTOR_OPERATOR);
+        return FieldStaticTransform.of(new FieldAbsoluteDate<>(field, date).shiftedBy(dt), shiftedTranslation,
+                shiftedRotation);
     }
 
     /**
@@ -603,14 +597,52 @@ public class GroundStation extends AbstractParticipant implements Observer {
      */
     private FieldVector3D<Gradient> getOrigin(final FieldAbsoluteDate<Gradient> date,
                                               final Map<String, Integer> indices) {
+        // compute position in topocentric frame
         final int freeParameters = date.getField().getZero().getFreeParameters();
         final AbsoluteDate absoluteDate = date.toAbsoluteDate();
-        final Gradient                       x          = eastOffsetDriver.getValue(freeParameters, indices, absoluteDate);
+        final Gradient x          = eastOffsetDriver.getValue(freeParameters, indices, absoluteDate);
         final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices, absoluteDate);
         final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices, absoluteDate);
+        final FieldVector3D<Gradient> position = new FieldVector3D<>(x, y, z);
+        // approximate linearly (for performance) static transform from topocentric to body shape frame
         final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
-        final FieldStaticTransform<Gradient> staticTopoToBody = baseFrame.getStaticTransformTo(bodyFrame, date);
-        final FieldVector3D<Gradient>        originBeforeDisplacement     = staticTopoToBody.transformPosition(new FieldVector3D<>(x, y, z));
+        final KinematicTransform kinematicTopoToBody = baseFrame.getKinematicTransformTo(bodyFrame, absoluteDate);
+        final FieldStaticTransform<Gradient> staticTopoToBody = shiftKinematicTransform(kinematicTopoToBody,
+                date.durationFrom(absoluteDate));
+        // apply transform and displacement
+        final FieldVector3D<Gradient>        originBeforeDisplacement     = staticTopoToBody.transformPosition(position);
         return originBeforeDisplacement.add(computeDisplacement(absoluteDate, originBeforeDisplacement.toVector3D()));
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate date, final boolean clockOffsetAlreadyApplied) {
+
+        // take clock offset into account
+        final AbsoluteDate offsetCompensatedDate = clockOffsetAlreadyApplied ?
+                                                   date :
+                                                   new AbsoluteDate(date, -getOffsetValue(date));
+
+        final TransformProvider transformProvider = getTransformProvider(inertial);
+        return transformProvider.getTransform(offsetCompensatedDate);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
+                                                        final FieldAbsoluteDate<Gradient> offsetCompensatedDate,
+                                                        final int freeParameters,
+                                                        final Map<String, Integer> indices) {
+        // take Earth offsets into account
+        final FieldTransform<Gradient> intermediateToBody =
+                estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
+
+        // take station offsets into account
+        final FieldVector3D<Gradient> origin = getOrigin(offsetCompensatedDate, indices);
+
+        final GroundStationTransformProvider transformProvider = new GroundStationTransformProvider(inertial, baseFrame,
+                eastOffsetDriver, northOffsetDriver, zenithOffsetDriver, estimatedEarthFrameProvider, arguments, displacements);
+        return transformProvider.getTransform(offsetCompensatedDate, origin, intermediateToBody);
+    }
+
 }
