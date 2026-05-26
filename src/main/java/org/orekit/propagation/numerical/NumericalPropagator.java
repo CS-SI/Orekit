@@ -16,6 +16,13 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -73,13 +80,6 @@ import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
  * numerical integration.
@@ -854,7 +854,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final AbstractStateTransitionMatrixGenerator generator = (AbstractStateTransitionMatrixGenerator)
                 getAdditionalDerivativesProviders().stream()
                         .filter(AbstractStateTransitionMatrixGenerator.class::isInstance)
-                        .collect(Collectors.toList()).getFirst();
+                        .toList().getFirst();
         final int expectedSize = generator.getStateDimension();
         if (dYdQ.length != expectedSize) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, dYdQ.length, expectedSize);

@@ -21,7 +21,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 
 /**
@@ -367,66 +366,59 @@ public final class KeplerianAnomalyUtility {
      */
     public static double convertAnomaly(final PositionAngleType oldType, final double anomaly, final double e,
                                         final PositionAngleType newType) {
-        if (newType == oldType) {
-            return anomaly;
+        return switch (newType) {
+            case MEAN -> getMeanAnomaly(e, anomaly, oldType);
+            case TRUE -> getTrueAnomaly(e, anomaly, oldType);
+            case ECCENTRIC -> getEccentricAnomaly(e, anomaly, oldType);
+        };
+    }
 
-        } else {
-            if (e > 1) {
-                switch (newType) {
-                    case MEAN:
-                        if (oldType == PositionAngleType.ECCENTRIC) {
-                            return KeplerianAnomalyUtility.hyperbolicEccentricToMean(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.hyperbolicTrueToMean(e, anomaly);
-                        }
+    /** Get the true anomaly.
+     * @param e eccentricity
+     * @param anomaly anomaly (rad)
+     * @param positionAngleType anomaly type
+     * @return true anomaly (rad)
+     * @since 14.0
+     */
+    private static double getTrueAnomaly(final double e, final double anomaly,
+                                         final PositionAngleType positionAngleType) {
+        return switch (positionAngleType) {
+            case MEAN -> (e > 1.) ? hyperbolicMeanToTrue(e, anomaly) : ellipticMeanToTrue(e, anomaly);
+            case TRUE -> anomaly;
+            case ECCENTRIC -> (e > 1.) ? hyperbolicEccentricToTrue(e, anomaly) : ellipticEccentricToTrue(e, anomaly);
+        };
+    }
 
-                    case ECCENTRIC:
-                        if (oldType == PositionAngleType.MEAN) {
-                            return KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, anomaly);
-                        }
+    /** Get the eccentric anomaly.
+     * @param e eccentricity
+     * @param anomaly anomaly (rad)
+     * @param positionAngleType anomaly type
+     * @return eccentric anomaly (rad)
+     * @since 14.0
+     */
+    private static double getEccentricAnomaly(final double e, final double anomaly,
+                                              final PositionAngleType positionAngleType) {
+        return switch (positionAngleType) {
+            case MEAN -> (e > 1.) ? hyperbolicMeanToEccentric(e, anomaly) : ellipticMeanToEccentric(e, anomaly);
+            case TRUE -> (e > 1.) ? hyperbolicTrueToEccentric(e, anomaly) : ellipticTrueToEccentric(e, anomaly);
+            case ECCENTRIC -> anomaly;
+        };
+    }
 
-                    case TRUE:
-                        if (oldType == PositionAngleType.ECCENTRIC) {
-                            return KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.hyperbolicMeanToTrue(e, anomaly);
-                        }
-
-                    default:
-                        break;
-                }
-
-            } else {
-                switch (newType) {
-                    case MEAN:
-                        if (oldType == PositionAngleType.ECCENTRIC) {
-                            return KeplerianAnomalyUtility.ellipticEccentricToMean(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.ellipticTrueToMean(e, anomaly);
-                        }
-
-                    case ECCENTRIC:
-                        if (oldType == PositionAngleType.MEAN) {
-                            return KeplerianAnomalyUtility.ellipticMeanToEccentric(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.ellipticTrueToEccentric(e, anomaly);
-                        }
-
-                    case TRUE:
-                        if (oldType == PositionAngleType.ECCENTRIC) {
-                            return KeplerianAnomalyUtility.ellipticEccentricToTrue(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.ellipticMeanToTrue(e, anomaly);
-                        }
-
-                    default:
-                        break;
-                }
-            }
-            throw new OrekitInternalError(null);
-        }
+    /** Get the mean anomaly.
+     * @param e eccentricity
+     * @param anomaly anomaly (rad)
+     * @param positionAngleType anomaly type
+     * @return mean anomaly (rad)
+     * @since 14.0
+     */
+    private static double getMeanAnomaly(final double e, final double anomaly,
+                                         final PositionAngleType positionAngleType) {
+        return switch (positionAngleType) {
+            case MEAN -> anomaly;
+            case TRUE -> (e > 1.) ? hyperbolicTrueToMean(e, anomaly) : ellipticTrueToMean(e, anomaly);
+            case ECCENTRIC -> (e > 1.) ? hyperbolicEccentricToMean(e, anomaly) : ellipticEccentricToMean(e, anomaly);
+        };
     }
 
     /**

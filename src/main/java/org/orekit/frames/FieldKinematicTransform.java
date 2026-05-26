@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.util.Arrays;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -27,8 +29,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.Arrays;
 
 /**
  * A transform that only includes translation and rotation as well as their respective rates.
@@ -299,7 +299,7 @@ public interface FieldKinematicTransform<T extends CalculusFieldElement<T>> exte
                                                                           final FieldPVCoordinates<T> pvCoordinates,
                                                                           final FieldRotation<T> rotation,
                                                                           final FieldVector3D<T> rotationRate) {
-        return new FieldKinematicTransform<T>() {
+        return new FieldKinematicTransform<>() {
 
             @Override
             public FieldKinematicTransform<T> getInverse() {

@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -161,7 +160,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
                                                  getObservers().
                                                  stream().
                                                  filter(observer -> observer instanceof ParameterDrivenDateIntervalDetector.BindingObserver).
-                                                 collect(Collectors.toList());
+                toList();
         original.forEach(driver::removeObserver);
 
         driver.addObserver(bindingObserver);

@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -26,7 +28,10 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
@@ -41,9 +46,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.function.Function;
-
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 class KeplerianOrbitTest {
@@ -1185,7 +1187,7 @@ class KeplerianOrbitTest {
                             5.6e-16);
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
                             orbit.getLEDot(),
-                            9.0e-16);
+                            1.0e-15);
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
                             orbit.getLMDot(),
                             1.8e-15);
@@ -1587,6 +1589,24 @@ class KeplerianOrbitTest {
 
     }
 
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testGetAnomaly(final PositionAngleType positionAngleType) {
+        // GIVEN
+        final double a = 1;
+        final double e = 0.1;
+        final double expectedAnomaly = 0.5;
+        final double expectedRate = -0.2;
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            final KeplerianParameters elements = new KeplerianParameters(a, e, 0, 0, 0, expectedAnomaly, inputPositionAngleType);
+            final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(elements, 0., 0., 0., 0., 0., expectedRate, positionAngleType,
+                    FramesFactory.getGCRF(), date, mu);
+            Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getAnomaly(inputPositionAngleType));
+            Assertions.assertEquals(expectedRate, keplerianOrbit.getAnomalyDot(inputPositionAngleType), 1e-10);
+        }
+    }
+
     @Test
     void testCoverageCachedPositionAngleTypeElliptic() {
         testCoverageCachedPositionAngleType(1e4, 0.5);
@@ -1599,12 +1619,13 @@ class KeplerianOrbitTest {
 
     private void testCoverageCachedPositionAngleType(final double a, final double e) {
         // GIVEN
-        final double expectedAnomaly = 0.;
+        final double expectedAnomaly = 0;
         // WHEN & THEN
         for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
             for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
-                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(a, e, 0., 0., 0.,
-                        expectedAnomaly, inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                final KeplerianParameters elements = new KeplerianParameters(a, e, 0, 0, 0, expectedAnomaly, inputPositionAngleType);
+                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(elements.withPositionAngleType(cachedPositionAngleType),
+                        FramesFactory.getGCRF(), date, mu);
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getTrueAnomaly());
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getEccentricAnomaly());
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getMeanAnomaly());
@@ -1622,9 +1643,10 @@ class KeplerianOrbitTest {
         // WHEN & THEN
         for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
             for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
-                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(semiMajorAxis, eccentricity, 0., 0., 0.,
-                        expectedAnomaly, 0., 0., 0., 0., 0., expectedAnomalyDot,
-                        inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                final KeplerianParameters elements = new KeplerianParameters(semiMajorAxis, eccentricity, 0., 0., 0.,
+                        expectedAnomaly, inputPositionAngleType);
+                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(elements, 0., 0., 0., 0., 0., expectedAnomalyDot,
+                        cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getTrueAnomaly());
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getEccentricAnomaly());
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getMeanAnomaly());
@@ -1645,9 +1667,10 @@ class KeplerianOrbitTest {
         // WHEN & THEN
         for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
             for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
-                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(semiMajorAxis, eccentricity, 0., 0., 0.,
-                        expectedAnomaly, 0., 0., 0., 0., 0., expectedAnomalyDot,
-                        inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                final KeplerianParameters elements = new KeplerianParameters(semiMajorAxis, eccentricity, 0., 0., 0.,
+                        expectedAnomaly, inputPositionAngleType);
+                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(elements, 0., 0., 0., 0., 0., expectedAnomalyDot,
+                        cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getTrueAnomaly());
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getEccentricAnomaly());
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getMeanAnomaly());

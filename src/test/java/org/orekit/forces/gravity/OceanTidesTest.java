@@ -321,11 +321,11 @@ public class OceanTidesTest {
             driver.addSpanAtDate(t0);
         }
         
-        detectors      = oceanTidesModel.getEventDetectors().collect(Collectors.toList());
+        detectors      = oceanTidesModel.getEventDetectors().toList();
         DateDetector dateDetector = (DateDetector) detectors.getFirst();
         List<TimeStamped> dates = dateDetector.getDates();
         
-        fieldDetectors = oceanTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
+        fieldDetectors = oceanTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).toList();
         FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.getFirst();
         FieldAbsoluteDate<Binary64> fieldDate = fieldDateDetector.getDate();
         

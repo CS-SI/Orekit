@@ -19,7 +19,6 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -326,7 +325,7 @@ public class TorqueFreeTest {
                                     map(i -> new Inertia(new InertiaAxis(ia.get(i.getFirst()).getI(), ia.getFirst().getA()),
                                                          new InertiaAxis(ia.get(i.get(1)).getI(), ia.get(1).getA()),
                                                          new InertiaAxis(ia.get(i.get(2)).getI(), ia.get(2).getA()))).
-                                    collect(Collectors.toList())));
+                            toList()));
         return permuted.stream();
     }
 

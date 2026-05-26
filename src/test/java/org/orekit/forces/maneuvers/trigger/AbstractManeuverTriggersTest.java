@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.maneuvers.trigger;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -55,9 +58,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTriggers> {
 
@@ -142,8 +142,8 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getOrbit().getI(), FastMath.PI)), 1e-4);
         Assertions.assertEquals(28970, finalorb.getOrbit().getA()/1000, 1);
 
-        final List<EventDetector> list1 = maneuver.getManeuverTriggers().getEventDetectors().collect(Collectors.toList());
-        final List<EventDetector> list2 = maneuver.getManeuverTriggers().getEventDetectors().collect(Collectors.toList());
+        final List<EventDetector> list1 = maneuver.getManeuverTriggers().getEventDetectors().toList();
+        final List<EventDetector> list2 = maneuver.getManeuverTriggers().getEventDetectors().toList();
         Assertions.assertEquals(list1.size(), list2.size());
         for (int i = 0; i < list1.size(); ++i ) {
             Assertions.assertSame(list1.get(i), list2.get(i));

@@ -16,6 +16,11 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -35,7 +40,10 @@ import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.adm.aem.Aem;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.events.*;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.time.AbsoluteDate;
@@ -46,16 +54,10 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-public class AggregateBoundedAttitudeProviderTest {
+class AggregateBoundedAttitudeProviderTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:ccsds");
     }
 
@@ -231,7 +233,7 @@ public class AggregateBoundedAttitudeProviderTest {
         // WHEN
         final Stream<EventDetector> eventDetectorStream = aggregateBoundedAttitudeProvider.getEventDetectors();
         // THEN
-        final List<EventDetector> eventDetectorList = eventDetectorStream.collect(Collectors.toList());
+        final List<EventDetector> eventDetectorList = eventDetectorStream.toList();
         Assertions.assertEquals(1, eventDetectorList.size());
         Assertions.assertInstanceOf(DateDetector.class, eventDetectorList.getFirst());
         Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, eventDetectorList.getFirst().getHandler());
@@ -251,9 +253,9 @@ public class AggregateBoundedAttitudeProviderTest {
         final Stream<FieldEventDetector<Binary64>> fieldEventDetectorStream = aggregateBoundedAttitudeProvider
                 .getFieldEventDetectors(Binary64Field.getInstance());
         // THEN
-        final List<FieldEventDetector<Binary64>> fieldEventDetectorList = fieldEventDetectorStream.collect(Collectors.toList());
+        final List<FieldEventDetector<Binary64>> fieldEventDetectorList = fieldEventDetectorStream.toList();
         final Stream<EventDetector> eventDetectorStream = aggregateBoundedAttitudeProvider.getEventDetectors();
-        final List<EventDetector> eventDetectorList = eventDetectorStream.collect(Collectors.toList());
+        final List<EventDetector> eventDetectorList = eventDetectorStream.toList();
         Assertions.assertEquals(eventDetectorList.size(), fieldEventDetectorList.size());
         Assertions.assertInstanceOf(FieldDateDetector.class, fieldEventDetectorList.getFirst());
         Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, fieldEventDetectorList.getFirst().getHandler());

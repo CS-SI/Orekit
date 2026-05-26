@@ -28,7 +28,7 @@ public class InterSatellitesWindUp extends AbstractWindUp<InterSatellitesPhase> 
 
     /** Simple constructor.
      * <p>
-     * The constructor is package protected to enforce use of {@link WindUpFactory}
+     * The constructor is package protected to enforce use of {@link InterSatellitesWindUpFactory}
      * and preserve phase continuity for successive measurements involving the same
      * satellite/receiver pair.
      * </p>
