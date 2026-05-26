@@ -82,7 +82,7 @@ public class FieldTeardropCircularWaypointCalculatorTest {
         final FieldAbsoluteDate<Binary64> epoch = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
         final FieldTeardropCircularWaypointCalculator<Binary64> tearDropCalculator = new FieldTeardropCircularWaypointCalculator<>(targetMeanMotion, turnAroundDistance, maneuverDistance, numberOfOrbits);
         final List<TimeStampedFieldPVCoordinates<Binary64>> tearDropWaypoints = tearDropCalculator.computeTearDropWaypoints(epoch.shiftedBy(1000.));
@@ -111,7 +111,7 @@ public class FieldTeardropCircularWaypointCalculatorTest {
         final FieldAbsoluteDate<Binary64> epoch = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
         final List<TimeStampedFieldPVCoordinates<Binary64>> tearDropWaypointsCW = RPOModel.CW.computeTeardropWaypoints(epoch.shiftedBy(1000), targetOrbit, turnAroundDistance,maneuverDistance, numberOfOrbits);
         final List<TimeStampedFieldPVCoordinates<Binary64>> tearDropWaypointsYA = RPOModel.YA.computeTeardropWaypoints(epoch.shiftedBy(1000), targetOrbit, turnAroundDistance,maneuverDistance, numberOfOrbits);
@@ -144,7 +144,7 @@ public class FieldTeardropCircularWaypointCalculatorTest {
         final FieldAbsoluteDate<Binary64> epoch = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(new Binary64(7000e3), new Binary64(0.1), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, new Binary64(Constants.EIGEN5C_EARTH_MU));
         OrekitException ex = assertThrows(OrekitException.class, () ->
                 RPOModel.YA.computeTeardropWaypoints(epoch, targetOrbit, turnAroundDistance, maneuverDistance, numberOfOrbits));

@@ -62,7 +62,7 @@ public class YamanakaAnkersenRendezVousTest {
         // Target's orbit
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.TRUE, PositionAngleType.TRUE,
+                PositionAngleType.TRUE,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         // Target's LVLH CCSDS LOF

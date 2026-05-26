@@ -104,7 +104,7 @@ public class RPOModelTest {
         // Target's orbit
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         // Start and end conditions of the transfer, expressed in the target's LOF
@@ -144,7 +144,7 @@ public class RPOModelTest {
         // Target's orbit
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.1, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         // Start and end conditions of the transfer, expressed in the target's LOF
@@ -184,7 +184,7 @@ public class RPOModelTest {
         // Target's orbit.
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0., 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         // Choose the RPO model.
@@ -225,7 +225,7 @@ public class RPOModelTest {
         // Target's orbit.
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.1, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         // Choice of the RPOModel to use.
@@ -266,7 +266,7 @@ public class RPOModelTest {
         // Target's orbit.
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         //Choice of the RPOModel.
@@ -324,7 +324,7 @@ public class RPOModelTest {
         // Target's orbit.
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0, 0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         //Choice of the RPOModel.
@@ -383,7 +383,7 @@ public class RPOModelTest {
         // Target's orbit
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         // Choice of the RPOModel.
@@ -448,7 +448,7 @@ public class RPOModelTest {
         // Target's orbit
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         // Choice of the RPOModel.
@@ -517,7 +517,7 @@ public class RPOModelTest {
         // Target's orbit
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         // Start and end conditions of the transfer, expressed in the target's LOF
@@ -562,7 +562,7 @@ public class RPOModelTest {
         // Target's orbit
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         // Start and end conditions of the transfer, expressed in the target's LOF
@@ -606,7 +606,7 @@ public class RPOModelTest {
         // Target's orbit.
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         // Choose the RPO model.
@@ -654,7 +654,7 @@ public class RPOModelTest {
         // Target's orbit.
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         // Choose the RPO model.
@@ -702,7 +702,7 @@ public class RPOModelTest {
         // Target's orbit.
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         //Choice of the RPOModel.
@@ -763,7 +763,7 @@ public class RPOModelTest {
         // Target's orbit.
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         //Choice of the RPOModel.
@@ -825,7 +825,7 @@ public class RPOModelTest {
         // Target's orbit.
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         // Choice of the RPOModel.
@@ -893,7 +893,7 @@ public class RPOModelTest {
         // Target's orbit.
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         // Choice of the RPOModel.
@@ -972,7 +972,7 @@ public class RPOModelTest {
         // Define target orbit and relative provider.
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(7000e3, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), firstManeuverDate, Constants.EIGEN5C_EARTH_MU);
         final RPOModel rpoCW = RPOModel.CW;
         final RPOModel rpoYA = RPOModel.YA;
@@ -1051,7 +1051,7 @@ public class RPOModelTest {
         // Define target orbit and relative provider.
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(new Binary64(7000e3), field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), firstManeuverDate, new Binary64(Constants.EIGEN5C_EARTH_MU));
         final RPOModel rpoCW = RPOModel.CW;
         final RPOModel rpoYA = RPOModel.YA;
@@ -1126,7 +1126,7 @@ public class RPOModelTest {
         // Target's orbit
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         final RPOModel rpo = RPOModel.CW;
@@ -1202,7 +1202,7 @@ public class RPOModelTest {
         // Target's orbit
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         final RPOModel rpo = RPOModel.YA;
@@ -1280,7 +1280,7 @@ public class RPOModelTest {
         // Target's orbit
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         final RPOModel rpo = RPOModel.CW;
@@ -1358,7 +1358,7 @@ public class RPOModelTest {
         // Target's orbit
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, field.getZero(), field.getZero(),
                 field.getZero(), field.getZero(), field.getZero(),
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, mu);
 
         final RPOModel rpo = RPOModel.YA;

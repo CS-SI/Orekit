@@ -65,7 +65,7 @@ public class FieldClohessyWiltshireRendezVousTest {
         final FieldAbsoluteDate<Binary64> rdvDate = epoch.shiftedBy(8*3600);
 
         // Target's orbit
-        final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(field, new KeplerianOrbit(rTarget.getReal(),0, 0, 0, 0, 0, PositionAngleType.MEAN,PositionAngleType.MEAN, FramesFactory.getGCRF(),epoch.toAbsoluteDate(),Constants.EIGEN5C_EARTH_MU));
+        final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(field, new KeplerianOrbit(rTarget.getReal(),0, 0, 0, 0, 0, PositionAngleType.MEAN, FramesFactory.getGCRF(),epoch.toAbsoluteDate(),Constants.EIGEN5C_EARTH_MU));
 
         // Target's QSW LOF
         final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW, new KeplerianPropagator(targetOrbit.toOrbit()),"QSW LOF target");

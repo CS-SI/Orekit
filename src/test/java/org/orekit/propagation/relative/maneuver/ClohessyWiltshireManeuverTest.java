@@ -47,7 +47,7 @@ public class ClohessyWiltshireManeuverTest {
         // Target's orbit
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
 
         // Target's QSW LOF

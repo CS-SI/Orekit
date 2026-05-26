@@ -109,7 +109,7 @@ public class CoellipticOrbitTest {
         // Target's orbit
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.1, 0.,
                 0.0, 0.0, 0.,
-                PositionAngleType.TRUE, PositionAngleType.TRUE,
+                PositionAngleType.TRUE,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
         final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
 
@@ -190,7 +190,7 @@ public class CoellipticOrbitTest {
         // Target's orbit
         final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(rTarget, new Binary64(0.1), new Binary64(0.),
                 new Binary64(0.0), new Binary64(0.0), new Binary64(0.),
-                PositionAngleType.TRUE, PositionAngleType.TRUE,
+                PositionAngleType.TRUE,
                 FramesFactory.getGCRF(), epoch, new Binary64(Constants.EIGEN5C_EARTH_MU));
 
         final LocalOrbitalFrame lof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, targetOrbit.toOrbit(), "LVLH CCSDS LOF");

@@ -77,7 +77,7 @@ public class TeardropCircularWaypointCalculatorTest {
         final AbsoluteDate epoch = AbsoluteDate.J2000_EPOCH;
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
         final TeardropCircularWaypointCalculator tearDropCalculator = new TeardropCircularWaypointCalculator(targetMeanMotion, turnAroundDistance, maneuverDistance, numberOfOrbits);
         final List<TimeStampedPVCoordinates> tearDropWaypoints = tearDropCalculator.computeTearDropWaypoints(epoch.shiftedBy(1000.));
@@ -104,7 +104,7 @@ public class TeardropCircularWaypointCalculatorTest {
         final AbsoluteDate epoch = AbsoluteDate.J2000_EPOCH;
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.0, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
         final List<TimeStampedPVCoordinates> tearDropWaypointsCW = RPOModel.CW.computeTeardropWaypoints(epoch.shiftedBy(1000), targetOrbit, turnAroundDistance,maneuverDistance, numberOfOrbits);
         final List<TimeStampedPVCoordinates> tearDropWaypointsYA = RPOModel.YA.computeTeardropWaypoints(epoch.shiftedBy(1000), targetOrbit, turnAroundDistance,maneuverDistance, numberOfOrbits);
@@ -136,7 +136,7 @@ public class TeardropCircularWaypointCalculatorTest {
         final AbsoluteDate epoch = AbsoluteDate.J2000_EPOCH;
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(7000e3, 0.1, 0.0,
                 0.0, 0.0, 0.0,
-                PositionAngleType.MEAN, PositionAngleType.MEAN,
+                PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), epoch, Constants.EIGEN5C_EARTH_MU);
         OrekitException ex = assertThrows(OrekitException.class, () ->
                 RPOModel.YA.computeTeardropWaypoints(epoch, targetOrbit, turnAroundDistance, maneuverDistance, numberOfOrbits));

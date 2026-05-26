@@ -66,7 +66,7 @@ public class FieldYamanakaAnkersenRendezVousTest {
         final FieldAbsoluteDate<Binary64> rdvDate = epoch.shiftedBy(8*3600);
 
         // Target's orbit
-        final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(field,new KeplerianOrbit(rTarget, 0.0, 0.0, 0.0, 0.0, 0.0, PositionAngleType.TRUE, PositionAngleType.TRUE, FramesFactory.getGCRF(), AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU));
+        final FieldKeplerianOrbit<Binary64> targetOrbit = new FieldKeplerianOrbit<>(field,new KeplerianOrbit(rTarget, 0.0, 0.0, 0.0, 0.0, 0.0, PositionAngleType.TRUE, FramesFactory.getGCRF(), AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU));
 
         // Target's LVLH CCSDS LOF
         final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, new KeplerianPropagator(targetOrbit.toOrbit()), "LVLH CCSDS LOF target");
