@@ -99,7 +99,8 @@ public class FieldYamanakaAnkersenEquations<T extends CalculusFieldElement<T>> {
      */
     public FieldYamanakaAnkersenMatrices<T> computeMatrices(final T timeSinceEpoch, final T targetA, final T targetE, final T targetInitialTheta, final T targetTheta, final T mu) {
 
-        final T k = mu.divide(targetA.pow(3)).pow((double) 1 / 4);
+        final T p = targetA.multiply(targetA.getField().getOne().subtract(targetE.pow(2)));
+        final T k = mu.divide(p.pow(3)).pow((double) 1 / 4);
         final T J = k.pow(2).multiply(timeSinceEpoch);
         final T rho_theta = rho(targetTheta, targetE);
         final T c_theta = c(targetTheta, targetE);

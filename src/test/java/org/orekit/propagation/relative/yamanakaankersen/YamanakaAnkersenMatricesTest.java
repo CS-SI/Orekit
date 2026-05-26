@@ -27,7 +27,7 @@ import org.orekit.utils.PVCoordinates;
 
 
 
-public class YamanakaAnkersenMatrixTest {
+public class YamanakaAnkersenMatricesTest {
 
     public static final double NUMERICAL_TOLERANCE = 1e-6;
 
@@ -42,7 +42,7 @@ public class YamanakaAnkersenMatrixTest {
         final double mu = 398600e9;
 
         final YamanakaAnkersenMatrices matrices = YamanakaAnkersenEquations.computeMatrices(timeSinceEpoch,targetA,targetE,targetInitialTheta,targetTheta,mu);
-        TestUtils.validateRealMatrix(MatrixUtils.createRealMatrix(new double[][] {{    1.,    5.15809929,    -2.78763231, 0.63629486},{0.,         -0.6069242,   0.90216168,  0.33622821},{ 0.,         -3.2138484 ,  2.80432336,  0.67245641},{0.,-0.32500015, -0.20424734, 0.62917896}}), matrices.getInPlaneMatrix(), NUMERICAL_TOLERANCE);
+        TestUtils.validateRealMatrix(MatrixUtils.createRealMatrix(new double[][] {{    1., 91.65856555, -57.61316931, 7.03989058},{0., -31.85972392, 20.71074309, -1.97740435},{ 0., -65.71944785, 42.42148618, -3.95480869},{0.,-20.28609784, 12.4474521, -0.84853331}}), matrices.getInPlaneMatrix(), NUMERICAL_TOLERANCE);
         TestUtils.validateRealMatrix(MatrixUtils.createRealMatrix(new double[][] {{  0.8660254,  0.5         },{-0.5,        0.8660254}}), matrices.getOutPlaneMatrix(), NUMERICAL_TOLERANCE);
     }
 @Test
@@ -62,12 +62,12 @@ public class YamanakaAnkersenMatrixTest {
 
         final PVCoordinates finalPV = matrices.transform(initialPV,targetInitialTheta,targetTheta,targetE,targetA,mu);
 
-        Assertions.assertEquals(-3988.161653345807,finalPV.getPosition().getX(),NUMERICAL_TOLERANCE);
-        Assertions.assertEquals(2085.484607920448,finalPV.getPosition().getY(),NUMERICAL_TOLERANCE);
-        Assertions.assertEquals(4316.91631803429,finalPV.getPosition().getZ(),NUMERICAL_TOLERANCE);
-        Assertions.assertEquals(6.331720007455974,finalPV.getVelocity().getX(),NUMERICAL_TOLERANCE);
-        Assertions.assertEquals(2.7687859925810123,finalPV.getVelocity().getY(),NUMERICAL_TOLERANCE);
-        Assertions.assertEquals(2.853050086358761,finalPV.getVelocity().getZ(),NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(-22744.724949364987,finalPV.getPosition().getX(),NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(464.8029487831341,finalPV.getPosition().getY(),NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(8873.951448243051,finalPV.getPosition().getZ(),NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(29.836822546829715,finalPV.getVelocity().getX(),NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(2.7524908430290833,finalPV.getVelocity().getY(),NUMERICAL_TOLERANCE);
+        Assertions.assertEquals(26.418869170876388,finalPV.getVelocity().getZ(),NUMERICAL_TOLERANCE);
 
     }
 

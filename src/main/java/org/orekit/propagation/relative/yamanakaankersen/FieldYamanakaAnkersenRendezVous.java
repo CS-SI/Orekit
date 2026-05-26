@@ -93,7 +93,8 @@ public class FieldYamanakaAnkersenRendezVous<T extends CalculusFieldElement<T>> 
         // Compute the Yamanaka-Ankersen matrices for the desired final time t
         final FieldYamanakaAnkersenMatrices<T> yaMatrices = (new FieldYamanakaAnkersenEquations<T>()).computeMatrices(deltaT, finalTargetOrbit.getA(), E, initialTrueAnomaly, finalTrueAnomaly, finalTargetOrbit.getMu());
         // Compute out of plane and in plane transfer matrices from Time to True Anomaly coordinates
-        final T k = finalTargetOrbit.getMu().divide(finalTargetOrbit.getA().pow(3)).pow((double) 1 / 4);
+        final T p = finalTargetOrbit.getA().multiply(finalTargetOrbit.getA().getField().getOne().subtract(E.pow(2)));
+        final T k = finalTargetOrbit.getMu().divide(p.pow(3)).pow((double) 1 / 4);
 
         // Compute outPlane transfer matrix for initialTrueAnomaly
         final T[][] outPlaneTransferMatrix = MathArrays.buildArray(E.getField(), 2, 2);

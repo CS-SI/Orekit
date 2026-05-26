@@ -92,8 +92,9 @@ public class YamanakaAnkersenRendezVous {
         final YamanakaAnkersenMatrices yaMatrices = YamanakaAnkersenEquations.computeMatrices(deltaT, finalTargetOrbit.getA(), E, initialTrueAnomaly, finalTrueAnomaly, finalTargetOrbit.getMu());
 
         // Compute out of plane and in plane transfer matrices from Time to True Anomaly coordinates.
-        final Power p = new Power((double) 1 / 4);
-        final double k = p.value(finalTargetOrbit.getMu() / FastMath.pow(finalTargetOrbit.getA(), 3));
+        final Power power = new Power((double) 1 / 4);
+        final double p = targetOrbit.getA() * (1 - E * E);
+        final double k = power.value(finalTargetOrbit.getMu() / FastMath.pow(p, 3));
 
         // Compute outPlane transfer matrix for initialTrueAnomaly
         final double[][] outPlaneTransferMatrix = { {rho(initialTrueAnomaly, E), 0.},

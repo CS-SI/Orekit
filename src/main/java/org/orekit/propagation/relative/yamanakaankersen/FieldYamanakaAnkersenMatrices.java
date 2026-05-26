@@ -122,7 +122,8 @@ public class FieldYamanakaAnkersenMatrices<T extends CalculusFieldElement<T>> {
      * @return PVT at the time encoded in the Yamanaka-Ankersen matrices, expressed in the target's LVLH CCSDS LOF.
      */
     public FieldPVCoordinates<T> transform(final FieldPVCoordinates<T> pv, final T initialTrueAnomaly, final T trueAnomaly, final T eccentricity, final T sma, final T mu) {
-        final T k = mu.divide(sma.pow(3)).pow((double) 1 / 4);
+        final T p = sma.multiply(sma.getField().getOne().subtract(eccentricity.pow(2)));
+        final T k = mu.divide(p.pow(3)).pow((double) 1 / 4);
 
         final FieldMatrix<T> pos0 = MatrixUtils.createColumnFieldMatrix(pv.getPosition().toArray());
         final FieldMatrix<T> vel0 = MatrixUtils.createColumnFieldMatrix(pv.getVelocity().toArray());

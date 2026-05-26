@@ -101,8 +101,9 @@ public class YamanakaAnkersenEquations {
      * @return state transition matrices at a given time t from an initial state.
      */
     public static YamanakaAnkersenMatrices computeMatrices(final double timeSinceEpoch, final double targetA, final double targetE, final double targetInitialTheta, final double targetTheta, final double mu) {
-        final Power p = new Power(  (double) 1 / 4);
-        final double k = p.value(mu / FastMath.pow(targetA, 3));
+        final Power power = new Power(  (double) 1 / 4);
+        final double p = targetA * (1 - targetE * targetE);
+        final double k = power.value(mu / FastMath.pow(p, 3));
         final double J = k * k * timeSinceEpoch;
         final double rho_theta = rho(targetTheta, targetE);
         final double c_theta = c(targetTheta, targetE);

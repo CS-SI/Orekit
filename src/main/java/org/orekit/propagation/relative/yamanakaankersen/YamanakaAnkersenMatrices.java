@@ -124,8 +124,9 @@ public class YamanakaAnkersenMatrices {
      */
     public PVCoordinates transform(final PVCoordinates pv, final double initialTrueAnomaly, final double trueAnomaly, final double eccentricity, final double sma, final double mu) {
         // Compute constant k
-        final Power p = new Power( (double) 1 / 4 );
-        final double k = p.value(mu / FastMath.pow(sma, 3));
+        final Power power = new Power( (double) 1 / 4 );
+        final double p = sma * (1 - eccentricity * eccentricity);
+        final double k = power.value(mu / FastMath.pow(p, 3));
 
         // Convert Vector3D to RealMatrix
         final RealMatrix pos0 = MatrixUtils.createColumnRealMatrix(pv.getPosition().toArray());
