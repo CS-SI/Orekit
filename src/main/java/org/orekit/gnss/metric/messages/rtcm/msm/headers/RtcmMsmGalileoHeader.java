@@ -80,7 +80,7 @@ public class RtcmMsmGalileoHeader extends RtcmMsmHeader {
     @Override
     public List<SatInSystem> convertSatellitesMask() {
         final List<SatInSystem> satellites = new ArrayList<>();
-        for (int satId = 1; satId <= 64; satId++) { 
+        for (int satId = 1; satId <= 64; satId++) {
             if ((this.getSatellitesMask() >> (64 - satId) & 1) == 1) {
                 // IDs 51 & 52 are for GIOVE-A and B
                 // IDs 53-64 are reserved
@@ -101,7 +101,7 @@ public class RtcmMsmGalileoHeader extends RtcmMsmHeader {
         }
         return signals;
     }
-    
+
     /**
      * Build the Galileo epoch from week number and seconds of week.
      * @param weekNumber Galileo week number

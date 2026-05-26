@@ -54,13 +54,13 @@ class Rtcm1107Test {
             "0001000100000000000000000000000000000000000000000000000000000000" +                                  // GNSS satellites mask
             "01000000000000000000000100000000" +                                                                  // GNSS signals mask
             "1111" +                                                                                              // GNSS cell mask
-            
+
             // Satellite data (2 sats)
             "0111111110000100" +                                                                                  // 2 * Rough range integer millis
             "00000000" +                                                                                          // 2 * Extended satellite data
             "01010010101010010001" +                                                                              // 2 * Rough range mod millis
             "0000000100001000000000110111" +                                                                      // 2 * Rough phase range rate
-            
+
             // Signal data (4 cells)
             "01001000100101101000000111110010011111101111001110101000001111111101101100101011" +                  // 4 * Fine pseudorange
             "000100110100000000101111000001111111111100101000111111100110110110111100111111111110001110010111" +  // 4 * Fine phase range
@@ -68,7 +68,7 @@ class Rtcm1107Test {
             "0000" +                                                                                              // 4 * Half-cycle ambiguity indicator
             "1010010000110011000010001000001010100000" +                                                          // 4 * CNR
             "110111000100011110110110000000000101000100101000100110010011" +                                      // 4 * Fine phase range rate
-            
+
             // Padding
             "000";
 

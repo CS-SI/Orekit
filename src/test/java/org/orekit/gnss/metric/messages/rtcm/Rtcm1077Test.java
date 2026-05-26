@@ -39,8 +39,8 @@ class Rtcm1077Test {
     @BeforeEach
     void setUp() {
         final String m =
-            // Header 
-            "010000110101" +                        // Message number: 1077 
+            // Header
+            "010000110101" +                        // Message number: 1077
             "111111111111" +                        // Reference station ID
             "001101110111100001110000100000" +      // Epoch time
             "0" +                                   // Multiple message indicator
@@ -67,7 +67,7 @@ class Rtcm1077Test {
             "00" +                                                  // 2 * Half-cycle ambiguity indicator
             "10111101001100110100" +                                // 2 * CNR
             "000110110000001000111010010101" +                      // 2 * Fine phase range rate
-            
+
             // Padding
             "00000";
 

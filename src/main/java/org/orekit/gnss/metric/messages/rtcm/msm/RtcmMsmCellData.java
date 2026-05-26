@@ -25,8 +25,8 @@ import org.orekit.gnss.metric.messages.rtcm.RtcmData;
  * @since 14.0
  */
 public class RtcmMsmCellData extends RtcmData {
-    private final RtcmMsmSatelliteData satelliteData; 
-    private final RtcmMsmSignalData signalData; 
+    private final RtcmMsmSatelliteData satelliteData;
+    private final RtcmMsmSignalData signalData;
 
     /**
      * Simple constructor.
@@ -52,5 +52,5 @@ public class RtcmMsmCellData extends RtcmData {
      */
     public RtcmMsmSignalData getSignalData() {
         return this.signalData;
-    }    
+    }
 }

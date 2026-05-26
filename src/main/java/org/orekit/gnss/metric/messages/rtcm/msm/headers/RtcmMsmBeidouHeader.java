@@ -90,7 +90,7 @@ public class RtcmMsmBeidouHeader extends RtcmMsmHeader {
         }
         return signals;
     }
-    
+
     /**
      * Build the BeiDou epoch from week number and seconds of week.
      * @param weekNumber BeiDou week number

@@ -1375,7 +1375,7 @@ public enum RtcmDataField implements DataField {
             return DataType.U_INT_4.decode(message).intValue() - 7;
         }
     },
-    
+
     /**
      * Half-cycle ambiguity indicator
      * <ul>

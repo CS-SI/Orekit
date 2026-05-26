@@ -103,7 +103,7 @@ public class RtcmMsmGlonassHeader extends RtcmMsmHeader {
         }
         return signals;
     }
-    
+
     /**
      * Build the GLONASS epoch from GLONASS-specific time parameters.
      * @param na GLONASS day number within four-year interval

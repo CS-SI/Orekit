@@ -54,13 +54,13 @@ class Rtcm1087Test {
             "0000000000001100000000000000000000000000000000000000000000000000" +  // GNSS satellites mask
             "01000000000000000000000000000000" +                                  // GNSS signals mask
             "11" +                                                                // GNSS cell mask
-            
+
             // Satellite data (2 sats)
             "0100110001001101" +                                                  // 2 * Rough range integer millis
             "01010000" +                                                          // 2 * Extended satellite data
             "00100111100001111111" +                                              // 2 * Rough range mod millis
             "0000100101001011111111010000" +                                      // 2 * Rough phase range rate
-            
+
             // Signal data (2 cells)
             "0010100111101100100100111110110101110110" +                          // 2 * Fine pseudorange
             "000010101001011000101110000011111101110001111000" +                  // 2 * Fine phase range
@@ -68,7 +68,7 @@ class Rtcm1087Test {
             "00" +                                                                // 2 * Half-cycle ambiguity indicator
             "10011001001100010100" +                                              // 2 * CNR
             "111100011101001000101011111111" +                                    // 2 * Fine phase range rate
-            
+
             // Padding
             "00000" +                                                             // Padding
             "";
@@ -90,7 +90,7 @@ class Rtcm1087Test {
         // Verify header
         Assertions.assertEquals("4095", rtcm1087.getHeader().getReferenceStation());
         Assertions.assertEquals(69249.000, rtcm1087.getHeader().getEpochTime());
-        Assertions.assertEquals(7, rtcm1087.getHeader().getDayOfWeek()); // Unknown 
+        Assertions.assertEquals(7, rtcm1087.getHeader().getDayOfWeek()); // Unknown
         Assertions.assertEquals("2026-03-26T16:14:27.000",
                 rtcm1087.getHeader().getEpoch(816, 8).getDate().toString(DataContext.getDefault().getTimeScales().getGPS()));
         Assertions.assertEquals(false, rtcm1087.getHeader().getMultipleMessageFlag());

@@ -78,7 +78,7 @@ public class RtcmMsmGpsHeader extends RtcmMsmHeader {
         final List<SatInSystem> satellites = new ArrayList<>();
         for (int satId = 1; satId <= 64; satId ++) {
             if ((this.getSatellitesMask() >> (64 - satId) & 1) == 1) {
-                // id 64 is reserved 
+                // id 64 is reserved
                 satellites.add(new SatInSystem(SatelliteSystem.GPS, satId < 64 ? satId : -1));
             }
         }
@@ -96,7 +96,7 @@ public class RtcmMsmGpsHeader extends RtcmMsmHeader {
         }
         return signals;
     }
-    
+
     /**
      * Build the GPS epoch from week number and seconds of week.
      * @param weekNumber GPS week number

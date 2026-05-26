@@ -501,12 +501,12 @@ public enum RtcmMessageType implements MessageType {
             galileoNavMessage.setOmegaDot(RtcmDataField.DF311.doubleValue(encodedMessage));
             galileoNavMessage.setBGDE1E5a(RtcmDataField.DF312.doubleValue(encodedMessage));
             galileoNavMessage.setBGDE5bE1(RtcmDataField.DF313.doubleValue(encodedMessage));
-            
+
             int e5bSignalHealthStatus = RtcmDataField.DF316.intValue(encodedMessage);
             int e5bDataValidityStatus = RtcmDataField.DF317.intValue(encodedMessage);
             int e1bSignalHealthStatus = RtcmDataField.DF287.intValue(encodedMessage);
             int e1bDataValidityStatus = RtcmDataField.DF288.intValue(encodedMessage);
-            int svHealth = 
+            int svHealth =
                 ((e5bSignalHealthStatus & 0x3) << 7) | // bits 7-8 (E5b Health Status)
                 ((e5bDataValidityStatus & 0x1) << 6) | // bit 6    (E5b Data Validity Status)
                                                        // bits 4-5 (E5a Health Status: Not applicable)
@@ -887,7 +887,7 @@ public enum RtcmMessageType implements MessageType {
         }
 
     },
-        
+
     RTCM_MSM7_1077("1077") {
         /** {@inheritDoc} */
         @Override
@@ -1056,7 +1056,7 @@ public enum RtcmMessageType implements MessageType {
             return new Rtcm1087(messageNumber, header, cellsData);
         }
     },
-        
+
     RTCM_MSM7_1097("1097") {
         /** {@inheritDoc} */
         @Override
@@ -1140,7 +1140,7 @@ public enum RtcmMessageType implements MessageType {
             return new Rtcm1097(messageNumber, header, cellsData);
         }
     },
-        
+
     RTCM_MSM7_1107("1107") {
         /** {@inheritDoc} */
         @Override
@@ -1224,7 +1224,7 @@ public enum RtcmMessageType implements MessageType {
             return new Rtcm1107(messageNumber, header, cellsData);
         }
     },
-        
+
     RTCM_MSM7_1117("1117") {
         /** {@inheritDoc} */
         @Override
@@ -1308,7 +1308,7 @@ public enum RtcmMessageType implements MessageType {
             return new Rtcm1117(messageNumber, header, cellsData);
         }
     },
-        
+
     RTCM_MSM7_1127("1127") {
         /** {@inheritDoc} */
         @Override

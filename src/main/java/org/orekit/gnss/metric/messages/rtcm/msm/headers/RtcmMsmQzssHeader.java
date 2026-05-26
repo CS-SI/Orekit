@@ -74,7 +74,7 @@ public class RtcmMsmQzssHeader extends RtcmMsmHeader {
     @Override
     public List<SatInSystem> convertSatellitesMask() {
         final List<SatInSystem> satellites = new ArrayList<>();
-        for (int satId = 1; satId <= 64; satId ++) { 
+        for (int satId = 1; satId <= 64; satId ++) {
             if ((this.getSatellitesMask() >> (64 - satId) & 1) == 1) {
                 // IDs 11-64 are reserved
                 satellites.add(new SatInSystem(SatelliteSystem.QZSS, satId < 11 ? 192 + satId : -1));
@@ -94,7 +94,7 @@ public class RtcmMsmQzssHeader extends RtcmMsmHeader {
         }
         return signals;
     }
-    
+
     /**
      * Build the QZSS epoch from week number and seconds of week.
      * @param weekNumber QZSS week number

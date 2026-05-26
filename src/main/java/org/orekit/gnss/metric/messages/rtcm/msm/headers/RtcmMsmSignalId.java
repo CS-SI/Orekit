@@ -97,7 +97,7 @@ public enum RtcmMsmSignalId {
     GAL_5Q(PredefinedObservationType.C5Q, PredefinedObservationType.L5Q, PredefinedObservationType.D5Q, PredefinedObservationType.S5Q),
     /** Galileo E5a I+Q MSM signal (code C5X, phase L5X, Doppler D5X, SNR S5X). */
     GAL_5X(PredefinedObservationType.C5X, PredefinedObservationType.L5X, PredefinedObservationType.D5X, PredefinedObservationType.S5X),
-    
+
     /** GLONASS G1 C/A MSM signal (code C1C, phase L1C, Doppler D1C, SNR S1C). */
     GLO_1C(PredefinedObservationType.C1C, PredefinedObservationType.L1C, PredefinedObservationType.D1C, PredefinedObservationType.S1C),
     /** GLONASS G1 P MSM signal (code C1P, phase L1P, Doppler D1P, SNR S1P). */
@@ -106,7 +106,7 @@ public enum RtcmMsmSignalId {
     GLO_2C(PredefinedObservationType.C2C, PredefinedObservationType.L2C, PredefinedObservationType.D2C, PredefinedObservationType.S2C),
     /** GLONASS G2 P MSM signal (code C2P, phase L2P, Doppler D2P, SNR S2P). */
     GLO_2P(PredefinedObservationType.C2P, PredefinedObservationType.L2P, PredefinedObservationType.D2P, PredefinedObservationType.S2P),
-       
+
     /** SBAS L1 C/A MSM signal (code C1C, phase L1C, Doppler D1C, SNR S1C). */
     SBAS_1C(PredefinedObservationType.C1C, PredefinedObservationType.L1C, PredefinedObservationType.D1C, PredefinedObservationType.S1C),
     /** SBAS L5 I MSM signal (code C5I, phase L5I, Doppler D5I, SNR S5I). */
@@ -142,7 +142,7 @@ public enum RtcmMsmSignalId {
     QZSS_6L(PredefinedObservationType.C6L, PredefinedObservationType.L6L, PredefinedObservationType.D6L, PredefinedObservationType.S6L),
     /** QZSS L6 S+L MSM signal (code C6X, phase L6X, Doppler D6X, SNR S6X). */
     QZSS_6X(PredefinedObservationType.C6X, PredefinedObservationType.L6X, PredefinedObservationType.D6X, PredefinedObservationType.S6X),
-    
+
     /** BeiDou B1 I MSM signal (code C2I, phase L2I, Doppler D2I, SNR S2I). */
     BDS_2I(PredefinedObservationType.C2I, PredefinedObservationType.L2I, PredefinedObservationType.D2I, PredefinedObservationType.S2I),
     /** BeiDou B1 Q MSM signal (code C2Q, phase L2Q, Doppler D2Q, SNR S2Q). */
@@ -161,7 +161,7 @@ public enum RtcmMsmSignalId {
     BDS_7Q(PredefinedObservationType.C7Q, PredefinedObservationType.L7Q, PredefinedObservationType.D7Q, PredefinedObservationType.S7Q),
     /** BeiDou B2 I+Q MSM signal (code C7X, phase L7X, Doppler D7X, SNR S7X). */
     BDS_7X(PredefinedObservationType.C7X, PredefinedObservationType.L7X, PredefinedObservationType.D7X, PredefinedObservationType.S7X);
-    
+
     private final PredefinedObservationType codeType;
     private final PredefinedObservationType phaseType;
     private final PredefinedObservationType dopplerType;

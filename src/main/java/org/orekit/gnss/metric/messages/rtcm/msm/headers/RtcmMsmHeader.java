@@ -30,7 +30,7 @@ import org.orekit.gnss.SatInSystem;
  */
 public abstract class RtcmMsmHeader {
     /** Reference Station ID. */
-    private String referenceStation; 
+    private String referenceStation;
 
     /** Multiple Message Indicator. */
     private boolean multipleMessage;
@@ -279,11 +279,11 @@ public abstract class RtcmMsmHeader {
      * Convert the satellites mask to a list of satellites.
      * @return list of satellites present in the MSM message
      */
-    abstract public List<SatInSystem> convertSatellitesMask(); 
+    abstract public List<SatInSystem> convertSatellitesMask();
 
     /**
      * Convert the signals mask to a list of signals.
      * @return list of signals present in the MSM message
      */
-    abstract public List<RtcmMsmSignalId> convertSignalsMask(); 
+    abstract public List<RtcmMsmSignalId> convertSignalsMask();
 }
