@@ -41,7 +41,7 @@ public abstract class AbstractEncodedMessageTest {
             Assertions.fail("an exception should habe been thrown");
         } catch (OrekitException re) {
             Assertions.assertEquals(OrekitMessages.TOO_LARGE_DATA_TYPE, re.getSpecifier());
-            Assertions.assertEquals(64, ((Integer) re.getParts()[0]).intValue());
+            Assertions.assertEquals(65, ((Integer) re.getParts()[0]).intValue());
         }
     }
 
