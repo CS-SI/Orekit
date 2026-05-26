@@ -22,7 +22,7 @@ import java.util.List;
 import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmGlonassHeader;
 
 /**
- * RTCM 1087 message: GLONASS MSM7
+ * RTCM 1087 message: GLONASS MSM7.
  * @author Nathan Schiffmacher
  * @since 14.0
  */
@@ -30,6 +30,8 @@ public class Rtcm1087 extends RtcmMsmMessage<RtcmMsmGlonassHeader> {
     /**
      * Constructor.
      * @param typeCode     message number
+     * @param header MSM message header
+     * @param cells list of MSM cells associated with this message
      */
     public Rtcm1087(final int typeCode, final RtcmMsmGlonassHeader header, final List<RtcmMsmCellData> cells) {
         super(typeCode, header, cells);

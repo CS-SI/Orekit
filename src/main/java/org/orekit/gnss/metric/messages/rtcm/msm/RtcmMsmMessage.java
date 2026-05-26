@@ -28,7 +28,9 @@ import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmHeader;
  * @since 14.0
  */
 public class RtcmMsmMessage<H extends RtcmMsmHeader> extends RtcmMessage<RtcmMsmCellData> {
-    private H header;
+
+    /** MSM message header. */
+    private final H header;
 
     /**
      * Simple constructor.

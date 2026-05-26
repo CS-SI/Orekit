@@ -25,6 +25,8 @@ import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmSignalId;
  * @since 14.0
  */
 public class RtcmMsmSignalData {
+
+    /** MSM signal identifier. */
     private RtcmMsmSignalId signalId;
 
     /** GNSS signal fine Pseudoranges (DF400, DF405). */
@@ -57,7 +59,7 @@ public class RtcmMsmSignalData {
      * Set the MSM signal identifier.
      * @param signalId MSM signal identifier
      */
-    public void setSignalId(RtcmMsmSignalId signalId) {
+    public void setSignalId(final RtcmMsmSignalId signalId) {
         this.signalId = signalId;
     }
 
@@ -73,7 +75,7 @@ public class RtcmMsmSignalData {
      * Set the fine pseudorange.
      * @param finePseudorange fine pseudorange in meters
      */
-    public void setFinePseudorange(double finePseudorange) {
+    public void setFinePseudorange(final double finePseudorange) {
         this.finePseudorange = finePseudorange;
     }
 
@@ -89,7 +91,7 @@ public class RtcmMsmSignalData {
      * Set the fine phaserange.
      * @param finePhaserange fine phaserange in meters
      */
-    public void setFinePhaserange(double finePhaserange) {
+    public void setFinePhaserange(final double finePhaserange) {
         this.finePhaserange = finePhaserange;
     }
 
@@ -105,7 +107,7 @@ public class RtcmMsmSignalData {
      * Set the phaserange lock time indicator.
      * @param lockTimeIndicator lock time indicator value
      */
-    public void setLockTimeIndicator(int lockTimeIndicator) {
+    public void setLockTimeIndicator(final int lockTimeIndicator) {
         this.lockTimeIndicator = lockTimeIndicator;
     }
 
@@ -121,7 +123,7 @@ public class RtcmMsmSignalData {
      * Set the half-cycle ambiguity indicator.
      * @param halfCycleAmbiguityIndicator true if half-cycle ambiguity is present, false otherwise
      */
-    public void setHalfCycleAmbiguityIndicator(boolean halfCycleAmbiguityIndicator) {
+    public void setHalfCycleAmbiguityIndicator(final boolean halfCycleAmbiguityIndicator) {
         this.halfCycleAmbiguityIndicator = halfCycleAmbiguityIndicator;
     }
 
@@ -137,7 +139,7 @@ public class RtcmMsmSignalData {
      * Set the carrier-to-noise ratio.
      * @param cnr CNR in dB-Hz
      */
-    public void setCnr(double cnr) {
+    public void setCnr(final double cnr) {
         this.cnr = cnr;
     }
 
@@ -153,7 +155,7 @@ public class RtcmMsmSignalData {
      * Set the fine phaserange rate.
      * @param finePhaserangeRate fine phaserange rate in meters per second
      */
-    public void setFinePhaserangeRate(double finePhaserangeRate) {
+    public void setFinePhaserangeRate(final double finePhaserangeRate) {
         this.finePhaserangeRate = finePhaserangeRate;
     }
 }

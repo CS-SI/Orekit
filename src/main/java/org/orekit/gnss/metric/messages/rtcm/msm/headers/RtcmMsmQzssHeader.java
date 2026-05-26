@@ -31,8 +31,6 @@ import org.orekit.gnss.SatelliteSystem;
  * @since 14.0
  */
 public class RtcmMsmQzssHeader extends RtcmMsmHeader {
-    /** Epoch time within the QZSS week, in seconds. */
-    private double epochTime;
 
     /** Mapping of RTCM MSM signal identifiers to QZSS MSM signal IDs. */
     private static final Map<Integer, RtcmMsmSignalId> SIGNAL_ID_MAP = new HashMap<>();
@@ -52,6 +50,9 @@ public class RtcmMsmQzssHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(31,  RtcmMsmSignalId.QZSS_1L);
         SIGNAL_ID_MAP.put(32,  RtcmMsmSignalId.QZSS_1X);
     }
+
+    /** Epoch time within the QZSS week, in seconds. */
+    private double epochTime;
 
     /**
      * Get the QZSS epoch time.
@@ -73,7 +74,7 @@ public class RtcmMsmQzssHeader extends RtcmMsmHeader {
     @Override
     public List<SatInSystem> convertSatellitesMask() {
         final List<SatInSystem> satellites = new ArrayList<>();
-        for (int satId = 1; satId <= 64; satId ++) {
+        for (int satId = 1; satId <= 64; satId++) {
             if ((this.getSatellitesMask() >> (64 - satId) & 1) == 1) {
                 // IDs 11-64 are reserved
                 satellites.add(new SatInSystem(SatelliteSystem.QZSS, satId < 11 ? 192 + satId : -1));

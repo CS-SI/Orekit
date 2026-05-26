@@ -31,8 +31,6 @@ import org.orekit.gnss.SatelliteSystem;
  * @since 14.0
  */
 public class RtcmMsmGpsHeader extends RtcmMsmHeader {
-    /** Epoch time within the GPS week, in seconds. */
-    private double epochTime;
 
     /** Mapping of RTCM MSM signal identifiers to GPS MSM signal IDs. */
     private static final Map<Integer, RtcmMsmSignalId> SIGNAL_ID_MAP = new HashMap<>();
@@ -55,6 +53,9 @@ public class RtcmMsmGpsHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(32, RtcmMsmSignalId.GPS_1X);
     }
 
+    /** Epoch time within the GPS week, in seconds. */
+    private double epochTime;
+
     /**
      * Get the GPS epoch time.
      * @return epoch time within the GPS week, in seconds
@@ -75,7 +76,7 @@ public class RtcmMsmGpsHeader extends RtcmMsmHeader {
     @Override
     public List<SatInSystem> convertSatellitesMask() {
         final List<SatInSystem> satellites = new ArrayList<>();
-        for (int satId = 1; satId <= 64; satId ++) {
+        for (int satId = 1; satId <= 64; satId++) {
             if ((this.getSatellitesMask() >> (64 - satId) & 1) == 1) {
                 // id 64 is reserved
                 satellites.add(new SatInSystem(SatelliteSystem.GPS, satId < 64 ? satId : -1));

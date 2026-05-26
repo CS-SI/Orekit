@@ -25,7 +25,8 @@ import org.orekit.gnss.SatInSystem;
  * @since 14.0
  */
 public class RtcmMsmSatelliteData {
-    /** Satellite the data refers to */
+
+    /** Satellite the data refers to. */
     private SatInSystem satellite;
 
     /** DF397: GNSS Satellite rough ranges (truncated to milliseconds), expressed in seconds. Null if not present. */
@@ -37,7 +38,7 @@ public class RtcmMsmSatelliteData {
     /** DF399: GNSS Satellite rough Phaserange Rates, expressed in meters per second. Null if not present. */
     private double roughPhaserangeRate;
 
-    /** Extended satellite data, GNSS specific */
+    /** Extended satellite data, GNSS specific. */
     private long extendedSatelliteData;
 
     /**

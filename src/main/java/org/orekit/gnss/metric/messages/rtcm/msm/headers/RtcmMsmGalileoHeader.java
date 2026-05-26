@@ -31,8 +31,6 @@ import org.orekit.gnss.SatelliteSystem;
  * @since 14.0
  */
 public class RtcmMsmGalileoHeader extends RtcmMsmHeader {
-    /** Epoch time within the Galileo week, in seconds. */
-    private double epochTime;
 
     /** Mapping of RTCM MSM signal identifiers to Galileo MSM signal IDs. */
     private static final Map<Integer, RtcmMsmSignalId> SIGNAL_ID_MAP = new HashMap<>();
@@ -58,6 +56,9 @@ public class RtcmMsmGalileoHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(23, RtcmMsmSignalId.GAL_5Q);
         SIGNAL_ID_MAP.put(24, RtcmMsmSignalId.GAL_5X);
     }
+
+    /** Epoch time within the Galileo week, in seconds. */
+    private double epochTime;
 
     /**
      * Get the Galileo epoch time.

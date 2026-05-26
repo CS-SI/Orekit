@@ -22,7 +22,7 @@ import java.util.List;
 import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmSbasHeader;
 
 /**
- * RTCM 1107 message: SBAS MSM7
+ * RTCM 1107 message: SBAS MSM7.
  * @author Nathan Schiffmacher
  * @since 14.0
  */
@@ -30,6 +30,8 @@ public class Rtcm1107 extends RtcmMsmMessage<RtcmMsmSbasHeader> {
     /**
      * Constructor.
      * @param typeCode     message number
+     * @param header MSM message header
+     * @param cells list of MSM cells associated with this message
      */
     public Rtcm1107(final int typeCode, final RtcmMsmSbasHeader header, final List<RtcmMsmCellData> cells) {
         super(typeCode, header, cells);

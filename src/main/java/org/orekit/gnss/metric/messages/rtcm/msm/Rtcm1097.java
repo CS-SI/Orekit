@@ -22,7 +22,7 @@ import java.util.List;
 import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmGalileoHeader;
 
 /**
- * RTCM 1097 message: GALILEO MSM7
+ * RTCM 1097 message: GALILEO MSM7.
  * @author Nathan Schiffmacher
  * @since 14.0
  */
@@ -30,6 +30,8 @@ public class Rtcm1097 extends RtcmMsmMessage<RtcmMsmGalileoHeader> {
     /**
      * Constructor.
      * @param typeCode     message number
+     * @param header MSM message header
+     * @param cells list of MSM cells associated with this message
      */
     public Rtcm1097(final int typeCode, final RtcmMsmGalileoHeader header, final List<RtcmMsmCellData> cells) {
         super(typeCode, header, cells);

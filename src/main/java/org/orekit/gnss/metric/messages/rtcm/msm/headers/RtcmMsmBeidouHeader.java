@@ -31,8 +31,6 @@ import org.orekit.gnss.SatelliteSystem;
  * @since 14.0
  */
 public class RtcmMsmBeidouHeader extends RtcmMsmHeader {
-    /** Epoch time within the BeiDou week, in seconds. */
-    private double epochTime;
 
     /** Mapping of RTCM MSM signal identifiers to BeiDou MSM signal IDs. */
     private static final Map<Integer, RtcmMsmSignalId> SIGNAL_ID_MAP = new HashMap<>();
@@ -48,6 +46,9 @@ public class RtcmMsmBeidouHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(15,  RtcmMsmSignalId.BDS_7Q);
         SIGNAL_ID_MAP.put(16,  RtcmMsmSignalId.BDS_7X);
     }
+
+    /** Epoch time within the BeiDou week, in seconds. */
+    private double epochTime;
 
     /**
      * Get the BeiDou epoch time.
@@ -69,7 +70,7 @@ public class RtcmMsmBeidouHeader extends RtcmMsmHeader {
     @Override
     public List<SatInSystem> convertSatellitesMask() {
         final List<SatInSystem> satellites = new ArrayList<>();
-        for (int satId = 1; satId <= 64; satId ++) {
+        for (int satId = 1; satId <= 64; satId++) {
             if ((this.getSatellitesMask() >> (64 - satId) & 1) == 1) {
                 // IDs 39-64 are reserved
                 satellites.add(new SatInSystem(SatelliteSystem.BEIDOU, satId));

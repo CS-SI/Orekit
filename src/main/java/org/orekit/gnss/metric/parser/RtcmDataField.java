@@ -16,8 +16,6 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import java.util.Locale;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -36,7 +34,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public long longValue(final EncodedMessage message, final int n) {
-            if(n > 64) {
+            if (n > 64) {
                 throw new OrekitException(OrekitMessages.TOO_LARGE_DATA_TYPE, n);
             }
             return message.extractBits(n);
@@ -48,7 +46,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public String stringValue(final EncodedMessage message, final int n) {
-            return String.format(Locale.US, "%4s", DataType.U_INT_12.decode(message).intValue()).trim();
+            return DataType.U_INT_12.decode(message).toString();
         }
     },
 
@@ -57,11 +55,11 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public String stringValue(final EncodedMessage message, final int n) {
-            return String.format(Locale.US, "%4s", DataType.U_INT_12.decode(message).intValue()).trim();
+            return DataType.U_INT_12.decode(message).toString();
         }
     },
 
-    /** GPS Epoch time (TOW) */
+    /** GPS Epoch time (TOW). */
     DF004 {
         /** {@inheritDoc} */
         @Override
@@ -1138,7 +1136,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /** MSM Multiple message bit */
+    /** MSM Multiple message bit. */
     DF393 {
         /** {@inheritDoc} */
         @Override
@@ -1147,9 +1145,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * GNSS Satellite mask.
-     */
+    /** GNSS Satellite mask. */
     DF394 {
         /** {@inheritDoc} */
         @Override
@@ -1158,20 +1154,16 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * GNSS Signal mask.
-     */
+    /** GNSS Signal mask. */
     DF395 {
         /** {@inheritDoc} */
         @Override
         public long longValue(final EncodedMessage message) {
-            return DataType.BIT_32.decode(message).longValue();
+            return DataType.BIT_32.decode(message);
         }
     },
 
-    /**
-     * GNSS Satellite rough range (converted to seconds)
-     */
+    /** GNSS Satellite rough range (converted to seconds). */
     DF397 {
         /** {@inheritDoc} */
         @Override
@@ -1180,9 +1172,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * GNSS Satellite rough range modulo 1 millisecond (converted to seconds)
-     */
+    /** GNSS Satellite rough range modulo 1 millisecond (converted to seconds). */
     DF398 {
         /** {@inheritDoc} */
         @Override
@@ -1191,9 +1181,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * GNSS Satellite rough Phaserange Rate (meters/second)
-     */
+    /** GNSS Satellite rough Phaserange Rate (meters/second). */
     DF399 {
         /** {@inheritDoc} */
         @Override
@@ -1202,23 +1190,19 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * GNSS Cell mask.
-     */
+    /** GNSS Cell mask. */
     DF396 {
         /** {@inheritDoc} */
         @Override
         public long longValue(final EncodedMessage message, final int n) {
-            if(n > 64) {
+            if (n > 64) {
                 throw new OrekitException(OrekitMessages.TOO_LARGE_DATA_TYPE, n);
             }
             return message.extractBits(n);
         }
     },
 
-    /**
-     * GNSS signal fine Phaserange Rate (meters/second)
-     */
+    /** GNSS signal fine Phaserange Rate (meters/second). */
     DF404 {
         /** {@inheritDoc} */
         @Override
@@ -1227,9 +1211,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * GNSS signal fine Pseudorange with extended resolution (converted to seconds)
-     */
+    /** GNSS signal fine Pseudorange with extended resolution (converted to seconds). */
     DF405 {
         /** {@inheritDoc} */
         @Override
@@ -1238,9 +1220,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * GNSS signal fine Phaserange data with extended resolution (converted to seconds)
-     */
+    /** GNSS signal fine Phaserange data with extended resolution (converted to seconds). */
     DF406 {
         /** {@inheritDoc} */
         @Override
@@ -1249,9 +1229,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * GNSS Phaserange Lock Time Indicator with extended range and resolution
-     */
+    /** GNSS Phaserange Lock Time Indicator with extended range and resolution. */
     DF407 {
         /** {@inheritDoc} */
         @Override
@@ -1260,9 +1238,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * GNSS signal CNR with extended resolution (dB-Hz)
-     */
+    /** GNSS signal CNR with extended resolution (dB-Hz). */
     DF408 {
         /** {@inheritDoc} */
         @Override
@@ -1271,9 +1247,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * IODS – Issue Of Data Station.
-     */
+    /** IODS – Issue Of Data Station. */
     DF409 {
         /** {@inheritDoc} */
         @Override
@@ -1282,9 +1256,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * Clock Steering Indicator.
-     */
+    /** Clock Steering Indicator. */
     DF411 {
         /** {@inheritDoc} */
         @Override
@@ -1293,9 +1265,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /**
-     * External Clock Indicator.
-     */
+    /** External Clock Indicator. */
     DF412 {
         /** {@inheritDoc} */
         @Override
@@ -1377,11 +1347,11 @@ public enum RtcmDataField implements DataField {
     },
 
     /**
-     * Half-cycle ambiguity indicator
+     * Half-cycle ambiguity indicator.
      * <ul>
-     * <li> 0 - No half-cycle ambiguity.
-     * <li> 1 - Half-cycle ambiguity.
-     * </li>
+     * <li> 0 - No half-cycle ambiguity.</li>
+     * <li> 1 - Half-cycle ambiguity.</li>
+     * </ul>
      */
     DF420 {
         /** {@inheritDoc} */
@@ -1391,7 +1361,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /** BeiDou Epoch Time (TOW) */
+    /** BeiDou Epoch Time (TOW). */
     DF427 {
         /** {@inheritDoc} */
         @Override
@@ -1400,7 +1370,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /** QZSS Epoch Time (TOW) */
+    /** QZSS Epoch Time (TOW). */
     DF428 {
         /** {@inheritDoc} */
         @Override

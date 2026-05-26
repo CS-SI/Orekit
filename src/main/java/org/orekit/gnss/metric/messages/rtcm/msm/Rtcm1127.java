@@ -22,7 +22,7 @@ import java.util.List;
 import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmBeidouHeader;
 
 /**
- * RTCM 1127 message: BEIDOU MSM7
+ * RTCM 1127 message: BEIDOU MSM7.
  * @author Nathan Schiffmacher
  * @since 14.0
  */
@@ -30,6 +30,8 @@ public class Rtcm1127 extends RtcmMsmMessage<RtcmMsmBeidouHeader> {
     /**
      * Constructor.
      * @param typeCode     message number
+     * @param header MSM message header
+     * @param cells list of MSM cells associated with this message
      */
     public Rtcm1127(final int typeCode, final RtcmMsmBeidouHeader header, final List<RtcmMsmCellData> cells) {
         super(typeCode, header, cells);

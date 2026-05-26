@@ -162,9 +162,16 @@ public enum RtcmMsmSignalId {
     /** BeiDou B2 I+Q MSM signal (code C7X, phase L7X, Doppler D7X, SNR S7X). */
     BDS_7X(PredefinedObservationType.C7X, PredefinedObservationType.L7X, PredefinedObservationType.D7X, PredefinedObservationType.S7X);
 
+    /** Observation type for code measurements. */
     private final PredefinedObservationType codeType;
+
+    /** Observation type for carrier phase measurements. */
     private final PredefinedObservationType phaseType;
+
+    /** Observation type for Doppler measurements. */
     private final PredefinedObservationType dopplerType;
+
+    /** Observation type for signal strength measurements. */
     private final PredefinedObservationType signalStrengthType;
 
     /**

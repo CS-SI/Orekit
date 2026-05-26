@@ -31,8 +31,6 @@ import org.orekit.gnss.SatelliteSystem;
  * @since 14.0
  */
 public class RtcmMsmSbasHeader extends RtcmMsmHeader {
-    /** Epoch time within the GPS week, in seconds. */
-    private double epochTime;
 
     /** Mapping of RTCM MSM signal identifiers to SBAS MSM signal IDs. */
     private static final Map<Integer, RtcmMsmSignalId> SIGNAL_ID_MAP = new HashMap<>();
@@ -44,8 +42,11 @@ public class RtcmMsmSbasHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(24,  RtcmMsmSignalId.SBAS_5X);
     }
 
+    /** Epoch time within the GPS week, in seconds. */
+    private double epochTime;
+
     /**
-     * Get the SBAS epoch time (which is GPS epoch time)
+     * Get the SBAS epoch time (which is GPS epoch time).
      * @return epoch time within the GPS week, in seconds
      */
     public double getEpochTime() {
@@ -53,7 +54,7 @@ public class RtcmMsmSbasHeader extends RtcmMsmHeader {
     }
 
     /**
-     * Set the SBAS epoch time (which is GPS epoch time)
+     * Set the SBAS epoch time (which is GPS epoch time).
      * @param epochTime epoch time within the GPS week, in seconds
      */
     public void setEpochTime(final double epochTime) {
@@ -64,7 +65,7 @@ public class RtcmMsmSbasHeader extends RtcmMsmHeader {
     @Override
     public List<SatInSystem> convertSatellitesMask() {
         final List<SatInSystem> satellites = new ArrayList<>();
-        for (int satId = 1; satId <= 64; satId ++) {
+        for (int satId = 1; satId <= 64; satId++) {
             if ((this.getSatellitesMask() >> (64 - satId) & 1) == 1) {
                 // IDs 40-64 are reserved
                 // PRN is SatID + 119

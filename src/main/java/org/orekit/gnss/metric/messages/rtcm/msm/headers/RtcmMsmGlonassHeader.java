@@ -31,10 +31,6 @@ import org.orekit.gnss.SatelliteSystem;
  * @since 14.0
  */
 public class RtcmMsmGlonassHeader extends RtcmMsmHeader {
-    /** GLONASS day of week. */
-    private int dayOfWeek;
-    /** Epoch time within the GLONASS day, in seconds. */
-    private double epochTime;
 
     /** Mapping of RTCM MSM signal identifiers to GLONASS MSM signal IDs. */
     private static final Map<Integer, RtcmMsmSignalId> SIGNAL_ID_MAP = new HashMap<>();
@@ -45,6 +41,12 @@ public class RtcmMsmGlonassHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(8,  RtcmMsmSignalId.GLO_2C);
         SIGNAL_ID_MAP.put(9,  RtcmMsmSignalId.GLO_2P);
     }
+
+    /** GLONASS day of week. */
+    private int dayOfWeek;
+
+    /** Epoch time within the GLONASS day, in seconds. */
+    private double epochTime;
 
     /**
      * Get the GLONASS day of week.
@@ -82,7 +84,7 @@ public class RtcmMsmGlonassHeader extends RtcmMsmHeader {
     @Override
     public List<SatInSystem> convertSatellitesMask() {
         final List<SatInSystem> satellites = new ArrayList<>();
-        for (int satId = 1; satId <= 64; satId ++) {
+        for (int satId = 1; satId <= 64; satId++) {
             if ((this.getSatellitesMask() >> (64 - satId) & 1) == 1) {
                 // IDs 25-64 are reserved
                 satellites.add(new SatInSystem(SatelliteSystem.GLONASS, satId < 25 ? satId : -1));

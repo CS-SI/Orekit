@@ -279,11 +279,11 @@ public abstract class RtcmMsmHeader {
      * Convert the satellites mask to a list of satellites.
      * @return list of satellites present in the MSM message
      */
-    abstract public List<SatInSystem> convertSatellitesMask();
+    public abstract List<SatInSystem> convertSatellitesMask();
 
     /**
      * Convert the signals mask to a list of signals.
      * @return list of signals present in the MSM message
      */
-    abstract public List<RtcmMsmSignalId> convertSignalsMask();
+    public abstract List<RtcmMsmSignalId> convertSignalsMask();
 }
