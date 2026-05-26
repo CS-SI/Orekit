@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.GLONASSDate;
 
 /**
  * RTCM MSM header for GLONASS observations.
@@ -104,13 +103,4 @@ public class RtcmMsmGlonassHeader extends RtcmMsmHeader {
         return signals;
     }
 
-    /**
-     * Build the GLONASS epoch from GLONASS-specific time parameters.
-     * @param na GLONASS day number within four-year interval
-     * @param n4 GLONASS four-year interval number
-     * @return GLONASS date corresponding to the epoch
-     */
-    public GLONASSDate getEpoch(final int na, final int n4) {
-        return new GLONASSDate(na, n4, this.getEpochTime());
-    }
 }

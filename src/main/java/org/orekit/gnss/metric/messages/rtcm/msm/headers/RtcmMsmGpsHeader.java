@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.GNSSDate;
 
 /**
  * RTCM MSM header for GPS observations.
@@ -97,12 +96,4 @@ public class RtcmMsmGpsHeader extends RtcmMsmHeader {
         return signals;
     }
 
-    /**
-     * Build the GPS epoch from week number and seconds of week.
-     * @param weekNumber GPS week number
-     * @return GNSS date corresponding to the epoch
-     */
-    public GNSSDate getEpoch(int weekNumber) {
-        return new GNSSDate(weekNumber, this.getEpochTime(), SatelliteSystem.GPS);
-    }
 }

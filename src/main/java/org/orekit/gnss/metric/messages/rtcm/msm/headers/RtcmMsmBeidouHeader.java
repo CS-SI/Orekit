@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.GNSSDate;
 
 /**
  * RTCM MSM header for BeiDou observations.
@@ -91,12 +90,4 @@ public class RtcmMsmBeidouHeader extends RtcmMsmHeader {
         return signals;
     }
 
-    /**
-     * Build the BeiDou epoch from week number and seconds of week.
-     * @param weekNumber BeiDou week number
-     * @return GNSS date corresponding to the epoch
-     */
-    public GNSSDate getEpoch(int weekNumber) {
-        return new GNSSDate(weekNumber, this.getEpochTime(), SatelliteSystem.BEIDOU);
-    }
 }

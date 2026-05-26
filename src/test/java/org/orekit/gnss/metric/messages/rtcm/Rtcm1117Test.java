@@ -89,8 +89,6 @@ class Rtcm1117Test {
         // Verify header
         Assertions.assertEquals("837", rtcm1117.getHeader().getReferenceStation());
         Assertions.assertEquals(199952.000, rtcm1117.getHeader().getEpochTime());
-        // Assertions.assertEquals("2026-03-26T16:20:09.000",
-        //         rtcm1117.getHeader().getEpoch(2411).getDate().toString(DataContext.getDefault().getTimeScales().getGPS()));
         Assertions.assertEquals(false, rtcm1117.getHeader().getMultipleMessageFlag());
         Assertions.assertEquals(0, rtcm1117.getHeader().getIssueofDataStation());
         Assertions.assertEquals(0, rtcm1117.getHeader().getClockSteeringIndicator());

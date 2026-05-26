@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.GNSSDate;
 
 /**
  * RTCM MSM header for SBAS observations.
@@ -87,12 +86,4 @@ public class RtcmMsmSbasHeader extends RtcmMsmHeader {
         return signals;
     }
 
-    /**
-     * Build the SBAS epoch (which is GPS epoch) from week number and seconds of week.
-     * @param weekNumber SBAS (ie. GPS) week number
-     * @return GNSS date corresponding to the epoch
-     */
-    public GNSSDate getEpoch(int weekNumber) {
-        return new GNSSDate(weekNumber, this.getEpochTime(), SatelliteSystem.SBAS);
-    }
 }
