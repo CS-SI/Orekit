@@ -42,25 +42,6 @@ public class RtcmMsmSbasHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(24,  RtcmMsmSignalId.SBAS_5X);
     }
 
-    /** Epoch time within the GPS week, in seconds. */
-    private double epochTime;
-
-    /**
-     * Get the SBAS epoch time (which is GPS epoch time).
-     * @return epoch time within the GPS week, in seconds
-     */
-    public double getEpochTime() {
-        return this.epochTime;
-    }
-
-    /**
-     * Set the SBAS epoch time (which is GPS epoch time).
-     * @param epochTime epoch time within the GPS week, in seconds
-     */
-    public void setEpochTime(final double epochTime) {
-        this.epochTime = epochTime;
-    }
-
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

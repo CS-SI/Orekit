@@ -53,25 +53,6 @@ public class RtcmMsmGpsHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(32, RtcmMsmSignalId.GPS_1X);
     }
 
-    /** Epoch time within the GPS week, in seconds. */
-    private double epochTime;
-
-    /**
-     * Get the GPS epoch time.
-     * @return epoch time within the GPS week, in seconds
-     */
-    public double getEpochTime() {
-        return this.epochTime;
-    }
-
-    /**
-     * Set the GPS epoch time.
-     * @param epochTime epoch time within the GPS week, in seconds
-     */
-    public void setEpochTime(final double epochTime) {
-        this.epochTime = epochTime;
-    }
-
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

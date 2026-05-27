@@ -57,25 +57,6 @@ public class RtcmMsmGalileoHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(24, RtcmMsmSignalId.GAL_5X);
     }
 
-    /** Epoch time within the Galileo week, in seconds. */
-    private double epochTime;
-
-    /**
-     * Get the Galileo epoch time.
-     * @return epoch time within the Galileo week, in seconds
-     */
-    public double getEpochTime() {
-        return this.epochTime;
-    }
-
-    /**
-     * Set the Galileo epoch time.
-     * @param epochTime epoch time within the Galileo week, in seconds
-     */
-    public void setEpochTime(final double epochTime) {
-        this.epochTime = epochTime;
-    }
-
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

@@ -45,9 +45,6 @@ public class RtcmMsmGlonassHeader extends RtcmMsmHeader {
     /** GLONASS day of week. */
     private int dayOfWeek;
 
-    /** Epoch time within the GLONASS day, in seconds. */
-    private double epochTime;
-
     /**
      * Get the GLONASS day of week.
      * @return GLONASS day of week
@@ -62,22 +59,6 @@ public class RtcmMsmGlonassHeader extends RtcmMsmHeader {
      */
     public void setDayOfWeek(final int dayOfWeek) {
         this.dayOfWeek = dayOfWeek;
-    }
-
-    /**
-     * Get the GLONASS epoch time.
-     * @return epoch time within the GLONASS day, in seconds
-     */
-    public double getEpochTime() {
-        return this.epochTime;
-    }
-
-    /**
-     * Set the GLONASS epoch time.
-     * @param epochTime epoch time within the GLONASS day, in seconds
-     */
-    public void setEpochTime(final double epochTime) {
-        this.epochTime = epochTime;
     }
 
     /** {@inheritDoc} */

@@ -47,25 +47,6 @@ public class RtcmMsmBeidouHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(16,  RtcmMsmSignalId.BDS_7X);
     }
 
-    /** Epoch time within the BeiDou week, in seconds. */
-    private double epochTime;
-
-    /**
-     * Get the BeiDou epoch time.
-     * @return epoch time within the BeiDou week, in seconds
-     */
-    public double getEpochTime() {
-        return this.epochTime;
-    }
-
-    /**
-     * Set the BeiDou epoch time.
-     * @param epochTime epoch time within the BeiDou week, in seconds
-     */
-    public void setEpochTime(final double epochTime) {
-        this.epochTime = epochTime;
-    }
-
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

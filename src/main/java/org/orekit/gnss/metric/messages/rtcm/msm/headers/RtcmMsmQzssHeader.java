@@ -51,25 +51,6 @@ public class RtcmMsmQzssHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(32,  RtcmMsmSignalId.QZSS_1X);
     }
 
-    /** Epoch time within the QZSS week, in seconds. */
-    private double epochTime;
-
-    /**
-     * Get the QZSS epoch time.
-     * @return epoch time within the QZSS week, in seconds
-     */
-    public double getEpochTime() {
-        return this.epochTime;
-    }
-
-    /**
-     * Set the QZSS epoch time.
-     * @param epochTime epoch time within the QZSS week, in seconds
-     */
-    public void setEpochTime(final double epochTime) {
-        this.epochTime = epochTime;
-    }
-
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

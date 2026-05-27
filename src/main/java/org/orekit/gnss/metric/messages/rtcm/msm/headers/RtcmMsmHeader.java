@@ -29,6 +29,7 @@ import org.orekit.gnss.SatInSystem;
  * @since 14.0
  */
 public abstract class RtcmMsmHeader {
+
     /** Reference Station ID. */
     private String referenceStation;
 
@@ -59,9 +60,28 @@ public abstract class RtcmMsmHeader {
     /** Cells mask indicating which satellite/signal combinations are included in the MSM message. */
     private long cellsMask;
 
+    /** Epoch time within the BeiDou week, in seconds. */
+    private double epochTime;
+
     /** Constructor. */
     public RtcmMsmHeader() {
         // Nothing to do ...
+    }
+
+    /**
+     * Get the epoch time.
+     * @return epoch time within the GNSS week, in seconds
+     */
+    public double getEpochTime() {
+        return this.epochTime;
+    }
+
+    /**
+     * Set the epoch time.
+     * @param epochTime epoch time within the GNSS week, in seconds
+     */
+    public void setEpochTime(final double epochTime) {
+        this.epochTime = epochTime;
     }
 
     /**
