@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntToLongFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -859,95 +860,17 @@ public enum RtcmMessageType implements MessageType {
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
 
+            // parse header
             final RtcmMsmGpsHeader header = new RtcmMsmGpsHeader();
-            List<RtcmMsmCellData> cellsData = new ArrayList<>();
-
             header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
             header.setEpochTime(RtcmDataField.DF004.doubleValue(encodedMessage));
+            completeMsm7MessageHeader(encodedMessage, header);
 
-            fillMsm7Message(encodedMessage, header, cellsData);
+            // parse cells data
+            return new Rtcm1077(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
 
-            final int nSats = header.getNumberOfSatellites();
-            final int cellsMaskLength = nSats * header.getNumberOfSignals();
-            header.setCellsMask(RtcmDataField.DF396.longValue(encodedMessage, cellsMaskLength));
-            final int nCells = header.getNumberOfCells();
-
-            // Parse satellite data
-            final List<SatInSystem> satellites = header.convertSatellitesMask();
-            final List<Double> intRoughRanges = IntStream.range(0, nSats).
-                                                mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
-                                                boxed().
-                                                toList();
-            final List<Long> extendedSatelliteData = IntStream.range(0, nSats).
-                                                     mapToLong(i -> RtcmDataField.DF001.longValue(encodedMessage, 4)).
-                                                     boxed().
-                                                     toList();
-            final List<Double> fracRoughRanges = IntStream.range(0, nSats).
-                                                 mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Double> roughPhaseRangeRates = IntStream.range(0, nSats).
-                                                      mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
-                                                      boxed().
-                                                      toList();
-            final Map<SatInSystem, RtcmMsmSatelliteData> satellitesData = IntStream.range(0, nSats).mapToObj(i -> {
-                final RtcmMsmSatelliteData d = new RtcmMsmSatelliteData();
-                d.setSatellite(satellites.get(i));
-                d.setIntMillisRoughRange(intRoughRanges.get(i));
-                d.setExtendedSatelliteData(extendedSatelliteData.get(i));
-                d.setModMillisRoughRange(fracRoughRanges.get(i));
-                d.setRoughPhaserangeRate(roughPhaseRangeRates.get(i));
-                return d;
-            }).collect(Collectors.toMap(RtcmMsmSatelliteData::getSatellite, d -> d, (d1, d2) -> d2));
-
-            // Parse signal data
-            final List<Double> finePseudoranges = IntStream.range(0, nCells).
-                                                  mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
-                                                  boxed().
-                                                  toList();
-            final List<Double> finePhaseranges = IntStream.range(0, nCells).
-                                                 mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Integer> lockTimeIndicators = IntStream.range(0, nCells).
-                                                     map(i -> RtcmDataField.DF407.intValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-            final List<Boolean> halfCycleAmbiguities = IntStream.range(0, nCells).
-                                                       mapToObj(i -> RtcmDataField.DF420.booleanValue(encodedMessage)).
-                                                       toList();
-            final List<Double> cnrs = IntStream.range(0, nCells).
-                                      mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
-                                      boxed().
-                                      toList();
-            final List<Double> finePhaserangeRates = IntStream.range(0, nCells).
-                                                     mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-
-            final List<Pair<SatInSystem, RtcmMsmSignalId>> cellIds = header.convertCellsMask();
-            IntStream.range(0, nCells).mapToObj(i -> {
-                // Get the cell Id
-                final Pair<SatInSystem, RtcmMsmSignalId> cellId = cellIds.get(i);
-
-                // Get the satellite data for this cell
-                final RtcmMsmSatelliteData satData = satellitesData.get(cellId.getFirst());
-
-                // Get the signal data for this cell
-                final RtcmMsmSignalData sigData = new RtcmMsmSignalData();
-                sigData.setSignalId(cellId.getSecond());
-                sigData.setFinePseudorange(finePseudoranges.get(i));
-                sigData.setFinePhaserange(finePhaseranges.get(i));
-                sigData.setLockTimeIndicator(lockTimeIndicators.get(i));
-                sigData.setHalfCycleAmbiguityIndicator(halfCycleAmbiguities.get(i));
-                sigData.setCnr(cnrs.get(i));
-                sigData.setFinePhaserangeRate(finePhaserangeRates.get(i));
-
-                // Merge the satellite and signal data
-                return new RtcmMsmCellData(satData, sigData);
-            }).forEach(cellsData::add);
-
-            return new Rtcm1077(messageNumber, header, cellsData);
         }
     },
 
@@ -956,96 +879,18 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
             final RtcmMsmGlonassHeader header = new RtcmMsmGlonassHeader();
-
-            List<RtcmMsmCellData> cellsData = new ArrayList<>();
-
             header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
             header.setDayOfWeek(RtcmDataField.DF416.intValue(encodedMessage));
             header.setEpochTime(RtcmDataField.DF034.doubleValue(encodedMessage));
-            fillMsm7Message(encodedMessage, header, cellsData);
+            completeMsm7MessageHeader(encodedMessage, header);
 
-            final int nSats = header.getNumberOfSatellites();
-            final int cellsMaskLength = nSats * header.getNumberOfSignals();
-            header.setCellsMask(RtcmDataField.DF396.longValue(encodedMessage, cellsMaskLength));
-            final int nCells = header.getNumberOfCells();
-
-            // Parse satellite data
-            final List<SatInSystem> satellites = header.convertSatellitesMask();
-            final List<Double> intRoughRanges = IntStream.range(0, nSats).
-                                                mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
-                                                boxed().
-                                                toList();
-            final List<Long> extendedSatelliteData = IntStream.range(0, nSats).
-                                                     mapToLong(i -> RtcmDataField.DF419.intValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-            final List<Double> fracRoughRanges = IntStream.range(0, nSats).
-                                                 mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Double> roughPhaseRangeRates = IntStream.range(0, nSats).
-                                                      mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
-                                                      boxed().
-                                                      toList();
-            final Map<SatInSystem, RtcmMsmSatelliteData> satellitesData = IntStream.range(0, nSats).mapToObj(i -> {
-                final RtcmMsmSatelliteData d = new RtcmMsmSatelliteData();
-                d.setSatellite(satellites.get(i));
-                d.setIntMillisRoughRange(intRoughRanges.get(i));
-                d.setExtendedSatelliteData(extendedSatelliteData.get(i));
-                d.setModMillisRoughRange(fracRoughRanges.get(i));
-                d.setRoughPhaserangeRate(roughPhaseRangeRates.get(i));
-                return d;
-            }).collect(Collectors.toMap(RtcmMsmSatelliteData::getSatellite, d -> d, (d1, d2) -> d2));
-
-            // Parse signal data
-            final List<Double> finePseudoranges = IntStream.range(0, nCells).
-                                                  mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
-                                                  boxed().
-                                                  toList();
-            final List<Double> finePhaseranges = IntStream.range(0, nCells).
-                                                 mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Integer> lockTimeIndicators = IntStream.range(0, nCells).
-                                                     map(i -> RtcmDataField.DF407.intValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-            final List<Boolean> halfCycleAmbiguities = IntStream.range(0, nCells).
-                                                       mapToObj(i -> RtcmDataField.DF420.booleanValue(encodedMessage)).
-                                                       toList();
-            final List<Double> cnrs = IntStream.range(0, nCells).
-                                      mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
-                                      boxed().
-                                      toList();
-            final List<Double> finePhaserangeRates = IntStream.range(0, nCells).
-                                                     mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-
-            final List<Pair<SatInSystem, RtcmMsmSignalId>> cellIds = header.convertCellsMask();
-            IntStream.range(0, nCells).mapToObj(i -> {
-                // Get the cell Id
-                final Pair<SatInSystem, RtcmMsmSignalId> cellId = cellIds.get(i);
-
-                // Get the satellite data for this cell
-                final RtcmMsmSatelliteData satData = satellitesData.get(cellId.getFirst());
-
-                // Get the signal data for this cell
-                final RtcmMsmSignalData sigData = new RtcmMsmSignalData();
-                sigData.setSignalId(cellId.getSecond());
-                sigData.setFinePseudorange(finePseudoranges.get(i));
-                sigData.setFinePhaserange(finePhaseranges.get(i));
-                sigData.setLockTimeIndicator(lockTimeIndicators.get(i));
-                sigData.setHalfCycleAmbiguityIndicator(halfCycleAmbiguities.get(i));
-                sigData.setCnr(cnrs.get(i));
-                sigData.setFinePhaserangeRate(finePhaserangeRates.get(i));
-
-                // Merge the satellite and signal data
-                return new RtcmMsmCellData(satData, sigData);
-            }).forEach(cellsData::add);
-
-            return new Rtcm1087(messageNumber, header, cellsData);
+            // parse cells data
+            return new Rtcm1087(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF419.intValue(encodedMessage)));
         }
     },
 
@@ -1054,95 +899,17 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
             final RtcmMsmGalileoHeader header = new RtcmMsmGalileoHeader();
-
-            List<RtcmMsmCellData> cellsData = new ArrayList<>();
-
             header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
             header.setEpochTime(RtcmDataField.DF004.doubleValue(encodedMessage));
-            fillMsm7Message(encodedMessage, header, cellsData);
+            completeMsm7MessageHeader(encodedMessage, header);
 
-            final int nSats = header.getNumberOfSatellites();
-            final int cellsMaskLength = nSats * header.getNumberOfSignals();
-            header.setCellsMask(RtcmDataField.DF396.longValue(encodedMessage, cellsMaskLength));
-            final int nCells = header.getNumberOfCells();
-
-            // Parse satellite data
-            final List<SatInSystem> satellites = header.convertSatellitesMask();
-            final List<Double> intRoughRanges = IntStream.range(0, nSats).
-                                                mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
-                                                boxed().
-                                                toList();
-            final List<Long> extendedSatelliteData = IntStream.range(0, nSats).
-                                                     mapToLong(i -> RtcmDataField.DF001.longValue(encodedMessage, 4)).
-                                                     boxed().
-                                                     toList();
-            final List<Double> fracRoughRanges = IntStream.range(0, nSats).
-                                                 mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Double> roughPhaseRangeRates = IntStream.range(0, nSats).
-                                                      mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
-                                                      boxed().
-                                                      toList();
-            final Map<SatInSystem, RtcmMsmSatelliteData> satellitesData = IntStream.range(0, nSats).mapToObj(i -> {
-                final RtcmMsmSatelliteData d = new RtcmMsmSatelliteData();
-                d.setSatellite(satellites.get(i));
-                d.setIntMillisRoughRange(intRoughRanges.get(i));
-                d.setExtendedSatelliteData(extendedSatelliteData.get(i));
-                d.setModMillisRoughRange(fracRoughRanges.get(i));
-                d.setRoughPhaserangeRate(roughPhaseRangeRates.get(i));
-                return d;
-            }).collect(Collectors.toMap(RtcmMsmSatelliteData::getSatellite, d -> d, (d1, d2) -> d2));
-
-            // Parse signal data
-            final List<Double> finePseudoranges = IntStream.range(0, nCells).
-                                                  mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
-                                                  boxed().
-                                                  toList();
-            final List<Double> finePhaseranges = IntStream.range(0, nCells).
-                                                 mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Integer> lockTimeIndicators = IntStream.range(0, nCells).
-                                                     map(i -> RtcmDataField.DF407.intValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-            final List<Boolean> halfCycleAmbiguities = IntStream.range(0, nCells).
-                                                       mapToObj(i -> RtcmDataField.DF420.booleanValue(encodedMessage)).
-                                                       toList();
-            final List<Double> cnrs = IntStream.range(0, nCells).
-                                      mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
-                                      boxed().
-                                      toList();
-            final List<Double> finePhaserangeRates = IntStream.range(0, nCells).
-                                                     mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-
-            final List<Pair<SatInSystem, RtcmMsmSignalId>> cellIds = header.convertCellsMask();
-            IntStream.range(0, nCells).mapToObj(i -> {
-                // Get the cell Id
-                final Pair<SatInSystem, RtcmMsmSignalId> cellId = cellIds.get(i);
-
-                // Get the satellite data for this cell
-                final RtcmMsmSatelliteData satData = satellitesData.get(cellId.getFirst());
-
-                // Get the signal data for this cell
-                final RtcmMsmSignalData sigData = new RtcmMsmSignalData();
-                sigData.setSignalId(cellId.getSecond());
-                sigData.setFinePseudorange(finePseudoranges.get(i));
-                sigData.setFinePhaserange(finePhaseranges.get(i));
-                sigData.setLockTimeIndicator(lockTimeIndicators.get(i));
-                sigData.setHalfCycleAmbiguityIndicator(halfCycleAmbiguities.get(i));
-                sigData.setCnr(cnrs.get(i));
-                sigData.setFinePhaserangeRate(finePhaserangeRates.get(i));
-
-                // Merge the satellite and signal data
-                return new RtcmMsmCellData(satData, sigData);
-            }).forEach(cellsData::add);
-
-            return new Rtcm1097(messageNumber, header, cellsData);
+            // parse cells data
+            return new Rtcm1097(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
         }
     },
 
@@ -1151,95 +918,18 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
             final RtcmMsmSbasHeader header = new RtcmMsmSbasHeader();
-
-            List<RtcmMsmCellData> cellsData = new ArrayList<>();
-
             header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
             header.setEpochTime(RtcmDataField.DF004.doubleValue(encodedMessage));
-            fillMsm7Message(encodedMessage, header, cellsData);
+            completeMsm7MessageHeader(encodedMessage, header);
 
-            final int nSats = header.getNumberOfSatellites();
-            final int cellsMaskLength = nSats * header.getNumberOfSignals();
-            header.setCellsMask(RtcmDataField.DF396.longValue(encodedMessage, cellsMaskLength));
-            final int nCells = header.getNumberOfCells();
+            // parse cells data
+            return new Rtcm1107(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
 
-            // Parse satellite data
-            final List<SatInSystem> satellites = header.convertSatellitesMask();
-            final List<Double> intRoughRanges = IntStream.range(0, nSats).
-                                                mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
-                                                boxed().
-                                                toList();
-            final List<Long> extendedSatelliteData = IntStream.range(0, nSats).
-                                                     mapToLong(i -> RtcmDataField.DF001.longValue(encodedMessage, 4)).
-                                                     boxed().
-                                                     toList();
-            final List<Double> fracRoughRanges = IntStream.range(0, nSats).
-                                                 mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Double> roughPhaseRangeRates = IntStream.range(0, nSats).
-                                                      mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
-                                                      boxed().
-                                                      toList();
-            final Map<SatInSystem, RtcmMsmSatelliteData> satellitesData = IntStream.range(0, nSats).mapToObj(i -> {
-                final RtcmMsmSatelliteData d = new RtcmMsmSatelliteData();
-                d.setSatellite(satellites.get(i));
-                d.setIntMillisRoughRange(intRoughRanges.get(i));
-                d.setExtendedSatelliteData(extendedSatelliteData.get(i));
-                d.setModMillisRoughRange(fracRoughRanges.get(i));
-                d.setRoughPhaserangeRate(roughPhaseRangeRates.get(i));
-                return d;
-            }).collect(Collectors.toMap(RtcmMsmSatelliteData::getSatellite, d -> d, (d1, d2) -> d2));
-
-            // Parse signal data
-            final List<Double> finePseudoranges = IntStream.range(0, nCells).
-                                                  mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
-                                                  boxed().
-                                                  toList();
-            final List<Double> finePhaseranges = IntStream.range(0, nCells).
-                                                 mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Integer> lockTimeIndicators = IntStream.range(0, nCells).
-                                                     map(i -> RtcmDataField.DF407.intValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-            final List<Boolean> halfCycleAmbiguities = IntStream.range(0, nCells).
-                                                       mapToObj(i -> RtcmDataField.DF420.booleanValue(encodedMessage)).
-                                                       toList();
-            final List<Double> cnrs = IntStream.range(0, nCells).
-                                      mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
-                                      boxed().
-                                      toList();
-            final List<Double> finePhaserangeRates = IntStream.range(0, nCells).
-                                                     mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-
-            final List<Pair<SatInSystem, RtcmMsmSignalId>> cellIds = header.convertCellsMask();
-            IntStream.range(0, nCells).mapToObj(i -> {
-                // Get the cell Id
-                final Pair<SatInSystem, RtcmMsmSignalId> cellId = cellIds.get(i);
-
-                // Get the satellite data for this cell
-                final RtcmMsmSatelliteData satData = satellitesData.get(cellId.getFirst());
-
-                // Get the signal data for this cell
-                final RtcmMsmSignalData sigData = new RtcmMsmSignalData();
-                sigData.setSignalId(cellId.getSecond());
-                sigData.setFinePseudorange(finePseudoranges.get(i));
-                sigData.setFinePhaserange(finePhaseranges.get(i));
-                sigData.setLockTimeIndicator(lockTimeIndicators.get(i));
-                sigData.setHalfCycleAmbiguityIndicator(halfCycleAmbiguities.get(i));
-                sigData.setCnr(cnrs.get(i));
-                sigData.setFinePhaserangeRate(finePhaserangeRates.get(i));
-
-                // Merge the satellite and signal data
-                return new RtcmMsmCellData(satData, sigData);
-            }).forEach(cellsData::add);
-
-            return new Rtcm1107(messageNumber, header, cellsData);
         }
     },
 
@@ -1248,105 +938,18 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
             final RtcmMsmQzssHeader header = new RtcmMsmQzssHeader();
-
-            List<RtcmMsmCellData> cellsData = new ArrayList<>();
-
             header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
             header.setEpochTime(RtcmDataField.DF428.doubleValue(encodedMessage));
-            fillMsm7Message(encodedMessage, header, cellsData);
+            completeMsm7MessageHeader(encodedMessage, header);
 
-            header.setMultipleMessageFlag(RtcmDataField.DF393.booleanValue(encodedMessage));
-            header.setIssueofDataStation(RtcmDataField.DF409.intValue(encodedMessage));
-            RtcmDataField.DF001.longValue(encodedMessage, 7); // Skip 7 reserved bits
-            header.setClockSteeringIndicator(RtcmDataField.DF411.intValue(encodedMessage));
-            header.setExternalClockIndicator(RtcmDataField.DF412.intValue(encodedMessage));
-            header.setDivergenceFreeSmoothingIndicator(RtcmDataField.DF417.booleanValue(encodedMessage));
-            header.setSmoothingInterval(RtcmDataField.DF418.intValue(encodedMessage));
-            header.setSatellitesMask(RtcmDataField.DF394.longValue(encodedMessage));
-            header.setSignalsMask(RtcmDataField.DF395.longValue(encodedMessage));
+            // parse cells data
+            return new Rtcm1117(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
 
-            final int nSats = header.getNumberOfSatellites();
-            final int cellsMaskLength = nSats * header.getNumberOfSignals();
-            header.setCellsMask(RtcmDataField.DF396.longValue(encodedMessage, cellsMaskLength));
-            final int nCells = header.getNumberOfCells();
-
-            // Parse satellite data
-            final List<SatInSystem> satellites = header.convertSatellitesMask();
-            final List<Double> intRoughRanges = IntStream.range(0, nSats).
-                                                mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
-                                                boxed().
-                                                toList();
-            final List<Long> extendedSatelliteData = IntStream.range(0, nSats).
-                                                     mapToLong(i -> RtcmDataField.DF001.longValue(encodedMessage, 4)).
-                                                     boxed().
-                                                     toList();
-            final List<Double> fracRoughRanges = IntStream.range(0, nSats).
-                                                 mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Double> roughPhaseRangeRates = IntStream.range(0, nSats).
-                                                      mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
-                                                      boxed().
-                                                      toList();
-            final Map<SatInSystem, RtcmMsmSatelliteData> satellitesData = IntStream.range(0, nSats).mapToObj(i -> {
-                final RtcmMsmSatelliteData d = new RtcmMsmSatelliteData();
-                d.setSatellite(satellites.get(i));
-                d.setIntMillisRoughRange(intRoughRanges.get(i));
-                d.setExtendedSatelliteData(extendedSatelliteData.get(i));
-                d.setModMillisRoughRange(fracRoughRanges.get(i));
-                d.setRoughPhaserangeRate(roughPhaseRangeRates.get(i));
-                return d;
-            }).collect(Collectors.toMap(RtcmMsmSatelliteData::getSatellite, d -> d, (d1, d2) -> d2));
-
-            // Parse signal data
-            final List<Double> finePseudoranges = IntStream.range(0, nCells).
-                                                  mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
-                                                  boxed().
-                                                  toList();
-            final List<Double> finePhaseranges = IntStream.range(0, nCells).
-                                                 mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Integer> lockTimeIndicators = IntStream.range(0, nCells).
-                                                     map(i -> RtcmDataField.DF407.intValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-            final List<Boolean> halfCycleAmbiguities = IntStream.range(0, nCells).
-                                                       mapToObj(i -> RtcmDataField.DF420.booleanValue(encodedMessage)).
-                                                       toList();
-            final List<Double> cnrs = IntStream.range(0, nCells).
-                                      mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
-                                      boxed().
-                                      toList();
-            final List<Double> finePhaserangeRates = IntStream.range(0, nCells).
-                                                     mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-
-            final List<Pair<SatInSystem, RtcmMsmSignalId>> cellIds = header.convertCellsMask();
-            IntStream.range(0, nCells).mapToObj(i -> {
-                // Get the cell Id
-                final Pair<SatInSystem, RtcmMsmSignalId> cellId = cellIds.get(i);
-
-                // Get the satellite data for this cell
-                final RtcmMsmSatelliteData satData = satellitesData.get(cellId.getFirst());
-
-                // Get the signal data for this cell
-                final RtcmMsmSignalData sigData = new RtcmMsmSignalData();
-                sigData.setSignalId(cellId.getSecond());
-                sigData.setFinePseudorange(finePseudoranges.get(i));
-                sigData.setFinePhaserange(finePhaseranges.get(i));
-                sigData.setLockTimeIndicator(lockTimeIndicators.get(i));
-                sigData.setHalfCycleAmbiguityIndicator(halfCycleAmbiguities.get(i));
-                sigData.setCnr(cnrs.get(i));
-                sigData.setFinePhaserangeRate(finePhaserangeRates.get(i));
-
-                // Merge the satellite and signal data
-                return new RtcmMsmCellData(satData, sigData);
-            }).forEach(cellsData::add);
-
-            return new Rtcm1117(messageNumber, header, cellsData);
         }
     },
 
@@ -1355,95 +958,18 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
             final RtcmMsmBeidouHeader header = new RtcmMsmBeidouHeader();
-
-            List<RtcmMsmCellData> cellsData = new ArrayList<>();
-
             header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
             header.setEpochTime(RtcmDataField.DF427.doubleValue(encodedMessage));
-            fillMsm7Message(encodedMessage, header, cellsData);
+            completeMsm7MessageHeader(encodedMessage, header);
 
-             final int nSats = header.getNumberOfSatellites();
-            final int cellsMaskLength = nSats * header.getNumberOfSignals();
-            header.setCellsMask(RtcmDataField.DF396.longValue(encodedMessage, cellsMaskLength));
-            final int nCells = header.getNumberOfCells();
+            // parse cells data
+            return new Rtcm1127(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
 
-            // Parse satellite data
-            final List<SatInSystem> satellites = header.convertSatellitesMask();
-            final List<Double> intRoughRanges = IntStream.range(0, nSats).
-                                                mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
-                                                boxed().
-                                                toList();
-            final List<Long> extendedSatelliteData = IntStream.range(0, nSats).
-                                                     mapToLong(i -> RtcmDataField.DF001.longValue(encodedMessage, 4)).
-                                                     boxed().
-                                                     toList();
-            final List<Double> fracRoughRanges = IntStream.range(0, nSats).
-                                                 mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Double> roughPhaseRangeRates = IntStream.range(0, nSats).
-                                                      mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
-                                                      boxed().
-                                                      toList();
-            final Map<SatInSystem, RtcmMsmSatelliteData> satellitesData = IntStream.range(0, nSats).mapToObj(i -> {
-                final RtcmMsmSatelliteData d = new RtcmMsmSatelliteData();
-                d.setSatellite(satellites.get(i));
-                d.setIntMillisRoughRange(intRoughRanges.get(i));
-                d.setExtendedSatelliteData(extendedSatelliteData.get(i));
-                d.setModMillisRoughRange(fracRoughRanges.get(i));
-                d.setRoughPhaserangeRate(roughPhaseRangeRates.get(i));
-                return d;
-            }).collect(Collectors.toMap(RtcmMsmSatelliteData::getSatellite, d -> d, (d1, d2) -> d2));
-
-            // Parse signal data
-            final List<Double> finePseudoranges = IntStream.range(0, nCells).
-                                                  mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
-                                                  boxed().
-                                                  toList();
-            final List<Double> finePhaseranges = IntStream.range(0, nCells).
-                                                 mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
-            final List<Integer> lockTimeIndicators = IntStream.range(0, nCells).
-                                                     map(i -> RtcmDataField.DF407.intValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-            final List<Boolean> halfCycleAmbiguities = IntStream.range(0, nCells).
-                                                       mapToObj(i -> RtcmDataField.DF420.booleanValue(encodedMessage)).
-                                                       toList();
-            final List<Double> cnrs = IntStream.range(0, nCells).
-                                      mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
-                                      boxed().
-                                      toList();
-            final List<Double> finePhaserangeRates = IntStream.range(0, nCells).
-                                                     mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
-                                                     boxed().
-                                                     toList();
-
-            final List<Pair<SatInSystem, RtcmMsmSignalId>> cellIds = header.convertCellsMask();
-            IntStream.range(0, nCells).mapToObj(i -> {
-                // Get the cell Id
-                final Pair<SatInSystem, RtcmMsmSignalId> cellId = cellIds.get(i);
-
-                // Get the satellite data for this cell
-                final RtcmMsmSatelliteData satData = satellitesData.get(cellId.getFirst());
-
-                // Get the signal data for this cell
-                final RtcmMsmSignalData sigData = new RtcmMsmSignalData();
-                sigData.setSignalId(cellId.getSecond());
-                sigData.setFinePseudorange(finePseudoranges.get(i));
-                sigData.setFinePhaserange(finePhaseranges.get(i));
-                sigData.setLockTimeIndicator(lockTimeIndicators.get(i));
-                sigData.setHalfCycleAmbiguityIndicator(halfCycleAmbiguities.get(i));
-                sigData.setCnr(cnrs.get(i));
-                sigData.setFinePhaserangeRate(finePhaserangeRates.get(i));
-
-                // Merge the satellite and signal data
-                return new RtcmMsmCellData(satData, sigData);
-            }).forEach(cellsData::add);
-
-            return new Rtcm1127(messageNumber, header, cellsData);
         }
     },
 
@@ -1707,16 +1233,14 @@ public enum RtcmMessageType implements MessageType {
 
     }
 
-    /** Fill MSM7 message.
+    /** Complete MSM7 message header.
      * @param encodedMessage encoded message
-     * @param header header to fill
-     * @param cells list of MSM cells associated with this message to fill
+     * @param header header to complete
      */
-    private static void fillMsm7Message(final EncodedMessage encodedMessage,
-                                        final RtcmMsmHeader header,
-                                        final List<RtcmMsmCellData> cells) {
+    private static void completeMsm7MessageHeader(final EncodedMessage encodedMessage,
+                                                  final RtcmMsmHeader header) {
 
-        // Parse header
+        // Parse final part of header
         header.setMultipleMessageFlag(RtcmDataField.DF393.booleanValue(encodedMessage));
         header.setIssueofDataStation(RtcmDataField.DF409.intValue(encodedMessage));
         RtcmDataField.DF001.longValue(encodedMessage, 7); // Skip 7 reserved bits
@@ -1726,6 +1250,102 @@ public enum RtcmMessageType implements MessageType {
         header.setSmoothingInterval(RtcmDataField.DF418.intValue(encodedMessage));
         header.setSatellitesMask(RtcmDataField.DF394.longValue(encodedMessage));
         header.setSignalsMask(RtcmDataField.DF395.longValue(encodedMessage));
+
+    }
+
+    /** Parse MSM7 message cells.
+     * @param encodedMessage encoded message
+     * @param header completed header
+     * @param extendedSatFunction function to extract extended satellite data
+     * @return MSM cells associated with this message
+     */
+    private static List<RtcmMsmCellData> parseMsm7MessageCells(final EncodedMessage encodedMessage,
+                                                               final RtcmMsmHeader header,
+                                                               final IntToLongFunction extendedSatFunction) {
+
+
+        final int nSats = header.getNumberOfSatellites();
+        final int cellsMaskLength = nSats * header.getNumberOfSignals();
+        header.setCellsMask(RtcmDataField.DF396.longValue(encodedMessage, cellsMaskLength));
+        final int nCells = header.getNumberOfCells();
+
+        // Parse satellite data
+        final List<SatInSystem> satellites = header.convertSatellitesMask();
+        final List<Double> intRoughRanges = IntStream.range(0, nSats).
+                                            mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
+                                                boxed().
+                                                toList();
+        final List<Long> extendedSatelliteData = IntStream.range(0, nSats).
+                                                 mapToLong(extendedSatFunction).
+                                                 boxed().
+                                                 toList();
+        final List<Double> fracRoughRanges = IntStream.range(0, nSats).
+                                             mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
+                                             boxed().
+                                             toList();
+        final List<Double> roughPhaseRangeRates = IntStream.range(0, nSats).
+                                                  mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
+                                                  boxed().
+                                                  toList();
+        final Map<SatInSystem, RtcmMsmSatelliteData> satellitesData = IntStream.range(0, nSats).mapToObj(i -> {
+            final RtcmMsmSatelliteData d = new RtcmMsmSatelliteData();
+            d.setSatellite(satellites.get(i));
+            d.setIntMillisRoughRange(intRoughRanges.get(i));
+            d.setExtendedSatelliteData(extendedSatelliteData.get(i));
+            d.setModMillisRoughRange(fracRoughRanges.get(i));
+            d.setRoughPhaserangeRate(roughPhaseRangeRates.get(i));
+            return d;
+        }).collect(Collectors.toMap(RtcmMsmSatelliteData::getSatellite, d -> d, (d1, d2) -> d2));
+
+        // Parse signal data
+        final List<Double> finePseudoranges = IntStream.range(0, nCells).
+                                              mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
+                                              boxed().
+                                              toList();
+        final List<Double> finePhaseranges = IntStream.range(0, nCells).
+                                             mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
+                                             boxed().
+                                             toList();
+        final List<Integer> lockTimeIndicators = IntStream.range(0, nCells).
+                                                 map(i -> RtcmDataField.DF407.intValue(encodedMessage)).
+                                                 boxed().
+                                                 toList();
+        final List<Boolean> halfCycleAmbiguities = IntStream.range(0, nCells).
+                                                   mapToObj(i -> RtcmDataField.DF420.booleanValue(encodedMessage)).
+                                                   toList();
+        final List<Double> cnrs = IntStream.range(0, nCells).
+                                  mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
+                                  boxed().
+                                  toList();
+        final List<Double> finePhaserangeRates = IntStream.range(0, nCells).
+                                                 mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
+                                                 boxed().
+                                                 toList();
+
+        final List<Pair<SatInSystem, RtcmMsmSignalId>> cellIds = header.convertCellsMask();
+
+        final List<RtcmMsmCellData> cells = IntStream.range(0, nCells).mapToObj(i -> {
+            // Get the cell Id
+            final Pair<SatInSystem, RtcmMsmSignalId> cellId = cellIds.get(i);
+
+            // Get the satellite data for this cell
+            final RtcmMsmSatelliteData satData = satellitesData.get(cellId.getFirst());
+
+            // Get the signal data for this cell
+            final RtcmMsmSignalData sigData = new RtcmMsmSignalData();
+            sigData.setSignalId(cellId.getSecond());
+            sigData.setFinePseudorange(finePseudoranges.get(i));
+            sigData.setFinePhaserange(finePhaseranges.get(i));
+            sigData.setLockTimeIndicator(lockTimeIndicators.get(i));
+            sigData.setHalfCycleAmbiguityIndicator(halfCycleAmbiguities.get(i));
+            sigData.setCnr(cnrs.get(i));
+            sigData.setFinePhaserangeRate(finePhaserangeRates.get(i));
+
+            // Merge the satellite and signal data
+            return new RtcmMsmCellData(satData, sigData);
+        }).toList();
+
+        return cells;
 
     }
 
