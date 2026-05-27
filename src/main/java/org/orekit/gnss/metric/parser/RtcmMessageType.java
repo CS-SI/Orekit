@@ -20,11 +20,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntToLongFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.gnss.metric.messages.common.AccuracyProvider;
@@ -58,6 +63,25 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045Data;
+import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1046;
+import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1046Data;
+import org.orekit.gnss.metric.messages.rtcm.msm.Rtcm1077;
+import org.orekit.gnss.metric.messages.rtcm.msm.Rtcm1087;
+import org.orekit.gnss.metric.messages.rtcm.msm.Rtcm1097;
+import org.orekit.gnss.metric.messages.rtcm.msm.Rtcm1107;
+import org.orekit.gnss.metric.messages.rtcm.msm.Rtcm1117;
+import org.orekit.gnss.metric.messages.rtcm.msm.Rtcm1127;
+import org.orekit.gnss.metric.messages.rtcm.msm.RtcmMsmCellData;
+import org.orekit.gnss.metric.messages.rtcm.msm.RtcmMsmSatelliteData;
+import org.orekit.gnss.metric.messages.rtcm.msm.RtcmMsmSignalData;
+import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmBeidouHeader;
+import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmGalileoHeader;
+import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmGlonassHeader;
+import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmGpsHeader;
+import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmHeader;
+import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmQzssHeader;
+import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmSbasHeader;
+import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmSignalId;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
@@ -69,6 +93,7 @@ import org.orekit.time.TimeScales;
 *
 * @author Luc Maisonobe
 * @author Bryan Cazabonne
+* @author Nathan Schiffmacher
 *
 * @see "RTCM STANDARD 10403.3, DIFFERENTIAL GNSS (GLOBAL NAVIGATION SATELLITE SYSTEMS) SERVICES – VERSION 3, October 2016."
 *
@@ -389,25 +414,7 @@ public enum RtcmMessageType implements MessageType {
             galileoNavMessage.setPRN(galileoId);
             galileoNavMessage.setIDot(RtcmDataField.DF292.doubleValue(encodedMessage));
             rtcm1045Data.setGalileoToc(RtcmDataField.DF293.doubleValue(encodedMessage));
-            galileoNavMessage.setAf2(RtcmDataField.DF294.doubleValue(encodedMessage));
-            galileoNavMessage.setAf1(RtcmDataField.DF295.doubleValue(encodedMessage));
-            galileoNavMessage.setAf0(RtcmDataField.DF296.doubleValue(encodedMessage));
-            galileoNavMessage.setCrs(RtcmDataField.DF297.doubleValue(encodedMessage));
-            galileoNavMessage.setDeltaN0(RtcmDataField.DF298.doubleValue(encodedMessage));
-            galileoNavMessage.setM0(RtcmDataField.DF299.doubleValue(encodedMessage));
-            galileoNavMessage.setCuc(RtcmDataField.DF300.doubleValue(encodedMessage));
-            galileoNavMessage.setE(RtcmDataField.DF301.doubleValue(encodedMessage));
-            galileoNavMessage.setCus(RtcmDataField.DF302.doubleValue(encodedMessage));
-            galileoNavMessage.setSqrtA(RtcmDataField.DF303.doubleValue(encodedMessage));
-            galileoNavMessage.setTime(RtcmDataField.DF304.doubleValue(encodedMessage));
-            galileoNavMessage.setCic(RtcmDataField.DF305.doubleValue(encodedMessage));
-            galileoNavMessage.setOmega0(RtcmDataField.DF306.doubleValue(encodedMessage));
-            galileoNavMessage.setCis(RtcmDataField.DF307.doubleValue(encodedMessage));
-            galileoNavMessage.setI0(RtcmDataField.DF308.doubleValue(encodedMessage));
-            galileoNavMessage.setCrc(RtcmDataField.DF309.doubleValue(encodedMessage));
-            galileoNavMessage.setPa(RtcmDataField.DF310.doubleValue(encodedMessage));
-            galileoNavMessage.setOmegaDot(RtcmDataField.DF311.doubleValue(encodedMessage));
-            galileoNavMessage.setBGDE1E5a(RtcmDataField.DF312.doubleValue(encodedMessage));
+            fillGalileoNavigationMessage(encodedMessage, galileoNavMessage);
             galileoNavMessage.setSvHealth(RtcmDataField.DF314.intValue(encodedMessage));
 
             // Set the navigation message
@@ -419,6 +426,66 @@ public enum RtcmMessageType implements MessageType {
             // Return the parsed message
             return new Rtcm1045(1045, rtcm1045Data);
 
+        }
+
+    },
+
+    /** Galileo I/NAV Ephemeris message. */
+    RTCM_1046("1046") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage,
+                                   final int messageNumber,
+                                   final TimeScales timeScales) {
+
+            // Initialize data container and navigation message
+            final Rtcm1046Data             rtcm1046Data      = new Rtcm1046Data();
+            final GalileoNavigationMessage galileoNavMessage =
+                new GalileoNavigationMessage(timeScales, SatelliteSystem.GALILEO,
+                                             GalileoNavigationMessage.INAV);
+
+            // Set the satellite ID
+            final int galileoId = RtcmDataField.DF252.intValue(encodedMessage);
+            rtcm1046Data.setSatelliteID(galileoId);
+
+            // Week number
+            final int galileoWeekNumber = RtcmDataField.DF289.intValue(encodedMessage);
+            galileoNavMessage.setWeek(galileoWeekNumber);
+
+            // IODNav
+            galileoNavMessage.setIODNav(RtcmDataField.DF290.intValue(encodedMessage));
+
+            // Accuracy provider
+            final AccuracyProvider galileoProvider = new SignalInSpaceAccuracy(RtcmDataField.DF286.intValue(encodedMessage));
+            rtcm1046Data.setAccuracyProvider(galileoProvider);
+            galileoNavMessage.setSisa(galileoProvider.getAccuracy());
+
+            // Fill navigation message
+            galileoNavMessage.setPRN(galileoId);
+            galileoNavMessage.setIDot(RtcmDataField.DF292.doubleValue(encodedMessage));
+            rtcm1046Data.setGalileoToc(RtcmDataField.DF293.doubleValue(encodedMessage));
+            fillGalileoNavigationMessage(encodedMessage, galileoNavMessage);
+            galileoNavMessage.setBGDE5bE1(RtcmDataField.DF313.doubleValue(encodedMessage));
+
+            final int e5bSignalHealthStatus = RtcmDataField.DF316.intValue(encodedMessage);
+            final int e5bDataValidityStatus = RtcmDataField.DF317.intValue(encodedMessage);
+            final int e1bSignalHealthStatus = RtcmDataField.DF287.intValue(encodedMessage);
+            final int e1bDataValidityStatus = RtcmDataField.DF288.intValue(encodedMessage);
+            final int svHealth =
+                ((e5bSignalHealthStatus & 0x3) << 7) | // bits 7-8 (E5b Health Status)
+                ((e5bDataValidityStatus & 0x1) << 6) | // bit 6    (E5b Data Validity Status)
+                                                       // bits 4-5 (E5a Health Status: Not applicable)
+                                                       // bit 3    (E5a Data Validity Status: Not applicable)
+                ((e1bSignalHealthStatus & 0x3) << 1) | // bits 1-2 (E1B Health Status)
+                ((e1bDataValidityStatus & 0x1) << 0);  // bit 0    (E1B Data Validity Status)
+            galileoNavMessage.setSvHealth(svHealth);
+
+            // Set the navigation message
+            rtcm1046Data.setGalileoNavigationMessage(galileoNavMessage);
+
+            // Return the parsed message
+            return new Rtcm1046(1046, rtcm1046Data);
         }
 
     },
@@ -787,6 +854,125 @@ public enum RtcmMessageType implements MessageType {
 
     },
 
+    /** Type 7 Multiple Signal Message for GPS. */
+    RTCM_MSM7_1077("1077") {
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
+            final RtcmMsmGpsHeader header = new RtcmMsmGpsHeader();
+            header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
+            header.setEpochTime(RtcmDataField.DF004.doubleValue(encodedMessage));
+            completeMsm7MessageHeader(encodedMessage, header);
+
+            // parse cells data
+            return new Rtcm1077(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
+
+        }
+    },
+
+    /** Type 7 Multiple Signal Message for Glonass. */
+    RTCM_MSM7_1087("1087") {
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
+            final RtcmMsmGlonassHeader header = new RtcmMsmGlonassHeader();
+            header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
+            header.setDayOfWeek(RtcmDataField.DF416.intValue(encodedMessage));
+            header.setEpochTime(RtcmDataField.DF034.doubleValue(encodedMessage));
+            completeMsm7MessageHeader(encodedMessage, header);
+
+            // parse cells data
+            return new Rtcm1087(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF419.intValue(encodedMessage)));
+        }
+    },
+
+    /** Type 7 Multiple Signal Message for Galileo. */
+    RTCM_MSM7_1097("1097") {
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
+            final RtcmMsmGalileoHeader header = new RtcmMsmGalileoHeader();
+            header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
+            header.setEpochTime(RtcmDataField.DF004.doubleValue(encodedMessage));
+            completeMsm7MessageHeader(encodedMessage, header);
+
+            // parse cells data
+            return new Rtcm1097(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
+        }
+    },
+
+    /** Type 7 Multiple Signal Message for SBAS. */
+    RTCM_MSM7_1107("1107") {
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
+            final RtcmMsmSbasHeader header = new RtcmMsmSbasHeader();
+            header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
+            header.setEpochTime(RtcmDataField.DF004.doubleValue(encodedMessage));
+            completeMsm7MessageHeader(encodedMessage, header);
+
+            // parse cells data
+            return new Rtcm1107(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
+
+        }
+    },
+
+    /** Type 7 Multiple Signal Message for QZSS. */
+    RTCM_MSM7_1117("1117") {
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
+            final RtcmMsmQzssHeader header = new RtcmMsmQzssHeader();
+            header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
+            header.setEpochTime(RtcmDataField.DF428.doubleValue(encodedMessage));
+            completeMsm7MessageHeader(encodedMessage, header);
+
+            // parse cells data
+            return new Rtcm1117(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
+
+        }
+    },
+
+    /** Type 7 Multiple Signal Message for Beidou. */
+    RTCM_MSM7_1127("1127") {
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber, final TimeScales timeScales) {
+
+            // parse header
+            final RtcmMsmBeidouHeader header = new RtcmMsmBeidouHeader();
+            header.setReferenceStation(RtcmDataField.DF003.stringValue(encodedMessage, 0));
+            header.setEpochTime(RtcmDataField.DF427.doubleValue(encodedMessage));
+            completeMsm7MessageHeader(encodedMessage, header);
+
+            // parse cells data
+            return new Rtcm1127(messageNumber, header,
+                                parseMsm7MessageCells(encodedMessage, header,
+                                                      i -> RtcmDataField.DF001.longValue(encodedMessage, 4)));
+
+        }
+    },
+
     /** Galileo Orbit Correction Message. */
     RTCM_1240("1240") {
 
@@ -1011,6 +1197,156 @@ public enum RtcmMessageType implements MessageType {
         }
         // No match found
         throw new OrekitException(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, rtcmNumber);
+    }
+
+    /** Fill Galileo message.
+     * @param encodedMessage encoded message
+     * @param galileoNavMessage message to fill
+     */
+    private static void fillGalileoNavigationMessage(final EncodedMessage encodedMessage,
+                                                     final GalileoNavigationMessage galileoNavMessage) {
+
+        // clock
+        galileoNavMessage.setAf2(RtcmDataField.DF294.doubleValue(encodedMessage));
+        galileoNavMessage.setAf1(RtcmDataField.DF295.doubleValue(encodedMessage));
+        galileoNavMessage.setAf0(RtcmDataField.DF296.doubleValue(encodedMessage));
+
+        // orbit
+        galileoNavMessage.setCrs(RtcmDataField.DF297.doubleValue(encodedMessage));
+        galileoNavMessage.setDeltaN0(RtcmDataField.DF298.doubleValue(encodedMessage));
+        galileoNavMessage.setM0(RtcmDataField.DF299.doubleValue(encodedMessage));
+        galileoNavMessage.setCuc(RtcmDataField.DF300.doubleValue(encodedMessage));
+        galileoNavMessage.setE(RtcmDataField.DF301.doubleValue(encodedMessage));
+        galileoNavMessage.setCus(RtcmDataField.DF302.doubleValue(encodedMessage));
+        galileoNavMessage.setSqrtA(RtcmDataField.DF303.doubleValue(encodedMessage));
+        galileoNavMessage.setTime(RtcmDataField.DF304.doubleValue(encodedMessage));
+        galileoNavMessage.setCic(RtcmDataField.DF305.doubleValue(encodedMessage));
+        galileoNavMessage.setOmega0(RtcmDataField.DF306.doubleValue(encodedMessage));
+        galileoNavMessage.setCis(RtcmDataField.DF307.doubleValue(encodedMessage));
+        galileoNavMessage.setI0(RtcmDataField.DF308.doubleValue(encodedMessage));
+        galileoNavMessage.setCrc(RtcmDataField.DF309.doubleValue(encodedMessage));
+        galileoNavMessage.setPa(RtcmDataField.DF310.doubleValue(encodedMessage));
+        galileoNavMessage.setOmegaDot(RtcmDataField.DF311.doubleValue(encodedMessage));
+
+        // bias
+        galileoNavMessage.setBGDE1E5a(RtcmDataField.DF312.doubleValue(encodedMessage));
+
+    }
+
+    /** Complete MSM7 message header.
+     * @param encodedMessage encoded message
+     * @param header header to complete
+     */
+    private static void completeMsm7MessageHeader(final EncodedMessage encodedMessage,
+                                                  final RtcmMsmHeader header) {
+
+        // Parse final part of header
+        header.setMultipleMessageFlag(RtcmDataField.DF393.booleanValue(encodedMessage));
+        header.setIssueofDataStation(RtcmDataField.DF409.intValue(encodedMessage));
+        RtcmDataField.DF001.longValue(encodedMessage, 7); // Skip 7 reserved bits
+        header.setClockSteeringIndicator(RtcmDataField.DF411.intValue(encodedMessage));
+        header.setExternalClockIndicator(RtcmDataField.DF412.intValue(encodedMessage));
+        header.setDivergenceFreeSmoothingIndicator(RtcmDataField.DF417.booleanValue(encodedMessage));
+        header.setSmoothingInterval(RtcmDataField.DF418.intValue(encodedMessage));
+        header.setSatellitesMask(RtcmDataField.DF394.longValue(encodedMessage));
+        header.setSignalsMask(RtcmDataField.DF395.longValue(encodedMessage));
+
+    }
+
+    /** Parse MSM7 message cells.
+     * @param encodedMessage encoded message
+     * @param header completed header
+     * @param extendedSatFunction function to extract extended satellite data
+     * @return MSM cells associated with this message
+     */
+    private static List<RtcmMsmCellData> parseMsm7MessageCells(final EncodedMessage encodedMessage,
+                                                               final RtcmMsmHeader header,
+                                                               final IntToLongFunction extendedSatFunction) {
+
+
+        final int nSats = header.getNumberOfSatellites();
+        final int cellsMaskLength = nSats * header.getNumberOfSignals();
+        header.setCellsMask(RtcmDataField.DF396.longValue(encodedMessage, cellsMaskLength));
+        final int nCells = header.getNumberOfCells();
+
+        // Parse satellite data
+        final List<SatInSystem> satellites = header.convertSatellitesMask();
+        final List<Double> intRoughRanges = IntStream.range(0, nSats).
+                                            mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
+                                                boxed().
+                                                toList();
+        final List<Long> extendedSatelliteData = IntStream.range(0, nSats).
+                                                 mapToLong(extendedSatFunction).
+                                                 boxed().
+                                                 toList();
+        final List<Double> fracRoughRanges = IntStream.range(0, nSats).
+                                             mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
+                                             boxed().
+                                             toList();
+        final List<Double> roughPhaseRangeRates = IntStream.range(0, nSats).
+                                                  mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
+                                                  boxed().
+                                                  toList();
+        final Map<SatInSystem, RtcmMsmSatelliteData> satellitesData = IntStream.range(0, nSats).mapToObj(i -> {
+            final RtcmMsmSatelliteData d = new RtcmMsmSatelliteData();
+            d.setSatellite(satellites.get(i));
+            d.setIntMillisRoughRange(intRoughRanges.get(i));
+            d.setExtendedSatelliteData(extendedSatelliteData.get(i));
+            d.setModMillisRoughRange(fracRoughRanges.get(i));
+            d.setRoughPhaserangeRate(roughPhaseRangeRates.get(i));
+            return d;
+        }).collect(Collectors.toMap(RtcmMsmSatelliteData::getSatellite, d -> d, (d1, d2) -> d2));
+
+        // Parse signal data
+        final List<Double> finePseudoranges = IntStream.range(0, nCells).
+                                              mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
+                                              boxed().
+                                              toList();
+        final List<Double> finePhaseranges = IntStream.range(0, nCells).
+                                             mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
+                                             boxed().
+                                             toList();
+        final List<Integer> lockTimeIndicators = IntStream.range(0, nCells).
+                                                 map(i -> RtcmDataField.DF407.intValue(encodedMessage)).
+                                                 boxed().
+                                                 toList();
+        final List<Boolean> halfCycleAmbiguities = IntStream.range(0, nCells).
+                                                   mapToObj(i -> RtcmDataField.DF420.booleanValue(encodedMessage)).
+                                                   toList();
+        final List<Double> cnrs = IntStream.range(0, nCells).
+                                  mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
+                                  boxed().
+                                  toList();
+        final List<Double> finePhaserangeRates = IntStream.range(0, nCells).
+                                                 mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
+                                                 boxed().
+                                                 toList();
+
+        final List<Pair<SatInSystem, RtcmMsmSignalId>> cellIds = header.convertCellsMask();
+
+        final List<RtcmMsmCellData> cells = IntStream.range(0, nCells).mapToObj(i -> {
+            // Get the cell Id
+            final Pair<SatInSystem, RtcmMsmSignalId> cellId = cellIds.get(i);
+
+            // Get the satellite data for this cell
+            final RtcmMsmSatelliteData satData = satellitesData.get(cellId.getFirst());
+
+            // Get the signal data for this cell
+            final RtcmMsmSignalData sigData = new RtcmMsmSignalData();
+            sigData.setSignalId(cellId.getSecond());
+            sigData.setFinePseudorange(finePseudoranges.get(i));
+            sigData.setFinePhaserange(finePhaseranges.get(i));
+            sigData.setLockTimeIndicator(lockTimeIndicators.get(i));
+            sigData.setHalfCycleAmbiguityIndicator(halfCycleAmbiguities.get(i));
+            sigData.setCnr(cnrs.get(i));
+            sigData.setFinePhaserangeRate(finePhaserangeRates.get(i));
+
+            // Merge the satellite and signal data
+            return new RtcmMsmCellData(satData, sigData);
+        }).toList();
+
+        return cells;
+
     }
 
 }

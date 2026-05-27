@@ -58,6 +58,9 @@ public enum DataType {
     /** 32 bits. */
     BIT_32(m -> m.extractBits(32)),
 
+    /** 64 bits. */
+    BIT_64(m -> m.extractBits(64)),
+
     /** 6 bits signed integer. */
     INT_6(m -> {
         final long msb = 0x20l;

@@ -43,6 +43,27 @@ public interface DataField {
         throw new OrekitInternalError(null);
     }
 
+    /**
+     * Get the value of the field as a long.
+     * @param message message containing the data
+     * @return long value of the field
+     */
+    default long longValue(final EncodedMessage message) {
+        // this method should be overwritten
+        throw new OrekitInternalError(null);
+    }
+
+    /**
+     * Get the value of the field as a long.
+     * @param message message containing the data
+     * @param n number of bits to decode
+     * @return long value of the field
+     */
+    default long longValue(final EncodedMessage message, int n) {
+        // this method should be overwritten
+        throw new OrekitInternalError(null);
+    }
+
     /** Get the value of the field as a double.
      * @param message message containing the data
      * @return double value of the field

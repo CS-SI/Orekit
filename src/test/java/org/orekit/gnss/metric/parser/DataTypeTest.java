@@ -635,7 +635,7 @@ public class DataTypeTest {
 
     @Test
     public void testNumber() {
-        Assertions.assertEquals(68, DataType.values().length);
+        Assertions.assertEquals(69, DataType.values().length);
     }
 
     private void check(DataType dataType, long rawMessage, Long expected) {

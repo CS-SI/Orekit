@@ -66,7 +66,7 @@ public abstract class AbstractEncodedMessage implements EncodedMessage {
     public long extractBits(final int n) {
 
         // safety check
-        if (n > 63) {
+        if (n > 64) {
             throw new OrekitException(OrekitMessages.TOO_LARGE_DATA_TYPE, n);
         }
 

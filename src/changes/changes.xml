@@ -20,7 +20,10 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
-          <action dev="serrof" type="ad" issue="1956">
+          <action dev="luc" type="add" issue="1960" due-to="Nathan Schiffmacher">
+              Added support for RTCM MSM7 messages.
+          </action>
+          <action dev="serrof" type="add" issue="1956">
               Add stand-alone Keplerian element converter.
           </action>
           <action dev="luc" type="fix" issue="1961">

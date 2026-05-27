@@ -195,7 +195,7 @@ public class NtripClientTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, oe.getSpecifier());
-            Assertions.assertEquals("1046", oe.getParts()[0]);
+            Assertions.assertEquals("1043", oe.getParts()[0]);
         }
     }
 

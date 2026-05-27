@@ -30,6 +30,9 @@ public class Units {
     /** Semi-circles units. */
     public static final Unit SEMI_CIRCLE = Unit.RADIAN.scale("sc", GNSSConstants.GNSS_PI);
 
+    /** Milliseconds units. */
+    public static final Unit MS = Unit.parse("ms");
+
     /** Nanoseconds units. */
     public static final Unit NS = Unit.parse("ns");
 

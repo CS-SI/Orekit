@@ -1,4 +1,4 @@
-/* Copyright 2002-2026 CS GROUP
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,34 +17,19 @@
 package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
 /**
- * Container for RTCM 1045 data.
- * @author Bryan Cazabonne
- * @since 11.0
+ * RTCM 1046 message: Galileo I/NAV Satellite Ephemeris Data.
+ * @author Nathan Schiffmacher
+ * @since 14.0
  */
-public class Rtcm1045Data extends Rtcm1046Data {
-
-    /** Galileo NAV Data Validity Status. */
-    private int galileoDataValidityStatus;
-
-    /** Constructor. */
-    public Rtcm1045Data() {
-        // Nothing to do ...
-    }
+public class Rtcm1046 extends RtcmEphemerisMessage<Rtcm1046Data> {
 
     /**
-     * Get the Galileo data validity status.
-     * @return the Galileo data validity status
+     * Constructor.
+     * @param typeCode message number
+     * @param rtcm1046Data RTCM 1046 message data
      */
-    public int getGalileoDataValidityStatus() {
-        return galileoDataValidityStatus;
-    }
-
-    /**
-     * Set the Galileo data validity status.
-     * @param galileoDataValidityStatus the validity status to set
-     */
-    public void setGalileoDataValidityStatus(final int galileoDataValidityStatus) {
-        this.galileoDataValidityStatus = galileoDataValidityStatus;
+    public Rtcm1046(final int typeCode, final Rtcm1046Data rtcm1046Data) {
+        super(typeCode, rtcm1046Data);
     }
 
 }
