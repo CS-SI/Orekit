@@ -114,6 +114,9 @@ public class TLEPropagatorBuilder
         // propagator
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), getMass(),
                                                                           getOrbitalParameterFactory().getFrame());
+        
+        final boolean bStarSelected = this.getPropagationParametersDrivers().getDrivers().get(0).isSelected();
+        propagator.getParametersDrivers().get(0).setSelected(bStarSelected);
         getImpulseManeuvers().forEach(propagator::addEventDetector);
         return propagator;
     }
