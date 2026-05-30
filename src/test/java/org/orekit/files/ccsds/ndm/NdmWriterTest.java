@@ -16,28 +16,32 @@
  */
 package org.orekit.files.ccsds.ndm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.XmlGenerator;
+import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import org.orekit.utils.IERSConventions;
 
 /**
  * Test class for CCSDS Navigation Data Message writing.<p>
@@ -83,6 +87,27 @@ public class NdmWriterTest {
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         NdmTestUtils.checkContainer(ndm, new ParserBuilder().buildNdmParser().parseMessage(source2));
         Assertions.assertTrue(caw.toString().contains("<ndm>"));
+    }
+
+    @Test
+    public void testBugMissingNdmEndKey() throws IOException {
+        // Test: https://gitlab.orekit.org/orekit/orekit/-/work_items/1963
+        ParserBuilder parserBuilder = new ParserBuilder(DataContext.getDefault()).withConventions(IERSConventions.IERS_2010)
+                                                                                 .withMu(Constants.WGS84_EARTH_MU)
+                                                                                 .withDefaultMass(Propagator.DEFAULT_MASS);
+        final String opmName = "/ccsds/odm/opm/OPMExample1.txt";
+        final String apmName = "/ccsds/adm/apm/APMExample01.txt";
+        List<NdmConstituent<?, ?>> constituents = new ArrayList<>();
+        constituents.add(parserBuilder.buildOpmParser().parseMessage(new DataSource(opmName, () -> NdmWriterTest.class.getResourceAsStream(opmName))));
+        constituents.add(parserBuilder.buildApmParser().parseMessage(new DataSource(apmName, () -> NdmWriterTest.class.getResourceAsStream(apmName))));
+        final Ndm initial = new Ndm(new ArrayList<>(), constituents);
+        StringBuffer stringBuffer = new StringBuffer();
+        new WriterBuilder(DataContext.getDefault()).buildNdmWriter()
+                                                   .writeMessage(new XmlGenerator(stringBuffer, 0, "empty.xml", 0., false,
+                                                                                  XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION), initial);
+        Assertions.assertTrue(stringBuffer.toString().contains("</ndm>"));
+        Ndm rebuilt = new ParserBuilder().buildNdmParser().parseMessage(new DataSource("empty.xml", () -> new StringReader(stringBuffer.toString())));
+        Assertions.assertEquals(2, rebuilt.getConstituents().size());
     }
 
     @Test

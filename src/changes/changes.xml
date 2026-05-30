@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1.6" date="TBD" description="Orekit 13.1.6 is a patch release">
+      <action dev="bryan" type="fix" issue="1963">
+          Fixed missing ndm end tag when generating NDM file with NdmWriter.
+      </action>
       <action dev="luc" type="fix" issue="1961">
           Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
       </action>
