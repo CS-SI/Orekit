@@ -83,6 +83,12 @@ public class NdmWriter {
             writeConstituent(generator, constituent);
         }
 
+        // close the ndm section
+        if (started) {
+            generator.exitSection();
+            started = false;
+        }
+
     }
 
     /** Start the composite message if needed.
