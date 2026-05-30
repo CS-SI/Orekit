@@ -90,6 +90,26 @@ public class NdmWriterTest {
     }
 
     @Test
+    public void testEmptyNdm() throws IOException {
+        // Test: https://gitlab.orekit.org/orekit/orekit/-/work_items/1964
+        // An empty NDM (no comments, no constituents) must produce valid <ndm></ndm> tags
+        final Ndm ndm = new Ndm(new ArrayList<>(), new ArrayList<>());
+        final StringBuffer stringBuffer = new StringBuffer();
+        new WriterBuilder(DataContext.getDefault()).buildNdmWriter()
+                                                   .writeMessage(new XmlGenerator(stringBuffer, 0, "empty.xml", 0., false,
+                                                                                  XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION), ndm);
+        // check that <ndm> and </ndm> tags are present
+        Assertions.assertTrue(stringBuffer.toString().contains("<ndm"));
+        Assertions.assertTrue(stringBuffer.toString().contains("</ndm>"));
+
+        // check that the produced file can be parsed back without error
+        final Ndm rebuilt = new ParserBuilder().buildNdmParser()
+                                               .parseMessage(new DataSource("empty.xml", () -> new StringReader(stringBuffer.toString())));
+        Assertions.assertTrue(rebuilt.getComments().isEmpty());
+        Assertions.assertTrue(rebuilt.getConstituents().isEmpty());
+    }
+
+    @Test
     public void testBugMissingNdmEndKey() throws IOException {
         // Test: https://gitlab.orekit.org/orekit/orekit/-/work_items/1963
         ParserBuilder parserBuilder = new ParserBuilder(DataContext.getDefault()).withConventions(IERSConventions.IERS_2010)

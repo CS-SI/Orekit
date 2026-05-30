@@ -45,9 +45,6 @@ public class NdmWriter {
     /** Builder for the constituents writers. */
     private final WriterBuilder builder;
 
-    /** Indicator for started message. */
-    private boolean started;
-
     /** Number of constituents written. */
     private int count;
 
@@ -61,7 +58,6 @@ public class NdmWriter {
      */
     public NdmWriter(final WriterBuilder builder) {
         this.builder = builder;
-        this.started = false;
         this.count   = 0;
     }
 
@@ -72,6 +68,9 @@ public class NdmWriter {
      */
     public void writeMessage(final Generator generator, final Ndm message)
         throws IOException {
+
+        // always open the <ndm> section, even for empty messages
+        generator.enterSection(NdmStructureKey.ndm.name());
 
         // write the global comments
         for (final String comment : message.getComments()) {
@@ -84,22 +83,8 @@ public class NdmWriter {
         }
 
         // close the ndm section
-        if (started) {
-            generator.exitSection();
-            started = false;
-        }
+        generator.exitSection();
 
-    }
-
-    /** Start the composite message if needed.
-     * @param generator generator to use for producing output
-     * @throws IOException if the stream cannot write to stream
-     */
-    private void startMessageIfNeeded(final Generator generator) throws IOException {
-        if (!started) {
-            generator.enterSection(NdmStructureKey.ndm.name());
-            started = true;
-        }
     }
 
     /** Write a comment line.
@@ -113,8 +98,6 @@ public class NdmWriter {
      * @throws IOException if the stream cannot write to stream
      */
     public void writeComment(final Generator generator, final String comment) throws IOException {
-
-        startMessageIfNeeded(generator);
 
         // check we can still write comments
         if (count > 0) {
@@ -135,9 +118,6 @@ public class NdmWriter {
      */
     public <H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>>
         void writeConstituent(final Generator generator, final F constituent) throws IOException {
-
-        // write the root element if needed
-        startMessageIfNeeded(generator);
 
         // write the constituent
         final MessageWriter<H, S, F> writer = buildWriter(constituent);

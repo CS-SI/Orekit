@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1.6" date="TBD" description="Orekit 13.1.6 is a patch release">
+      <action dev="bryan" type="fix" issue="1964">
+         Fixed empty NDM generation to include mandatory ndm tags.
+      </action>
       <action dev="bryan" type="fix" issue="1963">
           Fixed missing ndm end tag when generating NDM file with NdmWriter.
       </action>
