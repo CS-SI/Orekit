@@ -29,6 +29,9 @@
           <action dev="luc" type="fix" issue="1961">
               Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
           </action>
+          <action dev="vcucchie" type="fix" issue="1955">
+              Fix IntelliJ compilation issue.
+          </action>
           <action dev="vcucchie" type="update" issue="1954">
               Upgrade to JUnit 6.
           </action>
