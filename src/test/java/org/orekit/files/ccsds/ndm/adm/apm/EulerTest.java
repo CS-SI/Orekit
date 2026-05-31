@@ -65,7 +65,7 @@ class EulerTest {
 
         // Assert labeled rotation rate setting method
         euler.setEulerRotSeq(RotationOrder.XYZ);
-        euler.setIndexedRotationRate(0,Double.NaN);
+        euler.setIndexedRotationRate(0, Double.NaN);
         euler.setIndexedRotationRate(1,-2);
         euler.setIndexedRotationRate(2,-3);
 
@@ -73,9 +73,9 @@ class EulerTest {
         euler.setLabeledRotationRate('X', 4);
         euler.setLabeledRotationRate('X', 5);
 
-        assertEquals(4, euler.getRotationRates()[0]);
-        assertEquals(-2, euler.getRotationRates()[1]);
-        assertEquals(-3, euler.getRotationRates()[2]);
+        assertEquals(4, euler.getRotationRates().orElseThrow()[0]);
+        assertEquals(-2, euler.getRotationRates().orElseThrow()[1]);
+        assertEquals(-3, euler.getRotationRates().orElseThrow()[2]);
     }
 
 }

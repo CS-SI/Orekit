@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
 
@@ -41,45 +44,52 @@ import org.orekit.time.AbsoluteDate;
 public class ODParameters extends CommentsContainer {
 
     /** The start of a time interval (UTC) that contains the time of the last accepted observation. */
+    @Nullable
     private AbsoluteDate timeLastObsStart;
 
     /** The end of a time interval (UTC) that contains the time of the last accepted observation. */
+    @Nullable
     private AbsoluteDate timeLastObsEnd;
 
     /** The recommended OD time span calculated for the object. */
-    private double recommendedOdSpan;
+    @Nullable
+    private Double recommendedOdSpan;
 
     /** Based on the observations available and the RECOMMENDED_OD_SPAN, the actual time span used for the OD of the object. */
-    private double actualOdSpan;
+    @Nullable
+    private Double actualOdSpan;
 
     /** The number of observations available for the OD of the object. */
-    private int obsAvailable;
+    @Nullable
+    private Integer obsAvailable;
 
     /** The number of observations accepted for the OD of the object. */
-    private int obsUsed;
+    @Nullable
+    private Integer obsUsed;
 
     /** The number of sensor tracks available for the OD of the object. */
-    private int tracksAvailable;
+    @Nullable
+    private Integer tracksAvailable;
 
     /** The number of sensor tracks accepted for the OD of the object. */
-    private int tracksUsed;
+    @Nullable
+    private Integer tracksUsed;
 
     /** The percentage of residuals accepted in the OD of the object (from 0 to 100). */
-    private double residualsAccepted;
+    @Nullable
+    private Double residualsAccepted;
 
     /** The weighted Root Mean Square (RMS) of the residuals from a batch least squares OD. */
-    private double weightedRMS;
+    @Nullable
+    private Double weightedRMS;
 
     /** The epoch of the orbit determination used for this message (UTC). */
+    @Nullable
     private AbsoluteDate odEpoch;
 
     /** Simple constructor.
      */
     public ODParameters() {
-        recommendedOdSpan   = Double.NaN;
-        actualOdSpan        = Double.NaN;
-        residualsAccepted   = Double.NaN;
-        weightedRMS         = Double.NaN;
     }
 
     /** {@inheritDoc} */
@@ -92,8 +102,8 @@ public class ODParameters extends CommentsContainer {
      * Get the start of a time interval (UTC) that contains the time of the last accepted observation.
      * @return the start of a time interval (UTC)
      */
-    public AbsoluteDate getTimeLastObsStart() {
-        return timeLastObsStart;
+    public Optional<AbsoluteDate> getTimeLastObsStart() {
+        return Optional.ofNullable(timeLastObsStart);
     }
 
     /**
@@ -109,8 +119,8 @@ public class ODParameters extends CommentsContainer {
      * Get the start of a time interval (UTC) that contains the time of the last accepted observation.
      * @return the start of a time interval (UTC)
      */
-    public AbsoluteDate getTimeLastObsEnd() {
-        return timeLastObsEnd;
+    public Optional<AbsoluteDate> getTimeLastObsEnd() {
+        return Optional.ofNullable(timeLastObsEnd);
     }
 
     /**
@@ -126,8 +136,8 @@ public class ODParameters extends CommentsContainer {
      * Get the recommended OD time span calculated for the object.
      * @return the recommended OD time span (in days) calculated for the object
      */
-    public double getRecommendedOdSpan() {
-        return recommendedOdSpan;
+    public Optional<Double> getRecommendedOdSpan() {
+        return Optional.ofNullable(recommendedOdSpan);
     }
 
     /**
@@ -143,8 +153,8 @@ public class ODParameters extends CommentsContainer {
      * Get the actual OD time based on the observations available and the RECOMMENDED_OD_SPAN.
      * @return the actual OD time (in days)
      */
-    public double getActualOdSpan() {
-        return actualOdSpan;
+    public Optional<Double> getActualOdSpan() {
+        return Optional.ofNullable(actualOdSpan);
     }
 
     /**
@@ -160,8 +170,8 @@ public class ODParameters extends CommentsContainer {
      * Get the number of observations available for the OD of the object.
      * @return the number of observations available
      */
-    public int getObsAvailable() {
-        return obsAvailable;
+    public Optional<Integer> getObsAvailable() {
+        return Optional.ofNullable(obsAvailable);
     }
 
     /**
@@ -177,8 +187,8 @@ public class ODParameters extends CommentsContainer {
      * Get the number of observations accepted for the OD of the object.
      * @return the number of observations used
      */
-    public int getObsUsed() {
-        return obsUsed;
+    public Optional<Integer> getObsUsed() {
+        return Optional.ofNullable(obsUsed);
     }
 
     /**
@@ -194,8 +204,8 @@ public class ODParameters extends CommentsContainer {
      * Get the number of sensor tracks available for the OD of the object.
      * @return the number of sensor tracks available
      */
-    public int getTracksAvailable() {
-        return tracksAvailable;
+    public Optional<Integer> getTracksAvailable() {
+        return Optional.ofNullable(tracksAvailable);
     }
 
     /**
@@ -211,8 +221,8 @@ public class ODParameters extends CommentsContainer {
      * Get the number of sensor tracks used for the OD of the object.
      * @return the number of sensor tracks used
      */
-    public int getTracksUsed() {
-        return tracksUsed;
+    public Optional<Integer> getTracksUsed() {
+        return Optional.ofNullable(tracksUsed);
     }
 
     /**
@@ -228,8 +238,8 @@ public class ODParameters extends CommentsContainer {
      * Get the percentage of residuals accepted in the OD of the object (from 0 to 100).
      * @return the percentage of residuals accepted in the OD
      */
-    public double getResidualsAccepted() {
-        return residualsAccepted;
+    public Optional<Double> getResidualsAccepted() {
+        return Optional.ofNullable(residualsAccepted);
     }
 
     /**
@@ -245,8 +255,8 @@ public class ODParameters extends CommentsContainer {
      * Get the weighted Root Mean Square (RMS) of the residuals from a batch least squares OD.
      * @return the weighted Root Mean Square (RMS) of the residuals from a batch least squares OD
      */
-    public double getWeightedRMS() {
-        return weightedRMS;
+    public Optional<Double> getWeightedRMS() {
+        return Optional.ofNullable(weightedRMS);
     }
 
     /**
@@ -261,8 +271,8 @@ public class ODParameters extends CommentsContainer {
     /** Get the epoch of the orbit determination used for this message.
      * @return the odEpoch the epoch of the orbit determination used for this message
      */
-    public AbsoluteDate getOdEpoch() {
-        return odEpoch;
+    public Optional<AbsoluteDate> getOdEpoch() {
+        return Optional.ofNullable(odEpoch);
     }
 
     /** Set the epoch of the orbit determination used for this message.

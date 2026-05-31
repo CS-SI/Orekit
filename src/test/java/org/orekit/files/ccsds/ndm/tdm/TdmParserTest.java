@@ -16,6 +16,16 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -43,16 +53,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Test class for CCSDS Tracking Data Message parsing.<p>
@@ -548,7 +548,7 @@ public class TdmParserTest {
 
         // Header
         Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2005-160T20:15:00", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-160T20:15:00", utc).durationFrom(file.getHeader().getCreationDate()), 0.0);
         Assertions.assertEquals("NASA/JPL",file.getHeader().getOriginator());
         final List<String> headerComment = new ArrayList<>();
         headerComment.add("TDM example created by yyyyy-nnnA Nav Team (NASA/JPL)");
@@ -559,18 +559,18 @@ public class TdmParserTest {
         final TdmMetadata metadata = file.getSegments().getFirst().getMetadata();
 
         Assertions.assertEquals("UTC", metadata.getTimeSystem().name());
-        Assertions.assertEquals(0.0, new AbsoluteDate("2005-159T17:41:00", utc).durationFrom(metadata.getStartTime()), 0.0);
-        Assertions.assertEquals(0.0, new AbsoluteDate("2005-159T17:41:40", utc).durationFrom(metadata.getStopTime()), 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-159T17:41:00", utc).durationFrom(metadata.getStartTime().orElseThrow()), 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-159T17:41:40", utc).durationFrom(metadata.getStopTime().orElseThrow()), 0.0);
         Assertions.assertEquals("DSS-25", metadata.getParticipants().get(1));
         Assertions.assertEquals("yyyy-nnnA", metadata.getParticipants().get(2));
-        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
-        Assertions.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath());
-        Assertions.assertEquals(1.0, metadata.getIntegrationInterval(), 0.0);
-        Assertions.assertEquals(IntegrationReference.MIDDLE, metadata.getIntegrationRef());
-        Assertions.assertEquals(32021035200.0, metadata.getFreqOffset(), 0.0);
+        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode().orElseThrow());
+        Assertions.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath().orElseThrow());
+        Assertions.assertEquals(1.0, metadata.getIntegrationInterval().orElseThrow(), 0.0);
+        Assertions.assertEquals(IntegrationReference.MIDDLE, metadata.getIntegrationRef().orElseThrow());
+        Assertions.assertEquals(32021035200.0, metadata.getFreqOffset().orElseThrow(), 0.0);
         Assertions.assertEquals(0.000077, metadata.getTransmitDelays().get(1), 0.0);
         Assertions.assertEquals(0.000077, metadata.getReceiveDelays().get(1), 0.0);
-        Assertions.assertEquals(DataQuality.RAW, metadata.getDataQuality());
+        Assertions.assertEquals(DataQuality.RAW, metadata.getDataQuality().orElseThrow());
         final List<String> metaDataComment = new ArrayList<>();
         metaDataComment.add("This is a meta-data comment");
         Assertions.assertEquals(metaDataComment, metadata.getComments());
@@ -590,7 +590,7 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < keywords.length; i++) {
             Assertions.assertEquals(keywords[i], observations.get(i).getType().name());
-            Assertions.assertEquals(new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0, 0.0);
+            Assertions.assertEquals(0.0, new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0);
             Assertions.assertEquals(values[i], observations.get(i).getMeasurement(), 0.0);
         }
 
@@ -606,10 +606,10 @@ public class TdmParserTest {
         Assertions.assertEquals("p12", metadata.getParticipants().get(12));
         metadata.setTransmitDelays(Collections.singletonMap(12, 1.25));
         Assertions.assertNull(metadata.getTransmitDelays().get(1));
-        Assertions.assertEquals(1.25, metadata.getTransmitDelays().get(12).doubleValue(), 1.0e-15);
+        Assertions.assertEquals(1.25, metadata.getTransmitDelays().get(12), 1.0e-15);
         metadata.setReceiveDelays(Collections.singletonMap(12, 2.5));
         Assertions.assertNull(metadata.getReceiveDelays().get(1));
-        Assertions.assertEquals(2.5, metadata.getReceiveDelays().get(12).doubleValue(), 1.0e-15);
+        Assertions.assertEquals(2.5, metadata.getReceiveDelays().get(12), 1.0e-15);
 
     }
 
@@ -623,7 +623,7 @@ public class TdmParserTest {
 
         // Header
         Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2005-191T23:00:00", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-191T23:00:00", utc).durationFrom(file.getHeader().getCreationDate()), 0.0);
         Assertions.assertEquals("NASA/JPL",file.getHeader().getOriginator());
         final List<String> headerComment = new ArrayList<>();
         headerComment.add("TDM example created by yyyyy-nnnA Nav Team (NASA/JPL)");
@@ -635,20 +635,20 @@ public class TdmParserTest {
         Assertions.assertEquals("UTC", metadata.getTimeSystem().name());
         Assertions.assertEquals("DSS-24", metadata.getParticipants().get(1));
         Assertions.assertEquals("yyyy-nnnA", metadata.getParticipants().get(2));
-        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
-        Assertions.assertArrayEquals(new int[] { 1, 2, 1 }, metadata.getPath());
-        Assertions.assertEquals(IntegrationReference.START, metadata.getIntegrationRef());
-        Assertions.assertEquals(RangeMode.COHERENT, metadata.getRangeMode());
-        Assertions.assertEquals(2.0e+26, metadata.getRawRangeModulus(), 0.0);
-        Assertions.assertEquals(2.0e+26, metadata.getRangeModulus(new IdentityConverter()), 0.0);
-        Assertions.assertEquals(RangeUnits.RU, metadata.getRangeUnits());
+        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode().orElseThrow());
+        Assertions.assertArrayEquals(new int[] { 1, 2, 1 }, metadata.getPath().orElseThrow());
+        Assertions.assertEquals(IntegrationReference.START, metadata.getIntegrationRef().orElseThrow());
+        Assertions.assertEquals(RangeMode.COHERENT, metadata.getRangeMode().orElseThrow());
+        Assertions.assertEquals(2.0e+26, metadata.getRawRangeModulus().orElseThrow(), 0.0);
+        Assertions.assertEquals(2.0e+26, metadata.getRangeModulus(new IdentityConverter()).orElseThrow(), 0.0);
+        Assertions.assertEquals(RangeUnits.RU, metadata.getRangeUnits().orElseThrow());
         Assertions.assertEquals(7.7e-5, metadata.getTransmitDelays().get(1), 0.0);
         Assertions.assertEquals(0.0, metadata.getTransmitDelays().get(2), 0.0);
         Assertions.assertEquals(7.7e-5, metadata.getReceiveDelays().get(1), 0.0);
         Assertions.assertEquals(0.0, metadata.getReceiveDelays().get(2), 0.0);
-        Assertions.assertEquals(46.7741, metadata.getCorrectionRange(new IdentityConverter()), 0.0);
-        Assertions.assertEquals(46.7741, metadata.getRawCorrectionRange(), 0.0);
-        Assertions.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied());
+        Assertions.assertEquals(46.7741, metadata.getCorrectionRange(new IdentityConverter()).orElseThrow(), 0.0);
+        Assertions.assertEquals(46.7741, metadata.getRawCorrectionRange().orElseThrow(), 0.0);
+        Assertions.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied().orElseThrow());
         final List<String> metaDataComment = new ArrayList<>();
         metaDataComment.add("Range correction applied is range calibration to DSS-24.");
         metaDataComment.add("Estimated RTLT at begin of pass = 950 seconds");
@@ -679,7 +679,7 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < keywords.length; i++) {
             Assertions.assertEquals(keywords[i], observations.get(i).getType().name());
-            Assertions.assertEquals(new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0, 0.0);
+            Assertions.assertEquals(0.0, new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0);
             Assertions.assertEquals(values[i], observations.get(i).getMeasurement(), 0.0);
         }
         // Comment
@@ -698,7 +698,7 @@ public class TdmParserTest {
 
         // Header
         Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
-        Assertions.assertEquals(new AbsoluteDate("1998-06-10T01:00:00", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("1998-06-10T01:00:00", utc).durationFrom(file.getHeader().getCreationDate()), 0.0);
         Assertions.assertEquals("JAXA",file.getHeader().getOriginator());
         final List<String> headerComment = new ArrayList<>();
         headerComment.add("TDM example created by yyyyy-nnnA Nav Team (JAXA)");
@@ -708,23 +708,23 @@ public class TdmParserTest {
         final TdmMetadata metadata = file.getSegments().getFirst().getMetadata();
 
         Assertions.assertEquals("UTC", metadata.getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate("1998-06-10T00:57:37", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
-        Assertions.assertEquals(new AbsoluteDate("1998-06-10T00:57:44", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("1998-06-10T00:57:37", utc).durationFrom(metadata.getStartTime().orElseThrow()), 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("1998-06-10T00:57:44", utc).durationFrom(metadata.getStopTime().orElseThrow()), 0.0);
         Assertions.assertEquals("NORTH", metadata.getParticipants().get(1));
         Assertions.assertEquals("F07R07", metadata.getParticipants().get(2));
         Assertions.assertEquals("E7", metadata.getParticipants().get(3));
-        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
-        Assertions.assertArrayEquals(new int[] { 1, 2, 3, 2, 1 }, metadata.getPath());
-        Assertions.assertEquals(1.0, metadata.getIntegrationInterval(), 0.0);
-        Assertions.assertEquals(IntegrationReference.MIDDLE, metadata.getIntegrationRef());
-        Assertions.assertEquals(RangeMode.CONSTANT, metadata.getRangeMode());
-        Assertions.assertEquals(1.0, metadata.getRawRangeModulus(), 0.0);
-        Assertions.assertEquals(1000.0, metadata.getRangeModulus(new IdentityConverter()), 0.0);
-        Assertions.assertEquals(RangeUnits.km, metadata.getRangeUnits());
-        Assertions.assertEquals(AngleType.AZEL, metadata.getAngleType());
-        Assertions.assertEquals(2.0, metadata.getRawCorrectionRange(), 0.0);
-        Assertions.assertEquals(2000.0, metadata.getCorrectionRange(new IdentityConverter()), 0.0);
-        Assertions.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied());
+        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode().orElseThrow());
+        Assertions.assertArrayEquals(new int[] { 1, 2, 3, 2, 1 }, metadata.getPath().orElseThrow());
+        Assertions.assertEquals(1.0, metadata.getIntegrationInterval().orElseThrow(), 0.0);
+        Assertions.assertEquals(IntegrationReference.MIDDLE, metadata.getIntegrationRef().orElseThrow());
+        Assertions.assertEquals(RangeMode.CONSTANT, metadata.getRangeMode().orElseThrow());
+        Assertions.assertEquals(1.0, metadata.getRawRangeModulus().orElseThrow(), 0.0);
+        Assertions.assertEquals(1000.0, metadata.getRangeModulus(new IdentityConverter()).orElseThrow(), 0.0);
+        Assertions.assertEquals(RangeUnits.km, metadata.getRangeUnits().orElseThrow());
+        Assertions.assertEquals(AngleType.AZEL, metadata.getAngleType().orElseThrow());
+        Assertions.assertEquals(2.0, metadata.getRawCorrectionRange().orElseThrow(), 0.0);
+        Assertions.assertEquals(2000.0, metadata.getCorrectionRange(new IdentityConverter()).orElseThrow(), 0.0);
+        Assertions.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied().orElseThrow());
 
         // Data
         final List<Observation> observations = file.getSegments().getFirst().getData().getObservations();
@@ -747,7 +747,7 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < keywords.length; i++) {
             Assertions.assertEquals(keywords[i], observations.get(i).getType().name());
-            Assertions.assertEquals(new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0, 0.0);
+            Assertions.assertEquals(0.0, new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0);
             Assertions.assertEquals(values[i], observations.get(i).getMeasurement(), 1.0e-12 * FastMath.abs(values[i]));
         }
         // Comment
@@ -766,7 +766,7 @@ public class TdmParserTest {
 
         // Header
         Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2007-08-30T12:01:44.749", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2007-08-30T12:01:44.749", utc).durationFrom(file.getHeader().getCreationDate()), 0.0);
         Assertions.assertEquals("GSOC",file.getHeader().getOriginator());
         final List<String> headerComment = new ArrayList<>();
         headerComment.add("GEOSCX INP");
@@ -776,16 +776,16 @@ public class TdmParserTest {
         final TdmMetadata metadata = file.getSegments().getFirst().getMetadata();
 
         Assertions.assertEquals("UTC", metadata.getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate("2007-08-29T07:00:02.000", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2007-08-29T14:00:02.000", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2007-08-29T07:00:02.000", utc).durationFrom(metadata.getStartTime().orElseThrow()), 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2007-08-29T14:00:02.000", utc).durationFrom(metadata.getStopTime().orElseThrow()), 0.0);
         Assertions.assertEquals("HBSTK", metadata.getParticipants().get(1));
         Assertions.assertEquals("SAT", metadata.getParticipants().get(2));
-        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
-        Assertions.assertArrayEquals(new int[] { 1, 2, 1 }, metadata.getPath());
-        Assertions.assertEquals(1.0, metadata.getIntegrationInterval(), 0.0);
-        Assertions.assertEquals(IntegrationReference.END, metadata.getIntegrationRef());
-        Assertions.assertEquals(AngleType.XSYE, metadata.getAngleType());
-        Assertions.assertEquals(DataQuality.RAW, metadata.getDataQuality());
+        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode().orElseThrow());
+        Assertions.assertArrayEquals(new int[] { 1, 2, 1 }, metadata.getPath().orElseThrow());
+        Assertions.assertEquals(1.0, metadata.getIntegrationInterval().orElseThrow(), 0.0);
+        Assertions.assertEquals(IntegrationReference.END, metadata.getIntegrationRef().orElseThrow());
+        Assertions.assertEquals(AngleType.XSYE, metadata.getAngleType().orElseThrow());
+        Assertions.assertEquals(DataQuality.RAW, metadata.getDataQuality().orElseThrow());
         final List<String> metaDataComment = new ArrayList<>();
         metaDataComment.add("This is a meta-data comment");
         Assertions.assertEquals(metaDataComment, metadata.getComments());
@@ -808,7 +808,7 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < keywords.length; i++) {
             Assertions.assertEquals(keywords[i], observations.get(i).getType().name());
-            Assertions.assertEquals(new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0, 0.0);
+            Assertions.assertEquals(0.0, new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0);
             Assertions.assertEquals(values[i], observations.get(i).getMeasurement(), 1.0e-12 * FastMath.abs(values[i]));
         }
         // Comment
@@ -820,22 +820,22 @@ public class TdmParserTest {
         final TdmMetadata metadata2 = file.getSegments().get(1).getMetadata();
 
         Assertions.assertEquals("UTC", metadata.getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate("2007-08-29T06:00:02.000", utc).durationFrom(metadata2.getStartTime()), 0.0, 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2007-08-29T13:00:02.000", utc).durationFrom(metadata2.getStopTime()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2007-08-29T06:00:02.000", utc).durationFrom(metadata2.getStartTime().orElseThrow()), 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2007-08-29T13:00:02.000", utc).durationFrom(metadata2.getStopTime().orElseThrow()), 0.0);
         Assertions.assertEquals("WHM1", metadata2.getParticipants().get(1));
         Assertions.assertEquals("SAT", metadata2.getParticipants().get(2));
-        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata2.getMode());
-        Assertions.assertArrayEquals(new int[] { 1, 2, 1 }, metadata2.getPath());
-        Assertions.assertEquals(1.0, metadata2.getIntegrationInterval(), 0.0);
-        Assertions.assertEquals(IntegrationReference.END, metadata2.getIntegrationRef());
-        Assertions.assertEquals(1.0e7, metadata2.getRawRangeModulus(), 0.0);
-        Assertions.assertEquals(1.0e7 * Constants.SPEED_OF_LIGHT, metadata2.getRangeModulus(new IdentityConverter()), 0.0);
-        Assertions.assertEquals(RangeUnits.s, metadata2.getRangeUnits());
-        Assertions.assertEquals(AngleType.AZEL, metadata2.getAngleType());
-        Assertions.assertEquals(DataQuality.RAW, metadata2.getDataQuality());
-        Assertions.assertEquals(2.0, metadata2.getRawCorrectionRange(), 0.0);
-        Assertions.assertEquals(2.0 * Constants.SPEED_OF_LIGHT, metadata2.getCorrectionRange(new IdentityConverter()), 0.0);
-        Assertions.assertEquals(CorrectionApplied.YES, metadata2.getCorrectionsApplied());
+        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata2.getMode().orElseThrow());
+        Assertions.assertArrayEquals(new int[] { 1, 2, 1 }, metadata2.getPath().orElseThrow());
+        Assertions.assertEquals(1.0, metadata2.getIntegrationInterval().orElseThrow(), 0.0);
+        Assertions.assertEquals(IntegrationReference.END, metadata2.getIntegrationRef().orElseThrow());
+        Assertions.assertEquals(1.0e7, metadata2.getRawRangeModulus().orElseThrow(), 0.0);
+        Assertions.assertEquals(1.0e7 * Constants.SPEED_OF_LIGHT, metadata2.getRangeModulus(new IdentityConverter()).orElseThrow(), 0.0);
+        Assertions.assertEquals(RangeUnits.s, metadata2.getRangeUnits().orElseThrow());
+        Assertions.assertEquals(AngleType.AZEL, metadata2.getAngleType().orElseThrow());
+        Assertions.assertEquals(DataQuality.RAW, metadata2.getDataQuality().orElseThrow());
+        Assertions.assertEquals(2.0, metadata2.getRawCorrectionRange().orElseThrow(), 0.0);
+        Assertions.assertEquals(2.0 * Constants.SPEED_OF_LIGHT, metadata2.getCorrectionRange(new IdentityConverter()).orElseThrow(), 0.0);
+        Assertions.assertEquals(CorrectionApplied.YES, metadata2.getCorrectionsApplied().orElseThrow());
         final List<String> metaDataComment2 = new ArrayList<>();
         metaDataComment2.add("This is a meta-data comment");
         Assertions.assertEquals(metaDataComment2, metadata2.getComments());
@@ -858,7 +858,7 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < keywords2.length; i++) {
             Assertions.assertEquals(keywords2[i], observations2.get(i).getType().name());
-            Assertions.assertEquals(new AbsoluteDate(epochs2[i], utc).durationFrom(observations2.get(i).getEpoch()), 0.0, 0.0);
+            Assertions.assertEquals(0.0, new AbsoluteDate(epochs2[i], utc).durationFrom(observations2.get(i).getEpoch()), 0.0);
             Assertions.assertEquals(values2[i], observations2.get(i).getMeasurement(), 1.0e-12 * FastMath.abs(values2[i]));
         }
         // Comment
@@ -877,7 +877,7 @@ public class TdmParserTest {
 
         // Header
         Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2005-161T15:45:00", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-161T15:45:00", utc).durationFrom(file.getHeader().getCreationDate()), 0.0);
         Assertions.assertEquals("NASA/JPL",file.getHeader().getOriginator());
         final List<String> headerComment = new ArrayList<>();
         headerComment.add("TDM example created by yyyyy-nnnA Nav Team (NASA/JPL)");
@@ -891,8 +891,8 @@ public class TdmParserTest {
         final TdmMetadata metadata = file.getSegments().getFirst().getMetadata();
 
         Assertions.assertEquals("UTC", metadata.getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate("2005-142T12:00:00", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2005-145T12:00:00", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-142T12:00:00", utc).durationFrom(metadata.getStartTime().orElseThrow()), 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-145T12:00:00", utc).durationFrom(metadata.getStopTime().orElseThrow()), 0.0);
         Assertions.assertEquals("DSS-10", metadata.getParticipants().get(1));
         Assertions.assertEquals("UTC-NIST", metadata.getParticipants().get(2));
         final List<String> metaDataComment = new ArrayList<>();
@@ -920,7 +920,7 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < keywords.length; i++) {
             Assertions.assertEquals(keywords[i], observations.get(i).getType().name());
-            Assertions.assertEquals(new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0, 0.0);
+            Assertions.assertEquals(0.0, new AbsoluteDate(epochs[i], utc).durationFrom(observations.get(i).getEpoch()), 0.0);
             Assertions.assertEquals(values[i], observations.get(i).getMeasurement(), 0.0);
         }
         // Comment
@@ -933,8 +933,8 @@ public class TdmParserTest {
         final TdmMetadata metadata2 = file.getSegments().get(1).getMetadata();
 
         Assertions.assertEquals("UTC", metadata2.getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate("2005-142T12:00:00", utc).durationFrom(metadata2.getStartTime()), 0.0, 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2005-145T12:00:00", utc).durationFrom(metadata2.getStopTime()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-142T12:00:00", utc).durationFrom(metadata2.getStartTime().orElseThrow()), 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-145T12:00:00", utc).durationFrom(metadata2.getStopTime().orElseThrow()), 0.0);
         Assertions.assertEquals("DSS-40", metadata2.getParticipants().get(1));
         Assertions.assertEquals("UTC-NIST", metadata2.getParticipants().get(2));
         final List<String> metaDataComment2 = new ArrayList<>();
@@ -953,7 +953,7 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < keywords.length; i++) {
             Assertions.assertEquals(keywords[i], observations2.get(i).getType().name());
-            Assertions.assertEquals(new AbsoluteDate(epochs[i], utc).durationFrom(observations2.get(i).getEpoch()), 0.0, 0.0);
+            Assertions.assertEquals(0.0, new AbsoluteDate(epochs[i], utc).durationFrom(observations2.get(i).getEpoch()), 0.0);
             Assertions.assertEquals(values2[i], observations2.get(i).getMeasurement(), 0.0);
         }
         // Comment
@@ -966,8 +966,8 @@ public class TdmParserTest {
         final TdmMetadata metadata3 = file.getSegments().get(2).getMetadata();
 
         Assertions.assertEquals("UTC", metadata3.getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate("2005-142T12:00:00", utc).durationFrom(metadata3.getStartTime()), 0.0, 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2005-145T12:00:00", utc).durationFrom(metadata3.getStopTime()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-142T12:00:00", utc).durationFrom(metadata3.getStartTime().orElseThrow()), 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2005-145T12:00:00", utc).durationFrom(metadata3.getStopTime().orElseThrow()), 0.0);
         Assertions.assertEquals("DSS-60", metadata3.getParticipants().get(1));
         Assertions.assertEquals("UTC-NIST", metadata3.getParticipants().get(2));
         final List<String> metaDataComment3 = new ArrayList<>();
@@ -986,7 +986,7 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < keywords.length; i++) {
             Assertions.assertEquals(keywords[i], observations3.get(i).getType().name());
-            Assertions.assertEquals(new AbsoluteDate(epochs[i], utc).durationFrom(observations3.get(i).getEpoch()), 0.0, 0.0);
+            Assertions.assertEquals(0.0, new AbsoluteDate(epochs[i], utc).durationFrom(observations3.get(i).getEpoch()), 0.0);
             Assertions.assertEquals(values3[i], observations3.get(i).getMeasurement(), 0.0);
         }
         // Comment
@@ -1002,8 +1002,8 @@ public class TdmParserTest {
     private void validateTDMExampleAllKeywordsSequential(Tdm file) {
         validateTDMExampleAllKeywordsCommon(file);
         final TdmMetadata metadata = file.getSegments().getFirst().getMetadata();
-        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
-        Assertions.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath());
+        Assertions.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode().orElseThrow());
+        Assertions.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath().orElseThrow());
     }
 
     /**
@@ -1013,9 +1013,9 @@ public class TdmParserTest {
     private void validateTDMExampleAllKeywordsSingleDiff(Tdm file) {
         validateTDMExampleAllKeywordsCommon(file);
         final TdmMetadata metadata = file.getSegments().getFirst().getMetadata();
-        Assertions.assertEquals(TrackingMode.SINGLE_DIFF, metadata.getMode());
-        Assertions.assertArrayEquals(new int[] { 4, 5 }, metadata.getPath1());
-        Assertions.assertArrayEquals(new int[] { 3, 2 }, metadata.getPath2());
+        Assertions.assertEquals(TrackingMode.SINGLE_DIFF, metadata.getMode().orElseThrow());
+        Assertions.assertArrayEquals(new int[] { 4, 5 }, metadata.getPath1().orElseThrow());
+        Assertions.assertArrayEquals(new int[] { 3, 2 }, metadata.getPath2().orElseThrow());
     }
 
     /**
@@ -1028,9 +1028,9 @@ public class TdmParserTest {
 
         // Header
         Assertions.assertEquals(2.0, file.getHeader().getFormatVersion(), 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(file.getHeader().getCreationDate()), 0.0);
         Assertions.assertEquals("CS GROUP",file.getHeader().getOriginator());
-        Assertions.assertEquals("04655f62-1ba0-4ca6-92e9-eb3411db3d44", file.getHeader().getMessageId().toLowerCase());
+        Assertions.assertEquals("04655f62-1ba0-4ca6-92e9-eb3411db3d44", file.getHeader().getMessageId().orElseThrow().toLowerCase());
         final List<String> headerComment = new ArrayList<>();
         headerComment.add("TDM example created by CS GROUP");
         headerComment.add("Testing all TDM known meta-data and data keywords");
@@ -1089,33 +1089,33 @@ public class TdmParserTest {
         Assertions.assertEquals(ObservationType.RHUMIDITY            , metadata.getDataTypes().get(45));
         Assertions.assertEquals(ObservationType.TEMPERATURE          , metadata.getDataTypes().get(46));
         Assertions.assertEquals("UTC", metadata.getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
-        Assertions.assertEquals(new AbsoluteDate("2017-06-15T10:53:00.000", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(metadata.getStartTime().orElseThrow()), 0.0);
+        Assertions.assertEquals(0.0, new AbsoluteDate("2017-06-15T10:53:00.000", utc).durationFrom(metadata.getStopTime().orElseThrow()), 0.0);
         Assertions.assertEquals("DSS-25", metadata.getParticipants().get(1));
         Assertions.assertEquals("yyyy-nnnA", metadata.getParticipants().get(2));
         Assertions.assertEquals("P3", metadata.getParticipants().get(3));
         Assertions.assertEquals("P4", metadata.getParticipants().get(4));
         Assertions.assertEquals("P5", metadata.getParticipants().get(5));
-        Assertions.assertEquals("S", metadata.getTransmitBand());
-        Assertions.assertEquals("L", metadata.getReceiveBand());
-        Assertions.assertEquals(240, metadata.getTurnaroundNumerator(), 0);
-        Assertions.assertEquals(221, metadata.getTurnaroundDenominator(), 0);
-        Assertions.assertEquals(TimetagReference.TRANSMIT, metadata.getTimetagRef());
-        Assertions.assertEquals(1.0, metadata.getIntegrationInterval(), 0.0);
-        Assertions.assertEquals(IntegrationReference.MIDDLE, metadata.getIntegrationRef());
-        Assertions.assertEquals(32021035200.0, metadata.getFreqOffset(), 0.0);
-        Assertions.assertEquals(RangeMode.COHERENT, metadata.getRangeMode());
-        Assertions.assertEquals(32768.0, metadata.getRawRangeModulus(), 0.0);
-        Assertions.assertEquals(RangeUnits.RU, metadata.getRangeUnits());
-        Assertions.assertEquals(AngleType.RADEC, metadata.getAngleType());
-        Assertions.assertEquals("EME2000", metadata.getReferenceFrame().getName());
-        Assertions.assertEquals(CelestialBodyFrame.EME2000, metadata.getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(FramesFactory.getEME2000(), metadata.getReferenceFrame().asFrame());
-        Assertions.assertEquals("HERMITE", metadata.getInterpolationMethod());
-        Assertions.assertEquals(5, metadata.getInterpolationDegree());
-        Assertions.assertEquals(120000.0, metadata.getDopplerCountBias(), 1.0e-5);
-        Assertions.assertEquals(1000.0, metadata.getDopplerCountScale(), 1.0e-10);
-        Assertions.assertFalse(metadata.hasDopplerCountRollover());
+        Assertions.assertEquals("S", metadata.getTransmitBand().orElseThrow());
+        Assertions.assertEquals("L", metadata.getReceiveBand().orElseThrow());
+        Assertions.assertEquals(240, metadata.getTurnaroundNumerator().orElseThrow(), 0);
+        Assertions.assertEquals(221, metadata.getTurnaroundDenominator().orElseThrow(), 0);
+        Assertions.assertEquals(TimetagReference.TRANSMIT, metadata.getTimetagRef().orElseThrow());
+        Assertions.assertEquals(1.0, metadata.getIntegrationInterval().orElseThrow(), 0.0);
+        Assertions.assertEquals(IntegrationReference.MIDDLE, metadata.getIntegrationRef().orElseThrow());
+        Assertions.assertEquals(32021035200.0, metadata.getFreqOffset().orElseThrow(), 0.0);
+        Assertions.assertEquals(RangeMode.COHERENT, metadata.getRangeMode().orElseThrow());
+        Assertions.assertEquals(32768.0, metadata.getRawRangeModulus().orElseThrow(), 0.0);
+        Assertions.assertEquals(RangeUnits.RU, metadata.getRangeUnits().orElseThrow());
+        Assertions.assertEquals(AngleType.RADEC, metadata.getAngleType().orElseThrow());
+        Assertions.assertEquals("EME2000", metadata.getReferenceFrame().orElseThrow().getName());
+        Assertions.assertEquals(CelestialBodyFrame.EME2000, metadata.getReferenceFrame().get().asCelestialBodyFrame().orElseThrow());
+        Assertions.assertEquals(FramesFactory.getEME2000(), metadata.getReferenceFrame().get().asFrame().orElseThrow());
+        Assertions.assertEquals("HERMITE", metadata.getInterpolationMethod().orElseThrow());
+        Assertions.assertEquals(5, metadata.getInterpolationDegree().orElseThrow());
+        Assertions.assertEquals(120000.0, metadata.getDopplerCountBias().orElseThrow(), 1.0e-5);
+        Assertions.assertEquals(1000.0, metadata.getDopplerCountScale().orElseThrow(), 1.0e-10);
+        Assertions.assertFalse(metadata.hasDopplerCountRollover().orElseThrow());
         Assertions.assertEquals(0.000077, metadata.getTransmitDelays().get(1), 0.0);
         Assertions.assertEquals(0.000077, metadata.getTransmitDelays().get(2), 0.0);
         Assertions.assertEquals(0.000077, metadata.getTransmitDelays().get(3), 0.0);
@@ -1126,18 +1126,18 @@ public class TdmParserTest {
         Assertions.assertEquals(0.000077, metadata.getReceiveDelays().get(3), 0.0);
         Assertions.assertEquals(0.000077, metadata.getReceiveDelays().get(4), 0.0);
         Assertions.assertEquals(0.000077, metadata.getReceiveDelays().get(5), 0.0);
-        Assertions.assertEquals(DataQuality.RAW, metadata.getDataQuality());
-        Assertions.assertEquals(FastMath.toRadians(1.0), metadata.getCorrectionAngle1(), 0.0);
-        Assertions.assertEquals(FastMath.toRadians(2.0), metadata.getCorrectionAngle2(), 0.0);
-        Assertions.assertEquals(3000.0, metadata.getCorrectionDoppler(), 0.0);
-        Assertions.assertEquals(4.0, metadata.getCorrectionMagnitude(), 0.0);
-        Assertions.assertEquals(5.0, metadata.getRawCorrectionRange(), 0.0);
-        Assertions.assertEquals(6.0, metadata.getCorrectionRcs(), 0.0);
-        Assertions.assertEquals(7.0, metadata.getCorrectionReceive(), 0.0);
-        Assertions.assertEquals(8.0, metadata.getCorrectionTransmit(), 0.0);
-        Assertions.assertEquals(FastMath.toRadians(9.0), metadata.getCorrectionAberrationYearly(), 0.0);
-        Assertions.assertEquals(FastMath.toRadians(10.0), metadata.getCorrectionAberrationDiurnal(), 0.0);
-        Assertions.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied());
+        Assertions.assertEquals(DataQuality.RAW, metadata.getDataQuality().orElseThrow());
+        Assertions.assertEquals(FastMath.toRadians(1.0), metadata.getCorrectionAngle1().orElseThrow(), 0.0);
+        Assertions.assertEquals(FastMath.toRadians(2.0), metadata.getCorrectionAngle2().orElseThrow(), 0.0);
+        Assertions.assertEquals(3000.0, metadata.getCorrectionDoppler().orElseThrow(), 0.0);
+        Assertions.assertEquals(4.0, metadata.getCorrectionMagnitude().orElseThrow(), 0.0);
+        Assertions.assertEquals(5.0, metadata.getRawCorrectionRange().orElseThrow(), 0.0);
+        Assertions.assertEquals(6.0, metadata.getCorrectionRcs().orElseThrow(), 0.0);
+        Assertions.assertEquals(7.0, metadata.getCorrectionReceive().orElseThrow(), 0.0);
+        Assertions.assertEquals(8.0, metadata.getCorrectionTransmit().orElseThrow(), 0.0);
+        Assertions.assertEquals(FastMath.toRadians(9.0), metadata.getCorrectionAberrationYearly().orElseThrow(), 0.0);
+        Assertions.assertEquals(FastMath.toRadians(10.0), metadata.getCorrectionAberrationDiurnal().orElseThrow(), 0.0);
+        Assertions.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied().orElseThrow());
 
         final List<String> metaDataComment = new ArrayList<>();
         metaDataComment.add("All known meta-data keywords displayed");
@@ -1151,8 +1151,8 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < metadata.getDataTypes().size(); i++) {
             Assertions.assertEquals(metadata.getDataTypes().get(i), observations.get(i).getType());
-            Assertions.assertEquals(epoch.shiftedBy((double) (i+1)).durationFrom(observations.get(i).getEpoch()), 0.0, 0.0);
-            Assertions.assertEquals((double) (i+1), observations.get(i).getMeasurement(), 1.0e-12);
+            Assertions.assertEquals(0.0, epoch.shiftedBy((double) (i+1)).durationFrom(observations.get(i).getEpoch()), 0.0);
+            Assertions.assertEquals(i+1, observations.get(i).getMeasurement(), 1.0e-12);
         }
 
         // Comment
@@ -1196,7 +1196,7 @@ public class TdmParserTest {
 
         // verify
         MatcherAssert.assertThat(
-                tdm.getSegments().getFirst().getMetadata().getRadecFrame(),
+                tdm.getSegments().getFirst().getMetadata().getRadecFrame().orElseThrow(),
                 Matchers.sameInstance(myTod));
     }
 }

@@ -133,7 +133,7 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
                                   null :
                                   new OneAxisEllipsoid(writer.getEquatorialRadius(),
                                                        writer.getFlattening(),
-                                                       template.getTrajReferenceFrame().asFrame());
+                                                       template.getTrajReferenceFrame().asFrame().orElseThrow()); // CdmMetadata validates is not null
         this.formatter = formatter;
     }
 
@@ -196,10 +196,10 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
         final String name;
         if (metadata.getObjectName() != null) {
             name = metadata.getObjectName();
-        } else if (metadata.getInternationalDesignator() != null) {
-            name = metadata.getInternationalDesignator();
-        } else if (metadata.getObjectDesignator() != null) {
-            name = metadata.getObjectDesignator();
+        } else if (metadata.getInternationalDesignator().isPresent()) {
+            name = metadata.getInternationalDesignator().get();
+        } else if (metadata.getObjectDesignator().isPresent()) {
+            name = metadata.getObjectDesignator().get();
         } else {
             name = Ocm.UNKNOWN_OBJECT;
         }
@@ -242,14 +242,14 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
             for (final S block : blocks) {
 
                 // prepare metadata
-                trajectoryMetadata.setTrajNextID(TrajectoryStateHistoryMetadata.incrementTrajID(trajectoryMetadata.getTrajID()));
+                trajectoryMetadata.setTrajNextID(TrajectoryStateHistoryMetadata.incrementTrajID(trajectoryMetadata.getTrajID().orElse(null)));
                 trajectoryMetadata.setUseableStartTime(block.getStart());
                 trajectoryMetadata.setUseableStopTime(block.getStop());
                 trajectoryMetadata.setInterpolationDegree(block.getInterpolationSamples() - 1);
 
                 // prepare data
                 final OrbitElementsType type      = trajectoryMetadata.getTrajType();
-                final Frame             frame     = trajectoryMetadata.getTrajReferenceFrame().asFrame();
+                final Frame             frame     = trajectoryMetadata.getTrajReferenceFrame().asFrame().orElse(null);
                 int                     crossings = 0;
                 final List<TrajectoryState> states = new ArrayList<>(block.getCoordinates().size());
                 for (final C pv : block.getCoordinates()) {
@@ -269,12 +269,12 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
                 trajectoryWriter.write(generator);
 
                 // update the trajectory IDs
-                trajectoryMetadata.setTrajPrevID(trajectoryMetadata.getTrajID());
-                trajectoryMetadata.setTrajID(trajectoryMetadata.getTrajNextID());
+                trajectoryMetadata.setTrajPrevID(trajectoryMetadata.getTrajID().orElse(null));
+                trajectoryMetadata.setTrajID(trajectoryMetadata.getTrajNextID().orElse(null));
 
-                if (trajectoryMetadata.getOrbRevNum() >= 0) {
+                if (trajectoryMetadata.getOrbRevNum().isPresent()) {
                     // update the orbits revolution number
-                    trajectoryMetadata.setOrbRevNum(trajectoryMetadata.getOrbRevNum() + crossings);
+                    trajectoryMetadata.setOrbRevNum(trajectoryMetadata.getOrbRevNum().get() + crossings);
                 }
 
             }

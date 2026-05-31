@@ -577,6 +577,9 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=index de capteur {0} déjà utilisé
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=index de capteur {0} manquant
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=la valeur optionnelle ne peut pas être utilisée car non présente dans le fichier
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=nombre d''éléments incohérent, {0} attendus pour {1} fournis
 

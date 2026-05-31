@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.hipparchus.complex.Quaternion;
@@ -29,7 +30,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
-import org.opentest4j.AssertionFailedError;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -171,10 +171,17 @@ public class NdmTestUtils {
         } else if (original instanceof CcsdsFrameMapper) {
             Assertions.assertEquals(original, rebuilt);
             return true;
+        } else if (original instanceof Optional<?>) {
+            return checkOptional((Optional<?>) original, (Optional<?>) rebuilt);
         } else {
             return false;
         }
 
+    }
+
+    public static boolean checkOptional(final Optional<?> original, final Optional<?> rebuilt) {
+        Assertions.assertEquals(original.isPresent(), rebuilt.isPresent());
+        return recurseCheck(original.orElse(null), rebuilt.orElse(null));
     }
 
     public static void checkContainer(final Object original, final Object rebuilt) {
@@ -242,37 +249,37 @@ public class NdmTestUtils {
     }
 
     public static void checkFrameFacade(final FrameFacade original, final FrameFacade rebuilt) {
-        if (original.asFrame() == null) {
-            Assertions.assertNull(rebuilt.asFrame());
+        if (original.asFrame().isEmpty()) {
+            Assertions.assertFalse(rebuilt.asFrame().isPresent());
         } else {
-            Assertions.assertEquals(original.asFrame().getName(),
-                                rebuilt.asFrame().getName());
+            Assertions.assertEquals(original.asFrame().get().getName(),
+                                rebuilt.asFrame().get().getName());
         }
         Assertions.assertEquals(original.asCelestialBodyFrame(),
                             rebuilt.asCelestialBodyFrame());
-        if (original.asOrbitRelativeFrame() == null) {
-            Assertions.assertNull(rebuilt.asOrbitRelativeFrame());
+        if (original.asOrbitRelativeFrame().isEmpty()) {
+            Assertions.assertFalse(rebuilt.asOrbitRelativeFrame().isPresent());
         } else {
-            Assertions.assertEquals(original.asOrbitRelativeFrame().getLofType(),
-                                rebuilt.asOrbitRelativeFrame().getLofType());
+            Assertions.assertEquals(original.asOrbitRelativeFrame().get().getLofType(),
+                                rebuilt.asOrbitRelativeFrame().get().getLofType());
         }
-        if (original.asSpacecraftBodyFrame() == null) {
-            Assertions.assertNull(rebuilt.asSpacecraftBodyFrame());
+        if (original.asSpacecraftBodyFrame().isEmpty()) {
+            Assertions.assertFalse(rebuilt.asSpacecraftBodyFrame().isPresent());
         } else {
-            Assertions.assertEquals(original.asSpacecraftBodyFrame().getBaseEquipment(),
-                                rebuilt.asSpacecraftBodyFrame().getBaseEquipment());
-            Assertions.assertEquals(original.asSpacecraftBodyFrame().getLabel(),
-                                rebuilt.asSpacecraftBodyFrame().getLabel());
+            Assertions.assertEquals(original.asSpacecraftBodyFrame().get().getBaseEquipment(),
+                                rebuilt.asSpacecraftBodyFrame().get().getBaseEquipment());
+            Assertions.assertEquals(original.asSpacecraftBodyFrame().get().getLabel(),
+                                rebuilt.asSpacecraftBodyFrame().get().getLabel());
         }
         Assertions.assertEquals(original.getName(), rebuilt.getName());
     }
 
     public static void checkBodyFacade(final BodyFacade original, final BodyFacade rebuilt) {
-        if (original.getBody() == null) {
-            Assertions.assertNull(rebuilt.getBody());
+        if (original.getBody().isEmpty()) {
+            Assertions.assertFalse(rebuilt.getBody().isPresent());
         } else {
-            Assertions.assertEquals(original.getBody().getName(),
-                                rebuilt.getBody().getName());
+            Assertions.assertEquals(original.getBody().get().getName(),
+                                rebuilt.getBody().get().getName());
         }
         Assertions.assertEquals(original.getName().toUpperCase(Locale.US), rebuilt.getName().toUpperCase(Locale.US));
     }

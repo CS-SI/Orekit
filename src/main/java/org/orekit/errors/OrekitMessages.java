@@ -441,6 +441,9 @@ public enum OrekitMessages implements Localizable {
     /** CCSDS_MISSING_SENSOR_INDEX. */
     CCSDS_MISSING_SENSOR_INDEX("missing sensor index {0}"),
 
+    /** CCSDS_MISSING_SENSOR_INDEX. */
+    CCSDS_MISSING_OPTIONAL_VALUE("cannot use optional CCSDS value because not present in file"),
+
     /** IIRV_MISSING_LINEBREAK_IN_FILE. */
     IIRV_MISSING_LINEBREAK_IN_FILE("line break(s) missing after vector number {0} in {1}"),
 

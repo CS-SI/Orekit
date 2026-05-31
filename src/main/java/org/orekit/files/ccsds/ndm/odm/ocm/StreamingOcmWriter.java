@@ -230,14 +230,14 @@ public class StreamingOcmWriter implements AutoCloseable {
                     headerWritePending = false;
                 }
 
-                trajectoryMetadata.setTrajNextID(TrajectoryStateHistoryMetadata.incrementTrajID(trajectoryMetadata.getTrajID()));
+                trajectoryMetadata.setTrajNextID(TrajectoryStateHistoryMetadata.incrementTrajID(trajectoryMetadata.getTrajID().orElse(null)));
                 trajectoryMetadata.setUseableStartTime(date);
                 trajectoryMetadata.setUseableStopTime(t);
                 if (useAttitudeFrame) {
                     frame = s0.getAttitude().getReferenceFrame();
                     trajectoryMetadata.setTrajReferenceFrame(FrameFacade.map(frame));
                 } else {
-                    frame = trajectoryMetadata.getTrajReferenceFrame().asFrame();
+                    frame = trajectoryMetadata.getTrajReferenceFrame().asFrame().orElseThrow();  // CdmMetadata validates is not null
                 }
 
                 crossings = 0;
@@ -246,7 +246,7 @@ public class StreamingOcmWriter implements AutoCloseable {
                 final OneAxisEllipsoid body = trajectoryMetadata.getTrajType() == OrbitElementsType.GEODETIC ?
                                               new OneAxisEllipsoid(writer.getEquatorialRadius(),
                                                                    writer.getFlattening(),
-                                                                   trajectoryMetadata.getTrajReferenceFrame().asFrame()) :
+                                                                   trajectoryMetadata.getTrajReferenceFrame().asFrame().orElseThrow()) :  // CdmMetadata validates is not null
                                               null;
                 final double mu = s0.isOrbitDefined() ? s0.getOrbit().getMu() : Double.NaN;
                 trajectoryWriter = new TrajectoryStateHistoryWriter(new TrajectoryStateHistory(trajectoryMetadata,
@@ -291,12 +291,12 @@ public class StreamingOcmWriter implements AutoCloseable {
                 trajectoryWriter.exitSection(generator);
 
                 // update the trajectory IDs
-                trajectoryMetadata.setTrajPrevID(trajectoryMetadata.getTrajID());
-                trajectoryMetadata.setTrajID(trajectoryMetadata.getTrajNextID());
+                trajectoryMetadata.setTrajPrevID(trajectoryMetadata.getTrajID().orElse(null));
+                trajectoryMetadata.setTrajID(trajectoryMetadata.getTrajNextID().orElse(null));
 
-                if (trajectoryMetadata.getOrbRevNum() >= 0) {
+                if (trajectoryMetadata.getOrbRevNum().isPresent()) {
                     // update the orbits revolution number
-                    trajectoryMetadata.setOrbRevNum(trajectoryMetadata.getOrbRevNum() + crossings);
+                    trajectoryMetadata.setOrbRevNum(trajectoryMetadata.getOrbRevNum().get() + crossings);
                 }
 
             } catch (IOException e) {

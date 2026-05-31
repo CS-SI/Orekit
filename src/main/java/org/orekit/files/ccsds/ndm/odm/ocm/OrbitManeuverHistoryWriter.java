@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.DutyCycleType;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
@@ -62,54 +64,59 @@ class OrbitManeuverHistoryWriter extends AbstractWriter {
 
         // identifiers
         generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_ID.name(),        metadata.getManID(),       null, false);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_PREV_ID.name(),   metadata.getManPrevID(),   null, false);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_NEXT_ID.name(),   metadata.getManNextID(),   null, false);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_BASIS.name(),     metadata.getManBasis(),          false);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_BASIS_ID.name(),  metadata.getManBasisID(),  null, false);
+        generator.writeOptionalStringEntry(OrbitManeuverHistoryMetadataKey.MAN_PREV_ID.name(),   metadata.getManPrevID(),   null, false);
+        generator.writeOptionalStringEntry(OrbitManeuverHistoryMetadataKey.MAN_NEXT_ID.name(),   metadata.getManNextID(),   null, false);
+        generator.writeOptionalEnumEntry(OrbitManeuverHistoryMetadataKey.MAN_BASIS.name(),     metadata.getManBasis(),          false);
+        generator.writeOptionalStringEntry(OrbitManeuverHistoryMetadataKey.MAN_BASIS_ID.name(),  metadata.getManBasisID(),  null, false);
         generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_DEVICE_ID.name(), metadata.getManDeviceID(), null, false);
 
         // time
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_PREV_EPOCH.name(), timeConverter, metadata.getManPrevEpoch(), true, false);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_NEXT_EPOCH.name(), timeConverter, metadata.getManNextEpoch(), true, false);
+        generator.writeOptionalDateEntry(OrbitManeuverHistoryMetadataKey.MAN_PREV_EPOCH.name(), timeConverter, metadata.getManPrevEpoch(), true, false);
+        generator.writeOptionalDateEntry(OrbitManeuverHistoryMetadataKey.MAN_NEXT_EPOCH.name(), timeConverter, metadata.getManNextEpoch(), true, false);
 
         // references
         generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_PURPOSE.name(),      metadata.getManPurpose(),                          false);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_PRED_SOURCE.name(),  metadata.getManPredSource(),                 null, false);
+        generator.writeOptionalStringEntry(OrbitManeuverHistoryMetadataKey.MAN_PRED_SOURCE.name(),  metadata.getManPredSource(),                 null, false);
         generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_REF_FRAME.name(),    metadata.getManReferenceFrame().getName(),   null, false);
         if (!metadata.getManFrameEpoch().equals(timeConverter.getReferenceDate()) &&
-            metadata.getManReferenceFrame().asOrbitRelativeFrame() == null &&
-            metadata.getManReferenceFrame().asSpacecraftBodyFrame() == null) {
+            metadata.getManReferenceFrame().asOrbitRelativeFrame().isEmpty() &&
+            metadata.getManReferenceFrame().asSpacecraftBodyFrame().isEmpty()) {
             generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_FRAME_EPOCH.name(),  timeConverter, metadata.getManFrameEpoch(),  true, false);
         }
-        if (metadata.getGravitationalAssist() != null) {
-            generator.writeEntry(OrbitManeuverHistoryMetadataKey.GRAV_ASSIST_NAME.name(), metadata.getGravitationalAssist().getName(), null, false);
+        if (metadata.getGravitationalAssist().isPresent()) {
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.GRAV_ASSIST_NAME.name(), metadata.getGravitationalAssist().get().getName(), null, false);
         }
 
         // duty cycle
         final boolean notContinuous = metadata.getDcType() != DutyCycleType.CONTINUOUS;
         final boolean timeAndAngle  = metadata.getDcType() == DutyCycleType.TIME_AND_ANGLE;
         generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_TYPE.name(), metadata.getDcType(), false);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),  timeConverter, metadata.getDcWindowOpen(),  false, notContinuous);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(), timeConverter, metadata.getDcWindowClose(), false, notContinuous);
-        if (metadata.getDcMinCycles() >= 0) {
-            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(), metadata.getDcMinCycles(), false);
+        generator.writeOptionalDateEntry(OrbitManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),  timeConverter, metadata.getDcWindowOpen(),  false, notContinuous);
+        generator.writeOptionalDateEntry(OrbitManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(), timeConverter, metadata.getDcWindowClose(), false, notContinuous);
+        if (metadata.getDcMinCycles().isPresent()) {
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(), metadata.getDcMinCycles().get(), false);
         }
-        if (metadata.getDcMaxCycles() >= 0) {
-            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(), metadata.getDcMaxCycles(), false);
+        if (metadata.getDcMaxCycles().isPresent()) {
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(), metadata.getDcMaxCycles().get(), false);
         }
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(), false, notContinuous);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),  false, notContinuous);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),   false, notContinuous);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND,  notContinuous);
-        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND,  notContinuous);
+        generator.writeOptionalDateEntry(OrbitManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(), false, notContinuous);
+        generator.writeOptionalDateEntry(OrbitManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),  false, notContinuous);
+        generator.writeOptionalDateEntry(OrbitManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),   false, notContinuous);
+        generator.writeOptionalDoubleEntry(OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND,  notContinuous);
+        generator.writeOptionalDoubleEntry(OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND,  notContinuous);
         if (timeAndAngle) {
-            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_REF_DIR.name(), toString(metadata.getDcRefDir(), generator.getFormatter()), null, timeAndAngle);
+            // If timeAnAngle, all values are mandatory. That's why we use .orElseThrow() method
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_REF_DIR.name(),
+                    toString(metadata.getDcRefDir().orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE)), generator.getFormatter()),
+                    null, true);
             generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_BODY_FRAME.name(),
-                                 metadata.getDcBodyFrame().toString().replace(' ', '_'),
-                                 null, timeAndAngle);
-            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name(),   toString(metadata.getDcBodyTrigger(), generator.getFormatter()), null,   timeAndAngle);
-            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), metadata.getDcPhaseStartAngle(), Unit.DEGREE,  timeAndAngle);
-            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  metadata.getDcPhaseStopAngle(),  Unit.DEGREE,  timeAndAngle);
+                                 metadata.getDcBodyFrame().orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE)).toString().replace(' ', '_'),
+                                 null, true);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name(),
+                    toString(metadata.getDcBodyTrigger().orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE)), generator.getFormatter()),
+                    null, true);
+            generator.writeOptionalDoubleEntry(OrbitManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), metadata.getDcPhaseStartAngle(), Unit.DEGREE, true);
+            generator.writeOptionalDoubleEntry(OrbitManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  metadata.getDcPhaseStopAngle(),  Unit.DEGREE, true);
         }
 
         // elements

@@ -67,16 +67,16 @@ class MeanKeplerianElementsWriter extends AbstractWriter {
         generator.writeComments(keplerianElements.getComments());
         generator.writeEntry(KeplerianElementsKey.EPOCH.name(), timeConverter, keplerianElements.getEpoch(), true, true);
         if (theoryIsSgpSdp) {
-            generator.writeEntry(KeplerianElementsKey.MEAN_MOTION.name(), keplerianElements.getMeanMotion(), Units.REV_PER_DAY, true);
+            generator.writeOptionalDoubleEntry(KeplerianElementsKey.MEAN_MOTION.name(),     keplerianElements.getMeanMotion(), Units.REV_PER_DAY, true);
         } else {
-            generator.writeEntry(KeplerianElementsKey.SEMI_MAJOR_AXIS.name(), keplerianElements.getA(), Unit.KILOMETRE, true);
+            generator.writeOptionalDoubleEntry(KeplerianElementsKey.SEMI_MAJOR_AXIS.name(), keplerianElements.getA(),          Unit.KILOMETRE, true);
         }
-        generator.writeEntry(KeplerianElementsKey.ECCENTRICITY.name(),      keplerianElements.getE(), Unit.ONE,          true);
-        generator.writeEntry(KeplerianElementsKey.INCLINATION.name(),       keplerianElements.getI(), Unit.DEGREE,       true);
-        generator.writeEntry(KeplerianElementsKey.RA_OF_ASC_NODE.name(),    keplerianElements.getRaan(), Unit.DEGREE,    true);
-        generator.writeEntry(KeplerianElementsKey.ARG_OF_PERICENTER.name(), keplerianElements.getPa(), Unit.DEGREE,      true);
-        generator.writeEntry(KeplerianElementsKey.MEAN_ANOMALY.name(),      keplerianElements.getAnomaly(), Unit.DEGREE, true);
-        generator.writeEntry(KeplerianElementsKey.GM.name(),                keplerianElements.getMu(), Units.KM3_PER_S2, false);
+        generator.writeEntry(KeplerianElementsKey.ECCENTRICITY.name(),      keplerianElements.getE(),       Unit.ONE,         true);
+        generator.writeEntry(KeplerianElementsKey.INCLINATION.name(),       keplerianElements.getI(),       Unit.DEGREE,      true);
+        generator.writeEntry(KeplerianElementsKey.RA_OF_ASC_NODE.name(),    keplerianElements.getRaan(),    Unit.DEGREE,      true);
+        generator.writeEntry(KeplerianElementsKey.ARG_OF_PERICENTER.name(), keplerianElements.getPa(),      Unit.DEGREE,      true);
+        generator.writeEntry(KeplerianElementsKey.MEAN_ANOMALY.name(),      keplerianElements.getAnomaly(), Unit.DEGREE,      true);
+        generator.writeOptionalDoubleEntry(KeplerianElementsKey.GM.name(),  keplerianElements.getMu(),      Units.KM3_PER_S2, false);
 
     }
 

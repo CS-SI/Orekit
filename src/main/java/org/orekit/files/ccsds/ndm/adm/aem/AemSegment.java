@@ -70,7 +70,7 @@ public class AemSegment extends Segment<AemMetadata, AemData>
     /** {@inheritDoc} */
     @Override
     public String getInterpolationMethod() {
-        return getMetadata().getInterpolationMethod();
+        return getMetadata().getInterpolationMethod().orElse(null);
     }
 
     /** {@inheritDoc} */

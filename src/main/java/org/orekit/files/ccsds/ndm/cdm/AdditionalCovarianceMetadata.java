@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
@@ -38,32 +41,38 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 public class AdditionalCovarianceMetadata extends CommentsContainer {
 
     /** The atmospheric density forecast error. */
-    private double densityForecastUncertainty;
+    @Nullable
+    private Double densityForecastUncertainty;
 
     /** The minimum suggested covariance scale factor. */
-    private double cScaleFactorMin;
+    @Nullable
+    private Double cScaleFactorMin;
 
     /** The (median) suggested covariance scale factor. */
-    private double cScaleFactor;
+    @Nullable
+    private Double cScaleFactor;
 
     /** The maximum suggested covariance scale factor. */
-    private double cScaleFactorMax;
+    @Nullable
+    private Double cScaleFactorMax;
 
     /** The source (or origin) of the specific orbital data for this object. */
+    @Nullable
     private String screeningDataSource;
 
     /** The drag consider parameter (DCP) sensitivity vectors map forward expected error in the drag acceleration to actual
      * componentized position errors at TCA. */
+    @Nullable
     private double[] dcpSensitivityVectorPosition;
 
     /** The drag consider parameter (DCP) sensitivity vectors map forward expected error in the drag acceleration to actual
      * componentized velocity errors at TCA. */
+    @Nullable
     private double[] dcpSensitivityVectorVelocity;
 
 
     /** Simple constructor. */
     public AdditionalCovarianceMetadata() {
-        densityForecastUncertainty = Double.NaN;
     }
 
     /** {@inheritDoc} */
@@ -77,8 +86,8 @@ public class AdditionalCovarianceMetadata extends CommentsContainer {
      * Get the atmospheric density forecast error.
      * @return densityForecastUncertainty
      */
-    public double getDensityForecastUncertainty() {
-        return densityForecastUncertainty;
+    public Optional<Double> getDensityForecastUncertainty() {
+        return Optional.ofNullable(densityForecastUncertainty);
     }
 
     /**
@@ -93,8 +102,8 @@ public class AdditionalCovarianceMetadata extends CommentsContainer {
     /** Get the minimum suggested covariance scale factor.
      * @return the cScaleFactorMin
      */
-    public double getcScaleFactorMin() {
-        return cScaleFactorMin;
+    public Optional<Double> getcScaleFactorMin() {
+        return Optional.ofNullable(cScaleFactorMin);
     }
 
     /** Set the minimum suggested covariance scale factor.
@@ -107,8 +116,8 @@ public class AdditionalCovarianceMetadata extends CommentsContainer {
     /** Get the (median) suggested covariance scale factor.
      * @return the cScaleFactor
      */
-    public double getcScaleFactor() {
-        return cScaleFactor;
+    public Optional<Double> getcScaleFactor() {
+        return Optional.ofNullable(cScaleFactor);
     }
 
     /** Set the (median) suggested covariance scale factor.
@@ -121,8 +130,8 @@ public class AdditionalCovarianceMetadata extends CommentsContainer {
     /** Get the maximum suggested covariance scale factor.
      * @return the cScaleFactorMax
      */
-    public double getcScaleFactorMax() {
-        return cScaleFactorMax;
+    public Optional<Double> getcScaleFactorMax() {
+        return Optional.ofNullable(cScaleFactorMax);
     }
 
     /** set the maximum suggested covariance scale factor.
@@ -135,8 +144,8 @@ public class AdditionalCovarianceMetadata extends CommentsContainer {
     /** Get the source (or origin) of the specific orbital data for this object.
      * @return the screeningDataSource
      */
-    public String getScreeningDataSource() {
-        return screeningDataSource;
+    public Optional<String> getScreeningDataSource() {
+        return Optional.ofNullable(screeningDataSource);
     }
 
     /** Set the source (or origin) of the specific orbital data for this object.
@@ -149,8 +158,11 @@ public class AdditionalCovarianceMetadata extends CommentsContainer {
     /** Get the DCP sensitivity vector (position errors at TCA).
      * @return the dcpSensitivityVectorPosition
      */
-    public double[] getDcpSensitivityVectorPosition() {
-        return dcpSensitivityVectorPosition == null ? null : dcpSensitivityVectorPosition.clone();
+    public Optional<double[]> getDcpSensitivityVectorPosition() {
+        if (dcpSensitivityVectorPosition == null) {
+            return Optional.empty();
+        }
+        return Optional.of(dcpSensitivityVectorPosition.clone());
     }
 
     /** Set the DCP sensitivity vector (position errors at TCA).
@@ -163,8 +175,11 @@ public class AdditionalCovarianceMetadata extends CommentsContainer {
     /** Get the DCP sensitivity vector (velocity errors at TCA).
      * @return the dcpSensitivityVectorVelocity
      */
-    public double[] getDcpSensitivityVectorVelocity() {
-        return dcpSensitivityVectorVelocity == null ? null : dcpSensitivityVectorVelocity.clone();
+    public Optional<double[]> getDcpSensitivityVectorVelocity() {
+        if (dcpSensitivityVectorVelocity == null) {
+            return Optional.empty();
+        }
+        return Optional.of(dcpSensitivityVectorVelocity.clone());
     }
 
     /** Set the DCP sensitivity vector (velocity errors at TCA).

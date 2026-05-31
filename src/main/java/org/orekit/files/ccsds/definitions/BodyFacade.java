@@ -16,7 +16,10 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import java.util.Optional;
+
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.annotation.Nullable;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
@@ -31,6 +34,7 @@ public class BodyFacade {
     private final String name;
 
     /** Celestial body (may be null). */
+    @Nullable
     private final CelestialBody body;
 
     /** Simple constructor.
@@ -50,10 +54,10 @@ public class BodyFacade {
     }
 
     /** Get the celestial body.
-     * @return celestial body (may be null)
+     * @return celestial body (can be empty)
      */
-    public CelestialBody getBody() {
-        return body;
+    public Optional<CelestialBody> getBody() {
+        return Optional.ofNullable(body);
     }
 
     /**

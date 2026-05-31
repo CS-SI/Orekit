@@ -123,54 +123,51 @@ public class OcmWriter extends AbstractMessageWriter<OdmHeader, Segment<OcmMetad
         }
 
         // trajectory history
-        if (segment.getData().getTrajectoryBlocks() != null && !segment.getData().getTrajectoryBlocks().isEmpty()) {
+        if (!segment.getData().getTrajectoryBlocks().isEmpty()) {
             for (final TrajectoryStateHistory history : segment.getData().getTrajectoryBlocks()) {
                 // write optional trajectory history block
                 new TrajectoryStateHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 
-        if (segment.getData().getPhysicBlock() != null) {
+        if (segment.getData().getPhysicBlock().isPresent()) {
             // write optional physical properties block
-            new OrbitPhysicalPropertiesWriter(segment.getData().getPhysicBlock(),
-                                         getTimeConverter()).
+            new OrbitPhysicalPropertiesWriter(segment.getData().getPhysicBlock().get(), getTimeConverter()).
             write(generator);
         }
 
         // covariance history
-        if (segment.getData().getCovarianceBlocks() != null && !segment.getData().getCovarianceBlocks().isEmpty()) {
+        if (!segment.getData().getCovarianceBlocks().isEmpty()) {
             for (final OrbitCovarianceHistory history : segment.getData().getCovarianceBlocks()) {
                 // write optional covariance history block
                 new OrbitCovarianceHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 
-        if (segment.getData().getManeuverBlocks() != null && !segment.getData().getManeuverBlocks().isEmpty()) {
+        if (!segment.getData().getManeuverBlocks().isEmpty()) {
             for (final OrbitManeuverHistory maneuver : segment.getData().getManeuverBlocks()) {
                 // write optional maneuver block
                 new OrbitManeuverHistoryWriter(maneuver, getTimeConverter()).write(generator);
             }
         }
 
-        if (segment.getData().getPerturbationsBlock() != null) {
+        if (segment.getData().getPerturbationsBlock().isPresent()) {
             // write optional perturbation parameters block
-            new PerturbationsWriter(segment.getData().getPerturbationsBlock(),
-                                    getTimeConverter()).
+            new PerturbationsWriter(segment.getData().getPerturbationsBlock().get(), getTimeConverter()).
             write(generator);
         }
 
-        if (segment.getData().getOrbitDeterminationBlock() != null) {
+        if (segment.getData().getOrbitDeterminationBlock().isPresent()) {
             // write optional orbit determination block
-            new OrbitDeterminationWriter(segment.getData().getOrbitDeterminationBlock(),
-                                         getTimeConverter()).
+            new OrbitDeterminationWriter(segment.getData().getOrbitDeterminationBlock().get(), getTimeConverter()).
             write(generator);
         }
 
-        if (segment.getData().getUserDefinedBlock() != null) {
+        if (segment.getData().getUserDefinedBlock().isPresent()) {
             // write optional user defined parameters block
             new UserDefinedWriter(OcmDataSubStructureKey.user.name(),
                                   OcmDataSubStructureKey.USER.name(),
-                                  segment.getData().getUserDefinedBlock()).
+                                  segment.getData().getUserDefinedBlock().get()).
             write(generator);
         }
 

@@ -16,11 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.util.Arrays;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.CommentsContainer;
-
-import java.util.Arrays;
 
 /**
  * Container for Sigma/Eigenvectors Covariance data.
@@ -61,7 +61,6 @@ public class SigmaEigenvectorsCovariance extends CommentsContainer {
     public SigmaEigenvectorsCovariance(final boolean altCovFlag) {
         this.altCovFlag = altCovFlag;
         csig3eigvec3 = new double[12];
-
         Arrays.fill(csig3eigvec3, Double.NaN);
     }
 

@@ -17,8 +17,11 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
@@ -44,88 +47,114 @@ public class OcmMetadata extends OdmMetadata {
 
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
+    @Nullable
     private String internationalDesignator;
 
     /** Specification of satellite catalog source. */
+    @Nullable
     private String catalogName;
 
     /** Unique satellite identification designator for the object. */
+    @Nullable
     private String objectDesignator;
 
     /** Alternate names for this space object. */
     private List<String> alternateNames;
 
     /** Programmatic Point Of Contact at originator. */
+    @Nullable
     private String originatorPOC;
 
     /** Position of Programmatic Point Of Contact at originator. */
+    @Nullable
     private String originatorPosition;
 
     /** Phone number of Programmatic Point Of Contact at originator. */
+    @Nullable
     private String originatorPhone;
 
     /** Email address of Programmatic Point Of Contact at originator.
      * @since 11.2
      */
+    @Nullable
     private String originatorEmail;
 
     /** Address of Programmatic Point Of Contact at originator. */
+    @Nullable
     private String originatorAddress;
 
     /** Creating agency or operator. */
+    @Nullable
     private String techOrg;
 
     /** Technical Point Of Contact at originator. */
+    @Nullable
     private String techPOC;
 
     /** Position of Technical Point Of Contact at originator. */
+    @Nullable
     private String techPosition;
 
     /** Phone number of Technical Point Of Contact at originator. */
+    @Nullable
     private String techPhone;
 
     /** Email address of Technical Point Of Contact at originator.
      * @since 11.2
      */
+    @Nullable
     private String techEmail;
 
     /** Address of Technical Point Of Contact at originator. */
+    @Nullable
     private String techAddress;
 
     /** Unique ID identifying previous message from a given originator. */
+    @Nullable
     private String previousMessageID;
 
     /** Unique ID identifying next message from a given originator. */
+    @Nullable
     private String nextMessageID;
 
     /** Unique identifier of Attitude Data Message linked to this Orbit Data Message. */
+    @Nullable
     private String admMessageLink;
 
     /** Unique identifier of Conjunction Data Message linked to this Orbit Data Message. */
+    @Nullable
     private String cdmMessageLink;
 
     /** Unique identifier of Pointing Request Message linked to this Orbit Data Message. */
+    @Nullable
     private String prmMessageLink;
 
     /** Unique identifier of Reentry Data Messages linked to this Orbit Data Message. */
+    @Nullable
     private String rdmMessageLink;
 
     /** Unique identifier of Tracking Data Messages linked to this Orbit Data Message. */
+    @Nullable
     private String tdmMessageLink;
 
     /** Operator of the space object. */
+    @Nullable
     private String operator;
 
     /** Owner of the space object. */
+    @Nullable
     private String owner;
 
     /** Name of the country where the space object owner is based. */
+    @Nullable
     private String country;
 
     /** Name of the constellation this space object belongs to. */
+    @Nullable
     private String constellation;
 
     /** Type of object. */
+    @Nullable
     private ObjectType objectType;
 
     /** Epoch to which <em>all</em> relative times are referenced in data blocks;
@@ -133,58 +162,76 @@ public class OcmMetadata extends OdmMetadata {
     private AbsoluteDate epochT0;
 
     /** Operational status. */
+    @Nullable
     private OpsStatus opsStatus;
 
     /** Orbit category. */
+    @Nullable
     private OrbitCategory orbitCategory;
 
     /** List of elements of information data blocks included in this message. */
     private List<OcmElements> ocmDataElements;
 
-    /** Spacecraft clock count at {@link #getEpochT0()}. */
+    /** Spacecraft clock count at {@link #getEpochT0()}.
+     * Never null because of default value.
+     */
     private double sclkOffsetAtEpoch;
 
-    /** Number of spacecraft clock seconds occurring during one SI second. */
+    /** Number of spacecraft clock seconds occurring during one SI second.
+     * Never null because of default value.
+     */
     private double sclkSecPerSISec;
 
     /** Creation date of previous message from a given originator. */
+    @Nullable
     private AbsoluteDate previousMessageEpoch;
 
     /** Creation date of next message from a given originator. */
+    @Nullable
     private AbsoluteDate nextMessageEpoch;
 
     /** Time of the earliest data contained in the OCM. */
+    @Nullable
     private AbsoluteDate startTime;
 
     /** Time of the latest data contained in the OCM. */
+    @Nullable
     private AbsoluteDate stopTime;
 
     /** Span of time that the OCM covers. */
-    private double timeSpan;
+    @Nullable
+    private Double timeSpan;
 
-    /** Difference (TAI – UTC) in seconds at epoch {@link #epochT0}. */
-    private double taimutcT0;
+    /** Difference (TAI - UTC) in seconds at epoch {@link #epochT0}. */
+    @Nullable
+    private Double taimutcT0;
 
     /** Epoch of next leap second.
      * @since 11.2
      */
+    @Nullable
     private AbsoluteDate nextLeapEpoch;
 
-    /** Difference (TAI – UTC) in seconds incorporated at {@link #nextLeapEpoch}.
+    /** Difference (TAI - UTC) in seconds incorporated at {@link #nextLeapEpoch}.
      * @since 11.2
      */
-    private double nextLeapTaimutc;
+    @Nullable
+    private Double nextLeapTaimutc;
 
-    /** Difference (UT1 – UTC) in seconds at epoch {@link #epochT0}. */
-    private double ut1mutcT0;
+    /** Difference (UT1 - UTC) in seconds at epoch {@link #epochT0}. */
+    @Nullable
+    private Double ut1mutcT0;
 
     /** Source and version of Earth Orientation Parameters. */
+    @Nullable
     private String eopSource;
 
     /** Interpolation method for Earth Orientation Parameters. */
+    @Nullable
     private String interpMethodEOP;
 
     /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
+    @Nullable
     private String celestialSource;
 
     /** Data context.
@@ -204,14 +251,11 @@ public class OcmMetadata extends OdmMetadata {
 
         // set up the few fields that have default values as per CCSDS standard
         super(TimeSystem.UTC, frameMapper);
-        sclkOffsetAtEpoch = DEFAULT_SCLK_OFFSET_AT_EPOCH;
-        sclkSecPerSISec   = DEFAULT_SCLK_SEC_PER_SI_SEC;
-        timeSpan          = Double.NaN;
-        taimutcT0         = Double.NaN;
-        ut1mutcT0         = Double.NaN;
-        nextLeapTaimutc   = Double.NaN;
-        this.dataContext  = dataContext;
-
+        this.sclkOffsetAtEpoch = DEFAULT_SCLK_OFFSET_AT_EPOCH; // Default value if absent
+        this.sclkSecPerSISec   = DEFAULT_SCLK_SEC_PER_SI_SEC; // Default value if absent
+        this.dataContext       = dataContext;
+        this.ocmDataElements   = new ArrayList<>();
+        this.alternateNames    = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
@@ -224,15 +268,15 @@ public class OcmMetadata extends OdmMetadata {
         checkNotNull(getTimeSystem(), MetadataKey.TIME_SYSTEM.name());
         checkNotNull(epochT0,         OcmMetadataKey.EPOCH_TZERO.name());
         if (nextLeapEpoch != null) {
-            checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC.name());
+            checkNotNaN(nextLeapTaimutc != null ? nextLeapTaimutc : Double.NaN, OcmMetadataKey.NEXT_LEAP_TAIMUTC.name());
         }
     }
 
     /** Get the international designator for the object.
      * @return international designator for the object
      */
-    public String getInternationalDesignator() {
-        return internationalDesignator;
+    public Optional<String> getInternationalDesignator() {
+        return Optional.ofNullable(internationalDesignator);
     }
 
     /** Set the international designator for the object.
@@ -246,8 +290,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the specification of satellite catalog source.
      * @return specification of satellite catalog source
      */
-    public String getCatalogName() {
-        return catalogName;
+    public Optional<String> getCatalogName() {
+        return Optional.ofNullable(catalogName);
     }
 
     /** Set the specification of satellite catalog source.
@@ -261,8 +305,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the unique satellite identification designator for the object.
      * @return unique satellite identification designator for the object.
      */
-    public String getObjectDesignator() {
-        return objectDesignator;
+    public Optional<String> getObjectDesignator() {
+        return Optional.ofNullable(objectDesignator);
     }
 
     /** Set the unique satellite identification designator for the object.
@@ -291,8 +335,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the programmatic Point Of Contact at originator.
      * @return programmatic Point Of Contact at originator
      */
-    public String getOriginatorPOC() {
-        return originatorPOC;
+    public Optional<String> getOriginatorPOC() {
+        return Optional.ofNullable(originatorPOC);
     }
 
     /** Set the programmatic Point Of Contact at originator.
@@ -306,8 +350,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the position of Programmatic Point Of Contact at originator.
      * @return position of Programmatic Point Of Contact at originator
      */
-    public String getOriginatorPosition() {
-        return originatorPosition;
+    public Optional<String> getOriginatorPosition() {
+        return Optional.ofNullable(originatorPosition);
     }
 
     /** Set the position of Programmatic Point Of Contact at originator.
@@ -321,8 +365,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the phone number of Programmatic Point Of Contact at originator.
      * @return phone number of Programmatic Point Of Contact at originator
      */
-    public String getOriginatorPhone() {
-        return originatorPhone;
+    public Optional<String> getOriginatorPhone() {
+        return Optional.ofNullable(originatorPhone);
     }
 
     /** Set the phone number of Programmatic Point Of Contact at originator.
@@ -337,8 +381,8 @@ public class OcmMetadata extends OdmMetadata {
      * @return email address of Programmatic Point Of Contact at originator
      * @since 11.2
      */
-    public String getOriginatorEmail() {
-        return originatorEmail;
+    public Optional<String> getOriginatorEmail() {
+        return Optional.ofNullable(originatorEmail);
     }
 
     /** Set the email address of Programmatic Point Of Contact at originator.
@@ -353,8 +397,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the address of Programmatic Point Of Contact at originator.
      * @return address of Programmatic Point Of Contact at originator
      */
-    public String getOriginatorAddress() {
-        return originatorAddress;
+    public Optional<String> getOriginatorAddress() {
+        return Optional.ofNullable(originatorAddress);
     }
 
     /** Set the address of Programmatic Point Of Contact at originator.
@@ -368,8 +412,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the creating agency or operator.
      * @return creating agency or operator
      */
-    public String getTechOrg() {
-        return techOrg;
+    public Optional<String> getTechOrg() {
+        return Optional.ofNullable(techOrg);
     }
 
     /** Set the creating agency or operator.
@@ -383,8 +427,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the Technical Point Of Contact at originator.
      * @return Technical Point Of Contact at originator
      */
-    public String getTechPOC() {
-        return techPOC;
+    public Optional<String> getTechPOC() {
+        return Optional.ofNullable(techPOC);
     }
 
     /** Set the Technical Point Of Contact at originator.
@@ -398,8 +442,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the position of Technical Point Of Contact at originator.
      * @return position of Technical Point Of Contact at originator
      */
-    public String getTechPosition() {
-        return techPosition;
+    public Optional<String> getTechPosition() {
+        return Optional.ofNullable(techPosition);
     }
 
     /** Set the position of Technical Point Of Contact at originator.
@@ -413,8 +457,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the phone number of Technical Point Of Contact at originator.
      * @return phone number of Technical Point Of Contact at originator
      */
-    public String getTechPhone() {
-        return techPhone;
+    public Optional<String> getTechPhone() {
+        return Optional.ofNullable(techPhone);
     }
 
     /** Set the phone number of Technical Point Of Contact at originator.
@@ -429,8 +473,8 @@ public class OcmMetadata extends OdmMetadata {
      * @return email address of Technical Point Of Contact at originator
      * @since 11.2
      */
-    public String getTechEmail() {
-        return techEmail;
+    public Optional<String> getTechEmail() {
+        return Optional.ofNullable(techEmail);
     }
 
     /** Set the email address of Technical Point Of Contact at originator.
@@ -445,8 +489,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the address of Technical Point Of Contact at originator.
      * @return address of Technical Point Of Contact at originator
      */
-    public String getTechAddress() {
-        return techAddress;
+    public Optional<String> getTechAddress() {
+        return Optional.ofNullable(techAddress);
     }
 
     /** Set the address of Technical Point Of Contact at originator.
@@ -460,8 +504,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the unique ID identifying previous message from a given originator.
      * @return unique ID identifying previous message from a given originator
      */
-    public String getPreviousMessageID() {
-        return previousMessageID;
+    public Optional<String> getPreviousMessageID() {
+        return Optional.ofNullable(previousMessageID);
     }
 
     /** Set the unique ID identifying previous message from a given originator.
@@ -475,8 +519,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the unique ID identifying next message from a given originator.
      * @return unique ID identifying next message from a given originator
      */
-    public String getNextMessageID() {
-        return nextMessageID;
+    public Optional<String> getNextMessageID() {
+        return Optional.ofNullable(nextMessageID);
     }
 
     /** Set the unique ID identifying next message from a given originator.
@@ -490,8 +534,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the Unique identifier of Attitude Data Message linked to this Orbit Data Message.
      * @return Unique identifier of Attitude Data Message linked to this Orbit Data Message
      */
-    public String getAdmMessageLink() {
-        return admMessageLink;
+    public Optional<String> getAdmMessageLink() {
+        return Optional.ofNullable(admMessageLink);
     }
 
     /** Set the Unique identifier of Attitude Data Message linked to this Orbit Data Message.
@@ -505,8 +549,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the Unique identifier of Conjunction Data Message linked to this Orbit Data Message.
      * @return Unique identifier of Conjunction Data Message linked to this Orbit Data Message
      */
-    public String getCdmMessageLink() {
-        return cdmMessageLink;
+    public Optional<String> getCdmMessageLink() {
+        return Optional.ofNullable(cdmMessageLink);
     }
 
     /** Set the Unique identifier of Conjunction Data Message linked to this Orbit Data Message.
@@ -520,8 +564,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the Unique identifier of Pointing Request Message linked to this Orbit Data Message.
      * @return Unique identifier of Pointing Request Message linked to this Orbit Data Message
      */
-    public String getPrmMessageLink() {
-        return prmMessageLink;
+    public Optional<String> getPrmMessageLink() {
+        return Optional.ofNullable(prmMessageLink);
     }
 
     /** Set the Unique identifier of Pointing Request Message linked to this Orbit Data Message.
@@ -535,8 +579,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the Unique identifier of Reentry Data Message linked to this Orbit Data Message.
      * @return Unique identifier of Reentry Data Message linked to this Orbit Data Message
      */
-    public String getRdmMessageLink() {
-        return rdmMessageLink;
+    public Optional<String> getRdmMessageLink() {
+        return Optional.ofNullable(rdmMessageLink);
     }
 
     /** Set the Unique identifier of Reentry Data Message linked to this Orbit Data Message.
@@ -550,8 +594,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the Unique identifier of Tracking Data Message linked to this Orbit Data Message.
      * @return Unique identifier of Tracking Data Message linked to this Orbit Data Message
      */
-    public String getTdmMessageLink() {
-        return tdmMessageLink;
+    public Optional<String> getTdmMessageLink() {
+        return Optional.ofNullable(tdmMessageLink);
     }
 
     /** Set the Unique identifier of Tracking Data Message linked to this Orbit Data Message.
@@ -565,8 +609,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the operator of the space object.
      * @return operator of the space object
      */
-    public String getOperator() {
-        return operator;
+    public Optional<String> getOperator() {
+        return Optional.ofNullable(operator);
     }
 
     /** Set the operator of the space object.
@@ -580,8 +624,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the owner of the space object.
      * @return owner of the space object
      */
-    public String getOwner() {
-        return owner;
+    public Optional<String> getOwner() {
+        return Optional.ofNullable(owner);
     }
 
     /** Set the owner of the space object.
@@ -595,8 +639,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the name of the country where the space object owner is based.
      * @return name of the country where the space object owner is based
      */
-    public String getCountry() {
-        return country;
+    public Optional<String> getCountry() {
+        return Optional.ofNullable(country);
     }
 
     /** Set the name of the country where the space object owner is based.
@@ -610,8 +654,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the name of the constellation this space object belongs to.
      * @return name of the constellation this space object belongs to
      */
-    public String getConstellation() {
-        return constellation;
+    public Optional<String> getConstellation() {
+        return Optional.ofNullable(constellation);
     }
 
     /** Set the name of the constellation this space object belongs to.
@@ -625,8 +669,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the type of object.
      * @return type of object
      */
-    public ObjectType getObjectType() {
-        return objectType;
+    public Optional<ObjectType> getObjectType() {
+        return Optional.ofNullable(objectType);
     }
 
     /** Set the type of object.
@@ -655,8 +699,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the operational status.
      * @return operational status
      */
-    public OpsStatus getOpsStatus() {
-        return opsStatus;
+    public Optional<OpsStatus> getOpsStatus() {
+        return Optional.ofNullable(opsStatus);
     }
 
     /** Set the operational status.
@@ -670,8 +714,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the orbit category.
      * @return orbit category
      */
-    public OrbitCategory getOrbitCategory() {
-        return orbitCategory;
+    public Optional<OrbitCategory> getOrbitCategory() {
+        return Optional.ofNullable(orbitCategory);
     }
 
     /** Set the orbit category.
@@ -730,8 +774,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the creation date of previous message from a given originator.
      * @return creation date of previous message from a given originator
      */
-    public AbsoluteDate getPreviousMessageEpoch() {
-        return previousMessageEpoch;
+    public Optional<AbsoluteDate> getPreviousMessageEpoch() {
+        return Optional.ofNullable(previousMessageEpoch);
     }
 
     /** Set the creation date of previous message from a given originator.
@@ -745,8 +789,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the creation date of next message from a given originator.
      * @return creation date of next message from a given originator
      */
-    public AbsoluteDate getNextMessageEpoch() {
-        return nextMessageEpoch;
+    public Optional<AbsoluteDate> getNextMessageEpoch() {
+        return Optional.ofNullable(nextMessageEpoch);
     }
 
     /** Set the creation date of next message from a given originator.
@@ -760,8 +804,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the time of the earliest data contained in the OCM.
      * @return time of the earliest data contained in the OCM
      */
-    public AbsoluteDate getStartTime() {
-        return startTime;
+    public Optional<AbsoluteDate> getStartTime() {
+        return Optional.ofNullable(startTime);
     }
 
     /** Set the time of the earliest data contained in the OCM.
@@ -775,8 +819,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the time of the latest data contained in the OCM.
      * @return time of the latest data contained in the OCM
      */
-    public AbsoluteDate getStopTime() {
-        return stopTime;
+    public Optional<AbsoluteDate> getStopTime() {
+        return Optional.ofNullable(stopTime);
     }
 
     /** Set the time of the latest data contained in the OCM.
@@ -790,8 +834,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the span of time in seconds that the OCM covers.
      * @return span of time in seconds that the OCM covers
      */
-    public double getTimeSpan() {
-        return timeSpan;
+    public Optional<Double> getTimeSpan() {
+        return Optional.ofNullable(timeSpan);
     }
 
     /** Set the span of time in seconds that the OCM covers.
@@ -802,15 +846,15 @@ public class OcmMetadata extends OdmMetadata {
         this.timeSpan = timeSpan;
     }
 
-    /** Get the difference (TAI – UTC) in seconds at epoch {@link #getEpochT0()}.
-     * @return difference (TAI – UTC) in seconds at epoch {@link #getEpochT0()}
+    /** Get the difference (TAI - UTC) in seconds at epoch {@link #getEpochT0()}.
+     * @return difference (TAI - UTC) in seconds at epoch {@link #getEpochT0()}
      */
-    public double getTaimutcT0() {
-        return taimutcT0;
+    public Optional<Double> getTaimutcT0() {
+        return Optional.ofNullable(taimutcT0);
     }
 
-    /** Set the difference (TAI – UTC) in seconds at epoch {@link #getEpochT0()}.
-     * @param taimutcT0 difference (TAI – UTC) in seconds at epoch {@link #getEpochT0()}
+    /** Set the difference (TAI - UTC) in seconds at epoch {@link #getEpochT0()}.
+     * @param taimutcT0 difference (TAI - UTC) in seconds at epoch {@link #getEpochT0()}
      */
     public void setTaimutcT0(final double taimutcT0) {
         refuseFurtherComments();
@@ -821,8 +865,8 @@ public class OcmMetadata extends OdmMetadata {
      * @return epoch of next leap second
      * @since 11.2
      */
-    public AbsoluteDate getNextLeapEpoch() {
-        return nextLeapEpoch;
+    public Optional<AbsoluteDate> getNextLeapEpoch() {
+        return Optional.ofNullable(nextLeapEpoch);
     }
 
     /** Set the epoch of next leap second.
@@ -834,16 +878,16 @@ public class OcmMetadata extends OdmMetadata {
         this.nextLeapEpoch = nextLeapEpoch;
     }
 
-    /** Get the difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}.
-     * @return difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}
+    /** Get the difference (TAI - UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}.
+     * @return difference (TAI - UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}
      * @since 11.2
      */
-    public double getNextLeapTaimutc() {
-        return nextLeapTaimutc;
+    public Optional<Double> getNextLeapTaimutc() {
+        return Optional.ofNullable(nextLeapTaimutc);
     }
 
-    /** Set the difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}.
-     * @param nextLeapTaimutc difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}
+    /** Set the difference (TAI - UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}.
+     * @param nextLeapTaimutc difference (TAI - UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}
      * @since 11.2
      */
     public void setNextLeapTaimutc(final double nextLeapTaimutc) {
@@ -851,15 +895,15 @@ public class OcmMetadata extends OdmMetadata {
         this.nextLeapTaimutc = nextLeapTaimutc;
     }
 
-    /** Get the difference (UT1 – UTC) in seconds at epoch {@link #getEpochT0()}.
-     * @return difference (UT1 – UTC) in seconds at epoch {@link #getEpochT0()}
+    /** Get the difference (UT1 - UTC) in seconds at epoch {@link #getEpochT0()}.
+     * @return difference (UT1 - UTC) in seconds at epoch {@link #getEpochT0()}
      */
-    public double getUt1mutcT0() {
-        return ut1mutcT0;
+    public Optional<Double> getUt1mutcT0() {
+        return Optional.ofNullable(ut1mutcT0);
     }
 
-    /** Set the difference (UT1 – UTC) in seconds at epoch {@link #getEpochT0()}.
-     * @param ut1mutcT0 difference (UT1 – UTC) in seconds at epoch {@link #getEpochT0()}
+    /** Set the difference (UT1 - UTC) in seconds at epoch {@link #getEpochT0()}.
+     * @param ut1mutcT0 difference (UT1 - UTC) in seconds at epoch {@link #getEpochT0()}
      */
     public void setUt1mutcT0(final double ut1mutcT0) {
         refuseFurtherComments();
@@ -869,8 +913,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the source and version of Earth Orientation Parameters.
      * @return source and version of Earth Orientation Parameters
      */
-    public String getEopSource() {
-        return eopSource;
+    public Optional<String> getEopSource() {
+        return Optional.ofNullable(eopSource);
     }
 
     /** Set the source and version of Earth Orientation Parameters.
@@ -884,8 +928,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the interpolation method for Earth Orientation Parameters.
      * @return interpolation method for Earth Orientation Parameters
      */
-    public String getInterpMethodEOP() {
-        return interpMethodEOP;
+    public Optional<String> getInterpMethodEOP() {
+        return Optional.ofNullable(interpMethodEOP);
     }
 
     /** Set the interpolation method for Earth Orientation Parameters.
@@ -899,8 +943,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the source and version of celestial body (e.g. Sun/Earth/Planetary).
      * @return source and version of celestial body (e.g. Sun/Earth/Planetary)
      */
-    public String getCelestialSource() {
-        return celestialSource;
+    public Optional<String> getCelestialSource() {
+        return Optional.ofNullable(celestialSource);
     }
 
     /** Set the source and version of celestial body (e.g. Sun/Earth/Planetary).
@@ -932,44 +976,44 @@ public class OcmMetadata extends OdmMetadata {
         }
 
         // copy metadata
-        copy.setInternationalDesignator(getInternationalDesignator());
-        copy.setCatalogName(getCatalogName());
-        copy.setObjectDesignator(getObjectDesignator());
+        getInternationalDesignator().ifPresent(copy::setInternationalDesignator);
+        getCatalogName().ifPresent(copy::setCatalogName);
+        getObjectDesignator().ifPresent(copy::setObjectDesignator);
         copy.setAlternateNames(getAlternateNames());
-        copy.setOriginatorPOC(getOriginatorPOC());
-        copy.setOriginatorPosition(getOriginatorPosition());
-        copy.setOriginatorPhone(getOriginatorPhone());
-        copy.setOriginatorEmail(getOriginatorEmail());
-        copy.setOriginatorAddress(getOriginatorAddress());
-        copy.setTechOrg(getTechOrg());
-        copy.setTechPOC(getTechPOC());
-        copy.setTechPosition(getTechPosition());
-        copy.setTechPhone(getTechPhone());
-        copy.setTechEmail(getTechEmail());
-        copy.setTechAddress(getTechAddress());
-        copy.setAdmMessageLink(getAdmMessageLink());
-        copy.setCdmMessageLink(getCdmMessageLink());
-        copy.setPrmMessageLink(getPrmMessageLink());
-        copy.setRdmMessageLink(getRdmMessageLink());
-        copy.setTdmMessageLink(getTdmMessageLink());
-        copy.setOperator(getOperator());
-        copy.setOwner(getOwner());
-        copy.setCountry(getCountry());
-        copy.setConstellation(getConstellation());
-        copy.setObjectType(getObjectType());
+        getOriginatorPOC().ifPresent(copy::setOriginatorPOC);
+        getOriginatorPosition().ifPresent(copy::setOriginatorPosition);
+        getOriginatorPhone().ifPresent(copy::setOriginatorPhone);
+        getOriginatorEmail().ifPresent(copy::setOriginatorEmail);
+        getOriginatorAddress().ifPresent(copy::setOriginatorAddress);
+        getTechOrg().ifPresent(copy::setTechOrg);
+        getTechPOC().ifPresent(copy::setTechPOC);
+        getTechPosition().ifPresent(copy::setTechPosition);
+        getTechPhone().ifPresent(copy::setTechPhone);
+        getTechEmail().ifPresent(copy::setTechEmail);
+        getTechAddress().ifPresent(copy::setTechAddress);
+        getAdmMessageLink().ifPresent(copy::setAdmMessageLink);
+        getCdmMessageLink().ifPresent(copy::setCdmMessageLink);
+        getPrmMessageLink().ifPresent(copy::setPrmMessageLink);
+        getRdmMessageLink().ifPresent(copy::setRdmMessageLink);
+        getTdmMessageLink().ifPresent(copy::setTdmMessageLink);
+        getOperator().ifPresent(copy::setOperator);
+        getOwner().ifPresent(copy::setOwner);
+        getCountry().ifPresent(copy::setCountry);
+        getConstellation().ifPresent(copy::setConstellation);
+        getObjectType().ifPresent(copy::setObjectType);
         copy.setEpochT0(getEpochT0());
-        copy.setOpsStatus(getOpsStatus());
-        copy.setOrbitCategory(getOrbitCategory());
+        getOpsStatus().ifPresent(copy::setOpsStatus);
+        getOrbitCategory().ifPresent(copy::setOrbitCategory);
         copy.setOcmDataElements(getOcmDataElements());
         copy.setSclkOffsetAtEpoch(getSclkOffsetAtEpoch());
         copy.setSclkSecPerSISec(getSclkSecPerSISec());
-        copy.setTaimutcT0(getTaimutcT0());
-        copy.setNextLeapEpoch(getNextLeapEpoch());
-        copy.setNextLeapTaimutc(getNextLeapTaimutc());
-        copy.setUt1mutcT0(getUt1mutcT0());
-        copy.setEopSource(getEopSource());
-        copy.setInterpMethodEOP(getInterpMethodEOP());
-        copy.setCelestialSource(getCelestialSource());
+        getTaimutcT0().ifPresent(copy::setTaimutcT0);
+        getNextLeapEpoch().ifPresent(copy::setNextLeapEpoch);
+        getNextLeapTaimutc().ifPresent(copy::setNextLeapTaimutc);
+        getUt1mutcT0().ifPresent(copy::setUt1mutcT0);
+        getEopSource().ifPresent(copy::setEopSource);
+        getInterpMethodEOP().ifPresent(copy::setInterpMethodEOP);
+        getCelestialSource().ifPresent(copy::setCelestialSource);
 
         return copy;
 

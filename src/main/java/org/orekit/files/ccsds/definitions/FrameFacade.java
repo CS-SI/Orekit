@@ -16,7 +16,10 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import java.util.Optional;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.orekit.annotation.Nullable;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -36,15 +39,19 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class FrameFacade {
 
     /** Reference to node in Orekit frames tree. */
+    @Nullable
     private final Frame frame;
 
     /** Reference to celestial body centered frame. */
+    @Nullable
     private final CelestialBodyFrame celestialBodyFrame;
 
     /** Reference to orbit-relative frame. */
+    @Nullable
     private final OrbitRelativeFrame orbitRelativeFrame;
 
     /** Reference to spacecraft body frame. */
+    @Nullable
     private final SpacecraftBodyFrame spacecraftBodyFrame;
 
     /** Name of the frame. */
@@ -78,40 +85,40 @@ public class FrameFacade {
     /**
      * Get the associated frame tree node.
      *
-     * @return associated frame tree node, or null if none exists
+     * @return associated frame tree node, or empty if none exists
      */
-    public Frame asFrame() {
-        return frame;
+    public Optional<Frame> asFrame() {
+        return Optional.ofNullable(frame);
     }
 
     /**
      * Get the associated {@link CelestialBodyFrame celestial body frame}.
      *
-     * @return associated celestial body frame, or null if frame is associated to a
+     * @return associated celestial body frame, or empty if frame is associated to a
      * {@link #asOrbitRelativeFrame() orbit}, a {@link #asSpacecraftBodyFrame spacecraft} or is not supported
      */
-    public CelestialBodyFrame asCelestialBodyFrame() {
-        return celestialBodyFrame;
+    public Optional<CelestialBodyFrame> asCelestialBodyFrame() {
+        return Optional.ofNullable(celestialBodyFrame);
     }
 
     /**
      * Get the associated {@link OrbitRelativeFrame orbit relative frame}.
      *
-     * @return associated orbit relative frame, or null if frame is associated to a
+     * @return associated orbit relative frame, or empty if frame is associated to a
      * {@link #asCelestialBodyFrame() celestial body}, a {@link #asSpacecraftBodyFrame spacecraft} or is not supported
      */
-    public OrbitRelativeFrame asOrbitRelativeFrame() {
-        return orbitRelativeFrame;
+    public Optional<OrbitRelativeFrame> asOrbitRelativeFrame() {
+        return Optional.ofNullable(orbitRelativeFrame);
     }
 
     /**
      * Get the associated {@link SpacecraftBodyFrame spacecraft body frame}.
      *
-     * @return associated spacecraft body frame, or null if frame is associated to a
+     * @return associated spacecraft body frame, or empty if frame is associated to a
      * {@link #asCelestialBodyFrame() celestial body}, an {@link #asOrbitRelativeFrame orbit} or is not supported
      */
-    public SpacecraftBodyFrame asSpacecraftBodyFrame() {
-        return spacecraftBodyFrame;
+    public Optional<SpacecraftBodyFrame> asSpacecraftBodyFrame() {
+        return Optional.ofNullable(spacecraftBodyFrame);
     }
 
     /**
@@ -240,14 +247,14 @@ public class FrameFacade {
         final Transform frameInToPivot;
 
         // Orekit frame
-        if (frameIn.asFrame() != null) {
-            frameInToPivot = frameIn.asFrame().getTransformTo(inertialPivotFrame, date);
+        if (frameIn.asFrame().isPresent()) {
+            frameInToPivot = frameIn.asFrame().get().getTransformTo(inertialPivotFrame, date);
         }
 
         // Local orbital frame
-        else if (frameIn.asOrbitRelativeFrame() != null) {
+        else if (frameIn.asOrbitRelativeFrame().isPresent()) {
 
-            final LOFType lofIn = frameIn.asOrbitRelativeFrame().getLofType();
+            final LOFType lofIn = frameIn.asOrbitRelativeFrame().get().getLofType();
 
             if (lofIn != null) {
                 frameInToPivot =
@@ -260,8 +267,8 @@ public class FrameFacade {
         }
 
         //Celestial body frame
-        else if (frameIn.asCelestialBodyFrame() != null) {
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_TRANSFORM, frameIn.asCelestialBodyFrame().getName(),
+        else if (frameIn.asCelestialBodyFrame().isPresent()) {
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_TRANSFORM, frameIn.asCelestialBodyFrame().get().getName(),
                                       inertialPivotFrame.getName());
         }
 

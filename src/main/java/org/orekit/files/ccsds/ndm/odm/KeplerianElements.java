@@ -17,6 +17,9 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.frames.Frame;
@@ -47,15 +50,21 @@ public class KeplerianElements extends CommentsContainer implements Data {
     /** Epoch of state vector and optional Keplerian elements. */
     private AbsoluteDate epoch;
 
-    /** Orbit semi-major axis (m). */
-    private double a;
+    /** Orbit semi-major axis (m).
+     * <p>
+     * Used in OPM instead of mean motion.
+     * </p>
+     */
+    @Nullable
+    private Double a;
 
     /** Mean motion (the Keplerian Mean motion in rad/s).
      * <p>
      * Used in OMM instead of semi-major axis if MEAN_ELEMENT_THEORY = SGP/SGP4.
      * </p>
      */
-    private double meanMotion;
+    @Nullable
+    private Double meanMotion;
 
     /** Orbit eccentricity. */
     private double e;
@@ -76,19 +85,17 @@ public class KeplerianElements extends CommentsContainer implements Data {
     private PositionAngleType anomalyType;
 
     /** Gravitational coefficient. */
-    private double mu;
+    @Nullable
+    private Double mu;
 
     /** Simple constructor.
      */
     public KeplerianElements() {
-        a          = Double.NaN;
-        meanMotion =  Double.NaN;
         e          = Double.NaN;
         i          = Double.NaN;
         raan       = Double.NaN;
         pa         = Double.NaN;
         anomaly    = Double.NaN;
-        mu         = Double.NaN;
     }
 
     /** {@inheritDoc}
@@ -126,8 +133,8 @@ public class KeplerianElements extends CommentsContainer implements Data {
     /** Get the orbit semi-major axis.
      * @return the orbit semi-major axis
      */
-    public double getA() {
-        return a;
+    public Optional<Double> getA() {
+        return Optional.ofNullable(a);
     }
 
     /** Set the orbit semi-major axis.
@@ -141,8 +148,8 @@ public class KeplerianElements extends CommentsContainer implements Data {
     /** Get the orbit mean motion.
      * @return the orbit mean motion
      */
-    public double getMeanMotion() {
-        return meanMotion;
+    public Optional<Double> getMeanMotion() {
+        return Optional.ofNullable(meanMotion);
     }
 
     /** Set the orbit mean motion.
@@ -255,16 +262,17 @@ public class KeplerianElements extends CommentsContainer implements Data {
      * Get the gravitational coefficient.
      * @return gravitational coefficient
      */
-    public double getMu() {
-        return mu;
+    public Optional<Double> getMu() {
+        return Optional.ofNullable(mu);
     }
 
     /** Generate a keplerian orbit.
      * @param frame inertial frame for orbit
+     * @param defaultMu default gravitational coefficient to use if not specified in the file
      * @return generated orbit
      */
-    public KeplerianOrbit generateKeplerianOrbit(final Frame frame) {
-        return new KeplerianOrbit(a, e, i, pa, raan, anomaly, anomalyType, frame, epoch, mu);
+    public KeplerianOrbit generateKeplerianOrbit(final Frame frame, final double defaultMu) {
+        return new KeplerianOrbit(a, e, i, pa, raan, anomaly, anomalyType, frame, epoch, getMu().orElse(defaultMu));
     }
 
 }

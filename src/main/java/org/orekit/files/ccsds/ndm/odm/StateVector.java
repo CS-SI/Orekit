@@ -20,6 +20,7 @@ package org.orekit.files.ccsds.ndm.odm;
 import java.util.Arrays;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -56,17 +57,16 @@ public class StateVector extends CommentsContainer {
     private final double[] velocity;
 
     /** Acceleration vector (m/s²). */
-    private final double[] acceleration;
+    @Nullable
+    private double[] acceleration;
 
     /** Create an empty data set.
      */
     public StateVector() {
         position     = new double[3];
         velocity     = new double[3];
-        acceleration = new double[3];
         Arrays.fill(position,     Double.NaN);
         Arrays.fill(velocity,     Double.NaN);
-        Arrays.fill(acceleration, Double.NaN);
     }
 
     /** {@inheritDoc} */
@@ -124,6 +124,10 @@ public class StateVector extends CommentsContainer {
      */
     public void setA(final int index, final double value) {
         refuseFurtherComments();
+        if (acceleration == null) {
+            acceleration = new double[3];
+            Arrays.fill(acceleration, Double.NaN);
+        }
         acceleration[index] = value;
     }
 
@@ -131,7 +135,7 @@ public class StateVector extends CommentsContainer {
      * @return true is state contains acceleration data
      */
     public boolean hasAcceleration() {
-        return !Double.isNaN(acceleration[0] + acceleration[1] + acceleration[2]);
+        return acceleration != null;
     }
 
     /** Convert to {@link TimeStampedPVCoordinates}.

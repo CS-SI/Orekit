@@ -17,8 +17,10 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
@@ -59,7 +61,8 @@ public class Maneuver extends CommentsContainer {
     /** Mass change during maneuver (kg).
      * @since 12.0
      */
-    private double deltaMass;
+    @Nullable
+    private Double deltaMass;
 
     /**
      * Simple constructor.
@@ -67,7 +70,6 @@ public class Maneuver extends CommentsContainer {
     public Maneuver() {
         duration  = Double.NaN;
         torque    = new double[3];
-        deltaMass = Double.NaN;
         Arrays.fill(torque, Double.NaN);
     }
 
@@ -157,8 +159,8 @@ public class Maneuver extends CommentsContainer {
      * @return mass change during maneuver (kg, negative)
      * @since 12.0
      */
-    public double getDeltaMass() {
-        return deltaMass;
+    public Optional<Double> getDeltaMass() {
+        return Optional.ofNullable(deltaMass);
     }
 
     /**

@@ -97,13 +97,13 @@ public class Acm extends NdmConstituent<AdmHeader, Segment<AcmMetadata, AcmData>
             name = getMetadata().getObjectName();
         } else if (getMetadata().getInternationalDesignator() != null) {
             name = getMetadata().getInternationalDesignator();
-        } else if (getMetadata().getObjectDesignator() != null) {
-            name = getMetadata().getObjectDesignator();
+        } else if (getMetadata().getObjectDesignator().isPresent()) {
+            name = getMetadata().getObjectDesignator().get();
         } else {
             name = UNKNOWN_OBJECT;
         }
         final List<AttitudeStateHistory> histories = getSegments().getFirst().getData().getAttitudeBlocks();
-        return (histories == null) ?
+        return (histories.isEmpty()) ?
                Collections.emptyMap() :
                Collections.singletonMap(name, new AcmSatelliteEphemeris(name, histories));
     }

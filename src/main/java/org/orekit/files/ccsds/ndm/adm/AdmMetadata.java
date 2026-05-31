@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.files.ccsds.definitions.BodyFacade;
@@ -36,6 +39,7 @@ public class AdmMetadata extends Metadata {
     private String objectID;
 
     /** Body at origin of reference frame. */
+    @Nullable
     private BodyFacade center;
 
     /**
@@ -114,8 +118,8 @@ public class AdmMetadata extends Metadata {
     /** Get the body at origin of reference frame.
      * @return the body at origin of reference frame.
      */
-    public BodyFacade getCenter() {
-        return center;
+    public Optional<BodyFacade> getCenter() {
+        return Optional.ofNullable(center);
     }
 
     /** Set the body at origin of reference frame.
@@ -133,7 +137,7 @@ public class AdmMetadata extends Metadata {
      *         false otherwise
      */
     public boolean getHasCreatableBody() {
-        return center != null && center.getBody() != null;
+        return getCenter().isPresent() && getCenter().get().getBody().isPresent();
     }
 
 }

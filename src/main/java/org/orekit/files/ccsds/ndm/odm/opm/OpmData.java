@@ -18,7 +18,9 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
@@ -26,6 +28,7 @@ import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.StateVector;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.utils.Initializer;
 
 /**
  * Container for Orbit Parameter Message data.
@@ -35,21 +38,25 @@ import org.orekit.files.ccsds.section.Data;
 public class OpmData implements Data {
 
     /** State vector block. */
-    private final  StateVector stateVectorBlock;
+    private final StateVector stateVectorBlock;
 
     /** Keplerian elements block. */
+    @Nullable
     private final KeplerianElements keplerianElementsBlock;
 
     /** Spacecraft parameters block. */
+    @Nullable
     private final SpacecraftParameters spacecraftParametersBlock;
 
     /** Covariance matrix logical block being read. */
+    @Nullable
     private final CartesianCovariance covarianceBlock;
 
     /** Maneuvers. */
     private final List<Maneuver> maneuverBlocks;
 
     /** User defined parameters. */
+    @Nullable
     private final UserDefined userDefinedBlock;
 
     /** Mass. */
@@ -75,7 +82,7 @@ public class OpmData implements Data {
         this.keplerianElementsBlock    = keplerianElementsBlock;
         this.spacecraftParametersBlock = spacecraftParametersBlock;
         this.covarianceBlock           = covarianceBlock;
-        this.maneuverBlocks            = maneuverBlocks;
+        this.maneuverBlocks            = Initializer.emptyListIfNull(maneuverBlocks);
         this.userDefinedBlock          = userDefinedBlock;
         this.mass                      = mass;
     }
@@ -87,7 +94,7 @@ public class OpmData implements Data {
         if (keplerianElementsBlock != null) {
             keplerianElementsBlock.validate(version);
             // in OPM, only semi-major axis is allowed, not mean motion
-            keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA(),
+            keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA().orElse(Double.NaN),
                                                KeplerianElementsKey.SEMI_MAJOR_AXIS.name());
         }
         if (spacecraftParametersBlock != null) {
@@ -97,9 +104,7 @@ public class OpmData implements Data {
             covarianceBlock.setEpoch(stateVectorBlock.getEpoch());
             covarianceBlock.validate(version);
         }
-        for (final Maneuver maneuver : maneuverBlocks) {
-            maneuver.validate(version);
-        }
+        maneuverBlocks.forEach(maneuver -> maneuver.validate(version));
         if (userDefinedBlock != null) {
             userDefinedBlock.validate(version);
         }
@@ -113,24 +118,24 @@ public class OpmData implements Data {
     }
 
     /** Get the Keplerian elements logical block.
-     * @return Keplerian elements block (may be null)
+     * @return Keplerian elements block
      */
-    public KeplerianElements getKeplerianElementsBlock() {
-        return keplerianElementsBlock;
+    public Optional<KeplerianElements> getKeplerianElementsBlock() {
+        return Optional.ofNullable(keplerianElementsBlock);
     }
 
     /** Get the spacecraft parameters logical block.
-     * @return spacecraft parameters block (may be null)
+     * @return spacecraft parameters block
      */
-    public SpacecraftParameters getSpacecraftParametersBlock() {
-        return spacecraftParametersBlock;
+    public Optional<SpacecraftParameters> getSpacecraftParametersBlock() {
+        return Optional.ofNullable(spacecraftParametersBlock);
     }
 
     /** Get the covariance matrix logical block.
-     * @return covariance matrix block (may be null)
+     * @return covariance matrix block
      */
-    public CartesianCovariance getCovarianceBlock() {
-        return covarianceBlock;
+    public Optional<CartesianCovariance> getCovarianceBlock() {
+        return Optional.ofNullable(covarianceBlock);
     }
 
     /** Get the mass.
@@ -175,10 +180,10 @@ public class OpmData implements Data {
     }
 
     /** Get the user defined parameters logical block.
-     * @return user defined parameters block (may be null)
+     * @return user defined parameters block
      */
-    public UserDefined getUserDefinedBlock() {
-        return userDefinedBlock;
+    public Optional<UserDefined> getUserDefinedBlock() {
+        return Optional.ofNullable(userDefinedBlock);
     }
 
 }

@@ -577,6 +577,9 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=índex de captor {0} ja utilitzat
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=falta l''índex de captor {0}
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=número d''elements incoherents: esperats {0}, donats {1}
 

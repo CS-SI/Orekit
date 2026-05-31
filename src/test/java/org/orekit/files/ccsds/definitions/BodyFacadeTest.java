@@ -37,7 +37,7 @@ public class BodyFacadeTest {
 
         // Verify
         Assertions.assertEquals("EARTH", body.getName());
-        Assertions.assertEquals("Earth", body.getBody().getName());
+        Assertions.assertEquals("Earth", body.getBody().orElseThrow().getName());
 
     }
 
@@ -49,7 +49,7 @@ public class BodyFacadeTest {
 
         // Verify
         Assertions.assertEquals("SUN", body.getName());
-        Assertions.assertEquals("Sun", body.getBody().getName());
+        Assertions.assertEquals("Sun", body.getBody().orElseThrow().getName());
 
     }
 
@@ -61,14 +61,14 @@ public class BodyFacadeTest {
 
         // Verify
         Assertions.assertEquals("SUN", sun.getName());
-        Assertions.assertEquals("Sun", sun.getBody().getName());
+        Assertions.assertEquals("Sun", sun.getBody().orElseThrow().getName());
 
         // Create the body facade (EARTH)
         final BodyFacade earth = BodyFacade.create(CenterName.EARTH, DataContext.getDefault().getCelestialBodies());
 
         // Verify
         Assertions.assertEquals("EARTH", earth.getName());
-        Assertions.assertEquals("Earth", earth.getBody().getName());
+        Assertions.assertEquals("Earth", earth.getBody().orElseThrow().getName());
 
     }
 

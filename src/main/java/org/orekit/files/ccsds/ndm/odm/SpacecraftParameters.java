@@ -17,6 +17,9 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 
@@ -44,25 +47,25 @@ public class SpacecraftParameters extends CommentsContainer implements Data {
     private double mass;
 
     /** Solar radiation pressure area (m^2). */
-    private double solarRadArea;
+    @Nullable
+    private Double solarRadArea;
 
     /** Solar radiation pressure coefficient. */
-    private double solarRadCoeff;
+    @Nullable
+    private Double solarRadCoeff;
 
     /** Drag area (m^2). */
-    private double dragArea;
+    @Nullable
+    private Double dragArea;
 
     /** Drag coefficient. */
-    private double dragCoeff;
+    @Nullable
+    private Double dragCoeff;
 
     /** Create an empty state data set.
      */
     public SpacecraftParameters() {
-        mass          = Double.NaN;
-        solarRadArea  = Double.NaN;
-        solarRadCoeff = Double.NaN;
-        dragArea      = Double.NaN;
-        dragCoeff     = Double.NaN;
+        mass = Double.NaN;
     }
 
     /** {@inheritDoc} */
@@ -89,8 +92,8 @@ public class SpacecraftParameters extends CommentsContainer implements Data {
     /** Get the solar radiation pressure area.
      * @return the solar radiation pressure area
      */
-    public double getSolarRadArea() {
-        return solarRadArea;
+    public Optional<Double> getSolarRadArea() {
+        return Optional.ofNullable(solarRadArea);
     }
 
     /** Set the solar radiation pressure area.
@@ -104,11 +107,11 @@ public class SpacecraftParameters extends CommentsContainer implements Data {
     /** Get the solar radiation pressure coefficient.
      * @return the solar radiation pressure coefficient
      */
-    public double getSolarRadCoeff() {
-        return solarRadCoeff;
+    public Optional<Double> getSolarRadCoeff() {
+        return Optional.ofNullable(solarRadCoeff);
     }
 
-    /** Get the solar radiation pressure coefficient.
+    /** Set the solar radiation pressure coefficient.
      * @param solarRadCoeff the coefficient to be set
      */
     public void setSolarRadCoeff(final double solarRadCoeff) {
@@ -119,8 +122,8 @@ public class SpacecraftParameters extends CommentsContainer implements Data {
     /** Get the drag area.
      * @return the drag area
      */
-    public double getDragArea() {
-        return dragArea;
+    public Optional<Double> getDragArea() {
+        return Optional.ofNullable(dragArea);
     }
 
     /** Set the drag area.
@@ -134,8 +137,8 @@ public class SpacecraftParameters extends CommentsContainer implements Data {
     /** Get the drag coefficient.
      * @return the drag coefficient
      */
-    public double getDragCoeff() {
-        return dragCoeff;
+    public Optional<Double> getDragCoeff() {
+        return Optional.ofNullable(dragCoeff);
     }
 
     /** Set the drag coefficient.

@@ -18,9 +18,12 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.utils.Initializer;
 
 /** Data container for Orbit Comprehensive Messages.
  * @author Luc Maisonobe
@@ -32,6 +35,7 @@ public class OcmData implements Data {
     private final List<TrajectoryStateHistory> trajectoryBlocks;
 
     /** Physical properties logical block. */
+    @Nullable
     private final OrbitPhysicalProperties physicBlock;
 
     /** Covariance logical blocks. */
@@ -41,12 +45,15 @@ public class OcmData implements Data {
     private final List<OrbitManeuverHistory> maneuverBlocks;
 
     /** Perturbations logical block. */
+    @Nullable
     private final Perturbations perturbationsBlock;
 
     /** Orbit determination logical block. */
+    @Nullable
     private final OrbitDetermination orbitDeterminationBlock;
 
     /** User defined parameters logical block. */
+    @Nullable
     private final UserDefined userDefinedBlock;
 
     /** Simple constructor.
@@ -59,16 +66,16 @@ public class OcmData implements Data {
      * @param userDefinedBlock user defined parameters logical block (may be null)
      */
     public OcmData(final List<TrajectoryStateHistory> trajectoryBlocks,
-                   final OrbitPhysicalProperties           physicBlock,
-                   final List<OrbitCovarianceHistory>      covarianceBlocks,
-                   final List<OrbitManeuverHistory>        maneuverBlocks,
+                   final OrbitPhysicalProperties      physicBlock,
+                   final List<OrbitCovarianceHistory> covarianceBlocks,
+                   final List<OrbitManeuverHistory>   maneuverBlocks,
                    final Perturbations                perturbationsBlock,
                    final OrbitDetermination           orbitDeterminationBlock,
                    final UserDefined                  userDefinedBlock) {
-        this.trajectoryBlocks         = trajectoryBlocks;
+        this.trajectoryBlocks         = Initializer.emptyListIfNull(trajectoryBlocks);
         this.physicBlock              = physicBlock;
-        this.covarianceBlocks         = covarianceBlocks;
-        this.maneuverBlocks           = maneuverBlocks;
+        this.covarianceBlocks         = Initializer.emptyListIfNull(covarianceBlocks);
+        this.maneuverBlocks           = Initializer.emptyListIfNull(maneuverBlocks);
         this.perturbationsBlock       = perturbationsBlock;
         this.orbitDeterminationBlock  = orbitDeterminationBlock;
         this.userDefinedBlock         = userDefinedBlock;
@@ -77,24 +84,12 @@ public class OcmData implements Data {
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        if (trajectoryBlocks != null) {
-            for (final TrajectoryStateHistory osh : trajectoryBlocks) {
-                osh.getMetadata().validate(version);
-            }
-        }
+        trajectoryBlocks.forEach(osh -> osh.getMetadata().validate(version));
         if (physicBlock != null) {
             physicBlock.validate(version);
         }
-        if (covarianceBlocks != null) {
-            for (final OrbitCovarianceHistory ch : covarianceBlocks) {
-                ch.getMetadata().validate(version);
-            }
-        }
-        if (maneuverBlocks != null) {
-            for (final OrbitManeuverHistory mh : maneuverBlocks) {
-                mh.getMetadata().validate(version);
-            }
-        }
+        covarianceBlocks.forEach(ch -> ch.getMetadata().validate(version));
+        maneuverBlocks.forEach(mh -> mh.getMetadata().validate(version));
         if (perturbationsBlock != null) {
             perturbationsBlock.validate(version);
         }
@@ -107,7 +102,7 @@ public class OcmData implements Data {
     }
 
     /** Get trajectory state histories logical blocks.
-     * @return trajectory state histories logical blocks (may be null)
+     * @return trajectory state histories logical blocks
      * @since 12.0
      */
     public List<TrajectoryStateHistory> getTrajectoryBlocks() {
@@ -115,45 +110,45 @@ public class OcmData implements Data {
     }
 
     /** Get physical properties logical block.
-     * @return physical properties logical block (may be null)
+     * @return physical properties logical block
      */
-    public OrbitPhysicalProperties getPhysicBlock() {
-        return physicBlock;
+    public Optional<OrbitPhysicalProperties> getPhysicBlock() {
+        return Optional.ofNullable(physicBlock);
     }
 
     /** Get covariance logical blocks.
-     * @return covariance logical blocks (may be null)
+     * @return covariance logical blocks
      */
     public List<OrbitCovarianceHistory> getCovarianceBlocks() {
         return covarianceBlocks;
     }
 
     /** Get maneuvers logical blocks.
-     * @return maneuvers logical block (may be null)
+     * @return maneuvers logical blocks
      */
     public List<OrbitManeuverHistory> getManeuverBlocks() {
         return maneuverBlocks;
     }
 
     /** Get perturbations logical block.
-     * @return perturbations logical block (may be null)
+     * @return perturbations logical block
      */
-    public Perturbations getPerturbationsBlock() {
-        return perturbationsBlock;
+    public Optional<Perturbations> getPerturbationsBlock() {
+        return Optional.ofNullable(perturbationsBlock);
     }
 
     /** Get orbit determination logical block.
-     * @return orbit determination logical block (may be null)
+     * @return orbit determination logical block
      */
-    public OrbitDetermination getOrbitDeterminationBlock() {
-        return orbitDeterminationBlock;
+    public Optional<OrbitDetermination> getOrbitDeterminationBlock() {
+        return Optional.ofNullable(orbitDeterminationBlock);
     }
 
     /** Get user defined parameters logical block.
-     * @return user defined parameters logical block (may be null)
+     * @return user defined parameters logical block
      */
-    public UserDefined getUserDefinedBlock() {
-        return userDefinedBlock;
+    public Optional<UserDefined> getUserDefinedBlock() {
+        return Optional.ofNullable(userDefinedBlock);
     }
 
 }

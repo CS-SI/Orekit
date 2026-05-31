@@ -17,6 +17,9 @@
 
 package org.orekit.files.ccsds.ndm.odm.oem;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.frames.Frame;
@@ -35,14 +38,19 @@ public class OemMetadata extends OdmCommonMetadata {
     private AbsoluteDate stopTime;
 
     /** Start of useable time span covered by ephemerides data, it may be
-     * necessary to allow for proper interpolation. */
+     * necessary to allow for proper interpolation.
+     */
+    @Nullable
     private AbsoluteDate useableStartTime;
 
     /** End of useable time span covered by ephemerides data, it may be
-     * necessary to allow for proper interpolation. */
+     * necessary to allow for proper interpolation.
+     */
+    @Nullable
     private AbsoluteDate useableStopTime;
 
     /** The interpolation method to be used. */
+    @Nullable
     private InterpolationMethod interpolationMethod;
 
     /** The interpolation degree. */
@@ -117,8 +125,8 @@ public class OemMetadata extends OdmCommonMetadata {
      * necessary to allow for proper interpolation.
      * @return the useable start time
      */
-    public AbsoluteDate getUseableStartTime() {
-        return useableStartTime;
+    public Optional<AbsoluteDate> getUseableStartTime() {
+        return Optional.ofNullable(useableStartTime);
     }
 
     /** Set start of useable time span covered by ephemerides data, it may be
@@ -134,8 +142,8 @@ public class OemMetadata extends OdmCommonMetadata {
      * necessary to allow for proper interpolation.
      * @return the useable stop time
      */
-    public AbsoluteDate getUseableStopTime() {
-        return useableStopTime;
+    public Optional<AbsoluteDate> getUseableStopTime() {
+        return Optional.ofNullable(useableStopTime);
     }
 
     /** Set end of useable time span covered by ephemerides data, it may be
@@ -150,8 +158,8 @@ public class OemMetadata extends OdmCommonMetadata {
     /** Get the interpolation method to be used.
      * @return the interpolation method
      */
-    public InterpolationMethod getInterpolationMethod() {
-        return interpolationMethod;
+    public Optional<InterpolationMethod> getInterpolationMethod() {
+        return Optional.ofNullable(interpolationMethod);
     }
 
     /** Set the interpolation method to be used.
@@ -186,9 +194,7 @@ public class OemMetadata extends OdmCommonMetadata {
         checkMandatoryEntriesExceptDates(version);
 
         // allocate new instance
-        final OemMetadata copy = new OemMetadata(
-                getInterpolationDegree(),
-                getFrameMapper());
+        final OemMetadata copy = new OemMetadata(getInterpolationDegree(), getFrameMapper());
 
         // copy comments
         for (String comment : getComments()) {
@@ -201,16 +207,14 @@ public class OemMetadata extends OdmCommonMetadata {
         copy.setCenter(getCenter());
 
         // copy frames
-        copy.setFrameEpoch(getFrameEpoch());
+        getFrameEpoch().ifPresent(copy::setFrameEpoch);
         copy.setReferenceFrame(getReferenceFrame());
 
         // copy time system only (ignore times themselves)
         copy.setTimeSystem(getTimeSystem());
 
         // copy interpolation (degree has already been set up at construction)
-        if (getInterpolationMethod() != null) {
-            copy.setInterpolationMethod(getInterpolationMethod());
-        }
+        getInterpolationMethod().ifPresent(copy::setInterpolationMethod);
 
         return copy;
 

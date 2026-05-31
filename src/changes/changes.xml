@@ -26,6 +26,9 @@
           <action dev="serrof" type="fix" issue="1970">
               Made MeasurementFilter compatible with inter-satellite observations.
           </action>
+          <action dev="bryan" type="fix" issue="1969">
+              Fixed writing of DOPPLER_COUNT_ROLLOVER key in TDM format.
+          </action>
           <action dev="serrof" type="update" issue="1966">
               Introduced EarthBasedStation and updated GroundStation.
           </action>
@@ -351,6 +354,12 @@
           </action>
           <action dev="bryan" type="fix" issue="1162">
               Throw OrekitException with clear message when getBody() is called with an unknown celestial body name.
+          </action>
+          <action dev="bryan" type="update" issue="1103">
+              Used Optional for not-mandatory fields in CCSDS messages.
+          </action>
+          <action dev="bryan" type="fix" issue="1054">
+              Fixed default value of optional parameters in ODParameters by using Java Optional.
           </action>
       </release>
     <release version="13.1.6" date="2026-06-03" description="Orekit 13.1.6 is a patch release.
