@@ -20,6 +20,12 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="add" issue="1960" due-to="Nathan Schiffmacher">
+              Added support for RTCM MSM7 messages.
+          </action>
+          <action dev="serrof" type="add" issue="1956">
+              Add stand-alone Keplerian element converter.
+          </action>
           <action dev="luc" type="fix" issue="1961">
               Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
           </action>
@@ -70,6 +76,10 @@
           </action>
           <action dev="rafa" type="add" issue="1925">
               Add constructors with custom Love numbers in SolidTides.
+          </action>
+          <action dev="bryan" type="add" issue="1928">
+              Added IAU 2015 nominal equatorial and polar radius constants for
+              all solar system planets (Mercury, Venus, Mars, Saturn, Uranus, Neptune).
           </action>
           <action dev="vcucchie" type="add" issue="1927">
               Add class and sequence diagrams specific to PropagatorsParallelizer.
@@ -311,6 +321,9 @@
           </action>
           <action dev="afossa" type="fix" issue="1642">
               Change algorithm in KeplerianMotionCartesianUtility.predictPVHyperbolic() to fix numerical issues.
+          </action>
+          <action dev="bryan" type="add" issue="1636">
+              Added wind-up effect modifier for one-way GNSS phase measurements.
           </action>
           <action dev="vcucchie" type="fix" issue="1521">
               Fixed state covariance interpolator getSubInterpolators method.

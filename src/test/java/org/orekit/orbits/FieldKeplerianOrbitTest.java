@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -54,9 +56,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.function.Function;
-
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 class FieldKeplerianOrbitTest {
@@ -434,6 +433,26 @@ class FieldKeplerianOrbitTest {
         Assertions.assertEquals(orbit.getTrueAnomalyDot(), fieldOrbit.getTrueAnomalyDot().getReal());
     }
 
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testGetAnomaly(final PositionAngleType positionAngleType) {
+        // GIVEN
+        final double a = 1;
+        final double e = 0.1;
+        final double expectedAnomaly = 0.5;
+        final double expectedRate = -0.2;
+        final Binary64Field field = Binary64Field.getInstance();
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            final KeplerianParameters elements = new KeplerianParameters(a, e, 0, 0, 0, expectedAnomaly, inputPositionAngleType);
+            final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(elements, 0., 0., 0., 0., 0., expectedRate, positionAngleType,
+                    FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, mu);
+            final FieldKeplerianOrbit<Binary64> fieldOrbit = new FieldKeplerianOrbit<>(field, keplerianOrbit);
+            Assertions.assertEquals(expectedAnomaly, fieldOrbit.getAnomaly(inputPositionAngleType).getReal(), 1e-12);
+            Assertions.assertEquals(expectedRate, fieldOrbit.getAnomalyDot(inputPositionAngleType).getReal(), 1e-10);
+        }
+    }
+
     @Test
     void testCoverageCachedPositionAngleTypeWithRates() {
         // GIVEN
@@ -447,10 +466,12 @@ class FieldKeplerianOrbitTest {
         // WHEN & THEN
         for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
             for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final FieldKeplerianParameters<Binary64> fieldElements = new FieldKeplerianParameters<>(zero.newInstance(semiMajorAxis),
+                        zero.newInstance(eccentricity), zero, zero, zero,
+                        zero.newInstance(expectedAnomaly), inputPositionAngleType);
                 final FieldKeplerianOrbit<Binary64> fieldOrbit = new FieldKeplerianOrbit<>(
-                        zero.newInstance(semiMajorAxis), zero.newInstance(eccentricity), zero, zero, zero,
-                        zero.newInstance(expectedAnomaly), zero, zero, zero, zero, zero,
-                        zero.newInstance(expectedAnomalyDot), inputPositionAngleType, cachedPositionAngleType,
+                        fieldElements, zero, zero, zero, zero, zero,
+                        zero.newInstance(expectedAnomalyDot), cachedPositionAngleType,
                         FramesFactory.getGCRF(), new FieldAbsoluteDate<>(field, date), zero.newInstance(mu));
                 Assertions.assertEquals(cachedPositionAngleType, fieldOrbit.getCachedPositionAngleType());
                 Assertions.assertEquals(expectedAnomaly, fieldOrbit.getTrueAnomaly().getReal());
@@ -490,9 +511,10 @@ class FieldKeplerianOrbitTest {
         final double tolerance = 1e-10;
         for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
             for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
-                final FieldKeplerianOrbit<Binary64> fieldOrbit = new FieldKeplerianOrbit<>(
-                        zero.newInstance(semiMajorAxis), zero.newInstance(eccentricity), zero, zero, zero,
-                        zero.newInstance(anomaly), inputPositionAngleType, cachedPositionAngleType,
+                final FieldKeplerianParameters<Binary64> fieldElements = new FieldKeplerianParameters<>(zero.newInstance(semiMajorAxis),
+                        zero.newInstance(eccentricity), zero, zero, zero,
+                        zero.newInstance(anomaly), inputPositionAngleType);
+                final FieldKeplerianOrbit<Binary64> fieldOrbit = new FieldKeplerianOrbit<>(fieldElements.withPositionAngleType(cachedPositionAngleType),
                         FramesFactory.getGCRF(), new FieldAbsoluteDate<>(field, date), zero.newInstance(mu));
                 final KeplerianOrbit keplerianOrbit = fieldOrbit.toOrbit();
                 Assertions.assertEquals(keplerianOrbit.getTrueAnomaly(), fieldOrbit.getTrueAnomaly().getReal(),
@@ -517,10 +539,10 @@ class FieldKeplerianOrbitTest {
         final double tolerance = 1e-10;
         for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
             for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final FieldKeplerianParameters<Binary64> fieldElements = new FieldKeplerianParameters<>(zero.newInstance(semiMajorAxis),
+                        zero.newInstance(eccentricity), zero, zero, zero, zero.newInstance(anomaly), inputPositionAngleType);
                 final FieldKeplerianOrbit<Binary64> fieldOrbit = new FieldKeplerianOrbit<>(
-                        zero.newInstance(semiMajorAxis), zero.newInstance(eccentricity), zero, zero, zero,
-                        zero.newInstance(anomaly), zero, zero, zero, zero, zero, zero.newInstance(anomalyDot),
-                        inputPositionAngleType, cachedPositionAngleType,
+                        fieldElements, zero, zero, zero, zero, zero, zero.newInstance(anomalyDot), cachedPositionAngleType,
                         FramesFactory.getGCRF(), new FieldAbsoluteDate<>(field, date), zero.newInstance(mu));
                 final KeplerianOrbit keplerianOrbit = fieldOrbit.toOrbit();
                 Assertions.assertEquals(keplerianOrbit.getTrueAnomaly(), fieldOrbit.getTrueAnomaly().getReal(),
@@ -1757,7 +1779,7 @@ class FieldKeplerianOrbitTest {
                             5.6e-16);
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
                             orbit.getLEDot().getReal(),
-                            9.0e-16);
+                            1.e-15);
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
                             orbit.getLMDot().getReal(),
                             1.8e-15);

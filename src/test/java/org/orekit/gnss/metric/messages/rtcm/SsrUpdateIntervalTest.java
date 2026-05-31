@@ -27,7 +27,7 @@ public class SsrUpdateIntervalTest {
     @Test
     public void testUpdateInterval() {
         SsrUpdateInterval sui;
-        
+
         // Index = 0
         sui = new SsrUpdateInterval(0);
         Assertions.assertEquals(1.0, sui.getUpdateInterval(), eps);

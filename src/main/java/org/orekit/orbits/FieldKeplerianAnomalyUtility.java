@@ -24,7 +24,6 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 
 /**
@@ -389,66 +388,62 @@ public class FieldKeplerianAnomalyUtility {
      */
     public static <T extends CalculusFieldElement<T>> T convertAnomaly(final PositionAngleType oldType, final T anomaly,
                                                                        final T e, final PositionAngleType newType) {
-        if (oldType == newType) {
-            return anomaly;
+        return switch (newType) {
+            case MEAN -> getMeanAnomaly(e, anomaly, oldType);
+            case TRUE -> getTrueAnomaly(e, anomaly, oldType);
+            case ECCENTRIC -> getEccentricAnomaly(e, anomaly, oldType);
+        };
+    }
 
-        } else {
-            if (e.getReal() > 1) {
-                switch (newType) {
-                    case MEAN:
-                        if (oldType == PositionAngleType.ECCENTRIC) {
-                            return FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(e, anomaly);
-                        }
+    /** Get the true anomaly.
+     * @param <T> field type
+     * @param e eccentricity
+     * @param anomaly anomaly (rad)
+     * @param positionAngleType anomaly type
+     * @return true anomaly (rad)
+     * @since 14.0
+     */
+    private static <T extends CalculusFieldElement<T>> T getTrueAnomaly(final T e, final T anomaly,
+                                                                        final PositionAngleType positionAngleType) {
+        return switch (positionAngleType) {
+            case MEAN -> (e.getReal() > 1.) ? hyperbolicMeanToTrue(e, anomaly) : ellipticMeanToTrue(e, anomaly);
+            case TRUE -> anomaly;
+            case ECCENTRIC -> (e.getReal() > 1.) ? hyperbolicEccentricToTrue(e, anomaly) : ellipticEccentricToTrue(e, anomaly);
+        };
+    }
 
-                    case ECCENTRIC:
-                        if (oldType == PositionAngleType.MEAN) {
-                            return FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, anomaly);
-                        }
+    /** Get the eccentric anomaly.
+     * @param <T> field type
+     * @param e eccentricity
+     * @param anomaly anomaly (rad)
+     * @param positionAngleType anomaly type
+     * @return eccentric anomaly (rad)
+     * @since 14.0
+     */
+    private static <T extends CalculusFieldElement<T>> T getEccentricAnomaly(final T e, final T anomaly,
+                                                                             final PositionAngleType positionAngleType) {
+        return switch (positionAngleType) {
+            case MEAN -> (e.getReal() > 1.) ? hyperbolicMeanToEccentric(e, anomaly) : ellipticMeanToEccentric(e, anomaly);
+            case TRUE -> (e.getReal() > 1.) ? hyperbolicTrueToEccentric(e, anomaly) : ellipticTrueToEccentric(e, anomaly);
+            case ECCENTRIC -> anomaly;
+        };
+    }
 
-                    case TRUE:
-                        if (oldType == PositionAngleType.ECCENTRIC) {
-                            return FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(e, anomaly);
-                        }
-
-                    default:
-                        break;
-                }
-
-            } else {
-                switch (newType) {
-                    case MEAN:
-                        if (oldType == PositionAngleType.ECCENTRIC) {
-                            return FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.ellipticTrueToMean(e, anomaly);
-                        }
-
-                    case ECCENTRIC:
-                        if (oldType == PositionAngleType.MEAN) {
-                            return FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(e, anomaly);
-                        }
-
-                    case TRUE:
-                        if (oldType == PositionAngleType.ECCENTRIC) {
-                            return FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.ellipticMeanToTrue(e, anomaly);
-                        }
-
-                    default:
-                        break;
-                }
-            }
-            throw new OrekitInternalError(null);
-        }
+    /** Get the mean anomaly.
+     * @param <T> field type
+     * @param e eccentricity
+     * @param anomaly anomaly (rad)
+     * @param positionAngleType anomaly type
+     * @return mean anomaly (rad)
+     * @since 14.0
+     */
+    private static <T extends CalculusFieldElement<T>> T getMeanAnomaly(final T e, final T anomaly,
+                                                                        final PositionAngleType positionAngleType) {
+        return switch (positionAngleType) {
+            case MEAN -> anomaly;
+            case TRUE -> (e.getReal() > 1.) ? hyperbolicTrueToMean(e, anomaly) : ellipticTrueToMean(e, anomaly);
+            case ECCENTRIC -> (e.getReal() > 1.) ? hyperbolicEccentricToMean(e, anomaly) : ellipticEccentricToMean(e, anomaly);
+        };
     }
 
     /**

@@ -60,6 +60,42 @@ public interface Constants {
     /** Jupiter attraction coefficient as defined by IAU 2015 resolution B3: 1.2668653e17 (m³/s²). */
     double IAU_2015_NOMINAL_JUPITER_GM = 1.2668653e17;
 
+    /** Mercury equatorial radius as defined by IAU WGCCRE 2015: 2.44053e6 (m). */
+    double IAU_2015_NOMINAL_MERCURY_EQUATORIAL_RADIUS = 2.44053e6;
+
+    /** Mercury polar radius as defined by IAU WGCCRE 2015: 2.43826e6 (m). */
+    double IAU_2015_NOMINAL_MERCURY_POLAR_RADIUS = 2.43826e6;
+
+    /** Venus equatorial radius as defined by IAU WGCCRE 2015: 6.0518e6 (m). */
+    double IAU_2015_NOMINAL_VENUS_EQUATORIAL_RADIUS = 6.0518e6;
+
+    /** Venus polar radius as defined by IAU WGCCRE 2015: 6.0518e6 (m) (sphere). */
+    double IAU_2015_NOMINAL_VENUS_POLAR_RADIUS = 6.0518e6;
+
+    /** Mars equatorial radius as defined by IAU WGCCRE 2015: 3.39619e6 (m). */
+    double IAU_2015_NOMINAL_MARS_EQUATORIAL_RADIUS = 3.39619e6;
+
+    /** Mars polar radius as defined by IAU WGCCRE 2015: 3.37620e6 (m). */
+    double IAU_2015_NOMINAL_MARS_POLAR_RADIUS = 3.37620e6;
+
+    /** Saturn equatorial radius as defined by IAU WGCCRE 2015: 6.0268e7 (m). */
+    double IAU_2015_NOMINAL_SATURN_EQUATORIAL_RADIUS = 6.0268e7;
+
+    /** Saturn polar radius as defined by IAU WGCCRE 2015: 5.4364e7 (m). */
+    double IAU_2015_NOMINAL_SATURN_POLAR_RADIUS = 5.4364e7;
+
+    /** Uranus equatorial radius as defined by IAU WGCCRE 2015: 2.5559e7 (m). */
+    double IAU_2015_NOMINAL_URANUS_EQUATORIAL_RADIUS = 2.5559e7;
+
+    /** Uranus polar radius as defined by IAU WGCCRE 2015: 2.4973e7 (m). */
+    double IAU_2015_NOMINAL_URANUS_POLAR_RADIUS = 2.4973e7;
+
+    /** Neptune equatorial radius as defined by IAU WGCCRE 2015: 2.4764e7 (m). */
+    double IAU_2015_NOMINAL_NEPTUNE_EQUATORIAL_RADIUS = 2.4764e7;
+
+    /** Neptune polar radius as defined by IAU WGCCRE 2015: 2.4341e7 (m).  */
+    double IAU_2015_NOMINAL_NEPTUNE_POLAR_RADIUS = 2.4341e7;
+
     /** Duration of a mean solar day: 86400.0 s. */
     double JULIAN_DAY = 86400.0;
 
