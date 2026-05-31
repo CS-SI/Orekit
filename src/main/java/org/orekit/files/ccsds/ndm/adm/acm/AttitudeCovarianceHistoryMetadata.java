@@ -17,6 +17,9 @@
 
 package org.orekit.files.ccsds.ndm.adm.acm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
@@ -41,18 +44,23 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 public class AttitudeCovarianceHistoryMetadata extends CommentsContainer {
 
     /** Covariance identification number. */
+    @Nullable
     private String covID;
 
     /** Identification number of previous covariance. */
+    @Nullable
     private String covPrevID;
 
     /** Basis of this covariance time history data. */
+    @Nullable
     private String covBasis;
 
     /** Identification number of the covariance determination or simulation upon which this covariance is based. */
+    @Nullable
     private String covBasisID;
 
     /** Reference frame of the covariance. */
+    @Nullable
     private FrameFacade covReferenceFrame;
 
     /** Covariance element set type. */
@@ -79,8 +87,8 @@ public class AttitudeCovarianceHistoryMetadata extends CommentsContainer {
     /** Get covariance identification number.
      * @return covariance identification number
      */
-    public String getCovID() {
-        return covID;
+    public Optional<String> getCovID() {
+        return Optional.ofNullable(covID);
     }
 
     /** Set covariance identification number.
@@ -94,8 +102,8 @@ public class AttitudeCovarianceHistoryMetadata extends CommentsContainer {
     /** Get identification number of previous covariance.
      * @return identification number of previous covariance
      */
-    public String getCovPrevID() {
-        return covPrevID;
+    public Optional<String> getCovPrevID() {
+        return Optional.ofNullable(covPrevID);
     }
 
     /** Set identification number of previous covariance.
@@ -109,8 +117,8 @@ public class AttitudeCovarianceHistoryMetadata extends CommentsContainer {
     /** Get basis of this covariance time history data.
      * @return basis of this covariance time history data
      */
-    public String getCovBasis() {
-        return covBasis;
+    public Optional<String> getCovBasis() {
+        return Optional.ofNullable(covBasis);
     }
 
     /** Set basis of this covariance time history data.
@@ -124,8 +132,8 @@ public class AttitudeCovarianceHistoryMetadata extends CommentsContainer {
     /** Get identification number of the orbit determination or simulation upon which this covariance is based.
      * @return identification number of the orbit determination or simulation upon which this covariance is based
      */
-    public String getCovBasisID() {
-        return covBasisID;
+    public Optional<String> getCovBasisID() {
+        return Optional.ofNullable(covBasisID);
     }
 
     /** Set identification number of the orbit determination or simulation upon which this covariance is based.
@@ -139,8 +147,8 @@ public class AttitudeCovarianceHistoryMetadata extends CommentsContainer {
     /** Get reference frame of the covariance.
      * @return reference frame of the covariance
      */
-    public FrameFacade getCovReferenceFrame() {
-        return covReferenceFrame;
+    public Optional<FrameFacade> getCovReferenceFrame() {
+        return Optional.ofNullable(covReferenceFrame);
     }
 
     /** Set reference frame of the covariance.

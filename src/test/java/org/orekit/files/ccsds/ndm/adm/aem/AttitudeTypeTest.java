@@ -118,7 +118,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(true);
         final String[] attitudeDataBis = spin.createDataFields(metadata.isFirst(),
                                                                metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                               metadata.getEulerRotSeq(),
+                                                               metadata.getEulerRotSeq().orElse(null), // not used for spin
                                                                metadata.isSpacecraftBodyRate(),
                                                                tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -183,7 +183,7 @@ public class AttitudeTypeTest {
         metadata.setIsFirst(true);
         final TimeStampedAngularCoordinates tsac = quaternion.parse(metadata.isFirst(),
                                                                     metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                    metadata.getEulerRotSeq(),
+                                                                    metadata.getEulerRotSeq().orElse(null),  // not used for quaternion
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
         Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
@@ -203,7 +203,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(true);
         final String[] attitudeDataBis = quaternion.createDataFields(metadata.isFirst(),
                                                                      metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                     metadata.getEulerRotSeq(),
+                                                                     metadata.getEulerRotSeq().orElse(null), // not used for quaternion
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -227,7 +227,7 @@ public class AttitudeTypeTest {
         metadata.setIsFirst(true);
         final TimeStampedAngularCoordinates tsac = quaternion.parse(metadata.isFirst(),
                                                                     metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                    metadata.getEulerRotSeq(),
+                                                                    metadata.getEulerRotSeq().orElse(null), // not used for quaternion
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
         Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
@@ -247,7 +247,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(true);
         final String[] attitudeDataBis = quaternion.createDataFields(metadata.isFirst(),
                                                                      metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                     metadata.getEulerRotSeq(),
+                                                                     metadata.getEulerRotSeq().orElse(null), // not used for quaternion
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -274,7 +274,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(RotationOrder.XYZ);
         final TimeStampedAngularCoordinates tsac = quaternionRate.parse(metadata.isFirst(),
                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                        metadata.getEulerRotSeq(),
+                                                                        metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         context, attitudeData);
         Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
@@ -283,7 +283,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
         final UnivariateDerivative1[] rebuiltAngles = tsac.
                                                       toUnivariateDerivative1Rotation().
-                                                      getAngles(metadata.getEulerRotSeq(),
+                                                      getAngles(metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                 RotationConvention.FRAME_TRANSFORM);
         Assertions.assertEquals(FastMath.toRadians(4.31), rebuiltAngles[0].getFirstDerivative(), ANGLE_PRECISION);
         Assertions.assertEquals(FastMath.toRadians(1.28), rebuiltAngles[1].getFirstDerivative(), ANGLE_PRECISION);
@@ -302,7 +302,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(true);
         final String[] attitudeDataBis = quaternionRate.createDataFields(metadata.isFirst(),
                                                                          metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                         metadata.getEulerRotSeq(),
+                                                                         metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                          metadata.isSpacecraftBodyRate(),
                                                                          tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -327,7 +327,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(RotationOrder.XYZ);
         final TimeStampedAngularCoordinates tsac = eulerAngle.parse(metadata.isFirst(),
                                                                     metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                    metadata.getEulerRotSeq(),
+                                                                    metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
         final double[] angles = tsac.getRotation().getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
@@ -347,7 +347,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(RotationOrder.XYZ);
         final String[] attitudeDataBis = eulerAngle.createDataFields(metadata.isFirst(),
                                                                      metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                     metadata.getEulerRotSeq(),
+                                                                     metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -400,7 +400,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(sequence);
         final TimeStampedAngularCoordinates tsac = eulerAngleRate.parse(metadata.isFirst(),
                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                        metadata.getEulerRotSeq(),
+                                                                        metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         context, attitudeData);
         final FieldRotation<UnivariateDerivative1> r = tsac.toUnivariateDerivative1Rotation();
@@ -424,7 +424,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(sequence);
         final String[] attitudeDataBis = eulerAngleRate.createDataFields(metadata.isFirst(),
                                                                          metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                         metadata.getEulerRotSeq(),
+                                                                         metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                          metadata.isSpacecraftBodyRate(),
                                                                          tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -579,7 +579,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(a2b);
         String[] data = type.createDataFields(metadata.isFirst(),
                                               metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                              metadata.getEulerRotSeq(),
+                                              metadata.getEulerRotSeq().orElseThrow(), // just set above
                                               metadata.isSpacecraftBodyRate(),
                                               tac);
         String[] sData = new String[1 + data.length];
@@ -587,7 +587,7 @@ public class AttitudeTypeTest {
         System.arraycopy(data, 0, sData, 1, data.length);
         TimeStampedAngularCoordinates rebuilt = type.parse(metadata.isFirst(),
                                                            metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                           metadata.getEulerRotSeq(),
+                                                           metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                            metadata.isSpacecraftBodyRate(),
                                                            context, sData);
         TimeStampedAngularCoordinates diff = tac.addOffset(rebuilt.revert());

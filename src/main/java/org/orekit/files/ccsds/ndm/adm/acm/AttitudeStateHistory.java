@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.orekit.attitudes.BoundedAttitudeProvider;
 import org.orekit.attitudes.TabulatedProvider;
+import org.orekit.files.ccsds.utils.Initializer;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -48,7 +49,7 @@ public class AttitudeStateHistory implements AttitudeEphemerisFile.AttitudeEphem
     public AttitudeStateHistory(final AttitudeStateHistoryMetadata metadata,
                                 final List<AttitudeState> states) {
         this.metadata = metadata;
-        this.states   = states;
+        this.states   = Initializer.emptyListIfNull(states);
     }
 
     /** Get metadata.
@@ -113,7 +114,7 @@ public class AttitudeStateHistory implements AttitudeEphemerisFile.AttitudeEphem
     /** {@inheritDoc} */
     @Override
     public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
-        return states.stream().map(os -> os.toAngular(metadata.getEulerRotSeq())).collect(Collectors.toList());
+        return states.stream().map(os -> os.toAngular(metadata.getEulerRotSeq().orElse(null))).collect(Collectors.toList());
     }
 
 }

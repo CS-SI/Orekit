@@ -152,7 +152,7 @@ public class StreamingAemWriter implements AutoCloseable {
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
                 if (metadata.getEndpoints().getFrameA() == null ||
-                    metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame() == null) {
+                    metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame().isEmpty()) {
                     // the external frame must be frame A
                     metadata.getEndpoints().setFrameA(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
                 } else {

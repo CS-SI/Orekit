@@ -57,7 +57,7 @@ class OrbitDeterminationWriter extends AbstractWriter {
 
         // identifiers
         generator.writeEntry(OrbitDeterminationKey.OD_ID.name(),      od.getId(),     null, false);
-        generator.writeEntry(OrbitDeterminationKey.OD_PREV_ID.name(), od.getPrevId(), null, false);
+        generator.writeOptionalStringEntry(OrbitDeterminationKey.OD_PREV_ID.name(), od.getPrevId(), null, false);
         if (od.getMethod() != null) {
             final StringBuilder builder = new StringBuilder();
             builder.append(od.getMethod().getName());
@@ -70,39 +70,39 @@ class OrbitDeterminationWriter extends AbstractWriter {
 
         // time
         generator.writeEntry(OrbitDeterminationKey.OD_EPOCH.name(),             timeConverter, od.getEpoch(),                false, false);
-        generator.writeEntry(OrbitDeterminationKey.DAYS_SINCE_FIRST_OBS.name(), od.getTimeSinceFirstObservation(), Unit.DAY, false);
-        generator.writeEntry(OrbitDeterminationKey.DAYS_SINCE_LAST_OBS.name(),  od.getTimeSinceLastObservation(), Unit.DAY,  false);
-        generator.writeEntry(OrbitDeterminationKey.RECOMMENDED_OD_SPAN.name(),  od.getRecommendedOdSpan(), Unit.DAY,         false);
-        generator.writeEntry(OrbitDeterminationKey.ACTUAL_OD_SPAN.name(),       od.getActualOdSpan(), Unit.DAY,              false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.DAYS_SINCE_FIRST_OBS.name(), od.getTimeSinceFirstObservation(), Unit.DAY, false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.DAYS_SINCE_LAST_OBS.name(),  od.getTimeSinceLastObservation(), Unit.DAY,  false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.RECOMMENDED_OD_SPAN.name(),  od.getRecommendedOdSpan(), Unit.DAY,         false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.ACTUAL_OD_SPAN.name(),       od.getActualOdSpan(), Unit.DAY,              false);
 
         // counters
-        generator.writeEntry(OrbitDeterminationKey.OBS_AVAILABLE.name(),    od.getObsAvailable(),            false);
-        generator.writeEntry(OrbitDeterminationKey.OBS_USED.name(),         od.getObsUsed(),                 false);
-        generator.writeEntry(OrbitDeterminationKey.TRACKS_AVAILABLE.name(), od.getTracksAvailable(),         false);
-        generator.writeEntry(OrbitDeterminationKey.TRACKS_USED.name(),      od.getTracksUsed(),              false);
-        generator.writeEntry(OrbitDeterminationKey.MAXIMUM_OBS_GAP.name(),  od.getMaximumObsGap(), Unit.DAY, false);
+        generator.writeOptionalIntEntry(OrbitDeterminationKey.OBS_AVAILABLE.name(),       od.getObsAvailable(),            false);
+        generator.writeOptionalIntEntry(OrbitDeterminationKey.OBS_USED.name(),            od.getObsUsed(),                 false);
+        generator.writeOptionalIntEntry(OrbitDeterminationKey.TRACKS_AVAILABLE.name(),    od.getTracksAvailable(),         false);
+        generator.writeOptionalIntEntry(OrbitDeterminationKey.TRACKS_USED.name(),         od.getTracksUsed(),              false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.MAXIMUM_OBS_GAP.name(),  od.getMaximumObsGap(), Unit.DAY, false);
 
         // errors
-        generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMAJ.name(),    od.getEpochEigenMaj(), Unit.METRE,        false);
-        generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGINT.name(),    od.getEpochEigenInt(), Unit.METRE,        false);
-        generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMIN.name(),    od.getEpochEigenMin(), Unit.METRE,        false);
-        generator.writeEntry(OrbitDeterminationKey.OD_MAX_PRED_EIGMAJ.name(), od.getMaxPredictedEigenMaj(), Unit.METRE, false);
-        generator.writeEntry(OrbitDeterminationKey.OD_MIN_PRED_EIGMIN.name(), od.getMinPredictedEigenMin(), Unit.METRE, false);
-        generator.writeEntry(OrbitDeterminationKey.OD_CONFIDENCE.name(),      od.getConfidence(), Unit.PERCENT,         false);
-        generator.writeEntry(OrbitDeterminationKey.GDOP.name(),               od.getGdop(), Unit.ONE,                   false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.OD_EPOCH_EIGMAJ.name(),    od.getEpochEigenMaj(), Unit.METRE,        false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.OD_EPOCH_EIGINT.name(),    od.getEpochEigenInt(), Unit.METRE,        false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.OD_EPOCH_EIGMIN.name(),    od.getEpochEigenMin(), Unit.METRE,        false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.OD_MAX_PRED_EIGMAJ.name(), od.getMaxPredictedEigenMaj(), Unit.METRE, false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.OD_MIN_PRED_EIGMIN.name(), od.getMinPredictedEigenMin(), Unit.METRE, false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.OD_CONFIDENCE.name(),      od.getConfidence(), Unit.PERCENT,         false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.GDOP.name(),               od.getGdop(), Unit.ONE,                   false);
 
         // parameters
-        generator.writeEntry(OrbitDeterminationKey.SOLVE_N.name(),         od.getSolveN(),               false);
-        generator.writeEntry(OrbitDeterminationKey.SOLVE_STATES.name(),    od.getSolveStates(),          false);
-        generator.writeEntry(OrbitDeterminationKey.CONSIDER_N.name(),      od.getConsiderN(),            false);
-        generator.writeEntry(OrbitDeterminationKey.CONSIDER_PARAMS.name(), od.getConsiderParameters(),   false);
-        generator.writeEntry(OrbitDeterminationKey.SEDR.name(),            od.getSedr(), Units.W_PER_KG, false);
-        generator.writeEntry(OrbitDeterminationKey.SENSORS_N.name(),       od.getSensorsN(),             false);
-        generator.writeEntry(OrbitDeterminationKey.SENSORS.name(),         od.getSensors(),              false);
+        generator.writeOptionalIntEntry(OrbitDeterminationKey.SOLVE_N.name(),    od.getSolveN(),               false);
+        generator.writeEntry(OrbitDeterminationKey.SOLVE_STATES.name(),          od.getSolveStates(),          false);
+        generator.writeOptionalIntEntry(OrbitDeterminationKey.CONSIDER_N.name(), od.getConsiderN(),            false);
+        generator.writeEntry(OrbitDeterminationKey.CONSIDER_PARAMS.name(),       od.getConsiderParameters(),   false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.SEDR.name(),    od.getSedr(), Units.W_PER_KG, false);
+        generator.writeOptionalIntEntry(OrbitDeterminationKey.SENSORS_N.name(),  od.getSensorsN(),             false);
+        generator.writeEntry(OrbitDeterminationKey.SENSORS.name(),               od.getSensors(),              false);
 
         // observations
-        generator.writeEntry(OrbitDeterminationKey.WEIGHTED_RMS.name(),  od.getWeightedRms(), Unit.ONE, false);
-        generator.writeEntry(OrbitDeterminationKey.DATA_TYPES.name(),    od.getDataTypes(),             false);
+        generator.writeOptionalDoubleEntry(OrbitDeterminationKey.WEIGHTED_RMS.name(),  od.getWeightedRms(), Unit.ONE, false);
+        generator.writeEntry(OrbitDeterminationKey.DATA_TYPES.name(),                  od.getDataTypes(),             false);
 
     }
 

@@ -101,24 +101,24 @@ public class OpmWriter extends AbstractMessageWriter<OdmHeader, Segment<OdmCommo
                               segment.getData().getStateVectorBlock(), getTimeConverter()).
         write(generator);
 
-        if (segment.getData().getKeplerianElementsBlock() != null) {
+        if (segment.getData().getKeplerianElementsBlock().isPresent()) {
             // write optional Keplerian elements block
             new OsculationgKeplerianElementsWriter(XmlSubStructureKey.keplerianElements.name(), null,
-                                                   segment.getData().getKeplerianElementsBlock()).
+                                                   segment.getData().getKeplerianElementsBlock().get()).
             write(generator);
         }
 
-        if (segment.getData().getSpacecraftParametersBlock() != null) {
+        if (segment.getData().getSpacecraftParametersBlock().isPresent()) {
             // write optional spacecraft parameters block
             new SpacecraftParametersWriter(XmlSubStructureKey.spacecraftParameters.name(), null,
-                                           segment.getData().getSpacecraftParametersBlock()).
+                                           segment.getData().getSpacecraftParametersBlock().get()).
             write(generator);
         }
 
-        if (segment.getData().getCovarianceBlock() != null) {
+        if (segment.getData().getCovarianceBlock().isPresent()) {
             // write optional spacecraft parameters block
             new CartesianCovarianceWriter(XmlSubStructureKey.covarianceMatrix.name(), null,
-                                          segment.getData().getCovarianceBlock()).
+                                          segment.getData().getCovarianceBlock().get()).
             write(generator);
         }
 
@@ -129,10 +129,10 @@ public class OpmWriter extends AbstractMessageWriter<OdmHeader, Segment<OdmCommo
             }
         }
 
-        if (segment.getData().getUserDefinedBlock() != null) {
+        if (segment.getData().getUserDefinedBlock().isPresent()) {
             // write optional user defined parameters block
             new UserDefinedWriter(XmlSubStructureKey.userDefinedParameters.name(), null,
-                                  segment.getData().getUserDefinedBlock()).
+                                  segment.getData().getUserDefinedBlock().get()).
             write(generator);
         }
 

@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.section.Header;
 
 /**
@@ -26,6 +29,7 @@ import org.orekit.files.ccsds.section.Header;
 public class CdmHeader extends Header {
 
     /** ID that uniquely identifies a message from a given originator. */
+    @Nullable
     private String messageFor;
 
     /**
@@ -45,8 +49,8 @@ public class CdmHeader extends Header {
      * Get the spacecraft name for which the CDM is provided stored in MESSAGE_FOR key.
      * @return messageFor the spacecraft name for which the CDM is provided.
      */
-    public String getMessageFor() {
-        return messageFor;
+    public Optional<String> getMessageFor() {
+        return Optional.ofNullable(messageFor);
     }
 
     /**

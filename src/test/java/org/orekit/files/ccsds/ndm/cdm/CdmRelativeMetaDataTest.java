@@ -77,7 +77,7 @@ public class CdmRelativeMetaDataTest {
         meta.setScreenVolumeShape(ScreenVolumeShape.SPHERE);
         meta.setScreenVolumeRadius(1.);
         meta.checkScreenVolumeConditions();
-        Assertions.assertEquals(1.,  meta.getScreenVolumeRadius(), 0.);
+        Assertions.assertEquals(1.,  meta.getScreenVolumeRadius().orElseThrow(), 0.);
         
         // ScreenVolumeShape.BOX or ScreenVolumeShape.ELLIPSOID
         final ScreenVolumeShape[] shapes = new ScreenVolumeShape[] { ScreenVolumeShape.BOX, ScreenVolumeShape.ELLIPSOID };
@@ -88,9 +88,9 @@ public class CdmRelativeMetaDataTest {
 
             // Re-init errors
             meta.setScreenVolumeFrame(null);
-            meta.setScreenVolumeX(Double.NaN);
-            meta.setScreenVolumeY(Double.NaN);
-            meta.setScreenVolumeZ(Double.NaN);
+            meta.setScreenVolumeX(null);
+            meta.setScreenVolumeY(null);
+            meta.setScreenVolumeZ(null);
 
             // getScreenVolumeFrame() == null
             try {
@@ -159,6 +159,6 @@ public class CdmRelativeMetaDataTest {
         
         // Addendum: Test setCollisionPercentile when null
         meta.setCollisionPercentile(null);
-        Assertions.assertNull(meta.getCollisionPercentile());
+        Assertions.assertTrue(meta.getCollisionPercentile().isEmpty());
     }
 }

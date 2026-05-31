@@ -577,6 +577,9 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=sensor index {0} is already used
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=missing sensor index {0}
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=cannot use optional CCSDS value because not present in file
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=inconsistent number of elements: expected {0}, got {1}
 

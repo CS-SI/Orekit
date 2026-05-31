@@ -19,7 +19,9 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
@@ -48,6 +50,7 @@ public class OrbitDetermination extends CommentsContainer {
     private String id;
 
     /** Identification of previous orbit determination. */
+    @Nullable
     private String prevId;
 
     /** Orbit determination method. */
@@ -57,60 +60,78 @@ public class OrbitDetermination extends CommentsContainer {
     private AbsoluteDate epoch;
 
     /** Time elapsed between first accepted observation on epoch. */
-    private double timeSinceFirstObservation;
+    @Nullable
+    private Double timeSinceFirstObservation;
 
     /** Time elapsed between last accepted observation on epoch. */
-    private double timeSinceLastObservation;
+    @Nullable
+    private Double timeSinceLastObservation;
 
-    /** Sime span of observation recommended for the OD of the object. */
-    private double recommendedOdSpan;
+    /** Time span of observation recommended for the OD of the object. */
+    @Nullable
+    private Double recommendedOdSpan;
 
     /** Actual time span used for the OD of the object. */
-    private double actualOdSpan;
+    @Nullable
+    private Double actualOdSpan;
 
     /** Number of observations available within the actual OD span. */
+    @Nullable
     private Integer obsAvailable;
 
     /** Number of observations accepted within the actual OD span. */
+    @Nullable
     private Integer obsUsed;
 
     /** Number of sensors tracks available for the OD within the actual OD span. */
+    @Nullable
     private Integer tracksAvailable;
 
     /** Number of sensors tracks accepted for the OD within the actual OD span. */
+    @Nullable
     private Integer tracksUsed;
 
     /** Maximum time between observations in the OD of the object. */
-    private double maximumObsGap;
+    @Nullable
+    private Double maximumObsGap;
 
     /** Positional error ellipsoid 1σ major eigenvalue at the epoch of OD. */
-    private double epochEigenMaj;
+    @Nullable
+    private Double epochEigenMaj;
 
     /** Positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD. */
-    private double epochEigenInt;
+    @Nullable
+    private Double epochEigenInt;
 
     /** Positional error ellipsoid 1σ minor eigenvalue at the epoch of OD. */
-    private double epochEigenMin;
+    @Nullable
+    private Double epochEigenMin;
 
     /** Maximum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
-    private double maxPredictedEigenMaj;
+    @Nullable
+    private Double maxPredictedEigenMaj;
 
     /** Minimum predicted minor eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
-    private double minPredictedEigenMin;
+    @Nullable
+    private Double minPredictedEigenMin;
 
     /** Confidence metric. */
-    private double confidence;
+    @Nullable
+    private Double confidence;
 
     /** Generalize Dilution Of Precision. */
-    private double gdop;
+    @Nullable
+    private Double gdop;
 
     /** Number of solved-for states. */
+    @Nullable
     private Integer solveN;
 
     /** Description of state elements solved-for. */
     private List<String> solveStates;
 
     /** Number of consider parameters. */
+    @Nullable
     private Integer considerN;
 
     /** Description of consider parameters. */
@@ -119,16 +140,19 @@ public class OrbitDetermination extends CommentsContainer {
     /** Specific Energy Dissipation Rate.
      * @since 12.0
      */
-    private double sedr;
+    @Nullable
+    private Double sedr;
 
     /** Number of sensors used. */
+    @Nullable
     private Integer sensorsN;
 
     /** Description of sensors used. */
     private List<String> sensors;
 
     /** Weighted RMS residual ratio. */
-    private double weightedRms;
+    @Nullable
+    private Double weightedRms;
 
     /** Observation data types used. */
     private List<String> dataTypes;
@@ -136,25 +160,10 @@ public class OrbitDetermination extends CommentsContainer {
     /** Simple constructor.
      */
     public OrbitDetermination() {
-        sedr               = Double.NaN;
         solveStates        = Collections.emptyList();
         considerParameters = Collections.emptyList();
         sensors            = Collections.emptyList();
         dataTypes          = Collections.emptyList();
-        // In 502.0-B-3 (Table 6-11) these values are optional with no default
-        timeSinceFirstObservation = Double.NaN;
-        timeSinceLastObservation = Double.NaN;
-        recommendedOdSpan = Double.NaN;
-        actualOdSpan = Double.NaN;
-        maximumObsGap = Double.NaN;
-        epochEigenInt = Double.NaN;
-        epochEigenMaj = Double.NaN;
-        epochEigenMin = Double.NaN;
-        maxPredictedEigenMaj = Double.NaN;
-        minPredictedEigenMin = Double.NaN;
-        confidence = Double.NaN;
-        gdop = Double.NaN;
-        weightedRms = Double.NaN;
     }
 
     /** {@inheritDoc} */
@@ -183,8 +192,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get identification of previous orbit determination.
      * @return identification of previous orbit determination
      */
-    public String getPrevId() {
-        return prevId;
+    public Optional<String> getPrevId() {
+        return Optional.ofNullable(prevId);
     }
 
     /** Set identification of previous orbit determination.
@@ -225,8 +234,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get time elapsed between first accepted observation on epoch.
      * @return time elapsed between first accepted observation on epoch
      */
-    public double getTimeSinceFirstObservation() {
-        return timeSinceFirstObservation;
+    public Optional<Double> getTimeSinceFirstObservation() {
+        return Optional.ofNullable(timeSinceFirstObservation);
     }
 
     /** Set time elapsed between first accepted observation on epoch.
@@ -239,8 +248,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get time elapsed between last accepted observation on epoch.
      * @return time elapsed between last accepted observation on epoch
      */
-    public double getTimeSinceLastObservation() {
-        return timeSinceLastObservation;
+    public Optional<Double> getTimeSinceLastObservation() {
+        return Optional.ofNullable(timeSinceLastObservation);
     }
 
     /** Set time elapsed between last accepted observation on epoch.
@@ -253,8 +262,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get time span of observation recommended for the OD of the object.
      * @return time span of observation recommended for the OD of the object
      */
-    public double getRecommendedOdSpan() {
-        return recommendedOdSpan;
+    public Optional<Double> getRecommendedOdSpan() {
+        return Optional.ofNullable(recommendedOdSpan);
     }
 
     /** Set time span of observation recommended for the OD of the object.
@@ -267,8 +276,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get actual time span used for the OD of the object.
      * @return actual time span used for the OD of the object
      */
-    public double getActualOdSpan() {
-        return actualOdSpan;
+    public Optional<Double> getActualOdSpan() {
+        return Optional.ofNullable(actualOdSpan);
     }
 
     /** Set actual time span used for the OD of the object.
@@ -281,8 +290,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of observations available within the actual OD span.
      * @return number of observations available within the actual OD span
      */
-    public Integer getObsAvailable() {
-        return obsAvailable;
+    public Optional<Integer> getObsAvailable() {
+        return Optional.ofNullable(obsAvailable);
     }
 
     /** Set number of observations available within the actual OD span.
@@ -295,8 +304,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of observations accepted within the actual OD span.
      * @return number of observations accepted within the actual OD span
      */
-    public Integer getObsUsed() {
-        return obsUsed;
+    public Optional<Integer> getObsUsed() {
+        return Optional.ofNullable(obsUsed);
     }
 
     /** Set number of observations accepted within the actual OD span.
@@ -309,8 +318,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of sensors tracks available for the OD within the actual OD span.
      * @return number of sensors tracks available for the OD within the actual OD span
      */
-    public Integer getTracksAvailable() {
-        return tracksAvailable;
+    public Optional<Integer> getTracksAvailable() {
+        return Optional.ofNullable(tracksAvailable);
     }
 
     /** Set number of sensors tracks available for the OD within the actual OD span.
@@ -323,8 +332,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of sensors tracks accepted for the OD within the actual OD span.
      * @return number of sensors tracks accepted for the OD within the actual OD span
      */
-    public Integer getTracksUsed() {
-        return tracksUsed;
+    public Optional<Integer> getTracksUsed() {
+        return Optional.ofNullable(tracksUsed);
     }
 
     /** Set number of sensors tracks accepted for the OD within the actual OD span.
@@ -337,8 +346,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get maximum time between observations in the OD of the object.
      * @return maximum time between observations in the OD of the object
      */
-    public double getMaximumObsGap() {
-        return maximumObsGap;
+    public Optional<Double> getMaximumObsGap() {
+        return Optional.ofNullable(maximumObsGap);
     }
 
     /** Set maximum time between observations in the OD of the object.
@@ -351,8 +360,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get positional error ellipsoid 1σ major eigenvalue at the epoch of OD.
      * @return positional error ellipsoid 1σ major eigenvalue at the epoch of OD
      */
-    public double getEpochEigenMaj() {
-        return epochEigenMaj;
+    public Optional<Double> getEpochEigenMaj() {
+        return Optional.ofNullable(epochEigenMaj);
     }
 
     /** Set positional error ellipsoid 1σ major eigenvalue at the epoch of OD.
@@ -365,8 +374,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD.
      * @return positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD
      */
-    public double getEpochEigenInt() {
-        return epochEigenInt;
+    public Optional<Double> getEpochEigenInt() {
+        return Optional.ofNullable(epochEigenInt);
     }
 
     /** Set positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD.
@@ -379,8 +388,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get positional error ellipsoid 1σ minor eigenvalue at the epoch of OD.
      * @return positional error ellipsoid 1σ minor eigenvalue at the epoch of OD
      */
-    public double getEpochEigenMin() {
-        return epochEigenMin;
+    public Optional<Double> getEpochEigenMin() {
+        return Optional.ofNullable(epochEigenMin);
     }
 
     /** Set positional error ellipsoid 1σ minor eigenvalue at the epoch of OD.
@@ -393,8 +402,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get maximum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM.
      * @return maximum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM
      */
-    public double getMaxPredictedEigenMaj() {
-        return maxPredictedEigenMaj;
+    public Optional<Double> getMaxPredictedEigenMaj() {
+        return Optional.ofNullable(maxPredictedEigenMaj);
     }
 
     /** Set maximum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM.
@@ -407,8 +416,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get minimum predicted minor eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM.
      * @return minimum predicted v eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM
      */
-    public double getMinPredictedEigenMin() {
-        return minPredictedEigenMin;
+    public Optional<Double> getMinPredictedEigenMin() {
+        return Optional.ofNullable(minPredictedEigenMin);
     }
 
     /** Set minimum predicted minor eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM.
@@ -421,8 +430,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get confidence metric.
      * @return confidence metric
      */
-    public double getConfidence() {
-        return confidence;
+    public Optional<Double> getConfidence() {
+        return Optional.ofNullable(confidence);
     }
 
     /** Set confidence metric.
@@ -435,8 +444,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get generalize Dilution Of Precision.
      * @return generalize Dilution Of Precision
      */
-    public double getGdop() {
-        return gdop;
+    public Optional<Double> getGdop() {
+        return Optional.ofNullable(gdop);
     }
 
     /** Set generalize Dilution Of Precision.
@@ -449,8 +458,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of solved-for states.
      * @return number of solved-for states
      */
-    public Integer getSolveN() {
-        return solveN;
+    public Optional<Integer> getSolveN() {
+        return Optional.ofNullable(solveN);
     }
 
     /** Set number of solved-for states.
@@ -477,8 +486,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of consider parameters.
      * @return number of consider parameters
      */
-    public Integer getConsiderN() {
-        return considerN;
+    public Optional<Integer> getConsiderN() {
+        return Optional.ofNullable(considerN);
     }
 
     /** Set number of consider parameters.
@@ -506,8 +515,8 @@ public class OrbitDetermination extends CommentsContainer {
      * @return Specific Energy Dissipation Rate
      * @since 12.0
      */
-    public double getSedr() {
-        return sedr;
+    public Optional<Double> getSedr() {
+        return Optional.ofNullable(sedr);
     }
 
     /** Set Specific Energy Dissipation Rate.
@@ -521,8 +530,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of sensors used.
      * @return number of sensors used
      */
-    public Integer getSensorsN() {
-        return sensorsN;
+    public Optional<Integer> getSensorsN() {
+        return Optional.ofNullable(sensorsN);
     }
 
     /** Set number of sensors used.
@@ -549,8 +558,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get weighted RMS residual ratio.
      * @return weighted RMS residual ratio
      */
-    public double getWeightedRms() {
-        return weightedRms;
+    public Optional<Double> getWeightedRms() {
+        return Optional.ofNullable(weightedRms);
     }
 
     /** Set weighted RMS residual ratio.

@@ -17,6 +17,9 @@
 
 package org.orekit.files.ccsds.ndm.odm.omm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
@@ -37,15 +40,19 @@ public class OmmData implements Data {
     private final KeplerianElements keplerianElementsBlock;
 
     /** Spacecraft parameters block. */
+    @Nullable
     private final SpacecraftParameters spacecraftParameters;
 
     /** TLE block. */
+    @Nullable
     private final OmmTle tleBlock;
 
     /** Covariance matrix logical block being read. */
+    @Nullable
     private final CartesianCovariance covarianceBlock;
 
     /** User defined parameters. */
+    @Nullable
     private final UserDefined userDefinedBlock;
 
     /** Mass. */
@@ -86,11 +93,11 @@ public class OmmData implements Data {
         }
         if (tleBlock == null) {
             // semi-major axis was not checked above, we do it now
-            keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA(),
+            keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA().orElse(Double.NaN),
                                                KeplerianElementsKey.SEMI_MAJOR_AXIS.name());
         } else {
             // in OMM with TLE block, only mean motion is allowed, not semi-major axis
-            keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getMeanMotion(),
+            keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getMeanMotion().orElse(Double.NaN),
                                                KeplerianElementsKey.MEAN_MOTION.name());
             tleBlock.validate(version);
         }
@@ -111,31 +118,31 @@ public class OmmData implements Data {
     }
 
     /** Get the spacecraft parameters logical block.
-     * @return spacecraft parameters block (may be null)
+     * @return spacecraft parameters block
      */
-    public SpacecraftParameters getSpacecraftParametersBlock() {
-        return spacecraftParameters;
+    public Optional<SpacecraftParameters> getSpacecraftParametersBlock() {
+        return Optional.ofNullable(spacecraftParameters);
     }
 
     /** Get the TLE logical block.
      * @return TLE block
      */
-    public OmmTle getTLEBlock() {
-        return tleBlock;
+    public Optional<OmmTle> getTLEBlock() {
+        return Optional.ofNullable(tleBlock);
     }
 
     /** Get the covariance matrix logical block.
-     * @return covariance matrix block (may be null)
+     * @return covariance matrix block
      */
-    public CartesianCovariance getCovarianceBlock() {
-        return covarianceBlock;
+    public Optional<CartesianCovariance> getCovarianceBlock() {
+        return Optional.ofNullable(covarianceBlock);
     }
 
     /** Get the user defined parameters logical block.
-     * @return user defined parameters block (may be null)
+     * @return user defined parameters block
      */
-    public UserDefined getUserDefinedBlock() {
-        return userDefinedBlock;
+    public Optional<UserDefined> getUserDefinedBlock() {
+        return Optional.ofNullable(userDefinedBlock);
     }
 
     /** Get the mass.

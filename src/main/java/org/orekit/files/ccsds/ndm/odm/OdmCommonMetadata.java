@@ -17,6 +17,9 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
@@ -42,10 +45,12 @@ public class OdmCommonMetadata extends OdmMetadata {
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
+    @Nullable
     private String frameEpochString;
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
+    @Nullable
     private AbsoluteDate frameEpoch;
 
     /**
@@ -141,10 +146,7 @@ public class OdmCommonMetadata extends OdmMetadata {
      * @see #getFrameMapper()
      */
     public Frame getFrame() {
-        return getFrameMapper().buildCcsdsFrame(
-                getCenter(),
-                getReferenceFrame(),
-                getFrameEpoch());
+        return getFrameMapper().buildCcsdsFrame(center, referenceFrame, frameEpoch);
     }
 
     /**
@@ -181,8 +183,8 @@ public class OdmCommonMetadata extends OdmMetadata {
      * reference frame.
      * @return epoch of reference frame
      */
-    public AbsoluteDate getFrameEpoch() {
-        return frameEpoch;
+    public Optional<AbsoluteDate> getFrameEpoch() {
+        return Optional.ofNullable(frameEpoch);
     }
 
     /** Set epoch of reference frame, if not intrinsic to the definition of the

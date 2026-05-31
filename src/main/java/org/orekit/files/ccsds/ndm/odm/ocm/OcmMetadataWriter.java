@@ -62,67 +62,67 @@ class OcmMetadataWriter extends AbstractWriter {
         // object
         generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),
                              metadata.getObjectName(), null, false);
-        generator.writeEntry(OcmMetadataKey.INTERNATIONAL_DESIGNATOR.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.INTERNATIONAL_DESIGNATOR.name(),
                              metadata.getInternationalDesignator(), null, false);
-        generator.writeEntry(OcmMetadataKey.CATALOG_NAME.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.CATALOG_NAME.name(),
                              metadata.getCatalogName(), null, false);
-        generator.writeEntry(OcmMetadataKey.OBJECT_DESIGNATOR.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.OBJECT_DESIGNATOR.name(),
                              metadata.getObjectDesignator(), null, false);
         generator.writeEntry(OcmMetadataKey.ALTERNATE_NAMES.name(),
                              metadata.getAlternateNames(), false);
 
         // originator
-        generator.writeEntry(OcmMetadataKey.ORIGINATOR_POC.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.ORIGINATOR_POC.name(),
                              metadata.getOriginatorPOC(), null, false);
-        generator.writeEntry(OcmMetadataKey.ORIGINATOR_POSITION.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.ORIGINATOR_POSITION.name(),
                              metadata.getOriginatorPosition(), null, false);
-        generator.writeEntry(OcmMetadataKey.ORIGINATOR_PHONE.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.ORIGINATOR_PHONE.name(),
                              metadata.getOriginatorPhone(), null, false);
-        generator.writeEntry(OcmMetadataKey.ORIGINATOR_EMAIL.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.ORIGINATOR_EMAIL.name(),
                              metadata.getOriginatorEmail(), null, false);
-        generator.writeEntry(OcmMetadataKey.ORIGINATOR_ADDRESS.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.ORIGINATOR_ADDRESS.name(),
                              metadata.getOriginatorAddress(), null, false);
 
         // technical
-        generator.writeEntry(OcmMetadataKey.TECH_ORG.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.TECH_ORG.name(),
                              metadata.getTechOrg(), null, false);
-        generator.writeEntry(OcmMetadataKey.TECH_POC.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.TECH_POC.name(),
                              metadata.getTechPOC(), null, false);
-        generator.writeEntry(OcmMetadataKey.TECH_POSITION.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.TECH_POSITION.name(),
                              metadata.getTechPosition(), null, false);
-        generator.writeEntry(OcmMetadataKey.TECH_PHONE.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.TECH_PHONE.name(),
                              metadata.getTechPhone(), null, false);
-        generator.writeEntry(OcmMetadataKey.TECH_EMAIL.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.TECH_EMAIL.name(),
                              metadata.getTechEmail(), null, false);
-        generator.writeEntry(OcmMetadataKey.TECH_ADDRESS.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.TECH_ADDRESS.name(),
                              metadata.getTechAddress(), null, false);
 
         // messages
-        generator.writeEntry(OcmMetadataKey.PREVIOUS_MESSAGE_ID.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.PREVIOUS_MESSAGE_ID.name(),
                              metadata.getPreviousMessageID(), null, false);
-        generator.writeEntry(OcmMetadataKey.NEXT_MESSAGE_ID.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.NEXT_MESSAGE_ID.name(),
                              metadata.getNextMessageID(), null, false);
-        generator.writeEntry(OcmMetadataKey.ADM_MSG_LINK.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.ADM_MSG_LINK.name(),
                              metadata.getAdmMessageLink(), null, false);
-        generator.writeEntry(OcmMetadataKey.CDM_MSG_LINK.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.CDM_MSG_LINK.name(),
                              metadata.getCdmMessageLink(), null, false);
-        generator.writeEntry(OcmMetadataKey.PRM_MSG_LINK.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.PRM_MSG_LINK.name(),
                              metadata.getPrmMessageLink(), null, false);
-        generator.writeEntry(OcmMetadataKey.RDM_MSG_LINK.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.RDM_MSG_LINK.name(),
                              metadata.getRdmMessageLink(), null, false);
-        generator.writeEntry(OcmMetadataKey.TDM_MSG_LINK.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.TDM_MSG_LINK.name(),
                              metadata.getTdmMessageLink(), null, false);
 
         // operator
-        generator.writeEntry(OcmMetadataKey.OPERATOR.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.OPERATOR.name(),
                              metadata.getOperator(), null, false);
-        generator.writeEntry(OcmMetadataKey.OWNER.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.OWNER.name(),
                              metadata.getOwner(), null, false);
-        generator.writeEntry(OcmMetadataKey.COUNTRY.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.COUNTRY.name(),
                              metadata.getCountry(), null, false);
-        generator.writeEntry(OcmMetadataKey.CONSTELLATION.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.CONSTELLATION.name(),
                              metadata.getConstellation(), null, false);
-        generator.writeEntry(OcmMetadataKey.OBJECT_TYPE.name(),
+        generator.writeOptionalEnumEntry(OcmMetadataKey.OBJECT_TYPE.name(),
                              metadata.getObjectType(), false);
 
         // time
@@ -132,11 +132,11 @@ class OcmMetadataWriter extends AbstractWriter {
                              metadata.getEpochT0(), true, true);
 
         // definitions
-        generator.writeEntry(OcmMetadataKey.OPS_STATUS.name(),
+        generator.writeOptionalEnumEntry(OcmMetadataKey.OPS_STATUS.name(),
                              metadata.getOpsStatus(), false);
-        generator.writeEntry(OcmMetadataKey.ORBIT_CATEGORY.name(),
+        generator.writeOptionalEnumEntry(OcmMetadataKey.ORBIT_CATEGORY.name(),
                              metadata.getOrbitCategory(), false);
-        if (metadata.getOcmDataElements() != null) {
+        if (!metadata.getOcmDataElements().isEmpty()) {
             generator.writeEntry(OcmMetadataKey.OCM_DATA_ELEMENTS.name(),
                                  metadata.getOcmDataElements().stream().map(Enum::name).collect(Collectors.toList()), false);
         }
@@ -147,29 +147,29 @@ class OcmMetadataWriter extends AbstractWriter {
             generator.writeEntry(OcmMetadataKey.SCLK_OFFSET_AT_EPOCH.name(), metadata.getSclkOffsetAtEpoch(), Unit.SECOND, false);
             generator.writeEntry(OcmMetadataKey.SCLK_SEC_PER_SI_SEC.name(),  metadata.getSclkSecPerSISec(),   Unit.SECOND, false);
         }
-        generator.writeEntry(OcmMetadataKey.PREVIOUS_MESSAGE_EPOCH.name(), timeConverter,
+        generator.writeOptionalDateEntry(OcmMetadataKey.PREVIOUS_MESSAGE_EPOCH.name(), timeConverter,
                              metadata.getPreviousMessageEpoch(), true, false);
-        generator.writeEntry(OcmMetadataKey.NEXT_MESSAGE_EPOCH.name(), timeConverter,
+        generator.writeOptionalDateEntry(OcmMetadataKey.NEXT_MESSAGE_EPOCH.name(), timeConverter,
                              metadata.getNextMessageEpoch(), true, false);
-        generator.writeEntry(OcmMetadataKey.START_TIME.name(), timeConverter,
+        generator.writeOptionalDateEntry(OcmMetadataKey.START_TIME.name(), timeConverter,
                              metadata.getStartTime(), false, false);
-        generator.writeEntry(OcmMetadataKey.STOP_TIME.name(), timeConverter,
+        generator.writeOptionalDateEntry(OcmMetadataKey.STOP_TIME.name(), timeConverter,
                              metadata.getStopTime(), false, false);
-        generator.writeEntry(OcmMetadataKey.TIME_SPAN.name(),        metadata.getTimeSpan(),  Unit.DAY,    false);
-        generator.writeEntry(OcmMetadataKey.TAIMUTC_AT_TZERO.name(), metadata.getTaimutcT0(), Unit.SECOND, false);
-        if (metadata.getNextLeapEpoch() != null) {
-            generator.writeEntry(OcmMetadataKey.NEXT_LEAP_EPOCH.name(), timeConverter,
+        generator.writeOptionalDoubleEntry(OcmMetadataKey.TIME_SPAN.name(),        metadata.getTimeSpan(),  Unit.DAY,    false);
+        generator.writeOptionalDoubleEntry(OcmMetadataKey.TAIMUTC_AT_TZERO.name(), metadata.getTaimutcT0(), Unit.SECOND, false);
+        if (metadata.getNextLeapEpoch().isPresent()) {
+            generator.writeOptionalDateEntry(OcmMetadataKey.NEXT_LEAP_EPOCH.name(), timeConverter,
                                  metadata.getNextLeapEpoch(), true, true);
-            generator.writeEntry(OcmMetadataKey.NEXT_LEAP_TAIMUTC.name(), metadata.getNextLeapTaimutc(), Unit.SECOND, true);
+            generator.writeOptionalDoubleEntry(OcmMetadataKey.NEXT_LEAP_TAIMUTC.name(), metadata.getNextLeapTaimutc(), Unit.SECOND, true);
         }
-        generator.writeEntry(OcmMetadataKey.UT1MUTC_AT_TZERO.name(), metadata.getUt1mutcT0(), Unit.SECOND, false);
+        generator.writeOptionalDoubleEntry(OcmMetadataKey.UT1MUTC_AT_TZERO.name(), metadata.getUt1mutcT0(), Unit.SECOND, false);
 
         // data sources
-        generator.writeEntry(OcmMetadataKey.EOP_SOURCE.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.EOP_SOURCE.name(),
                              metadata.getEopSource(), null, false);
-        generator.writeEntry(OcmMetadataKey.INTERP_METHOD_EOP.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.INTERP_METHOD_EOP.name(),
                              metadata.getInterpMethodEOP(), null, false);
-        generator.writeEntry(OcmMetadataKey.CELESTIAL_SOURCE.name(),
+        generator.writeOptionalStringEntry(OcmMetadataKey.CELESTIAL_SOURCE.name(),
                              metadata.getCelestialSource(), null, false);
 
     }

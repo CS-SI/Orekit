@@ -458,7 +458,7 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
                 final AbsoluteDate epoch = context.getTimeSystem().getConverter(context).parse(fields[0]);
                 return currentAttitudeStateHistory.add(new AttitudeState(currentAttitudeStateHistoryMetadata.getAttitudeType(),
-                                                                         currentAttitudeStateHistoryMetadata.getRateType(),
+                                                                         currentAttitudeStateHistoryMetadata.getRateType().orElse(null),
                                                                          epoch, fields, 1));
             } catch (NumberFormatException | OrekitIllegalArgumentException e) {
                 throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,

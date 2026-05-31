@@ -49,45 +49,45 @@ class AttitudeManeuverWriter extends AbstractWriter {
         generator.writeComments(man.getComments());
 
         // identifiers
-        generator.writeEntry(AttitudeManeuverKey.MAN_ID.name(),      man.getID(),         null, false);
-        generator.writeEntry(AttitudeManeuverKey.MAN_PREV_ID.name(), man.getPrevID(),     null, false);
-        generator.writeEntry(AttitudeManeuverKey.MAN_PURPOSE.name(), man.getManPurpose(), null, true);
+        generator.writeOptionalStringEntry(AttitudeManeuverKey.MAN_ID.name(),      man.getID(),         null, false);
+        generator.writeOptionalStringEntry(AttitudeManeuverKey.MAN_PREV_ID.name(), man.getPrevID(),     null, false);
+        generator.writeEntry(AttitudeManeuverKey.MAN_PURPOSE.name(),               man.getManPurpose(), null, true);
 
         // time
-        generator.writeEntry(AttitudeManeuverKey.MAN_BEGIN_TIME.name(),             man.getBeginTime(), Unit.SECOND,      false);
-        generator.writeEntry(AttitudeManeuverKey.MAN_END_TIME.name(),               man.getEndTime(),   Unit.SECOND,      false);
-        generator.writeEntry(AttitudeManeuverKey.MAN_DURATION.name(),               man.getDuration(),  Unit.SECOND,      false);
+        generator.writeEntry(AttitudeManeuverKey.MAN_BEGIN_TIME.name(),              man.getBeginTime(), Unit.SECOND,      false);
+        generator.writeOptionalDoubleEntry(AttitudeManeuverKey.MAN_END_TIME.name(),  man.getEndTime(),   Unit.SECOND,      false);
+        generator.writeOptionalDoubleEntry(AttitudeManeuverKey.MAN_DURATION.name(),  man.getDuration(),  Unit.SECOND,      false);
 
         // actuator
-        generator.writeEntry(AttitudeManeuverKey.ACTUATOR_USED.name(), man.getActuatorUsed(), null, false);
+        generator.writeOptionalStringEntry(AttitudeManeuverKey.ACTUATOR_USED.name(), man.getActuatorUsed(), null, false);
 
         // target
-        if (man.getTargetMomentum() != null) {
+        if (man.getTargetMomentum().isPresent()) {
             final StringBuilder momentum = new StringBuilder();
-            momentum.append(generator.doubleToString(Units.N_M_S.fromSI(man.getTargetMomentum().getX())));
+            momentum.append(generator.doubleToString(Units.N_M_S.fromSI(man.getTargetMomentum().get().getX())));
             momentum.append(' ');
-            momentum.append(generator.doubleToString(Units.N_M_S.fromSI(man.getTargetMomentum().getY())));
+            momentum.append(generator.doubleToString(Units.N_M_S.fromSI(man.getTargetMomentum().get().getY())));
             momentum.append(' ');
-            momentum.append(generator.doubleToString(Units.N_M_S.fromSI(man.getTargetMomentum().getZ())));
+            momentum.append(generator.doubleToString(Units.N_M_S.fromSI(man.getTargetMomentum().get().getZ())));
             generator.writeEntry(AttitudeManeuverKey.TARGET_MOMENTUM.name(), momentum.toString(),                Units.N_M_S, true);
-            if (man.getTargetMomFrame() != null) {
-                generator.writeEntry(AttitudeManeuverKey.TARGET_MOM_FRAME.name(), man.getTargetMomFrame().getName(), null,    false);
+            if (man.getTargetMomFrame().isPresent()) {
+                generator.writeEntry(AttitudeManeuverKey.TARGET_MOM_FRAME.name(), man.getTargetMomFrame().get().getName(), null,    false);
             }
         }
 
-        if (man.getTargetAttitude() != null) {
+        if (man.getTargetAttitude().isPresent()) {
             final StringBuilder attitude = new StringBuilder();
-            attitude.append(generator.doubleToString(man.getTargetAttitude().getQ1()));
+            attitude.append(generator.doubleToString(man.getTargetAttitude().get().getQ1()));
             attitude.append(' ');
-            attitude.append(generator.doubleToString(man.getTargetAttitude().getQ2()));
+            attitude.append(generator.doubleToString(man.getTargetAttitude().get().getQ2()));
             attitude.append(' ');
-            attitude.append(generator.doubleToString(man.getTargetAttitude().getQ3()));
+            attitude.append(generator.doubleToString(man.getTargetAttitude().get().getQ3()));
             attitude.append(' ');
-            attitude.append(generator.doubleToString(man.getTargetAttitude().getQ0()));
+            attitude.append(generator.doubleToString(man.getTargetAttitude().get().getQ0()));
             generator.writeEntry(AttitudeManeuverKey.TARGET_ATTITUDE.name(), attitude.toString(), null, true);
         }
 
-        generator.writeEntry(AttitudeManeuverKey.TARGET_SPINRATE.name(), man.getTargetSpinRate(), Units.DEG_PER_S, false);
+        generator.writeOptionalDoubleEntry(AttitudeManeuverKey.TARGET_SPINRATE.name(), man.getTargetSpinRate(), Units.DEG_PER_S, false);
 
     }
 

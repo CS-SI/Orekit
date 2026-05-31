@@ -103,8 +103,8 @@ public class AttitudeWriterTest {
         metadata.setStopTime(s0.getMetadata().getStop());
         metadata.setAttitudeType(s0.getMetadata().getAttitudeType());
         metadata.setIsFirst(s0.getMetadata().isFirst());
-        metadata.setCenter(s0.getMetadata().getCenter());
-        metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod());
+        metadata.setCenter(s0.getMetadata().getCenter().orElse(null));
+        metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod().orElse(null));
         AemWriter writer = new WriterBuilder().
                            withConventions(IERSConventions.IERS_2010).
                            withDataContext(DataContext.getDefault()).
@@ -279,7 +279,7 @@ public class AttitudeWriterTest {
         AemMetadata meta2 = segment2.getMetadata();
         Assertions.assertEquals(meta1.getObjectID(),                            meta2.getObjectID());
         Assertions.assertEquals(meta1.getObjectName(),                          meta2.getObjectName());
-        Assertions.assertEquals(meta1.getCenter().getName(),                    meta2.getCenter().getName());
+        Assertions.assertEquals(meta1.getCenter().orElseThrow().getName(),      meta2.getCenter().orElseThrow().getName());
         Assertions.assertEquals(meta1.getTimeSystem().name(), meta2.getTimeSystem().name());
         Assertions.assertEquals(meta1.getLaunchYear(),                          meta2.getLaunchYear());
         Assertions.assertEquals(meta1.getLaunchNumber(),                        meta2.getLaunchNumber());

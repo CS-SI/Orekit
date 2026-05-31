@@ -59,14 +59,14 @@ class AttitudeCovarianceHistoryWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // identifiers
-        generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_ID.name(),       metadata.getCovID(),      null, false);
-        generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_PREV_ID.name(),  metadata.getCovPrevID(),  null, false);
-        generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_BASIS.name(),    metadata.getCovBasis(),   null, false);
-        generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_BASIS_ID.name(), metadata.getCovBasisID(), null, false);
+        generator.writeOptionalStringEntry(AttitudeCovarianceHistoryMetadataKey.COV_ID.name(),       metadata.getCovID(),      null, false);
+        generator.writeOptionalStringEntry(AttitudeCovarianceHistoryMetadataKey.COV_PREV_ID.name(),  metadata.getCovPrevID(),  null, false);
+        generator.writeOptionalStringEntry(AttitudeCovarianceHistoryMetadataKey.COV_BASIS.name(),    metadata.getCovBasis(),   null, false);
+        generator.writeOptionalStringEntry(AttitudeCovarianceHistoryMetadataKey.COV_BASIS_ID.name(), metadata.getCovBasisID(), null, false);
 
         // references
-        if (metadata.getCovReferenceFrame() != null) {
-            generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_REF_FRAME.name(), metadata.getCovReferenceFrame().getName(), null, false);
+        if (metadata.getCovReferenceFrame().isPresent()) {
+            generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_REF_FRAME.name(), metadata.getCovReferenceFrame().get().getName(), null, false);
         }
 
         // elements

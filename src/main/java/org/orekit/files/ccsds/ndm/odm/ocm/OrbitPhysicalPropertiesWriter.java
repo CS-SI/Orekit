@@ -19,12 +19,12 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.io.IOException;
 
+import org.hipparchus.complex.Quaternion;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
 /** Writer for physical properties data.
@@ -56,78 +56,78 @@ class OrbitPhysicalPropertiesWriter extends AbstractWriter {
         // physical properties block
         generator.writeComments(phys.getComments());
 
-        generator.writeEntry(OrbitPhysicalPropertiesKey.MANUFACTURER.name(), phys.getManufacturer(), null, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.BUS_MODEL.name(),    phys.getBusModel(),     null, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.DOCKED_WITH.name(),  phys.getDockedWith(),         false);
+        generator.writeOptionalStringEntry(OrbitPhysicalPropertiesKey.MANUFACTURER.name(), phys.getManufacturer(), null, false);
+        generator.writeOptionalStringEntry(OrbitPhysicalPropertiesKey.BUS_MODEL.name(),    phys.getBusModel(),     null, false);
+        generator.writeEntry(OrbitPhysicalPropertiesKey.DOCKED_WITH.name(),                phys.getDockedWith(),         false);
 
         // drag
-        generator.writeEntry(OrbitPhysicalPropertiesKey.DRAG_CONST_AREA.name(),  phys.getDragConstantArea(), Units.M2,    false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.DRAG_COEFF_NOM.name(),   phys.getDragCoefficient(), Unit.ONE,     false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.DRAG_UNCERTAINTY.name(), phys.getDragUncertainty(), Unit.PERCENT, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.DRAG_CONST_AREA.name(),  phys.getDragConstantArea(), Units.M2,    false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.DRAG_COEFF_NOM.name(),   phys.getDragCoefficient(), Unit.ONE,     false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.DRAG_UNCERTAINTY.name(), phys.getDragUncertainty(), Unit.PERCENT, false);
 
         // mass
-        generator.writeEntry(OrbitPhysicalPropertiesKey.INITIAL_WET_MASS.name(), phys.getInitialWetMass(), Unit.KILOGRAM, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.WET_MASS.name(),         phys.getWetMass(), Unit.KILOGRAM,        false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.DRY_MASS.name(),         phys.getDryMass(), Unit.KILOGRAM,        false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.INITIAL_WET_MASS.name(), phys.getInitialWetMass(), Unit.KILOGRAM, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.WET_MASS.name(),         phys.getWetMass(), Unit.KILOGRAM,        false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.DRY_MASS.name(),         phys.getDryMass(), Unit.KILOGRAM,        false);
 
         // Optimally Enclosing Box
-        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_PARENT_FRAME.name(),       phys.getOebParentFrame().getName(),           null, false);
-        final AbsoluteDate oebParentFrameEpoch = phys.getOebParentFrameEpoch();
+        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_PARENT_FRAME.name(), phys.getOebParentFrame().getName(), null, false);
         // oebParentFrameEpoch may be null. Usually checked in writeEntry(...)
-        if (!timeConverter.getReferenceDate().equals(oebParentFrameEpoch) &&
-            phys.getOebParentFrame().asOrbitRelativeFrame() == null &&
-            phys.getOebParentFrame().asSpacecraftBodyFrame() == null) {
-            generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_PARENT_FRAME_EPOCH.name(), timeConverter, oebParentFrameEpoch, true, false);
+        if (phys.getOebParentFrameEpoch().isPresent() &&
+            !timeConverter.getReferenceDate().equals(phys.getOebParentFrameEpoch().get()) &&
+            phys.getOebParentFrame().asOrbitRelativeFrame().isEmpty() &&
+            phys.getOebParentFrame().asSpacecraftBodyFrame().isEmpty()) {
+            generator.writeOptionalDateEntry(OrbitPhysicalPropertiesKey.OEB_PARENT_FRAME_EPOCH.name(), timeConverter, phys.getOebParentFrameEpoch(), true, false);
         }
-        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_Q1.name(),                 phys.getOebQ().getQ1(), Unit.ONE,                   false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_Q2.name(),                 phys.getOebQ().getQ2(), Unit.ONE,                   false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_Q3.name(),                 phys.getOebQ().getQ3(), Unit.ONE,                   false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_QC.name(),                 phys.getOebQ().getQ0(), Unit.ONE,                   false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_MAX.name(),                phys.getOebMax(), Unit.METRE,                       false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_INT.name(),                phys.getOebIntermediate(), Unit.METRE,              false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_MIN.name(),                phys.getOebMin(), Unit.METRE,                       false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.AREA_ALONG_OEB_MAX.name(),     phys.getOebAreaAlongMax(), Units.M2,                false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.AREA_ALONG_OEB_INT.name(),     phys.getOebAreaAlongIntermediate(), Units.M2,       false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.AREA_ALONG_OEB_MIN.name(),     phys.getOebAreaAlongMin(), Units.M2,                false);
+        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_Q1.name(),             phys.getOebQ().map(Quaternion::getQ1).orElse(Double.NaN), Unit.ONE,   false);
+        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_Q2.name(),             phys.getOebQ().map(Quaternion::getQ2).orElse(Double.NaN), Unit.ONE,   false);
+        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_Q3.name(),             phys.getOebQ().map(Quaternion::getQ3).orElse(Double.NaN), Unit.ONE,   false);
+        generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_QC.name(),             phys.getOebQ().map(Quaternion::getQ0).orElse(Double.NaN), Unit.ONE,   false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.OEB_MAX.name(),            phys.getOebMax(),                                         Unit.METRE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.OEB_INT.name(),            phys.getOebIntermediate(),                                Unit.METRE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.OEB_MIN.name(),            phys.getOebMin(),                                         Unit.METRE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.AREA_ALONG_OEB_MAX.name(), phys.getOebAreaAlongMax(),                                Units.M2,   false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.AREA_ALONG_OEB_INT.name(), phys.getOebAreaAlongIntermediate(),                       Units.M2,   false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.AREA_ALONG_OEB_MIN.name(), phys.getOebAreaAlongMin(),                                Units.M2,   false);
 
         // collision probability
-        generator.writeEntry(OrbitPhysicalPropertiesKey.AREA_MIN_FOR_PC.name(), phys.getMinAreaForCollisionProbability(), Units.M2, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.AREA_MAX_FOR_PC.name(), phys.getMaxAreaForCollisionProbability(), Units.M2, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.AREA_TYP_FOR_PC.name(), phys.getTypAreaForCollisionProbability(), Units.M2, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.AREA_MIN_FOR_PC.name(), phys.getMinAreaForCollisionProbability(), Units.M2, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.AREA_MAX_FOR_PC.name(), phys.getMaxAreaForCollisionProbability(), Units.M2, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.AREA_TYP_FOR_PC.name(), phys.getTypAreaForCollisionProbability(), Units.M2, false);
 
         // radar cross section
-        generator.writeEntry(OrbitPhysicalPropertiesKey.RCS.name(),     phys.getRcs(), Units.M2,    false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.RCS_MIN.name(), phys.getMinRcs(), Units.M2, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.RCS_MAX.name(), phys.getMaxRcs(), Units.M2, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.RCS.name(),     phys.getRcs(), Units.M2,    false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.RCS_MIN.name(), phys.getMinRcs(), Units.M2, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.RCS_MAX.name(), phys.getMaxRcs(), Units.M2, false);
 
         // solar radiation pressure
-        generator.writeEntry(OrbitPhysicalPropertiesKey.SRP_CONST_AREA.name(),        phys.getSrpConstantArea(), Units.M2,    false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.SOLAR_RAD_COEFF.name(),       phys.getSrpCoefficient(), Unit.ONE,     false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.SOLAR_RAD_UNCERTAINTY.name(), phys.getSrpUncertainty(), Unit.PERCENT, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.SRP_CONST_AREA.name(),        phys.getSrpConstantArea(), Units.M2,    false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.SOLAR_RAD_COEFF.name(),       phys.getSrpCoefficient(), Unit.ONE,     false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.SOLAR_RAD_UNCERTAINTY.name(), phys.getSrpUncertainty(), Unit.PERCENT, false);
 
         // visual magnitude
-        generator.writeEntry(OrbitPhysicalPropertiesKey.VM_ABSOLUTE.name(),     phys.getVmAbsolute(),    Unit.ONE, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.VM_APPARENT_MIN.name(), phys.getVmApparentMin(), Unit.ONE, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.VM_APPARENT.name(),     phys.getVmApparent(),    Unit.ONE, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.VM_APPARENT_MAX.name(), phys.getVmApparentMax(), Unit.ONE, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.REFLECTANCE.name(),     phys.getReflectance(),   Unit.ONE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.VM_ABSOLUTE.name(),     phys.getVmAbsolute(),    Unit.ONE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.VM_APPARENT_MIN.name(), phys.getVmApparentMin(), Unit.ONE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.VM_APPARENT.name(),     phys.getVmApparent(),    Unit.ONE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.VM_APPARENT_MAX.name(), phys.getVmApparentMax(), Unit.ONE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.REFLECTANCE.name(),     phys.getReflectance(),   Unit.ONE, false);
 
         // attitude
-        generator.writeEntry(OrbitPhysicalPropertiesKey.ATT_CONTROL_MODE.name(),  phys.getAttitudeControlMode(),       null,        false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.ATT_ACTUATOR_TYPE.name(), phys.getAttitudeActuatorType(),      null,        false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.ATT_KNOWLEDGE.name(),     phys.getAttitudeKnowledgeAccuracy(), Unit.DEGREE, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.ATT_CONTROL.name(),       phys.getAttitudeControlAccuracy(),   Unit.DEGREE, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.ATT_POINTING.name(),      phys.getAttitudePointingAccuracy(),  Unit.DEGREE, false);
+        generator.writeOptionalStringEntry(OrbitPhysicalPropertiesKey.ATT_CONTROL_MODE.name(),  phys.getAttitudeControlMode(),       null,        false);
+        generator.writeOptionalStringEntry(OrbitPhysicalPropertiesKey.ATT_ACTUATOR_TYPE.name(), phys.getAttitudeActuatorType(),      null,        false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.ATT_KNOWLEDGE.name(),     phys.getAttitudeKnowledgeAccuracy(), Unit.DEGREE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.ATT_CONTROL.name(),       phys.getAttitudeControlAccuracy(),   Unit.DEGREE, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.ATT_POINTING.name(),      phys.getAttitudePointingAccuracy(),  Unit.DEGREE, false);
 
         // maneuvers
-        generator.writeEntry(OrbitPhysicalPropertiesKey.AVG_MANEUVER_FREQ.name(), phys.getManeuversFrequency(), Units.NB_PER_Y, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.MAX_THRUST.name(),        phys.getMaxThrust(),          Unit.NEWTON,    false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.DV_BOL.name(),            phys.getBolDv(),              Units.KM_PER_S, false);
-        generator.writeEntry(OrbitPhysicalPropertiesKey.DV_REMAINING.name(),      phys.getRemainingDv(),        Units.KM_PER_S, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.AVG_MANEUVER_FREQ.name(), phys.getManeuversFrequency(), Units.NB_PER_Y, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.MAX_THRUST.name(),        phys.getMaxThrust(),          Unit.NEWTON,    false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.DV_BOL.name(),            phys.getBolDv(),              Units.KM_PER_S, false);
+        generator.writeOptionalDoubleEntry(OrbitPhysicalPropertiesKey.DV_REMAINING.name(),      phys.getRemainingDv(),        Units.KM_PER_S, false);
 
         // inertia
-        final RealMatrix inertia = phys.getInertiaMatrix();
-        if (inertia != null) {
+        if (phys.getInertiaMatrix().isPresent()) {
+            final RealMatrix inertia = phys.getInertiaMatrix().get();
             generator.writeEntry(OrbitPhysicalPropertiesKey.IXX.name(), inertia.getEntry(0, 0), Units.KG_M2, false);
             generator.writeEntry(OrbitPhysicalPropertiesKey.IYY.name(), inertia.getEntry(1, 1), Units.KG_M2, false);
             generator.writeEntry(OrbitPhysicalPropertiesKey.IZZ.name(), inertia.getEntry(2, 2), Units.KG_M2, false);

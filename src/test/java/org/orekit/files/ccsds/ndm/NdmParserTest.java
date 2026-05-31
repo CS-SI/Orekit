@@ -74,7 +74,7 @@ public class NdmParserTest {
         Assertions.assertEquals(1, ndm.getConstituents().size());
         Opm opm = (Opm) ndm.getConstituents().getFirst();
         Assertions.assertEquals("OSPREY 5", opm.getMetadata().getObjectName());
-        Assertions.assertEquals(3000.0, opm.getData().getSpacecraftParametersBlock().getMass(), 1.0e-10);
+        Assertions.assertEquals(3000.0, opm.getData().getSpacecraftParametersBlock().orElseThrow().getMass(), 1.0e-10);
     }
 
     @Test
@@ -86,11 +86,11 @@ public class NdmParserTest {
         Assertions.assertEquals("NDM with two constituents: an OCM and an APM", ndm.getComments().getFirst());
         Assertions.assertEquals(2, ndm.getConstituents().size());
         Ocm ocm = (Ocm) ndm.getConstituents().getFirst();
-        Assertions.assertEquals("1998-999A", ocm.getMetadata().getInternationalDesignator());
-        Assertions.assertEquals("WGS-84", ocm.getData().getUserDefinedBlock().getParameters().get("EARTH_MODEL"));
+        Assertions.assertEquals("1998-999A", ocm.getMetadata().getInternationalDesignator().orElseThrow());
+        Assertions.assertEquals("WGS-84", ocm.getData().getUserDefinedBlock().orElseThrow().getParameters().get("EARTH_MODEL"));
         Apm apm = (Apm) ndm.getConstituents().get(1);
         Assertions.assertEquals("MARS SPIRIT", apm.getMetadata().getObjectName());
-        Assertions.assertEquals("INSTRUMENT_A", apm.getData().getQuaternionBlock().getEndpoints().getFrameA().getName());
+        Assertions.assertEquals("INSTRUMENT_A", apm.getData().getQuaternionBlock().orElseThrow().getEndpoints().getFrameA().getName());
     }
 
 }

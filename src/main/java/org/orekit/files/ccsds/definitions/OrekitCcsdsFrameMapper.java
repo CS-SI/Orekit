@@ -40,11 +40,10 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
         if (orientation == null) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, NO_REFERENCE_FRAME);
         }
-        final Frame frame = orientation.asFrame();
-        if (frame == null) {
+        if (orientation.asFrame().isEmpty()) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, orientation.getName());
         }
-        return frame;
+        return orientation.asFrame().get();
     }
 
     @Override
@@ -54,24 +53,23 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
         if (center == null) {
             throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, "No Orbit center name");
         }
-        final CelestialBody body = center.getBody();
-        if (body == null) {
+        if (center.getBody().isEmpty()) {
             throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, center.getName());
         }
+        final CelestialBody body = center.getBody().get();
         if (orientation == null) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, NO_REFERENCE_FRAME);
         }
-        final Frame frame = orientation.asFrame();
-        if (frame == null) {
+        if (orientation.asFrame().isEmpty()) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, orientation.getName());
         }
+        final Frame frame = orientation.asFrame().get();
         // Just return frame if we don't need to shift the center based on CENTER_NAME
         // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
-        final CelestialBodyFrame celestialBodyFrame =
-                orientation.asCelestialBodyFrame();
+        final CelestialBodyFrame celestialBodyFrame = orientation.asCelestialBodyFrame().orElse(null);
         final boolean isMci = celestialBodyFrame == CelestialBodyFrame.MCI;
         final boolean isIcrf = celestialBodyFrame == CelestialBodyFrame.ICRF;
-        final String centerName = body.getName();
+        final String centerName = center.getBody().get().getName();
         final boolean isCenterEarth = CelestialBodyFactory.EARTH.equals(centerName);
         final boolean isCenterMars = CelestialBodyFactory.MARS.equals(centerName);
         if (isIcrf) {

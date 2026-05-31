@@ -187,6 +187,20 @@ name to create the data source, and using the default values for the parser buil
 
     Oem oem = new ParserBuilder().buildOemParser().parseMessage(new DataSource(fileName));
 
+### Optional Fields
+
+Since version 14.0, getters for not-mandatory fields in CCSDS data classes
+return `java.util.Optional<T>` instead of using `null` (for object types)
+or `Double.NaN` (for numeric types) as sentinel values.
+
+Mandatory fields continue to return their values directly (non-optional).
+Callers should use `Optional.isEmpty()` to check if a field was present
+in the parsed file, or `Optional.get()` / `Optional.orElse(default)` to
+access the value.
+
+Setters still accept the raw type (including `null`), maintaining backward
+compatibility for programmatic construction of messages.
+
 ### Writing
 
 Writing a CCSDS message is done by using a specific writer class for the message

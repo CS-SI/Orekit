@@ -17,8 +17,11 @@
 
 package org.orekit.files.ccsds.ndm.adm.acm;
 
+import java.util.Optional;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
@@ -45,9 +48,11 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 public class AttitudeManeuver extends CommentsContainer {
 
     /** Maneuver identification number. */
+    @Nullable
     private String id;
 
     /** Identification number of previous maneuver. */
+    @Nullable
     private String prevID;
 
     /** Purpose of the maneuver. */
@@ -57,33 +62,36 @@ public class AttitudeManeuver extends CommentsContainer {
     private double beginTime;
 
     /** End time of actual maneuver, relative to t₀. */
-    private double endTime;
+    @Nullable
+    private Double endTime;
 
     /** Duration. */
-    private double duration;
+    @Nullable
+    private Double duration;
 
     /** Actuator used. */
+    @Nullable
     private String actuatorUsed;
 
     /** Target momentum (if purpose is momentum desaturation). */
+    @Nullable
     private Vector3D targetMomentum;
 
     /** Reference frame for {@link #targetMomentum}. */
+    @Nullable
     private FrameFacade targetMomFrame;
 
     /** Target attitude (if purpose is attitude adjustment). */
+    @Nullable
     private Rotation targetAttitude;
 
     /** Target spin rate (if purpose is spin rate adjustment). */
-    private double targetSpinRate;
+    @Nullable
+    private Double targetSpinRate;
 
     /** Build an uninitialized maneuver.
      */
     public AttitudeManeuver() {
-        beginTime      = Double.NaN;
-        endTime        = Double.NaN;
-        duration       = Double.NaN;
-        targetSpinRate = Double.NaN;
     }
 
     /** {@inheritDoc} */
@@ -91,7 +99,7 @@ public class AttitudeManeuver extends CommentsContainer {
     public void validate(final double version) {
         checkNotNull(manPurpose, AttitudeManeuverKey.MAN_PURPOSE.name());
         checkNotNaN(beginTime,   AttitudeManeuverKey.MAN_BEGIN_TIME.name());
-        if (!Double.isNaN(endTime + duration)) {
+        if (endTime != null && duration != null) {
             throw new OrekitException(OrekitMessages.CCSDS_INCOMPATIBLE_KEYS_BOTH_USED,
                                       AttitudeManeuverKey.MAN_END_TIME,
                                       AttitudeManeuverKey.MAN_DURATION);
@@ -104,8 +112,8 @@ public class AttitudeManeuver extends CommentsContainer {
     /** Get maneuver identification number.
      * @return maneuver identification number
      */
-    public String getID() {
-        return id;
+    public Optional<String> getID() {
+        return Optional.ofNullable(id);
     }
 
     /** Set maneuver identification number.
@@ -119,8 +127,8 @@ public class AttitudeManeuver extends CommentsContainer {
     /** Get identification number of previous maneuver.
      * @return identification number of previous maneuver
      */
-    public String getPrevID() {
-        return prevID;
+    public Optional<String> getPrevID() {
+        return Optional.ofNullable(prevID);
     }
 
     /** Set identification number of previous maneuver.
@@ -163,8 +171,8 @@ public class AttitudeManeuver extends CommentsContainer {
     /** Get end time of actual maneuver, relative to t₀.
      * @return end time of actual maneuver, relative to t₀
      */
-    public double getEndTime() {
-        return endTime;
+    public Optional<Double> getEndTime() {
+        return Optional.ofNullable(endTime);
     }
 
     /** Set end time of actual maneuver, relative to t₀.
@@ -177,8 +185,8 @@ public class AttitudeManeuver extends CommentsContainer {
     /** Get duration.
      * @return duration
      */
-    public double getDuration() {
-        return duration;
+    public Optional<Double> getDuration() {
+        return Optional.ofNullable(duration);
     }
 
     /** Set duration.
@@ -191,8 +199,8 @@ public class AttitudeManeuver extends CommentsContainer {
     /** Get the actuator used.
      * @return actuator used
      */
-    public String getActuatorUsed() {
-        return actuatorUsed;
+    public Optional<String> getActuatorUsed() {
+        return Optional.ofNullable(actuatorUsed);
     }
 
     /** Set actuator used.
@@ -205,8 +213,8 @@ public class AttitudeManeuver extends CommentsContainer {
     /** Get target momentum (if purpose is momentum desaturation).
      * @return target momentum
      */
-    public Vector3D getTargetMomentum() {
-        return targetMomentum;
+    public Optional<Vector3D> getTargetMomentum() {
+        return Optional.ofNullable(targetMomentum);
     }
 
     /** Set target momentum (if purpose is momentum desaturation).
@@ -219,8 +227,8 @@ public class AttitudeManeuver extends CommentsContainer {
     /** Get reference frame for {@link #getTargetMomentum()}.
      * @return reference frame for {@link #getTargetMomentum()}
      */
-    public FrameFacade getTargetMomFrame() {
-        return targetMomFrame;
+    public Optional<FrameFacade> getTargetMomFrame() {
+        return Optional.ofNullable(targetMomFrame);
     }
 
     /** Set reference frame for {@link #getTargetMomentum()}.
@@ -233,8 +241,8 @@ public class AttitudeManeuver extends CommentsContainer {
     /** Get target attitude (if purpose is attitude adjustment).
      * @return target attitude
      */
-    public Rotation getTargetAttitude() {
-        return targetAttitude;
+    public Optional<Rotation> getTargetAttitude() {
+        return Optional.ofNullable(targetAttitude);
     }
 
     /** Set target attitude (if purpose is attitude adjustment).
@@ -247,8 +255,8 @@ public class AttitudeManeuver extends CommentsContainer {
     /** Get target spin rate (if purpose is spin rate adjustment).
      * @return target spin rate
      */
-    public double getTargetSpinRate() {
-        return targetSpinRate;
+    public Optional<Double> getTargetSpinRate() {
+        return Optional.ofNullable(targetSpinRate);
     }
 
     /** Set target spin rate (if purpose is spin rate adjustment).

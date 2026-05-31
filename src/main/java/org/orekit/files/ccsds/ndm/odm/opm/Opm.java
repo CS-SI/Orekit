@@ -22,7 +22,6 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.orbits.CartesianOrbit;
@@ -133,9 +132,8 @@ public class Opm extends NdmConstituent<OdmHeader, Segment<OdmCommonMetadata, Op
     public KeplerianOrbit generateKeplerianOrbit() {
         final OdmCommonMetadata metadata = getMetadata();
         final OpmData        data     = getData();
-        final KeplerianElements keplerianElements = data.getKeplerianElementsBlock();
-        if (keplerianElements != null) {
-            return keplerianElements.generateKeplerianOrbit(metadata.getFrame());
+        if (data.getKeplerianElementsBlock().isPresent()) {
+            return data.getKeplerianElementsBlock().get().generateKeplerianOrbit(metadata.getFrame(), mu);
         } else {
             return new KeplerianOrbit(getPVCoordinates(), metadata.getFrame(),
                                       data.getStateVectorBlock().getEpoch(),

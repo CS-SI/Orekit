@@ -17,8 +17,11 @@
 
 package org.orekit.files.ccsds.ndm.adm.acm;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
@@ -32,27 +35,35 @@ import org.orekit.time.AbsoluteDate;
 public class AcmMetadata extends AdmMetadata {
 
     /** Specification of satellite catalog source. */
+    @Nullable
     private String catalogName;
 
     /** Unique satellite identification designator for the object. */
+    @Nullable
     private String objectDesignator;
 
     /** Programmatic Point Of Contact at originator. */
+    @Nullable
     private String originatorPOC;
 
     /** Position of Programmatic Point Of Contact at originator. */
+    @Nullable
     private String originatorPosition;
 
     /** Phone number of Programmatic Point Of Contact at originator. */
+    @Nullable
     private String originatorPhone;
 
     /** Email address of Programmatic Point Of Contact at originator. */
+    @Nullable
     private String originatorEmail;
 
     /** Address of Programmatic Point Of Contact at originator. */
+    @Nullable
     private String originatorAddress;
 
     /** Unique identifier of Orbit Data Message linked to this Orbit Data Message. */
+    @Nullable
     private String odmMessageLink;
 
     /** Epoch to which <em>all</em> relative times are referenced in data blocks;
@@ -63,19 +74,24 @@ public class AcmMetadata extends AdmMetadata {
     private List<AcmElements> acmDataElements;
 
     /** Time of the earliest data contained in the OCM. */
+    @Nullable
     private AbsoluteDate startTime;
 
     /** Time of the latest data contained in the OCM. */
+    @Nullable
     private AbsoluteDate stopTime;
 
     /** Difference (TAI – UTC) in seconds at epoch {@link #epochT0}. */
-    private double taimutcT0;
+    @Nullable
+    private Double taimutcT0;
 
     /** Epoch of next leap second. */
+    @Nullable
     private AbsoluteDate nextLeapEpoch;
 
     /** Difference (TAI – UTC) in seconds incorporated at {@link #nextLeapEpoch}. */
-    private double nextLeapTaimutc;
+    @Nullable
+    private Double nextLeapTaimutc;
 
     /**
      * Create a new meta-data.
@@ -85,11 +101,7 @@ public class AcmMetadata extends AdmMetadata {
      */
     public AcmMetadata(final CcsdsFrameMapper frameMapper) {
         super(frameMapper);
-
-        // set up the few fields that have default values as per CCSDS standard
-        taimutcT0         = Double.NaN;
-        nextLeapTaimutc   = Double.NaN;
-
+        acmDataElements = Collections.emptyList();
     }
 
     /** {@inheritDoc} */
@@ -124,8 +136,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the specification of satellite catalog source.
      * @return specification of satellite catalog source
      */
-    public String getCatalogName() {
-        return catalogName;
+    public Optional<String> getCatalogName() {
+        return Optional.ofNullable(catalogName);
     }
 
     /** Set the specification of satellite catalog source.
@@ -139,8 +151,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the unique satellite identification designator for the object.
      * @return unique satellite identification designator for the object.
      */
-    public String getObjectDesignator() {
-        return objectDesignator;
+    public Optional<String> getObjectDesignator() {
+        return Optional.ofNullable(objectDesignator);
     }
 
     /** Set the unique satellite identification designator for the object.
@@ -154,8 +166,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the programmatic Point Of Contact at originator.
      * @return programmatic Point Of Contact at originator
      */
-    public String getOriginatorPOC() {
-        return originatorPOC;
+    public Optional<String> getOriginatorPOC() {
+        return Optional.ofNullable(originatorPOC);
     }
 
     /** Set the programmatic Point Of Contact at originator.
@@ -169,8 +181,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the position of Programmatic Point Of Contact at originator.
      * @return position of Programmatic Point Of Contact at originator
      */
-    public String getOriginatorPosition() {
-        return originatorPosition;
+    public Optional<String> getOriginatorPosition() {
+        return Optional.ofNullable(originatorPosition);
     }
 
     /** Set the position of Programmatic Point Of Contact at originator.
@@ -184,8 +196,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the phone number of Programmatic Point Of Contact at originator.
      * @return phone number of Programmatic Point Of Contact at originator
      */
-    public String getOriginatorPhone() {
-        return originatorPhone;
+    public Optional<String> getOriginatorPhone() {
+        return Optional.ofNullable(originatorPhone);
     }
 
     /** Set the phone number of Programmatic Point Of Contact at originator.
@@ -199,8 +211,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the email address of Programmatic Point Of Contact at originator.
      * @return email address of Programmatic Point Of Contact at originator
      */
-    public String getOriginatorEmail() {
-        return originatorEmail;
+    public Optional<String> getOriginatorEmail() {
+        return Optional.ofNullable(originatorEmail);
     }
 
     /** Set the email address of Programmatic Point Of Contact at originator.
@@ -214,8 +226,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the address of Programmatic Point Of Contact at originator.
      * @return address of Programmatic Point Of Contact at originator
      */
-    public String getOriginatorAddress() {
-        return originatorAddress;
+    public Optional<String> getOriginatorAddress() {
+        return Optional.ofNullable(originatorAddress);
     }
 
     /** Set the address of Programmatic Point Of Contact at originator.
@@ -229,8 +241,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the Unique identifier of Orbit Data Message linked to this Attitude Data Message.
      * @return Unique identifier of Orbit Data Message linked to this Attitude Data Message
      */
-    public String getOdmMessageLink() {
-        return odmMessageLink;
+    public Optional<String> getOdmMessageLink() {
+        return Optional.ofNullable(odmMessageLink);
     }
 
     /** Set the Unique identifier of Orbit Data Message linked to this Attitude Data Message.
@@ -274,8 +286,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the time of the earliest data contained in the OCM.
      * @return time of the earliest data contained in the OCM
      */
-    public AbsoluteDate getStartTime() {
-        return startTime;
+    public Optional<AbsoluteDate> getStartTime() {
+        return Optional.ofNullable(startTime);
     }
 
     /** Set the time of the earliest data contained in the OCM.
@@ -289,8 +301,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the time of the latest data contained in the OCM.
      * @return time of the latest data contained in the OCM
      */
-    public AbsoluteDate getStopTime() {
-        return stopTime;
+    public Optional<AbsoluteDate> getStopTime() {
+        return Optional.ofNullable(stopTime);
     }
 
     /** Set the time of the latest data contained in the OCM.
@@ -304,8 +316,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the difference (TAI – UTC) in seconds at epoch {@link #getEpochT0()}.
      * @return difference (TAI – UTC) in seconds at epoch {@link #getEpochT0()}
      */
-    public double getTaimutcT0() {
-        return taimutcT0;
+    public Optional<Double> getTaimutcT0() {
+        return Optional.ofNullable(taimutcT0);
     }
 
     /** Set the difference (TAI – UTC) in seconds at epoch {@link #getEpochT0()}.
@@ -319,8 +331,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the epoch of next leap second.
      * @return epoch of next leap second
      */
-    public AbsoluteDate getNextLeapEpoch() {
-        return nextLeapEpoch;
+    public Optional<AbsoluteDate> getNextLeapEpoch() {
+        return Optional.ofNullable(nextLeapEpoch);
     }
 
     /** Set the epoch of next leap second.
@@ -334,8 +346,8 @@ public class AcmMetadata extends AdmMetadata {
     /** Get the difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}.
      * @return difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}
      */
-    public double getNextLeapTaimutc() {
-        return nextLeapTaimutc;
+    public Optional<Double> getNextLeapTaimutc() {
+        return Optional.ofNullable(nextLeapTaimutc);
     }
 
     /** Set the difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}.
