@@ -16,14 +16,13 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
@@ -39,6 +38,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.FrameAdapter;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -74,6 +74,9 @@ public class TopocentricFrame extends Frame implements ExtendedPositionProvider 
      */
     private final Vector3D cartesianPoint;
 
+    /** Extended position provider. */
+    private final ExtendedPositionProvider extendedPositionProvider;
+
     /** Simple constructor.
      * @param parentShape body shape on which the local point is defined
      * @param point local surface point where topocentric frame is defined
@@ -82,17 +85,11 @@ public class TopocentricFrame extends Frame implements ExtendedPositionProvider 
     public TopocentricFrame(final BodyShape parentShape, final GeodeticPoint point,
                             final String name) {
 
-        super(parentShape.getBodyFrame(),
-                new Transform(AbsoluteDate.ARBITRARY_EPOCH,
-                        new Transform(AbsoluteDate.ARBITRARY_EPOCH,
-                                parentShape.transform(point).negate()),
-                        new Transform(AbsoluteDate.ARBITRARY_EPOCH,
-                                new Rotation(point.getEast(), point.getZenith(),
-                                        Vector3D.PLUS_I, Vector3D.PLUS_K),
-                                Vector3D.ZERO)),
+        super(parentShape.getBodyFrame(), new TopocentricTransformProvider(point, parentShape),
                 name, false);
         this.parentShape    = parentShape;
         this.point          = point;
+        this.extendedPositionProvider = new FrameAdapter(this);
         this.cartesianPoint = getTransformProvider().
                 getStaticTransform(AbsoluteDate.ARBITRARY_EPOCH).
                 getInverse().
@@ -435,39 +432,39 @@ public class TopocentricFrame extends Frame implements ExtendedPositionProvider 
     /** {@inheritDoc} */
     @Override
     public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
-        return getStaticTransformTo(frame, date).transformPosition(Vector3D.ZERO);
+        return extendedPositionProvider.getPosition(date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date,
                                                                             final Frame frame) {
-        return getStaticTransformTo(frame, date).transformPosition(Vector3D.ZERO);
+        return extendedPositionProvider.getPosition(date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
-        return getKinematicTransformTo(frame, date).transformOnlyPV(PVCoordinates.ZERO).getVelocity();
+        return extendedPositionProvider.getVelocity(date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date, final Frame frame) {
-        return getKinematicTransformTo(frame, date).transformOnlyPV(FieldPVCoordinates.getZero(date.getField())).getVelocity();
+        return extendedPositionProvider.getVelocity(date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date, PVCoordinates.ZERO));
+        return extendedPositionProvider.getPVCoordinates(date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
                                                                                                  final Frame frame) {
-        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(date, FieldPVCoordinates.getZero(date.getField())));
+        return extendedPositionProvider.getPVCoordinates(date, frame);
     }
 
     /** Get the topocentric position from {@link TrackingCoordinates}.

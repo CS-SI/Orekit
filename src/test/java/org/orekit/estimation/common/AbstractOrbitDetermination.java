@@ -62,6 +62,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.leastsquares.SequentialBatchLSEstimator;
 import org.orekit.estimation.measurements.AngularAzEl;
+import org.orekit.estimation.measurements.EarthBasedStation;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
@@ -112,7 +113,6 @@ import org.orekit.files.sinex.SinexParser;
 import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.EOPHistory;
@@ -123,9 +123,7 @@ import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.models.AtmosphericRefractionModel;
-import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.ITURP834AtmosphericRefraction;
-import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
@@ -149,7 +147,6 @@ import org.orekit.models.earth.troposphere.TroposphereMappingFunction;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
-import org.orekit.models.earth.weather.GlobalPressureTemperature;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
@@ -1439,9 +1436,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         final EOPHistory eopHistory = FramesFactory.findEOP(body.getBodyFrame());
-        Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(9, 9),
-                                ReferenceEllipsoid.getWgs84(body.getBodyFrame()));
-        final GlobalPressureTemperature gpt = new GlobalPressureTemperature(geoid, TimeScalesFactory.getUTC());
         for (int i = 0; i < stationNames.length; ++i) {
 
             // displacements
@@ -1482,7 +1476,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final PressureTemperatureHumidityProvider pth0Provider =
                             TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER;
-            final GroundStation station = new GroundStation(topo, eopHistory, displacements);
+            final GroundStation station = new EarthBasedStation(topo, eopHistory, displacements);
             station.getClockBiasDriver().setReferenceValue(stationClockOffsets[i]);
             station.getClockBiasDriver().setValue(stationClockOffsets[i]);
             station.getClockBiasDriver().setMinValue(stationClockOffsetsMin[i]);

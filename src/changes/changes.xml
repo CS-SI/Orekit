@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="serrof" type="update" issue="1966">
+              Introduced EarthBasedStation and updated GroundStation.
+          </action>
           <action dev="luc" type="add" issue="1960" due-to="Nathan Schiffmacher">
               Added support for RTCM MSM7 messages.
           </action>

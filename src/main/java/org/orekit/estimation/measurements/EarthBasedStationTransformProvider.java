@@ -39,7 +39,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
-/** Class modeling a ground station frame transform.
+/** Class modeling a Earth-based station frame transform.
  * <p>
  * This class considers a position offset parameter w.r.t. a base {@link TopocentricFrame
  * topocentric frame}.
@@ -58,9 +58,10 @@ import org.orekit.utils.ParameterDriver;
  * models and associated planet orientation parameters would be applied, if available):
  * </p>
  * @author Romain Serra
+ * @see EarthBasedStation
  * @since 14.0
  */
-class GroundStationTransformProvider implements TransformProvider {
+class EarthBasedStationTransformProvider implements TransformProvider {
 
     /**
      * Target frame.
@@ -104,13 +105,13 @@ class GroundStationTransformProvider implements TransformProvider {
      * @param displacements ground station displacement model (tides, ocean loading, atmospheric loading, thermal
      *                      effects...)
      */
-    GroundStationTransformProvider(final Frame frame, final TopocentricFrame baseFrame,
-                                   final ParameterDriver eastOffsetDriver,
-                                   final ParameterDriver northOffsetDriver,
-                                   final ParameterDriver zenithOffsetDriver,
-                                   final EstimatedEarthFrameProvider estimatedEarthFrameProvider,
-                                   final FundamentalNutationArguments fundamentalNutationArguments,
-                                   final StationDisplacement... displacements) {
+    EarthBasedStationTransformProvider(final Frame frame, final TopocentricFrame baseFrame,
+                                       final ParameterDriver eastOffsetDriver,
+                                       final ParameterDriver northOffsetDriver,
+                                       final ParameterDriver zenithOffsetDriver,
+                                       final EstimatedEarthFrameProvider estimatedEarthFrameProvider,
+                                       final FundamentalNutationArguments fundamentalNutationArguments,
+                                       final StationDisplacement... displacements) {
         this.frame = frame;
         this.baseFrame = baseFrame;
 

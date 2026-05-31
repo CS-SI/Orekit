@@ -21,12 +21,11 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.EarthBasedStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
@@ -53,7 +52,7 @@ public class IodLaplaceTest extends AbstractIodTest {
         // The ground station is set to Austin, Texas, U.S.A
         final OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                    Constants.WGS84_EARTH_FLATTENING, itrf);
-        this.observer = new GroundStation(
+        this.observer = new EarthBasedStation(
                 new TopocentricFrame(body, new GeodeticPoint(0.528253, -1.705768, 0.0), "Austin"));
         this.observer.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
         this.observer.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);

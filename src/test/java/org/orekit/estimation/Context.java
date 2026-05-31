@@ -16,12 +16,16 @@
  */
 package org.orekit.estimation;
 
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.measurements.EarthBasedStation;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObserverSatellite;
 import org.orekit.forces.drag.DragSensitive;
@@ -30,19 +34,25 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
-import org.orekit.orbits.*;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
-import org.orekit.propagation.conversion.*;
+import org.orekit.propagation.conversion.BrouwerLyddanePropagatorBuilder;
+import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
+import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
+import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
+import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.List;
-import java.util.Map;
 
 public class Context implements StationDataProvider {
 
@@ -86,7 +96,7 @@ public class Context implements StationDataProvider {
     public StationDisplacement[] displacements;
 
     /** Ground stations for orbit determination. */
-    public List<GroundStation> stations;
+    public List<EarthBasedStation> stations;
 
     /** Stations for turn-around range.
      * Map entry = primary station
@@ -277,12 +287,12 @@ public class Context implements StationDataProvider {
      * @param name               the name of the station
      * @return a new instance of {@code GroundStation} created with the provided parameters
      */
-    public GroundStation createStation(double latitudeInDegrees, double longitudeInDegrees,
-                                double altitude, String name) {
+    public EarthBasedStation createStation(double latitudeInDegrees, double longitudeInDegrees,
+                                           double altitude, String name) {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
-        return new GroundStation(new TopocentricFrame(earth, gp, name), ut1.getEOPHistory(), displacements);
+        return new EarthBasedStation(new TopocentricFrame(earth, gp, name), ut1.getEOPHistory(), displacements);
     }
     
     ObserverSatellite createObserverSatellite(final Vector3D deltaPosition, final Vector3D deltaVelocity,
@@ -309,7 +319,7 @@ public class Context implements StationDataProvider {
     }
 
     @Override
-    public List<GroundStation> getStations() {
+    public List<EarthBasedStation> getStations() {
         return stations;
     }
     

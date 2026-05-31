@@ -62,6 +62,18 @@ public class FrameAdapter implements ExtendedPositionProvider {
 
     /** {@inheritDoc} */
     @Override
+    public Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
+        return originFrame.getKinematicTransformTo(frame, date).transformOnlyPV(PVCoordinates.ZERO).getVelocity();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return originFrame.getKinematicTransformTo(frame, date).transformOnlyPV(FieldPVCoordinates.getZero(date.getField())).getVelocity();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return new TimeStampedPVCoordinates(date,
                 originFrame.getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO));
