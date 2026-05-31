@@ -549,7 +549,6 @@
           <compilerArgs>
             <arg>-Xlint:deprecation</arg>
             <arg>-Xlint:unchecked</arg>
-            <arg>-Xplugin:dataContextPlugin</arg>
           </compilerArgs>
           <release>${orekit.compiler.release}</release>
         </configuration>
@@ -651,6 +650,27 @@
                     <include>LICENSE.txt</include>
                     <include>NOTICE.txt</include>
                   </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- Copy the javac plugin service descriptor into target/classes only
+                 during process-resources, which runs AFTER plugin-compile.
+                 The descriptor lives outside src/main/resources on purpose: keeping
+                 it there would make IDEs (e.g. IntelliJ) see it on the compile
+                 classpath before the plugin class has been built, causing javac's
+                 ServiceLoader to fail to instantiate the not-yet-compiled plugin. -->
+            <id>copy-plugin-descriptor</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/plugin-descriptor</directory>
                 </resource>
               </resources>
             </configuration>
@@ -1202,6 +1222,41 @@
             </plugin>
           </plugins>
         </pluginManagement>
+      </build>
+    </profile>
+    <profile>
+      <!-- Activates the DefaultDataContext javac plugin everywhere except inside
+           IntelliJ. IntelliJ sets the idea.version system property when running its
+           embedded Maven; the !idea.version activation keeps the -Xplugin: arg out of
+           the compiler config that the IDE imports into .idea/compiler.xml (the plugin
+           class isn't on the IDE compile classpath at javac startup, so passing it
+           would cause "plug-in not found"). Command-line Maven and CI activate this
+           profile normally and the plugin runs as before. -->
+      <id>data-context-plugin</id>
+      <activation>
+        <property>
+          <name>!idea.version</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+              <execution>
+                <!-- Apply the arg only to the main compile execution; plugin-compile
+                     and default-testCompile must not receive it. -->
+                <id>default-compile</id>
+                <configuration>
+                  <compilerArgs combine.children="append">
+                    <arg>-Xplugin:dataContextPlugin</arg>
+                  </compilerArgs>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
       </build>
     </profile>
   </profiles>
