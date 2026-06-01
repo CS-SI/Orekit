@@ -23,64 +23,71 @@ import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+
 /**
  * Interface for Field Relative provider.
+ * <p>
+ * A field relative provider is an interface extending FieldAdditionalDataProvider to provide the relative state of a
+ * chaser S/C in regard to a target S/C as a FieldAdditionalData. The target S/C is propagated with the "main"
+ * propagator where the additional data is added.
+ * </p>
  *
+ * @param <T> Any scalar field.
  * @author Romain Cuvillon
  * @since 14.0
- * @param <T> Any scalar field.
  */
 public interface FieldRelativeProvider<T extends CalculusFieldElement<T>> extends FieldAdditionalDataProvider<T[], T> {
+
     /**
      * Get the initial TimeStampedPVCoordinates of the chaser in the Local Orbital Frame of the target.
      *
-     * @return initial TimeStampedPVCoordinates of the chaser in target's LOF.
+     * @return initial TimeStampedPVCoordinates of the chaser in target's LOF
      */
     TimeStampedFieldPVCoordinates<T> getInitialChaserPVTLof();
 
     /**
      * Set the initial TimeStampedPVCoordinates of the chaser in the Local Orbital Frame of the target.
      *
-     * @param initialChaserPVTLof initial TimeStampedPVCoordinates of the chaser in target's LOF.
+     * @param initialChaserPVTLof initial TimeStampedPVCoordinates of the chaser in target's LOF
      */
     void setInitialChaserPVTLof(TimeStampedFieldPVCoordinates<T> initialChaserPVTLof);
 
     /**
-     * Extracts the chaser's PVT in the target LOF from the given taget {@link SpacecraftState}.
+     * Extracts the chaser's PVT in the target LOF from the given target {@link SpacecraftState}.
      *
-     * @param spacecraftState target SpacecraftState.
-     * @return chaser's TimeStampedPVCoordinates in target's LOF.
+     * @param targetState target SpacecraftState
+     * @return chaser's TimeStampedPVCoordinates in target's LOF
      */
-    TimeStampedFieldPVCoordinates<T> extractChaserPVT(FieldSpacecraftState<T> spacecraftState);
+    TimeStampedFieldPVCoordinates<T> extractChaserPVT(FieldSpacecraftState<T> targetState);
 
     /**
-     * Extracts the chaser's PVT from the given target {@link SpacecraftState} and converts it to the desired output frame.
+     * Extracts the chaser's PVT from the given target {@link SpacecraftState} and converts it to the desired output
+     * frame.
      *
-     * @param spacecraftState target SpacecraftState.
-     * @param outputFrame     desired frame in which to extract chaser's TimeStampedPVCoordinates.
-     * @return TimeStampedPVCoordinates in desired frame.
+     * @param targetState target SpacecraftState
+     * @param outputFrame desired frame in which to extract chaser's TimeStampedPVCoordinates
+     * @return TimeStampedPVCoordinates in desired frame
      */
-    TimeStampedFieldPVCoordinates<T> extractChaserPVT(FieldSpacecraftState<T> spacecraftState, Frame outputFrame);
+    TimeStampedFieldPVCoordinates<T> extractChaserPVT(FieldSpacecraftState<T> targetState, Frame outputFrame);
 
     /**
      * Get the target Orbit.
      *
-     * @return orbit of the target.
+     * @return orbit of the target
      */
     FieldOrbit<T> getTargetOrbit();
 
     /**
      * Set the target orbit.
      *
-     * @param targetOrbit orbit of the target.
+     * @param targetOrbit orbit of the target
      */
     void setTargetOrbit(FieldOrbit<T> targetOrbit);
 
     /**
-     * CW doesn't use true anomaly, so default is a no-op
-     * Set the true anomaly of the target.
+     * CW doesn't use true anomaly, so default is a no-op Set the true anomaly of the target.
      *
-     * @param trueAnomaly true anomaly of the target.
+     * @param trueAnomaly true anomaly of the target
      */
     default void setTargetTrueAnomaly(final T trueAnomaly) {
     }

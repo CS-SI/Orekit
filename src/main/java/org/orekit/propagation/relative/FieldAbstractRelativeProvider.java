@@ -25,7 +25,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.LOF;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -34,11 +33,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 /**
  * Abstraction class for Field RelativeProvider.
  *
+ * @param <T> Any scalar field.
  * @author Romain Cuvillon
  * @since 14.0
- * @param <T> Any scalar field.
  */
-public abstract class FieldAbstractRelativeProvider<T extends CalculusFieldElement<T>> implements FieldRelativeProvider<T> {
+public abstract class FieldAbstractRelativeProvider<T extends CalculusFieldElement<T>>
+                implements FieldRelativeProvider<T> {
+
     /**
      * Default additional equations name.
      */
@@ -67,120 +68,128 @@ public abstract class FieldAbstractRelativeProvider<T extends CalculusFieldEleme
     /**
      * Builds a new RelativeProvider object from the target orbit and an all-zero PVT for the chaser.
      *
-     * @param targetOrbit Target orbit. Should be circular for better results.
-     * @param lof         Local Orbital Frame.
+     * @param targetOrbit Target orbit
+     * @param lof         Local Orbital Frame
      */
     @DefaultDataContext
     public FieldAbstractRelativeProvider(final FieldOrbit<T> targetOrbit, final LOF lof) {
-        this(targetOrbit, new TimeStampedFieldPVCoordinates<>(targetOrbit.getA().getField(), new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH, Vector3D.ZERO, Vector3D.ZERO)), lof);
+        this(targetOrbit,
+             new TimeStampedFieldPVCoordinates<>(targetOrbit.getA().getField(),
+                                                 new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH,
+                                                                              Vector3D.ZERO,
+                                                                              Vector3D.ZERO)),
+             lof);
     }
 
     /**
      * Builds a new RelativeProvider object from the target orbit and an initial PVT of the chaser.
      *
-     * @param targetOrbit         Target orbit. Should be circular for better results.
-     * @param initialChaserPVTLof Chaser PVT in the target's local orbital frame.
-     * @param lof                 Local Orbital Frame.
+     * @param targetOrbit         Target orbit
+     * @param initialChaserPVTLof Chaser PVT in the target's local orbital frame
+     * @param lof                 Local Orbital Frame
      */
-    public FieldAbstractRelativeProvider(final FieldOrbit<T> targetOrbit, final TimeStampedFieldPVCoordinates<T> initialChaserPVTLof, final LOF lof) {
+    public FieldAbstractRelativeProvider(final FieldOrbit<T> targetOrbit,
+                                         final TimeStampedFieldPVCoordinates<T> initialChaserPVTLof,
+                                         final LOF lof) {
         this(targetOrbit, initialChaserPVTLof, DEFAULT_ADDITIONAL_EQUATIONS_NAME, lof);
     }
 
     /**
      * Builds a new RelativeProvider object from the target orbit and an initial PVT of the chaser.
      *
-     * @param targetOrbit             Target orbit. Should be circular for better results.
-     * @param initialChaserPVTLof     Chaser PVT in the target's  local orbital frame.
-     * @param additionalEquationsName Additional equations name.
-     * @param lof                     Local Orbital Frame.
+     * @param targetOrbit             Target orbit
+     * @param initialChaserPVTLof     Chaser PVT in the target's  local orbital frame
+     * @param additionalEquationsName Additional equations name
+     * @param lof                     Local Orbital Frame
      */
-    public FieldAbstractRelativeProvider(final FieldOrbit<T> targetOrbit, final TimeStampedFieldPVCoordinates<T> initialChaserPVTLof, final String additionalEquationsName, final LOF lof) {
-        this.targetOrbit = targetOrbit;
-        this.initialChaserPVTLof = initialChaserPVTLof;
+    public FieldAbstractRelativeProvider(final FieldOrbit<T> targetOrbit,
+                                         final TimeStampedFieldPVCoordinates<T> initialChaserPVTLof,
+                                         final String additionalEquationsName,
+                                         final LOF lof) {
+        this.targetOrbit             = targetOrbit;
+        this.initialChaserPVTLof     = initialChaserPVTLof;
         this.additionalEquationsName = additionalEquationsName;
-        this.lof = lof;
+        this.lof                     = lof;
     }
 
     /**
      * Builds a new RelativeProvider object from the target orbit and additionalEquationsName.
      *
-     * @param targetOrbit             Target orbit. Should be circular for better results.
-     * @param additionalEquationsName Additional equations name.
-     * @param lof                     Local Orbital Frame.
+     * @param targetOrbit             Target orbit
+     * @param additionalEquationsName Additional equations name
+     * @param lof                     Local Orbital Frame
      */
-    public FieldAbstractRelativeProvider(final FieldOrbit<T> targetOrbit, final String additionalEquationsName, final LOF lof) {
+    public FieldAbstractRelativeProvider(final FieldOrbit<T> targetOrbit,
+                                         final String additionalEquationsName,
+                                         final LOF lof) {
         // Copy input parameters
-        this.targetOrbit = targetOrbit;
+        this.targetOrbit             = targetOrbit;
         this.additionalEquationsName = additionalEquationsName;
-        this.lof = lof;
+        this.lof                     = lof;
     }
 
-    /**
-     * Sets the initial chaser PVT in target's LOF.
-     *
-     * @param initialChaserPVTLof Initial chaser PVT in target's LOF.
-     */
+    /** {@inheritDoc}. */
     @Override
     public void setInitialChaserPVTLof(final TimeStampedFieldPVCoordinates<T> initialChaserPVTLof) {
         this.initialChaserPVTLof = initialChaserPVTLof;
     }
 
+    /** {@inheritDoc}. */
     @Override
     public TimeStampedFieldPVCoordinates<T> getInitialChaserPVTLof() {
         return initialChaserPVTLof;
     }
 
+    /** {@inheritDoc}. */
     @Override
     public String getName() {
         return additionalEquationsName;
     }
 
+    /** {@inheritDoc}. */
     @Override
-    /*
-      {@inheritDoc}
-     */
     public FieldOrbit<T> getTargetOrbit() {
         return targetOrbit;
     }
 
-    /*
-      {@inheritDoc}
-     */
+    /** {@inheritDoc}. */
     @Override
     public void setTargetOrbit(final FieldOrbit<T> targetOrbit) {
         this.targetOrbit = targetOrbit;
     }
 
-    /**
-     * Extracts the chaser's PVT from the given {@link SpacecraftState} and returns it. It is expressed in the target's LOF.
-     *
-     * @param spacecraftState Target's spacecraft state.
-     * @return Chaser PVT in the target's LOF.
-     */
+    /** {@inheritDoc}. */
     @Override
-    public TimeStampedFieldPVCoordinates<T> extractChaserPVT(final FieldSpacecraftState<T> spacecraftState) {
-        final T[] chaserState = spacecraftState.getAdditionalState(additionalEquationsName);
-        return new TimeStampedFieldPVCoordinates<>(spacecraftState.getDate(), new FieldPVCoordinates<>(
-                new FieldVector3D<>(chaserState[0], chaserState[1], chaserState[2]),
-                new FieldVector3D<>(chaserState[3], chaserState[4], chaserState[5])));
+    public TimeStampedFieldPVCoordinates<T> extractChaserPVT(final FieldSpacecraftState<T> targetState) {
+
+        // Get additional state corresponding to the chaser state in target's LOF
+        final T[] chaserState = targetState.getAdditionalState(additionalEquationsName);
+
+        // Build PVT in target's LOF
+        return new TimeStampedFieldPVCoordinates<>(targetState.getDate(),
+                                                   new FieldPVCoordinates<>(new FieldVector3D<>(chaserState[0],
+                                                                                                chaserState[1],
+                                                                                                chaserState[2]),
+                                                                            new FieldVector3D<>(chaserState[3],
+                                                                                                chaserState[4],
+                                                                                                chaserState[5])));
     }
 
-    /**
-     * Extracts the chaser's PVT from the given {@link SpacecraftState} and converts it to the desired output frame.
-     *
-     * @param spacecraftState Target's spacecraft state.
-     * @param outputFrame     Desired output frame for the chaser PVT.
-     * @return Chaser PVT in desired output frame.
-     */
+    /** {@inheritDoc}. */
     @Override
-    public TimeStampedFieldPVCoordinates<T> extractChaserPVT(final FieldSpacecraftState<T> spacecraftState, final Frame outputFrame) {
+    public TimeStampedFieldPVCoordinates<T> extractChaserPVT(final FieldSpacecraftState<T> targetState,
+                                                             final Frame outputFrame) {
         // Extract chaser PVT in target's LOF
-        final TimeStampedFieldPVCoordinates<T> chaserPVTLOF = extractChaserPVT(spacecraftState);
-        // Transform PVT from target's LOF to reference inertial frame.
-        final FieldTransform<T> lofToInertial = lof.transformFromInertial(spacecraftState.getDate(), spacecraftState.getPVCoordinates()).getInverse();
+        final TimeStampedFieldPVCoordinates<T> chaserPVTLOF = extractChaserPVT(targetState);
+
+        // Transform PVT from target's LOF to reference inertial frame
+        final FieldTransform<T> lofToInertial =
+                        lof.transformFromInertial(targetState.getDate(), targetState.getPVCoordinates()).getInverse();
         final TimeStampedFieldPVCoordinates<T> pvInertial = lofToInertial.transformPVCoordinates(chaserPVTLOF);
+
         // Transform PVT from reference inertial frame to desired output frame.
-        final FieldTransform<T> inertialToOutputFrame = spacecraftState.getFrame().getTransformTo(outputFrame, spacecraftState.getDate());
+        final FieldTransform<T> inertialToOutputFrame =
+                        targetState.getFrame().getTransformTo(outputFrame, targetState.getDate());
         return inertialToOutputFrame.transformPVCoordinates(pvInertial);
     }
 }
