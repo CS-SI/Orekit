@@ -29,9 +29,7 @@ import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 
 /**

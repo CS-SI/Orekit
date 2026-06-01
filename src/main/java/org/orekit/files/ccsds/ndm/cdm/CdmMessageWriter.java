@@ -29,9 +29,7 @@ import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.MessageWriter;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 
 /** Cdm message writer.
