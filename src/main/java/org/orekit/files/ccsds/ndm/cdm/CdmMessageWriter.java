@@ -160,11 +160,8 @@ public abstract class CdmMessageWriter implements MessageWriter<CdmHeader, CdmSe
 
         // creation date is informational only, but mandatory and always in UTC
         final DateTimeComponents creationDate = ((header == null) ? date : header.getCreationDate()).getComponents(utc);
-        final DateComponents     dc           = creationDate.getDate();
-        final TimeComponents     tc           = creationDate.getTime();
         generator.writeEntry(HeaderKey.CREATION_DATE.name(),
-                             generator.dateToString(dc.getYear(), dc.getMonth(), dc.getDay(),
-                                                    tc.getHour(), tc.getMinute(), tc.getSecond()),
+                             generator.dateToString(creationDate),
                              null, true);
 
         // Use built-in default if mandatory originator not present

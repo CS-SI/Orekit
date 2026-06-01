@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.util.RyuDouble;
+import org.orekit.time.DateTimeComponents;
 
 /** Formatter used to produce strings from data with high accuracy.
  * <p>
@@ -93,5 +94,11 @@ public class AccurateFormatter implements Formatter {
     @Deprecated
     public static String format(final double value) {
         return RyuDouble.doubleToString(value);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString(DateTimeComponents dt) {
+        return dt.toStringWithoutUtcOffset();
     }
 }
