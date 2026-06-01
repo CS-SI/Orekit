@@ -26,6 +26,9 @@
       <action dev="bryan" type="fix" issue="1963">
           Fixed missing ndm end tag when generating NDM file with NdmWriter.
       </action>
+      <action dev="vcucchie" type="fix" issue="1962">
+          Fixed ULP drift during CCSDS file writing.
+      </action>
       <action dev="luc" type="fix" issue="1961">
           Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
       </action>
