@@ -267,7 +267,7 @@ public abstract class AbstractGenerator implements Generator {
     @Override
     public String dateToCalendarString(final TimeConverter converter, final AbsoluteDate date) {
         final DateTimeComponents dt = converter.components(date);
-        return formatter.toString(dt);
+        return dateToString(dt);
     }
 
     /**
