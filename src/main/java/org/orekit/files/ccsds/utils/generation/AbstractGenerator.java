@@ -272,7 +272,7 @@ public abstract class AbstractGenerator implements Generator {
 
     /** {@inheritDoc} */
     @Override
-    public String dateToString(DateTimeComponents dt) {
+    public String dateToString(final DateTimeComponents dt) {
         return formatter.toString(dt);
     }
 

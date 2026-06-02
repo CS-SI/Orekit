@@ -98,7 +98,7 @@ public class AccurateFormatter implements Formatter {
 
     /** {@inheritDoc} */
     @Override
-    public String toString(DateTimeComponents dt) {
+    public String toString(final DateTimeComponents dt) {
         return dt.toStringWithoutUtcOffset();
     }
 }
