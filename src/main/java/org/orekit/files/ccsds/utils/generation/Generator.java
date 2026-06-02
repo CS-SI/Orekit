@@ -206,7 +206,7 @@ public interface Generator extends AutoCloseable {
     String dateToCalendarString(TimeConverter converter, AbsoluteDate date);
 
     /**
-     * Convert a date to string value with high precision (attosecond accuracy).
+     * Convert a date to string value with high precision.
      * @param dt date and time components to write
      * @return date as a string
      * @since 13.1.6

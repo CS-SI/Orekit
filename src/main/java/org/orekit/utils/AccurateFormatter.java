@@ -96,7 +96,14 @@ public class AccurateFormatter implements Formatter {
         return RyuDouble.doubleToString(value);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Format date time components to make use of attosecond accuracy from {@link org.orekit.time.TimeOffset}.
+     * It relies on the {@link DateTimeComponents#toStringWithoutUtcOffset()} method to display date time.
+     *
+     * @param dt date time components to be formatted
+     * @return date formatted to match the following format [yyyy-MM-ddTHH:mm:ss.S#]
+     * @since 13.1.6
+     */
     @Override
     public String toString(final DateTimeComponents dt) {
         return dt.toStringWithoutUtcOffset();
