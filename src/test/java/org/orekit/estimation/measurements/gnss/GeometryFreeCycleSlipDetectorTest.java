@@ -116,12 +116,12 @@ public class GeometryFreeCycleSlipDetectorTest {
         }
         final RinexObservationParser parser = new RinexObservationParser();
         final List<ObservationDataSet>  obserDataSets = parser.parse(nd).getObservationDataSets();
-        //With dt = 31 s, cycle slip should not exist, a very huge threshold is used to not detect cycle-slip
+        //With dt = 31 s, cycle slip should not exist; a very huge threshold is used to not detect cycle-slip
         GeometryFreeCycleSlipDetector slipDetectors =
             new GeometryFreeCycleSlipDetector(31, 31.0, 10);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
         for(CycleSlipDetectorResults d: results) {
-            Assertions.assertFalse(d.getCycleSlipMap().get(PredefinedGnssSignal.G01).isEmpty());
+            Assertions.assertTrue(d.getCycleSlipMap().get(PredefinedGnssSignal.G01).isEmpty());
         }
         //With dt = 29 s, a cycle-slip should occur at each new measurement (97 times)
         GeometryFreeCycleSlipDetector slipDetectors2 =

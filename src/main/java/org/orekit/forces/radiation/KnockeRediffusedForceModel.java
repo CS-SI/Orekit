@@ -64,41 +64,41 @@ import org.orekit.utils.ParameterDriver;
  */
 public class KnockeRediffusedForceModel implements ForceModel {
 
-    /** 7Earth rotation around Sun pulsation in rad/sec. */
-    private static final double EARTH_AROUND_SUN_PULSATION = MathUtils.TWO_PI / Constants.JULIAN_YEAR;
+    /** Earth rotation around Sun pulsation in rad/sec. */
+    public static final double EARTH_AROUND_SUN_PULSATION = MathUtils.TWO_PI / Constants.JULIAN_YEAR;
 
     /** Coefficient for solar irradiance computation. */
-    private static final double ES_COEFF = 4.5606E-6;
+    public static final double ES_COEFF = 4.5606E-6;
 
     /** First coefficient for albedo computation. */
-    private static final double A0 = 0.34;
+    public static final double A0 = 0.34;
 
     /** Second coefficient for albedo computation. */
-    private static final double C0 = 0.;
+    public static final double C0 = 0.;
 
     /** Third coefficient for albedo computation. */
-    private static final double C1 = 0.10;
+    public static final double C1 = 0.10;
 
     /** Fourth coefficient for albedo computation. */
-    private static final double C2 = 0.;
+    public static final double C2 = 0.;
 
     /** Fifth coefficient for albedo computation. */
-    private static final double A2 = 0.29;
+    public static final double A2 = 0.29;
 
     /** First coefficient for Earth emissivity computation. */
-    private static final double E0 = 0.68;
+    public static final double E0 = 0.68;
 
     /** Second coefficient for Earth emissivity computation. */
-    private static final double K0 = 0.;
+    public static final double K0 = 0.;
 
     /** Third coefficient for Earth emissivity computation. */
-    private static final double K1 = -0.07;
+    public static final double K1 = -0.07;
 
     /** Fourth coefficient for Earth emissivity computation. */
-    private static final double K2 = 0.;
+    public static final double K2 = 0.;
 
     /** Fifth coefficient for Earth emissivity computation. */
-    private static final double E2 = -0.18;
+    public static final double E2 = -0.18;
 
     /** Sun model. */
     private final ExtendedPositionProvider sun;
@@ -189,7 +189,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
         // Sectorize the part of Earth which is seen by the satellite into crown sectors with constant angular resolution
         for (double eastAxisOffset = 1.5 * angularResolution;
-             eastAxisOffset < FastMath.asin(equatorialRadius / satellitePosition.getNorm());
+             eastAxisOffset < FastMath.acos(equatorialRadius / satellitePosition.getNorm());
              eastAxisOffset = eastAxisOffset + angularResolution) {
 
             // Build rotation transformations to get first crown elementary sector center
@@ -259,7 +259,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
         // Sectorize the part of Earth which is seen by the satellite into crown sectors with constant angular resolution
         for (double eastAxisOffset = 1.5 * angularResolution;
-             eastAxisOffset < FastMath.asin(equatorialRadius / satellitePosition.getNorm().getReal());
+             eastAxisOffset < FastMath.acos(equatorialRadius / satellitePosition.getNorm().getReal());
              eastAxisOffset = eastAxisOffset + angularResolution) {
 
             // Build rotation transformations to get first crown elementary sector center

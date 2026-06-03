@@ -731,6 +731,23 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             os.getPrimaryDerivative(), propagationType);
     }
 
+    /**
+     * Reset the state prior to continue propagation.
+     * <p>
+     * As the new state will be used for the next integration step,
+     * it shall be consistent with propagator needs. A typical example
+     * is that DSST only integrates mean elements, not osculating ones.
+     * </p>
+     * @param handler event handler
+     * @param detector event detector
+     * @param oldState old state (previous one)
+     * @return new state
+     * @since 13.1.6
+     */
+    protected SpacecraftState resetIntegrationStateAtEvent(final EventHandler handler, final EventDetector detector, final SpacecraftState oldState) {
+        return handler.resetState(detector, oldState);
+    }
+
     /** Differential equations for the main state (orbit, attitude and mass). */
     public interface MainStateEquations {
 
@@ -1042,7 +1059,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 public ODEState resetState(final ODEEventDetector d, final ODEStateAndDerivative s) {
 
                     final SpacecraftState oldState = convertToOrekitWithAdditional(s);
-                    final SpacecraftState newState = handler.resetState(detector, oldState);
+                    final SpacecraftState newState = resetIntegrationStateAtEvent(handler, detector, oldState);
                     stateChanged(newState);
 
                     // main part

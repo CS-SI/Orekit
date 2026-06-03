@@ -26,9 +26,6 @@
           <action dev="serrof" type="add" issue="1956">
               Add stand-alone Keplerian element converter.
           </action>
-          <action dev="luc" type="fix" issue="1961">
-              Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
-          </action>
           <action dev="vcucchie" type="fix" issue="1955">
               Fix IntelliJ compilation issue.
           </action>
@@ -347,42 +344,89 @@
               Throw OrekitException with clear message when getBody() is called with an unknown celestial body name.
           </action>
       </release>
-      <release version="13.1.5" date="2026-05-02" description="Orekit 13.1.5 is a patch release. It solves various bugs including the proper handling of central body in CCSDS frames">
-        <action dev="evan" type="fix" issue="1914">
-            Account for central body in CCSDS NDM when ModifiedFrame is used.
-            When parsing a CCSDS file Earth-centered ICRF is GCRF.
-        </action>
-        <action dev="evan" type="add" issue="1914">
-            Add CcsdsFrameMapper interface to improve consistency and allow
-            users to provide their own mapping.
-        </action>
-        <action dev="serrof" type="fix" issue="1949">
-            Fixed wrong getVelocity in FieldOrbit.
-        </action>
-        <action dev="ShippingEnjoyer" type="fix" issue="1943">
-            Fixed peer cache performance regression on high contention.
-        </action>
-        <action dev="benoitpremy" type="fix" issue="1942">
-            Fixed local dependency in JPL ephemeris loader test.
-        </action>
-        <action dev="pkoch" type="fix" issue="1939">
-            Fixed broken links in documentation.
-        </action>
-        <action dev="vcucchie" type="fix" issue="1938">
-            Updated supported names for JPL DE files to support new file naming convention.
-        </action>
-        <action dev="serrof" type="fix" issue="1933">
-            Fixed confusion between covariance reference time and initial propagation time in StateCovarianceProvider.
-        </action>
-        <action dev="maxime" type="fix" issue="1930">
-            Fixed parsing DistanceUnit keyword in STK ephemeris file parser.
-        </action>
-        <action dev="markrutten" type="fix" issue="1929">
-            Fixed Gooding convergence issue.
-        </action>
-        <action dev="serrof" type="fix" issue="1903">
-            Use actual station position in ionospheric angular correction.
-        </action>
+    <release version="13.1.6" date="2026-06-03" description="Orekit 13.1.6 is a patch release.
+                                                             It solves various bugs related to CCSDS parsing and writing, DSST
+                                                             propagation, and GNSS combination of measurements. This version
+                                                             also includes performance improvements in interpolation.">
+      <action dev="bryan" type="fix" issue="1964">
+          Fixed empty NDM generation to include mandatory ndm tags.
+      </action>
+      <action dev="bryan" type="fix" issue="1963">
+          Fixed missing ndm end tag when generating NDM file with NdmWriter.
+      </action>
+      <action dev="vcucchie" type="fix" issue="1962">
+          Fixed ULP drift during CCSDS file writing.
+      </action>
+      <action dev="luc" type="fix" issue="1961">
+          Fixed parsing of DateComponents.MIN_EPOCH and DateComponents.MAX_EPOCH.
+      </action>
+      <action dev="vcucchie" type="fix" issue="1958">
+          Reduced per-call overhead in (Field)TimeInterpolator.interpolate(...) by removing
+          the defensive copy, cache wrapper, and Stream pipeline. The sample must now be in
+          chronological order (previously copied and sorted silently).
+      </action>
+      <action dev="bryan" type="fix" issue="1957">
+          Fixed computation of resetted integration state for DSST propagation
+      </action>
+      <action dev="bryan" type="fix" issue="1513">
+          Fixed OPM parser silently skipping maneuvers with missing optional fields (duration and delta mass).
+      </action>
+      <action dev="bryan" type="fix" issue="1348">
+          Fixed FieldDSSTPropagator.afterIntegration() which was not preserving user-added
+          step handlers after osculating propagation.
+      </action>
+      <action dev="bryan" type="fix" issue="1076">
+          Corrected CombinationType returned by AbstractSingleFrequencyCombination
+          (was always PHASE_MINUS_CODE instead of the actual type).
+      </action>
+      <action dev="bryan" type="fix" issue="1076">
+          Fixed unit inconsistency in MelbourneWubbenaCombination
+          (wide-lane phase was in cycles instead of meters).
+      </action>
+      <action dev="vcucchie" type="fix" issue="1025">
+          Fixed frame alignement mistake in the Frames webpage.
+      </action>
+      <action dev="bryan" type="fix" issue="852">
+          Fixed Earth horizon angle computation in KnockeRediffusedForceModel for correct
+          visibility cone calculation.
+      </action>
+    </release>
+    <release version="13.1.5" date="2026-05-02" description="Orekit 13.1.5 is a patch release. It solves various bugs including the proper handling of central body in CCSDS frames">
+      <action dev="evan" type="fix" issue="1914">
+          Account for central body in CCSDS NDM when ModifiedFrame is used.
+          When parsing a CCSDS file Earth-centered ICRF is GCRF.
+      </action>
+      <action dev="evan" type="add" issue="1914">
+          Add CcsdsFrameMapper interface to improve consistency and allow
+          users to provide their own mapping.
+      </action>
+      <action dev="serrof" type="fix" issue="1949">
+          Fixed wrong getVelocity in FieldOrbit.
+      </action>
+      <action dev="ShippingEnjoyer" type="fix" issue="1943">
+          Fixed peer cache performance regression on high contention.
+      </action>
+      <action dev="benoitpremy" type="fix" issue="1942">
+          Fixed local dependency in JPL ephemeris loader test.
+      </action>
+      <action dev="pkoch" type="fix" issue="1939">
+          Fixed broken links in documentation.
+      </action>
+      <action dev="vcucchie" type="fix" issue="1938">
+          Updated supported names for JPL DE files to support new file naming convention.
+      </action>
+      <action dev="serrof" type="fix" issue="1933">
+          Fixed confusion between covariance reference time and initial propagation time in StateCovarianceProvider.
+      </action>
+      <action dev="maxime" type="fix" issue="1930">
+          Fixed parsing DistanceUnit keyword in STK ephemeris file parser.
+      </action>
+      <action dev="markrutten" type="fix" issue="1929">
+          Fixed Gooding convergence issue.
+      </action>
+      <action dev="serrof" type="fix" issue="1903">
+          Use actual station position in ionospheric angular correction.
+      </action>
     </release>
     <release version="13.1.4" date="2026-02-08" description="Orekit 13.1.4 is a patch release. It fixes bugs related to DSST, parsing, time and interpolation">
       <action dev="lebihanbastien" type="fix" issue="1907">

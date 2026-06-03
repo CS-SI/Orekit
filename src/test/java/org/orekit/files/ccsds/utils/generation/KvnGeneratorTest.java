@@ -19,6 +19,11 @@ package org.orekit.files.ccsds.utils.generation;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.files.ccsds.definitions.TimeConverter;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.units.Unit;
 
@@ -91,6 +96,36 @@ public class KvnGeneratorTest {
                                 KEY_2      = 180.0
                                 """, caw.toString());
         }
+    }
+
+    /**
+     * Test to write a date with non-representable seconds on a double.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/issues/1962">Issue 1962</a>
+     */
+    @Test
+    void testWriteDateEntry() throws IOException {
+        // GIVEN
+        // Load orekit data
+        Utils.setDataRoot("regular-data");
+
+        // Create the generator
+        final Appendable appendable = new StringBuilder();
+        final Generator  generator  = new KvnGenerator(appendable, 0, "", 0, 0);
+
+        // Create the time converter
+        final TimeScale     utc       = TimeScalesFactory.getUTC();
+        final TimeConverter converter = new TimeConverter(utc, new AbsoluteDate());
+
+        // Create date (seconds cannot be stored inside a double, will introduce an ULP drift).
+        final String       referenceDateString = "2026-05-21T23:04:00.934";
+        final AbsoluteDate date                = new AbsoluteDate(referenceDateString, utc);
+
+        // WHEN
+        generator.writeEntry("date", converter, date, false, true);
+
+        // THEN
+        Assertions.assertEquals("date = 2026-05-21T23:04:00.934\n", appendable.toString());
     }
 
 }

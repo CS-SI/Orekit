@@ -207,7 +207,7 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex2GeometryFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getGeometryFreeCombination(system),
-                     CombinationType.GEOMETRY_FREE, 6.953, 27534453.519,0.0,  Double.NaN, 2, 2);
+                     CombinationType.GEOMETRY_FREE, 6.953, 9.65285587310791, 0.0,  Double.NaN, 2, 2);
     }
 
     @Test
@@ -231,7 +231,7 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex2MelbourneWubbena() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
-                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 3801972.2239, 34 * GnssSignal.F0, 1, 2);
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, -29.164272382855415, 34 * GnssSignal.F0, 1, 2);
     }
 
     @Test
@@ -263,7 +263,7 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex3GeometryFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getGeometryFreeCombination(system),
-                     CombinationType.GEOMETRY_FREE, 2.187, 3821708.096, 0.0, Double.NaN, 2, 3);
+                     CombinationType.GEOMETRY_FREE, 2.187, 0.9417382925748825, 0.0, Double.NaN, 2, 3);
     }
 
     @Test
@@ -287,7 +287,7 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex3MelbourneWubbena() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
-                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, -18577480.4117, 5 * GnssSignal.F0, 1, 3);
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 15.086727432906628, 5 * GnssSignal.F0, 1, 3);
     }
 
     @Test
@@ -407,4 +407,25 @@ public class MeasurementCombinationFactoryTest {
 
     }
 
+    @Test
+    public void testIssue1076GraphicCombinationType() {
+        // Verify that GRAPHICCombination returns GRAPHIC CombinationType, not PHASE_MINUS_CODE
+        // See: https://gitlab.orekit.org/orekit/orekit/-/work_items/1076
+        final GRAPHICCombination graphic = MeasurementCombinationFactory.getGRAPHICCombination(SatelliteSystem.GPS);
+        final CombinedObservationData combined = graphic.combine(new ObservationData(PredefinedObservationType.L1, 1.23456789E8, 0, 0),
+                new ObservationData(PredefinedObservationType.C1, 2.34567890E7, 0, 0));
+        Assertions.assertEquals(CombinationType.GRAPHIC, combined.getCombinationType());
+        Assertions.assertEquals(MeasurementType.COMBINED_RANGE_PHASE, combined.getMeasurementType());
+    }
+
+    @Test
+    public void testIssue1076PhaseMinusCodeCombinationType() {
+        // Verify that PhaseMinusCodeCombination returns PHASE_MINUS_CODE CombinationType
+        // See: https://gitlab.orekit.org/orekit/orekit/-/work_items/1076
+        final PhaseMinusCodeCombination phaseMinusCode = MeasurementCombinationFactory.getPhaseMinusCodeCombination(SatelliteSystem.GPS);
+        final CombinedObservationData combined = phaseMinusCode.combine(new ObservationData(PredefinedObservationType.L1, 1.23456789E8, 0, 0),
+                                                                        new ObservationData(PredefinedObservationType.C1, 2.34567890E7, 0, 0));
+        Assertions.assertEquals(CombinationType.PHASE_MINUS_CODE, combined.getCombinationType());
+        Assertions.assertEquals(MeasurementType.COMBINED_RANGE_PHASE, combined.getMeasurementType());
+    }
 }

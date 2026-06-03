@@ -74,8 +74,6 @@ public class Maneuver extends CommentsContainer {
         super.validate(version);
         checkNotNull(epochIgnition,  ManeuverKey.MAN_EPOCH_IGNITION.name());
         checkNotNull(referenceFrame, ManeuverKey.MAN_REF_FRAME.name());
-        checkNotNaN(duration,        ManeuverKey.MAN_DURATION.name());
-        checkNotNaN(deltaMass,       ManeuverKey.MAN_DELTA_MASS.name());
         checkNotNaN(dV[0],           ManeuverKey.MAN_DV_1.name());
         checkNotNaN(dV[1],           ManeuverKey.MAN_DV_2.name());
         checkNotNaN(dV[2],           ManeuverKey.MAN_DV_3.name());
@@ -158,7 +156,7 @@ public class Maneuver extends CommentsContainer {
     public boolean completed() {
         return !(epochIgnition == null ||
                  referenceFrame == null ||
-                 Double.isNaN(duration + deltaMass + dV[0] + dV[1] + dV[2]));
+                 Double.isNaN(dV[0] + dV[1] + dV[2]));
     }
 
 }

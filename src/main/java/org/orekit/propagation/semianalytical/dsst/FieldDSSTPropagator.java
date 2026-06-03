@@ -51,6 +51,8 @@ import org.orekit.propagation.conversion.osc2mean.DSSTTheory;
 import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
 import org.orekit.propagation.conversion.osc2mean.MeanTheory;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -714,9 +716,15 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     @Override
     protected void afterIntegration() {
         // remove the special short periodics step handler if added before
-        if (isMeanOrbit() ==  PropagationType.OSCULATING) {
+        if (isMeanOrbit() == PropagationType.OSCULATING) {
             final List<FieldODEStepHandler<T>> preserved = new ArrayList<>();
             final FieldODEIntegrator<T> integrator = getIntegrator();
+            for (final FieldODEStepHandler<T> sp : integrator.getStepHandlers()) {
+                // FieldShortPeriodicsHandler is a non-static inner class, generic type is then implicit. Class name should be enough to identify it.
+                if (!sp.getClass().getSimpleName().equals("FieldShortPeriodicsHandler")) {
+                    preserved.add(sp);
+                }
+            }
 
             // clear the list
             integrator.clearStepHandlers();
@@ -794,6 +802,19 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         mapper = newMapper;
         return mapper;
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected FieldSpacecraftState<T> resetIntegrationStateAtEvent(final FieldEventHandler<T> handler, final FieldEventDetector<T> detector,
+                                                                   final FieldSpacecraftState<T> oldState) {
+        final FieldSpacecraftState<T> newState = super.resetIntegrationStateAtEvent(handler, detector, oldState);
+        if (PropagationType.MEAN.equals(getPropagationType())) {
+            // newState is a mean state, no need to convert it
+            return newState;
+        }
+        // newState is an osculating state, it must be converted to mean state because DSST integrates mean elements
+        return computeMeanState(newState, getAttitudeProvider(), forceModels);
     }
 
     /** Internal mapper using mean parameters plus short periodic terms. */
