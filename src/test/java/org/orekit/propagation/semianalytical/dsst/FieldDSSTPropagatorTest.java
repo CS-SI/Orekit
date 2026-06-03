@@ -1534,7 +1534,7 @@ class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> state = getLEOState(field);
         final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
         final AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 60.0, 3600.0, tol[0], tol[1]);
-        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.OSCULATING);
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(4, 4);
         propagator.addForceModel(new DSSTZonal(provider));
         propagator.setInitialState(state);
@@ -1607,7 +1607,7 @@ class FieldDSSTPropagatorTest {
         // WHEN
         final ClassicalRungeKuttaFieldIntegrator<Binary64> integrator =
                 new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().newInstance(60.0));
-        final FieldDSSTPropagator<Binary64> dsst = new FieldDSSTPropagator<>(field, integrator,
+        final FieldDSSTPropagator<Binary64> dsst = new FieldDSSTPropagator<>(integrator,
                 PropagationType.OSCULATING,
                 Propagator.getDefaultLaw(dataContext.getFrames()));
         dsst.addForceModel(new DSSTZonal(dataContext.getFrames().getGTOD(true), provider));
