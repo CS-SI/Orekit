@@ -29,9 +29,7 @@ import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 
 /**
@@ -166,11 +164,8 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
 
         // creation date is informational only, but mandatory and always in UTC
         final DateTimeComponents creationDate = ((header == null) ? date : header.getCreationDate()).getComponents(utc);
-        final DateComponents     dc           = creationDate.getDate();
-        final TimeComponents     tc           = creationDate.getTime();
         generator.writeEntry(HeaderKey.CREATION_DATE.name(),
-                             generator.dateToString(dc.getYear(), dc.getMonth(), dc.getDay(),
-                                                    tc.getHour(), tc.getMinute(), tc.getSecond()),
+                             generator.dateToString(creationDate),
                              null, true);
 
         // Use built-in default if mandatory originator not present

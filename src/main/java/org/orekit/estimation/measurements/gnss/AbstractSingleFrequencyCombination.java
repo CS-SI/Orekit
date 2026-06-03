@@ -135,7 +135,7 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
 
         // Combined observation data
         return new CombinedObservationData(combinedValue, f,
-                                           CombinationType.PHASE_MINUS_CODE, MeasurementType.COMBINED_RANGE_PHASE,
+                                           type, MeasurementType.COMBINED_RANGE_PHASE,
                                            Arrays.asList(phase, pseudoRange));
     }
 

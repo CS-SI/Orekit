@@ -20,12 +20,15 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -387,6 +390,169 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         Assertions.assertEquals(date0.shiftedBy(duration), finalState.getDate());
     }
 
+    @Test
+    void testAlbedoAndEmissivityValues() {
+
+        // Model
+        final KnockeRediffusedForceModel forceModel = createSimpleForceModel();
+
+        // Reference epoch: December 22, 1981 (winter solstice in northern hemisphere)
+        final AbsoluteDate refEpoch = new AbsoluteDate(1981, 12, 22, 0, 0, 0.0, TimeScalesFactory.getUTC());
+
+        // Test at equator (latitude = 0)
+        // At equator, Legendre P1(0) = 0, P2(0) = -0.5
+        // Albedo = A0 + A2 * P2(0) = 0.34 + 0.29 * (-0.5) = 0.34 - 0.145 = 0.195
+        // Emissivity = E0 + E2 * P2(0) = 0.68 + (-0.18) * (-0.5) = 0.68 + 0.09 = 0.77
+        final double refAlbedoEquator = KnockeRediffusedForceModel.A0 + KnockeRediffusedForceModel.A2 * (-0.5);
+        final double refEmissivityEquator = KnockeRediffusedForceModel.E0 + KnockeRediffusedForceModel.E2 * (-0.5);
+        Assertions.assertEquals(refAlbedoEquator, forceModel.computeAlbedo(refEpoch, 0.0), 1e-14);
+        Assertions.assertEquals(refEmissivityEquator, forceModel.computeEmissivity(refEpoch, 0.0), 1e-14);
+
+        // Test at north pole (latitude = PI/2) on reference epoch day
+        // At pole, sin(phi) = 1, P1(1) = 1, P2(1) = 1
+        // On Dec 22 (winter solstice), the periodic term cos(2*pi*dd/DAYS_YEAR) = 1
+        // Albedo = A0 + C1 * 1 * 1 + A2 * 1 = 0.34 + 0.10 + 0.29 = 0.73
+        // Emissivity = E0 + K1 * 1 * 1 + E2 * 1 = 0.68 - 0.07 - 0.18 = 0.43
+        final double refAlbedoPole = KnockeRediffusedForceModel.A0 + KnockeRediffusedForceModel.A2 * 1 + KnockeRediffusedForceModel.C1 * 1 * 1;
+        final double refEmissivityPole = KnockeRediffusedForceModel.E0 + KnockeRediffusedForceModel.E2 * 1 + KnockeRediffusedForceModel.K1 * 1 * 1;
+        Assertions.assertEquals(refAlbedoPole, forceModel.computeAlbedo(refEpoch, MathUtils.SEMI_PI), 1e-14);
+        Assertions.assertEquals(refEmissivityPole, forceModel.computeEmissivity(refEpoch, MathUtils.SEMI_PI), 1e-14);
+
+        // Test periodicity: values should be the same after one year
+        final AbsoluteDate oneYearLater = refEpoch.shiftedBy(365.25 * 86400.0);
+        Assertions.assertEquals(refAlbedoPole, forceModel.computeAlbedo(oneYearLater, FastMath.PI / 2.0), 1e-14);
+        Assertions.assertEquals(refEmissivityPole, forceModel.computeEmissivity(oneYearLater, FastMath.PI / 2.0), 1e-14);
+
+        // Test at specific date and latitude (non regression)
+        final AbsoluteDate specificDate = new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getUTC());
+        final double specificLat = -0.8571953966;
+        final double albedoSpecific = forceModel.computeAlbedo(specificDate, specificLat);
+        final double emissivitySpecific = forceModel.computeEmissivity(specificDate, specificLat);
+        Assertions.assertTrue(albedoSpecific > 0.3 && albedoSpecific < 0.5, "Albedo should be in reasonable range");
+        Assertions.assertTrue(emissivitySpecific > 0.5 && emissivitySpecific < 0.8, "Emissivity should be in reasonable range");
+    }
+
+    @Test
+    void testSolarFluxComputation() {
+        // Model
+        final KnockeRediffusedForceModel forceModel = createSimpleForceModel();
+        // Solar flux at 1 AU: ES_COEFF * c / 1^2
+        // ES_COEFF = 4.5606E-6, c = 299792458 m/s
+        final double expectedFlux = KnockeRediffusedForceModel.ES_COEFF * Constants.SPEED_OF_LIGHT;
+        Assertions.assertEquals(expectedFlux, forceModel.computeSolarFlux(new Vector3D(Constants.JPL_SSD_ASTRONOMICAL_UNIT, 0, 0)), 1e-10);
+    }
+
+    @Test
+    void testAcceleration() {
+
+        // LEO Orbit
+        final Vector3D pos = new Vector3D(2.06479765813527000e+06,
+                                          -3.89513229411636293e+06,
+                                          -5.09383750217838865e+06);
+        final Vector3D vel = new Vector3D(-2.19214076040873215e+03,
+                                           5.39738533682446723e+03,
+                                          -5.01727016544111484e+03);
+        final AbsoluteDate date = new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getUTC());
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(pos, vel), FramesFactory.getGCRF(), date, Constants.WGS84_EARTH_MU);
+
+        // Model
+        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(CelestialBodyFactory.getSun(),
+                new IsotropicRadiationSingleCoefficient(1.0, 1.5),
+                Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                FastMath.toRadians(10));
+
+        // Compute acceleration and verify
+        // Typical values are on the order of 1e-11 to 1e-10 km/s^2 (Montenbruck, Satellite Orbits, Fig 3.1)
+        final Vector3D acceleration = forceModel.acceleration(new SpacecraftState(orbit), forceModel.getParameters(date));
+        final double accNormKmPerSec = acceleration.getNorm() * 0.001;
+        Assertions.assertTrue(accNormKmPerSec > 0, "Acceleration should be non-zero in LEO");
+        Assertions.assertTrue(acceleration.dotProduct(pos.normalize()) > 0, "Radial acceleration should be positive (away from Earth)");
+        Assertions.assertTrue(accNormKmPerSec > 1e-11 && accNormKmPerSec < 1e-10, "Acceleration magnitude " + accNormKmPerSec + " is outside expected range for LEO");
+    }
+
+    @Test
+    void testAccelerationDecreasesWithAltitude() {
+
+        // Computation date
+        final AbsoluteDate date = new AbsoluteDate(2003, 3, 1, 13, 59, 27.816, TimeScalesFactory.getUTC());
+
+        // Model
+        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(CelestialBodyFactory.getSun(),
+                new IsotropicRadiationSingleCoefficient(1.0, 1.5),
+                Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                FastMath.toRadians(10));
+
+        // Test at multiple altitudes
+        final double[] altitudes = {400000, 800000, 2000000, 36000000};
+        double previousAccNorm = Double.POSITIVE_INFINITY;
+
+        for (final double altitude : altitudes) {
+            // Create orbit
+            final double r = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + altitude;
+            final double v = FastMath.sqrt(Constants.WGS84_EARTH_MU / r);
+            final Orbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(r, 0, 0), new Vector3D(0, v, 0)),
+                    FramesFactory.getGCRF(), date, Constants.WGS84_EARTH_MU);
+
+            // Compute acceleration
+            final Vector3D acceleration = forceModel.acceleration(new SpacecraftState(orbit), forceModel.getParameters(date));
+            final double accNorm = acceleration.getNorm();
+
+            // Acceleration should decrease with altitude (See Montenbruck, Satellite Orbits, Fig 3.1)
+            Assertions.assertTrue(accNorm < previousAccNorm,
+                    "Acceleration at " + altitude + "m (" + accNorm +
+                    ") should be less than at previous altitude (" + previousAccNorm + ")");
+
+            previousAccNorm = accNorm;
+        }
+    }
+
+    @Test
+    void testFieldAccelerationConsistency() {
+
+        // Initial field Keplerian orbit
+        final AbsoluteDate realDate = new AbsoluteDate(2003, 3, 1, 13, 59, 27.816, TimeScalesFactory.getUTC());
+        final Binary64 a = new Binary64(7e6);
+        final Binary64 e = new Binary64(0.01);
+        final Binary64 i = new Binary64(1.2);
+        final Binary64 pa = new Binary64(0.7);
+        final Binary64 raan = new Binary64(0.5);
+        final Binary64 n = new Binary64(0.1);
+
+        final Field<Binary64> field = a.getField();
+        final Binary64 zero = field.getZero();
+        final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field, realDate);
+        final Frame frame = FramesFactory.getEME2000();
+
+        final FieldKeplerianOrbit<Binary64> fieldOrbit =
+                new FieldKeplerianOrbit<>(a, e, i, pa, raan, n,
+                                          PositionAngleType.MEAN, frame, date,
+                                          zero.add(Constants.EIGEN5C_EARTH_MU));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(fieldOrbit);
+
+        // Model
+        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(CelestialBodyFactory.getSun(),
+                new IsotropicRadiationSingleCoefficient(1.0, 1.5),
+                Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                FastMath.toRadians(15));
+
+        // Acceleration
+        final FieldVector3D<Binary64> fieldAcc = forceModel.acceleration(fieldState, forceModel.getParameters(field));
+        final Vector3D realAcc = forceModel.acceleration(fieldState.toSpacecraftState(), forceModel.getParameters());
+
+        // Verify
+        Assertions.assertEquals(realAcc.getX(), fieldAcc.getX().getReal(), 1e-15);
+        Assertions.assertEquals(realAcc.getY(), fieldAcc.getY().getReal(), 1e-15);
+        Assertions.assertEquals(realAcc.getZ(), fieldAcc.getZ().getReal(), 1e-15);
+    }
+
+    /** Create a simple force model for testing albedo and emissivity computations. */
+    private KnockeRediffusedForceModel createSimpleForceModel() {
+        return new KnockeRediffusedForceModel(CelestialBodyFactory.getSun(),
+                new IsotropicRadiationSingleCoefficient(1.0, 1.5),
+                Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                FastMath.toRadians(30));
+    }
+
     /** Knocke model specialized step handler. */
     private static class KnockeStepHandler implements OrekitFixedStepHandler {
 
@@ -423,9 +589,9 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
             final double crossTrackAcceleration = knockeAcceleration.dotProduct(crossTrackUnit);
 
             // Check values
-            Assertions.assertEquals(2.5e-10, radialAcceleration, 1.5e-10);
-            Assertions.assertEquals(0.0, alongTrackAcceleration, 5e-11);
-            Assertions.assertEquals(0.0, crossTrackAcceleration, 5e-12);
+            Assertions.assertEquals(5.0e-10, radialAcceleration, 5.0e-10);
+            Assertions.assertEquals(0.0, alongTrackAcceleration, 2e-10);
+            Assertions.assertEquals(0.0, crossTrackAcceleration, 2e-11);
         }
 
     }

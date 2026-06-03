@@ -22,6 +22,9 @@ import java.util.List;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Unit;
 
@@ -201,6 +204,19 @@ public interface Generator extends AutoCloseable {
      * @since 12.0
      */
     String dateToCalendarString(TimeConverter converter, AbsoluteDate date);
+
+    /**
+     * Convert a date to string value with high precision.
+     * @param dt date and time components to write
+     * @return date as a string
+     * @since 13.1.6
+     */
+    default String dateToString(DateTimeComponents dt) {
+        final DateComponents date = dt.getDate();
+        final TimeComponents time = dt.getTime();
+        return dateToString(date.getYear(), date.getMonth(), date.getDay(),
+                            time.getHour(), time.getMinute(), time.getSecond());
+    }
 
     /** Convert a date to string value with high precision.
      * @param year year
