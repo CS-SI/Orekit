@@ -19,9 +19,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.1.6" date="TBD" description="Orekit 13.1.6 is a patch release">
+    <release version="13.1.6" date="2026-06-03" description="Orekit 13.1.6 is a patch release.
+                                                             It solves various bugs related to CCSDS parsing and writing, DSST
+                                                             propagation, and GNSS combination of measurements. This version
+                                                             also includes performance improvements in interpolation.">
       <action dev="bryan" type="fix" issue="1964">
-         Fixed empty NDM generation to include mandatory ndm tags.
+          Fixed empty NDM generation to include mandatory ndm tags.
       </action>
       <action dev="bryan" type="fix" issue="1963">
           Fixed missing ndm end tag when generating NDM file with NdmWriter.
