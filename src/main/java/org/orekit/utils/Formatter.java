@@ -16,6 +16,10 @@
  */
 package org.orekit.utils;
 
+import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeComponents;
+
 import java.util.Locale;
 
 /** Formatter used to produce strings from data.
@@ -54,5 +58,20 @@ public interface Formatter {
      * @return date formatted to match the following format [yyyy-MM-ddTHH:mm:ss.S#]
      */
     String toString(int year, int month, int day, int hour, int minute, double seconds);
+
+    /**
+     * Format date time components to make use of attosecond accuracy from {@link org.orekit.time.TimeOffset}. Does not
+     * check if date time is real or if it will meet formating requirements.
+     *
+     * @param dt date time components to be formatted
+     * @return date formatted to match the following format [yyyy-MM-ddTHH:mm:ss.S#]
+     * @since 13.1.6
+     */
+    default String toString(DateTimeComponents dt) {
+        final DateComponents date = dt.getDate();
+        final TimeComponents time = dt.getTime();
+        return toString(date.getYear(), date.getMonth(), date.getDay(),
+                        time.getHour(), time.getMinute(), time.getSecond());
+    }
 
 }

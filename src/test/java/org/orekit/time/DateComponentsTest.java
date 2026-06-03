@@ -26,18 +26,18 @@ public class DateComponentsTest {
     public void testReferenceDates() {
 
         int[][] reference = {
-                { -4713, 12, 31, -2451546 }, { -4712, 01, 01, -2451545 },
-                {  0000, 12, 31,  -730122 }, {  0001, 01, 01,  -730121 },
-                {  1500, 02, 28,  -182554 }, {  1500, 02, 29,  -182553 },
-                {  1500, 03, 01,  -182552 }, {  1582, 10, 04,  -152385 },
-                {  1582, 10, 15,  -152384 }, {  1600, 02, 28,  -146039 },
-                {  1600, 02, 29,  -146038 }, {  1600, 03, 01,  -146037 },
-                {  1700, 02, 28,  -109514 }, {  1700, 03, 01,  -109513 },
-                {  1800, 02, 28,   -72990 }, {  1800, 03, 01,   -72989 },
+                { -4713, 12, 31, -2451546 }, { -4712,  1,  1, -2451545 },
+                {     0, 12, 31,  -730122 }, {     1,  1,  1,  -730121 },
+                {  1500,  2, 28,  -182554 }, {  1500,  2, 29,  -182553 },
+                {  1500,  3,  1,  -182552 }, {  1582, 10,  4,  -152385 },
+                {  1582, 10, 15,  -152384 }, {  1600,  2, 28,  -146039 },
+                {  1600,  2, 29,  -146038 }, {  1600,  3,  1,  -146037 },
+                {  1700,  2, 28,  -109514 }, {  1700,  3,  1,  -109513 },
+                {  1800,  2, 28,   -72990 }, {  1800,  3,  1,   -72989 },
                 {  1858, 11, 15,   -51546 }, {  1858, 11, 16,   -51545 },
-                {  1999, 12, 31,       -1 }, {  2000, 01, 01,        0 },
-                {  2000, 02, 28,       58 }, {  2000, 02, 29,       59 },
-                {  2000, 03, 01,       60 }
+                {  1999, 12, 31,       -1 }, {  2000,  1,  1,        0 },
+                {  2000,  2, 28,       58 }, {  2000,  2, 29,       59 },
+                {  2000,  3,  1,       60 }
         };
 
         for (int i = 0; i < reference.length; ++i) {
@@ -129,11 +129,11 @@ public class DateComponentsTest {
     @Test
     public void testDayOfWeek() {
         Assertions.assertEquals(7, new DateComponents(-4713, 12, 31).getDayOfWeek());
-        Assertions.assertEquals(1, new DateComponents(-4712, 01, 01).getDayOfWeek());
-        Assertions.assertEquals(4, new DateComponents( 1582, 10, 04).getDayOfWeek());
+        Assertions.assertEquals(1, new DateComponents(-4712,  1,  1).getDayOfWeek());
+        Assertions.assertEquals(4, new DateComponents( 1582, 10,  4).getDayOfWeek());
         Assertions.assertEquals(5, new DateComponents( 1582, 10, 15).getDayOfWeek());
         Assertions.assertEquals(5, new DateComponents( 1999, 12, 31).getDayOfWeek());
-        Assertions.assertEquals(6, new DateComponents( 2000, 01, 01).getDayOfWeek());
+        Assertions.assertEquals(6, new DateComponents( 2000,  1,  1).getDayOfWeek());
     }
 
     @Test
@@ -289,9 +289,9 @@ public class DateComponentsTest {
 
     @Test
     public void testConstructorDoYYearBoundaries() {
-        Assertions.assertNotNull(new DateComponents(2003, 1));
+        Assertions.assertNotNull(new DateComponents(2003,   1));
         Assertions.assertNotNull(new DateComponents(2003, 365));
-        Assertions.assertNotNull(new DateComponents(2004, 1));
+        Assertions.assertNotNull(new DateComponents(2004,   1));
         Assertions.assertNotNull(new DateComponents(2004, 366));
     }
 
@@ -347,11 +347,19 @@ public class DateComponentsTest {
     @Test
     public void testConstructorBadString() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            DateComponents.parseDate("197-05-01");
+            DateComponents.parseDate("197a-05-01");
         });
     }
 
-    @Test 
+    @Test
+    public void testConstructor3digitsYear() {
+       final DateComponents dtc = DateComponents.parseDate("197-05-01");
+       Assertions.assertEquals(197, dtc.getYear());
+       Assertions.assertEquals(  5, dtc.getMonth());
+       Assertions.assertEquals(  1, dtc.getDay());
+    }
+
+    @Test
     public void testWellFormed() {
         checkWellFormed(-4800, -4700, -2483687, -2446797);
         checkWellFormed(   -5,     5,  -732313,  -728296);
@@ -446,6 +454,23 @@ public class DateComponentsTest {
         Assertions.assertEquals(       3,          new DateComponents(Integer.MIN_VALUE).getMonth());
         Assertions.assertEquals(       3,          new DateComponents(Integer.MIN_VALUE).getDay());
         Assertions.assertEquals(Integer.MIN_VALUE, new DateComponents(Integer.MIN_VALUE).getJ2000Day());
+    }
+
+    @Test
+    public void testIssue1961() {
+        Assertions.assertEquals(Integer.MIN_VALUE,
+                                DateComponents.parseDate(DateComponents.MIN_EPOCH.toString()).getJ2000Day());
+        Assertions.assertEquals(Integer.MAX_VALUE,
+                                DateComponents.parseDate(DateComponents.MAX_EPOCH.toString()).getJ2000Day());
+    }
+
+    @Test
+    public void testAllFormats() {
+        Assertions.assertEquals(DateComponents.parseDate("2026-05-21"), DateComponents.parseDate("20260521"));
+        Assertions.assertEquals(DateComponents.parseDate("2026-05-21"), DateComponents.parseDate("2026-141"));
+        Assertions.assertEquals(DateComponents.parseDate("2026-05-21"), DateComponents.parseDate("2026141"));
+        Assertions.assertEquals(DateComponents.parseDate("2026-05-21"), DateComponents.parseDate("2026-W21-4"));
+        Assertions.assertEquals(DateComponents.parseDate("2026-05-21"), DateComponents.parseDate("2026W214"));
     }
 
 }
