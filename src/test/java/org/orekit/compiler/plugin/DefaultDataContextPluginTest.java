@@ -54,7 +54,7 @@ public class DefaultDataContextPluginTest {
         Files.createDirectories(output);
         List<String> arguments = new ArrayList<>(Arrays.asList(
                 "-cp", System.getProperty("java.class.path"),
-                "-source", "1.8", "-target", "1.8",
+                "-source", "21", "-target", "21",
                 "-d", output.toAbsolutePath().toString(),
                 "-Xmaxwarns", "9999",
                 "-Xplugin:dataContextPlugin"));
@@ -70,7 +70,7 @@ public class DefaultDataContextPluginTest {
         long count = Arrays.stream(actual.split("\n"))
                 .filter(s -> s.contains(DefaultDataContextPlugin.MESSAGE))
                 .count();
-        Assertions.assertEquals(count, 30, actual);
+        Assertions.assertEquals(30, count, actual);
         Assertions.assertFalse(actual.contains(" error:"),actual);
         Assertions.assertEquals(0, retVal, actual);
     }
@@ -87,25 +87,25 @@ public class DefaultDataContextPluginTest {
         }
         Files.walkFileTree(
                 path,
-                new FileVisitor<Path>() {
+                new FileVisitor<>() {
                     @Override
-                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                    public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) {
                         return FileVisitResult.CONTINUE;
                     }
 
                     @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
                         Files.delete(file);
                         return FileVisitResult.CONTINUE;
                     }
 
                     @Override
-                    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                    public FileVisitResult visitFileFailed(final Path file, final IOException exc) throws IOException {
                         throw exc;
                     }
 
                     @Override
-                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
                         Files.delete(dir);
                         return FileVisitResult.CONTINUE;
                     }
