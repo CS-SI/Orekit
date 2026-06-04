@@ -1068,4 +1068,30 @@ public class OpmParserTest {
                                  OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));
     }
 
+    @Test
+    public void testParseOPMWithPartialManeuver() {
+        final String ex = "/ccsds/odm/opm/OPMExamplePartialManeuver.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+
+        final OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
+        final Opm file = parser.parseMessage(source);
+
+        Assertions.assertTrue(file.getData().hasManeuvers());
+        Assertions.assertEquals(1, file.getNbManeuvers());
+
+        final Maneuver maneuver = file.getManeuver(0);
+        Assertions.assertNotNull(maneuver.getEpochIgnition());
+        Assertions.assertEquals(new AbsoluteDate(2000, 6, 3, 9, 0,
+                                                 new TimeOffset(34, TimeOffset.SECOND, 100, TimeOffset.MILLISECOND),
+                                                 TimeScalesFactory.getUTC()),
+                            maneuver.getEpochIgnition());
+        Assertions.assertNotNull(maneuver.getReferenceFrame());
+        Assertions.assertEquals(FramesFactory.getEME2000(), maneuver.getReferenceFrame().asFrame());
+        Assertions.assertFalse(Double.isNaN(maneuver.getDV().getX()));
+        Assertions.assertFalse(Double.isNaN(maneuver.getDV().getY()));
+        Assertions.assertFalse(Double.isNaN(maneuver.getDV().getZ()));
+        Assertions.assertTrue(Double.isNaN(maneuver.getDuration()));
+        Assertions.assertTrue(Double.isNaN(maneuver.getDeltaMass()));
+    }
+
 }

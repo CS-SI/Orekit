@@ -244,9 +244,9 @@ class IodGoodingTest extends AbstractIodTest {
 
         final KeplerianOrbit orbit1 = new KeplerianOrbit(iod.estimate(frame, raDec1, raDec2, raDec3, rhoInit1, rhoInit3));
         final KeplerianOrbit orbit2 = new KeplerianOrbit(iod.estimate(frame,
-                                                         raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), frame),
-                                                         raDec2.getStation().getPVCoordinatesProvider().getPosition(raDec2.getDate(), frame),
-                                                         raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), frame),
+                                                         raDec1.getObserver().getPVCoordinatesProvider().getPosition(raDec1.getDate(), frame),
+                                                         raDec2.getObserver().getPVCoordinatesProvider().getPosition(raDec2.getDate(), frame),
+                                                         raDec3.getObserver().getPVCoordinatesProvider().getPosition(raDec3.getDate(), frame),
                                                          raDec1.getObservedLineOfSight(frame), raDec1.getDate(),
                                                          raDec2.getObservedLineOfSight(frame), raDec2.getDate(),
                                                          raDec3.getObservedLineOfSight(frame), raDec3.getDate(),

@@ -49,6 +49,8 @@ import org.orekit.propagation.conversion.osc2mean.DSSTTheory;
 import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
 import org.orekit.propagation.conversion.osc2mean.MeanTheory;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
@@ -966,6 +968,17 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         return sptValue;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected SpacecraftState resetIntegrationStateAtEvent(final EventHandler handler, final EventDetector detector, final SpacecraftState oldState) {
+        final SpacecraftState newState = super.resetIntegrationStateAtEvent(handler, detector, oldState);
+        if (PropagationType.MEAN.equals(getPropagationType())) {
+            // newState is a mean state, no need to convert it
+            return newState;
+        }
+        // newState is an osculating state, it must be converted to mean state because DSST integrates mean elements
+        return computeMeanState(newState, getAttitudeProvider(), forceModels);
+    }
 
     /** Internal mapper using mean parameters plus short periodic terms. */
     private static class MeanPlusShortPeriodicMapper extends StateMapper {

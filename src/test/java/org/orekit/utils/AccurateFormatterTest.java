@@ -18,6 +18,10 @@ package org.orekit.utils;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 
 class AccurateFormatterTest {
 
@@ -63,6 +67,33 @@ class AccurateFormatterTest {
                 new AccurateFormatter().toString(20210, 300, 260, 900, 450, 600.0));
         Assertions.assertEquals("-2021--3--26T-9:-45:00.0",
                 new AccurateFormatter().toString(-2021, -3, -26, -9, -45, -1.0));
+    }
+
+    /**
+     * Test back-and-forth conversion using a date with non-representable seconds on a double.
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/issues/1962">Issue 1962</a>
+     */
+    @Test
+    void testNonRepresentableSecondsWithDouble() {
+        // GIVEN
+        // Load orekit data
+        Utils.setDataRoot("regular-data");
+
+        // Create date (seconds cannot be stored inside a double, will introduce an ULP drift).
+        final String       referenceDateString = "2026-05-21T23:04:00.934";
+        final TimeScale    utc                 = TimeScalesFactory.getUTC();
+        final AbsoluteDate date                = new AbsoluteDate(referenceDateString, utc);
+
+        // Create accurate formatter
+        final AccurateFormatter formatter = new AccurateFormatter();
+
+        // WHEN
+        final String       actualDateString = formatter.toString(date.getComponents(utc));
+        final AbsoluteDate dateFromString   = new AbsoluteDate(actualDateString, utc);
+
+        // THEN
+        Assertions.assertEquals(referenceDateString, actualDateString);
+        Assertions.assertEquals(date, dateFromString);
     }
 
 }
