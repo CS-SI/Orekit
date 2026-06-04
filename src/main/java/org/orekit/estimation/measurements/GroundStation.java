@@ -309,7 +309,7 @@ public class GroundStation extends AbstractParticipant implements Observer {
     }
 
     /**
-     * Shift a kinematic transform by a Gradient time into a FieldStaticTransform<Gradient>.
+     * Shift a kinematic transform by a Gradient time into a FieldStaticTransform.
      * @param kinematicTransform kinematic transform to shift
      * @param dt time to shift by
      * @return Field static transform shifted by dt
