@@ -70,9 +70,11 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
 
                 // Station position at signal arrival
                 // Set the reference date of offset drivers arbitrarily to avoid exception
-                station.getPrimeMeridianOffsetDriver().setReferenceDate(date);
-                station.getPolarOffsetXDriver().setReferenceDate(date);
-                station.getPolarOffsetYDriver().setReferenceDate(date);
+                if (station instanceof EarthBasedStation earthBasedStation) {
+                    earthBasedStation.getPrimeMeridianOffsetDriver().setReferenceDate(date);
+                    earthBasedStation.getPolarOffsetXDriver().setReferenceDate(date);
+                    earthBasedStation.getPolarOffsetYDriver().setReferenceDate(date);
+                }
                 final Transform offsetToInertialArrival = station.getOffsetToInertial(inertialFrame, date, false);
                 final Vector3D  stationPArrival = offsetToInertialArrival.transformPosition(Vector3D.ZERO);
 

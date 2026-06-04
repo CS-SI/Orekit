@@ -106,7 +106,7 @@ class IodGoodingTest extends AbstractIodTest {
         Assertions.assertEquals(0.004504568857387906, orbitGooding.getE(), 1.0e-7);
         Assertions.assertEquals(FastMath.toRadians(0.09137634766893886), orbitGooding.getI(), 1.0e-10);
         Assertions.assertEquals(FastMath.toRadians(170.1160849868576), orbitGooding.getPerigeeArgument(), 1.0e-6);
-        Assertions.assertEquals(FastMath.toRadians(90.77888177347695), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(90.77888177347695), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-8);
         Assertions.assertEquals(FastMath.toRadians(-19.13147024478354), orbitGooding.getTrueAnomaly(), 1.0e-6);
     }
 

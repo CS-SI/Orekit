@@ -47,7 +47,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class GroundStationTransformProviderTest {
+class EarthBasedStationTransformProviderTest {
 
     @BeforeAll
     static void setUp() {
@@ -65,7 +65,7 @@ class GroundStationTransformProviderTest {
         final EstimatedEarthFrameProvider estimatedEarthFrameProvider = mock();
         when(estimatedEarthFrameProvider.getTransform(any(AbsoluteDate.class))).thenReturn(Transform.IDENTITY);
         when(estimatedEarthFrameProvider.getStaticTransform(any(AbsoluteDate.class))).thenReturn(Transform.IDENTITY);
-        final TransformProvider provider = new GroundStationTransformProvider(frame, topocentricFrame,
+        final TransformProvider provider = new EarthBasedStationTransformProvider(frame, topocentricFrame,
                 mockDriver(0.), mockDriver(0.), mockDriver(0.), estimatedEarthFrameProvider, null);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         // WHEN
@@ -90,7 +90,7 @@ class GroundStationTransformProviderTest {
         final EstimatedEarthFrameProvider estimatedEarthFrameProvider = mock();
         when(estimatedEarthFrameProvider.getTransform(any(AbsoluteDate.class))).thenReturn(Transform.IDENTITY);
         when(estimatedEarthFrameProvider.getStaticTransform(any(AbsoluteDate.class))).thenReturn(Transform.IDENTITY);
-        final TransformProvider provider = new GroundStationTransformProvider(frame, topocentricFrame,
+        final TransformProvider provider = new EarthBasedStationTransformProvider(frame, topocentricFrame,
                 mockDriver(10.), mockDriver(-20.), mockDriver(5.), estimatedEarthFrameProvider, null);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         // WHEN
@@ -115,7 +115,7 @@ class GroundStationTransformProviderTest {
         final FieldAbsoluteDate<Gradient> date = FieldAbsoluteDate.getArbitraryEpoch(field);
         when(estimatedEarthFrameProvider.getTransform(date)).thenReturn(FieldTransform.getIdentity(field));
         when(estimatedEarthFrameProvider.getTransform(any(AbsoluteDate.class))).thenReturn(Transform.IDENTITY);
-        final GroundStationTransformProvider provider = new GroundStationTransformProvider(frame, topocentricFrame,
+        final EarthBasedStationTransformProvider provider = new EarthBasedStationTransformProvider(frame, topocentricFrame,
                 mockDriver(10.), mockDriver(-20.), mockDriver(5.),
                 estimatedEarthFrameProvider, null);
         // WHEN
@@ -145,7 +145,7 @@ class GroundStationTransformProviderTest {
         final ParameterDriver eastOffsetDriver = mockDriverWithGradient(10., freeParameters);
         final ParameterDriver northOffsetDriver = mockDriverWithGradient(-20., freeParameters);
         final ParameterDriver zenithOffsetDriver = mockDriverWithGradient(5., freeParameters);
-        final GroundStationTransformProvider provider = new GroundStationTransformProvider(frame, topocentricFrame,
+        final EarthBasedStationTransformProvider provider = new EarthBasedStationTransformProvider(frame, topocentricFrame,
                 eastOffsetDriver, northOffsetDriver, zenithOffsetDriver, estimatedEarthFrameProvider, null);
         // WHEN
         final FieldTransform<Gradient> transform = provider.getTransform(date);
@@ -157,7 +157,8 @@ class GroundStationTransformProviderTest {
         station.getParametersDrivers().forEach(driver -> driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH));
         final FieldTransform<Gradient> transformGradient = station.getOffsetToInertial(frame, date, freeParameters, parameters);
         assertEquals(transform.getFieldDate(), transformGradient.getFieldDate());
-        assertEquals(transform.getTranslation(), transformGradient.getTranslation());
+        assertArrayEquals(transform.getTranslation().toVector3D().toArray(), transformGradient.getTranslation().toVector3D().toArray(),
+                1e-7);
         assertEquals(0., Rotation.distance(transform.getRotation().toRotation(), transformGradient.getRotation().toRotation()), 1.e-13);
         assertEquals(transform.getRotationRate(), transformGradient.getRotationRate());
         assertEquals(transform.getRotationAcceleration(), transformGradient.getRotationAcceleration());
@@ -181,7 +182,7 @@ class GroundStationTransformProviderTest {
         final ParameterDriver eastOffsetDriver = mockDriverWithGradient(10., freeParameters);
         final ParameterDriver northOffsetDriver = mockDriverWithGradient(-20., freeParameters);
         final ParameterDriver zenithOffsetDriver = mockDriverWithGradient(5., freeParameters);
-        final GroundStationTransformProvider provider = new GroundStationTransformProvider(frame, topocentricFrame,
+        final EarthBasedStationTransformProvider provider = new EarthBasedStationTransformProvider(frame, topocentricFrame,
                 eastOffsetDriver, northOffsetDriver, zenithOffsetDriver, estimatedEarthFrameProvider, null);
         // WHEN
         final FieldStaticTransform<Gradient> staticTransform = provider.getStaticTransform(date);
@@ -193,7 +194,8 @@ class GroundStationTransformProviderTest {
         station.getParametersDrivers().forEach(driver -> driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH));
         final FieldStaticTransform<Gradient> transformGradient = station.getOffsetToInertial(frame, date, freeParameters, parameters);
         assertEquals(staticTransform.getDate(), transformGradient.getDate());
-        assertEquals(staticTransform.getTranslation(), transformGradient.getTranslation());
+        assertArrayEquals(staticTransform.getTranslation().toVector3D().toArray(),
+                transformGradient.getTranslation().toVector3D().toArray(), 1e-7);
         assertEquals(0., Rotation.distance(staticTransform.getRotation().toRotation(), transformGradient.getRotation().toRotation()), 1.e-13);
     }
 

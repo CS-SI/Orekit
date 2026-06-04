@@ -39,8 +39,8 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.AngularRaDec;
+import org.orekit.estimation.measurements.EarthBasedStation;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -60,7 +60,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class AberrationModifierTest {
 
-    static GroundStation groundStation;
+    static EarthBasedStation groundStation;
 
     @BeforeAll
     static void setup() {
@@ -75,7 +75,7 @@ public class AberrationModifierTest {
                 51.8);
         TopocentricFrame stationFrame = new TopocentricFrame(ReferenceEllipsoid.getWgs84(fixedFrame),
                 stationLocation, "station");
-        groundStation = new GroundStation(stationFrame);
+        groundStation = new EarthBasedStation(stationFrame);
 
         // Select parameters and set reference date
         List<ParameterDriver> parameterDrivers = new ArrayList<>();

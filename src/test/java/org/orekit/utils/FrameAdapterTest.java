@@ -35,10 +35,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class FrameAdapterTest {
+class FrameAdapterTest {
 
     @Test
-    public void testDouble() {
+    void testDouble() {
 
         final Frame                         eme2000        = FramesFactory.getEME2000();
         final CelestialBody                 moon           = CelestialBodyFactory.getMoon();
@@ -64,7 +64,7 @@ public class FrameAdapterTest {
     }
 
     @Test
-    public void testField() {
+    void testField() {
         doTestField(Binary64Field.getInstance());
     }
 
@@ -110,8 +110,23 @@ public class FrameAdapterTest {
         Assertions.assertEquals(moonPVProvider.getPosition(date, eme2000), fieldPosition.toVector3D());
     }
 
+    @Test
+    void testGetVelocityField() {
+        // GIVEN
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final CelestialBody moon = CelestialBodyFactory.getMoon();
+        final Frame moonFrame = moon.getBodyOrientedFrame();
+        final FrameAdapter moonPVProvider = new FrameAdapter(moonFrame);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
+        // WHEN
+        final FieldVector3D<Binary64> fieldVelocity = moonPVProvider.getVelocity(fieldDate, eme2000);
+        // THEN
+        Assertions.assertEquals(moonPVProvider.getVelocity(date, eme2000), fieldVelocity.toVector3D());
+    }
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

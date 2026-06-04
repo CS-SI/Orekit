@@ -25,8 +25,8 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
+import org.orekit.estimation.measurements.EarthBasedStation;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -55,7 +55,7 @@ public abstract class AbstractIodTest {
     /**
      * ground station for the observations.
      */
-    protected GroundStation observer;
+    protected EarthBasedStation observer;
 
     /**
      * gravitational constant.
@@ -79,7 +79,7 @@ public abstract class AbstractIodTest {
         // The ground station is set to Austin, Texas, U.S.A
         final OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
-        this.observer = new GroundStation(new TopocentricFrame(body,
+        this.observer = new EarthBasedStation(new TopocentricFrame(body,
                                                                new GeodeticPoint(FastMath.toRadians(40),
                                                                                  FastMath.toRadians(-110),
                                                                                  2000.0), ""));
