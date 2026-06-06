@@ -69,6 +69,11 @@ public class NbsNrcSteamTable implements WaterVaporPressureProvider {
 
     }
 
+    /** Simple constructor. */
+    public NbsNrcSteamTable() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public double waterVaporPressure(final double p, final double t, final double rh) {

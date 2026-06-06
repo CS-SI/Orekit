@@ -29,6 +29,11 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class ApsideEventFunction implements EventFunction {
 
+    /** Simple constructor. */
+    public ApsideEventFunction() {
+        // nothing to do
+    }
+
     @Override
     public double value(final SpacecraftState state) {
         return Vector3D.dotProduct(state.getPosition(), state.getVelocity());

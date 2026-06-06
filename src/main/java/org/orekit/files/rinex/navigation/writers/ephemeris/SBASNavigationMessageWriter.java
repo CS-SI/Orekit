@@ -33,6 +33,11 @@ import java.io.IOException;
 public class SBASNavigationMessageWriter
     extends AbstractEphemerisMessageWriter<SBASNavigationMessage> {
 
+    /** Simple constructor. */
+    public SBASNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeEphLine0(final SBASNavigationMessage message, final String identifier,

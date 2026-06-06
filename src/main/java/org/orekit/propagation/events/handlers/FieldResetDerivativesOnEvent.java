@@ -33,6 +33,11 @@ import org.orekit.propagation.events.FieldEventDetector;
  */
 public class FieldResetDerivativesOnEvent<T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
+    /** Simple constructor. */
+    public FieldResetDerivativesOnEvent() {
+        // nothing to do
+    }
+
     /**
      * Specific implementation of the eventOccurred interface.
      *

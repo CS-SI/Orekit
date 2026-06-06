@@ -56,6 +56,11 @@ public class CIPM2007 implements WaterVaporPressureProvider {
     /** Temperature enhancement factor. */
     private static final double F_T2 = 5.6e-7;
 
+    /** Simple constructor. */
+    public CIPM2007() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public double waterVaporPressure(final double p, final double t, final double rh) {

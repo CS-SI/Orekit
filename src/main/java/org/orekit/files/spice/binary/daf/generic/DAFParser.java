@@ -39,6 +39,11 @@ import org.orekit.errors.OrekitMessages;
  */
 public class DAFParser {
 
+    /** Simple constructor. */
+    public DAFParser() {
+        // nothing to do
+    }
+
     /**
      * Parse the given data source into a {@link DAF}.
      *

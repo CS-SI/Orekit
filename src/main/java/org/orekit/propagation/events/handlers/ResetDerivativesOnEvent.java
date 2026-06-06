@@ -29,6 +29,11 @@ import org.orekit.propagation.events.EventDetector;
  */
 public class ResetDerivativesOnEvent implements EventHandler {
 
+    /** Simple constructor. */
+    public ResetDerivativesOnEvent() {
+        // nothing to do
+    }
+
     /**
      * Specific implementation of the eventOccurred interface.
      *

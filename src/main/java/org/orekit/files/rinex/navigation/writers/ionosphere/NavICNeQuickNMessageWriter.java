@@ -33,6 +33,11 @@ import java.io.IOException;
 public class NavICNeQuickNMessageWriter
     extends NavigationMessageWriter<IonosphereNavICNeQuickNMessage> {
 
+    /** Simple constructor. */
+    public NavICNeQuickNMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final IonosphereNavICNeQuickNMessage message,

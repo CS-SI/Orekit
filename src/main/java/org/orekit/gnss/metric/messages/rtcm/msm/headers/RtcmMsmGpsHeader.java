@@ -53,6 +53,11 @@ public class RtcmMsmGpsHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(32, RtcmMsmSignalId.GPS_1X);
     }
 
+    /** Simple constructor. */
+    public RtcmMsmGpsHeader() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

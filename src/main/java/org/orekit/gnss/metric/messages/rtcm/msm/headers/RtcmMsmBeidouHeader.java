@@ -47,6 +47,11 @@ public class RtcmMsmBeidouHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(16,  RtcmMsmSignalId.BDS_7X);
     }
 
+    /** Simple constructor. */
+    public RtcmMsmBeidouHeader() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

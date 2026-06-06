@@ -31,6 +31,11 @@ import java.io.IOException;
 public class GalileoNavigationMessageWriter
     extends AbstractNavigationMessageWriter<GalileoNavigationMessage> {
 
+    /** Simple constructor. */
+    public GalileoNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeField1Line1(final GalileoNavigationMessage message,

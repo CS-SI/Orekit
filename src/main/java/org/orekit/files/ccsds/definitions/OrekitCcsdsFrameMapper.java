@@ -34,6 +34,11 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
     /** Message indicating no reference frame. */
     private static final String NO_REFERENCE_FRAME = "No reference frame";
 
+    /** Simple constructor. */
+    public OrekitCcsdsFrameMapper() {
+        // nothing to do
+    }
+
     @Override
     public Frame buildCcsdsFrame(final FrameFacade orientation,
                                  final AbsoluteDate frameEpoch) {
