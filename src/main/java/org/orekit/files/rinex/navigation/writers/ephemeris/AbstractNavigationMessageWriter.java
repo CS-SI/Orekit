@@ -53,6 +53,11 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
     /** Format for one 19 float field. */
     private static final FastDoubleFormatter NINETEEN_FLOAT = new FastScientificFormatter(19);
 
+    /** Simple constructor. */
+    protected AbstractNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final T message,

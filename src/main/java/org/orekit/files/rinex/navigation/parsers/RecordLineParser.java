@@ -31,6 +31,11 @@ import org.orekit.utils.units.Unit;
  */
 public abstract class RecordLineParser {
 
+    /** Simple constructor. */
+    protected RecordLineParser() {
+        // nothing to do
+    }
+
     /** Parse the SV/Epoch/Sv clock of the navigation message.
      * @param line      line to read
      * @param timeScale time scale to use

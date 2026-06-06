@@ -32,6 +32,11 @@ import java.io.IOException;
 public abstract class CivilianNavigationMessageWriter<T extends CivilianNavigationMessage<T>>
     extends AbstractNavigationMessageWriter<T> {
 
+    /** Simple constructor. */
+    protected CivilianNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeField1Line1(final T message, final RinexNavigationWriter writer)

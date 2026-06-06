@@ -30,6 +30,11 @@ import java.io.IOException;
  */
 public abstract class NavigationMessageWriter<T extends NavigationMessage> {
 
+    /** Simple constructor. */
+    protected NavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** Write the TYPE / SV / MSG line.
      * @param type message type
      * @param identifier identifier

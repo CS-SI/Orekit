@@ -281,6 +281,11 @@ public abstract class AbstractManeuverTriggers implements ResettableManeuverTrig
         /** Last reset state for cache. */
         private SpacecraftState lastResetState;
 
+        /** Simple constructor. */
+        protected TriggerHandler() {
+            // nothing to do
+        }
+
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
@@ -338,6 +343,11 @@ public abstract class AbstractManeuverTriggers implements ResettableManeuverTrig
 
         /** Last reset state for cache. */
         private FieldSpacecraftState<S> lastResetState;
+
+        /** Simple constructor. */
+        protected FieldTriggerHandler() {
+            // nothing to do
+        }
 
         /** {@inheritDoc} */
         @Override
