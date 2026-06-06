@@ -28,6 +28,9 @@ import org.orekit.propagation.SpacecraftState;
  */
 public interface EventFunctionModifier extends EventFunction {
 
+    /** Get the base event function.
+     * @return base event function
+     */
     EventFunction getBaseFunction();
 
     @Override
@@ -50,6 +53,11 @@ public interface EventFunctionModifier extends EventFunction {
         return getBaseFunction().dependsOnMainVariablesOnly();
     }
 
+    /** Create a modifier that adds a real increment to the event function value.
+     * @param eventFunction base event function
+     * @param increment real increment to add
+     * @return modifier wrapping the base function
+     */
     static EventFunctionModifier addReal(final EventFunction eventFunction, final double increment) {
         return new EventFunctionModifier() {
             @Override
@@ -69,6 +77,12 @@ public interface EventFunctionModifier extends EventFunction {
         };
     }
 
+    /** Create a modifier that adds a field element increment to the event function value.
+     * @param <S> type of the field element increment
+     * @param eventFunction base event function
+     * @param increment field element increment to add
+     * @return modifier wrapping the base function
+     */
     static <S extends CalculusFieldElement<S>> EventFunctionModifier addFieldValue(final EventFunction eventFunction,
                                                                                    final S increment) {
         return new EventFunctionModifier() {

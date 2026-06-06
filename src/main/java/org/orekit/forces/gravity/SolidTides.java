@@ -37,6 +37,7 @@ import org.orekit.utils.OrekitConfiguration;
 /** Solid tides force model.
  * @since 6.1
  * @author Luc Maisonobe
+ * @author Rafael Ayala
  */
 public class SolidTides implements ForceModelModifier {
 
@@ -153,7 +154,6 @@ public class SolidTides implements ForceModelModifier {
      * @param nbPoints          number of points to use for interpolation, if less than 2
      *                          then no interpolation is performed (thus greatly increasing computation cost)
      * @param bodies            tide generating bodies (typically Sun and Moon)
-     * @author Rafael Ayala
      * @since 14.0
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
@@ -184,7 +184,6 @@ public class SolidTides implements ForceModelModifier {
      * @see #DEFAULT_STEP
      * @see #DEFAULT_POINTS
      * @see #SolidTides(Frame, double, double, TideSystem, LoveNumbers, double, int, CelestialBody...)
-     * @author Rafael Ayala
      * @since 14.0
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
