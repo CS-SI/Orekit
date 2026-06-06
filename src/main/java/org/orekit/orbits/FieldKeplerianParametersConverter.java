@@ -28,6 +28,7 @@ import org.orekit.utils.FieldPVCoordinates;
 /**
  * Class for converting between Keplerian elements and Cartesian coordinates (Field version).
  * It works for all types of orbits (elliptical or not).
+ * @param <T> type of the field element
  * @author Romain Serra
  * @see FieldKeplerianParameters
  * @see KeplerianParametersConverter

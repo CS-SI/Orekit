@@ -23,6 +23,8 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 
 /** Abstract class for detectors using a body shape.
  *
+ * @param <D> type of the detector
+ * @param <T> type of the field element
  * @author Romain Serra
  * @since 14.0
  * @see AbstractGeographicalDetector

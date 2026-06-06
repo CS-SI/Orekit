@@ -23,6 +23,7 @@ import org.orekit.estimation.measurements.Observer;
 import org.orekit.signal.SignalTravelTimeModel;
 
 /** Abstract builder for measurements based on two signal receivers.
+ * @param <T> type of the measurement
  * @author Romain Serra
  * @since 14.0
  */

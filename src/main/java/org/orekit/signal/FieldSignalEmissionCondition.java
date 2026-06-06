@@ -28,6 +28,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @param emissionDate    Signal emission date.
  * @param emitterPosition Receiver position's vector at signal emission.
  * @param referenceFrame  Frame where position is given.
+ * @param <T> type of the field element
  * @author Romain Serra
  * @see SignalEmissionCondition
  * @since 14.0

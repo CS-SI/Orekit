@@ -26,6 +26,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 *
 * @see FieldAdaptableInterval
 * @see PeriodBasedAdaptableInterval
+* @param <T> type of the field element
 * @author Romain Serra
 * @since 14.0
 */
