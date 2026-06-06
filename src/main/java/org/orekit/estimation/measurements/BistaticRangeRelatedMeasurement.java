@@ -50,10 +50,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * The motion of the observers and the spacecraft during the signal flight time are taken into account.
  * </p>
  *
+ * @param <T> type of the measurement
  * @author Romain Serra
  * @since 14.0
  */
-abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>> extends SignalBasedMeasurement<T> {
+public abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /**
      * Observer from which emission is made.

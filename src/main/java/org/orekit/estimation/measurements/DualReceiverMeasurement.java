@@ -49,10 +49,11 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * The motion of the observers and the spacecraft during the signal flight time are taken into account.
  * </p>
  *
+ * @param <T> type of the measurement
  * @author Brianna Aubin
  * @since 14.0
  */
-abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends SignalBasedMeasurement<T> {
+public abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /**
      * First observer to receive signal.  Determines measurement date.
