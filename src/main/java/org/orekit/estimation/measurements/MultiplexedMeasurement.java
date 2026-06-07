@@ -167,7 +167,8 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
     @Override
     protected EstimatedMeasurementBase<MultiplexedMeasurement> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                        final int evaluation,
-                                                                                                       final SpacecraftState[] states) {
+                                                                                                       final SpacecraftState[] states,
+                                                                                                       final boolean fillParticipants) {
 
         final SpacecraftState[]              evaluationStates = new SpacecraftState[nbSat];
         final double[]                       value            = new double[dimension];
@@ -184,7 +185,8 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
             }
 
             // perform evaluation
-            final EstimatedMeasurementBase<?> eI = observedMeasurements.get(i).estimateWithoutDerivatives(iteration, evaluation, filteredStates);
+            final EstimatedMeasurementBase<?> eI = observedMeasurements.get(i).estimateWithoutDerivatives(iteration,
+                    evaluation, filteredStates);
             estimatedMeasurementsWithoutDerivatives.add(eI);
 
             // extract results

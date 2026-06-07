@@ -161,12 +161,11 @@ public class WindUpTest {
         double max = Double.NEGATIVE_INFINITY;
         for (EstimatedMeasurementBase<?> m : measurements) {
             Phase phase = (Phase) m.getObservedMeasurement();
-            @SuppressWarnings("unchecked")
-            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.
-                getObservedMeasurement().
-                estimateWithoutDerivatives(new SpacecraftState[] {
+            EstimatedMeasurementBase<Phase> estimated = ((Phase) m.
+                getObservedMeasurement()).
+                theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] {
                                                propagator.propagate(phase.getDate())
-                                           });
+                                           }, true);
             final double original = estimated.getEstimatedValue()[0];
             windUp.modifyWithoutDerivatives(estimated);
             final double modified = estimated.getEstimatedValue()[0];

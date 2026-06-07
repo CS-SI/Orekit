@@ -23,6 +23,8 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -243,8 +245,9 @@ class FDOATest {
 
     }
 
-    @Test
-    void testParticipantsAgainstTDOA() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testParticipantsAgainstTDOA(final boolean fillParticipants) {
         // GIVEN
         Utils.setDataRoot("regular-data");
         final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
@@ -267,11 +270,18 @@ class FDOATest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final FDOA fdoa = new FDOA(prime, second, 1., epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurementBase<FDOA> estimatedFdoa = fdoa.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<FDOA> estimatedFdoa = fdoa.theoreticalEvaluationWithoutDerivatives(0, 0, state, fillParticipants);
         // THEN
         final TDOA tdoa = new TDOA(prime, second, epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurement<TDOA> estimatedTdoa = tdoa.estimate(0, 0, state);
-        compareParticipants(estimatedFdoa, estimatedTdoa);
+        final EstimatedMeasurementBase<TDOA> estimatedTdoa = tdoa.theoreticalEvaluationWithoutDerivatives(0, 0, state, fillParticipants);
+        assertEquals(estimatedTdoa.getStates().length, estimatedFdoa.getStates().length);
+        assertEquals(estimatedTdoa.getStates()[0].getDate(), estimatedFdoa.getStates()[0].getDate());
+        if (fillParticipants) {
+            compareParticipants(estimatedFdoa, estimatedTdoa);
+        } else {
+            assertEquals(0, estimatedFdoa.getParticipants().length);
+            assertEquals(0, estimatedTdoa.getParticipants().length);
+        }
     }
 
     @Test
@@ -298,10 +308,12 @@ class FDOATest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final FDOA fdoa = new FDOA(prime, second, 1., epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurementBase<FDOA> estimatedWithoutDerivatives = fdoa.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<FDOA> estimatedWithoutDerivatives = fdoa.theoreticalEvaluationWithoutDerivatives(0, 0, state, true);
         // THEN
         final EstimatedMeasurement<FDOA> estimated = fdoa.estimate(0, 0, state);
         assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-7);
+        assertEquals(estimated.getStates().length, estimatedWithoutDerivatives.getStates().length);
+        assertEquals(estimated.getStates()[0].getDate(), estimatedWithoutDerivatives.getStates()[0].getDate());
         compareParticipants(estimated, estimatedWithoutDerivatives);
     }
 

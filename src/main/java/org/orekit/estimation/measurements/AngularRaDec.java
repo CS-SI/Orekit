@@ -127,16 +127,17 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
     @Override
     protected EstimatedMeasurementBase<AngularRaDec> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                              final int evaluation,
-                                                                                             final SpacecraftState[] states) {
+                                                                                             final SpacecraftState[] states,
+                                                                                             final boolean fillParticipants) {
         // Compute emission date
         final AbsoluteDate receptionDate = observer.getCorrectedReceptionDate(getDate());
         final PVCoordinatesProvider receiver = observer.getPVCoordinatesProvider();
         final SpacecraftState state = states[0];
         final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final Frame frame = state.getFrame();
-        final TimeStampedPVCoordinates receiverPV = receiver.getPVCoordinates(receptionDate, frame);
+        final Vector3D receiverPosition = receiver.getPosition(receptionDate, frame);
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate,
-                receiverPV.getPosition(), frame);
+                receiverPosition, frame);
         final AbsoluteDate emissionDate = computeEmissionDate(receptionCondition, emitter);
 
         // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)
@@ -146,8 +147,9 @@ public class AngularRaDec extends AngularMeasurement<AngularRaDec> {
         final double shift = emissionDate.durationFrom(state);
         final SpacecraftState shiftedState = state.shiftedBy(shift);
         final EstimatedMeasurementBase<AngularRaDec> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
-                new SpacecraftState[] { shiftedState },
-                new TimeStampedPVCoordinates[] { shiftedState.getPVCoordinates(), receiverPV });
+                new SpacecraftState[] { shiftedState }, fillParticipants ? new TimeStampedPVCoordinates[] {
+                        shiftedState.getPVCoordinates(), receiver.getPVCoordinates(receptionDate, frame) } :
+                new TimeStampedPVCoordinates[0]);
         estimated.setEstimatedValue(wrapFirstAngle(raDec[0]), raDec[1]);
         return estimated;
     }

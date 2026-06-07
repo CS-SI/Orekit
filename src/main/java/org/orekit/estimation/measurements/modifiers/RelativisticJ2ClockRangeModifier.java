@@ -75,4 +75,9 @@ public class RelativisticJ2ClockRangeModifier extends AbstractRelativisticJ2Cloc
         estimated.modifyEstimatedValue(this, newValue);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

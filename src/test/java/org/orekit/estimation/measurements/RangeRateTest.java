@@ -775,7 +775,7 @@ class RangeRateTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final RangeRate rangeRate = new RangeRate(station, epoch, 0., 1., 1., twoWay, satellite);
-        final EstimatedMeasurementBase<RangeRate> estimatedWithoutDerivatives = rangeRate.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<RangeRate> estimatedWithoutDerivatives = rangeRate.theoreticalEvaluationWithoutDerivatives(0, 0, state, true);
         // THEN
         final EstimatedMeasurement<RangeRate> estimated = rangeRate.estimate(0, 0, state);
         assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-9);

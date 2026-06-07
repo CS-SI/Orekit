@@ -119,7 +119,8 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
     @Override
     protected EstimatedMeasurementBase<InterSatellitesPhase> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                      final int evaluation,
-                                                                                                     final SpacecraftState[] states) {
+                                                                                                     final SpacecraftState[] states,
+                                                                                                     final boolean fillParticipants) {
 
         final CommonParametersWithoutDerivatives common = computeCommonParametersWithout(states);
 
@@ -129,10 +130,9 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
                                                        new SpacecraftState[] {
                                                            common.getState(),
                                                            states[1]
-                                                       }, new TimeStampedPVCoordinates[] {
-                                                           common.getRemotePV(),
-                                                           common.getTransitPV()
-                                                       });
+                                                       }, fillParticipants ? new TimeStampedPVCoordinates[] {
+                                                           common.getRemotePV(), common.getTransitPV()
+                                                       } : new TimeStampedPVCoordinates[0]);
 
         // Phase value
         final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;

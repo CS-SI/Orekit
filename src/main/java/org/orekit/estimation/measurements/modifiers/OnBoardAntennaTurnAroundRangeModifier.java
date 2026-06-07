@@ -107,4 +107,9 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

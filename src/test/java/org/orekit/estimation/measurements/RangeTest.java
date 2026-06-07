@@ -359,7 +359,8 @@ class RangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = ((Range) measurement)
+                            .theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] { state }, true);
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(3, participants.length);
@@ -946,7 +947,7 @@ class RangeTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final Range range = new Range(station, twoWay, epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurementBase<Range> estimatedWithoutDerivatives = range.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<Range> estimatedWithoutDerivatives = range.theoreticalEvaluationWithoutDerivatives(0, 0, state, true);
         // THEN
         final EstimatedMeasurement<Range> estimated = range.estimate(0, 0, state);
         assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-8);

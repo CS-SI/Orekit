@@ -89,7 +89,8 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
     @Override
     protected EstimatedMeasurementBase<OneWayGNSSRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                 final int evaluation,
-                                                                                                final SpacecraftState[] states) {
+                                                                                                final SpacecraftState[] states,
+                                                                                                final boolean fillParticipants) {
 
         final CommonParametersWithoutDerivatives common =
             computeLocalParametersWithout(states, getSatellites().getFirst(), getDate());
@@ -99,10 +100,9 @@ public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
                         new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
                                                            common.getState()
-                                                       }, new TimeStampedPVCoordinates[] {
-                                                           common.getRemotePV(),
-                                                           common.getTransitPV()
-                                                       });
+                                                       }, fillParticipants ? new TimeStampedPVCoordinates[] {
+                                                           common.getRemotePV(), common.getTransitPV()
+                                                       } : new TimeStampedPVCoordinates[0]);
 
         // Range value
         final double range = (common.getTauD() + common.getLocalOffset().getBias() -

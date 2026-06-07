@@ -83,7 +83,8 @@ public class InterSatellitesOneWayRangeRate
     @Override
     protected EstimatedMeasurementBase<InterSatellitesOneWayRangeRate> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                                final int evaluation,
-                                                                                                               final SpacecraftState[] states) {
+                                                                                                               final SpacecraftState[] states,
+                                                                                                               final boolean fillParticipants) {
 
         final CommonParametersWithoutDerivatives common = computeCommonParametersWithout(states);
 

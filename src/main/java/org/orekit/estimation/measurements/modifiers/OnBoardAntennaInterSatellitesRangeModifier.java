@@ -69,4 +69,9 @@ public class OnBoardAntennaInterSatellitesRangeModifier
         estimated.modifyEstimatedValue(this, estimated.getEstimatedValue()[0] + delta);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

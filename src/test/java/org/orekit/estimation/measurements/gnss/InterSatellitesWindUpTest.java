@@ -183,14 +183,13 @@ public class InterSatellitesWindUpTest {
         double max = Double.NEGATIVE_INFINITY;
         for (EstimatedMeasurementBase<?> m : measurements) {
             InterSatellitesPhase phase = (InterSatellitesPhase) m.getObservedMeasurement();
-            @SuppressWarnings("unchecked")
             EstimatedMeasurementBase<InterSatellitesPhase> estimated =
-            (EstimatedMeasurementBase<InterSatellitesPhase>) m.
-                getObservedMeasurement().
-                estimateWithoutDerivatives(new SpacecraftState[] {
-                                               receiverPropagator.propagate(phase.getDate()),
-                                               emitterPropagator.propagate(phase.getDate())
-                                           });
+                    ((InterSatellitesPhase) m.
+                        getObservedMeasurement()).
+                        theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] {
+                                                       receiverPropagator.propagate(phase.getDate()),
+                                                       emitterPropagator.propagate(phase.getDate())
+                                                   }, true);
             final double original = estimated.getEstimatedValue()[0];
             windUp.modifyWithoutDerivatives(estimated);
             final double modified = estimated.getEstimatedValue()[0];

@@ -419,7 +419,7 @@ class TDOATest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final TDOA tdoa = new TDOA(prime, second, epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurementBase<TDOA> estimatedWithoutDerivatives = tdoa.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<TDOA> estimatedWithoutDerivatives = tdoa.theoreticalEvaluationWithoutDerivatives(0, 0, state, true);
         // THEN
         final EstimatedMeasurement<TDOA> estimated = tdoa.estimate(0, 0, state);
         assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-7);

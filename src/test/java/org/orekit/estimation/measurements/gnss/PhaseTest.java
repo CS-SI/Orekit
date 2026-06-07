@@ -198,7 +198,7 @@ public class PhaseTest {
 
                     // Values of the Phase & errors
                     final double phaseObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = ((Phase) measurement).theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] { state }, true);
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);

@@ -85,7 +85,8 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurementBase<TDOA> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
-                                                                                     final SpacecraftState[] states) {
+                                                                                     final SpacecraftState[] states,
+                                                                                     final boolean fillParticipants) {
         final SpacecraftState state = states[0];
         final Frame frame = state.getFrame();
 
@@ -107,12 +108,18 @@ public class TDOA extends DualReceiverMeasurement<TDOA> {
         final double tdoa = (firstReceptionDate.durationFrom(emissionDate) + offset1) - (secondReceptionDate.durationFrom(emissionDate) + offset2);
 
         // Prepare the evaluation
-        final TimeStampedPVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, frame);
-        final TimeStampedPVCoordinates secondPV = getSecondObserver().getPVCoordinatesProvider().getPVCoordinates(secondReceptionDate, frame);
+        final TimeStampedPVCoordinates[] participants;
+        if (fillParticipants) {
+            final TimeStampedPVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, frame);
+            final TimeStampedPVCoordinates secondPV = getSecondObserver().getPVCoordinatesProvider().getPVCoordinates(secondReceptionDate, frame);
+            participants = new TimeStampedPVCoordinates[] { emitterPV, tdoa > 0.0 ? secondPV : primePV, tdoa > 0.0 ? primePV : secondPV };
+        } else {
+            participants = new TimeStampedPVCoordinates[0];
+        }
         final EstimatedMeasurement<TDOA> estimated =
                 new EstimatedMeasurement<>(this, iteration, evaluation,
                         new SpacecraftState[] { state.shiftedBy(emissionDate.durationFrom(state.getDate())) },
-                        new TimeStampedPVCoordinates[] { emitterPV, tdoa > 0.0 ? secondPV : primePV, tdoa > 0.0 ? primePV : secondPV });
+                        participants);
 
         // set TDOA value
         estimated.setEstimatedValue(tdoa);

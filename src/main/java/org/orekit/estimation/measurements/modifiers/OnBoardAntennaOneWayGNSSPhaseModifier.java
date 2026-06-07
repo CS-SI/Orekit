@@ -77,4 +77,9 @@ public class OnBoardAntennaOneWayGNSSPhaseModifier
                                        estimated.getObservedMeasurement().getWavelength());
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

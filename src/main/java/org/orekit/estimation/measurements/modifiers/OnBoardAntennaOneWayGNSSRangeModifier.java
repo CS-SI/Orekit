@@ -76,4 +76,9 @@ public class OnBoardAntennaOneWayGNSSRangeModifier
                                        oneWayDistanceModification(estimated));
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

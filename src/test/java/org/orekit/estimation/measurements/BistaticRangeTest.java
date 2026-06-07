@@ -25,6 +25,8 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -89,9 +91,6 @@ class BistaticRangeTest {
 
             // Estimate the measurement value
             final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
-            // Check dates
-            assertTrue(estimated.getParticipants()[0].getDate().isBefore(state.getDate()));
-            Assertions.assertFalse((estimated.getParticipants()[2].getDate().isBefore(state.getDate())));
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -471,8 +470,9 @@ class BistaticRangeTest {
         compareParticipants(estimatedRange, estimatedBistatic);
     }
 
-    @Test
-    void testParticipantsField() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testParticipantsField(final boolean fillParticipants) {
         // GIVEN
         Utils.setDataRoot("regular-data");
         final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
@@ -495,11 +495,17 @@ class BistaticRangeTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final BistaticRange bistaticRange = new BistaticRange(emitter, receiver, epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurementBase<BistaticRange> estimatedWithoutDerivatives = bistaticRange.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<BistaticRange> estimatedWithoutDerivatives = bistaticRange.theoreticalEvaluationWithoutDerivatives(0, 0, state, fillParticipants);
         // THEN
         final EstimatedMeasurement<BistaticRange> estimated = bistaticRange.estimate(0, 0, state);
         assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-7);
-        compareParticipants(estimated, estimatedWithoutDerivatives);
+        assertEquals(estimated.getStates().length, estimatedWithoutDerivatives.getStates().length);
+        assertEquals(estimated.getStates()[0].getDate(), estimatedWithoutDerivatives.getStates()[0].getDate());
+        if (fillParticipants) {
+            compareParticipants(estimated, estimatedWithoutDerivatives);
+        } else {
+            assertEquals(0, estimatedWithoutDerivatives.getParticipants().length);
+        }
     }
 
     private void compareParticipants(final EstimatedMeasurementBase<?> expected, final EstimatedMeasurementBase<?> actual) {
