@@ -16,8 +16,11 @@
  */
 package org.orekit.estimation.measurements.filtering;
 
+import java.util.Arrays;
+
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.functions.ElevationValueCrossingFunction;
 
@@ -35,17 +38,27 @@ public class ElevationFilter<T extends ObservedMeasurement<T>> implements Measur
 
     /**
      * Constructor.
+     * @param topocentricFrame considered by the filter
+     * @param threshold minimum elevation for a measurements to be accepted, in radians
+     * @since 14.0
+     */
+    public ElevationFilter(final TopocentricFrame topocentricFrame, final double threshold) {
+        this.elevationFunction = new ElevationValueCrossingFunction(null, topocentricFrame, threshold);
+    }
+
+    /**
+     * Constructor.
      * @param station considered by the filter
      * @param threshold minimum elevation for a measurements to be accepted, in radians
      */
     public ElevationFilter(final GroundStation station, final double threshold) {
-        this.elevationFunction = new ElevationValueCrossingFunction(null, station.getBaseFrame(), threshold);
+        this(station.getBaseFrame(), threshold);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
-        if (elevationFunction.value(state) < 0.) {
+    public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState[] states) {
+        if (Arrays.stream(states).mapToDouble(elevationFunction::value).anyMatch(value -> value < 0.)) {
             measurement.setEnabled(false);
         }
     }

@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="serrof" type="fix" issue="1970">
+              Made MeasurementFilter compatible with inter-satellite observations.
+          </action>
           <action dev="serrof" type="update" issue="1966">
               Introduced EarthBasedStation and updated GroundStation.
           </action>

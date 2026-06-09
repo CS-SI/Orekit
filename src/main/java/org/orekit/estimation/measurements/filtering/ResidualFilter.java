@@ -47,11 +47,10 @@ public class ResidualFilter<T extends ObservedMeasurement<T>> implements Measure
 
     /** {@inheritDoc} */
     @Override
-    public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
+    public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState[] states) {
 
         // Computation of the estimated value of the measurement
-        final SpacecraftState[]           sc             = new SpacecraftState[] {state};
-        final EstimatedMeasurementBase<T> estimated      = measurement.estimateWithoutDerivatives(sc);
+        final EstimatedMeasurementBase<T> estimated      = measurement.estimateWithoutDerivatives(states);
         final double[]                    estimatedValue = estimated.getEstimatedValue();
 
         // Observed parameters (i.e. value and standard deviation)
