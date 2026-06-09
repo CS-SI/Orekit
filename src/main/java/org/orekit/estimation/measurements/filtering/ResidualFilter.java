@@ -37,12 +37,26 @@ public class ResidualFilter<T extends ObservedMeasurement<T>> implements Measure
     /** Threshold over which the measurement will be rejected. */
     private final double threshold;
 
+    /** Flag for the scaling of residuals (by the expected sigmas). */
+    private final boolean scaling;
+
+    /**
+     * Constructor.
+     * @param threshold maximum value for the measurement residual
+     * @param scaling flag for the scaling of residuals
+     * @since 14.0
+     */
+    public ResidualFilter(final double threshold, final boolean scaling) {
+        this.threshold  = threshold;
+        this.scaling  = scaling;
+    }
+
     /**
      * Constructor.
      * @param threshold maximum value for the measurement residual
      */
     public ResidualFilter(final double threshold) {
-        this.threshold  = threshold;
+        this(threshold, true);
     }
 
     /** {@inheritDoc} */
@@ -59,9 +73,11 @@ public class ResidualFilter<T extends ObservedMeasurement<T>> implements Measure
 
         // Check if observed value is not too far from estimation
         for (int i = 0; i < observedValue.length; i++) {
-            if (FastMath.abs(observedValue[i] - estimatedValue[i]) > threshold * sigma[i]) {
+            final double criticalValue = scaling ? threshold * sigma[i] : threshold;
+            if (FastMath.abs(observedValue[i] - estimatedValue[i]) > criticalValue) {
                 // Observed value is too far, measurement is disabled
                 measurement.setEnabled(false);
+                break;
             }
         }
 
