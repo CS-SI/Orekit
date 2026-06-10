@@ -34,6 +34,7 @@ import org.orekit.propagation.SpacecraftState;
  * @author David Soulard
  * @since 10.2
  */
+@FunctionalInterface
 public interface MeasurementFilter<T extends ObservedMeasurement<T>> {
 
     /** Apply a filter to an observed measurement.
@@ -43,8 +44,21 @@ public interface MeasurementFilter<T extends ObservedMeasurement<T>> {
      * return <code>false</code>.
      * </p>
      * @param measurement observed measurement
-     * @param state current spacecraft state.
+     * @param states spacecraft states participating in the measurement.
+     * @since 14.0
      * */
-    void filter(ObservedMeasurement<T> measurement, SpacecraftState state);
+    void filter(ObservedMeasurement<T> measurement, SpacecraftState[] states);
 
+    /** Apply a filter to an observed measurement (single spacecraft case, will fail for inter-satellite models).
+     * <p>
+     * If the observed measurement is rejected by the filter,
+     * the method {@link ObservedMeasurement#isEnabled()} will
+     * return <code>false</code>.
+     * </p>
+     * @param measurement observed measurement
+     * @param state spacecraft state participating in the measurement.
+     * */
+    default void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
+        filter(measurement, new SpacecraftState[] { state });
+    }
 }

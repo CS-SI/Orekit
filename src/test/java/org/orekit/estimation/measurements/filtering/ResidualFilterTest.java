@@ -29,9 +29,10 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -66,8 +67,14 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-class ResidualsFilteringTest {
+class ResidualFilterTest {
 
 
     @BeforeEach
@@ -76,6 +83,49 @@ class ResidualsFilteringTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testFilteredIn(final boolean scaling) {
+        // GIVEN
+        final SpacecraftState state = mock();
+        final SpacecraftState[] states = new SpacecraftState[]{state};
+        final double residual = 10.;
+        final ObservedMeasurement<Range> observedMeasurement = mockRange(residual, scaling, states);
+        final ResidualFilter<Range> residualFilter = new ResidualFilter<>(residual * 2, scaling);
+        // WHEN
+        residualFilter.filter(observedMeasurement, states);
+        // THEN
+        verify(observedMeasurement, times(0)).setEnabled(false);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testFilteredOut(final boolean scaling) {
+        // GIVEN
+        final SpacecraftState state = mock();
+        final SpacecraftState[] states = new SpacecraftState[]{state};
+        final double residual = 1.;
+        final ObservedMeasurement<Range> observedMeasurement = mockRange(residual, scaling, states);
+        final ResidualFilter<Range> residualFilter = new ResidualFilter<>(residual / 2, scaling);
+        // WHEN
+        residualFilter.filter(observedMeasurement, states);
+        // THEN
+        verify(observedMeasurement, times(1)).setEnabled(false);
+    }
+
+    private ObservedMeasurement<Range> mockRange(final double residual, final boolean scaling,
+                                                 final SpacecraftState[] states) {
+        final ObservedMeasurement<Range> observedMeasurement = mock();
+        when(observedMeasurement.getObservedValue()).thenReturn(new double[]{residual});
+        if (scaling) {
+            when(observedMeasurement.getTheoreticalStandardDeviation()).thenReturn(new double[] {1.});
+        }
+        final EstimatedMeasurementBase<Range> estimatedRange = new EstimatedMeasurementBase<>(mock(),
+                0, 0, states, new TimeStampedPVCoordinates[0]);
+        estimatedRange.setEstimatedValue(0.);
+        when(observedMeasurement.estimateWithoutDerivatives(states)).thenReturn(estimatedRange);
+        return observedMeasurement;
+    }
     private Propagator buildPropagator(final Orbit orbit) {
         NumericalPropagator propa = new NumericalPropagator(new DormandPrince853Integrator(0.1, 500, 0.001, 0.001));
         propa.setOrbitType(OrbitType.CARTESIAN);
@@ -146,7 +196,7 @@ class ResidualsFilteringTest {
                 processMeasurements.add(meas.getObservedMeasurement());
             }
         }
-        Assertions.assertEquals(processMeasurements.size(), measurements.size());
+        assertEquals(processMeasurements.size(), measurements.size());
     }
 
     @Test
@@ -188,6 +238,6 @@ class ResidualsFilteringTest {
                 processMeasurements.add(meas.getObservedMeasurement());
             }
         }
-        Assertions.assertEquals(6, measurements.size()-processMeasurements.size());
+        assertEquals(6, measurements.size()-processMeasurements.size());
     }
 }
