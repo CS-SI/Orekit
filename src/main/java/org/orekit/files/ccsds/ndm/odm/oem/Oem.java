@@ -51,6 +51,9 @@ public class Oem extends NdmConstituent<OdmHeader, OemSegment>
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OEM_VERS";
 
+    /** Default name for unknown object. */
+    public static final String UNKNOWN_OBJECT = "UNKNOWN";
+
     /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
     private final double mu;
 
@@ -68,17 +71,36 @@ public class Oem extends NdmConstituent<OdmHeader, OemSegment>
         this.mu = mu;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * The metadata entries checked for use as the key are the following ones,
+     * the first non-null being used. The map from OEM files always contains only
+     * one object.
+     * <ul>
+     *   <li>{@link org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata#getObjectID()}  OBJECT_ID}
+     *   if non-null and not equal to {@link #UNKNOWN_OBJECT}</li>
+     *   <li>{@link org.orekit.files.ccsds.ndm.odm.OdmMetadata#getObjectName() OBJECT_NAME}</li>
+     *   <li>the default name {@link #UNKNOWN_OBJECT} for unknown objects</li>
+     * </ul>
+     */
     @Override
     public Map<String, OemSatelliteEphemeris> getSatellites() {
-        final Map<String, List<OemSegment>> byId = new HashMap<>();
+        final Map<String, List<OemSegment>> byName = new HashMap<>();
         for (final OemSegment segment : getSegments()) {
-            final String id = segment.getMetadata().getObjectID();
-            byId.putIfAbsent(id, new ArrayList<>());
-            byId.get(id).add(segment);
+            final String name;
+            if (segment.getMetadata().getObjectID() != null &&
+                !UNKNOWN_OBJECT.equals(segment.getMetadata().getObjectID())) {
+                name = segment.getMetadata().getObjectID();
+            } else if (segment.getMetadata().getObjectName() != null) {
+                name = segment.getMetadata().getObjectName();
+            } else {
+                name = UNKNOWN_OBJECT;
+            }
+            byName.putIfAbsent(name, new ArrayList<>());
+            byName.get(name).add(segment);
         }
         final Map<String, OemSatelliteEphemeris> ret = new HashMap<>();
-        for (final Map.Entry<String, List<OemSegment>> entry : byId.entrySet()) {
+        for (final Map.Entry<String, List<OemSegment>> entry : byName.entrySet()) {
             ret.put(entry.getKey(), new OemSatelliteEphemeris(entry.getKey(), mu, entry.getValue()));
         }
         return ret;

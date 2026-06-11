@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="fix" issue="1971">
+              Allow to use object name as a key in OEM and AEM messages.
+          </action>
           <action dev="serrof" type="fix" issue="1970">
               Made MeasurementFilter compatible with inter-satellite observations.
           </action>
