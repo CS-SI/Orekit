@@ -44,6 +44,9 @@ public class Aem extends NdmConstituent<AdmHeader, AemSegment>
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_AEM_VERS";
 
+    /** Default name for unknown object. */
+    public static final String UNKNOWN_OBJECT = "UNKNOWN";
+
     /** Simple constructor.
      * @param header file header
      * @param segments file segments
@@ -55,17 +58,36 @@ public class Aem extends NdmConstituent<AdmHeader, AemSegment>
         super(header, segments, conventions, dataContext);
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * The metadata entries checked for use as the key are the following ones,
+     * the first non-null being used. The map from AEM files always contains only
+     * one object.
+     * <ul>
+     *   <li>{@link org.orekit.files.ccsds.ndm.adm.AdmMetadata#getObjectID()}  OBJECT_ID}
+     *   if non-null and not equal to {@link #UNKNOWN_OBJECT}</li>
+     *   <li>{@link org.orekit.files.ccsds.ndm.adm.AdmMetadata#getObjectName() OBJECT_NAME}</li>
+     *   <li>the default name {@link #UNKNOWN_OBJECT} for unknown objects</li>
+     * </ul>
+     */
     @Override
     public Map<String, AemSatelliteEphemeris> getSatellites() {
-        final Map<String, List<AemSegment>> byId = new HashMap<>();
+        final Map<String, List<AemSegment>> byName = new HashMap<>();
         for (final AemSegment segment : getSegments()) {
-            final String id = segment.getMetadata().getObjectID();
-            byId.putIfAbsent(id, new ArrayList<>());
-            byId.get(id).add(segment);
+            final String name;
+            if (segment.getMetadata().getObjectID() != null &&
+                !UNKNOWN_OBJECT.equals(segment.getMetadata().getObjectID())) {
+                name = segment.getMetadata().getObjectID();
+            } else if (segment.getMetadata().getObjectName() != null) {
+                name = segment.getMetadata().getObjectName();
+            } else {
+                name = UNKNOWN_OBJECT;
+            }
+            byName.putIfAbsent(name, new ArrayList<>());
+            byName.get(name).add(segment);
         }
         final Map<String, AemSatelliteEphemeris> ret = new HashMap<>();
-        for (final Map.Entry<String, List<AemSegment>> entry : byId.entrySet()) {
+        for (final Map.Entry<String, List<AemSegment>> entry : byName.entrySet()) {
             ret.put(entry.getKey(), new AemSatelliteEphemeris(entry.getKey(), entry.getValue()));
         }
         return ret;

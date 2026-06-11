@@ -76,7 +76,18 @@ public class Acm extends NdmConstituent<AdmHeader, Segment<AcmMetadata, AcmData>
         return getSegments().getFirst().getData();
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * The metadata entries checked for use as the key are the following ones,
+     * the first non-null being used. The map from ACM files always contains only
+     * one object.
+     * <ul>
+     *   <li>{@link org.orekit.files.ccsds.ndm.adm.AdmMetadata#getObjectName() OBJECT_NAME}</li>
+     *   <li>{@link AcmMetadata#getInternationalDesignator() INTERNATIONAL_DESIGNATOR}</li>
+     *   <li>{@link AcmMetadata#getObjectDesignator() OBJECT_DESIGNATOR}</li>
+     *   <li>the default name {@link #UNKNOWN_OBJECT} for unknown objects</li>
+     * </ul>
+     */
     @Override
     public Map<String, AcmSatelliteEphemeris> getSatellites() {
         // the ACM file has only one segment and a deep structure
