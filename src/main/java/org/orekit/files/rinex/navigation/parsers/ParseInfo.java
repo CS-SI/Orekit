@@ -544,7 +544,7 @@ public class ParseInfo {
                     messageType.equals(BeidouLegacyNavigationMessage.D1) ||
                     messageType.equals(BeidouLegacyNavigationMessage.D2)) {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
-                    final boolean d2 = messageType.equals(BeidouLegacyNavigationMessage.D2);
+                    final boolean d2 = BeidouLegacyNavigationMessage.D2.equals(messageType);
                     return new BeidouD1D2Parser(this,
                                                 new BeidouLegacyNavigationMessage(d2,
                                                                                   timeScales,
