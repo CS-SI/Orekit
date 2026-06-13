@@ -94,10 +94,9 @@ class GPSPropagatorTest {
 
     @Test
     void testClockCorrections() {
-        final GNSSPropagator<GPSAlmanac>
-            propagator =
-            new GNSSPropagator<>(almanacs.getFirst().factory(context.getFrames().getEME2000(), context.getFrames()
-                .getITRF(IERSConventions.IERS_2010, false)));
+        final GNSSPropagator<GPSAlmanac> propagator =
+            new GNSSPropagator<>(almanacs.getFirst().factory(context.getFrames().getEME2000(),
+                                                             context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
         propagator.addAdditionalDataProvider(
             new ClockCorrectionsProvider(almanacs.getFirst(), almanacs.getFirst().getCycleDuration()));
         // Propagate at the GPS date and one GPS cycle later
@@ -540,8 +539,7 @@ class GPSPropagatorTest {
             propagator =
             new GNSSPropagator<>(factory.createFromDrivers(), eci, ecef, attitudeProvider, mass);
 
-        final GNSSPropagator<GPSLegacyNavigationMessage>
-            rebuilt =
+        final GNSSPropagator<GPSLegacyNavigationMessage> rebuilt =
             new GNSSPropagator<>(propagator.getInitialState(), factory.createFromDrivers(), ecef, attitudeProvider,
                                  mass);
         final GNSSOrbitalElements<?> oe2 = rebuilt.getOrbitalElements();
