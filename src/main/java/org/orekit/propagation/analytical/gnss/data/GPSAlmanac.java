@@ -17,11 +17,12 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.TimeScales;
+
 
 /**
  * This class holds a GPS almanac as read from SEM or YUMA files.
@@ -58,9 +59,7 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
      *                         (may be different from real system, for example in Rinex nav, weeks
      *                         are always according to GPS)
      * @param prn              PRN number of the satellite
-     * @param week             reference Week of the orbit
      * @param orbit            Keplerian orbit in Earth-frozen frame
-     * @param time             reference time
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
      * @param deltaN0Dot       change rate in Δn₀
@@ -83,9 +82,8 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
      * @param ura              average URA
      * @param satConfiguration satellite configuration
      */
-    public GPSAlmanac(final TimeScales timeScales, final SatelliteSystem system,
-                      final int prn, final int week, final KeplerianOrbit orbit,
-                      final double time, final double aDot,
+    public GPSAlmanac(final TimeScales timeScales, final SatelliteSystem system, final int prn,
+                      final KeplerianOrbit orbit, final double aDot,
                       final double deltaN0, final double deltaN0Dot,
                       final double iDot, final double omegaDot,
                       final double cuc, final double cus,
@@ -96,9 +94,8 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
                       final String source, final int svn,
                       final int health, final int ura, final int satConfiguration) {
         super(GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
-              timeScales, system, null,
-              prn, week, orbit,
-              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              timeScales, system, null, prn,
+              orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc);
         this.source           = source;
         this.svn              = svn;
@@ -123,9 +120,9 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSAlmanac>>
-        F toField(final Field<T> field) {
-        return (F) new FieldGPSAlmanac<>(field, this);
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSAlmanac, F>>
+        F toField(final FieldKeplerianOrbit<T> orbit) {
+        return (F) new FieldGPSAlmanac<>(orbit, this);
     }
 
     /** Get the source of this GPS almanac.
@@ -167,7 +164,7 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
     /** {@inheritDoc} */
     @Override
     public GPSAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new GPSAlmanacFactory(getTimeScales(), getSystem(), getType(), inertial, bodyFixed, getDate());
+        return new GPSAlmanacFactory(getTimeScales(), getSystem(), inertial, bodyFixed);
     }
 
 }

@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -28,7 +28,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, GalileoNavigationMessage> {
+    extends FieldAbstractNavigationMessage<T, GalileoNavigationMessage, FieldGalileoNavigationMessage<T>> {
 
     /** Issue of Data of the navigation batch. */
     private final int iodNav;
@@ -49,27 +49,29 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     private final T svHealth;
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldGalileoNavigationMessage(final Field<T> field, final GalileoNavigationMessage original) {
-        super(field, original);
+    public FieldGalileoNavigationMessage(final FieldKeplerianOrbit<T> orbit, final GalileoNavigationMessage original) {
+        super(orbit, original);
         iodNav     = original.getIODNav();
         dataSource = original.getDataSource();
-        bgbE1E5a   = field.getZero().newInstance(original.getBGDE1E5a());
-        bgdE5bE1   = field.getZero().newInstance(original.getBGDE5bE1());
-        sisa       = field.getZero().newInstance(original.getSisa());
-        svHealth   = field.getZero().newInstance(original.getSvHealth());
+        bgbE1E5a   = orbit.getMu().newInstance(original.getBGDE1E5a());
+        bgdE5bE1   = orbit.getMu().newInstance(original.getBGDE5bE1());
+        sisa       = orbit.getMu().newInstance(original.getSisa());
+        svHealth   = orbit.getMu().newInstance(original.getSvHealth());
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldGalileoNavigationMessage(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldGalileoNavigationMessage(final FieldKeplerianOrbit<T> orbit,
+                                                                             final Function<V, T> converter,
                                                                              final FieldGalileoNavigationMessage<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
         iodNav     = original.getIODNav();
         dataSource = original.getDataSource();
         bgbE1E5a   = converter.apply(original.getBGDE1E5a());
@@ -87,9 +89,9 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, GalileoNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldGalileoNavigationMessage<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, GalileoNavigationMessage, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldGalileoNavigationMessage<>(orbit, converter, this);
     }
 
     /**

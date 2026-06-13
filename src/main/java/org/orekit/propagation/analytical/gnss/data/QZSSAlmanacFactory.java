@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -38,16 +37,13 @@ public class QZSSAlmanacFactory extends GNSSOrbitalElementsFactory<QZSSAlmanac> 
     /** Simple constructor.
      * @param timeScales      known time scales
      * @param system          satellite system to use for interpreting week number
-     * @param type            message type (null if not a navigation message)
      * @param inertial        reference inertial frame
      * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
-     * @param date            date of the orbital parameters
      */
     public QZSSAlmanacFactory(final TimeScales timeScales, final SatelliteSystem system,
-                              final String type, final Frame inertial, final Frame bodyFixed,
-                              final AbsoluteDate date) {
-        super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system,
-              type, inertial, bodyFixed, date, GNSSConstants.QZSS_MU);
+                              final Frame inertial, final Frame bodyFixed) {
+        super(GNSSConstants.QZSS_AV, timeScales, system,
+              null, inertial, bodyFixed, GNSSConstants.QZSS_MU);
     }
 
     /** Get the source of this QZSS almanac.
@@ -81,9 +77,8 @@ public class QZSSAlmanacFactory extends GNSSOrbitalElementsFactory<QZSSAlmanac> 
     /** {@inheritDoc} */
     @Override
     public QZSSAlmanac createFromDrivers() {
-        return new QZSSAlmanac(getTimeScales(), getSystem(), getPrn(), getWeek(),
-                               createOrbitFromDrivers(),
-                               getTimeDriver().getValue(), getADotDriver().getValue(),
+        return new QZSSAlmanac(getTimeScales(), getSystem(), getPrn(),
+                               createOrbitFromDrivers(), getADotDriver().getValue(),
                                getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
                                getCucDriver().getValue(), getCusDriver().getValue(),

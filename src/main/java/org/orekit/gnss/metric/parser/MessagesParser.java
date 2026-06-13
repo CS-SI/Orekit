@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.time.TimeScales;
 
@@ -35,16 +36,28 @@ public abstract class MessagesParser {
     /** Known time scales. */
     private final TimeScales timeScales;
 
+    /** Reference inertial frame.
+     * @since 14.0
+     */
+    private final Frame inertial;
+
+    /** Body fixed frame. */
+    private final Frame bodyFixed;
+
     /**
      * Constructor.
      * @param messages list of needed messages
      * @param timeScales known time scales
+     * @param inertial       reference inertial frame
+     * @param bodyFixed      body fixed frame (will be frozen at {@code date} to build the orbital elements
      * @since 13.0
      */
-    protected MessagesParser(final List<Integer> messages,
-                             final TimeScales timeScales) {
+    protected MessagesParser(final List<Integer> messages, final TimeScales timeScales,
+                             final Frame inertial, final Frame bodyFixed) {
         this.messages   = messages;
         this.timeScales = timeScales;
+        this.inertial   = inertial;
+        this.bodyFixed  = bodyFixed;
     }
 
     /** Parse one message.
@@ -65,11 +78,14 @@ public abstract class MessagesParser {
 
             // if set to 0, notification will be triggered regardless of message type
             if (messages.contains(0)) {
-                return messageType.parse(message, messageNumberInt, timeScales);
+                return messageType.parse(message, messageNumberInt,
+                                         timeScales,  inertial, bodyFixed);
             }
 
             // parse one message
-            return messages.contains(messageNumberInt) ? messageType.parse(message, messageNumberInt, timeScales) : null;
+            return messages.contains(messageNumberInt) ?
+                   messageType.parse(message, messageNumberInt, timeScales, inertial, bodyFixed) :
+                   null;
 
         } catch (OrekitException oe) {
             if (ignoreUnknownMessageTypes &&

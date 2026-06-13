@@ -56,9 +56,7 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      *                         are always according to GPS)
      * @param type             message type
      * @param prn              PRN number of the satellite
-     * @param week             reference Week of the orbit
      * @param orbit            Keplerian orbit in Earth-frozen frame
-     * @param time             reference time
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
      * @param deltaN0Dot       change rate in Δn₀
@@ -80,8 +78,7 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      */
     protected AbstractNavigationMessage(final double angularVelocity, final int weeksInCycle,
                                         final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                        final int prn, final int week, final KeplerianOrbit orbit,
-                                        final double time, final double aDot,
+                                        final int prn, final KeplerianOrbit orbit, final double aDot,
                                         final double deltaN0, final double deltaN0Dot,
                                         final double iDot, final double omegaDot,
                                         final double cuc, final double cus,
@@ -90,8 +87,8 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
                                         final double af0, final double af1, final double af2,
                                         final double tgd, final double toc,
                                         final AbsoluteDate epochToc, final double transmissionTime) {
-        super(angularVelocity, weeksInCycle, timeScales, system, type, prn, week, orbit,
-              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+        super(angularVelocity, weeksInCycle, timeScales, system, type, prn,
+              orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc);
         this.epochToc         = epochToc;
         this.transmissionTime = transmissionTime;
@@ -103,7 +100,7 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      * @param original regular field instance
      */
     protected <T extends CalculusFieldElement<T>,
-               A extends AbstractNavigationMessage<A>> AbstractNavigationMessage(final FieldAbstractNavigationMessage<T, A> original) {
+               A extends AbstractNavigationMessage<A>> AbstractNavigationMessage(final FieldAbstractNavigationMessage<T, A, ?> original) {
         super(original);
         epochToc         = original.getEpochToc().toAbsoluteDate();
         transmissionTime = original.getTransmissionTime().getReal();
@@ -119,14 +116,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     @Override
     public String getNavigationMessageSubType() {
         return null;
-    }
-
-    /**
-     * Getter for Square Root of Semi-Major Axis (√m).
-     * @return Square Root of Semi-Major Axis (√m)
-     */
-    public double getSqrtA() {
-        return FastMath.sqrt(getOrbit().getA());
     }
 
     /** Get the time of clock epoch.

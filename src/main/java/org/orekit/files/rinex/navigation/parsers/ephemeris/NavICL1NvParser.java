@@ -77,7 +77,6 @@ public class NavICL1NvParser
         final ParseInfo parseInfo = getParseInfo();
         final NavICL1NvNavigationMessageFactory factory = getFactory();
         factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-        factory.setWeek(parseInfo.parseInt2());
         parseInfo.closePendingRecord();
     }
 

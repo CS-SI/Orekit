@@ -27,17 +27,19 @@ import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFacto
 public class Rtcm1045Data extends Rtcm1046Data {
 
     /** Galileo NAV Data Validity Status. */
-    private int galileoDataValidityStatus;
+    private final int galileoDataValidityStatus;
 
     /** Constructor.
      * @param satelliteId satellite ID
      * @param accuracyProvider accuracy provider
      * @param factory factory for Galileo navigation message
+     * @param galileoDataValidityStatus the validity status to set
      * @since 14.0
      */
     public Rtcm1045Data(final int satelliteId, final AccuracyProvider accuracyProvider,
-                        final GalileoNavigationMessageFactory factory) {
+                        final GalileoNavigationMessageFactory factory, final int galileoDataValidityStatus) {
         super(satelliteId, accuracyProvider, factory);
+        this.galileoDataValidityStatus = galileoDataValidityStatus;
     }
 
     /**
@@ -46,14 +48,6 @@ public class Rtcm1045Data extends Rtcm1046Data {
      */
     public int getGalileoDataValidityStatus() {
         return galileoDataValidityStatus;
-    }
-
-    /**
-     * Set the Galileo data validity status.
-     * @param galileoDataValidityStatus the validity status to set
-     */
-    public void setGalileoDataValidityStatus(final int galileoDataValidityStatus) {
-        this.galileoDataValidityStatus = galileoDataValidityStatus;
     }
 
 }

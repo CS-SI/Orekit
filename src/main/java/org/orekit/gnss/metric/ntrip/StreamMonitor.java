@@ -33,6 +33,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.gnss.metric.parser.AbstractEncodedMessage;
 import org.orekit.gnss.metric.parser.MessagesParser;
@@ -113,6 +114,16 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
     /** Max number of reconnections. */
     private final int maxRetries;
 
+    /** Reference inertial frame.
+     * @since 14.0
+     */
+    private final Frame inertial;
+
+    /** Body fixed frame.
+     * @since 14.0
+     */
+    private final Frame bodyFixed;
+
     /** Stop flag. */
     private AtomicBoolean stop;
 
@@ -146,12 +157,15 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
      * @param reconnectDelay delay before we reconnect after connection close
      * @param reconnectDelayFactor factor by which reconnection delay is multiplied after each attempt
      * @param maxRetries max number of reconnect attempts without reading any data
+     * @param inertial reference inertial frame
+     * @param bodyFixed body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @since 14.0
      */
     public StreamMonitor(final NtripClient client,
                          final String mountPoint, final Type type,
                          final boolean requiresNMEA, final boolean ignoreUnknownMessageTypes,
                          final double reconnectDelay, final double reconnectDelayFactor,
-                         final int maxRetries) {
+                         final int maxRetries, final Frame inertial, final Frame bodyFixed) {
         this.client                    = client;
         this.mountPoint                = mountPoint;
         this.type                      = type;
@@ -160,6 +174,8 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
         this.reconnectDelay            = reconnectDelay;
         this.reconnectDelayFactor      = reconnectDelayFactor;
         this.maxRetries                = maxRetries;
+        this.inertial                  = inertial;
+        this.bodyFixed                 = bodyFixed;
         this.stop                      = new AtomicBoolean(false);
         this.observers                 = new HashMap<>();
         this.lastMessages              = new HashMap<>();
@@ -210,7 +226,8 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
 
         try {
 
-            final MessagesParser parser = type.getParser(extractUsedMessages(), client.getTimeScales());
+            final MessagesParser parser = type.getParser(extractUsedMessages(), client.getTimeScales(),
+                                                         inertial, bodyFixed);
             int nbAttempts = 0;
             double delay = reconnectDelay;
             while (nbAttempts < maxRetries) {

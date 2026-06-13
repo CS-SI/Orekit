@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -33,28 +33,30 @@ import java.util.function.Function;
  *
  */
 public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldGnssOrbitalElements<T, BeidouAlmanac> {
+    extends FieldGnssOrbitalElements<T, BeidouAlmanac, FieldBeidouAlmanac<T>> {
 
     /** Health status. */
     private final int health;
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldBeidouAlmanac(final Field<T> field, final BeidouAlmanac original) {
-        super(field, original);
+    public FieldBeidouAlmanac(final FieldKeplerianOrbit<T> orbit, final BeidouAlmanac original) {
+        super(orbit, original);
         health = original.getHealth();
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldBeidouAlmanac(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldBeidouAlmanac(final FieldKeplerianOrbit<T> orbit,
+                                                                  final Function<V, T> converter,
                                                                   final FieldBeidouAlmanac<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
         health = original.getHealth();
     }
 
@@ -67,9 +69,9 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, BeidouAlmanac>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldBeidouAlmanac<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, BeidouAlmanac, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldBeidouAlmanac<>(orbit, converter, this);
     }
 
     /**

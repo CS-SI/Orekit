@@ -85,9 +85,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      *                         are always according to GPS)
      * @param type             message type
      * @param prn              PRN number of the satellite
-     * @param week             reference Week of the orbit
      * @param orbit            Keplerian orbit in Earth-frozen frame
-     * @param time             reference time
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
      * @param deltaN0Dot       change rate in Δn₀
@@ -123,8 +121,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
     protected CivilianNavigationMessage(final boolean cnv2,
                                         final double angularVelocity, final int weeksInCycle,
                                         final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                        final int prn, final int week, final KeplerianOrbit orbit,
-                                        final double time, final double aDot,
+                                        final int prn, final KeplerianOrbit orbit, final double aDot,
                                         final double deltaN0, final double deltaN0Dot,
                                         final double iDot, final double omegaDot,
                                         final double cuc, final double cus,
@@ -138,8 +135,8 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
                                         final double iscL2C, final double iscL5I5, final double iscL5Q5,
                                         final int uraiEd, final int uraiNed0, final int uraiNed1, final int uraiNed2,
                                         final int flags) {
-        super(angularVelocity, weeksInCycle, timeScales, system, type, prn, week, orbit,
-              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+        super(angularVelocity, weeksInCycle, timeScales, system, type, prn,
+              orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, epochToc, transmissionTime);
         this.cnv2       = cnv2;
         this.svAccuracy = svAccuracy;
@@ -163,7 +160,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * @param original regular field instance
      */
     protected <T extends CalculusFieldElement<T>,
-               A extends CivilianNavigationMessage<A>> CivilianNavigationMessage(final FieldCivilianNavigationMessage<T, A> original) {
+               A extends CivilianNavigationMessage<A>> CivilianNavigationMessage(final FieldCivilianNavigationMessage<T, A, ?> original) {
         super(original);
         cnv2       = original.isCnv2();
         svAccuracy = original.getSvAccuracy().getReal();

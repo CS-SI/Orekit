@@ -17,8 +17,8 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -34,7 +34,7 @@ import java.util.function.Function;
  *
  */
 public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldGnssOrbitalElements<T, GalileoAlmanac> {
+    extends FieldGnssOrbitalElements<T, GalileoAlmanac, FieldGalileoAlmanac<T>> {
 
     /** Nominal inclination (Ref: Galileo ICD - Table 75). */
     private static final double I0 = FastMath.toRadians(56.0);
@@ -55,11 +55,11 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     private final int iod;
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldGalileoAlmanac(final Field<T> field, final GalileoAlmanac original) {
-        super(field, original);
+    public FieldGalileoAlmanac(final FieldKeplerianOrbit<T> orbit, final GalileoAlmanac original) {
+        super(orbit, original);
         healthE5a = original.getHealthE5a();
         healthE5b = original.getHealthE5b();
         healthE1  = original.getHealthE1();
@@ -68,12 +68,14 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldGalileoAlmanac(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldGalileoAlmanac(final FieldKeplerianOrbit<T> orbit,
+                                                                   final Function<V, T> converter,
                                                                    final FieldGalileoAlmanac<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
         healthE5a = original.getHealthE5a();
         healthE5b = original.getHealthE5b();
         healthE1  = original.getHealthE1();
@@ -89,9 +91,9 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, GalileoAlmanac>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldGalileoAlmanac<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, GalileoAlmanac, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldGalileoAlmanac<>(orbit, converter, this);
     }
 
     /**

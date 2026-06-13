@@ -33,24 +33,20 @@ public class NavICAlmanacFactory extends GNSSOrbitalElementsFactory<NavICAlmanac
      *
      * @param timeScales      known time scales
      * @param system          satellite system to use for interpreting week number
-     * @param type            message type (null if not a navigation message)
      * @param inertial        reference inertial frame
      * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
-     * @param date            date of the orbital parameters
      */
     public NavICAlmanacFactory(final TimeScales timeScales, final SatelliteSystem system,
-                               final String type, final Frame inertial, final Frame bodyFixed,
-                               final AbsoluteDate date) {
-        super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB, timeScales, system,
-              type, inertial, bodyFixed, date, GNSSConstants.NAVIC_MU);
+                               final Frame inertial, final Frame bodyFixed) {
+        super(GNSSConstants.NAVIC_AV, timeScales, system,
+              null, inertial, bodyFixed, GNSSConstants.NAVIC_MU);
     }
 
     /** {@inheritDoc} */
     @Override
     public NavICAlmanac createFromDrivers() {
-        return new NavICAlmanac(getTimeScales(), getSystem(), getPrn(), getWeek(),
-                                createOrbitFromDrivers(),
-                                getTimeDriver().getValue(), getADotDriver().getValue(),
+        return new NavICAlmanac(getTimeScales(), getSystem(), getPrn(),
+                                createOrbitFromDrivers(), getADotDriver().getValue(),
                                 getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                 getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
                                 getCucDriver().getValue(), getCusDriver().getValue(),

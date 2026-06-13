@@ -17,8 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.util.FastMath;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.time.FieldAbsoluteDate;
 
 import java.util.function.Function;
@@ -27,6 +26,7 @@ import java.util.function.Function;
  * Base class for GNSS navigation messages.
  * @param <T> type of the field elements
  * @param <O> type of the orbital elements (non-field version)
+ * @param <P> type of the orbital elements (field version)
  * @author Luc Maisonobe
  * @since 13.0
  *
@@ -37,8 +37,9 @@ import java.util.function.Function;
  * @see FieldNavicLegacyNavigationMessage
  */
 public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElement<T>,
-                                                     O extends AbstractNavigationMessage<O>>
-    extends FieldGnssOrbitalElements<T, O> {
+                                                     O extends AbstractNavigationMessage<O>,
+                                                     P extends FieldAbstractNavigationMessage<T, O, P>>
+    extends FieldGnssOrbitalElements<T, O, P> {
 
     /** Time of clock epoch. */
     private final FieldAbsoluteDate<T> epochToc;
@@ -47,33 +48,27 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
     private final T transmissionTime;
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    protected FieldAbstractNavigationMessage(final Field<T> field, final O original) {
-        super(field, original);
-        epochToc         = new FieldAbsoluteDate<>(field, original.getEpochToc());
-        transmissionTime = field.getZero().newInstance(original.getTransmissionTime());
+    protected FieldAbstractNavigationMessage(final FieldKeplerianOrbit<T> orbit, final O original) {
+        super(orbit, original);
+        epochToc         = new FieldAbsoluteDate<>(orbit.getDate().getField(), original.getEpochToc());
+        transmissionTime = orbit.getMu().newInstance(original.getTransmissionTime());
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    protected <V extends CalculusFieldElement<V>> FieldAbstractNavigationMessage(final Function<V, T> converter,
-                                                                                 final FieldAbstractNavigationMessage<V, O> original) {
-        super(converter, original);
+    protected <V extends CalculusFieldElement<V>> FieldAbstractNavigationMessage(final FieldKeplerianOrbit<T> orbit,
+                                                                                 final Function<V, T> converter,
+                                                                                 final FieldAbstractNavigationMessage<V, O, ?> original) {
+        super(orbit, converter, original);
         epochToc         = new FieldAbsoluteDate<>(getToc().getField(), original.getEpochToc().toAbsoluteDate());
         transmissionTime = converter.apply(original.getTransmissionTime());
-    }
-
-    /**
-     * Getter for Square Root of Semi-Major Axis (√m).
-     * @return Square Root of Semi-Major Axis (√m)
-     */
-    public T getSqrtA() {
-        return FastMath.sqrt(getOrbit().getA());
     }
 
     /**

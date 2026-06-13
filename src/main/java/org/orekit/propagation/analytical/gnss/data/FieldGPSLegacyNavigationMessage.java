@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -28,24 +28,26 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldGPSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldLegacyNavigationMessage<T, GPSLegacyNavigationMessage> {
+    extends FieldLegacyNavigationMessage<T, GPSLegacyNavigationMessage, FieldGPSLegacyNavigationMessage<T>> {
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldGPSLegacyNavigationMessage(final Field<T> field, final GPSLegacyNavigationMessage original) {
-        super(field, original);
+    public FieldGPSLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit, final GPSLegacyNavigationMessage original) {
+        super(orbit, original);
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldGPSLegacyNavigationMessage(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldGPSLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit,
+                                                                               final Function<V, T> converter,
                                                                                final FieldGPSLegacyNavigationMessage<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
     }
 
     /** {@inheritDoc} */
@@ -57,9 +59,9 @@ public class FieldGPSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, GPSLegacyNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldGPSLegacyNavigationMessage<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, GPSLegacyNavigationMessage, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldGPSLegacyNavigationMessage<>(orbit, converter, this);
     }
 
 }

@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -28,7 +28,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, NavICL1NvNavigationMessage> {
+    extends FieldAbstractNavigationMessage<T, NavICL1NvNavigationMessage, FieldNavicL1NvNavigationMessage<T>> {
 
     /** Reference signal flag. */
     private final int referenceSignalFlag;
@@ -42,16 +42,6 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
      * @since 14.0
      */
     private final int l1SpsHealth;
-
-    /** User Range Accuracy Index.
-     * @since 14.0
-     */
-    private int urai;
-
-    /** L1 SPS health.
-     * @since 14.0
-     */
-    private int l1SpsHealth;
 
     /** Estimated group delay differential TGD for S-L5 correction. */
     private final T tgdSL5;
@@ -69,29 +59,31 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     private final T iscL1DS;
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldNavicL1NvNavigationMessage(final Field<T> field, final NavICL1NvNavigationMessage original) {
-        super(field, original);
+    public FieldNavicL1NvNavigationMessage(final FieldKeplerianOrbit<T> orbit, final NavICL1NvNavigationMessage original) {
+        super(orbit, original);
         referenceSignalFlag = original.getReferenceSignalFlag();
         urai                = original.getUrai();
         l1SpsHealth         = original.getL1SpsHealth();
-        tgdSL5              = field.getZero().newInstance(original.getTGDSL5());
-        iscSL1P             = field.getZero().newInstance(original.getIscSL1P());
-        iscL1DL1P           = field.getZero().newInstance(original.getIscL1DL1P());
-        iscL1PS             = field.getZero().newInstance(original.getIscL1PS());
-        iscL1DS             = field.getZero().newInstance(original.getIscL1DS());
+        tgdSL5              = orbit.getMu().newInstance(original.getTGDSL5());
+        iscSL1P             = orbit.getMu().newInstance(original.getIscSL1P());
+        iscL1DL1P           = orbit.getMu().newInstance(original.getIscL1DL1P());
+        iscL1PS             = orbit.getMu().newInstance(original.getIscL1PS());
+        iscL1DS             = orbit.getMu().newInstance(original.getIscL1DS());
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldNavicL1NvNavigationMessage(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldNavicL1NvNavigationMessage(final FieldKeplerianOrbit<T> orbit,
+                                                                               final Function<V, T> converter,
                                                                                final FieldNavicL1NvNavigationMessage<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
         referenceSignalFlag = original.getReferenceSignalFlag();
         urai                = original.getUrai();
         l1SpsHealth         = original.getL1SpsHealth();
@@ -111,9 +103,9 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, NavICL1NvNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldNavicL1NvNavigationMessage<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, NavICL1NvNavigationMessage, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldNavicL1NvNavigationMessage<>(orbit, converter, this);
     }
 
     /** Get reference signal flag.

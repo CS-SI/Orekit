@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -31,28 +30,26 @@ public class QZSSCivilianNavigationMessageFactory
     extends CivilianNavigationMessageFactory<QZSSCivilianNavigationMessage> {
 
     /** Simple constructor.
-     * @param timeScales      known time scales
-     * @param system          satellite system to use for interpreting week number
-     * @param type            message type (null if not a navigation message)
-     * @param inertial        reference inertial frame
-     * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
-     * @param date            date of the orbital parameters
-     * @param cnv2            indicator for CNV 2 messages
+     * @param timeScales known time scales
+     * @param system     satellite system to use for interpreting week number
+     * @param type       message type (null if not a navigation message)
+     * @param inertial   reference inertial frame
+     * @param bodyFixed  body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @param cnv2       indicator for CNV 2 messages
      */
     public QZSSCivilianNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
                                                 final String type, final Frame inertial, final Frame bodyFixed,
-                                                final AbsoluteDate date, final boolean cnv2) {
+                                                final boolean cnv2) {
         super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system,
-              type, inertial, bodyFixed, date, GNSSConstants.QZSS_MU, cnv2);
+              type, inertial, bodyFixed, GNSSConstants.QZSS_MU, cnv2);
     }
 
     /** {@inheritDoc} */
     @Override
     public QZSSCivilianNavigationMessage createFromDrivers() {
         return new QZSSCivilianNavigationMessage(isCnv2(),
-                                                 getTimeScales(), getSystem(), getType(), getPrn(), getWeek(),
-                                                 createOrbitFromDrivers(),
-                                                 getTimeDriver().getValue(), getADotDriver().getValue(),
+                                                 getTimeScales(), getSystem(), getType(), getPrn(),
+                                                 createOrbitFromDrivers(), getADotDriver().getValue(),
                                                  getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                                  getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
                                                  getCucDriver().getValue(), getCusDriver().getValue(),

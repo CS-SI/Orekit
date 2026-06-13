@@ -17,12 +17,13 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
+
 
 /**
  * Container for data contained in a Beidou civilian navigation message.
@@ -92,9 +93,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      *                         (may be different from real system, for example in Rinex nav, weeks
      *                         are always according to GPS)
      * @param prn              PRN number of the satellite
-     * @param week             reference Week of the orbit
      * @param orbit            Keplerian orbit in Earth-frozen frame
-     * @param time             reference time
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
      * @param deltaN0Dot       change rate in Δn₀
@@ -132,8 +131,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      */
     public BeidouCivilianNavigationMessage(final BeidouCivilianType beidouType,
                                            final TimeScales timeScales, final SatelliteSystem system,
-                                           final int prn, final int week, final KeplerianOrbit orbit,
-                                           final double time, final double aDot,
+                                           final int prn, final KeplerianOrbit orbit, final double aDot,
                                            final double deltaN0, final double deltaN0Dot,
                                            final double iDot, final double omegaDot,
                                            final double cuc, final double cus,
@@ -150,8 +148,8 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
                                            final double tgdB1Cp, final double tgdB2ap, final double tgdB2bI,
                                            final BeidouSatelliteType satelliteType) {
         super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system, beidouType.name(), prn, week, orbit,
-              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              timeScales, system, beidouType.name(), prn, orbit,
+              aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, epochToc, transmissionTime);
         this.beidouType = beidouType;
         this.iode           = iode;
@@ -215,9 +213,9 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouCivilianNavigationMessage>>
-        F toField(final Field<T> field) {
-        return (F) new FieldBeidouCivilianNavigationMessage<>(field, this);
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouCivilianNavigationMessage, F>>
+        F toField(final FieldKeplerianOrbit<T> orbit) {
+        return (F) new FieldBeidouCivilianNavigationMessage<>(orbit, this);
     }
 
     /** Get the Issue Of Data Ephemeris (IODE).
@@ -336,8 +334,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     @Override
     public BeidouCivilianNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
         return new BeidouCivilianNavigationMessageFactory(getTimeScales(), getSystem(), getType(),
-                                                          inertial, bodyFixed,
-                                                          getDate(), getBeidouType(), getSatelliteType());
+                                                          inertial, bodyFixed, getBeidouType(), getSatelliteType());
     }
 
 }

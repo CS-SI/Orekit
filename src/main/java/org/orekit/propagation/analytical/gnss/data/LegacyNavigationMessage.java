@@ -68,9 +68,7 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      *                         are always according to GPS)
      * @param type             message type
      * @param prn              PRN number of the satellite
-     * @param week             reference Week of the orbit
      * @param orbit            Keplerian orbit in Earth-frozen frame
-     * @param time             reference time
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
      * @param deltaN0Dot       change rate in Δn₀
@@ -99,8 +97,7 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      */
     protected LegacyNavigationMessage(final double angularVelocity, final int weeksInCycle,
                                       final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                      final int prn, final int week, final KeplerianOrbit orbit,
-                                      final double time, final double aDot,
+                                      final int prn, KeplerianOrbit orbit, final double aDot,
                                       final double deltaN0, final double deltaN0Dot,
                                       final double iDot, final double omegaDot,
                                       final double cuc, final double cus,
@@ -112,8 +109,8 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
                                       final int iode, final int iodc, final double svAccuracy,
                                       final int svHealth, final int fitInterval,
                                       final int l2Codes, final int l2PFlags) {
-        super(angularVelocity, weeksInCycle, timeScales, system, type, prn, week, orbit,
-              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+        super(angularVelocity, weeksInCycle, timeScales, system, type, prn, orbit,
+              aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, epochToc, transmissionTime);
         this.iode        = iode;
         this.iodc        = iodc;
@@ -130,7 +127,7 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      * @param original regular field instance
      */
     protected <T extends CalculusFieldElement<T>, A extends LegacyNavigationMessage<A>>
-        LegacyNavigationMessage(final FieldLegacyNavigationMessage<T, A> original) {
+        LegacyNavigationMessage(final FieldLegacyNavigationMessage<T, A, ?> original) {
         super(original);
         iode        = original.getIODE();
         iodc        = original.getIODC();

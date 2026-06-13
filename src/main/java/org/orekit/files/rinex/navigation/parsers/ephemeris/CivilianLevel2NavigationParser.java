@@ -100,7 +100,7 @@ public abstract class CivilianLevel2NavigationParser<T extends CivilianNavigatio
         final F         factory   = getFactory();
         final ParseInfo parseInfo = getParseInfo();
         factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-        factory.setWeek(parseInfo.parseInt2());
+        factory.setWeekAndTime(parseInfo.parseInt2(), factory.getTimeDriver().getValue());
         factory.setFlags(getParseInfo().parseInt3());
         parseInfo.closePendingRecord();
     }

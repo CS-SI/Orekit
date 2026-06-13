@@ -19,8 +19,10 @@ package org.orekit.files.rinex.navigation.writers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianType;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
@@ -50,7 +52,7 @@ public class BeidouCivilianNavigationMessageWriter
         writer.writeDouble(message.getIDot(), RinexNavigationParser.RAD_PER_S);
         writer.writeDouble(message.getDeltaN0Dot(), RinexNavigationParser.RAD_PER_S2);
         writer.writeInt(message.getSatelliteType().getIntegerId());
-        writer.writeDouble(message.getTime(), Unit.SECOND);
+        writer.writeDouble(new GNSSDate(message.getDate(), SatelliteSystem.BEIDOU).getSecondsInWeek(), Unit.SECOND);
         writer.finishLine();
     }
 

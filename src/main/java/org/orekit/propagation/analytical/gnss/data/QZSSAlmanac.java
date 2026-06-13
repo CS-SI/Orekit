@@ -17,11 +17,12 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.TimeScales;
+
 
 /**
  * This class holds a QZSS almanac as read from YUMA files.
@@ -45,9 +46,7 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
      * @param prn        PRN number of the satellite
-     * @param week       reference Week of the orbit
      * @param orbit      Keplerian orbit in Earth-frozen frame
-     * @param time       reference time
      * @param aDot       change rate in semi-major axis (m/s)
      * @param deltaN0    delta of satellite mean motion
      * @param deltaN0Dot change rate in Δn₀
@@ -67,9 +66,8 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
      * @param source     source of the almanac
      * @param health     health status
      */
-    public QZSSAlmanac(final TimeScales timeScales, final SatelliteSystem system,
-                       final int prn, final int week, final KeplerianOrbit orbit,
-                       final double time, final double aDot,
+    public QZSSAlmanac(final TimeScales timeScales, final SatelliteSystem system, final int prn,
+                       final KeplerianOrbit orbit, final double aDot,
                        final double deltaN0, final double deltaN0Dot,
                        final double iDot, final double omegaDot,
                        final double cuc, final double cus,
@@ -78,9 +76,8 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
                        final double af0, final double af1, final double af2,
                        final double tgd, final double toc,
                        final String source, final int health) {
-        super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system, null,
-              prn, week, orbit,
-              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+        super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system, null, prn,
+              orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc);
         this.source = source;
         this.health = health;
@@ -99,9 +96,9 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSAlmanac>>
-        F toField(final Field<T> field) {
-        return (F) new FieldQZSSAlmanac<>(field, this);
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSAlmanac, F>>
+        F toField(final FieldKeplerianOrbit<T> orbit) {
+        return (F) new FieldQZSSAlmanac<>(orbit, this);
     }
 
     /** Get the source of this QZSS almanac.
@@ -121,7 +118,7 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
     /** {@inheritDoc} */
     @Override
     public QZSSAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new QZSSAlmanacFactory(getTimeScales(), getSystem(), getType(), inertial, bodyFixed, getDate());
+        return new QZSSAlmanacFactory(getTimeScales(), getSystem(), inertial, bodyFixed);
     }
 
 }

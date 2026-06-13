@@ -18,6 +18,7 @@ package org.orekit.gnss.metric.ntrip;
 
 import java.util.List;
 
+import org.orekit.frames.Frame;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
 import org.orekit.gnss.metric.parser.MessagesParser;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
@@ -35,8 +36,9 @@ public enum Type {
 
         /** {@inheritDoc} */
         @Override
-        public MessagesParser getParser(final List<Integer> messages, final TimeScales timeScales) {
-            return new RtcmMessagesParser(messages, timeScales);
+        public MessagesParser getParser(final List<Integer> messages, final TimeScales timeScales,
+                                        final Frame inertial, final Frame bodyFixed) {
+            return new RtcmMessagesParser(messages, timeScales, inertial, bodyFixed);
         }
 
     },
@@ -46,8 +48,9 @@ public enum Type {
 
         /** {@inheritDoc} */
         @Override
-        public MessagesParser getParser(final List<Integer> messages, final TimeScales timeScales) {
-            return new IgsSsrMessagesParser(messages, timeScales);
+        public MessagesParser getParser(final List<Integer> messages, final TimeScales timeScales,
+                                        final Frame inertial, final Frame bodyFixed) {
+            return new IgsSsrMessagesParser(messages, timeScales, inertial, bodyFixed);
         }
 
     };
@@ -56,9 +59,12 @@ public enum Type {
      * Get the message parser associated to the SSR type.
      * @param messages list of needed messages
      * @param timeScales known time scales
+     * @param inertial       reference inertial frame
+     * @param bodyFixed      body fixed frame (will be frozen at {@code date} to build the orbital elements
      * @return a configured message parser
-     * @since 13.0
+     * @since 14.0
      */
-    public abstract MessagesParser getParser(List<Integer> messages, TimeScales timeScales);
+    public abstract MessagesParser getParser(List<Integer> messages, TimeScales timeScales,
+                                             Frame inertial, Frame bodyFixed);
 
 }

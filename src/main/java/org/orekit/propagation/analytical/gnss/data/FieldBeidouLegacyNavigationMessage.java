@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -28,7 +28,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, BeidouLegacyNavigationMessage> {
+    extends FieldAbstractNavigationMessage<T, BeidouLegacyNavigationMessage, FieldBeidouLegacyNavigationMessage<T>> {
 
     /** Indicator for D2 messages.
      * @since 14.0
@@ -56,28 +56,30 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     private final T svAccuracy;
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldBeidouLegacyNavigationMessage(final Field<T> field, final BeidouLegacyNavigationMessage original) {
-        super(field, original);
+    public FieldBeidouLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit, final BeidouLegacyNavigationMessage original) {
+        super(orbit, original);
         d2         = original.isD2();
         aode       = original.getAODE();
         aodc       = original.getAODC();
         satH1      = original.getSatH1();
-        tgd1       = field.getZero().newInstance(original.getTGD1());
-        tgd2       = field.getZero().newInstance(original.getTGD2());
-        svAccuracy = field.getZero().newInstance(original.getSvAccuracy());
+        tgd1       = orbit.getMu().newInstance(original.getTGD1());
+        tgd2       = orbit.getMu().newInstance(original.getTGD2());
+        svAccuracy = orbit.getMu().newInstance(original.getSvAccuracy());
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldBeidouLegacyNavigationMessage(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldBeidouLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit,
+                                                                                  final Function<V, T> converter,
                                                                                   final FieldBeidouLegacyNavigationMessage<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
         d2         = original.isD2();
         aode       = original.getAODE();
         aodc       = original.getAODC();
@@ -96,9 +98,9 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, BeidouLegacyNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldBeidouLegacyNavigationMessage<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, BeidouLegacyNavigationMessage, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldBeidouLegacyNavigationMessage<>(orbit, converter, this);
     }
 
     /**

@@ -36,11 +36,13 @@ import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.ParsingUtils;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.units.Unit;
 
 /**
@@ -114,23 +116,41 @@ public class RinexNavigationParser {
     /** Set of time scales. */
     private final TimeScales timeScales;
 
+    /** Reference inertial frame.
+     * @since 14.0
+     */
+    private final Frame inertial;
+
+    /** Body fixed frame.
+     * @since 14.0
+     */
+    private final Frame bodyFixed;
+
     /**
      * Constructor.
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.</p>
-     * @see #RinexNavigationParser(TimeScales)
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context},
+     * EME2000 and ITRF with IERS 2010 conventions</p>
+     * @see #RinexNavigationParser(TimeScales, Frame, Frame)
      *
      */
     @DefaultDataContext
     public RinexNavigationParser() {
-        this(DataContext.getDefault().getTimeScales());
+        this(DataContext.getDefault().getTimeScales(),
+             DataContext.getDefault().getFrames().getEME2000(),
+             DataContext.getDefault().getFrames().getITRF(IERSConventions.IERS_2010, false));
     }
 
     /**
      * Constructor.
      * @param timeScales the set of time scales used for parsing dates.
+     * @param inertial   reference inertial frame
+     * @param bodyFixed  body fixed frame
+     * @since 14.0
      */
-    public RinexNavigationParser(final TimeScales timeScales) {
+    public RinexNavigationParser(final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
         this.timeScales = timeScales;
+        this.inertial   = inertial;
+        this.bodyFixed  = bodyFixed;
     }
 
     /**
@@ -142,7 +162,7 @@ public class RinexNavigationParser {
     public RinexNavigation parse(final DataSource source) throws IOException {
 
         // initialize internal data structures
-        final ParseInfo parseInfo = new ParseInfo(source.getName(), timeScales);
+        final ParseInfo parseInfo = new ParseInfo(source.getName(), timeScales, inertial, bodyFixed);
 
         Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
         try (Reader reader = source.getOpener().openReaderOnce();
