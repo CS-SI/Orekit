@@ -147,6 +147,11 @@ public abstract class GNSSOrbitalElementsDriversProvider
     /** Known time scales. */
     private final TimeScales timeScales;
 
+    /** Message type (null if not a navigation message).
+     * @since 14.0
+     */
+    private final String type;
+
     /** PRN number of the satellite. */
     private int prn;
 
@@ -202,9 +207,11 @@ public abstract class GNSSOrbitalElementsDriversProvider
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
+     * @param type            type (null if not a navigation message)
      */
     protected GNSSOrbitalElementsDriversProvider(final double angularVelocity, final int weeksInCycle,
-                                                 final TimeScales timeScales, final SatelliteSystem system) {
+                                                 final TimeScales timeScales, final SatelliteSystem system,
+                                                 final String type) {
 
         // immutable fields
         this.angularVelocity = angularVelocity;
@@ -212,6 +219,7 @@ public abstract class GNSSOrbitalElementsDriversProvider
         this.cycleDuration   = GNSSConstants.GNSS_WEEK_IN_SECONDS * weeksInCycle;
         this.system          = system;
         this.timeScales      = timeScales;
+        this.type            = type;
 
         this.timeDriver       = createDriver(TIME,               -10);
         this.aDotDriver       = createDriver(A_DOT,              -10);
@@ -292,6 +300,14 @@ public abstract class GNSSOrbitalElementsDriversProvider
      */
     public TimeScales getTimeScales() {
         return timeScales;
+    }
+
+    /** Get the message type.
+     * @return message type (null if not a navigation message)
+     * @since 14.0
+     */
+    public String getType() {
+        return type;
     }
 
     /** {@inheritDoc}

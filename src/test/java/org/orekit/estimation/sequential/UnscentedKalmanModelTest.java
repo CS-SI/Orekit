@@ -393,7 +393,7 @@ public class UnscentedKalmanModelTest {
         final List<Double> scaleList = new ArrayList<>();
 
         // Orbital parameters
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 scaleList.add(driver.getScale());
             }
@@ -454,7 +454,7 @@ public class UnscentedKalmanModelTest {
     @Test
     public void MassDepletionTest()  {
         // Add a maneuver with nonzero mass expenditure between the first and second measurement dates.
-        AbsoluteDate initialDate = this.propagatorBuilder.getInitialOrbitDate();
+        AbsoluteDate initialDate = this.propagatorBuilder.getOrbitalParameterFactory().getDate();
         double initialMass = this.propagatorBuilder.getMass();
         AbsoluteDate maneuverDate = initialDate.shiftedBy(5.0);
 

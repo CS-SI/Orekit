@@ -18,7 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
 
 /**
@@ -57,7 +59,8 @@ public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
      *                   are always according to GPS)
      */
     public GPSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system);
+        super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
+              timeScales, system, null);
     }
 
     /** Constructor from field instance.
@@ -181,6 +184,15 @@ public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
      */
     public void setSatConfiguration(final int satConfiguration) {
         this.config = satConfiguration;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSPropagatorBuilder<GPSAlmanac> builder(final Frame inertial, final Frame bodyFixed) {
+        return new GNSSPropagatorBuilder<>(new GPSAlmanacFactory(getTimeScales(), getSystem(),
+                                                                 inertial, bodyFixed,
+                                                                 getDate(), getMu()),
+                                           inertial, bodyFixed);
     }
 
 }

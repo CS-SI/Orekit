@@ -17,7 +17,11 @@
 package org.orekit.orbits;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.util.List;
 
 /** Factory for Cartesian orbits.
  * @since 14.0
@@ -29,26 +33,21 @@ public class CartesianOrbitFactory extends AbstractOrbitFactory<CartesianOrbit> 
      * @param positionScale position scale used to scale the orbital drivers
      */
     public CartesianOrbitFactory(final CartesianOrbit template, final double positionScale) {
-        super(template, positionScale, PositionAngleType.ECCENTRIC);
+        super(positionScale, template, PositionAngleType.ECCENTRIC);
     }
 
     /** {@inheritDoc} */
     @Override
-    public CartesianOrbit toParameters(final double[] array) {
-        return new CartesianOrbit(new PVCoordinates(new Vector3D(array[0], array[1], array[2]),
-                                                    new Vector3D(array[3], array[4], array[5])),
+    public CartesianOrbit createFromDrivers() {
+        final AbsoluteDate           date    = getDate();
+        final List<DelegatingDriver> drivers = getOrbitalParametersDrivers().getDrivers();
+        return new CartesianOrbit(new PVCoordinates(new Vector3D(drivers.get(0).getValue(date),
+                                                                 drivers.get(1).getValue(date),
+                                                                 drivers.get(2).getValue(date)),
+                                                    new Vector3D(drivers.get(3).getValue(date),
+                                                                 drivers.get(4).getValue(date),
+                                                                 drivers.get(5).getValue(date))),
                                   getFrame(), getDate(), getMu());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public final double[] toArray(final CartesianOrbit orbit) {
-        final PVCoordinates pv = orbit.getPVCoordinates();
-        final Vector3D      p  = pv.getPosition();
-        final Vector3D      v  = pv.getVelocity();
-        return new double[] {
-            p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()
-        };
     }
 
 }

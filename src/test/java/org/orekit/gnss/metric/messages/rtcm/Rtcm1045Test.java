@@ -30,7 +30,6 @@ import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
@@ -92,11 +91,10 @@ public class Rtcm1045Test {
         final GalileoNavigationMessage galileoMessage   = ephemerisData.getGalileoNavigationMessage();
 
         // Verify propagator initialization
-        final GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(galileoMessage,
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        final GNSSPropagator<GalileoNavigationMessage> propagator =
+            galileoMessage.builder(context.getFrames().getEME2000(),
+                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+                           buildPropagator();
         Assertions.assertNotNull(propagator);
         final double eps = 8.2e-10;
         Assertions.assertEquals(0.0, galileoMessage.getDate().

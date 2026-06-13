@@ -54,9 +54,6 @@ public class TLETheory implements MeanTheory {
     /** Template TLE. */
     private final TLE tmpTle;
 
-    /** UTC scale. */
-    private final TimeScale utc;
-
     /** TEME frame. */
     private final Frame teme;
 
@@ -101,7 +98,7 @@ public class TLETheory implements MeanTheory {
      * @param teme     TEME frame scale
      */
     public TLETheory(final TimeScale utc, final Frame teme) {
-        this(new TLE(TMP_L1, TMP_L2, utc), utc, teme);
+        this(new TLE(TMP_L1, TMP_L2, utc), teme);
     }
 
     /**
@@ -110,18 +107,16 @@ public class TLETheory implements MeanTheory {
      * @param dataContext data context
      */
     public TLETheory(final TLE template, final DataContext dataContext) {
-        this(template, dataContext.getTimeScales().getUTC(), dataContext.getFrames().getTEME());
+        this(template, dataContext.getFrames().getTEME());
     }
 
     /**
      * Constructor.
      * @param template template TLE
-     * @param utc      UTC scale
      * @param teme     TEME frame scale
      */
-    public TLETheory(final TLE template, final TimeScale utc, final Frame teme) {
+    public TLETheory(final TLE template, final Frame teme) {
         this.tmpTle = template;
-        this.utc    = utc;
         this.teme   = teme;
     }
 
@@ -144,7 +139,6 @@ public class TLETheory implements MeanTheory {
      */
     public <T extends CalculusFieldElement<T>> TLETheory(final FieldTLE<T> template, final TimeScale utc, final Frame teme) {
         this.tmpTle = template.toTLE();
-        this.utc    = utc;
         this.teme   = teme;
     }
 
@@ -173,7 +167,7 @@ public class TLETheory implements MeanTheory {
     public Orbit meanToOsculating(final Orbit mean) {
         // Build TLE from mean and template
         final KeplerianOrbit meanKepl = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(mean);
-        final TLE meanTle = TleGenerationUtil.newTLE(meanKepl, tmpTle, tmpTle.getBStar(mean.getDate()), utc);
+        final TLE meanTle = TleGenerationUtil.newTLE(meanKepl, tmpTle, tmpTle.getBStar(mean.getDate()));
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(meanTle, teme);
         return propagator.getInitialState().getOrbit();
     }
@@ -200,12 +194,13 @@ public class TLETheory implements MeanTheory {
     public <T extends CalculusFieldElement<T>> FieldOrbit<T> meanToOsculating(final FieldOrbit<T> mean) {
         final FieldAbsoluteDate<T> date = mean.getDate();
         final Field<T> field = date.getField();
-        final FieldTLE<T> fieldTmpTle = new FieldTLE<>(field, tmpTle.getLine1(), tmpTle.getLine2(), utc);
+        final FieldTLE<T> fieldTmpTle = new FieldTLE<>(field, tmpTle.getLine1(), tmpTle.getLine2(), tmpTle.getUtc());
         final T bStar = field.getZero().newInstance(fieldTmpTle.getBStar());
         // Build TLE from mean and template
         final FieldKeplerianOrbit<T> meanKepl = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(mean);
-        final FieldTLE<T> meanTle = TleGenerationUtil.newTLE(meanKepl, fieldTmpTle, bStar, utc);
-        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(meanTle, teme, meanTle.getParameters(field));
+        final FieldTLE<T> meanTle = TleGenerationUtil.newTLE(meanKepl, fieldTmpTle, bStar);
+        final FieldTLEPropagator<T> propagator =
+            FieldTLEPropagator.selectExtrapolator(meanTle, teme, meanTle.getParameters(field));
         return propagator.getInitialState().getOrbit();
     }
 

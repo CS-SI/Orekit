@@ -20,6 +20,7 @@ import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouCivilianType;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
@@ -74,12 +75,12 @@ public class BeidouCivilianNavigationMessageWriter
                                  final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        if (BeidouCivilianNavigationMessage.CNV1.equals(message.getNavigationMessageType())) {
+        if (message.getBeidouType() == BeidouCivilianType.CNV1) {
             writer.writeDouble(message.getIscB1CD(), Unit.SECOND);
             writer.writeEmpty();
             writer.writeDouble(message.getTgdB1Cp(), Unit.SECOND);
             writer.writeDouble(message.getTgdB2ap(), Unit.SECOND);
-        } else if (BeidouCivilianNavigationMessage.CNV2.equals(message.getNavigationMessageType())) {
+        } else if (message.getBeidouType() == BeidouCivilianType.CNV2) {
             writer.writeEmpty();
             writer.writeDouble(message.getIscB2AD(), Unit.SECOND);
             writer.writeDouble(message.getTgdB1Cp(), Unit.SECOND);
@@ -99,7 +100,7 @@ public class BeidouCivilianNavigationMessageWriter
         // TYPE / SV / MSG, and lines 0 to 7
         super.writeMessage(identifier, message, header, writer);
 
-        if (BeidouCivilianNavigationMessage.CNV3.equals(message.getNavigationMessageType())) {
+        if (message.getBeidouType() == BeidouCivilianType.CNV3) {
             // EPH MESSAGE LINE - 8
             writer.indentLine(header);
             writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);

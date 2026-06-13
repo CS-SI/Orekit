@@ -16,6 +16,11 @@
  */
 package org.orekit.orbits;
 
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.util.List;
+
 /** Factory for circular orbits.
  * @since 14.0
  */
@@ -26,29 +31,23 @@ public class EquinoctialOrbitFactory extends AbstractOrbitFactory<EquinoctialOrb
      * @param positionScale position scale used to scale the orbital drivers
      * @param positionAngleType position angle type to use
      */
-    protected EquinoctialOrbitFactory(final EquinoctialOrbit template, final double positionScale,
-                                      final PositionAngleType positionAngleType) {
-        super(template, positionScale, positionAngleType);
+    public EquinoctialOrbitFactory(final EquinoctialOrbit template, final double positionScale,
+                                   final PositionAngleType positionAngleType) {
+        super(positionScale, template, positionAngleType);
     }
 
     /** {@inheritDoc} */
     @Override
-    public EquinoctialOrbit toParameters(final double[] array) {
-        return new EquinoctialOrbit(array[0], array[1], array[2], array[3], array[4], array[5],
+    public EquinoctialOrbit createFromDrivers() {
+        final AbsoluteDate           date    = getDate();
+        final List<DelegatingDriver> drivers = getOrbitalParametersDrivers().getDrivers();
+        return new EquinoctialOrbit(drivers.get(0).getValue(date),
+                                    drivers.get(1).getValue(date),
+                                    drivers.get(2).getValue(date),
+                                    drivers.get(3).getValue(date),
+                                    drivers.get(4).getValue(date),
+                                    drivers.get(5).getValue(date),
                                     getPositionAngleType(), getFrame(), getDate(), getMu());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public final double[] toArray(final EquinoctialOrbit orbit) {
-        return new double[] {
-            orbit.getA(),
-            orbit.getEquinoctialEx(),
-            orbit.getEquinoctialEy(),
-            orbit.getHx(),
-            orbit.getHy(),
-            orbit.getL(getPositionAngleType())
-        };
     }
 
 }

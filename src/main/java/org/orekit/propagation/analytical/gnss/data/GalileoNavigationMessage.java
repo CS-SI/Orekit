@@ -18,7 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
 
 /**
@@ -189,6 +191,16 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      */
     public void setSvHealth(final double svHealth) {
         this.svHealth = svHealth;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSPropagatorBuilder<GalileoNavigationMessage> builder(final Frame inertial, final Frame bodyFixed) {
+        return new GNSSPropagatorBuilder<>(new GalileoFactory(getType().equals(GalileoNavigationMessage.INAV),
+                                                              getTimeScales(), getSystem(),
+                                                              inertial, bodyFixed,
+                                                              getDate(), getMu()),
+                                           inertial, bodyFixed);
     }
 
 }

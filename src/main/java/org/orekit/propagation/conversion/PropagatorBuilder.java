@@ -77,7 +77,7 @@ public interface PropagatorBuilder extends Cloneable {
      * @return orbital parameters factory
      * @since 14.0
      */
-    OrbitalParameterFactory<OrbitalParameters> getOrbitalParameterFactory();
+    OrbitalParameterFactory<? extends OrbitalParameters> getOrbitalParameterFactory();
 
     /** Get the initial mass.
      * @return the mass (kg)

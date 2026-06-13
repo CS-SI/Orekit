@@ -129,7 +129,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
         this.currentMeasurementNumber        = 0;
-        this.referenceDate                   = propagatorBuilders.getFirst().getInitialOrbitDate();
+        this.referenceDate                   = propagatorBuilders.getFirst().getOrbitalParameterFactory().getDate();
         this.currentDate                     = referenceDate;
 
         final Map<String, Integer> orbitalParameterColumns = new HashMap<>(6 * builders.size());
@@ -142,7 +142,10 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
             estimatedOrbitalParameters[k] = new ParameterDriversList();
             orbitsStartColumns[k] = columns;
             final String suffix = propagatorBuilders.size() > 1 ? "[" + k + "]" : null;
-            for (final ParameterDriver driver : builders.get(k).getOrbitalParametersDrivers().getDrivers()) {
+            final ParameterDriversList drivers = builders.get(k).
+                                                 getOrbitalParameterFactory().
+                                                 getOrbitalParametersDrivers();
+            for (final ParameterDriver driver : drivers.getDrivers()) {
                 if (driver.getReferenceDate() == null) {
                     driver.setReferenceDate(currentDate);
                 }
@@ -204,8 +207,11 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
         this.measurementProcessNoiseMatrix = measurementProcessNoiseMatrix;
         this.covarianceIndirection       = new int[builders.size()][columns];
         for (int k = 0; k < covarianceIndirection.length; ++k) {
-            final ParameterDriversList orbitDrivers      = builders.get(k).getOrbitalParametersDrivers();
-            final ParameterDriversList parametersDrivers = builders.get(k).getPropagationParametersDrivers();
+            final ParameterDriversList orbitDrivers      = builders.get(k).
+                                                           getOrbitalParameterFactory().
+                                                           getOrbitalParametersDrivers();
+            final ParameterDriversList parametersDrivers = builders.get(k).
+                                                           getPropagationParametersDrivers();
             Arrays.fill(covarianceIndirection[k], -1);
             int i = 0;
             for (final ParameterDriver driver : orbitDrivers.getDrivers()) {
@@ -298,9 +304,9 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
             }
 
             KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                    builders.get(k).getOrbitalParametersDrivers(),
-                    builders.get(k).getPropagationParametersDrivers(),
-                    estimatedMeasurementsParameters);
+                                               builders.get(k).getOrbitalParameterFactory().getOrbitalParametersDrivers(),
+                                               builders.get(k).getPropagationParametersDrivers(),
+                                               estimatedMeasurementsParameters);
 
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {
@@ -528,9 +534,9 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
             }
 
             KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                    builders.get(k).getOrbitalParametersDrivers(),
-                    builders.get(k).getPropagationParametersDrivers(),
-                    estimatedMeasurementsParameters);
+                                              builders.get(k).getOrbitalParameterFactory().getOrbitalParametersDrivers(),
+                                              builders.get(k).getPropagationParametersDrivers(),
+                                              estimatedMeasurementsParameters);
 
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.ode.ODEIntegrator;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -29,21 +30,21 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
+import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for numerical propagator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<NumericalPropagator> {
+public class NumericalPropagatorBuilder
+    extends AbstractIntegratedPropagatorBuilder<NumericalPropagator, Orbit, AbstractOrbitFactory<Orbit>> {
 
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
@@ -52,56 +53,27 @@ public class NumericalPropagatorBuilder extends AbstractIntegratedPropagatorBuil
     private final List<ImpulseManeuver> impulseManeuvers;
 
     /** Build a new instance.
-     * <p>
-     * The reference orbit is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, and is also used together
-     * with the {@code positionScale} to convert from the {@link
-     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
-     * The default attitude provider is aligned with the orbit's inertial frame.
-     * </p>
-     *
-     * @param referenceOrbit reference orbit from which real orbits will be built
+     * @param factory factory for initial orbit
      * @param builder first order integrator builder
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
-     * @since 8.0
-     * @see #NumericalPropagatorBuilder(Orbit, ODEIntegratorBuilder, PositionAngleType,
-     * double, AttitudeProvider)
+     * @since 14.0
+     * @see #NumericalPropagatorBuilder(AbstractOrbitFactory, ODEIntegratorBuilder, AttitudeProvider)
      */
-    public NumericalPropagatorBuilder(final Orbit referenceOrbit,
-                                      final ODEIntegratorBuilder builder,
-                                      final PositionAngleType positionAngleType,
-                                      final double positionScale) {
-        this(referenceOrbit, builder, positionAngleType, positionScale,
-             FrameAlignedProvider.of(referenceOrbit.getFrame()));
+    public NumericalPropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
+                                      final ODEIntegratorBuilder builder) {
+        this(factory, builder, FrameAlignedProvider.of(factory.getFrame()));
     }
 
     /** Build a new instance.
-     * <p>
-     * The reference orbit is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, and is also used together
-     * with the {@code positionScale} to convert from the {@link
-     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
-     * </p>
-     * @param referenceOrbit reference orbit from which real orbits will be built
+     * @param factory factory for initial orbit
      * @param builder first order integrator builder
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
      * @param attitudeProvider attitude law.
-     * @since 10.1
+     * @since 14.0
      */
-    public NumericalPropagatorBuilder(final Orbit referenceOrbit,
+    public NumericalPropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
                                       final ODEIntegratorBuilder builder,
-                                      final PositionAngleType positionAngleType,
-                                      final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, builder, positionAngleType, positionScale, PropagationType.OSCULATING, attitudeProvider, Propagator.DEFAULT_MASS);
+        super((AbstractOrbitFactory<Orbit>) factory, builder,
+              PropagationType.OSCULATING, attitudeProvider, Propagator.DEFAULT_MASS);
         this.forceModels = new ArrayList<>();
         this.impulseManeuvers = new ArrayList<>();
     }
@@ -111,10 +83,8 @@ public class NumericalPropagatorBuilder extends AbstractIntegratedPropagatorBuil
      * @param builder builder to copy
      */
     private NumericalPropagatorBuilder(final NumericalPropagatorBuilder builder) {
-        this(builder.createInitialOrbit(),
+        this(builder.getOrbitalParameterFactory(),
              builder.getIntegratorBuilder(),
-             builder.getPositionAngleType(),
-             builder.getPositionScale(),
              builder.getAttitudeProvider());
     }
 
@@ -193,23 +163,26 @@ public class NumericalPropagatorBuilder extends AbstractIntegratedPropagatorBuil
             }
         }
 
-        addSupportedParameters(model.getParametersDrivers());
+        addPropagationParameters(model.getParametersDrivers());
     }
 
     /** {@inheritDoc} */
     public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
+        final AbstractOrbitFactory<Orbit> factory = getOrbitalParameterFactory();
         setParameters(normalizedParameters);
-        final Orbit           orbit    = createInitialOrbit();
-        final Attitude        attitude =
-                getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
+        final Orbit           orbit    = factory.createFromDrivers();
+        final Attitude        attitude = getAttitudeProvider().
+                                         getAttitude(orbit, orbit.getDate(), factory.getFrame());
         final SpacecraftState state    = new SpacecraftState(orbit, attitude).withMass(getMass());
 
-        final NumericalPropagator propagator = new NumericalPropagator(
-                getIntegratorBuilder().buildIntegrator(orbit, getOrbitType(), getPositionAngleType()),
-                getAttitudeProvider());
-        propagator.setOrbitType(getOrbitType());
-        propagator.setPositionAngleType(getPositionAngleType());
+        final ODEIntegrator integrator = getIntegratorBuilder().
+                                         buildIntegrator(orbit,
+                                                         factory.getOrbitType(),
+                                                         factory.getPositionAngleType());
+        final NumericalPropagator propagator = new NumericalPropagator(integrator, getAttitudeProvider());
+        propagator.setOrbitType(factory.getOrbitType());
+        propagator.setPositionAngleType(factory.getPositionAngleType());
 
         // Configure force models
         if (!hasNewtonianAttraction()) {

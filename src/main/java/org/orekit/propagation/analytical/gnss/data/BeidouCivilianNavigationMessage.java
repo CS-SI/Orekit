@@ -18,8 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.RadioWave;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
 
 /**
@@ -29,17 +30,10 @@ import org.orekit.time.TimeScales;
  */
 public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<BeidouCivilianNavigationMessage> {
 
-    /** Identifier for Beidou-3 B1C message type. */
-    public static final String CNV1 = "CNV1";
-
-    /** Identifier for Beidou-3 B2A message type. */
-    public static final String CNV2 = "CNV2";
-
-    /** Identifier for Beidou-3 B2B message type. */
-    public static final String CNV3 = "CNV3";
-
-    /** Radio wave on which navigation signal is sent. */
-    private final RadioWave radioWave;
+    /** Beidou civilian message type.
+     * @since 14.0
+     */
+    private final BeidouCivilianType beidouType;
 
     /** Issue of Data, Ephemeris. */
     private int iode;
@@ -91,19 +85,17 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
 
     /**
      * Constructor.
-     * @param radioWave  radio wave on which navigation signal is sent
+     * @param beidouType Beidou civilian message type
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
-     * @param type       message type
      */
-    public BeidouCivilianNavigationMessage(final RadioWave radioWave,
-                                           final TimeScales timeScales, final SatelliteSystem system,
-                                           final String type) {
+    public BeidouCivilianNavigationMessage(final BeidouCivilianType beidouType,
+                                           final TimeScales timeScales, final SatelliteSystem system) {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system, type);
-        this.radioWave = radioWave;
+              timeScales, system, beidouType.name());
+        this.beidouType = beidouType;
     }
 
     /** Constructor from field instance.
@@ -112,7 +104,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      */
     public <T extends CalculusFieldElement<T>> BeidouCivilianNavigationMessage(final FieldBeidouCivilianNavigationMessage<T> original) {
         super(original);
-        this.radioWave = original.getRadioWave();
+        this.beidouType = original.getBeidouType();
         setIODE(original.getIODE());
         setIODC(original.getIODC());
         setIscB1CD(original.getIscB1CD().getReal());
@@ -131,6 +123,14 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
         setSatelliteType(original.getSatelliteType());
     }
 
+    /** Get the Beidou civilian message type.
+     * @return Beidou civilian message type
+     * @since 14.0
+     */
+    public BeidouCivilianType getBeidouType() {
+        return beidouType;
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean isCivilianMessage() {
@@ -143,14 +143,6 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouCivilianNavigationMessage>>
         F toField(final Field<T> field) {
         return (F) new FieldBeidouCivilianNavigationMessage<>(field, this);
-    }
-
-    /**
-     * Getter for radio wave.
-     * @return radio wave on which navigation signal is sent
-     */
-    public RadioWave getRadioWave() {
-        return radioWave;
     }
 
     /**
@@ -407,6 +399,16 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      */
     public void setSatelliteType(final BeidouSatelliteType satelliteType) {
         this.satelliteType = satelliteType;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSPropagatorBuilder<BeidouCivilianNavigationMessage> builder(final Frame inertial, final Frame bodyFixed) {
+        return new GNSSPropagatorBuilder<>(new BeidouCivilianFactory(getBeidouType(),
+                                                                     getTimeScales(), getSystem(),
+                                                                     inertial, bodyFixed,
+                                                                     getDate(), getMu()),
+                                           inertial, bodyFixed);
     }
 
 }

@@ -26,6 +26,7 @@ import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.CartesianOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -50,7 +51,8 @@ public class AbstractPropagatorBuilderTest {
         // Use a Cartesian orbit so the parameters are changed sufficiently when shifting the orbit of a minute
         final Orbit initialOrbit = new CartesianOrbit(context.initialOrbit);
 
-        final AbstractPropagatorBuilder<KeplerianPropagator> propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngleType.TRUE, 10., true) {
+        final AbstractPropagatorBuilder<KeplerianPropagator, CartesianOrbit, CartesianOrbitFactory> propagatorBuilder =
+            new AbstractPropagatorBuilder<>(initialOrbit, PositionAngleType.TRUE, 10., true) {
 
             @Override
             public KeplerianPropagator buildPropagator(double[] normalizedParameters) {

@@ -30,6 +30,11 @@ import java.util.function.Function;
 public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T>>
     extends FieldAbstractNavigationMessage<T, BeidouLegacyNavigationMessage> {
 
+    /** Indicator for D2 messages.
+     * @since 14.0
+     */
+    private final boolean d2;
+
     /** Age of Data, Ephemeris. */
     private int aode;
 
@@ -56,6 +61,7 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
      */
     public FieldBeidouLegacyNavigationMessage(final Field<T> field, final BeidouLegacyNavigationMessage original) {
         super(field, original);
+        this.d2 = original.isD2();
         setAODE(field.getZero().newInstance(original.getAODE()));
         setAODC(field.getZero().newInstance(original.getAODC()));
         setTGD1(field.getZero().newInstance(original.getTGD1()));
@@ -72,6 +78,7 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     public <V extends CalculusFieldElement<V>> FieldBeidouLegacyNavigationMessage(final Function<V, T> converter,
                                                                                   final FieldBeidouLegacyNavigationMessage<V> original) {
         super(converter, original);
+        this.d2 = original.isD2();
         setAODE(getMu().newInstance(original.getAODE()));
         setAODC(getMu().newInstance(original.getAODC()));
         setTGD1(converter.apply(original.getTGD1()));
@@ -92,6 +99,15 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, BeidouLegacyNavigationMessage>>
         G changeField(final Function<T, U> converter) {
         return (G) new FieldBeidouLegacyNavigationMessage<>(converter, this);
+    }
+
+    /**
+     * Check if message is a D2 message.
+     * @return true if message is a D2 message
+     * @since 14.0
+     */
+    public boolean isD2() {
+        return d2;
     }
 
     /**

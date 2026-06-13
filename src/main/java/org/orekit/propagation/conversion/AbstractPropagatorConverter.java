@@ -102,7 +102,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                                           final double threshold,
                                           final int maxIterations) {
         this.builder       = builder;
-        this.frame         = builder.getFrame();
+        this.frame         = builder.getOrbitalParameterFactory().getFrame();
         this.optimizer     = new LevenbergMarquardtOptimizer();
         this.maxIterations = maxIterations;
         this.sample        = new ArrayList<>();
@@ -288,7 +288,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                 // build the list of supported parameters
                 final StringBuilder sBuilder = new StringBuilder();
                 for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
-                    if (sBuilder.length() > 0) {
+                    if (!sBuilder.isEmpty()) {
                         sBuilder.append(", ");
                     }
                     sBuilder.append(driver.getName());

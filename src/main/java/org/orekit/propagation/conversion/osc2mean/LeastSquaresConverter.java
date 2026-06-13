@@ -170,10 +170,8 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
         this.optimizer = optimizer;
     }
 
-    /**
-     * Gets the convergence threshold.
-     * @return convergence threshold
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getThreshold() {
         return threshold;
     }
@@ -317,7 +315,7 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
         public Pair<RealVector, RealMatrix> value(final RealVector point) {
             final RealVector objectiveOscState = MatrixUtils.createRealVector(6);
             final RealMatrix objectiveJacobian = MatrixUtils.createRealMatrix(6, 6);
-            getTransformedAndJacobian(state -> mean2Osc(state), point,
+            getTransformedAndJacobian(this::mean2Osc, point,
                                       objectiveOscState, objectiveJacobian);
             return new Pair<>(objectiveOscState, objectiveJacobian);
         }

@@ -123,10 +123,8 @@ public class FixedPointConverter implements OsculatingToMeanConverter {
         this.theory = meanTheory;
     }
 
-    /**
-     * Gets convergence threshold.
-     * @return convergence threshold
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getThreshold() {
         return threshold;
     }

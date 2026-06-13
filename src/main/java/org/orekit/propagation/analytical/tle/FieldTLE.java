@@ -426,7 +426,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      *
      * @return UTC time scale.
      */
-    TimeScale getUtc() {
+    public TimeScale getUtc() {
         return utc;
     }
 
@@ -776,7 +776,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         converter.setMeanTheory(new TLETheory(templateTLE.toTLE(), dataContext));
         final T bStar = state.getMass().getField().getZero().newInstance(templateTLE.getBStar());
         final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        final FieldTLE<T> tle =  TleGenerationUtil.newTLE(mean, templateTLE, bStar, dataContext.getTimeScales().getUTC());
+        final FieldTLE<T> tle =  TleGenerationUtil.newTLE(mean, templateTLE, bStar);
         // reset estimated parameters from template to generated tle
         for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
             if (templateDrivers.isSelected()) {

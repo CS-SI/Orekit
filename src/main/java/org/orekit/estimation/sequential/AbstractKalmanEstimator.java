@@ -56,7 +56,7 @@ public abstract class AbstractKalmanEstimator implements ParameterEstimator {
     protected AbstractKalmanEstimator(final MatrixDecomposer decomposer,
                                       final List<? extends PropagatorBuilder> builders) {
         this.builders = builders;
-        this.referenceDate = builders.getFirst().getInitialOrbitDate();
+        this.referenceDate = builders.getFirst().getOrbitalParameterFactory().getDate();
         this.decomposer = decomposer;
         this.observer = null;
     }

@@ -52,9 +52,9 @@ import org.orekit.files.rinex.navigation.parsers.ionosphere.NavICKlobucharParser
 import org.orekit.files.rinex.navigation.parsers.ionosphere.NavICNeQuickNParser;
 import org.orekit.files.rinex.navigation.parsers.ionosphere.NeQuickGParser;
 import org.orekit.files.rinex.utils.ParsingUtils;
-import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouCivilianType;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
@@ -540,36 +540,23 @@ public class ParseInfo {
                 }
                 break;
             case BEIDOU:
-                if (messageType == null || messageType.equals(BeidouLegacyNavigationMessage.D1) || messageType.equals(
-                    BeidouLegacyNavigationMessage.D2)) {
+                if (messageType == null ||
+                    messageType.equals(BeidouLegacyNavigationMessage.D1) ||
+                    messageType.equals(BeidouLegacyNavigationMessage.D2)) {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
+                    final boolean d2 = messageType.equals(BeidouLegacyNavigationMessage.D2);
                     return new BeidouD1D2Parser(this,
-                                                new BeidouLegacyNavigationMessage(timeScales,
+                                                new BeidouLegacyNavigationMessage(d2,
+                                                                                  timeScales,
                                                                                   SatelliteSystem.BEIDOU,
                                                                                   messageType));
-                } else if (messageType.equals(BeidouCivilianNavigationMessage.CNV1)) {
+                } else {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
                     return new BeidouCnv123Parser(this,
-                                                  new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B1C,
+                                                  new BeidouCivilianNavigationMessage(BeidouCivilianType.valueOf(messageType),
                                                                                       timeScales,
-                                                                                      SatelliteSystem.BEIDOU,
-                                                                                      BeidouCivilianNavigationMessage.CNV1));
-                } else if (messageType.equals(BeidouCivilianNavigationMessage.CNV2)) {
-                    // in Rinex, week number for Beidou is really aligned to Beidou week!
-                    return new BeidouCnv123Parser(this,
-                                                  new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B2A,
-                                                                                      timeScales,
-                                                                                      SatelliteSystem.BEIDOU,
-                                                                                      BeidouCivilianNavigationMessage.CNV2));
-                } else if (messageType.equals(BeidouCivilianNavigationMessage.CNV3)) {
-                    // in Rinex, week number for Beidou is really aligned to Beidou week!
-                    return new BeidouCnv123Parser(this,
-                                                  new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B2B,
-                                                                                      timeScales,
-                                                                                      SatelliteSystem.BEIDOU,
-                                                                                      BeidouCivilianNavigationMessage.CNV3));
+                                                                                      SatelliteSystem.BEIDOU));
                 }
-                break;
             case NAVIC:
                 if (messageType == null || messageType.equals(NavICLegacyNavigationMessage.LNAV)) {
                     // in Rinex, week number is aligned to GPS week!

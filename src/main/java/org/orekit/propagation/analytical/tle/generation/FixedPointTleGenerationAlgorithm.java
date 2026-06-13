@@ -21,12 +21,9 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
-import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
 import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.TimeScale;
@@ -43,7 +40,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 12.0
  */
-public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm {
+public class FixedPointTleGenerationAlgorithm extends AbstractTleGenerationAlgorithm<FixedPointConverter> {
 
     /** Default value for epsilon. */
     public static final double EPSILON_DEFAULT = 1.0e-10;
@@ -53,12 +50,6 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
 
     /** Default value for scale. */
     public static final double SCALE_DEFAULT = 1.0;
-
-    /** Osculating to mean orbit converter. */
-    private final FixedPointConverter converter;
-
-    /** UTC time scale. */
-    private final TimeScale utc;
 
     /**
      * Default constructor.
@@ -104,26 +95,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
                                             final double scale,
                                             final TimeScale utc,
                                             final Frame teme) {
-        this.converter = new FixedPointConverter(new TLETheory(utc, teme),
-                                                 epsilon,
-                                                 maxIterations,
-                                                 scale);
-        this.utc       = utc;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public TLE generate(final SpacecraftState state, final TLE templateTLE) {
-        final KeplerianOrbit mean = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        final TLE tle = TleGenerationUtil.newTLE(mean, templateTLE, templateTLE.getBStar(mean.getDate()), utc);
-        // reset estimated parameters from template to generated tle
-        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
-            if (templateDrivers.isSelected()) {
-                // set to selected for the new TLE
-                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
-            }
-        }
-        return tle;
+        super(new FixedPointConverter(new TLETheory(utc, teme), epsilon, maxIterations, scale));
     }
 
     /** {@inheritDoc} */
@@ -131,8 +103,9 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
     public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
                                                                     final FieldTLE<T> templateTLE) {
         final T bStar = state.getMass().getField().getZero().newInstance(templateTLE.getBStar());
-        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        final FieldTLE<T> tle = TleGenerationUtil.newTLE(mean, templateTLE, bStar, utc);
+        final FieldKeplerianOrbit<T> mean =
+            (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(getConverter().convertToMean(state.getOrbit()));
+        final FieldTLE<T> tle = TleGenerationUtil.newTLE(mean, templateTLE, bStar);
         // reset estimated parameters from template to generated tle
         for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
             if (templateDrivers.isSelected()) {

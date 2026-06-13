@@ -22,8 +22,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOpti
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
@@ -31,7 +29,6 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.conversion.osc2mean.LeastSquaresConverter;
 import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.ParameterDriver;
 
 /**
  * Least squares method to generate a usable TLE from a spacecraft state.
@@ -39,16 +36,10 @@ import org.orekit.utils.ParameterDriver;
  * @author Mark Rutten
  * @since 12.0
  */
-public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorithm {
+public class LeastSquaresTleGenerationAlgorithm extends AbstractTleGenerationAlgorithm<LeastSquaresConverter> {
 
     /** Default value for maximum number of iterations.*/
     public static final int DEFAULT_MAX_ITERATIONS = 1000;
-
-    /** Osculating to mean orbit converter. */
-    private final LeastSquaresConverter converter;
-
-    /** UTC time scale. */
-    private final TimeScale utc;
 
     /**
      * Default constructor.
@@ -89,10 +80,11 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
     public LeastSquaresTleGenerationAlgorithm(final int maxIterations,
                                               final TimeScale utc,
                                               final Frame teme) {
-        this(utc, teme, new LeastSquaresConverter(new TLETheory(utc, teme),
-                                                  new LevenbergMarquardtOptimizer(),
-                                                  LeastSquaresConverter.DEFAULT_THRESHOLD,
-                                                  maxIterations));
+        this(utc, teme,
+             new LeastSquaresConverter(new TLETheory(utc, teme),
+                                       new LevenbergMarquardtOptimizer(),
+                                       LeastSquaresConverter.DEFAULT_THRESHOLD,
+                                       maxIterations));
     }
 
     /**
@@ -106,24 +98,8 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
     public LeastSquaresTleGenerationAlgorithm(final TimeScale utc,
                                               final Frame teme,
                                               final LeastSquaresConverter converter) {
-        this.utc       = utc;
-        this.converter = converter;
+        super(converter);
         converter.setMeanTheory(new TLETheory(utc, teme));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public TLE generate(final SpacecraftState state, final TLE templateTLE) {
-        final KeplerianOrbit mean = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        final TLE tle = TleGenerationUtil.newTLE(mean, templateTLE, templateTLE.getBStar(mean.getDate()), utc);
-        // reset estimated parameters from template to generated tle
-        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
-            if (templateDrivers.isSelected()) {
-                // set to selected for the new TLE
-                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
-            }
-        }
-        return tle;
     }
 
     /**
@@ -136,7 +112,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
      * @return the RMS
      */
     public double getRms() {
-        return converter.getRMS();
+        return getConverter().getRMS();
     }
 
     /** {@inheritDoc} */
@@ -145,4 +121,5 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
                                                                     final FieldTLE<T> templateTLE) {
         throw new UnsupportedOperationException();
     }
+
 }

@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -176,7 +177,8 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
 
         final BrouwerLyddanePropagatorBuilder propagatorBuilder =
                         context.createBrouwerLyddane(PositionAngleType.MEAN, true, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
@@ -307,6 +309,7 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);

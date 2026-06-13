@@ -16,6 +16,11 @@
  */
 package org.orekit.orbits;
 
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.util.List;
+
 /** Factory for circular orbits.
  * @since 14.0
  */
@@ -26,29 +31,23 @@ public class CircularOrbitFactory extends AbstractOrbitFactory<CircularOrbit> {
      * @param positionScale position scale used to scale the orbital drivers
      * @param positionAngleType position angle type to use
      */
-    protected CircularOrbitFactory(final CircularOrbit template, final double positionScale,
-                                   final PositionAngleType positionAngleType) {
-        super(template, positionScale, positionAngleType);
+    public CircularOrbitFactory(final CircularOrbit template, final double positionScale,
+                                final PositionAngleType positionAngleType) {
+        super(positionScale, template, positionAngleType);
     }
 
     /** {@inheritDoc} */
     @Override
-    public CircularOrbit toParameters(final double[] array) {
-        return new CircularOrbit(array[0], array[1], array[2], array[3], array[4], array[5],
+    public CircularOrbit createFromDrivers() {
+        final AbsoluteDate           date    = getDate();
+        final List<DelegatingDriver> drivers = getOrbitalParametersDrivers().getDrivers();
+        return new CircularOrbit(drivers.get(0).getValue(date),
+                                 drivers.get(1).getValue(date),
+                                 drivers.get(2).getValue(date),
+                                 drivers.get(3).getValue(date),
+                                 drivers.get(4).getValue(date),
+                                 drivers.get(5).getValue(date),
                                  getPositionAngleType(), getFrame(), getDate(), getMu());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public final double[] toArray(final CircularOrbit orbit) {
-        return new double[] {
-            orbit.getA(),
-            orbit.getCircularEx(),
-            orbit.getCircularEy(),
-            orbit.getI(),
-            orbit.getRightAscensionOfAscendingNode(),
-            orbit.getAlpha(getPositionAngleType())
-        };
     }
 
 }

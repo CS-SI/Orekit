@@ -23,6 +23,7 @@ import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -33,7 +34,6 @@ import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 import java.util.ArrayList;
@@ -44,7 +44,8 @@ import java.util.List;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<DSSTPropagator> {
+public class DSSTPropagatorBuilder
+    extends AbstractIntegratedPropagatorBuilder<DSSTPropagator, EquinoctialOrbit, EquinoctialOrbitFactory> {
 
     /** Force models used during the extrapolation of the orbit. */
     private final List<DSSTForceModel> forceModels;
@@ -53,59 +54,36 @@ public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<D
     private PropagationType stateType;
 
     /** Build a new instance.
-     * <p>
-     * The reference orbit is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, and is also used together
-     * with the {@code positionScale} to convert from the {@link
-     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
-     * The default attitude provider is aligned with the orbit's inertial frame.
-     * </p>
-     *
-     * @param referenceOrbit reference orbit from which real orbits will be built
+     * @param factory factory for initial orbit
      * @param builder first order integrator builder
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
-     * @see #DSSTPropagatorBuilder(Orbit, ODEIntegratorBuilder, double, PropagationType,
-     * PropagationType, AttitudeProvider)
+     * @see #DSSTPropagatorBuilder(EquinoctialOrbitFactory, ODEIntegratorBuilder,
+     * PropagationType, PropagationType, AttitudeProvider)
+     * @since 14.0
      */
-    public DSSTPropagatorBuilder(final Orbit referenceOrbit,
+    public DSSTPropagatorBuilder(final EquinoctialOrbitFactory factory,
                                  final ODEIntegratorBuilder builder,
-                                 final double positionScale,
                                  final PropagationType propagationType,
                                  final PropagationType stateType) {
-        this(referenceOrbit, builder, positionScale, propagationType, stateType,
-             FrameAlignedProvider.of(referenceOrbit.getFrame()));
+        this(factory, builder, propagationType, stateType,
+             FrameAlignedProvider.of(factory.getFrame()));
     }
 
     /** Build a new instance.
-     * <p>
-     * The reference orbit is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, and is also used together
-     * with the {@code positionScale} to convert from the {@link
-     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
-     * </p>
-     * @param referenceOrbit reference orbit from which real orbits will be built
+     * @param factory factory for initial orbit
      * @param builder first order integrator builder
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
      * @param attitudeProvider attitude law.
-     * @since 10.1
+     * @since 14.0
      */
-    public DSSTPropagatorBuilder(final Orbit referenceOrbit,
+    public DSSTPropagatorBuilder(final EquinoctialOrbitFactory factory,
                                  final ODEIntegratorBuilder builder,
-                                 final double positionScale,
                                  final PropagationType propagationType,
                                  final PropagationType stateType,
                                  final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, builder, PositionAngleType.MEAN, positionScale, propagationType, attitudeProvider, Propagator.DEFAULT_MASS);
+        super(factory, builder, propagationType, attitudeProvider, Propagator.DEFAULT_MASS);
         this.forceModels       = new ArrayList<>();
         this.stateType         = stateType;
     }
@@ -114,8 +92,8 @@ public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<D
      * @param builder builder to copy from
      */
     private DSSTPropagatorBuilder(final DSSTPropagatorBuilder builder) {
-        this(builder.createInitialOrbit(), builder.getIntegratorBuilder(),
-             builder.getPositionScale(), builder.getPropagationType(),
+        this(builder.getOrbitalParameterFactory(), builder.getIntegratorBuilder(),
+             builder.getPropagationType(),
              builder.getStateType(), builder.getAttitudeProvider());
     }
 
@@ -179,7 +157,7 @@ public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<D
             }
         }
 
-        addSupportedParameters(model.getParametersDrivers());
+        addPropagationParameters(model.getParametersDrivers());
     }
 
     /** Reset the orbit in the propagator builder.
@@ -195,8 +173,8 @@ public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<D
     public DSSTPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
-        final EquinoctialOrbit orbit    = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit());
-        final Attitude         attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
+        final EquinoctialOrbit orbit    = getOrbitalParameterFactory().createFromDrivers();
+        final Attitude         attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         final SpacecraftState  state    = new SpacecraftState(orbit, attitude).withMass(getMass());
 
         final DSSTPropagator propagator = new DSSTPropagator(

@@ -79,9 +79,8 @@ class GnssGradientConverterTest {
         goe.setCrs(-18.78125);
         goe.setCic(3.166496753692627E-8);
         goe.setCis(-1.862645149230957E-8);
-        propagator = new GNSSPropagatorBuilder(goe,
-                                               context.getFrames().getEME2000(),
-                                               context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+        propagator = goe.builder(context.getFrames().getEME2000(),
+                                 context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                      buildPropagator();
     }
 

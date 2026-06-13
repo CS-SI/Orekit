@@ -22,34 +22,29 @@ import org.orekit.utils.ParameterDriver;
  * @param <P> type of the orbits
  * @since 14.0
  */
-public abstract class AbstractOrbitFactory<P extends Orbit>
-    extends AbstractOrbitalParameterFactory<P> {
+public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbitalParameterFactory<P> {
 
     /** Orbit type to use. */
     private final OrbitType orbitType;
 
-    /** Position angle type to use. */
-    private final PositionAngleType positionAngleType;
-
-    /** Simple constructor.
+    /**
+     * Simple constructor.
      * <p>
-     * The template orbit is used as a model. It defines the
-     * inertial frame, the central attraction coefficient, the orbit type, and is also
-     * used together with the {@code positionScale} to convert from the {@link
-     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this factory to the real orbital parameters.
+     * The template orbit is used as a model. It defines the inertial frame, the central attraction coefficient, the
+     * orbit type, and is also used together with the {@code positionScale} to convert from the
+     * {@link ParameterDriver#setNormalizedValue(double) normalized} parameters used by the callers of this factory to
+     * the real orbital parameters.
      * </p>
-     * @param template template orbit
-     * @param positionScale position scale used to scale the orbital drivers
+     *
+     * @param positionScale     position scale used to scale the orbital drivers
+     * @param template          template orbit
      * @param positionAngleType position angle type to use
      */
-    protected AbstractOrbitFactory(final P template, final double positionScale,
+    protected AbstractOrbitFactory(final double positionScale, final P template,
                                    final PositionAngleType positionAngleType) {
-        super(template.getDate(), template.getFrame(), template.getMu(),
-              template.getType().getDrivers(positionScale, template, positionAngleType),
-              positionScale);
+        super(template.getType().getDrivers(positionScale, template, positionAngleType),
+              template.getFrame(), positionAngleType, template.getDate(), template.getMu());
         this.orbitType         = template.getType();
-        this.positionAngleType = positionAngleType;
     }
 
     /** Get the orbit type to use.
@@ -57,13 +52,6 @@ public abstract class AbstractOrbitFactory<P extends Orbit>
      */
     public OrbitType getOrbitType() {
         return orbitType;
-    }
-
-    /** Get the position angle type to use.
-     * @return position angle type to use
-     */
-    public PositionAngleType getPositionAngleType() {
-        return positionAngleType;
     }
 
 }

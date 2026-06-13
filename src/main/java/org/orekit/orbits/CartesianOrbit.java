@@ -140,6 +140,13 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     @Override
+    public AbstractOrbitFactory<CartesianOrbit> factory(final double positionScale,
+                                                        final PositionAngleType positionAngleType) {
+        return new CartesianOrbitFactory(this, positionScale);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected Vector3D nonKeplerianAcceleration() {
         final double norm = getPosition().getNorm();
         return getPVCoordinates().getAcceleration().add(new Vector3D(getMu() / (norm * norm * norm), getPosition()));

@@ -26,6 +26,7 @@ import org.hipparchus.linear.RealVector;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitalParameterFactory;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -137,7 +138,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
 
             // Orbital drivers
             final List<DelegatingDriver> orbitalParameterDrivers =
-                    getBuilders().get(k).getOrbitalParametersDrivers().getDrivers();
+                    getBuilders().get(k).getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers();
 
             // Indexes
             final int[] indK = covarianceIndirection[k];
@@ -247,6 +248,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         final Map<String, Integer> measurementParameterColumns = getMeasurementParameterColumns();
         for (int k = 0; k < evaluationStates.length; ++k) {
             final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
+            final OrbitalParameterFactory<?> factory = getBuilders().get(p).getOrbitalParameterFactory();
 
             // Predicted orbit
             final Orbit predictedOrbit = evaluationStates[k].getOrbit();
@@ -256,7 +258,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
 
             // Partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];
-            predictedOrbit.getJacobianWrtParameters(getBuilders().get(p).getPositionAngleType(), aCY);   //dC/dY
+            predictedOrbit.getJacobianWrtParameters(factory.getPositionAngleType(), aCY);   //dC/dY
             final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
             // Jacobian of the measurement with respect to current Cartesian coordinates
@@ -266,10 +268,11 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
             // Fill the normalized measurement matrix's columns related to estimated orbital parameters
+            final List<DelegatingDriver> drivers = factory.getOrbitalParametersDrivers().getDrivers();
             for (int i = 0; i < dMdY.getRowDimension(); ++i) {
                 int jOrb = orbitsStartColumns[p];
                 for (int j = 0; j < dMdY.getColumnDimension(); ++j) {
-                    final ParameterDriver driver = getBuilders().get(p).getOrbitalParametersDrivers().getDrivers().get(j);
+                    final ParameterDriver driver = drivers.get(j);
                     if (driver.isSelected()) {
                         measurementMatrix.setEntry(i, jOrb++,
                                                    dMdY.getEntry(i, j) / sigma[i] * driver.getScale());
@@ -333,7 +336,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(getBuilders().getFirst().getInitialOrbitDate());
+                driver.setReferenceDate(getBuilders().getFirst().getOrbitalParameterFactory().getDate());
             }
         }
 
@@ -445,14 +448,18 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
             // If any mass changes have occurred during this estimation step, such as maneuvers,
             // the updated mass value must be carried over so that new Propagators from this builder start with the updated mass.
             if (getBuilders().get(k) instanceof AbstractPropagatorBuilder) {
-                ((AbstractPropagatorBuilder<?>) (getBuilders().get(k))).setMass(predictedSpacecraftState.getMass());
+                ((AbstractPropagatorBuilder<?, ?, ?>) (getBuilders().get(k))).setMass(predictedSpacecraftState.getMass());
             }
 
             // The orbital parameters in the state vector are replaced with their predicted values
             // The propagation & measurement parameters are not changed by the prediction (i.e. the propagation)
             // As the propagator builder was previously updated with the predicted orbit,
             // the selected orbital drivers are already up to date with the prediction
-            for (DelegatingDriver orbitalDriver : getBuilders().get(k).getOrbitalParametersDrivers().getDrivers()) {
+            final ParameterDriversList drivers = getBuilders().
+                                                 get(k).
+                                                 getOrbitalParameterFactory().
+                                                 getOrbitalParametersDrivers();
+            for (DelegatingDriver orbitalDriver : drivers.getDrivers()) {
                 if (orbitalDriver.isSelected()) {
                     predictedState.setEntry(jOrb++, orbitalDriver.getNormalizedValue());
                 }
