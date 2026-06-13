@@ -34,7 +34,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldKeplerianParameters;
@@ -210,12 +209,12 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GN
     /** {@inheritDoc} */
     @Override
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
-        // Gets the PVCoordinates in ECEF frame
+        // Get the PVCoordinates in ECEF frame
         final FieldPVCoordinates<T> pvaInECEF = propagateInEcef(date, parameters);
-        // Transforms the PVCoordinates to ECI frame
+        // Transform the PVCoordinates to ECI frame
         final FieldPVCoordinates<T> pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
-        // Returns the Cartesian orbit
-        return new FieldCartesianOrbit<>(pvaInECI, eci, date, getMU());
+        // Return the Keplerian orbit
+        return new FieldKeplerianOrbit<>(pvaInECI, eci, date, getMU());
     }
 
     /**

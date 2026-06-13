@@ -24,9 +24,6 @@ import org.orekit.utils.ParameterDriver;
  */
 public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbitalParameterFactory<P> {
 
-    /** Orbit type to use. */
-    private final OrbitType orbitType;
-
     /**
      * Simple constructor.
      * <p>
@@ -42,16 +39,9 @@ public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbi
      */
     protected AbstractOrbitFactory(final double positionScale, final P template,
                                    final PositionAngleType positionAngleType) {
-        super(template.getType().getDrivers(positionScale, template, positionAngleType),
+        super(template.getType(),
+              template.getType().getDrivers(positionScale, template, positionAngleType),
               template.getFrame(), positionAngleType, template.getDate(), template.getMu());
-        this.orbitType         = template.getType();
-    }
-
-    /** Get the orbit type to use.
-     * @return orbit type to use
-     */
-    public OrbitType getOrbitType() {
-        return orbitType;
     }
 
     /** {@inheritDoc} */
@@ -60,11 +50,11 @@ public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbi
 
         // fix both frame and type
         final Orbit partiallyConverted = orbit.getFrame() == getFrame() ? orbit : orbit.inFrame(getFrame());
-        final Orbit fullyConverted     = orbitType.convertType(partiallyConverted);
+        final Orbit fullyConverted     = getOrbitType().convertType(partiallyConverted);
 
         // retrieve orbital parameters
         final double[] stateVector = new double[6];
-        orbitType.mapOrbitToArray(fullyConverted, getPositionAngleType(), stateVector, null);
+        getOrbitType().mapOrbitToArray(fullyConverted, getPositionAngleType(), stateVector, null);
 
         return stateVector;
 

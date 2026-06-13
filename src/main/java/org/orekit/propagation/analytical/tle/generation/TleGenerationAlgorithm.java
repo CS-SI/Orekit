@@ -90,7 +90,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
      */
     protected TleGenerationAlgorithm(final TLE templateTLE,  final Frame teme,
                                      final OsculatingToMeanConverter converter) {
-        super(createOrbitalParametersDrivers(templateTLE), teme, PositionAngleType.MEAN,
+        super(null, createOrbitalParametersDrivers(templateTLE), teme, PositionAngleType.MEAN,
               templateTLE.getDate(), TLEConstants.MU);
         this.templateTLE = templateTLE;
 

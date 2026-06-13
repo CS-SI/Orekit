@@ -26,6 +26,11 @@ import org.orekit.utils.ParameterDriversList;
  */
 public interface OrbitalParameterFactory<P extends OrbitalParameters> extends Cloneable {
 
+    /** Get the orbit type to use.
+     * @return orbit type to use
+     */
+    OrbitType getOrbitType();
+
     /** Get the drivers for orbital parameters.
      * <p>
      * There are always exactly 6 drivers for orbital parameters
