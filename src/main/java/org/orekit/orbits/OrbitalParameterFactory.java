@@ -24,7 +24,7 @@ import org.orekit.utils.ParameterDriversList;
  * @param <P> type of the orbital parameters
  * @since 14.0
  */
-public interface OrbitalParameterFactory<P extends OrbitalParameters> {
+public interface OrbitalParameterFactory<P extends OrbitalParameters> extends Cloneable {
 
     /** Get the drivers for orbital parameters.
      * <p>

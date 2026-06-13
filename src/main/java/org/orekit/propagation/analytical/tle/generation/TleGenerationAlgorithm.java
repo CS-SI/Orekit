@@ -19,6 +19,8 @@ package org.orekit.propagation.analytical.tle.generation;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.AbstractOrbitalParameterFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -78,7 +80,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
     private final TLE templateTLE;
 
     /** Non-Keplerian drivers (containing only for ballistic coefficient parameter). */
-    private final ParameterDriversList nonKeplerianDrivers;
+    private ParameterDriversList nonKeplerianDrivers;
 
     /** Osculating to mean orbit converter. */
     private final OsculatingToMeanConverter converter;
@@ -239,6 +241,23 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
         final FieldKeplerianOrbit<T> mean =
             (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
         return TleGenerationUtil.newTLE(mean, templateTLE);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TleGenerationAlgorithm clone() {
+
+        final TleGenerationAlgorithm clone = (TleGenerationAlgorithm) super.clone();
+
+        // de-couple b-star driver
+        final ParameterDriversList newDrivers = new ParameterDriversList();
+        final ParameterDriver driver = nonKeplerianDrivers.getDrivers().get(0);
+        newDrivers.add(new ParameterDriver(driver.getName(), driver.getValue(), driver.getScale(),
+                                           driver.getMinValue(), driver.getMaxValue()));
+        nonKeplerianDrivers = newDrivers;
+
+        return clone;
+
     }
 
 }

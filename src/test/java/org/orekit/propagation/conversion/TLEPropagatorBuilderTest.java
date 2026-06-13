@@ -84,9 +84,10 @@ public class TLEPropagatorBuilderTest {
         // Then
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
-        final PVCoordinates initialPv = TLEPropagator.
-                                        selectExtrapolator(builder.getOrbitalParameterFactory().createFromDrivers()).
-                                        getPVCoordinates(orbit.getDate());
+        final PVCoordinates initialPv  = TLEPropagator.
+                                         selectExtrapolator(builder.getOrbitalParameterFactory().createFromDrivers()).
+                                         propagateOrbit(orbit.getDate()).
+                                         getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());
         final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
         final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());

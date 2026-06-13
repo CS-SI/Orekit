@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -29,7 +31,7 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
     implements OrbitalParameterFactory<P> {
 
     /** Drivers for orbital parameters. */
-    private final ParameterDriversList drivers;
+    private ParameterDriversList orbitalDrivers;
 
     /** Frame in which the orbital parameters are defined. */
     private final Frame frame;
@@ -46,16 +48,17 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
     /**
      * Simple constructor.
      *
-     * @param drivers           drivers for orbital parameters
+     * @param orbitalDrivers    drivers for orbital parameters
      * @param frame             frame in which the orbital parameters are defined
      * @param positionAngleType position angle type to use
      * @param date              date of the orbital parameters
      * @param mu                central attraction coefficient (m³/s²)
      */
-    protected AbstractOrbitalParameterFactory(final ParameterDriversList drivers, final Frame frame,
+    protected AbstractOrbitalParameterFactory(final ParameterDriversList orbitalDrivers,
+                                              final Frame frame,
                                               final PositionAngleType positionAngleType,
                                               final AbsoluteDate date, final double mu) {
-        this.drivers           = drivers;
+        this.orbitalDrivers    = orbitalDrivers;
         this.date              = date;
         this.frame             = frame;
         this.positionAngleType = positionAngleType;
@@ -65,7 +68,7 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
     /** {@inheritDoc} */
     @Override
     public ParameterDriversList getOrbitalParametersDrivers() {
-        return drivers;
+        return orbitalDrivers;
     }
 
     /** {@inheritDoc} */
@@ -118,9 +121,9 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
         // fix orbital parameters
         final double[] stateVector = toArray(orbit);
         for (int i = 0; i < 6; i++) {
-            final ParameterDriver driver = getOrbitalParametersDrivers().getDrivers().get(i);
+            final ParameterDriver driver = orbitalDrivers.getDrivers().get(i);
             driver.setReferenceValue(stateVector[i]);
-            driver.setValue(stateVector[i], getDate());
+            driver.setValue(stateVector[i]);
         }
 
         // fix date
@@ -136,5 +139,31 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
      * @return arrays corresponding to orbit
      */
     protected abstract double[] toArray(Orbit orbit);
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractOrbitalParameterFactory<P> clone() {
+        try {
+
+            final AbstractOrbitalParameterFactory<P> clone = (AbstractOrbitalParameterFactory<P>) super.clone();
+
+            // de-couple orbital parameters drivers
+            final ParameterDriversList oldDrivers = orbitalDrivers;
+            final ParameterDriversList newDrivers = new ParameterDriversList();
+            for (final ParameterDriver oldDriver : oldDrivers.getDrivers()) {
+                final ParameterDriver newDriver =
+                    new ParameterDriver(oldDriver.getName(), oldDriver.getValue(), oldDriver.getScale(),
+                                        oldDriver.getMinValue(), oldDriver.getMaxValue());
+                newDriver.setSelected(oldDriver.isSelected());
+                newDrivers.add(newDriver);
+            }
+            orbitalDrivers = newDrivers;
+
+            return clone;
+
+        } catch (CloneNotSupportedException cnse) {
+            throw new OrekitException(OrekitMessages.ORBITAL_PARAMETER_FACTORY_NOT_CLONEABLE);
+        }
+    }
 
 }

@@ -976,6 +976,9 @@ public enum OrekitMessages implements Localizable {
     /** PROPAGATOR_BUILDER_NOT_CLONEABLE. */
     PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned"),
 
+    /** ORBITAL_PARAMETER_FACTORY_NOT_CLONEABLE. */
+    ORBITAL_PARAMETER_FACTORY_NOT_CLONEABLE("orbital parameter factory cannot be cloned"),
+
     /** WRONG_PROCESS_COVARIANCE_DIMENSION. */
     WRONG_PROCESS_COVARIANCE_DIMENSION("Process covariance expecting dimension {0}, got {1}"),
 

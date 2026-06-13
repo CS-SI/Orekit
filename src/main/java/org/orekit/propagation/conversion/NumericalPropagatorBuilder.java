@@ -94,8 +94,10 @@ public class NumericalPropagatorBuilder
         // Call to super clone() method to avoid warning
         final NumericalPropagatorBuilder clonedBuilder = (NumericalPropagatorBuilder) super.clone();
 
-        // Use copy constructor to unlink orbital drivers
-        final NumericalPropagatorBuilder builder =  new NumericalPropagatorBuilder(clonedBuilder);
+        // Use cloned builder to unlink orbital drivers
+        final NumericalPropagatorBuilder builder =
+            new NumericalPropagatorBuilder((AbstractOrbitFactory<Orbit>) clonedBuilder.getOrbitalParameterFactory().clone(),
+                                           clonedBuilder.getIntegratorBuilder(), clonedBuilder.getAttitudeProvider());
 
         // Set mass and force models
         builder.setMass(getMass());

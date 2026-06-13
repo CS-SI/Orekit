@@ -51,13 +51,6 @@ public class KeplerianPropagatorBuilder
         super((AbstractOrbitFactory<Orbit>) factory, true, attitudeProvider, Propagator.DEFAULT_MASS);
     }
 
-    /** Copy constructor.
-     * @param builder builder to copy from
-     */
-    private KeplerianPropagatorBuilder(final KeplerianPropagatorBuilder builder) {
-        this(builder.getOrbitalParameterFactory(), builder.getAttitudeProvider());
-    }
-
     /** {@inheritDoc}. */
     @Override
     public KeplerianPropagatorBuilder clone() {
@@ -65,7 +58,9 @@ public class KeplerianPropagatorBuilder
         final KeplerianPropagatorBuilder clonedBuilder = (KeplerianPropagatorBuilder) super.clone();
 
         // Use copy constructor to unlink orbital drivers
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(clonedBuilder);
+        final KeplerianPropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(clonedBuilder.getOrbitalParameterFactory().clone(),
+                                           clonedBuilder.getAttitudeProvider());
 
         // Set mass
         builder.setMass(getMass());
