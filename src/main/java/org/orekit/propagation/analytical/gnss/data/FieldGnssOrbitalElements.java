@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.MathArrays;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbitalParameters;
 import org.orekit.time.FieldAbsoluteDate;
@@ -298,6 +299,31 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @return non-field version of the instance
      */
     public abstract O toNonField();
+
+    /** Create an array with the 15 non-Keplerian parameters.
+     * <p>
+     *  The array is ordered according to {@link NonKeplerianDriversFactory} order.
+     *  </p>
+     * @return array with the 15 non-Keplerian parameters
+     */
+    public T[] toArray() {
+        final T[] array = MathArrays.buildArray(orbit.getDate().getField(), NonKeplerianDriversFactory.SIZE);
+        array[NonKeplerianDriversFactory.A_DOT_INDEX]        = aDot;
+        array[NonKeplerianDriversFactory.DELTA_N0_INDEX]     = deltaN0;
+        array[NonKeplerianDriversFactory.DELTA_N0_DOT_INDEX] = deltaN0Dot;
+        array[NonKeplerianDriversFactory.I_DOT_INDEX]        = iDot;
+        array[NonKeplerianDriversFactory.OMEGA_DOT_INDEX]    = omegaDot;
+        array[NonKeplerianDriversFactory.CUC_INDEX]          = cuc;
+        array[NonKeplerianDriversFactory.CUS_INDEX]          = cus;
+        array[NonKeplerianDriversFactory.CRC_INDEX]          = crc;
+        array[NonKeplerianDriversFactory.CRS_INDEX]          = crs;
+        array[NonKeplerianDriversFactory.CIC_INDEX]          = cic;
+        array[NonKeplerianDriversFactory.CIS_INDEX]          = cis;
+        array[NonKeplerianDriversFactory.AF0_INDEX]          = af0;
+        array[NonKeplerianDriversFactory.AF1_INDEX]          = af1;
+        array[NonKeplerianDriversFactory.AF2_INDEX]          = af2;
+        return array;
+    }
 
     /** Create another field version of the instance.
      * @param <U>          type of the new field elements

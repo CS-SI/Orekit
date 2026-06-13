@@ -463,7 +463,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
                                                            new FieldAbsoluteDate<>(initialOrbit.getMu().getValue().getField(),
                                                                                    initialOrbit.getDate().toAbsoluteDate()),
                                                            initialOrbit.getMu().getValue()),
-                                 driversFactory.toArray(zero.getField(), zero::newInstance),
+                                 nonKeplerianElements.toArray(),
                                  FieldGradient::getValue);
 
     }

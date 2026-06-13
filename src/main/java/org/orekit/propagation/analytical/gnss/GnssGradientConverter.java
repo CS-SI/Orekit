@@ -108,9 +108,22 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>,
                                                                    d  -> Gradient.constant(nbParams, d));
 
         // build propagator handling gradient
-        return new FieldGnssPropagator<>(gState, elements,
-                                         propagator.getECEF(), propagator.getAttitudeProvider(),
-                                         gState.getMass());
+        final FieldGnssPropagator<Gradient, O, P> gPropagator =
+            new FieldGnssPropagator<>(gState, elements,
+                                      propagator.getECEF(), propagator.getAttitudeProvider(),
+                                      gState.getMass());
+        final List<ParameterDriver> gDrivers = gPropagator.getParametersDrivers();
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isSelected()) {
+                gDrivers.
+                    stream().
+                    filter(gDriver -> driver.getName().equals(gDriver.getName())).
+                    findFirst().
+                    ifPresent(gDriver -> gDriver.setSelected(true));
+            }
+        }
+
+        return gPropagator;
 
     }
 
