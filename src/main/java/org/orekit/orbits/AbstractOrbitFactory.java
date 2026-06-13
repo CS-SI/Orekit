@@ -64,7 +64,7 @@ public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbi
 
         // retrieve orbital parameters
         final double[] stateVector = new double[6];
-        orbitType.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
+        orbitType.mapOrbitToArray(fullyConverted, getPositionAngleType(), stateVector, null);
 
         return stateVector;
 
