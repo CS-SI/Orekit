@@ -205,8 +205,7 @@ public class TLEKalmanEstimatorTest {
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createTleBuilder(dP);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
                                                             LOFType.LVLH));
 

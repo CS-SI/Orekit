@@ -23,12 +23,8 @@ import org.orekit.data.DataContext;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.List;
 
 /** Builder for TLEPropagator.
  * @author Pascal Parraud
@@ -36,7 +32,7 @@ import java.util.List;
  * @since 6.0
  */
 public class TLEPropagatorBuilder
-    extends AbstractAnalyticalPropagatorBuilder<TLEPropagator, TLE, TleParametersFactory> {
+    extends AbstractAnalyticalPropagatorBuilder<TLEPropagator, TLE, TleGenerationAlgorithm> {
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
@@ -46,49 +42,40 @@ public class TLEPropagatorBuilder
 
     /** Build a new instance. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
-     * @param factory TLE parameters factory
      * @param generationAlgorithm TLE generation algorithm
+     * @see #TLEPropagatorBuilder(DataContext, TleGenerationAlgorithm)
+     * @see #TLEPropagatorBuilder(DataContext, TleGenerationAlgorithm, AttitudeProvider)
      * @since 14.0
-     * @see #TLEPropagatorBuilder(DataContext, TleParametersFactory, TleGenerationAlgorithm)
-     * @see #TLEPropagatorBuilder(DataContext, TleParametersFactory, TleGenerationAlgorithm, AttitudeProvider)
      */
     @DefaultDataContext
-    public TLEPropagatorBuilder(final TleParametersFactory factory,
-                                final TleGenerationAlgorithm generationAlgorithm) {
-        this(DataContext.getDefault(), factory, generationAlgorithm);
+    public TLEPropagatorBuilder(final TleGenerationAlgorithm generationAlgorithm) {
+        this(DataContext.getDefault(), generationAlgorithm);
     }
 
     /** Build a new instance.
      * @param dataContext used to access frames and time scales.
-     * @param factory TLE parameters factory
      * @param generationAlgorithm TLE generation algorithm
+     * @see #TLEPropagatorBuilder(DataContext, TleGenerationAlgorithm, AttitudeProvider)
      * @since 14.0
-     * @see #TLEPropagatorBuilder(DataContext, TleParametersFactory, TleGenerationAlgorithm, AttitudeProvider)
      */
     public TLEPropagatorBuilder(final DataContext dataContext,
-                                final TleParametersFactory factory,
                                 final TleGenerationAlgorithm generationAlgorithm) {
-        this(dataContext, factory, generationAlgorithm,
+        this(dataContext, generationAlgorithm,
              FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
     }
 
     /** Build a new instance.
      * @param dataContext used to access frames and time scales.
-     * @param factory TLE parameters factory
      * @param generationAlgorithm TLE generation algorithm
      * @param attitudeProvider attitude law to use
      * @since 14.0
      */
     public TLEPropagatorBuilder(final DataContext dataContext,
-                                final TleParametersFactory factory,
                                 final TleGenerationAlgorithm generationAlgorithm,
                                 final AttitudeProvider attitudeProvider) {
-        super(factory, false, attitudeProvider, Propagator.DEFAULT_MASS);
+        super(generationAlgorithm, false, attitudeProvider, Propagator.DEFAULT_MASS);
         this.dataContext         = dataContext;
         this.generationAlgorithm = generationAlgorithm;
-
-        // Propagation parameters: Bstar
-        addPropagationParameters(factory.createFromDrivers().getParametersDrivers());
 
     }
 
@@ -96,8 +83,7 @@ public class TLEPropagatorBuilder
      * @param builder builder to copy from
      */
     private TLEPropagatorBuilder(final TLEPropagatorBuilder builder) {
-        this(builder.dataContext, builder.getOrbitalParameterFactory(),
-             builder.generationAlgorithm, builder.getAttitudeProvider());
+        this(builder.dataContext, builder.generationAlgorithm, builder.getAttitudeProvider());
     }
 
     /** {@inheritDoc}. */
@@ -128,12 +114,6 @@ public class TLEPropagatorBuilder
 
         // TLE related to the orbit
         final TLE tle = getOrbitalParameterFactory().createFromDrivers();
-        final List<ParameterDriver> drivers = tle.getParametersDrivers();
-        for (int index = 0; index < drivers.size(); index++) {
-            if (drivers.get(index).isSelected()) {
-                tle.getParametersDrivers().get(index).setSelected(true);
-            }
-        }
 
         // propagator
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), getMass(),

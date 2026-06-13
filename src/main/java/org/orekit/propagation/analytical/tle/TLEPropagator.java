@@ -47,6 +47,8 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -75,7 +77,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Fabien Maussion (java translation)
  * @see TLE
  */
-public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
+public abstract class TLEPropagator extends AbstractAnalyticalPropagator implements ParameterDriversProvider {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
@@ -182,6 +184,11 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** All TLEs and masses. */
     private TimeSpanMap<Pair<TLE, Double>> tlesAndMasses;
 
+    /** Driver for the ballistic parameter.
+     * @since 14.0
+     */
+    private final ParameterDriver bStarDriver;
+
     /** Protected constructor for derived classes.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
@@ -192,10 +199,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @see #TLEPropagator(TLE, AttitudeProvider, double, Frame)
      */
     @DefaultDataContext
-    protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                            final double mass) {
+    protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider, final double mass) {
         this(initialTLE, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME());
+             DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Protected constructor for derived classes.
@@ -211,10 +217,29 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
                             final Frame teme) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
-        this.utc       = initialTLE.getUtc();
+        this.utc           = initialTLE.getUtc();
         initializeTle(initialTLE);
-        this.teme      = teme;
+        this.teme          = teme;
         this.tlesAndMasses = new TimeSpanMap<>(new Pair<>(tle, mass));
+        this.bStarDriver   = new ParameterDriver(TleGenerationAlgorithm.B_STAR,
+                                                 initialTLE.getBStar(),
+                                                 TleGenerationAlgorithm.B_STAR_SCALE,
+                                                 Double.NEGATIVE_INFINITY,
+                                                 Double.POSITIVE_INFINITY);
+        bStarDriver.addObserver(new ParameterObserver() {
+
+            @Override
+            public void valueChanged(final double previousValue, final ParameterDriver driver,
+                                     final AbsoluteDate date) {
+                resetBStar();
+            }
+
+            @Override
+            public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap,
+                                            final ParameterDriver driver) {
+                resetBStar();
+            }
+        });
 
         // set the initial state
         final Orbit orbit = propagateOrbit(initialTLE.getDate());
@@ -287,10 +312,11 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
                                                    final double mass,
                                                    final Frame teme) {
 
-        final double a1 = FastMath.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
+        final double xkeOverN = TLEConstants.XKE / (tle.getMeanMotion() * 60.0);
+        final double a1 = FastMath.cbrt(xkeOverN * xkeOverN);
         final double cosi0 = FastMath.cos(tle.getI());
-        final double temp = TLEConstants.CK2 * 1.5 * (3 * cosi0 * cosi0 - 1.0) *
-                            FastMath.pow(1.0 - tle.getE() * tle.getE(), -1.5);
+        final double oMe2  = 1.0 - tle.getE() * tle.getE();
+        final double temp = TLEConstants.CK2 * 1.5 * (3 * cosi0 * cosi0 - 1.0) / (oMe2 * FastMath.sqrt(oMe2));
         final double delta1 = temp / (a1 * a1);
         final double a0 = a1 * (1.0 - delta1 * (TLEConstants.ONE_THIRD + delta1 * (delta1 * 134.0 / 81.0 + 1.0)));
         final double delta0 = temp / (a0 * a0);
@@ -319,20 +345,22 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     public PVCoordinates getPVCoordinates(final AbsoluteDate date) {
 
-        sxpPropagate(date.durationFrom(tle.getDate()) / 60.0);
+        sxpPropagate(date.durationFrom(tle.getDate()) / 60.0, tle.getBStar());
 
         // Compute PV with previous calculated parameters
         return computePVCoordinates();
     }
 
     /** Computation of the first commons parameters.
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    private void initializeCommons() {
+    private void initializeCommons(final double bStar) {
 
         // Sine and cosine of inclination
         final SinCos scI0 = FastMath.sinCos(tle.getI());
 
-        final double a1 = FastMath.pow(TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
+        final double xkeOverN = TLEConstants.XKE / (tle.getMeanMotion() * 60.0);
+        final double a1 = FastMath.cbrt(xkeOverN * xkeOverN);
         cosi0 = scI0.cos();
         theta2 = cosi0 * cosi0;
         final double x3thm1 = 3.0 * theta2 - 1.0;
@@ -382,7 +410,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         // C2 and C1 coefficients computation :
         c2 = coef1 * xn0dp * (a0dp * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
              0.75 * TLEConstants.CK2 * tsi / psisq * x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
-        c1 = tle.getBStar() * c2;
+        c1 = bStar * c2;
         sini0 = scI0.sin();
 
         final double x1mth2 = 1.0 - theta2;
@@ -546,14 +574,22 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(bStarDriver);
+    }
+
     /** Initialization proper to each propagator (SGP or SDP).
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected abstract void sxpInitialize();
+    protected abstract void sxpInitialize(double bStar);
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param t the offset from initial epoch (min)
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected abstract void sxpPropagate(double t);
+    protected abstract void sxpPropagate(double t, double bStar);
 
     /** {@inheritDoc}
      * <p>
@@ -585,9 +621,25 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param state spacecraft state on which to base new TLE
      */
     private void resetTle(final SpacecraftState state) {
-        final TleGenerationAlgorithm algorithm = getDefaultTleGenerationAlgorithm(utc, teme);
-        final TLE newTle = algorithm.generate(state, tle);
+        final TleGenerationAlgorithm algorithm = getDefaultTleGenerationAlgorithm(tle, utc, teme);
+        algorithm.reset(state.getOrbit());
+        final TLE newTle = algorithm.createFromDrivers();
         initializeTle(newTle);
+    }
+
+    /** Reset the B-star value from the parameter driver.
+     * @since 14.0
+     */
+    private void resetBStar() {
+        tle = new TLE(tle.getSatelliteNumber(), tle.getClassification(),
+                      tle.getLaunchYear(), tle.getLaunchNumber(), tle.getLaunchPiece(),
+                      tle.getEphemerisType(), tle.getElementNumber(), tle.getDate(),
+                      tle.getMeanMotion(), tle.getMeanMotionFirstDerivative(),
+                      tle.getMeanMotionSecondDerivative(),
+                      tle.getE(), tle.getI(), tle.getPerigeeArgument(), tle.getRaan(),
+                      tle.getMeanAnomaly(), tle.getRevolutionNumberAtEpoch(),
+                      bStarDriver.getValue());
+        initializeTle(tle);
     }
 
     /** Initialize internal TLE.
@@ -595,8 +647,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     private void initializeTle(final TLE newTle) {
         tle = newTle;
-        initializeCommons();
-        sxpInitialize();
+        initializeCommons(newTle.getBStar());
+        sxpInitialize(newTle.getBStar());
     }
 
     /** {@inheritDoc} */
@@ -644,29 +696,28 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @return names of the parameters (i.e. columns) of the Jacobian matrix
      */
     protected List<String> getJacobiansColumnsNames() {
-        final List<String> columnsNames = new ArrayList<>();
-        for (final ParameterDriver driver : tle.getParametersDrivers()) {
-
-            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
-                // As driver with same name should have same NamesSpanMap we only check the if condition on the
-                // first span map and then if the condition is OK all the span names are added to the jacobian column names
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    columnsNames.add(span.getData());
-                }
+        if (bStarDriver.isSelected()) {
+            final List<String> columnsNames = new ArrayList<>();
+            for (Span<String> span = bStarDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                columnsNames.add(span.getData());
             }
+            return columnsNames;
+        } else {
+            return Collections.emptyList();
         }
-        Collections.sort(columnsNames);
-        return columnsNames;
     }
 
     /**
      * Get the default TLE generation algorithm.
+     * @param templateTLE template TLE
      * @param utc UTC time scale
      * @param teme TEME frame
      * @return a TLE generation algorithm
      */
-    public static TleGenerationAlgorithm getDefaultTleGenerationAlgorithm(final TimeScale utc, final Frame teme) {
-        return new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+    public static TleGenerationAlgorithm getDefaultTleGenerationAlgorithm(final TLE templateTLE,
+                                                                          final TimeScale utc, final Frame teme) {
+        return new FixedPointTleGenerationAlgorithm(templateTLE,
+                                                    FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
                                                     FixedPointTleGenerationAlgorithm.MAX_ITERATIONS_DEFAULT,
                                                     FixedPointTleGenerationAlgorithm.SCALE_DEFAULT, utc, teme);
     }

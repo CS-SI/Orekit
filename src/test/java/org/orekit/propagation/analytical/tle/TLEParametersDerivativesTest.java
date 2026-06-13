@@ -26,6 +26,7 @@ import org.orekit.Utils;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -46,7 +47,7 @@ public class TLEParametersDerivativesTest {
 
     @Test
     public void testBStarEstimation() {
-        doTestParametersDerivatives(TLE.B_STAR, 5.16e-3, tleSPOT);
+        doTestParametersDerivatives(TleGenerationAlgorithm.B_STAR, 5.16e-3, tleSPOT);
     }
 
     @Test
@@ -64,10 +65,12 @@ public class TLEParametersDerivativesTest {
 
     private void doTestParametersDerivatives(String parameterName, double tolerance, TLE tle) {
 
+        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+
         // compute state Jacobian using PartialDerivatives
         ParameterDriversList bound = new ParameterDriversList();
 
-        for (final ParameterDriver driver : tle.getParametersDrivers()) {
+        for (final ParameterDriver driver : propagator.getParametersDrivers()) {
             if (driver.getName().equals(parameterName)) {
                 driver.setSelected(true);
                 bound.add(driver);
@@ -76,7 +79,6 @@ public class TLEParametersDerivativesTest {
             }
         }
         // compute state Jacobian using PartialDerivatives
-        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
@@ -94,7 +96,7 @@ public class TLEParametersDerivativesTest {
 
         // compute reference Jacobian using finite differences
         OrbitType orbitType = OrbitType.CARTESIAN;
-        TLEPropagator propagator2 = TLEPropagator.selectExtrapolator(tle);
+        TLEPropagator propagator2;
         double[][] dYdPRef = new double[6][1];
 
         ParameterDriver selected = bound.getDrivers().getFirst();

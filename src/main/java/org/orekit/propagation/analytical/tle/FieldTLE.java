@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.tle;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -47,8 +45,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -69,7 +65,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @since 11.0
  * @param <T> type of the field elements
  */
-public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, ParameterDriversProvider {
+public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
@@ -88,17 +84,6 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
 
     /** Identifier for SDP8 type of ephemeris. */
     public static final int SDP8 = 5;
-
-    /** Parameter name for B* coefficient. */
-    public static final String B_STAR = "BSTAR";
-
-    /** B* scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
 
     /** Name of the mean motion parameter. */
     private static final String MEAN_MOTION = "meanMotion";
@@ -173,8 +158,8 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     /** The UTC scale. */
     private final TimeScale utc;
 
-    /** Driver for ballistic coefficient parameter. */
-    private final ParameterDriver bStarParameterDriver;
+    /** Ballistic coefficient parameter. */
+    private final T bStar;
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -254,18 +239,16 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         meanAnomaly  = zero.newInstance(FastMath.toRadians(ParseUtils.parseDouble(line2, 43, 8)));
 
         revolutionNumberAtEpoch = ParseUtils.parseInteger(line2, 63, 5);
-        final double bStarValue = Double.parseDouble((line1.substring(53, 54) + '.' +
-                        line1.substring(54, 59) + 'e' +
-                        line1.substring(59, 61)).replace(' ', '0'));
+        bStar = zero.newInstance(Double.parseDouble((line1.substring(53, 54) + '.' +
+                                                     line1.substring(54, 59) + 'e' +
+                                                     line1.substring(59, 61)).
+                                 replace(' ', '0')));
 
         // save the lines
         this.line1 = line1;
         this.line2 = line2;
         this.utc = utc;
 
-        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStarValue, B_STAR_SCALE,
-                                                        Double.NEGATIVE_INFINITY,
-                                                        Double.POSITIVE_INFINITY);
 
     }
 
@@ -309,7 +292,9 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * @param revolutionNumberAtEpoch revolution number at epoch
      * @param bStar ballistic coefficient
      * @see #FieldTLE(int, char, int, int, String, int, int, FieldAbsoluteDate, CalculusFieldElement, CalculusFieldElement,
-     * CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, int, double, TimeScale)
+     * CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement,
+     * CalculusFieldElement, int, CalculusFieldElement, TimeScale)
+     * @since 14.0
      */
     @DefaultDataContext
     public FieldTLE(final int satelliteNumber, final char classification,
@@ -318,7 +303,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
                final T meanMotion, final T meanMotionFirstDerivative,
                final T meanMotionSecondDerivative, final T e, final T i,
                final T pa, final T raan, final T meanAnomaly,
-               final int revolutionNumberAtEpoch, final double bStar) {
+               final int revolutionNumberAtEpoch, final T bStar) {
         this(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
                 ephemerisType, elementNumber, epoch, meanMotion,
                 meanMotionFirstDerivative, meanMotionSecondDerivative, e, i, pa, raan,
@@ -365,6 +350,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * @param revolutionNumberAtEpoch revolution number at epoch
      * @param bStar ballistic coefficient
      * @param utc the UTC time scale.
+     * @since 14.0
      */
     public FieldTLE(final int satelliteNumber, final char classification,
                final int launchYear, final int launchNumber, final String launchPiece,
@@ -372,7 +358,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
                final T meanMotion, final T meanMotionFirstDerivative,
                final T meanMotionSecondDerivative, final T e, final T i,
                final T pa, final T raan, final T meanAnomaly,
-               final int revolutionNumberAtEpoch, final double bStar,
+               final int revolutionNumberAtEpoch, final T bStar,
                final TimeScale utc) {
 
         // pi for fields
@@ -410,9 +396,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, pi);
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
-        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
-                                                       Double.NEGATIVE_INFINITY,
-                                                       Double.POSITIVE_INFINITY);
+        this.bStar                    = bStar;
 
         // don't build the line until really needed
         this.line1 = null;
@@ -493,7 +477,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         buffer.append(formatExponentMarkerFree("meanMotionSecondDerivative", n2, 5, ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(formatExponentMarkerFree("B*", getBStar(), 5, ' ', 8, true));
+        buffer.append(formatExponentMarkerFree("B*", getBStar().getReal(), 5, ' ', 8, true));
 
         buffer.append(' ');
         buffer.append(ephemerisType);
@@ -573,15 +557,6 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
 
         line2 = buffer.toString();
 
-    }
-
-    /** {@inheritDoc}.
-     * <p>Get the drivers for TLE propagation SGP4 and SDP4.
-     * @return drivers for SGP4 and SDP4 model parameters
-     */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.singletonList(bStarParameterDriver);
     }
 
     /** Get the satellite id.
@@ -707,8 +682,8 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     /** Get the ballistic coefficient.
      * @return bStar
      */
-    public double getBStar() {
-        return bStarParameterDriver.getValue(getDate().toAbsoluteDate());
+    public T getBStar() {
+        return bStar;
     }
 
     /**
@@ -726,7 +701,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      */
     public String toString() {
         try {
-            return getLine1() + System.getProperty("line.separator") + getLine2();
+            return getLine1() + System.lineSeparator() + getLine2();
         } catch (OrekitException oe) {
             throw new OrekitInternalError(oe);
         }
@@ -774,17 +749,8 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
                                                                              final OsculatingToMeanConverter converter,
                                                                              final DataContext dataContext) {
         converter.setMeanTheory(new TLETheory(templateTLE.toTLE(), dataContext));
-        final T bStar = state.getMass().getField().getZero().newInstance(templateTLE.getBStar());
         final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        final FieldTLE<T> tle =  TleGenerationUtil.newTLE(mean, templateTLE, bStar);
-        // reset estimated parameters from template to generated tle
-        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
-            if (templateDrivers.isSelected()) {
-                // set to selected for the new TLE
-                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
-            }
-        }
-        return tle;
+        return TleGenerationUtil.newTLE(mean, templateTLE);
     }
 
     /** Check the lines format validity.
@@ -819,17 +785,10 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * @return TLE
      */
     public TLE toTLE() {
-        final TLE regularTLE = new TLE(getSatelliteNumber(), getClassification(), getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getEphemerisType(),
-                                       getElementNumber(), getDate().toAbsoluteDate(), getMeanMotion().getReal(), getMeanMotionFirstDerivative().getReal(),
-                                       getMeanMotionSecondDerivative().getReal(), getE().getReal(), getI().getReal(), getPerigeeArgument().getReal(),
-                                       getRaan().getReal(), getMeanAnomaly().getReal(), getRevolutionNumberAtEpoch(), getBStar(), getUtc());
-
-        for (int k = 0; k < regularTLE.getParametersDrivers().size(); ++k) {
-            regularTLE.getParametersDrivers().get(k).setSelected(getParametersDrivers().get(k).isSelected());
-        }
-
-        return regularTLE;
-
+        return new TLE(getSatelliteNumber(), getClassification(), getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getEphemerisType(),
+                       getElementNumber(), getDate().toAbsoluteDate(), getMeanMotion().getReal(), getMeanMotionFirstDerivative().getReal(),
+                       getMeanMotionSecondDerivative().getReal(), getE().getReal(), getI().getReal(), getPerigeeArgument().getReal(),
+                       getRaan().getReal(), getMeanAnomaly().getReal(), getRevolutionNumberAtEpoch(), getBStar().getReal(), getUtc());
     }
 
     /** Check if this tle equals the provided tle.
@@ -867,7 +826,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
                 raan.getReal() == tle.raan.getReal() &&
                 meanAnomaly.getReal() == tle.meanAnomaly.getReal() &&
                 revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
-                getBStar() == tle.getBStar();
+                bStar.getReal() == tle.bStar.getReal();
     }
 
     /** Get a hashcode for this tle.
@@ -892,7 +851,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
                 raan,
                 meanAnomaly,
                 revolutionNumberAtEpoch,
-                getBStar());
+                bStar);
     }
 
 }

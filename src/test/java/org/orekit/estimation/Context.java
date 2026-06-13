@@ -256,7 +256,7 @@ public class Context implements StationDataProvider {
      * @return a configured TLEPropagatorBuilder instance
      */
     public TLEPropagatorBuilder createTleBuilder(final double dP) {
-        return new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(initialTLE, PositionAngleType.MEAN, dP));
+        return new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(initialTLE));
     }
 
     /**

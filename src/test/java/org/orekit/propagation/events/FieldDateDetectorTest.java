@@ -88,9 +88,8 @@ public class FieldDateDetectorTest {
 
     @Test
     void testExceptionTimer() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestExceptionTimer(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> doTestExceptionTimer(Binary64Field.getInstance()));
     }
 
     @Test
@@ -377,7 +376,7 @@ public class FieldDateDetectorTest {
         FieldTLE<T> tle = new FieldTLE<>(field,
                                          "1 43197U 18015F   19284.07336221  .00000533  00000-0  24811-4 0  9998",
                                          "2 43197  97.4059  50.1428 0017543 265.5429 181.0400 15.24136761 93779");
-        FieldPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field));
+        FieldPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle);
 
         // Min gap to seconds
         int maxCheck = (int) ((end - start) / 2000);

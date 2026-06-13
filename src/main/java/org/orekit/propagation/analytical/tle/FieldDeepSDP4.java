@@ -56,13 +56,9 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
     private double thgr;
     private T xnq;
     private T omegaq;
-    private double zcosil;
-    private double zsinil;
-    private double zsinhl;
-    private double zcoshl;
+
     private double zmol;
-    private double zcosgl;
-    private double zsingl;
+
     private double zmos;
     private T savtsn;
 
@@ -134,7 +130,7 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
     private boolean synchronous;
 
     /** Flag for compliance with Dundee modifications. */
-    private boolean isDundeeCompliant = true;
+    private final boolean isDundeeCompliant = true;
 
     /** Constructor for a unique initial TLE.
      *
@@ -143,14 +139,12 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-     * @param parameters SGP4 and SDP4 model parameters
-     * @see #FieldDeepSDP4(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
+     * @see #FieldDeepSDP4(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame)
+     * @since 14.0
      */
     @DefaultDataContext
-    public FieldDeepSDP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,
-                    final T mass, final T[] parameters) {
-        this(initialTLE, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME(), parameters);
+    public FieldDeepSDP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider, final T mass) {
+        this(initialTLE, attitudeProvider, mass, DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Constructor for a unique initial TLE.
@@ -158,14 +152,13 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
-     * @param parameters SGP4 and SDP4 model parameters
+     * @since 14.0
      */
     public FieldDeepSDP4(final FieldTLE<T> initialTLE,
                          final AttitudeProvider attitudeProvider,
                          final T mass,
-                         final Frame teme,
-                         final T[] parameters) {
-        super(initialTLE, attitudeProvider, mass, teme, parameters);
+                         final Frame teme) {
+        super(initialTLE, attitudeProvider, mass, teme);
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.
@@ -207,18 +200,18 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
         final double c_minus_gam = 0.228027132 * daysSince1900 - 1.1151842;
         final double gam = 5.8351514 + 0.0019443680 * daysSince1900;
 
-        zcosil = 0.91375164 - 0.03568096 * ctem;
-        zsinil = FastMath.sqrt(1.0 - zcosil * zcosil);
-        zsinhl = 0.089683511 * stem / zsinil;
-        zcoshl = FastMath.sqrt(1.0 - zsinhl * zsinhl);
+        final double zcosil = 0.91375164 - 0.03568096 * ctem;
+        final double zsinil = FastMath.sqrt(1.0 - zcosil * zcosil);
+        final double zsinhl = 0.089683511 * stem / zsinil;
+        final double zcoshl = FastMath.sqrt(1.0 - zsinhl * zsinhl);
         zmol = MathUtils.normalizeAngle(c_minus_gam, pi.getReal());
 
         double zx = 0.39785416 * stem / zsinil;
         final double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
         zx = FastMath.atan2( zx, zy) + gam - xnodce;
         final SinCos scZx = FastMath.sinCos(zx);
-        zcosgl = scZx.cos();
-        zsingl = scZx.sin();
+        final double zcosgl = scZx.cos();
+        final double zsingl = scZx.sin();
         zmos = MathUtils.normalizeAngle(6.2565837 + 0.017201977 * daysSince1900, pi.getReal());
 
         // Do solar terms

@@ -16,14 +16,16 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Pair;
+import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -55,7 +57,7 @@ import org.orekit.utils.TimeSpanMap;
  * <p>
  * Deep- or near- space propagator is selected internally according to NORAD recommendations
  * so that the user has not to worry about the used computation methods. One instance is created
- * for each TLE (this instance can only be get using {@link #selectExtrapolator(FieldTLE, CalculusFieldElement[])} method,
+ * for each TLE (this instance can only be get using {@link #selectExtrapolator(FieldTLE)} method,
  * and can compute {@link PVCoordinates position and velocity coordinates} at any
  * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided
  * TLE epoch (of course this accuracy is not really measurable nor predictable: according to
@@ -180,6 +182,11 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     /** All TLEs and masses. */
     private TimeSpanMap<Pair<FieldTLE<T>, T>> tlesAndMasses;
 
+    /** Driver for the ballistic parameter.
+     * @since 14.0
+     */
+    private final ParameterDriver bStarDriver;
+
     /** Protected constructor for derived classes.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
@@ -187,13 +194,12 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @param initialTLE the unique TLE to propagate
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-     * @param parameters SGP4 and SDP4 model parameters
-     * @see #FieldTLEPropagator(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
+     * @see #FieldTLEPropagator(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame)
+     * @since 14.0
      */
     @DefaultDataContext
-    protected FieldTLEPropagator(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider, final T mass,
-                                 final T[] parameters) {
-        this(initialTLE, attitudeProvider, mass, DataContext.getDefault().getFrames().getTEME(), parameters);
+    protected FieldTLEPropagator(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider, final T mass) {
+        this(initialTLE, attitudeProvider, mass, DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Protected constructor for derived classes.
@@ -201,20 +207,27 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
-     * @param parameters SGP4 and SDP4 model parameters
+     * @since 14.0
      */
     protected FieldTLEPropagator(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider, final T mass,
-                                 final Frame teme, final T[] parameters) {
+                                 final Frame teme) {
         super(initialTLE.getE().getField(), attitudeProvider);
         setStartDate(initialTLE.getDate());
-        this.utc       = initialTLE.getUtc();
+        this.utc           = initialTLE.getUtc();
         initializeTle(initialTLE);
-        this.teme      = teme;
-        this.tlesAndMasses      = new TimeSpanMap<>(new Pair<>(tle, mass));
+        this.teme          = teme;
+        this.tlesAndMasses = new TimeSpanMap<>(new Pair<>(tle, mass));
+        this.bStarDriver   = new ParameterDriver(TleGenerationAlgorithm.B_STAR,
+                                                 initialTLE.getBStar().getReal(),
+                                                 TleGenerationAlgorithm.B_STAR_SCALE,
+                                                 Double.NEGATIVE_INFINITY,
+                                                 Double.POSITIVE_INFINITY);
 
-        initializeCommons(parameters);
-        sxpInitialize(parameters);
+        initializeCommons(tle.getBStar());
+        sxpInitialize(tle.getBStar());
         // set the initial state
+        final T[] parameters = MathArrays.buildArray(initialTLE.getDate().getField(), 1);
+        parameters[0] = initialTLE.getBStar();
         final FieldOrbit<T> orbit = propagateOrbit(initialTLE.getDate(), parameters);
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude).withMass(mass));
@@ -225,14 +238,14 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param tle the TLE to propagate.
-     * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
-     * @see #selectExtrapolator(FieldTLE, Frame, CalculusFieldElement[])
+     * @see #selectExtrapolator(FieldTLE, Frame)
+     * @since 14.0
      */
     @DefaultDataContext
-    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {
-        return selectExtrapolator(tle, DataContext.getDefault().getFrames().getTEME(), parameters);
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle) {
+        return selectExtrapolator(tle, DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -241,17 +254,14 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      *
      * @param tle the TLE to propagate.
      * @param teme TEME frame.
-     * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
+     * @since 14.0
      */
-    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frame teme, final T[] parameters) {
-        return selectExtrapolator(
-                tle,
-                FrameAlignedProvider.of(teme),
-                tle.getE().getField().getZero().newInstance(DEFAULT_MASS),
-                teme,
-                parameters);
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
+                                                                                               final Frame teme) {
+        return selectExtrapolator(tle, FrameAlignedProvider.of(teme),
+                                  tle.getE().getField().getZero().newInstance(DEFAULT_MASS), teme);
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -261,18 +271,18 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @param tle the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-     * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
-     * @see #selectExtrapolator(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
+     * @see #selectExtrapolator(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame)
+     * @since 14.0
      */
     @DefaultDataContext
-    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
-                                                   final AttitudeProvider attitudeProvider,
-                                                   final T mass,
-                                                   final T[] parameters) {
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T>
+    selectExtrapolator(final FieldTLE<T> tle,
+                       final AttitudeProvider attitudeProvider,
+                       final T mass) {
         return selectExtrapolator(tle, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME(), parameters);
+                                  DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -281,21 +291,20 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
-     * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
+     * @since 14.0
      */
-    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
-                                                   final AttitudeProvider attitudeProvider,
-                                                   final T mass,
-                                                   final Frame teme,
-                                                   final T[] parameters) {
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T>
+    selectExtrapolator(final FieldTLE<T> tle, final AttitudeProvider attitudeProvider,
+                       final T mass, final Frame teme) {
 
-        final T a1 = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE).pow(TLEConstants.TWO_THIRD);
+        final T xkeOverN = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE);
+        final T a1 = xkeOverN.multiply(xkeOverN).cbrt();
         final T cosi0 = FastMath.cos(tle.getI());
         final T temp1 = cosi0.multiply(cosi0.multiply(3.0)).subtract(1.0).multiply(1.5 * TLEConstants.CK2);
-        final T temp2 = tle.getE().multiply(tle.getE()).negate().add(1.0).pow(-1.5);
-        final T temp = temp1.multiply(temp2);
+        final T oMe2  =  tle.getE().multiply(tle.getE()).negate().add(1.0);
+        final T temp = temp1.divide(oMe2.multiply(oMe2.sqrt()));
         final T delta1 = temp.divide(a1.multiply(a1));
         final T a0 = a1.multiply(delta1.multiply(delta1.multiply(
                         delta1.multiply(134.0 / 81.0).add(1.0)).add(TLEConstants.ONE_THIRD)).negate().add(1.0));
@@ -306,9 +315,9 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
 
         // Period >= 225 minutes is deep space
         if (MathUtils.TWO_PI / (xn0dp.multiply(TLEConstants.MINUTES_PER_DAY).getReal()) >= (1.0 / 6.4)) {
-            return new FieldDeepSDP4<>(tle, attitudeProvider, mass, teme, parameters);
+            return new FieldDeepSDP4<>(tle, attitudeProvider, mass, teme);
         } else {
-            return new FieldSGP4<>(tle, attitudeProvider, mass, teme, parameters);
+            return new FieldSGP4<>(tle, attitudeProvider, mass, teme);
         }
     }
 
@@ -321,25 +330,25 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
 
     /** Get the extrapolated position and velocity from an initial TLE.
      * @param date the final date
-     * @param parameters values of the model
+     * @param bStar value of the ballistic coefficient to use for propagation
      * @return the final PVCoordinates
      */
-    public FieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final T bStar) {
 
-        sxpPropagate(date.durationFrom(tle.getDate()).divide(60.0), parameters);
+        sxpPropagate(date.durationFrom(tle.getDate()).divide(60.0), bStar);
 
         // Compute PV with previous calculated parameters
         return computePVCoordinates();
     }
 
     /** Computation of the first commons parameters.
-     * @param parameters SGP4 and SDP4 model parameters
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    private void initializeCommons(final T[] parameters) {
+    private void initializeCommons(final T bStar) {
 
         final T zero = tle.getDate().getField().getZero();
-        final T bStar = parameters[0];
-        final T a1 = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE).pow(TLEConstants.TWO_THIRD);
+        final T xkeOverN = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE);
+        final T a1 = xkeOverN.multiply(xkeOverN).cbrt();
         cosi0 = FastMath.cos(tle.getI());
         theta2 = cosi0.multiply(cosi0);
         final T x3thm1 = theta2.multiply(3.0).subtract(1.0);
@@ -559,19 +568,19 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return tle.getParametersDrivers();
+        return Collections.singletonList(bStarDriver);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
-     * @param parameters model parameters
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected abstract void sxpInitialize(T[] parameters);
+    protected abstract void sxpInitialize(final T bStar);
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param t the offset from initial epoch (min)
-     * @param parameters model parameters
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected abstract void sxpPropagate(T t, T[] parameters);
+    protected abstract void sxpPropagate(T t, final T bStar);
 
     /** {@inheritDoc}
      * <p>
@@ -603,7 +612,8 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @param state spacecraft state on which to base new TLE
      */
     private void resetTle(final FieldSpacecraftState<T> state) {
-        final TleGenerationAlgorithm algorithm = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme);
+        final TleGenerationAlgorithm algorithm =
+            TLEPropagator.getDefaultTleGenerationAlgorithm(tle.toTLE(), utc, teme);
         final FieldTLE<T> newTle = algorithm.generate(state, tle);
         initializeTle(newTle);
     }
@@ -613,9 +623,8 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      */
     private void initializeTle(final FieldTLE<T> newTle) {
         tle = newTle;
-        final T[] parameters = tle.getParameters(tle.getDate().getField());
-        initializeCommons(parameters);
-        sxpInitialize(parameters);
+        initializeCommons(newTle.getBStar());
+        sxpInitialize(newTle.getBStar());
     }
 
     /** {@inheritDoc} */
@@ -626,11 +635,11 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     /** {@inheritDoc} */
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         final FieldTLE<T> closestTle = tlesAndMasses.get(date.toAbsoluteDate()).getKey();
-        if (!tle.equals(closestTle)) {
+        if (parameters[0] != closestTle.getBStar() || !tle.equals(closestTle)) {
             initializeTle(closestTle);
         }
         final T mu = date.getField().getZero().newInstance(TLEConstants.MU);
-        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, mu);
+        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters[0]), teme, date, mu);
     }
 
     /** Get the underlying TLE.

@@ -95,10 +95,9 @@ public class Rtcm1046Test {
         final GalileoNavigationMessage galileoMessage   = ephemerisData.getGalileoNavigationMessage();
 
         // Verify propagator initialization
-        final GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(galileoMessage,
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+        final GNSSPropagator<GalileoNavigationMessage> propagator =
+            galileoMessage.builder(context.getFrames().getEME2000(),
+                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                 buildPropagator();
         Assertions.assertNotNull(propagator);
         final double eps = 8.2e-10;

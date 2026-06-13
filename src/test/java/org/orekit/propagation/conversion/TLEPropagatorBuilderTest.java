@@ -25,7 +25,6 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -39,12 +38,11 @@ public class TLEPropagatorBuilderTest {
 
         // Given
         final DataContext dataContext = Utils.setDataRoot("regular-data");
-        final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        final TLE tle =
+            new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                    "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         final TLEPropagatorBuilder builder =
-            new TLEPropagatorBuilder(dataContext,
-                                     new TleParametersFactory(tle, dataContext.getFrames().getTEME()),
-                                     new FixedPointTleGenerationAlgorithm());
+            new TLEPropagatorBuilder(dataContext, new FixedPointTleGenerationAlgorithm(tle));
 
         // When
         final TLEPropagatorBuilder copyBuilder = builder.clone();
@@ -69,8 +67,7 @@ public class TLEPropagatorBuilderTest {
                                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         final TLEPropagatorBuilder builder =
             new TLEPropagatorBuilder(dataContext,
-                                     new TleParametersFactory(tle, dataContext.getFrames().getTEME()),
-                                     new FixedPointTleGenerationAlgorithm());
+                                     new FixedPointTleGenerationAlgorithm(tle));
         final TLE built = builder.getOrbitalParameterFactory().createFromDrivers();
         final Orbit orbit = TLEPropagator.selectExtrapolator(built).propagateOrbit(built.getDate());
 

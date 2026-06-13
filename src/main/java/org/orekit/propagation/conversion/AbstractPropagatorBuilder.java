@@ -141,16 +141,22 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
                                         final AttitudeProvider attitudeProvider, final double initialMass) {
 
         this.factory             = factory;
-        this.propagationDrivers  = new ParameterDriversList();
         this.attitudeProvider    = attitudeProvider;
         this.mass                = initialMass;
         for (final ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
+            // by default, we always select the orbital parameters
             driver.setSelected(true);
         }
 
         this.additionalDerivativesProviders = new ArrayList<>();
 
         if (addDriverForCentralAttraction) {
+
+            // we need to use a separate list, to avoid messing with the one from the factory
+            // when adding the driver for mu
+            propagationDrivers = new ParameterDriversList();
+            factory.getNonKeplerianParametersDrivers().getDrivers().forEach(propagationDrivers::add);
+
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                                  factory.getMu(), MU_SCALE, 0, Double.POSITIVE_INFINITY);
             muDriver.addObserver(new ParameterObserver() {
@@ -168,7 +174,11 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
                 }
             });
             propagationDrivers.add(muDriver);
+        } else {
+            // we just reuse the original list from the factory
+            propagationDrivers = factory.getNonKeplerianParametersDrivers();
         }
+
     }
 
     /** Get the mass.

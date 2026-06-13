@@ -27,9 +27,22 @@ import org.orekit.utils.ParameterDriversList;
 public interface OrbitalParameterFactory<P extends OrbitalParameters> {
 
     /** Get the drivers for orbital parameters.
+     * <p>
+     * There are always exactly 6 drivers for orbital parameters
+     * that correspond to Keplerian motion. Some orbital
+     * parameters have additional drivers for non-Keplerian motion
+     * (TLE has a M2 parameter, GNSS orbital elements have Δa, iDot…)
+     * These additional drivers are <em>not</em> included here, they
+     * are provided by {@link #getNonKeplerianParametersDrivers()}.
+     * </p>
      * @return drivers for orbital parameters
      */
     ParameterDriversList getOrbitalParametersDrivers();
+
+    /** Get the drivers for additional drivers for non-Keplerian motion.
+     * @return drivers for non-Keplerian motion
+     */
+    ParameterDriversList getNonKeplerianParametersDrivers();
 
     /** Get the frame in which the orbit is propagated.
      * @return frame in which the orbit is propagated

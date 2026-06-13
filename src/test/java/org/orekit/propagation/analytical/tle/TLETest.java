@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.ParseException;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -67,8 +66,8 @@ class TLETest {
         Assertions.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly()), 1e-10);
         Assertions.assertEquals(14.26113993, tle.getMeanMotion() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
         Assertions.assertEquals(7182888.814633288, tle.computeSemiMajorAxis(), 1e-10);
-        Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
-        Assertions.assertEquals(tle.getElementNumber(), 2 , 0);
+        Assertions.assertEquals(6, tle.getRevolutionNumberAtEpoch(), 0);
+        Assertions.assertEquals(2, tle.getElementNumber(), 0);
 
         line1 = "1 T7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28";
         line2 = "2 T7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60";
@@ -308,11 +307,10 @@ class TLETest {
     }
 
     @Test
-    void testDifferentSatNumbers() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                    "2 27422  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        });
+    public void testDifferentSatNumbers() {
+        Assertions.assertThrows(OrekitException.class,
+                                () -> new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                                              "2 27422  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62"));
     }
 
     @Test
@@ -354,10 +352,10 @@ class TLETest {
     }
 
     @Test
-    void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
+    void testSatCodeCompliance() throws IOException, OrekitException {
 
-        BufferedReader rEntry = null;
-        BufferedReader rResults = null;
+        BufferedReader rEntry;
+        BufferedReader rResults;
 
         InputStream inEntry =
             TLETest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
@@ -537,7 +535,7 @@ class TLETest {
         final SpacecraftState state = propagator.propagate(tleISS.getDate());
 
         // Convert to TLE
-        final TLE rebuilt = new FixedPointTleGenerationAlgorithm().generate(state, tleISS);
+        final TLE rebuilt = new FixedPointTleGenerationAlgorithm(tleISS).generate(state, tleISS);
 
         // Verify
         final double eps = 1.0e-7;
@@ -564,9 +562,10 @@ class TLETest {
         // Initialize TLE
         final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
                                    "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleISS);
 
         try {
-            tleISS.getParameterDriver("MyWonderfulDriver");
+            propagator.getParameterDriver("MyWonderfulDriver");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());

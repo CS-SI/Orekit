@@ -67,14 +67,13 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-     * @param parameters SGP4 and SDP4 model parameters
-     * @see #FieldSGP4(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
+     * @see #FieldSGP4(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame)
+     * @since 14.0
      */
     @DefaultDataContext
-    public FieldSGP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,
-                final T mass, final T[] parameters) {
+    public FieldSGP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider, final T mass) {
         this(initialTLE, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME(), parameters);
+                DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Constructor for a unique initial TLE.
@@ -82,22 +81,17 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
-     * @param parameters SGP4 and SDP4 model parameters
+     * @since 14.0
      */
-    public FieldSGP4(final FieldTLE<T> initialTLE,
-                final AttitudeProvider attitudeProvider,
-                final T mass,
-                final Frame teme,
-                final T[] parameters) {
-        super(initialTLE, attitudeProvider, mass, teme, parameters);
+    public FieldSGP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,
+                     final T mass, final Frame teme) {
+        super(initialTLE, attitudeProvider, mass, teme);
     }
 
-    /** Initialization proper to each propagator (SGP or SDP).
-     * @param parameters model parameters
-     */
-    protected void sxpInitialize(final T[] parameters) {
+    /** {@inheritDoc} */
+    @Override
+    protected void sxpInitialize(final T bStar) {
 
-        final T bStar = parameters[0];
         // For perigee less than 220 kilometers, the equations are truncated to
         // linear variation in sqrt a and quadratic variation in mean anomaly.
         // Also, the c3 term, the delta omega term, and the delta m term are dropped.
@@ -130,14 +124,11 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
         // initialized
     }
 
-    /** Propagation proper to each propagator (SGP or SDP).
-     * @param tSince the offset from initial epoch (min)
-     * @param parameters model parameters
-     */
-    protected void sxpPropagate(final T tSince, final T[] parameters) {
+    /** {@inheritDoc} */
+    @Override
+    protected void sxpPropagate(final T tSince, final T bStar) {
 
         // Update for secular gravity and atmospheric drag.
-        final T bStar = parameters[0];
         final T xmdf = tle.getMeanAnomaly().add(xmdot.multiply(tSince));
         final T omgadf = tle.getPerigeeArgument().add(omgdot.multiply(tSince));
         final T xn0ddf = tle.getRaan().add(xnodot.multiply(tSince));

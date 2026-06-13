@@ -71,16 +71,15 @@ abstract class SDP4  extends TLEPropagator {
         super(initialTLE, attitudeProvider, mass, teme);
     }
 
-    /** Initialization proper to each propagator (SGP or SDP).
-     */
-    protected void sxpInitialize() {
+    /** {@inheritDoc} */
+    @Override
+    protected void sxpInitialize(final double bStar) {
         luniSolarTermsComputation();
     }  // End of initialization
 
-    /** Propagation proper to each propagator (SGP or SDP).
-     * @param tSince the offset from initial epoch (minutes)
-     */
-    protected void sxpPropagate(final double tSince) {
+    /** {@inheritDoc} */
+    @Override
+    protected void sxpPropagate(final double tSince, final double bStar) {
 
         // Update for secular gravity and atmospheric drag
         omgadf = tle.getPerigeeArgument() + omgdot * tSince;
@@ -95,8 +94,9 @@ abstract class SDP4  extends TLEPropagator {
         deepSecularEffects(tSince);
 
         final double tempa = 1 - c1 * tSince;
-        a   = FastMath.pow(TLEConstants.XKE / xn, TLEConstants.TWO_THIRD) * tempa * tempa;
-        em -= tle.getBStar(tle.getDate().shiftedBy(tSince)) * c4 * tSince;
+        final double xkeOverN = TLEConstants.XKE / xn;
+        a   = FastMath.cbrt(xkeOverN * xkeOverN) * tempa * tempa;
+        em -= bStar * c4 * tSince;
 
         // Update for deep-space periodic effects
         xll += xn0dp * t2cof * tSinceSq;

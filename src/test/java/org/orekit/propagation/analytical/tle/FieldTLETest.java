@@ -25,7 +25,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +48,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.ParseException;
 
 public class FieldTLETest {
 
@@ -117,9 +115,8 @@ public class FieldTLETest {
 
     @Test
     public void testDifferentSatNumbers() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestDifferentSatNumbers(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(OrekitException.class,
+                                () -> doTestDifferentSatNumbers(Binary64Field.getInstance()));
     }
 
     @Test
@@ -138,7 +135,7 @@ public class FieldTLETest {
     }
 
     @Test
-    public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
+    public void testSatCodeCompliance() throws IOException, OrekitException {
         doTestSatCodeCompliance(Binary64Field.getInstance());
     }
 
@@ -199,7 +196,7 @@ public class FieldTLETest {
         Assertions.assertEquals(2002, tle.getLaunchYear());
         Assertions.assertEquals(21, tle.getLaunchNumber());
         Assertions.assertEquals("A", tle.getLaunchPiece());
-        Assertions.assertEquals(-0.0089879, tle.getBStar(), 0);
+        Assertions.assertEquals(-0.0089879, tle.getBStar().getReal(), 0);
         Assertions.assertEquals(0, tle.getEphemerisType());
         Assertions.assertEquals(98.749, FastMath.toDegrees(tle.getI().getReal()), 1e-10);
         Assertions.assertEquals(199.5121, FastMath.toDegrees(tle.getRaan().getReal()), 1e-10);
@@ -208,8 +205,8 @@ public class FieldTLETest {
         Assertions.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly().getReal()), 1e-10);
         Assertions.assertEquals(14.26113993, tle.getMeanMotion().getReal() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
         Assertions.assertEquals(7182888.814633288, tle.computeSemiMajorAxis().getReal(), 1e-10);
-        Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
-        Assertions.assertEquals(tle.getElementNumber(), 2 , 0);
+        Assertions.assertEquals(6, tle.getRevolutionNumberAtEpoch());
+        Assertions.assertEquals(2, tle.getElementNumber());
 
         line1 = "1 T7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28";
         line2 = "2 T7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60";
@@ -260,7 +257,7 @@ public class FieldTLETest {
         Assertions.assertEquals(tleA.getLaunchYear(),                tleB.getLaunchYear());
         Assertions.assertEquals(tleA.getLaunchNumber(),              tleB.getLaunchNumber());
         Assertions.assertEquals(tleA.getLaunchPiece(),               tleB.getLaunchPiece());
-        Assertions.assertEquals(tleA.getBStar(),           tleB.getBStar(), 0);
+        Assertions.assertEquals(tleA.getBStar().getReal(),           tleB.getBStar(), 0);
         Assertions.assertEquals(tleA.getEphemerisType(),             tleB.getEphemerisType());
         Assertions.assertEquals(tleA.getI().getReal(),               tleB.getI(), 1e-10);
         Assertions.assertEquals(tleA.getRaan().getReal(),            tleB.getRaan(), 1e-10);
@@ -306,21 +303,28 @@ public class FieldTLETest {
     }
 
     public <T extends CalculusFieldElement<T>> void doTestDirectConstruction(Field<T> field) {
-        final T T_zero = field.getZero();
+        final T zero = field.getZero();
         FieldTLE<T> tleA = new FieldTLE<>(5555, 'U', 1971, 86, "J", 0, 908,
-                new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
-                        new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
-                        TimeScalesFactory.getUTC()),
-                T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.00001e-9, 3)),
-                T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
-                T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, 0.01234e-9);
+                                          new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
+                                                                  new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                                                  TimeScalesFactory.getUTC()),
+                                          zero.newInstance(taylorConvert(12.26882470, 1)),
+                                          zero.newInstance(taylorConvert(-0.00000004, 2)),
+                                          zero.newInstance(taylorConvert(0.00001e-9, 3)),
+                                          zero.newInstance(0.0075476),
+                                          zero.newInstance(FastMath.toRadians(74.0161)),
+                                          zero.newInstance(FastMath.toRadians(328.9888)),
+                                          zero.newInstance(FastMath.toRadians(228.9750)),
+                                          zero.newInstance(FastMath.toRadians(30.6709)),
+                                          80454,
+                                          zero.newInstance(0.01234e-9));
         FieldTLE<T> tleB = new FieldTLE<>(field, "1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
                 "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
         Assertions.assertEquals(tleA.getSatelliteNumber(),           tleB.getSatelliteNumber(), 0);
         Assertions.assertEquals(tleA.getLaunchYear(),                tleB.getLaunchYear());
         Assertions.assertEquals(tleA.getLaunchNumber(),              tleB.getLaunchNumber());
         Assertions.assertEquals(tleA.getLaunchPiece(),               tleB.getLaunchPiece());
-        Assertions.assertEquals(tleA.getBStar()          ,           tleB.getBStar(), 0);
+        Assertions.assertEquals(tleA.getBStar().getReal(),           tleB.getBStar().getReal(), 0);
         Assertions.assertEquals(tleA.getEphemerisType(),             tleB.getEphemerisType());
         Assertions.assertEquals(tleA.getI().getReal(),               tleB.getI().getReal(), 1e-10);
         Assertions.assertEquals(tleA.getRaan().getReal(),            tleB.getRaan().getReal(), 1e-10);
@@ -333,33 +337,42 @@ public class FieldTLETest {
     }
 
     public <T extends CalculusFieldElement<T>> void doTestGenerateAlpha5(Field<T> field) {
-        final T T_zero = field.getZero();
+        final T zero = field.getZero();
         FieldTLE<T> tle = new FieldTLE<>(339999, 'U', 1971, 86, "J", 0, 908,
-                new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
-                        new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
-                        TimeScalesFactory.getUTC()),
-                T_zero.add(taylorConvert(12.26882470, 1)),
-                T_zero.add(taylorConvert(-0.00000004, 2)),
-                T_zero.add(taylorConvert(0.00001e-9, 3)),
-                T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)),
-                T_zero.add(FastMath.toRadians(328.9888)),
-                T_zero.add(FastMath.toRadians(228.9750)),
-                T_zero.add(FastMath.toRadians(30.6709)),
-                80454, 0.01234e-9);
+                                         new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
+                                                                 new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                                                 TimeScalesFactory.getUTC()),
+                                         zero.newInstance(taylorConvert(12.26882470, 1)),
+                                         zero.newInstance(taylorConvert(-0.00000004, 2)),
+                                         zero.newInstance(taylorConvert(0.00001e-9, 3)),
+                                         zero.newInstance(0.0075476),
+                                         zero.newInstance(FastMath.toRadians(74.0161)),
+                                         zero.newInstance(FastMath.toRadians(328.9888)),
+                                         zero.newInstance(FastMath.toRadians(228.9750)),
+                                         zero.newInstance(FastMath.toRadians(30.6709)),
+                                         80454,
+                                         zero.newInstance(0.01234e-9));
         Assertions.assertEquals("1 Z9999U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9088", tle.getLine1());
         Assertions.assertEquals("2 Z9999  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804541", tle.getLine2());
     }
 
     public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeSecondDerivative(Field<T> field) {
         try {
-            final T T_zero = field.getZero();
+            final T zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<>(5555, 'U', 1971, 86, "J", 0, 908,
-                    new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
-                            new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
-                            TimeScalesFactory.getUTC()),
-                    T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.99999e11, 3)),
-                    T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
-                    T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, 0.01234e-9);
+                                             new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
+                                                                     new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                                                     TimeScalesFactory.getUTC()),
+                                             zero.newInstance(taylorConvert(12.26882470, 1)),
+                                             zero.newInstance(taylorConvert(-0.00000004, 2)),
+                                             zero.newInstance(taylorConvert(0.99999e11, 3)),
+                                             zero.newInstance(0.0075476),
+                                             zero.newInstance(FastMath.toRadians(74.0161)),
+                                             zero.newInstance(FastMath.toRadians(328.9888)),
+                                             zero.newInstance(FastMath.toRadians(228.9750)),
+                                             zero.newInstance(FastMath.toRadians(30.6709)),
+                                             80454,
+                                             zero.newInstance(0.01234e-9));
             tle.getLine1();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -371,14 +384,21 @@ public class FieldTLETest {
 
     public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeBStar(Field<T> field) {
         try {
-            final T T_zero = field.getZero();
+            final T zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<>(5555, 'U', 1971, 86, "J", 0, 908,
-                    new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
-                            new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
-                            TimeScalesFactory.getUTC()),
-                    T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.00001e-9, 3)),
-                    T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
-                    T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, 0.99999e11);
+                                             new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
+                                                                     new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                                                     TimeScalesFactory.getUTC()),
+                                             zero.newInstance(taylorConvert(12.26882470, 1)),
+                                             zero.newInstance(taylorConvert(-0.00000004, 2)),
+                                             zero.newInstance(taylorConvert(0.00001e-9, 3)),
+                                             zero.newInstance(0.0075476),
+                                             zero.newInstance(FastMath.toRadians(74.0161)),
+                                             zero.newInstance(FastMath.toRadians(328.9888)),
+                                             zero.newInstance(FastMath.toRadians(228.9750)),
+                                             zero.newInstance(FastMath.toRadians(30.6709)),
+                                             80454,
+                                             zero.newInstance(0.99999e11));
             tle.getLine1();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -390,14 +410,21 @@ public class FieldTLETest {
 
     public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeEccentricity(Field<T> field) {
         try {
-            final T T_zero = field.getZero();
+            final T zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<>(5555, 'U', 1971, 86, "J", 0, 908,
-                    new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
-                            new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
-                            TimeScalesFactory.getUTC()),
-                    T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.00001e-9, 3)),
-                    T_zero.add(1.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
-                    T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, 0.01234e-9);
+                                             new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
+                                                                     new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                                                     TimeScalesFactory.getUTC()),
+                                             zero.newInstance(taylorConvert(12.26882470, 1)),
+                                             zero.newInstance(taylorConvert(-0.00000004, 2)),
+                                             zero.newInstance(taylorConvert(0.00001e-9, 3)),
+                                             zero.newInstance(1.0075476),
+                                             zero.newInstance(FastMath.toRadians(74.0161)),
+                                             zero.newInstance(FastMath.toRadians(328.9888)),
+                                             zero.newInstance(FastMath.toRadians(228.9750)),
+                                             zero.newInstance(FastMath.toRadians(30.6709)),
+                                             80454,
+                                             zero.newInstance(0.01234e-9));
             tle.getLine2();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -409,14 +436,21 @@ public class FieldTLETest {
 
     public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeSatelliteNumber1(Field<T> field) {
         try {
-            final T T_zero = field.getZero();
+            final T zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<>(1000000, 'U', 1971, 86, "J", 0, 908,
-                    new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
-                            new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
-                            TimeScalesFactory.getUTC()),
-                    T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.00001e-9, 3)),
-                    T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
-                    T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, 0.01234e-9);
+                                             new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
+                                                                     new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                                                     TimeScalesFactory.getUTC()),
+                                             zero.newInstance(taylorConvert(12.26882470, 1)),
+                                             zero.newInstance(taylorConvert(-0.00000004, 2)),
+                                             zero.newInstance(taylorConvert(0.00001e-9, 3)),
+                                             zero.newInstance(0.0075476),
+                                             zero.newInstance(FastMath.toRadians(74.0161)),
+                                             zero.newInstance(FastMath.toRadians(328.9888)),
+                                             zero.newInstance(FastMath.toRadians(228.9750)),
+                                             zero.newInstance(FastMath.toRadians(30.6709)),
+                                             80454,
+                                             zero.newInstance(0.01234e-9));
             tle.getLine1();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -428,14 +462,21 @@ public class FieldTLETest {
 
     public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeSatelliteNumber2(Field<T> field) {
         try {
-            final T T_zero = field.getZero();
+            final T zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<>(1000000, 'U', 1971, 86, "J", 0, 908,
-                    new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
-                            new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
-                            TimeScalesFactory.getUTC()),
-                    T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.00001e-9, 3)),
-                    T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
-                    T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, 0.01234e-9);
+                                             new FieldAbsoluteDate<>(field, new DateComponents(2012, 26),
+                                                                     new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                                                     TimeScalesFactory.getUTC()),
+                                             zero.newInstance(taylorConvert(12.26882470, 1)),
+                                             zero.newInstance(taylorConvert(-0.00000004, 2)),
+                                             zero.newInstance(taylorConvert(0.00001e-9, 3)),
+                                             zero.newInstance(0.0075476),
+                                             zero.newInstance(FastMath.toRadians(74.0161)),
+                                             zero.newInstance(FastMath.toRadians(328.9888)),
+                                             zero.newInstance(FastMath.toRadians(228.9750)),
+                                             zero.newInstance(FastMath.toRadians(30.6709)),
+                                             80454,
+                                             zero.newInstance(0.01234e-9));
             tle.getLine2();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -490,7 +531,7 @@ public class FieldTLETest {
         }
     }
 
-    public <T extends CalculusFieldElement<T>>void doTestSatCodeCompliance(Field<T> field) throws IOException, OrekitException, ParseException {
+    public <T extends CalculusFieldElement<T>>void doTestSatCodeCompliance(Field<T> field) throws IOException, OrekitException {
 
         BufferedReader rEntry = null;
         BufferedReader rResults = null;
@@ -532,25 +573,22 @@ public class FieldTLETest {
 
                         int satNum = Integer.parseInt(title[1]);
                         Assertions.assertEquals(satNum, tle.getSatelliteNumber());
-                        final T[] parameters;
-                        parameters = MathArrays.buildArray(field, 1);
-                        parameters[0] = field.getZero().add(tle.getBStar());
-                        FieldTLEPropagator<T> ex = FieldTLEPropagator.selectExtrapolator(tle, parameters);
+                        FieldTLEPropagator<T> ex = FieldTLEPropagator.selectExtrapolator(tle);
                         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
 
                             String[] data = rline.split(" ");
                             double minFromStart = Double.parseDouble(data[0]);
-                            T pX = T_zero.add(1000*Double.parseDouble(data[1]));
-                            T pY = T_zero.add(1000*Double.parseDouble(data[2]));
-                            T pZ = T_zero.add(1000*Double.parseDouble(data[3]));
-                            T vX = T_zero.add(1000*Double.parseDouble(data[4]));
-                            T vY = T_zero.add(1000*Double.parseDouble(data[5]));
-                            T vZ = T_zero.add(1000*Double.parseDouble(data[6]));
+                            T pX = T_zero.newInstance(1000*Double.parseDouble(data[1]));
+                            T pY = T_zero.newInstance(1000*Double.parseDouble(data[2]));
+                            T pZ = T_zero.newInstance(1000*Double.parseDouble(data[3]));
+                            T vX = T_zero.newInstance(1000*Double.parseDouble(data[4]));
+                            T vY = T_zero.newInstance(1000*Double.parseDouble(data[5]));
+                            T vZ = T_zero.newInstance(1000*Double.parseDouble(data[6]));
                             FieldVector3D<T> testPos = new FieldVector3D<>(pX, pY, pZ);
                             FieldVector3D<T> testVel = new FieldVector3D<>(vX, vY, vZ);
 
                             FieldAbsoluteDate<T> date = tle.getDate().shiftedBy(minFromStart * 60);
-                            FieldPVCoordinates<T> results = ex.getPVCoordinates(date, parameters);
+                            FieldPVCoordinates<T> results = ex.getPVCoordinates(date, tle.getBStar());
                             double normDifPos = testPos.subtract(results.getPosition()).getNorm().getReal();
                             double normDifVel = testVel.subtract(results.getVelocity()).getNorm().getReal();
 
@@ -577,10 +615,7 @@ public class FieldTLETest {
     public <T extends CalculusFieldElement<T>> void doTestZeroInclination(Field<T> field) {
         FieldTLE<T> tle = new FieldTLE<>(field, "1 26451U 00043A   10130.13784012 -.00000276  00000-0  10000-3 0  3866",
                 "2 26451 000.0000 266.1044 0001893 160.7642 152.5985 01.00271160 35865");
-        final T[] parameters;
-        parameters = MathArrays.buildArray(field, 1);
-        parameters[0].add(tle.getBStar());
-        FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
+        FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle);
         FieldPVCoordinates<T> pv = propagator.propagate(tle.getDate().shiftedBy(100)).getPVCoordinates();
         Assertions.assertEquals(42171546.979560345, pv.getPosition().getNorm().getReal(), 1.0e-3);
         Assertions.assertEquals(3074.1890089357994, pv.getVelocity().getNorm().getReal(), 1.0e-6);
@@ -603,10 +638,12 @@ public class FieldTLETest {
     }
 
     public <T extends CalculusFieldElement<T>> void doTestEqualTLE(Field<T> field) {
-        FieldTLE<T> tleA = new FieldTLE<>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        FieldTLE<T> tleB = new FieldTLE<>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        FieldTLE<T> tleA = new FieldTLE<>(field,
+                                          "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                                          "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        FieldTLE<T> tleB = new FieldTLE<>(field,
+                                          "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                                          "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         Assertions.assertEquals(tleA, tleB);
     }
 
@@ -619,43 +656,61 @@ public class FieldTLETest {
     }
 
     public <T extends CalculusFieldElement<T>> void doTestIssue388(Field<T> field) {
-        final T T_zero = field.getZero();
+        final T zero = field.getZero();
         FieldTLE<T> tleRef = new FieldTLE<>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         FieldTLE<T> tleOriginal = new FieldTLE<>(27421, 'U', 2002, 21, "A", TLE.DEFAULT, 2,
-                new FieldAbsoluteDate<>(field, "2002-05-04T11:45:15.695", TimeScalesFactory.getUTC()),
-                T_zero.add(FastMath.toRadians(14.26113993 * 360 / Constants.JULIAN_DAY)),
-                T_zero.add(FastMath.toRadians(-.00021470 * 360 * 2 / (Constants.JULIAN_DAY * Constants.JULIAN_DAY))),
-                T_zero.add(FastMath.toRadians(0.0)),
-                T_zero.add(1.333E-4), T_zero.add(FastMath.toRadians(98.7490)),
-                T_zero.add(FastMath.toRadians(133.9522)), T_zero.add(FastMath.toRadians(199.5121)), T_zero.add(FastMath.toRadians(226.1918)),
-                6, -0.0089879);
+                                                 new FieldAbsoluteDate<>(field, "2002-05-04T11:45:15.695",
+                                                                         TimeScalesFactory.getUTC()),
+                                                 zero.newInstance(FastMath.toRadians(14.26113993 * 360 / Constants.JULIAN_DAY)),
+                                                 zero.newInstance(FastMath.toRadians(-.00021470 * 360 * 2 / (Constants.JULIAN_DAY * Constants.JULIAN_DAY))),
+                                                 zero.newInstance(FastMath.toRadians(0.0)),
+                                                 zero.newInstance(1.333E-4),
+                                                 zero.newInstance(FastMath.toRadians(98.7490)),
+                                                 zero.newInstance(FastMath.toRadians(133.9522)),
+                                                 zero.newInstance(FastMath.toRadians(199.5121)),
+                                                 zero.newInstance(FastMath.toRadians(226.1918)),
+                                                 6,
+                                                 zero.newInstance(-0.0089879));
         Assertions.assertEquals(tleRef.getLine1(), tleOriginal.getLine1());
         Assertions.assertEquals(tleRef.getLine2(), tleOriginal.getLine2());
         FieldTLE<T> changedBStar = new FieldTLE<>(27421, 'U', 2002, 21, "A", TLE.DEFAULT, 2,
-                new FieldAbsoluteDate<>(field, "2002-05-04T11:45:15.695", TimeScalesFactory.getUTC()),
-                T_zero.add(FastMath.toRadians(14.26113993 * 360 / Constants.JULIAN_DAY)),
-                T_zero.add(FastMath.toRadians(-.00021470 * 360 * 2 / (Constants.JULIAN_DAY * Constants.JULIAN_DAY))),
-                T_zero.add(FastMath.toRadians(0.0)),
-                T_zero.add(1.333E-4), T_zero.add(FastMath.toRadians(98.7490)),
-                T_zero.add(FastMath.toRadians(133.9522)), T_zero.add(FastMath.toRadians(199.5121)), T_zero.add(FastMath.toRadians(226.1918)),
-                6, 1.0e-4);
+                                                  new FieldAbsoluteDate<>(field, "2002-05-04T11:45:15.695", TimeScalesFactory.getUTC()),
+                                                  zero.newInstance(FastMath.toRadians(14.26113993 * 360 / Constants.JULIAN_DAY)),
+                                                  zero.newInstance(FastMath.toRadians(-.00021470 * 360 * 2 / (Constants.JULIAN_DAY * Constants.JULIAN_DAY))),
+                                                  zero.newInstance(FastMath.toRadians(0.0)),
+                                                  zero.newInstance(1.333E-4),
+                                                  zero.newInstance(FastMath.toRadians(98.7490)),
+                                                  zero.newInstance(FastMath.toRadians(133.9522)),
+                                                  zero.newInstance(FastMath.toRadians(199.5121)),
+                                                  zero.newInstance(FastMath.toRadians(226.1918)),
+                                                  6,
+                                                  zero.newInstance(1.0e-4));
         Assertions.assertEquals(tleRef.getLine1().replace("-89879-2", " 10000-3"), changedBStar.getLine1());
         Assertions.assertEquals(tleRef.getLine2(), changedBStar.getLine2());
-        Assertions.assertEquals(1.0e-4, new FieldTLE<>(field, changedBStar.getLine1(), changedBStar.getLine2()).getBStar(), 1.0e-15);
+        Assertions.assertEquals(1.0e-4,
+                                new FieldTLE<>(field, changedBStar.getLine1(), changedBStar.getLine2()).getBStar().getReal(),
+                                1.0e-15);
     }
 
     public <T extends CalculusFieldElement<T>> void doTestIssue664NegativeRaanPa(Field<T> field) {
-        final T T_zero = field.getZero();
+        final T zero = field.getZero();
         FieldTLE<T> tle = new FieldTLE<>(99999, 'X', 2020, 42, "F", 0, 999,
-                new FieldAbsoluteDate<>(field, "2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), T_zero.add(0.0011010400252833312), T_zero.add(0.0),
-                T_zero.add(0.0), T_zero.add(0.0016310523359516962), T_zero.add(1.6999188604164899),
-                T_zero.add(-3.219351286726724), T_zero.add(-2.096689019811356),
-                T_zero.add(2.157567545975006), 1, 1e-05);
+                                         new FieldAbsoluteDate<>(field, "2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()),
+                                         zero.newInstance(0.0011010400252833312),
+                                         zero.newInstance(0.0),
+                                         zero.newInstance(0.0),
+                                         zero.newInstance(0.0016310523359516962),
+                                         zero.newInstance(1.6999188604164899),
+                                         zero.newInstance(-3.219351286726724),
+                                         zero.newInstance(-2.096689019811356),
+                                         zero.newInstance(2.157567545975006),
+                                         1,
+                                         zero.newInstance(1e-05));
         // Comparing with TLE strings generated in Orekit Python after forcing the RAAN
         // and PA to the [0, 2*Pi] range
-        Assertions.assertEquals(tle.getLine1(), "1 99999X 20042F   20001.04166667  .00000000  00000-0  10000-4 0  9997");
-        Assertions.assertEquals(tle.getLine2(), "2 99999  97.3982 239.8686 0016311 175.5448 123.6195 15.14038717    18");
+        Assertions.assertEquals("1 99999X 20042F   20001.04166667  .00000000  00000-0  10000-4 0  9997", tle.getLine1());
+        Assertions.assertEquals("2 99999  97.3982 239.8686 0016311 175.5448 123.6195 15.14038717    18", tle.getLine2());
     }
 
     @Test
@@ -670,7 +725,7 @@ public class FieldTLETest {
                                                          "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
 
         // TLE propagator
-        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS);
 
         // State at TLE epoch
         final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
@@ -697,7 +752,7 @@ public class FieldTLETest {
         Assertions.assertEquals(tleISS.getRaan().getReal(),            rebuilt.getRaan().getReal(),            eps * tleISS.getRaan().getReal());
         Assertions.assertEquals(tleISS.getMeanAnomaly().getReal(),     rebuilt.getMeanAnomaly().getReal(),     eps * tleISS.getMeanAnomaly().getReal());
         Assertions.assertEquals(tleISS.getMeanAnomaly().getReal(),     rebuilt.getMeanAnomaly().getReal(),     eps * tleISS.getMeanAnomaly().getReal());
-        Assertions.assertEquals(tleISS.getBStar(),                     rebuilt.getBStar(),                     eps * tleISS.getBStar());
+        Assertions.assertEquals(tleISS.getBStar().getReal(),           rebuilt.getBStar().getReal(),           eps * tleISS.getBStar().getReal());
     }
 
     @Test
@@ -724,8 +779,10 @@ public class FieldTLETest {
                 new FieldAbsoluteDate<>(field, new AbsoluteDate("2022-01-01T23:59:59.99999999", TimeScalesFactory.getUTC()));
 
         final FieldTLE<Binary64> tle =
-                new FieldTLE<>(99999, 'U', 2022, 999, "A", 0, 1, tleDate, zero, zero, zero, zero, zero, zero, zero, zero, 99,
-                               11606 * 1e-4, TimeScalesFactory.getUTC());
+                new FieldTLE<>(99999, 'U', 2022, 999, "A", 0, 1,
+                               tleDate, zero, zero, zero, zero, zero, zero, zero, zero, 99,
+                               zero.newInstance(11606 * 1e-4),
+                               TimeScalesFactory.getUTC());
 
         //When
         final FieldAbsoluteDate<Binary64> returnedDate = tle.getDate();

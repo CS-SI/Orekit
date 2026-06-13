@@ -68,7 +68,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
-import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
@@ -106,8 +105,9 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                            final ODEIntegratorBuilder builder,
                                                            final double positionScale) {
-        return new TLEPropagatorBuilder(new TleParametersFactory(templateTLE, FramesFactory.getTEME()),
-                                        new FixedPointTleGenerationAlgorithm());
+        TLEPropagatorBuilder tb = new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(templateTLE));
+        tb.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
+        return tb;
     }
 
     /** {@inheritDoc} */
@@ -207,7 +207,9 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final boolean print = false;
 
         // input in resources directory
-        final String inputPath = TLEKalmanOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = TLEKalmanOrbitDeterminationTest.class.getClassLoader().
+                                 getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").
+                                 toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
@@ -218,7 +220,6 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().getFirst().setSelected(false);
 
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;
@@ -295,8 +296,8 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         Assertions.assertEquals(0.0, dV, velocityAccuracy);
 
         // Test on measurements parameters
-        final List<ParameterDriversList.DelegatingDriver> list = new ArrayList<>();
-        list.addAll(kalmanLageos2.getMeasurementsParameters().getDrivers());
+        final List<ParameterDriversList.DelegatingDriver> list =
+            new ArrayList<>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
         final double[] stationOffSet = { 0.069571, -0.114921,  -0.084817 };
         final double rangeBias = -0.041797;
@@ -337,7 +338,6 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line1 = "1 32711U 08012A   16044.40566018 -.00000039 +00000-0 +00000-0 0  9993";
         final String line2 = "2 32711 055.4362 301.3402 0091581 207.7162 151.8496 02.00563594058026";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().getFirst().setSelected(false);
 
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;

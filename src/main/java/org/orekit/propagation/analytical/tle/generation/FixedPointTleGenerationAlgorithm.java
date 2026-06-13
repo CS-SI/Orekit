@@ -16,18 +16,13 @@
  */
 package org.orekit.propagation.analytical.tle.generation;
 
-import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
 import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.ParameterDriver;
 
 /**
  * Fixed Point method to reverse SGP4 and SDP4 propagation algorithm
@@ -40,7 +35,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 12.0
  */
-public class FixedPointTleGenerationAlgorithm extends AbstractTleGenerationAlgorithm<FixedPointConverter> {
+public class FixedPointTleGenerationAlgorithm extends TleGenerationAlgorithm {
 
     /** Default value for epsilon. */
     public static final double EPSILON_DEFAULT = 1.0e-10;
@@ -58,10 +53,12 @@ public class FixedPointTleGenerationAlgorithm extends AbstractTleGenerationAlgor
      * as well as {@link #EPSILON_DEFAULT}, {@link #MAX_ITERATIONS_DEFAULT},
      * {@link #SCALE_DEFAULT} for method convergence.
      * </p>
+     * @param templateTLE template TLE
+     * @since 14.0
      */
     @DefaultDataContext
-    public FixedPointTleGenerationAlgorithm() {
-        this(EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT, SCALE_DEFAULT);
+    public FixedPointTleGenerationAlgorithm(final TLE templateTLE) {
+        this(templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT, SCALE_DEFAULT);
     }
 
     /**
@@ -69,51 +66,40 @@ public class FixedPointTleGenerationAlgorithm extends AbstractTleGenerationAlgor
      * <p>
      * Uses the {@link DataContext#getDefault() default data context}.
      * </p>
+     * @param templateTLE template TLE
      * @param epsilon used to compute threshold for convergence check
      * @param maxIterations maximum number of iterations for convergence
      * @param scale scale factor of the Fixed Point algorithm
+     * @since 14.0
      */
     @DefaultDataContext
-    public FixedPointTleGenerationAlgorithm(final double epsilon,
+    public FixedPointTleGenerationAlgorithm(final TLE templateTLE,
+                                            final double epsilon,
                                             final int maxIterations,
                                             final double scale) {
-        this(epsilon, maxIterations, scale,
+        this(templateTLE, epsilon, maxIterations, scale,
              DataContext.getDefault().getTimeScales().getUTC(),
              DataContext.getDefault().getFrames().getTEME());
     }
 
     /**
      * Constructor.
+     * @param templateTLE template TLE
      * @param epsilon used to compute threshold for convergence check
      * @param maxIterations maximum number of iterations for convergence
      * @param scale scale factor of the Fixed Point algorithm
      * @param utc UTC time scale
      * @param teme TEME frame
+     * @since 14.0
      */
-    public FixedPointTleGenerationAlgorithm(final double epsilon,
+    public FixedPointTleGenerationAlgorithm(final TLE templateTLE,
+                                            final double epsilon,
                                             final int maxIterations,
                                             final double scale,
                                             final TimeScale utc,
                                             final Frame teme) {
-        super(new FixedPointConverter(new TLETheory(utc, teme), epsilon, maxIterations, scale));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
-                                                                    final FieldTLE<T> templateTLE) {
-        final T bStar = state.getMass().getField().getZero().newInstance(templateTLE.getBStar());
-        final FieldKeplerianOrbit<T> mean =
-            (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(getConverter().convertToMean(state.getOrbit()));
-        final FieldTLE<T> tle = TleGenerationUtil.newTLE(mean, templateTLE, bStar);
-        // reset estimated parameters from template to generated tle
-        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
-            if (templateDrivers.isSelected()) {
-                // set to selected for the new TLE
-                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
-            }
-        }
-        return tle;
+        super(templateTLE, teme,
+              new FixedPointConverter(new TLETheory(utc, teme), epsilon, maxIterations, scale));
     }
 
 }

@@ -32,10 +32,10 @@ class ParameterEstimatorTest {
     @ValueSource(booleans = {true, false})
     void testGetOrbitalParametersDrivers(final boolean estimateOnly) {
         // GIVEN
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(TestUtils.getTestOrbit(),
-                PositionAngleType.MEAN, 1.);
-        builder.getOrbitalParametersDrivers().getDrivers().forEach(delegatingDriver -> delegatingDriver.setSelected(false));
-        builder.getOrbitalParametersDrivers().getDrivers().getFirst().setSelected(true);  // select only one
+        final KeplerianPropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(TestUtils.getTestOrbit().factory(PositionAngleType.MEAN, 1.));
+        builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().forEach(delegatingDriver -> delegatingDriver.setSelected(false));
+        builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst().setSelected(true);  // select only one
         final TestEstimator testEstimator = new TestEstimator(builder);
         // WHEN
         final ParameterDriversList driversList = testEstimator.getOrbitalParametersDrivers(estimateOnly);
@@ -52,8 +52,8 @@ class ParameterEstimatorTest {
     @ValueSource(booleans = {true, false})
     void testGetPropagationParametersDrivers(final boolean estimateOnly) {
         // GIVEN
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(TestUtils.getTestOrbit(),
-                PositionAngleType.MEAN, 1.);
+        final KeplerianPropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(TestUtils.getTestOrbit().factory(PositionAngleType.MEAN, 1.));
         final TestEstimator testEstimator = new TestEstimator(builder);
         // WHEN
         final ParameterDriversList driversList = testEstimator.getPropagationParametersDrivers(estimateOnly);
