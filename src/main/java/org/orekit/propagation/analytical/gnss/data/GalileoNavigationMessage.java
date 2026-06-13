@@ -132,19 +132,20 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, GalileoNavigationMessage, P>>
-    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
-        return (P) new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                       getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                       converter.apply(getTgd()), toFieldToc(orbit),
-                                                       converter.apply(getTransmissionTime()),
-                                                       getIODNav(), getDataSource(),
-                                                       converter.apply(getBGDE1E5a()),
-                                                       converter.apply(getBGDE5bE1()),
-                                                       converter.apply(getSisa()),
-                                                       converter.apply( getSvHealth()));
+    public <T extends CalculusFieldElement<T>>
+    FieldGalileoNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                             final T[] nonKeplerian,
+                                             final DoubleFunction<T> converter) {
+        return new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                   getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                                   converter.apply(getTgd()), toFieldToc(orbit),
+                                                   converter.apply(getTransmissionTime()),
+                                                   getIODNav(), getDataSource(),
+                                                   converter.apply(getBGDE1E5a()),
+                                                   converter.apply(getBGDE5bE1()),
+                                                   converter.apply(getSisa()),
+                                                   converter.apply( getSvHealth()));
     }
 
     /** Get the Issue Of Data (IOD).

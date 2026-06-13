@@ -208,26 +208,27 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, BeidouCivilianNavigationMessage, P>>
-    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
-        return (P) new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
-                                                              getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                              getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                              converter.apply(getTgd()), toFieldToc(orbit),
-                                                              converter.apply(getTransmissionTime()),
-                                                              getIODE(), getIODC(),
-                                                              converter.apply(getIscB1CD()),
-                                                              converter.apply(getIscB1CP()),
-                                                              converter.apply(getIscB2AD()),
-                                                              getSisaiOe(), getSisaiOcb(),
-                                                              getSisaiOc1(), getSisaiOc2(),
-                                                              getSismai(), getHealth(), getIntegrityFlags(),
-                                                              converter.apply(getTgdB1Cp()),
-                                                              converter.apply(getTgdB2ap()),
-                                                              converter.apply(getTgdB2bI()),
-                                                              getSatelliteType());
+    public <T extends CalculusFieldElement<T>>
+    FieldBeidouCivilianNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                    final T[] nonKeplerian,
+                                                    final DoubleFunction<T> converter) {
+        return new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
+                                                          getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                          getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                                          converter.apply(getTgd()), toFieldToc(orbit),
+                                                          converter.apply(getTransmissionTime()),
+                                                          getIODE(), getIODC(),
+                                                          converter.apply(getIscB1CD()),
+                                                          converter.apply(getIscB1CP()),
+                                                          converter.apply(getIscB2AD()),
+                                                          getSisaiOe(), getSisaiOcb(),
+                                                          getSisaiOc1(), getSisaiOc2(),
+                                                          getSismai(), getHealth(), getIntegrityFlags(),
+                                                          converter.apply(getTgdB1Cp()),
+                                                          converter.apply(getTgdB2ap()),
+                                                          converter.apply(getTgdB2bI()),
+                                                          getSatelliteType());
     }
 
     /** Get the Issue Of Data Ephemeris (IODE).

@@ -91,14 +91,15 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, BeidouAlmanac, P>>
-    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
-        return (P) new FieldBeidouAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                            getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                            converter.apply( getTgd()), toFieldToc(orbit),
-                                            getHealth());
+    public <T extends CalculusFieldElement<T>>
+    FieldBeidouAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                  final T[] nonKeplerian,
+                                  final DoubleFunction<T> converter) {
+        return new FieldBeidouAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                        getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                        converter.apply( getTgd()), toFieldToc(orbit),
+                                        getHealth());
     }
 
     /** Get the Health status.

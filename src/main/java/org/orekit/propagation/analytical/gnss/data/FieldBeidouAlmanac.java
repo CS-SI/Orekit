@@ -36,7 +36,7 @@ import java.util.function.Function;
  *
  */
 public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldGnssOrbitalElements<T, BeidouAlmanac, FieldBeidouAlmanac<T>> {
+    extends FieldGnssOrbitalElements<T, BeidouAlmanac> {
 
     /** Health status. */
     private final int health;
@@ -71,17 +71,18 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, BeidouAlmanac, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldBeidouAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                            getType(), getPrn(), getGnssDate().getGnssDate(),
-                                            orbit, nonKeplerian,
-                                            converter.apply(getTgd()),
-                                            new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                    getToc().toAbsoluteDate()),
-                                            getHealth());
+    public <U extends CalculusFieldElement<U>>
+        FieldBeidouAlmanac<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                      final U[] nonKeplerian,
+                                      final Function<T, U> converter) {
+        return new FieldBeidouAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                        getType(), getPrn(), getGnssDate().getGnssDate(),
+                                        orbit, nonKeplerian,
+                                        converter.apply(getTgd()),
+                                        new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                getToc().toAbsoluteDate()),
+                                        getHealth());
     }
 
     /** Gets the Health status.

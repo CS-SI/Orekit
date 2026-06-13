@@ -35,7 +35,7 @@ public class GnssTestUtils {
     public static <O extends GNSSOrbitalElements<O>>
     void checkFieldConversion(final O message) {
         try {
-            FieldGnssOrbitalElements<Binary64, O, ?> intermediate = message.toField(Binary64Field.getInstance());
+            FieldGnssOrbitalElements<Binary64, O> intermediate = message.toField(Binary64Field.getInstance());
             final O rebuilt = intermediate.toNonField();
 
             for (final Method getter : getGetters(message, Integer.TYPE)) {

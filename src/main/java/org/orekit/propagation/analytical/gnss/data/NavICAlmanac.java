@@ -86,12 +86,13 @@ public class NavICAlmanac extends GNSSOrbitalElements<NavICAlmanac> {
 
     /** {@inheritDoc} */
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, NavICAlmanac, P>>
-    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
-        return (P) new FieldNavICAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                           getType(), getPrn(), getGnssDate(), orbit,  nonKeplerian,
-                                           converter.apply(getTgd()), toFieldToc(orbit));
+    public <T extends CalculusFieldElement<T>>
+    FieldNavICAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                 final T[] nonKeplerian,
+                                 final DoubleFunction<T> converter) {
+        return new FieldNavICAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                       getType(), getPrn(), getGnssDate(), orbit,  nonKeplerian,
+                                       converter.apply(getTgd()), toFieldToc(orbit));
    }
 
     /** {@inheritDoc} */

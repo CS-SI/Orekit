@@ -26,14 +26,12 @@ import org.orekit.time.TimeScales;
  * Container for data contained in a GPS/QZNSS civilian navigation message.
  * @param <T> type of the field elements
  * @param <O> type of the orbital elements (non-field version)
- * @param <P> type of the orbital elements (field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
 public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElement<T>,
-                                                     O extends CivilianNavigationMessage<O>,
-                                                     P extends FieldAbstractNavigationMessage<T, O, P>>
-    extends FieldAbstractNavigationMessage<T, O, P>
+                                                     O extends CivilianNavigationMessage<O>>
+    extends FieldAbstractNavigationMessage<T, O>
     implements FieldGNSSClockElements<T> {
 
     /** Indicator for CNV 2 messages. */

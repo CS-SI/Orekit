@@ -201,7 +201,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      * @param original regular field instance
      */
     protected <T extends CalculusFieldElement<T>,
-               A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A, ?> original) {
+               A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
              original.getType(), original.getPrn(),
              original.getGnssDate().getGnssDate(), original.getOrbit().toOrbit(),
@@ -232,13 +232,12 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
 
     /** Create a field version of the instance.
      * @param <T> type of the field elements
-     * @param <P> type of the orbital elements (field version)
      * @param field field
      * @return field version of the instance
      * @since 14.0
      */
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, O, P>>
-        P toField(Field<T> field) {
+    public <T extends CalculusFieldElement<T>>
+        FieldGnssOrbitalElements<T, O> toField(Field<T> field) {
         final T zero = field.getZero();
         final T[] parameters = MathArrays.buildArray(field, NonKeplerianDriversFactory.SIZE);
         parameters[NonKeplerianDriversFactory.TIME_INDEX]         = zero.newInstance(getGnssDate().getSecondsInWeek());
@@ -261,15 +260,16 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
 
     /** Create another field version of the instance.
      * @param <T>          type of the field elements
-     * @param <P>          type of the orbital elements (field version)
      * @param orbit        orbit in the correct gradient field
      * @param nonKeplerian non-Keplerian parameters
      * @param converter    converter for remaining elements
      * @return gradient version of the instance
      * @since 14.0
      */
-    public abstract <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, O, P>>
-        P toField(FieldKeplerianOrbit<T> orbit, T[] nonKeplerian, DoubleFunction<T> converter);
+    public abstract <T extends CalculusFieldElement<T>>
+        FieldGnssOrbitalElements<T, O> toField(FieldKeplerianOrbit<T> orbit,
+                                               T[] nonKeplerian,
+                                               DoubleFunction<T> converter);
 
     /** Convert TOC.
      * @param <T>   type of the field elements

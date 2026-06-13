@@ -136,19 +136,20 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, BeidouLegacyNavigationMessage, P>>
-    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
-        return (P) new FieldBeidouLegacyNavigationMessage<>(isD2(),
-                                                            getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                            getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                            converter.apply(getTgd()), toFieldToc(orbit),
-                                                            converter.apply(getTransmissionTime()),
-                                                            getAODE(), getAODC(), getSatH1(),
-                                                            converter.apply( getTGD1()),
-                                                            converter.apply(getTGD2()),
-                                                            converter.apply(getSvAccuracy()));
+    public <T extends CalculusFieldElement<T>>
+    FieldBeidouLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                  final T[] nonKeplerian,
+                                                  final DoubleFunction<T> converter) {
+        return new FieldBeidouLegacyNavigationMessage<>(isD2(),
+                                                        getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                        getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                                        converter.apply(getTgd()), toFieldToc(orbit),
+                                                        converter.apply(getTransmissionTime()),
+                                                        getAODE(), getAODC(), getSatH1(),
+                                                        converter.apply( getTGD1()),
+                                                        converter.apply(getTGD2()),
+                                                        converter.apply(getSvAccuracy()));
     }
 
     /**

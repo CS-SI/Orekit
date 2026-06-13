@@ -60,12 +60,9 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @param <T> type of the field elements
  * @param <O> type of the orbital elements (non-field version)
- * @param <P> type of the orbital elements (field version)
  * @since 13.0
  */
-public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
-                                 O extends GNSSOrbitalElements<O>,
-                                 P extends FieldGnssOrbitalElements<T, O, P>>
+public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GNSSOrbitalElements<O>>
     extends FieldAbstractAnalyticalPropagator<T> {
 
     /** Maximum number of iterations for internal loops. */
@@ -84,7 +81,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
     private static final double EPS = 1.0e-12;
 
     /** The GNSS propagation model used. */
-    private FieldGnssOrbitalElements<T, O, P> orbitalElements;
+    private FieldGnssOrbitalElements<T, O> orbitalElements;
 
     /** Factory for non-Keplerian elements drivers.
      * @since 14.0
@@ -125,7 +122,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
      * @param provider Attitude provider
      * @param mass Satellite mass (kg)
      */
-    public FieldGnssPropagator(final P orbitalElements,
+    public FieldGnssPropagator(final FieldGnssOrbitalElements<T, O> orbitalElements,
                                final Frame eci, final Frame ecef,
                                final AttitudeProvider provider, final T mass) {
         super(orbitalElements.getDate().getField(), provider);
@@ -161,7 +158,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
      * @param mass                 spacecraft mass
      */
     public FieldGnssPropagator(final FieldSpacecraftState<T> initialState,
-                               final P nonKeplerianElements,
+                               final FieldGnssOrbitalElements<T, O> nonKeplerianElements,
                                final Frame ecef, final AttitudeProvider provider, final T mass) {
         this(buildOrbitalElements(initialState, nonKeplerianElements, new NonKeplerianDriversFactory(),
                         ecef, provider, mass),
@@ -206,7 +203,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
      * @return the underlying GNSS orbital elements
      * @since 14.0
      */
-    public FieldGnssOrbitalElements<T, O, P> getOrbitalElements() {
+    public FieldGnssOrbitalElements<T, O> getOrbitalElements() {
         return orbitalElements;
     }
 
@@ -350,8 +347,6 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
      *
      * @param <T> type of the field elements
      * @param <O> type of the orbital elements (non-field version)
-     * @param <P> type of the orbital elements (field version)
-     * @param <Q> type of the orbital elements (field gradient version)
      * @param initialState         initial state
      * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be overridden)
      * @param driversFactory       factory for non-Keplerian drivers
@@ -360,15 +355,13 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
      * @param mass                 satellite mass (kg)
      * @return orbital elements that generate the {@code initialState} when used with a propagator
      */
-    private static <T extends CalculusFieldElement<T>,
-                    O extends GNSSOrbitalElements<O>,
-                    P extends FieldGnssOrbitalElements<T, O, P>,
-                    Q extends FieldGnssOrbitalElements<FieldGradient<T>, O, Q>>
-       P buildOrbitalElements(final FieldSpacecraftState<T> initialState,
-                              final FieldGnssOrbitalElements<T, O, P> nonKeplerianElements,
-                              final NonKeplerianDriversFactory driversFactory,
-                              final Frame ecef, final AttitudeProvider provider,
-                              final T mass) {
+    public static <T extends CalculusFieldElement<T>,
+                   O extends GNSSOrbitalElements<O>>
+       FieldGnssOrbitalElements<T, O> buildOrbitalElements(final FieldSpacecraftState<T> initialState,
+                                                           final FieldGnssOrbitalElements<T, O> nonKeplerianElements,
+                                                           final NonKeplerianDriversFactory driversFactory,
+                                                           final Frame ecef, final AttitudeProvider provider,
+                                                           final T mass) {
 
         final Field<T> field = initialState.getDate().getField();
 
@@ -381,11 +374,11 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
 
         // refine orbit using simple differential correction to reach target PV
         final FieldPVCoordinates<T> targetPV = initialState.getPVCoordinates(frozenEcef);
-        Q gElements = convert(nonKeplerianElements, orbit, driversFactory);
+        FieldGnssOrbitalElements<FieldGradient<T>, O> gElements = convert(nonKeplerianElements, orbit, driversFactory);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
-            final FieldGnssPropagator<FieldGradient<T>, O, Q> gPropagator =
+            final FieldGnssPropagator<FieldGradient<T>, O> gPropagator =
                 new FieldGnssPropagator<>(gElements, frozenEcef, ecef, provider,
                                           gElements.getOrbit().getMu().newInstance(mass));
             final FieldPVCoordinates<FieldGradient<T>> gPV = gPropagator.getInitialState().getPVCoordinates();
@@ -436,7 +429,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
                                           new FieldAbsoluteDate<>(previous.getMu().getValue().getField(),
                                                                   previous.getDate().toAbsoluteDate()),
                                           previous.getMu().getValue());
-            gElements = convert(nonKeplerianElements, updated);
+            gElements = convert(nonKeplerianElements, updated, driversFactory);
 
             final double deltaP = FastMath.sqrt(residuals.getEntry(0).getReal() * residuals.getEntry(0).getReal() +
                                                 residuals.getEntry(1).getReal() * residuals.getEntry(1).getReal() +
@@ -477,7 +470,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
      */
     private static <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T>
         approximateInitialOrbit(final FieldSpacecraftState<T> initialState,
-                                final FieldGnssOrbitalElements<T, ?, ?> nonKeplerianElements,
+                                final FieldGnssOrbitalElements<T, ?> nonKeplerianElements,
                                 final Frame frozenEcef) {
 
         // rotate the state to a frame that is inertial but aligned with Earth frame,
@@ -540,25 +533,29 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
     }
 
     /** Convert orbital elements to gradient.
-     * @param <T> type of the field elements
-     * @param elements   primitive double elements
-     * @param orbit      Keplerian orbit
+     * @param <T>            type of the field elements
+     * @param <O>            type of the orbital elements (non-field version)
+     * @param elements       primitive double elements
+     * @param orbit          Keplerian orbit
+     * @param driversFactory factory for non-Kepleria drivers
      * @return converted elements, set up as gradient relative to Keplerian orbit
      */
-    private static <T extends CalculusFieldElement<T>> FieldGnssOrbitalElements<FieldGradient<T>, ?, ?>
-        convert(final FieldGnssOrbitalElements<T, ?, ?> elements, final FieldKeplerianOrbit<T> orbit) {
+    private static <T extends CalculusFieldElement<T>, O extends GNSSOrbitalElements<O>>
+        FieldGnssOrbitalElements<FieldGradient<T>, O> convert(final FieldGnssOrbitalElements<T, O> elements,
+                                                              final FieldKeplerianOrbit<T> orbit,
+                                                              final NonKeplerianDriversFactory driversFactory) {
         return elements.toField(new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(FieldGradient.variable(FREE_PARAMETERS, 0,
-                                                                                                           orbit.getA()),
+                                                                                                                orbit.getA()),
                                                                                          FieldGradient.variable(FREE_PARAMETERS, 1,
-                                                                                                           orbit.getE()),
+                                                                                                                orbit.getE()),
                                                                                          FieldGradient.variable(FREE_PARAMETERS, 2,
-                                                                                                           orbit.getI()),
+                                                                                                                orbit.getI()),
                                                                                          FieldGradient.variable(FREE_PARAMETERS, 3,
-                                                                                                           orbit.getPerigeeArgument()),
+                                                                                                                orbit.getPerigeeArgument()),
                                                                                          FieldGradient.variable(FREE_PARAMETERS, 4,
-                                                                                                           orbit.getRightAscensionOfAscendingNode()),
+                                                                                                                orbit.getRightAscensionOfAscendingNode()),
                                                                                          FieldGradient.variable(FREE_PARAMETERS, 5,
-                                                                                                           orbit.getMeanAnomaly()),
+                                                                                                                orbit.getMeanAnomaly()),
                                                                                          PositionAngleType.MEAN),
                                                           orbit.getFrame(),
                                                           new FieldAbsoluteDate<>(FieldGradient.constant(FREE_PARAMETERS,

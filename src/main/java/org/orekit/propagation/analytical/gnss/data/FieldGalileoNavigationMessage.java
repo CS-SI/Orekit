@@ -31,7 +31,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, GalileoNavigationMessage, FieldGalileoNavigationMessage<T>> {
+    extends FieldAbstractNavigationMessage<T, GalileoNavigationMessage> {
 
     /** Issue of Data of the navigation batch. */
     private final int iodNav;
@@ -96,20 +96,21 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, GalileoNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                       getType(), getPrn(), getGnssDate().getGnssDate(),
-                                                       orbit, nonKeplerian,
-                                                       converter.apply(getTgd()), toFieldToc(orbit),
-                                                       converter.apply(getTransmissionTime()),
-                                                       getIODNav(), getDataSource(),
-                                                       converter.apply(getBGDE1E5a()),
-                                                       converter.apply(getBGDE5bE1()),
-                                                       converter.apply(getSisa()),
-                                                       converter.apply(getSvHealth()));
+    public <U extends CalculusFieldElement<U>>
+        FieldGalileoNavigationMessage<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                                 final U[] nonKeplerian,
+                                                 final Function<T, U> converter) {
+        return new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                   getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                   orbit, nonKeplerian,
+                                                   converter.apply(getTgd()), toFieldToc(orbit),
+                                                   converter.apply(getTransmissionTime()),
+                                                   getIODNav(), getDataSource(),
+                                                   converter.apply(getBGDE1E5a()),
+                                                   converter.apply(getBGDE5bE1()),
+                                                   converter.apply(getSisa()),
+                                                   converter.apply(getSvHealth()));
     }
 
     /**

@@ -37,7 +37,7 @@ import java.util.function.Function;
  *
  */
 public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldGnssOrbitalElements<T, GPSAlmanac, FieldGPSAlmanac<T>> {
+    extends FieldGnssOrbitalElements<T, GPSAlmanac> {
 
     /** Source of the almanac. */
     private final String source;
@@ -93,18 +93,19 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, GPSAlmanac, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                         getType(), getPrn(), getGnssDate().getGnssDate(),
-                                         orbit, nonKeplerian,
-                                         converter.apply(getTgd()),
-                                         new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                 getToc().toAbsoluteDate()),
-                                         getSource(), getSVN(), getHealth(),
-                                         getURA(), getSatConfiguration());
+    public <U extends CalculusFieldElement<U>>
+        FieldGPSAlmanac<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                   final U[] nonKeplerian,
+                                   final Function<T, U> converter) {
+        return new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                     getType(), getPrn(), getGnssDate().getGnssDate(),
+                                     orbit, nonKeplerian,
+                                     converter.apply(getTgd()),
+                                     new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                             getToc().toAbsoluteDate()),
+                                     getSource(), getSVN(), getHealth(),
+                                     getURA(), getSatConfiguration());
     }
 
     /**

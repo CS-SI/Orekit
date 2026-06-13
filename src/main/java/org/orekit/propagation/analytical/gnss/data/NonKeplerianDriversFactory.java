@@ -237,7 +237,7 @@ public class NonKeplerianDriversFactory {
     /** Reset the parameters drivers from existing elements.
      * @param elements elements to use for reset
      */
-    public void reset(final FieldGnssOrbitalElements<?, ?, ?> elements) {
+    public void reset(final FieldGnssOrbitalElements<?, ?> elements) {
         reset(timeDriver,       elements.getGnssDate().getGnssDate().getSecondsInWeek());
         reset(aDotDriver,       elements.getADot().getReal());
         reset(deltaN0Driver,    elements.getDeltaN0().getReal());

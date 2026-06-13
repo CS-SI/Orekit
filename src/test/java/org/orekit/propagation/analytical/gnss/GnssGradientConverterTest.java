@@ -35,7 +35,6 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.gnss.data.FieldGalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
@@ -91,10 +90,8 @@ class GnssGradientConverterTest {
 
     @Test
     void testInitialStateStmNoSelectedParameters() {
-        GnssGradientConverter<GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
-            converter = new GnssGradientConverter<>(propagator);
-        final FieldGnssPropagator<Gradient, GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
-            gPropagator = converter.getPropagator();
+        GnssGradientConverter<GalileoNavigationMessage> converter = new GnssGradientConverter<>(propagator);
+        final FieldGnssPropagator<Gradient, GalileoNavigationMessage> gPropagator = converter.getPropagator();
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(6, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
@@ -104,10 +101,8 @@ class GnssGradientConverterTest {
     @Test
     void testInitialStateStmAllParametersSelected() {
         propagator.getParametersDrivers().forEach(p -> p.setSelected(true));
-        GnssGradientConverter<GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
-            converter = new GnssGradientConverter<>(propagator);
-        final FieldGnssPropagator<Gradient, GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
-            gPropagator = converter.getPropagator();
+        GnssGradientConverter<GalileoNavigationMessage> converter = new GnssGradientConverter<>(propagator);
+        final FieldGnssPropagator<Gradient, GalileoNavigationMessage> gPropagator = converter.getPropagator();
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(21, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());

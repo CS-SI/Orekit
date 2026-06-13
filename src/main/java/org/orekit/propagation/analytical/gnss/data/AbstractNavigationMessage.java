@@ -91,7 +91,7 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      * @param original regular field instance
      */
     protected <T extends CalculusFieldElement<T>,
-               A extends AbstractNavigationMessage<A>> AbstractNavigationMessage(final FieldAbstractNavigationMessage<T, A, ?> original) {
+               A extends AbstractNavigationMessage<A>> AbstractNavigationMessage(final FieldAbstractNavigationMessage<T, A> original) {
         super(original);
         transmissionTime = original.getTransmissionTime().getReal();
     }

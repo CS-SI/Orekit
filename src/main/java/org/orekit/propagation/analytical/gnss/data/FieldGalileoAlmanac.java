@@ -36,7 +36,7 @@ import java.util.function.Function;
  *
  */
 public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldGnssOrbitalElements<T, GalileoAlmanac, FieldGalileoAlmanac<T>> {
+    extends FieldGnssOrbitalElements<T, GalileoAlmanac> {
 
     /** Satellite E5a signal health status. */
     private final int healthE5a;
@@ -87,18 +87,19 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, GalileoAlmanac, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                             getType(), getPrn(), getGnssDate().getGnssDate(),
-                                             orbit, nonKeplerian,
-                                             converter.apply(getTgd()),
-                                             new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                     getToc().toAbsoluteDate()),
-                                             getHealthE5a(), getHealthE5b(), getHealthE1(),
-                                             getIOD());
+    public <U extends CalculusFieldElement<U>>
+        FieldGalileoAlmanac<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                       final U[] nonKeplerian,
+                                       final Function<T, U> converter) {
+        return new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                         getType(), getPrn(), getGnssDate().getGnssDate(),
+                                         orbit, nonKeplerian,
+                                         converter.apply(getTgd()),
+                                         new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                 getToc().toAbsoluteDate()),
+                                         getHealthE5a(), getHealthE5b(), getHealthE1(),
+                                         getIOD());
     }
 
     /**

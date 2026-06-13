@@ -36,7 +36,7 @@ import java.util.function.Function;
  *
  */
 public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldGnssOrbitalElements<T, NavICAlmanac, FieldNavICAlmanac<T>> {
+    extends FieldGnssOrbitalElements<T, NavICAlmanac> {
 
     /** Creates a new instance.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
@@ -65,16 +65,17 @@ public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, NavICAlmanac, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldNavICAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                           getType(), getPrn(), getGnssDate().getGnssDate(),
-                                           orbit, nonKeplerian,
-                                           converter.apply(getTgd()),
-                                           new FieldAbsoluteDate<>(orbit.getDate().getField(),
-                                                                   getToc().toAbsoluteDate()));
+    public <U extends CalculusFieldElement<U>>
+        FieldNavICAlmanac<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                     final U[] nonKeplerian,
+                                     final Function<T, U> converter) {
+        return new FieldNavICAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                       getType(), getPrn(), getGnssDate().getGnssDate(),
+                                       orbit, nonKeplerian,
+                                       converter.apply(getTgd()),
+                                       new FieldAbsoluteDate<>(orbit.getDate().getField(),
+                                                               getToc().toAbsoluteDate()));
     }
 
 }

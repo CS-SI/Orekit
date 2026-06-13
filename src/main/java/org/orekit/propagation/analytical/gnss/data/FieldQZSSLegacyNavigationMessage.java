@@ -31,7 +31,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldLegacyNavigationMessage<T, QZSSLegacyNavigationMessage, FieldQZSSLegacyNavigationMessage<T>> {
+    extends FieldLegacyNavigationMessage<T, QZSSLegacyNavigationMessage> {
 
     /** Creates a new instance.
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
@@ -74,19 +74,20 @@ public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, QZSSLegacyNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldQZSSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                          getType(), getPrn(), getGnssDate().getGnssDate(),
-                                                          orbit, nonKeplerian,
-                                                          converter.apply(getTgd()), toFieldToc(orbit),
-                                                          converter.apply(getTransmissionTime()),
-                                                          getIODE(), getIODC(),
-                                                          converter.apply(getSvAccuracy()),
-                                                          getSvHealth(), getFitInterval(),
-                                                          getL2Codes(), getL2PFlags());
+    public <U extends CalculusFieldElement<U>>
+        FieldQZSSLegacyNavigationMessage<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                                    final U[] nonKeplerian,
+                                                    final Function<T, U> converter) {
+        return new FieldQZSSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                      getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                      orbit, nonKeplerian,
+                                                      converter.apply(getTgd()), toFieldToc(orbit),
+                                                      converter.apply(getTransmissionTime()),
+                                                      getIODE(), getIODC(),
+                                                      converter.apply(getSvAccuracy()),
+                                                      getSvHealth(), getFitInterval(),
+                                                      getL2Codes(), getL2PFlags());
     }
 
 }

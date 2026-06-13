@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
@@ -403,7 +402,6 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      * </p>
      *
      * @param <O> type of the orbital elements (non-field version)
-     * @param <Q> type of the orbital elements (gradient version)
      * @param initialState         initial state
      * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be overridden)
      * @param driversFactory       factory for non-Keplerian drivers
@@ -413,8 +411,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      * @return orbital elements that generate the {@code initialState} when used with a propagator
      * @since 13.0
      */
-    private static <O extends GNSSOrbitalElements<O>,
-                    Q extends FieldGnssOrbitalElements<Gradient, O, Q>>
+    public static <O extends GNSSOrbitalElements<O>>
         O buildOrbitalElements(final SpacecraftState initialState,
                                final O nonKeplerianElements,
                                final NonKeplerianDriversFactory driversFactory,
@@ -428,12 +425,12 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         driversFactory.reset(nonKeplerianElements);
 
         // refine orbit using simple differential correction to reach target PV
-        final PVCoordinates targetPV = initialState.getPVCoordinates();
-        FieldGnssOrbitalElements<Gradient, O, ?> gElements = convert(nonKeplerianElements, orbit, driversFactory);
+        final PVCoordinates targetPV = initialState.getPVCoordinates(frozenEcef);
+        FieldGnssOrbitalElements<Gradient, O> gElements = convert(nonKeplerianElements, orbit, driversFactory);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
-            final FieldGnssPropagator<Gradient, O, Q> gPropagator =
+            final FieldGnssPropagator<Gradient, O> gPropagator =
                 new FieldGnssPropagator<>(gElements, frozenEcef, ecef, provider,
                                           gElements.getTgd().newInstance(mass));
             final FieldPVCoordinates<Gradient> gPV = gPropagator.getInitialState().getPVCoordinates();
@@ -572,13 +569,16 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
 
     /** Convert orbital elements to gradient.
      * @param <O> type of the orbital elements (non-field version)
-     * @param elements   primitive double elements
-     * @param orbit      Keplerian orbit
+     * @param elements       primitive double elements
+     * @param orbit          Keplerian orbit
+     * @param driversFactory factory for non-Kepleria drivers
      * @return converted elements, set up as gradient relative to Keplerian orbit
      * @since 14.0
      */
     private static <O extends GNSSOrbitalElements<O>>
-        FieldGnssOrbitalElements<Gradient, O, ?> convert(final O elements, final KeplerianOrbit orbit, final NonKeplerianDriversFactory driversFactory) {
+        FieldGnssOrbitalElements<Gradient, O> convert(final O elements,
+                                                      final KeplerianOrbit orbit,
+                                                      final NonKeplerianDriversFactory driversFactory) {
         return elements.toField(new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(FREE_PARAMETERS, 0,
                                                                                                            orbit.getA()),
                                                                                          Gradient.variable(FREE_PARAMETERS, 1,

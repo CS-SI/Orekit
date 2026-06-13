@@ -118,15 +118,16 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, GPSAlmanac, P>>
-    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
-        return (P) new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                         getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                         converter.apply(getTgd()), toFieldToc(orbit),
-                                         getSource(), getSVN(),
-                                         getHealth(), getURA(), getSatConfiguration());
+    public <T extends CalculusFieldElement<T>>
+    FieldGPSAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                               final T[] nonKeplerian,
+                               final DoubleFunction<T> converter) {
+        return new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                     getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                     converter.apply(getTgd()), toFieldToc(orbit),
+                                     getSource(), getSVN(),
+                                     getHealth(), getURA(), getSatConfiguration());
     }
 
     /** Get the source of this GPS almanac.

@@ -31,7 +31,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, BeidouCivilianNavigationMessage, FieldBeidouCivilianNavigationMessage<T>> {
+    extends FieldAbstractNavigationMessage<T, BeidouCivilianNavigationMessage> {
 
     /** Beidou civilian message type.
      * @since 14.0
@@ -172,27 +172,28 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, BeidouCivilianNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
-                                                              getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                              getType(), getPrn(), getGnssDate().getGnssDate(),
-                                                              orbit, nonKeplerian,
-                                                              converter.apply(getTgd()), toFieldToc(orbit),
-                                                              converter.apply(getTransmissionTime()),
-                                                              getIODE(), getIODC(),
-                                                              converter.apply(getIscB1CD()),
-                                                              converter.apply(getIscB1CP()),
-                                                              converter.apply(getIscB2AD()),
-                                                              getSisaiOe(), getSisaiOcb(),
-                                                              getSisaiOc1(), getSisaiOc2(),
-                                                              getSismai(), getHealth(), getIntegrityFlags(),
-                                                              converter.apply(getTgdB1Cp()),
-                                                              converter.apply(getTgdB2ap()),
-                                                              converter.apply(getTgdB2bI()),
-                                                              getSatelliteType());
+    public <U extends CalculusFieldElement<U>>
+        FieldBeidouCivilianNavigationMessage<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                                        final U[] nonKeplerian,
+                                                        final Function<T, U> converter) {
+        return new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
+                                                          getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                          getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                          orbit, nonKeplerian,
+                                                          converter.apply(getTgd()), toFieldToc(orbit),
+                                                          converter.apply(getTransmissionTime()),
+                                                          getIODE(), getIODC(),
+                                                          converter.apply(getIscB1CD()),
+                                                          converter.apply(getIscB1CP()),
+                                                          converter.apply(getIscB2AD()),
+                                                          getSisaiOe(), getSisaiOcb(),
+                                                          getSisaiOc1(), getSisaiOc2(),
+                                                          getSismai(), getHealth(), getIntegrityFlags(),
+                                                          converter.apply(getTgdB1Cp()),
+                                                          converter.apply(getTgdB2ap()),
+                                                          converter.apply(getTgdB2bI()),
+                                                          getSatelliteType());
     }
 
     /**

@@ -113,25 +113,26 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, GPSCivilianNavigationMessage, P>>
-    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
-        return (P) new FieldGPSCivilianNavigationMessage<>(isCnv2(),
-                                                           getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                           getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                           converter.apply(getTgd()), toFieldToc(orbit),
-                                                           converter.apply(getTransmissionTime()),
-                                                           converter.apply(getSvAccuracy()),
-                                                           getSvHealth(),
-                                                           converter.apply(getIscL1CA()),
-                                                           converter.apply(getIscL1CD()),
-                                                           converter.apply(getIscL1CP()),
-                                                           converter.apply(getIscL2C()),
-                                                           converter.apply(getIscL5I5()),
-                                                           converter.apply(getIscL5Q5()),
-                                                           getUraiEd(), getUraiNed0(), getUraiNed1(), getUraiNed2(),
-                                                           getFlags());
+    public <T extends CalculusFieldElement<T>>
+    FieldGPSCivilianNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                 final T[] nonKeplerian,
+                                                 final DoubleFunction<T> converter) {
+        return new FieldGPSCivilianNavigationMessage<>(isCnv2(),
+                                                       getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                       getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                                       converter.apply(getTgd()), toFieldToc(orbit),
+                                                       converter.apply(getTransmissionTime()),
+                                                       converter.apply(getSvAccuracy()),
+                                                       getSvHealth(),
+                                                       converter.apply(getIscL1CA()),
+                                                       converter.apply(getIscL1CD()),
+                                                       converter.apply(getIscL1CP()),
+                                                       converter.apply(getIscL2C()),
+                                                       converter.apply(getIscL5I5()),
+                                                       converter.apply(getIscL5Q5()),
+                                                       getUraiEd(), getUraiNed0(), getUraiNed1(), getUraiNed2(),
+                                                       getFlags());
     }
 
     /** {@inheritDoc} */

@@ -31,7 +31,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, NavICL1NvNavigationMessage, FieldNavicL1NvNavigationMessage<T>> {
+    extends FieldAbstractNavigationMessage<T, NavICL1NvNavigationMessage> {
 
     /** Reference signal flag. */
     private final int referenceSignalFlag;
@@ -112,22 +112,21 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, NavICL1NvNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
-        return (V) new FieldNavicL1NvNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                         getType(), getPrn(), getGnssDate().getGnssDate(),
-                                                         orbit, nonKeplerian,
-                                                         converter.apply(getTgd()), toFieldToc(orbit),
-                                                         converter.apply(getTransmissionTime()),
-                                                         getReferenceSignalFlag(),
-                                                         getUrai(), getL1SpsHealth(),
-                                                         converter.apply(getTGDSL5()),
-                                                         converter.apply(getIscSL1P()),
-                                                         converter.apply(getIscL1DL1P()),
-                                                         converter.apply(getIscL1PS()),
-                                                         converter.apply(getIscL1DS()));
+    public <U extends CalculusFieldElement<U>>
+        FieldNavicL1NvNavigationMessage<U> toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return new FieldNavicL1NvNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                     getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                     orbit, nonKeplerian,
+                                                     converter.apply(getTgd()), toFieldToc(orbit),
+                                                     converter.apply(getTransmissionTime()),
+                                                     getReferenceSignalFlag(),
+                                                     getUrai(), getL1SpsHealth(),
+                                                     converter.apply(getTGDSL5()),
+                                                     converter.apply(getIscSL1P()),
+                                                     converter.apply(getIscL1DL1P()),
+                                                     converter.apply(getIscL1PS()),
+                                                     converter.apply(getIscL1DS()));
     }
 
     /** Get reference signal flag.

@@ -116,15 +116,16 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, GalileoAlmanac, P>>
-    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
-        return (P) new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                             getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                             converter.apply(getTgd()), toFieldToc(orbit),
-                                             getHealthE5a(), getHealthE5b(), getHealthE1(),
-                                             getIOD());
+    public <T extends CalculusFieldElement<T>>
+    FieldGalileoAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                   final T[] nonKeplerian,
+                                   final DoubleFunction<T> converter) {
+        return new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                         getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                         converter.apply(getTgd()), toFieldToc(orbit),
+                                         getHealthE5a(), getHealthE5b(), getHealthE1(),
+                                         getIOD());
     }
 
     /** Get the E1-B/C signal health status.
