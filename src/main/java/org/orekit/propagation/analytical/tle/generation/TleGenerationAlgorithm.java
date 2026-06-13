@@ -19,8 +19,6 @@ package org.orekit.propagation.analytical.tle.generation;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.AbstractOrbitalParameterFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;

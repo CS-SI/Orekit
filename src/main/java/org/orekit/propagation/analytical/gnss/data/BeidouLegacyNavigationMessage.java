@@ -20,7 +20,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -42,40 +43,88 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     private final boolean d2;
 
     /** Age of Data, Ephemeris. */
-    private int aode;
+    private final int aode;
 
     /** Age of Data, Clock. */
-    private int aodc;
+    private final int aodc;
 
     /** Health identifier.
      * @since 14.0
      */
-    private int satH1;
+    private final int satH1;
 
     /** B1/B3 Group Delay Differential (s). */
-    private double tgd1;
+    private final double tgd1;
 
     /** B2/B3 Group Delay Differential (s). */
-    private double tgd2;
+    private final double tgd2;
 
     /** The user SV accuracy (m). */
-    private double svAccuracy;
+    private final double svAccuracy;
 
     /** Constructor.
-     * @param d2         indicator for D2 messages
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     * @param type       message type
+     * @param d2               indicator for D2 messages
+     * @param timeScales       known time scales
+     * @param system           satellite system to consider for interpreting week number
+     *                         (may be different from real system, for example in Rinex nav, weeks
+     *                         are always according to GPS)
+     * @param type             message type
+     * @param prn              PRN number of the satellite
+     * @param week             reference Week of the orbit
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param time             reference time
+     * @param aDot             change rate in semi-major axis (m/s)
+     * @param deltaN0          delta of satellite mean motion
+     * @param deltaN0Dot       change rate in Δn₀
+     * @param iDot             inclination rate (rad/s)
+     * @param omegaDot         rate of right ascension (rad/s)
+     * @param cuc              amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus              amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc              amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs              amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic              amplitude of the cosine harmonic correction term to the inclination
+     * @param cis              amplitude of the sine harmonic correction term to the inclination
+     * @param af0              zero-th order clock correction (s)
+     * @param af1              first order clock correction (s/s)
+     * @param af2              second order clock correction (s/s²)
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param epochToc         time of clock epoch
+     * @param transmissionTime transmission time
+     * @param aode             age of data, ephemeris
+     * @param aodc             age of data, clock
+     * @param satH1            health identifier
+     * @param tgd1             B1/B3 Group Delay Differential (s)
+     * @param tgd2             B2/B3 Group Delay Differential (s)
+     * @param svAccuracy       user SV accuracy (m)
      */
     public BeidouLegacyNavigationMessage(final boolean d2,
                                          final TimeScales timeScales,
                                          final SatelliteSystem system,
-                                         final String type) {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system, type);
-        this.d2 = d2;
+                                         final String type,
+                                         final int prn, final int week, final KeplerianOrbit orbit,
+                                         final double time, final double aDot,
+                                         final double deltaN0, final double deltaN0Dot,
+                                         final double iDot, final double omegaDot,
+                                         final double cuc, final double cus,
+                                         final double crc, final double crs,
+                                         final double cic, final double cis,
+                                         final double af0, final double af1, final double af2,
+                                         final double tgd, final double toc,
+                                         final AbsoluteDate epochToc, final double transmissionTime,
+                                         final int aode, final int aodc, final int satH1,
+                                         final double tgd1, final double tgd2, final double svAccuracy) {
+        super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
+              timeScales, system, type, prn, week, orbit,
+              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              af0, af1, af2, tgd, toc, epochToc, transmissionTime);
+        this.d2         = d2;
+        this.aode       = aode;
+        this.aodc       = aodc;
+        this.satH1      = satH1;
+        this.tgd1       = tgd1;
+        this.tgd2       = tgd2;
+        this.svAccuracy = svAccuracy;
     }
 
     /** Constructor from field instance.
@@ -84,13 +133,13 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      */
     public <T extends CalculusFieldElement<T>> BeidouLegacyNavigationMessage(final FieldBeidouLegacyNavigationMessage<T> original) {
         super(original);
-        this.d2 = original.isD2();
-        setAODE(original.getAODE());
-        setAODC(original.getAODC());
-        setTGD1(original.getTGD1().getReal());
-        setTGD2(original.getTGD2().getReal());
-        setSvAccuracy(original.getSvAccuracy().getReal());
-        setSatH1(original.getSatH1());
+        d2         = original.isD2();
+        aode       = original.getAODE();
+        aodc       = original.getAODC();
+        satH1      = original.getSatH1();
+        tgd1       = original.getTGD1().getReal();
+        tgd2       = original.getTGD2().getReal();
+        svAccuracy = original.getSvAccuracy().getReal();
     }
 
     /** {@inheritDoc} */
@@ -119,29 +168,11 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     }
 
     /**
-     * Setter for the age of data clock.
-     * @param aod the age of data to set
-     */
-    public void setAODC(final double aod) {
-        // The value is given as a floating number in the navigation message
-        this.aodc = (int) aod;
-    }
-
-    /**
      * Getter for the Age Of Data Ephemeris (AODE).
      * @return the Age Of Data Ephemeris (AODE)
      */
     public int getAODE() {
         return aode;
-    }
-
-    /**
-     * Setter for the age of data ephemeris.
-     * @param aod the age of data to set
-     */
-    public void setAODE(final double aod) {
-        // The value is given as a floating number in the navigation message
-        this.aode = (int) aod;
     }
 
     /**
@@ -153,27 +184,11 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     }
 
     /**
-     * Setter for the B1/B3 Group Delay Differential (s).
-     * @param tgd the group delay differential to set
-     */
-    public void setTGD1(final double tgd) {
-        this.tgd1 = tgd;
-    }
-
-    /**
      * Getter for the estimated group delay differential TGD for B2I signal.
      * @return the estimated group delay differential TGD2 for B2I signal (s)
      */
     public double getTGD2() {
         return tgd2;
-    }
-
-    /**
-     * Setter for the B2/B3 Group Delay Differential (s).
-     * @param tgd the group delay differential to set
-     */
-    public void setTGD2(final double tgd) {
-        this.tgd2 = tgd;
     }
 
     /**
@@ -184,14 +199,6 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
         return svAccuracy;
     }
 
-    /**
-     * Setter for the user SV accuracy.
-     * @param svAccuracy the value to set
-     */
-    public void setSvAccuracy(final double svAccuracy) {
-        this.svAccuracy = svAccuracy;
-    }
-
     /** Get the health identifier.
      * @return health identifier
      * @since 14.0
@@ -200,22 +207,11 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
         return satH1;
     }
 
-    /** Set the health identifier.
-     * @param satH1 health identifier
-     * @since 14.0
-     */
-    public void setSatH1(final int satH1) {
-        this.satH1 = satH1;
-    }
-
     /** {@inheritDoc} */
     @Override
-    public GNSSPropagatorBuilder<BeidouLegacyNavigationMessage> builder(final Frame inertial, final Frame bodyFixed) {
-        return new GNSSPropagatorBuilder<>(new BeidouLegacyFactory(isD2(),
-                                                                   getTimeScales(), getSystem(),
-                                                                   inertial, bodyFixed,
-                                                                   getDate(), getMu()),
-                                           inertial, bodyFixed);
+    public BeidouLegacyNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new BeidouLegacyNavigationMessageFactory(getTimeScales(), getSystem(), getType(),
+                                                        inertial, bodyFixed, getDate(), isD2());
     }
 
 }

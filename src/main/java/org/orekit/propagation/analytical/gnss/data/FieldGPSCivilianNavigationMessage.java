@@ -36,7 +36,6 @@ public class FieldGPSCivilianNavigationMessage<T extends CalculusFieldElement<T>
      */
     public FieldGPSCivilianNavigationMessage(final Field<T> field, final GPSCivilianNavigationMessage original) {
         super(field, original);
-        setFlags(original.getFlags());
     }
 
     /** Constructor from different field instance.
@@ -47,7 +46,6 @@ public class FieldGPSCivilianNavigationMessage<T extends CalculusFieldElement<T>
     public <V extends CalculusFieldElement<V>> FieldGPSCivilianNavigationMessage(final Function<V, T> converter,
                                                                                  final FieldGPSCivilianNavigationMessage<V> original) {
         super(converter, original);
-        setFlags(original.getFlags());
     }
 
     /** {@inheritDoc} */

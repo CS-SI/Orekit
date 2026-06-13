@@ -31,22 +31,22 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     extends FieldAbstractNavigationMessage<T, GalileoNavigationMessage> {
 
     /** Issue of Data of the navigation batch. */
-    private int iodNav;
+    private final int iodNav;
 
     /** Data source. */
-    private int dataSource;
+    private final int dataSource;
 
     /** E1/E5a broadcast group delay (s). */
-    private T bgbE1E5a;
+    private final T bgbE1E5a;
 
     /** E5b/E1 broadcast group delay (s). */
-    private T bgdE5bE1;
+    private final T bgdE5bE1;
 
     /** Signal in space accuracy. */
-    private T sisa;
+    private final T sisa;
 
     /** Satellite health status. */
-    private T svHealth;
+    private final T svHealth;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -54,12 +54,12 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
      */
     public FieldGalileoNavigationMessage(final Field<T> field, final GalileoNavigationMessage original) {
         super(field, original);
-        setIODNav(original.getIODNav());
-        setDataSource(original.getDataSource());
-        setBGDE1E5a(field.getZero().newInstance(original.getBGDE1E5a()));
-        setBGDE5bE1(field.getZero().newInstance(original.getBGDE5bE1()));
-        setSisa(field.getZero().newInstance(original.getSisa()));
-        setSvHealth(field.getZero().newInstance(original.getSvHealth()));
+        iodNav     = original.getIODNav();
+        dataSource = original.getDataSource();
+        bgbE1E5a   = field.getZero().newInstance(original.getBGDE1E5a());
+        bgdE5bE1   = field.getZero().newInstance(original.getBGDE5bE1());
+        sisa       = field.getZero().newInstance(original.getSisa());
+        svHealth   = field.getZero().newInstance(original.getSvHealth());
     }
 
     /** Constructor from different field instance.
@@ -70,12 +70,12 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     public <V extends CalculusFieldElement<V>> FieldGalileoNavigationMessage(final Function<V, T> converter,
                                                                              final FieldGalileoNavigationMessage<V> original) {
         super(converter, original);
-        setIODNav(original.getIODNav());
-        setDataSource(original.getDataSource());
-        setBGDE1E5a(converter.apply(original.getBGDE1E5a()));
-        setBGDE5bE1(converter.apply(original.getBGDE5bE1()));
-        setSisa(converter.apply(original.getSisa()));
-        setSvHealth(converter.apply(original.getSvHealth()));
+        iodNav     = original.getIODNav();
+        dataSource = original.getDataSource();
+        bgbE1E5a   = converter.apply(original.getBGDE1E5a());
+        bgdE5bE1   = converter.apply(original.getBGDE5bE1());
+        sisa       = converter.apply(original.getSisa());
+        svHealth   = converter.apply(original.getSvHealth());
     }
 
     /** {@inheritDoc} */
@@ -101,14 +101,6 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Setter for the Issue of Data of the navigation batch.
-     * @param iod the IOD to set
-     */
-    public void setIODNav(final int iod) {
-        this.iodNav = iod;
-    }
-
-    /**
      * Getter for the the data source.
      * @return the data source
      */
@@ -117,35 +109,11 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Setter for the data source.
-     * @param dataSource data source
-     */
-    public void setDataSource(final int dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    /**
      * Getter for the E1/E5a broadcast group delay.
      * @return the E1/E5a broadcast group delay (s)
      */
     public T getBGDE1E5a() {
         return bgbE1E5a;
-    }
-
-    /**
-     * Setter for the E1/E5a broadcast group delay (s).
-     * @param bgd the E1/E5a broadcast group delay to set
-     */
-    public void setBGDE1E5a(final T bgd) {
-        this.bgbE1E5a = bgd;
-    }
-
-    /**
-     * Setter for the E5b/E1 broadcast group delay (s).
-     * @param bgd the E5b/E1 broadcast group delay to set
-     */
-    public void setBGDE5bE1(final T bgd) {
-        this.bgdE5bE1 = bgd;
     }
 
     /**
@@ -165,27 +133,11 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Setter for the signal in space accuracy.
-     * @param sisa the sisa to set
-     */
-    public void setSisa(final T sisa) {
-        this.sisa = sisa;
-    }
-
-    /**
      * Getter for the SV health status.
      * @return the SV health status
      */
     public T getSvHealth() {
         return svHealth;
-    }
-
-    /**
-     * Setter for the SV health status.
-     * @param svHealth the SV health status to set
-     */
-    public void setSvHealth(final T svHealth) {
-        this.svHealth = svHealth;
     }
 
 }

@@ -19,26 +19,28 @@ package org.orekit.propagation.analytical.gnss;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
 
 /** Converter for GNSS propagator.
+ * @param <O> type of the orbital elements
  * @author Luc Maisonobe
  * @since 13.0
  */
-class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
+class GnssGradientConverter<O extends GNSSOrbitalElements<O>> extends AbstractAnalyticalGradientConverter {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;
 
     /** Orbit propagator. */
-    private final GNSSPropagator propagator;
+    private final GNSSPropagator<O> propagator;
 
     /** Simple constructor.
      * @param propagator orbit propagator used to access initial orbit
      */
-    GnssGradientConverter(final GNSSPropagator propagator) {
+    GnssGradientConverter(final GNSSPropagator<O> propagator) {
         super(propagator, FREE_STATE_PARAMETERS);
         this.propagator = propagator;
     }
@@ -61,7 +63,7 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return propagator.getOrbitalElements().getParametersDrivers();
+        return propagator.getParametersDrivers();
     }
 
 }

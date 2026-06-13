@@ -34,22 +34,22 @@ import java.util.function.Function;
  *
  */
 public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, GPSAlmanac> {
+    extends FieldGnssOrbitalElements<T, GPSAlmanac> {
 
     /** Source of the almanac. */
-    private String src;
+    private final String source;
 
     /** SVN number. */
-    private int svn;
+    private final int svn;
 
     /** Health status. */
-    private int health;
+    private final int health;
 
     /** Average URA. */
-    private int ura;
+    private final int ura;
 
     /** Satellite configuration. */
-    private int config;
+    private final int satConfiguration;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -57,11 +57,11 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
      */
     public FieldGPSAlmanac(final Field<T> field, final GPSAlmanac original) {
         super(field, original);
-        setSource(original.getSource());
-        setSVN(original.getSVN());
-        setHealth(original.getHealth());
-        setURA(original.getURA());
-        setSatConfiguration(original.getSatConfiguration());
+        source           = original.getSource();
+        svn              = original.getSVN();
+        health           = original.getHealth();
+        ura              = original.getURA();
+        satConfiguration = original.getSatConfiguration();
     }
 
     /** Constructor from different field instance.
@@ -72,11 +72,11 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
     public <V extends CalculusFieldElement<V>> FieldGPSAlmanac(final Function<V, T> converter,
                                                                final FieldGPSAlmanac<V> original) {
         super(converter, original);
-        setSource(original.getSource());
-        setSVN(original.getSVN());
-        setHealth(original.getHealth());
-        setURA(original.getURA());
-        setSatConfiguration(original.getSatConfiguration());
+        source           = original.getSource();
+        svn              = original.getSVN();
+        health           = original.getHealth();
+        ura              = original.getURA();
+        satConfiguration = original.getSatConfiguration();
     }
 
     /** {@inheritDoc} */
@@ -94,33 +94,13 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final T sqrtA) {
-        setSma(sqrtA.square());
-    }
-
-    /**
      * Gets the source of this GPS almanac.
      * <p>Sources can be SEM or YUMA, when the almanac is read from a file.</p>
      *
      * @return the source of this GPS almanac
      */
     public String getSource() {
-        return src;
-    }
-
-    /**
-     * Sets the source of this GPS almanac.
-     *
-     * @param source the source of this GPS almanac
-     */
-    public void setSource(final String source) {
-        this.src = source;
+        return source;
     }
 
     /**
@@ -133,30 +113,12 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Sets the "SVN" reference number.
-     *
-     * @param svnNumber the number to set
-     */
-    public void setSVN(final int svnNumber) {
-        this.svn = svnNumber;
-    }
-
-    /**
      * Gets the Health status.
      *
      * @return the Health status
      */
     public int getHealth() {
         return health;
-    }
-
-    /**
-     * Sets the health status.
-     *
-     * @param health the health status to set
-     */
-    public void setHealth(final int health) {
-        this.health = health;
     }
 
     /**
@@ -169,44 +131,12 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Sets the average URA number.
-     *
-     * @param uraNumber the URA number to set
-     */
-    public void setURA(final int uraNumber) {
-        this.ura = uraNumber;
-    }
-
-    /**
      * Gets the satellite configuration.
      *
      * @return the satellite configuration
      */
     public int getSatConfiguration() {
-        return config;
-    }
-
-    /**
-     * Sets the satellite configuration.
-     *
-     * @param satConfiguration the satellite configuration to set
-     */
-    public void setSatConfiguration(final int satConfiguration) {
-        this.config = satConfiguration;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof FieldGPSAlmanac) {
-            final FieldGPSAlmanac<?> g = (FieldGPSAlmanac<?>) original;
-            setSource(g.getSource());
-            setSVN(g.getSVN());
-            setHealth(g.getHealth());
-            setURA(g.getURA());
-            setSatConfiguration(g.getSatConfiguration());
-        }
+        return satConfiguration;
     }
 
 }

@@ -19,27 +19,29 @@ package org.orekit.files.rinex.navigation.parsers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory;
 
 /** Parser for QZSS legacy.
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class QzssLnavParser extends LegacyNavigationParser<QZSSLegacyNavigationMessage> {
+public class QzssLnavParser
+    extends LegacyNavigationParser<QZSSLegacyNavigationMessage, QZSSLegacyNavigationMessageFactory> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
-     * @param message container for navigation message
+     * @param factory factory for navigation message
      */
-    public QzssLnavParser(final ParseInfo parseInfo, final QZSSLegacyNavigationMessage message) {
-        super(parseInfo, message);
+    public QzssLnavParser(final ParseInfo parseInfo, final QZSSLegacyNavigationMessageFactory factory) {
+        super(parseInfo, factory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
         final ParseInfo parseInfo = getParseInfo();
-        parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, getMessage());
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, getFactory());
     }
 
     /** {@inheritDoc} */

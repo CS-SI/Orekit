@@ -34,7 +34,7 @@ import java.util.function.Function;
  *
  */
 public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, GalileoAlmanac> {
+    extends FieldGnssOrbitalElements<T, GalileoAlmanac> {
 
     /** Nominal inclination (Ref: Galileo ICD - Table 75). */
     private static final double I0 = FastMath.toRadians(56.0);
@@ -43,16 +43,16 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     private static final double A0 = 29600000;
 
     /** Satellite E5a signal health status. */
-    private int healthE5a;
+    private final int healthE5a;
 
     /** Satellite E5b signal health status. */
-    private int healthE5b;
+    private final int healthE5b;
 
     /** Satellite E1-B/C signal health status. */
-    private int healthE1;
+    private final int healthE1;
 
     /** Almanac Issue Of Data. */
-    private int iod;
+    private final int iod;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -60,10 +60,10 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
      */
     public FieldGalileoAlmanac(final Field<T> field, final GalileoAlmanac original) {
         super(field, original);
-        setHealthE5a(original.getHealthE5a());
-        setHealthE5b(original.getHealthE5b());
-        setHealthE1(original.getHealthE1());
-        setIOD(original.getIOD());
+        healthE5a = original.getHealthE5a();
+        healthE5b = original.getHealthE5b();
+        healthE1  = original.getHealthE1();
+        iod       = original.getIOD();
     }
 
     /** Constructor from different field instance.
@@ -74,10 +74,10 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     public <V extends CalculusFieldElement<V>> FieldGalileoAlmanac(final Function<V, T> converter,
                                                                    final FieldGalileoAlmanac<V> original) {
         super(converter, original);
-        setHealthE5a(original.getHealthE5a());
-        setHealthE5b(original.getHealthE5b());
-        setHealthE1(original.getHealthE1());
-        setIOD(original.getIOD());
+        healthE5a = original.getHealthE5a();
+        healthE5b = original.getHealthE5b();
+        healthE1  = original.getHealthE1();
+        iod       = original.getIOD();
     }
 
     /** {@inheritDoc} */
@@ -95,63 +95,12 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Sets the difference between the square root of the semi-major axis
-     * and the square root of the nominal semi-major axis.
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param dsqa the value to set
-     */
-    public void setDeltaSqrtA(final T dsqa) {
-        final T sqrtA = dsqa.add(FastMath.sqrt(A0));
-        setSma(sqrtA.square());
-    }
-
-    /**
-     * Sets the the correction of orbit reference inclination at reference time.
-     * <p>
-     * In addition, this method set the value of the reference inclination.
-     * </p>
-     * @param dinc correction of orbit reference inclination at reference time in radians
-     */
-    public void setDeltaInc(final T dinc) {
-        setI0(dinc.add(I0));
-    }
-
-    /**
-     * Gets the Issue of Data (IOD).
-     *
-     * @return the Issue Of Data
-     */
-    public int getIOD() {
-        return iod;
-    }
-
-    /**
-     * Sets the Issue of Data (IOD).
-     *
-     * @param iodValue the value to set
-     */
-    public void setIOD(final int iodValue) {
-        this.iod = iodValue;
-    }
-
-    /**
      * Gets the E1-B/C signal health status.
      *
      * @return the E1-B/C signal health status
      */
     public int getHealthE1() {
         return healthE1;
-    }
-
-    /**
-     * Sets the E1-B/C signal health status.
-     *
-     * @param healthE1 health status to set
-     */
-    public void setHealthE1(final int healthE1) {
-        this.healthE1 = healthE1;
     }
 
     /**
@@ -164,15 +113,6 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Sets the E5a signal health status.
-     *
-     * @param healthE5a health status to set
-     */
-    public void setHealthE5a(final int healthE5a) {
-        this.healthE5a = healthE5a;
-    }
-
-    /**
      * Gets the E5b signal health status.
      *
      * @return the E5b signal health status
@@ -182,25 +122,12 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Sets the E5b signal health status.
+     * Gets the Issue of Data (IOD).
      *
-     * @param healthE5b health status to set
+     * @return the Issue Of Data
      */
-    public void setHealthE5b(final int healthE5b) {
-        this.healthE5b = healthE5b;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof FieldGalileoAlmanac) {
-            final FieldGalileoAlmanac<?> g = (FieldGalileoAlmanac<?>) original;
-            setHealthE5a(g.getHealthE5a());
-            setHealthE5b(g.getHealthE5b());
-            setHealthE1(g.getHealthE1());
-            setIOD(g.getIOD());
-        }
+    public int getIOD() {
+        return iod;
     }
 
 }

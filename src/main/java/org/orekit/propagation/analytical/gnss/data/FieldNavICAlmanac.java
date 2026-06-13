@@ -33,7 +33,7 @@ import java.util.function.Function;
  *
  */
 public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, NavICAlmanac> {
+    extends FieldGnssOrbitalElements<T, NavICAlmanac> {
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -65,17 +65,6 @@ public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
     public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, NavICAlmanac>>
         G changeField(final Function<T, U> converter) {
         return (G) new FieldNavICAlmanac<>(converter, this);
-    }
-
-    /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final T sqrtA) {
-        setSma(sqrtA.square());
     }
 
 }

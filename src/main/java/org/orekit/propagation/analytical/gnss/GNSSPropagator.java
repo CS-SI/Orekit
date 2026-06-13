@@ -38,6 +38,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianAnomalyUtility;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -52,6 +53,7 @@ import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** Common handling of {@link AbstractAnalyticalPropagator} methods for GNSS propagators.
@@ -62,7 +64,8 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @param <O> type of the orbital elements
  * @author Pascal Parraud
  */
-public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAnalyticalPropagator {
+public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
+    extends AbstractAnalyticalPropagator implements ParameterDriversProvider {
 
     /** Maximum number of iterations for internal loops.
      * @since 13.0
@@ -115,6 +118,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAn
         this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
         this.ecef = ecef;
+
         // Sets initial state
         final Orbit orbit = propagateOrbit(orbitalElements.getDate());
         final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
@@ -144,6 +148,12 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAn
              initialState.getFrame(), ecef, provider, initialState.getMass());
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        // TODO
+    }
+
     /**
      * Gets the Earth Centered Inertial frame used to propagate the orbit.
      *
@@ -169,7 +179,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAn
      * @return the Earth gravity coefficient.
      */
     public double getMU() {
-        return orbitalElements.getMu();
+        return orbitalElements.getOrbit().getMu();
     }
 
     /** Get the underlying GNSS propagation orbital elements.
@@ -204,7 +214,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAn
     @Override
     protected List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
-        for (final ParameterDriver driver : orbitalElements.getParametersDrivers()) {
+        for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
                 // As driver with same name should have same NamesSpanMap we only check if the first span is present,
                 // if not we add all span names to columnsNames
@@ -238,23 +248,26 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAn
      * @return the GNSS SV PVCoordinates in {@link #getECEF() ECEF frame}
      */
     public PVCoordinates propagateInEcef(final AbsoluteDate date) {
+
+        final KeplerianOrbit orbit = orbitalElements.getOrbit();
+
         // Duration from GNSS ephemeris Reference date
         final UnivariateDerivative2 tk = new UnivariateDerivative2(getTk(date), 1.0, 0.0);
         // Semi-major axis
-        final UnivariateDerivative2 ak = tk.multiply(orbitalElements.getADot()).add(orbitalElements.getSma());
+        final UnivariateDerivative2 ak = tk.multiply(orbitalElements.getADot()).add(orbit.getA());
         // Mean motion
         final UnivariateDerivative2 nA = tk.multiply(orbitalElements.getDeltaN0Dot() * 0.5).
                                          add(orbitalElements.getDeltaN0()).
-                                         add(orbitalElements.getMeanMotion0());
+                                         add(orbit.getKeplerianMeanMotion());
         // Mean anomaly
-        final UnivariateDerivative2 mk = tk.multiply(nA).add(orbitalElements.getM0());
+        final UnivariateDerivative2 mk = tk.multiply(nA).add(orbit.getMeanAnomaly());
         // Eccentric Anomaly
-        final UnivariateDerivative2 e  = tk.newInstance(orbitalElements.getE());
+        final UnivariateDerivative2 e  = tk.newInstance(orbit.getE());
         final UnivariateDerivative2 ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, mk);
         // True Anomaly
         final UnivariateDerivative2 vk =  FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, ek);
         // Argument of Latitude
-        final UnivariateDerivative2 phik    = vk.add(orbitalElements.getPa());
+        final UnivariateDerivative2 phik    = vk.add(orbit.getPerigeeArgument());
         final FieldSinCos<UnivariateDerivative2> cs2phi = FastMath.sinCos(phik.multiply(2));
         // Argument of Latitude Correction
         final UnivariateDerivative2 dphik = cs2phi.cos().multiply(orbitalElements.getCuc()).add(cs2phi.sin().multiply(orbitalElements.getCus()));
@@ -265,9 +278,9 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAn
         // Corrected Argument of Latitude
         final FieldSinCos<UnivariateDerivative2> csuk = FastMath.sinCos(phik.add(dphik));
         // Corrected Radius
-        final UnivariateDerivative2 rk = ek.cos().multiply(-orbitalElements.getE()).add(1).multiply(ak).add(drk);
+        final UnivariateDerivative2 rk = ek.cos().multiply(-orbit.getE()).add(1).multiply(ak).add(drk);
         // Corrected Inclination
-        final UnivariateDerivative2 ik  = tk.multiply(orbitalElements.getIDot()).add(orbitalElements.getI0()).add(dik);
+        final UnivariateDerivative2 ik  = tk.multiply(orbitalElements.getIDot()).add(orbit.getI()).add(dik);
         final FieldSinCos<UnivariateDerivative2> csik = FastMath.sinCos(ik);
         // Positions in orbital plane
         final UnivariateDerivative2 xk = csuk.cos().multiply(rk);
@@ -276,7 +289,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAn
         final double thetaDot = orbitalElements.getAngularVelocity();
         final FieldSinCos<UnivariateDerivative2> csomk =
             FastMath.sinCos(tk.multiply(orbitalElements.getOmegaDot() - thetaDot).
-                            add(orbitalElements.getOmega0() - thetaDot * orbitalElements.getTime()));
+                            add(orbit.getRightAscensionOfAscendingNode() - thetaDot * orbitalElements.getTime()));
         // returns the Earth-fixed coordinates
         final FieldVector3D<UnivariateDerivative2> positionWithDerivatives =
                         new FieldVector3D<>(xk.multiply(csomk.cos()).subtract(yk.multiply(csomk.sin()).multiply(csik.cos())),
@@ -360,13 +373,13 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAn
 
         // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
-        final FieldGnssOrbitalElements<Gradient, O> gElements = convert(nonKeplerianElements, orbit);
+        FieldGnssOrbitalElements<Gradient, O> gElements = convert(nonKeplerianElements, orbit);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
             final FieldGnssPropagator<Gradient> gPropagator =
                 new FieldGnssPropagator<>(gElements, initialState.getFrame(), ecef, provider,
-                                          gElements.getMu().newInstance(mass));
+                                          gElements.getToc().newInstance(mass));
             final FieldPVCoordinates<Gradient> gPV = gPropagator.getInitialState().getPVCoordinates();
 
             // compute Jacobian matrix
@@ -389,12 +402,17 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAn
             final RealVector correction = new QRDecomposition(jacobian, EPS).getSolver().solve(residuals);
 
             // update initial orbit
-            gElements.setSma(gElements.getSma().add(correction.getEntry(0)));
-            gElements.setE(gElements.getE().add(correction.getEntry(1)));
-            gElements.setI0(gElements.getI0().add(correction.getEntry(2)));
-            gElements.setPa(gElements.getPa().add(correction.getEntry(3)));
-            gElements.setOmega0(gElements.getOmega0().add(correction.getEntry(4)));
-            gElements.setM0(gElements.getM0().add(correction.getEntry(5)));
+            final FieldKeplerianOrbit<Gradient> previous = gElements.getOrbit();
+            final FieldKeplerianOrbit<Gradient> updated =
+                new FieldKeplerianOrbit<>(previous.getA().add(correction.getEntry(0)),
+                                          previous.getE().add(correction.getEntry(1)),
+                                          previous.getI().add(correction.getEntry(2)),
+                                          previous.getPerigeeArgument().add(correction.getEntry(3)),
+                                          previous.getRightAscensionOfAscendingNode().add(correction.getEntry(4)),
+                                          previous.getMeanAnomaly().add(correction.getEntry(5)),
+                                          PositionAngleType.MEAN, PositionAngleType.MEAN,
+                                          previous.getFrame(), previous.getDate(), previous.getMu());
+            gElements = convert(nonKeplerianElements, updated.toOrbit());
 
             final double deltaP = FastMath.sqrt(residuals.getEntry(0) * residuals.getEntry(0) +
                                                 residuals.getEntry(1) * residuals.getEntry(1) +

@@ -20,29 +20,41 @@ import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessageFactory;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.utils.units.Unit;
 
 /** Parser for abstract navigation messages.
  * @param <T> type of the navigation message
+ * @param <F> type of the navigation message factory
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public abstract class AbstractNavigationParser<T extends AbstractNavigationMessage<T>> extends RecordLineParser {
+public abstract class AbstractNavigationParser<T extends AbstractNavigationMessage<T>,
+                                               F extends AbstractNavigationMessageFactory<T>>
+    extends RecordLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
 
-    /** Container for navigation message. */
-    private final T message;
+    /** Factory for navigation factory. */
+    private final F factory;
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
-     * @param message container for navigation message
+     * @param factory factory for navigation message
      */
-    protected AbstractNavigationParser(final ParseInfo parseInfo, final T message) {
+    protected AbstractNavigationParser(final ParseInfo parseInfo, final F factory) {
         this.parseInfo = parseInfo;
-        this.message   = message;
+        this.factory   = factory;
+    }
+
+    /** Get the factory.
+     * @return factory
+     */
+    protected F getFactory() {
+        return factory;
     }
 
     /** Get the container for parsing data.
@@ -52,63 +64,82 @@ public abstract class AbstractNavigationParser<T extends AbstractNavigationMessa
         return parseInfo;
     }
 
-    /** Get the container for the navigation message.
+    /** Get the container for the navigation factory.
      * @return container for the navigation message
      */
     public T getMessage() {
-        return message;
+        return factory.createFromDrivers();
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
         if (parseInfo.getHeader().getFormatVersion() < 3.0) {
-            parseSvEpochSvClockLineRinex2(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(), message);
+            parseSvEpochSvClockLineRinex2(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(), factory);
         } else {
-            parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, message);
+            parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, factory);
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-        message.setCrs(parseInfo.parseDouble2(Unit.METRE));
-        message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
-        message.setM0(parseInfo.parseDouble4(Unit.RADIAN));
+        factory.getCrsDriver().setValue(parseInfo.parseDouble2(Unit.METRE));
+        factory.getDeltaN0Driver().setValue(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
+        factory.
+            getOrbitalParametersDrivers().
+            findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).
+            setValue(parseInfo.parseDouble4(Unit.RADIAN));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine02() {
-        message.setCuc(parseInfo.parseDouble1(Unit.RADIAN));
-        message.setE(parseInfo.parseDouble2(Unit.NONE));
-        message.setCus(parseInfo.parseDouble3(Unit.RADIAN));
-        message.setSqrtA(parseInfo.parseDouble4(RinexNavigationParser.SQRT_M));
+        factory.getCucDriver().setValue(parseInfo.parseDouble1(Unit.RADIAN));
+        factory.
+            getOrbitalParametersDrivers().
+            findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).
+            setValue(parseInfo.parseDouble2(Unit.NONE));
+        factory.getCusDriver().setValue(parseInfo.parseDouble3(Unit.RADIAN));
+        final double sqrtA = parseInfo.parseDouble4(RinexNavigationParser.SQRT_M);
+        factory.
+            getOrbitalParametersDrivers().
+            findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).
+            setValue(sqrtA * sqrtA);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine03() {
-        message.setTime(parseInfo.parseDouble1(Unit.SECOND));
-        message.setCic(parseInfo.parseDouble2(Unit.RADIAN));
-        message.setOmega0(parseInfo.parseDouble3(Unit.RADIAN));
-        message.setCis(parseInfo.parseDouble4(Unit.RADIAN));
+        factory.getTimeDriver().setValue(parseInfo.parseDouble1(Unit.SECOND));
+        factory.getCicDriver().setValue(parseInfo.parseDouble2(Unit.RADIAN));
+        factory.
+            getOrbitalParametersDrivers().
+            findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).
+            setValue(parseInfo.parseDouble3(Unit.RADIAN));
+        factory.getCisDriver().setValue(parseInfo.parseDouble4(Unit.RADIAN));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine04() {
-        message.setI0(parseInfo.parseDouble1(Unit.RADIAN));
-        message.setCrc(parseInfo.parseDouble2(Unit.METRE));
-        message.setPa(parseInfo.parseDouble3(Unit.RADIAN));
-        message.setOmegaDot(parseInfo.parseDouble4(RinexNavigationParser.RAD_PER_S));
+        factory.
+            getOrbitalParametersDrivers().
+            findByName(GNSSOrbitalElementsFactory.INCLINATION).
+            setValue(parseInfo.parseDouble1(Unit.RADIAN));
+        factory.getCrcDriver().setValue(parseInfo.parseDouble2(Unit.METRE));
+        factory.
+            getOrbitalParametersDrivers().
+            findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).
+            setValue(parseInfo.parseDouble3(Unit.RADIAN));
+        factory.getOmegaDotDriver().setValue(parseInfo.parseDouble4(RinexNavigationParser.RAD_PER_S));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
-        message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        message.setWeek(parseInfo.parseInt3());
+        factory.getIDotDriver().setValue(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
+        factory.setWeek(parseInfo.parseInt3());
     }
 
 }

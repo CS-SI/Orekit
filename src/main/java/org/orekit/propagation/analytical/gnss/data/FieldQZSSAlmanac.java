@@ -30,13 +30,13 @@ import java.util.function.Function;
  *
  */
 public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, QZSSAlmanac> {
+    extends FieldGnssOrbitalElements<T, QZSSAlmanac> {
 
     /** Source of the almanac. */
-    private String src;
+    private final String source;
 
     /** Health status. */
-    private int health;
+    private final int health;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -44,8 +44,8 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
      */
     public FieldQZSSAlmanac(final Field<T> field, final QZSSAlmanac original) {
         super(field, original);
-        setSource(original.getSource());
-        setHealth(original.getHealth());
+        source = original.getSource();
+        health = original.getHealth();
     }
 
     /** Constructor from different field instance.
@@ -56,8 +56,8 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
     public <V extends CalculusFieldElement<V>> FieldQZSSAlmanac(final Function<V, T> converter,
                                                                 final FieldQZSSAlmanac<V> original) {
         super(converter, original);
-        setSource(original.getSource());
-        setHealth(original.getHealth());
+        source = original.getSource();
+        health = original.getHealth();
     }
 
     /** {@inheritDoc} */
@@ -75,32 +75,12 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final T sqrtA) {
-        setSma(sqrtA.square());
-    }
-
-    /**
      * Gets the source of this QZSS almanac.
      *
      * @return the source of this QZSS almanac
      */
     public String getSource() {
-        return src;
-    }
-
-    /**
-     * Sets the source of this GPS almanac.
-     *
-     * @param source the source of this GPS almanac
-     */
-    public void setSource(final String source) {
-        this.src = source;
+        return source;
     }
 
     /**
@@ -110,26 +90,6 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
      */
     public int getHealth() {
         return health;
-    }
-
-    /**
-     * Sets the health status.
-     *
-     * @param health the health status to set
-     */
-    public void setHealth(final int health) {
-        this.health = health;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof FieldQZSSAlmanac) {
-            final FieldQZSSAlmanac<?> q = (FieldQZSSAlmanac<?>) original;
-            setSource(q.getSource());
-            setHealth(q.getHealth());
-        }
     }
 
 }

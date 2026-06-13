@@ -20,6 +20,7 @@ import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessageFactory;
 import org.orekit.utils.units.Unit;
 
 /** Parser for NavIC L1NV.
@@ -27,56 +28,56 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class NavICL1NvParser extends CivilianNavigationParser<NavICL1NvNavigationMessage> {
+public class NavICL1NvParser
+    extends CivilianLevel1NavigationParser<NavICL1NvNavigationMessage, NavICL1NvNavigationMessageFactory> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
-     * @param message container for navigation message
+     * @param factory factory for navigation message
      */
-    public NavICL1NvParser(final ParseInfo parseInfo, final NavICL1NvNavigationMessage message) {
-        super(parseInfo, message);
+    public NavICL1NvParser(final ParseInfo parseInfo, final NavICL1NvNavigationMessageFactory factory) {
+        super(parseInfo, factory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
         final ParseInfo parseInfo = getParseInfo();
-        final NavICL1NvNavigationMessage message = getMessage();
-        message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        message.setDeltaN0Dot(parseInfo.parseDouble2(RinexNavigationParser.RAD_PER_S2));
-        message.setReferenceSignalFlag(parseInfo.parseInt4());
+        final NavICL1NvNavigationMessageFactory factory = getFactory();
+        factory.getIDotDriver().setValue(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
+        factory.getDeltaN0DotDriver().setValue(parseInfo.parseDouble2(RinexNavigationParser.RAD_PER_S2));
+        factory.setReferenceSignalFlag(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
         final ParseInfo parseInfo = getParseInfo();
-        final NavICL1NvNavigationMessage message = getMessage();
-        final int uraIndex = parseInfo.parseInt1();
-        message.setUrai(uraIndex);
-        message.setL1SpsHealth(parseInfo.parseInt2());
-        message.setTGD(parseInfo.parseDouble3(Unit.SECOND));
-        message.setTGDSL5(parseInfo.parseDouble4(Unit.SECOND));
+        final NavICL1NvNavigationMessageFactory factory = getFactory();
+        factory.setUrai(parseInfo.parseInt1());
+        factory.setL1SpsHealth(parseInfo.parseInt2());
+        factory.setTGD(parseInfo.parseDouble3(Unit.SECOND));
+        factory.setTGDSL5(parseInfo.parseDouble4(Unit.SECOND));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
-        final NavICL1NvNavigationMessage message = getMessage();
-        message.setIscSL1P(parseInfo.parseDouble1(Unit.SECOND));
-        message.setIscL1DL1P(parseInfo.parseDouble2(Unit.SECOND));
-        message.setIscL1PS(parseInfo.parseDouble3(Unit.SECOND));
-        message.setIscL1DS(parseInfo.parseDouble4(Unit.SECOND));
+        final NavICL1NvNavigationMessageFactory factory = getFactory();
+        factory.setIscSL1P(parseInfo.parseDouble1(Unit.SECOND));
+        factory.setIscL1DL1P(parseInfo.parseDouble2(Unit.SECOND));
+        factory.setIscL1PS(parseInfo.parseDouble3(Unit.SECOND));
+        factory.setIscL1DS(parseInfo.parseDouble4(Unit.SECOND));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine08() {
         final ParseInfo parseInfo = getParseInfo();
-        final NavICL1NvNavigationMessage message = getMessage();
-        message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-        message.setWeek(parseInfo.parseInt2());
+        final NavICL1NvNavigationMessageFactory factory = getFactory();
+        factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        factory.setWeek(parseInfo.parseInt2());
         parseInfo.closePendingRecord();
     }
 

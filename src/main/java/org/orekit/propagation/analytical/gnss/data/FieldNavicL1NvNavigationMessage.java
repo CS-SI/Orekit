@@ -28,10 +28,20 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldCivilianNavigationMessage<T, NavICL1NvNavigationMessage> {
+    extends FieldAbstractNavigationMessage<T, NavICL1NvNavigationMessage> {
 
     /** Reference signal flag. */
-    private int referenceSignalFlag;
+    private final int referenceSignalFlag;
+
+    /** User Range Accuracy Index.
+     * @since 14.0
+     */
+    private final int urai;
+
+    /** L1 SPS health.
+     * @since 14.0
+     */
+    private final int l1SpsHealth;
 
     /** User Range Accuracy Index.
      * @since 14.0
@@ -44,19 +54,19 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     private int l1SpsHealth;
 
     /** Estimated group delay differential TGD for S-L5 correction. */
-    private T tgdSL5;
+    private final T tgdSL5;
 
     /** Inter Signal Delay for S L1P. */
-    private T iscSL1P;
+    private final T iscSL1P;
 
     /** Inter Signal Delay for L1D L1P. */
-    private T iscL1DL1P;
+    private final T iscL1DL1P;
 
     /** Inter Signal Delay for L1P S. */
-    private T iscL1PS;
+    private final T iscL1PS;
 
     /** Inter Signal Delay for L1DS. */
-    private T iscL1DS;
+    private final T iscL1DS;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -64,14 +74,14 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
      */
     public FieldNavicL1NvNavigationMessage(final Field<T> field, final NavICL1NvNavigationMessage original) {
         super(field, original);
-        setReferenceSignalFlag(original.getReferenceSignalFlag());
-        setUrai(original.getUrai());
-        setL1SpsHealth(original.getL1SpsHealth());
-        setTGDSL5(field.getZero().newInstance(original.getTGDSL5()));
-        setIscSL1P(field.getZero().newInstance(original.getIscSL1P()));
-        setIscL1DL1P(field.getZero().newInstance(original.getIscL1DL1P()));
-        setIscL1PS(field.getZero().newInstance(original.getIscL1PS()));
-        setIscL1DS(field.getZero().newInstance(original.getIscL1DS()));
+        referenceSignalFlag = original.getReferenceSignalFlag();
+        urai                = original.getUrai();
+        l1SpsHealth         = original.getL1SpsHealth();
+        tgdSL5              = field.getZero().newInstance(original.getTGDSL5());
+        iscSL1P             = field.getZero().newInstance(original.getIscSL1P());
+        iscL1DL1P           = field.getZero().newInstance(original.getIscL1DL1P());
+        iscL1PS             = field.getZero().newInstance(original.getIscL1PS());
+        iscL1DS             = field.getZero().newInstance(original.getIscL1DS());
     }
 
     /** Constructor from different field instance.
@@ -82,14 +92,14 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     public <V extends CalculusFieldElement<V>> FieldNavicL1NvNavigationMessage(final Function<V, T> converter,
                                                                                final FieldNavicL1NvNavigationMessage<V> original) {
         super(converter, original);
-        setReferenceSignalFlag(original.getReferenceSignalFlag());
-        setUrai(original.getUrai());
-        setL1SpsHealth(original.getL1SpsHealth());
-        setTGDSL5(converter.apply(original.getTGDSL5()));
-        setIscSL1P(converter.apply(original.getIscSL1P()));
-        setIscL1DL1P(converter.apply(original.getIscL1DL1P()));
-        setIscL1PS(converter.apply(original.getIscL1PS()));
-        setIscL1DS(converter.apply(original.getIscL1DS()));
+        referenceSignalFlag = original.getReferenceSignalFlag();
+        urai                = original.getUrai();
+        l1SpsHealth         = original.getL1SpsHealth();
+        tgdSL5              = converter.apply(original.getTGDSL5());
+        iscSL1P             = converter.apply(original.getIscSL1P());
+        iscL1DL1P           = converter.apply(original.getIscL1DL1P());
+        iscL1PS             = converter.apply(original.getIscL1PS());
+        iscL1DS             = converter.apply(original.getIscL1DS());
     }
 
     /** {@inheritDoc} */
@@ -106,26 +116,11 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
         return (G) new FieldNavicL1NvNavigationMessage<>(converter, this);
     }
 
-    /** Set reference signal flag.
-     * @param referenceSignalFlag reference signal flag
-     */
-    public void setReferenceSignalFlag(final int referenceSignalFlag) {
-        this.referenceSignalFlag = referenceSignalFlag;
-    }
-
     /** Get reference signal flag.
      * @return reference signal flag
      */
     public int getReferenceSignalFlag() {
         return referenceSignalFlag;
-    }
-
-    /** Set User Range Accuracy Index.
-     * @param urai User Range Accuracy Index
-     * @since 14.0
-     */
-    public void setUrai(final int urai) {
-        this.urai = urai;
     }
 
     /** Get User Range Accuracy Index.
@@ -136,28 +131,12 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
         return urai;
     }
 
-    /** Set L1 SPS health.
-     * @param l1SpsHealth L1 SPS health
-     * @since 14.0
-     */
-    public void setL1SpsHealth(final int l1SpsHealth) {
-        this.l1SpsHealth = l1SpsHealth;
-    }
-
     /** Get L1 SPS health.
      * @return L1 SPS health
      * @since 14.0
      */
     public int getL1SpsHealth() {
         return l1SpsHealth;
-    }
-
-    /**
-     * Set the estimated group delay differential TGD for S-L5 correction.
-     * @param groupDelayDifferential the estimated group delay differential TGD for S-L3 correction (s)
-     */
-    public void setTGDSL5(final T groupDelayDifferential) {
-        this.tgdSL5 = groupDelayDifferential;
     }
 
     /**
@@ -177,27 +156,11 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Setter for inter Signal Delay for S L1P.
-     * @param delay delay to set
-     */
-    public void setIscSL1P(final T delay) {
-        this.iscSL1P = delay;
-    }
-
-    /**
      * Getter for inter Signal Delay for L1D L1P.
      * @return inter signal delay
      */
     public T getIscL1DL1P() {
         return iscL1DL1P;
-    }
-
-    /**
-     * Setter for inter Signal Delay for L1D L1P.
-     * @param delay delay to set
-     */
-    public void setIscL1DL1P(final T delay) {
-        this.iscL1DL1P = delay;
     }
 
     /**
@@ -209,42 +172,11 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Setter for inter Signal Delay for L1P S.
-     * @param delay delay to set
-     */
-    public void setIscL1PS(final T delay) {
-        this.iscL1PS = delay;
-    }
-
-    /**
      * Getter for inter Signal Delay for L1D S.
      * @return inter signal delay
      */
     public T getIscL1DS() {
         return iscL1DS;
-    }
-
-    /**
-     * Setter for inter Signal Delay for L1D S.
-     * @param delay delay to set
-     */
-    public void setIscL1DS(final T delay) {
-        this.iscL1DS = delay;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof FieldNavicL1NvNavigationMessage) {
-            final FieldNavicL1NvNavigationMessage<T> m = (FieldNavicL1NvNavigationMessage<T>) original;
-            setReferenceSignalFlag(m.getReferenceSignalFlag());
-            setTGDSL5(m.getTGDSL5());
-            setIscSL1P(m.getIscSL1P());
-            setIscL1DL1P(m.getIscL1DL1P());
-            setIscL1PS(m.getIscL1PS());
-            setIscL1DS(m.getIscL1DS());
-        }
     }
 
 }

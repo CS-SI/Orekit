@@ -20,7 +20,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -29,7 +30,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class NavICL1NvNavigationMessage
-    extends CivilianNavigationMessage<NavICL1NvNavigationMessage> {
+    extends AbstractNavigationMessage<NavICL1NvNavigationMessage> {
 
     /** Message type.
      * @since 14.0
@@ -37,7 +38,17 @@ public class NavICL1NvNavigationMessage
     public static final String L1NV = "L1NV";
 
     /** Reference signal flag. */
-    private int referenceSignalFlag;
+    private final int referenceSignalFlag;
+
+    /** User Range Accuracy Index.
+     * @since 14.0
+     */
+    private final int urai;
+
+    /** L1 SPS health.
+     * @since 14.0
+     */
+    private final int l1SpsHealth;
 
     /** User Range Accuracy Index.
      * @since 14.0
@@ -50,31 +61,85 @@ public class NavICL1NvNavigationMessage
     private int l1SpsHealth;
 
     /** Estimated group delay differential TGD for S-L5 correction. */
-    private double tgdSL5;
+    private final double tgdSL5;
 
     /** Inter Signal Delay for S L1P. */
-    private double iscSL1P;
+    private final double iscSL1P;
 
     /** Inter Signal Delay for L1D L1P. */
-    private double iscL1DL1P;
+    private final double iscL1DL1P;
 
     /** Inter Signal Delay for L1P S. */
-    private double iscL1PS;
+    private final double iscL1PS;
 
-    /** Inter Signal Delay for L1DS. */
-    private double iscL1DS;
+    /** Inter Signal Delay for L1D S. */
+    private final double iscL1DS;
 
     /** Constructor.
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     * @param type       message type
+     * @param timeScales          known time scales
+     * @param system              satellite system to consider for interpreting week number
+     *                            (may be different from real system, for example in Rinex nav, weeks
+     *                            are always according to GPS)
+     * @param type                message type
+     * @param prn                 PRN number of the satellite
+     * @param week                reference Week of the orbit
+     * @param orbit               Keplerian orbit in Earth-frozen frame
+     * @param time                reference time
+     * @param aDot                change rate in semi-major axis (m/s)
+     * @param deltaN0             delta of satellite mean motion
+     * @param deltaN0Dot          change rate in Δn₀
+     * @param iDot                inclination rate (rad/s)
+     * @param omegaDot            rate of right ascension (rad/s)
+     * @param cuc                 amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus                 amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc                 amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs                 amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic                 amplitude of the cosine harmonic correction term to the inclination
+     * @param cis                 amplitude of the sine harmonic correction term to the inclination
+     * @param af0                 zero-th order clock correction (s)
+     * @param af1                 first order clock correction (s/s)
+     * @param af2                 second order clock correction (s/s²)
+     * @param tgd                 group delay differential TGD for L1-L2 correction
+     * @param toc                 time of clock
+     * @param epochToc            time of clock epoch
+     * @param transmissionTime    transmission time
+     * @param referenceSignalFlag reference signal flag
+     * @param urai                User Range Accuracy Index
+     * @param l1SpsHealth         L1 SPS health
+     * @param tgdSL5              estimated group delay differential TGD for S-L5 correction
+     * @param iscSL1P             inter signal delay for S L1P
+     * @param iscL1DL1P           inter signal delay for L1D L1P
+     * @param iscL1PS             inter signal delay for L1P S
+     * @param iscL1DS             inter signal delay for L1D S
      */
-    public NavICL1NvNavigationMessage(final TimeScales timeScales, final SatelliteSystem system,
-                                      final String type) {
-        super(true, GNSSConstants.NAVIC_MU, GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, system, type);
+    public NavICL1NvNavigationMessage(final TimeScales timeScales, final SatelliteSystem system, final String type,
+                                      final int prn, final int week, final KeplerianOrbit orbit,
+                                      final double time, final double aDot,
+                                      final double deltaN0, final double deltaN0Dot,
+                                      final double iDot, final double omegaDot,
+                                      final double cuc, final double cus,
+                                      final double crc, final double crs,
+                                      final double cic, final double cis,
+                                      final double af0, final double af1, final double af2,
+                                      final double tgd, final double toc,
+                                      final AbsoluteDate epochToc, final double transmissionTime,
+                                      final int referenceSignalFlag,
+                                      final int urai, final int l1SpsHealth,
+                                      final double tgdSL5,
+                                      final double iscSL1P, final double iscL1DL1P,
+                                      final double iscL1PS, final double iscL1DS) {
+        super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
+              timeScales, system, type, prn, week, orbit,
+              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              af0, af1, af2, tgd, toc, epochToc, transmissionTime);
+        this.referenceSignalFlag = referenceSignalFlag;
+        this.urai                = urai;
+        this.l1SpsHealth         = l1SpsHealth;
+        this.tgdSL5              = tgdSL5;
+        this.iscSL1P             = iscSL1P;
+        this.iscL1DL1P           = iscL1DL1P;
+        this.iscL1PS             = iscL1PS;
+        this.iscL1DS             = iscL1DS;
     }
 
     /** Constructor from field instance.
@@ -83,14 +148,14 @@ public class NavICL1NvNavigationMessage
      */
     public <T extends CalculusFieldElement<T>> NavICL1NvNavigationMessage(final FieldNavicL1NvNavigationMessage<T> original) {
         super(original);
-        setReferenceSignalFlag(original.getReferenceSignalFlag());
-        setUrai(original.getUrai());
-        setL1SpsHealth(original.getL1SpsHealth());
-        setTGDSL5(original.getTGDSL5().getReal());
-        setIscSL1P(original.getIscSL1P().getReal());
-        setIscL1DL1P(original.getIscL1DL1P().getReal());
-        setIscL1PS(original.getIscL1PS().getReal());
-        setIscL1DS(original.getIscL1DS().getReal());
+        referenceSignalFlag = original.getReferenceSignalFlag();
+        urai                = original.getUrai();
+        l1SpsHealth         = original.getL1SpsHealth();
+        tgdSL5              = original.getTGDSL5().getReal();
+        iscSL1P             = original.getIscSL1P().getReal();
+        iscL1DL1P           = original.getIscL1DL1P().getReal();
+        iscL1PS             = original.getIscL1PS().getReal();
+        iscL1DS             = original.getIscL1DS().getReal();
     }
 
     /** {@inheritDoc} */
@@ -101,26 +166,11 @@ public class NavICL1NvNavigationMessage
         return (F) new FieldNavicL1NvNavigationMessage<>(field, this);
     }
 
-    /** Set reference signal flag.
-     * @param referenceSignalFlag reference signal flag
-     */
-    public void setReferenceSignalFlag(final int referenceSignalFlag) {
-        this.referenceSignalFlag = referenceSignalFlag;
-    }
-
-    /** Get reference signal flag.
+    /** Get the reference signal flag.
      * @return reference signal flag
      */
     public int getReferenceSignalFlag() {
         return referenceSignalFlag;
-    }
-
-    /** Set User Range Accuracy Index.
-     * @param urai User Range Accuracy Index
-     * @since 14.0
-     */
-    public void setUrai(final int urai) {
-        this.urai = urai;
     }
 
     /** Get User Range Accuracy Index.
@@ -131,14 +181,6 @@ public class NavICL1NvNavigationMessage
         return urai;
     }
 
-    /** Set L1 SPS health.
-     * @param l1SpsHealth L1 SPS health
-     * @since 14.0
-     */
-    public void setL1SpsHealth(final int l1SpsHealth) {
-        this.l1SpsHealth = l1SpsHealth;
-    }
-
     /** Get L1 SPS health.
      * @return L1 SPS health
      * @since 14.0
@@ -147,108 +189,46 @@ public class NavICL1NvNavigationMessage
         return l1SpsHealth;
     }
 
-    /**
-     * Set the estimated group delay differential TGD for S-L5 correction.
-     * @param groupDelayDifferential the estimated group delay differential TGD for S-L3 correction (s)
-     */
-    public void setTGDSL5(final double groupDelayDifferential) {
-        this.tgdSL5 = groupDelayDifferential;
-    }
-
-    /**
-     * Set the estimated group delay differential TGD for S-L5 correction.
+    /** Get the estimated group delay differential TGD for S-L5 correction.
      * @return estimated group delay differential TGD for S-L3 correction (s)
      */
     public double getTGDSL5() {
         return tgdSL5;
     }
 
-    /**
-     * Getter for inter Signal Delay for S L1P.
+    /** Get the inter Signal Delay for S L1P.
      * @return inter signal delay
      */
     public double getIscSL1P() {
         return iscSL1P;
     }
 
-    /**
-     * Setter for inter Signal Delay for S L1P.
-     * @param delay delay to set
-     */
-    public void setIscSL1P(final double delay) {
-        this.iscSL1P = delay;
-    }
-
-    /**
-     * Getter for inter Signal Delay for L1D L1P.
+    /** Get the inter Signal Delay for L1D L1P.
      * @return inter signal delay
      */
     public double getIscL1DL1P() {
         return iscL1DL1P;
     }
 
-    /**
-     * Setter for inter Signal Delay for L1D L1P.
-     * @param delay delay to set
-     */
-    public void setIscL1DL1P(final double delay) {
-        this.iscL1DL1P = delay;
-    }
-
-    /**
-     * Getter for inter Signal Delay for L1P S.
+    /** Get the inter Signal Delay for L1P S.
      * @return inter signal delay
      */
     public double getIscL1PS() {
         return iscL1PS;
     }
 
-    /**
-     * Setter for inter Signal Delay for L1P S.
-     * @param delay delay to set
-     */
-    public void setIscL1PS(final double delay) {
-        this.iscL1PS = delay;
-    }
-
-    /**
-     * Getter for inter Signal Delay for L1D S.
+    /** Get the inter Signal Delay for L1D S.
      * @return inter signal delay
      */
     public double getIscL1DS() {
         return iscL1DS;
     }
 
-    /**
-     * Setter for inter Signal Delay for L1D S.
-     * @param delay delay to set
-     */
-    public void setIscL1DS(final double delay) {
-        this.iscL1DS = delay;
-    }
-
     /** {@inheritDoc} */
     @Override
-    public GNSSPropagatorBuilder<NavICL1NvNavigationMessage> builder(final Frame inertial, final Frame bodyFixed) {
-        return new GNSSPropagatorBuilder<>(new NavICCivilianFactory(getTimeScales(), getSystem(),
-                                                                    inertial, bodyFixed,
-                                                                    getDate(), getMu()),
-                                           inertial, bodyFixed);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof NavICL1NvNavigationMessage) {
-            final NavICL1NvNavigationMessage m = (NavICL1NvNavigationMessage) original;
-            setReferenceSignalFlag(m.getReferenceSignalFlag());
-            setTGDSL5(m.getTGDSL5());
-            setIscSL1P(m.getIscSL1P());
-            setIscL1DL1P(m.getIscL1DL1P());
-            setIscL1PS(m.getIscL1PS());
-            setIscL1DS(m.getIscL1DS());
-        }
+    public NavICL1NvNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new NavICL1NvNavigationMessageFactory(getTimeScales(), getSystem(), getType(),
+                                                     inertial, bodyFixed, getDate());
     }
 
 }

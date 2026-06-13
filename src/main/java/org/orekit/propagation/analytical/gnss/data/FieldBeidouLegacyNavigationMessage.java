@@ -36,24 +36,24 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     private final boolean d2;
 
     /** Age of Data, Ephemeris. */
-    private int aode;
+    private final int aode;
 
     /** Age of Data, Clock. */
-    private int aodc;
+    private final int aodc;
 
     /** Health identifier.
      * @since 14.0
      */
-    private int satH1;
+    private final int satH1;
 
     /** B1/B3 Group Delay Differential (s). */
-    private T tgd1;
+    private final T tgd1;
 
     /** B2/B3 Group Delay Differential (s). */
-    private T tgd2;
+    private final T tgd2;
 
     /** The user SV accuracy (m). */
-    private T svAccuracy;
+    private final T svAccuracy;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -61,13 +61,13 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
      */
     public FieldBeidouLegacyNavigationMessage(final Field<T> field, final BeidouLegacyNavigationMessage original) {
         super(field, original);
-        this.d2 = original.isD2();
-        setAODE(field.getZero().newInstance(original.getAODE()));
-        setAODC(field.getZero().newInstance(original.getAODC()));
-        setTGD1(field.getZero().newInstance(original.getTGD1()));
-        setTGD2(field.getZero().newInstance(original.getTGD2()));
-        setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
-        setSatH1(original.getSatH1());
+        d2         = original.isD2();
+        aode       = original.getAODE();
+        aodc       = original.getAODC();
+        satH1      = original.getSatH1();
+        tgd1       = field.getZero().newInstance(original.getTGD1());
+        tgd2       = field.getZero().newInstance(original.getTGD2());
+        svAccuracy = field.getZero().newInstance(original.getSvAccuracy());
     }
 
     /** Constructor from different field instance.
@@ -78,13 +78,13 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     public <V extends CalculusFieldElement<V>> FieldBeidouLegacyNavigationMessage(final Function<V, T> converter,
                                                                                   final FieldBeidouLegacyNavigationMessage<V> original) {
         super(converter, original);
-        this.d2 = original.isD2();
-        setAODE(getMu().newInstance(original.getAODE()));
-        setAODC(getMu().newInstance(original.getAODC()));
-        setTGD1(converter.apply(original.getTGD1()));
-        setTGD2(converter.apply(original.getTGD2()));
-        setSvAccuracy(converter.apply(original.getSvAccuracy()));
-        setSatH1(original.getSatH1());
+        d2         = original.isD2();
+        aode       = original.getAODE();
+        aodc       = original.getAODC();
+        satH1      = original.getSatH1();
+        tgd1       = converter.apply(original.getTGD1());
+        tgd2       = converter.apply(original.getTGD2());
+        svAccuracy = converter.apply(original.getSvAccuracy());
     }
 
     /** {@inheritDoc} */
@@ -119,29 +119,11 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     }
 
     /**
-     * Setter for the age of data clock.
-     * @param aod the age of data to set
-     */
-    public void setAODC(final T aod) {
-        // The value is given as a floating number in the navigation message
-        this.aodc = (int) aod.getReal();
-    }
-
-    /**
      * Getter for the Age Of Data Ephemeris (AODE).
      * @return the Age Of Data Ephemeris (AODE)
      */
     public int getAODE() {
         return aode;
-    }
-
-    /**
-     * Setter for the age of data ephemeris.
-     * @param aod the age of data to set
-     */
-    public void setAODE(final T aod) {
-        // The value is given as a floating number in the navigation message
-        this.aode = (int) aod.getReal();
     }
 
     /**
@@ -153,27 +135,11 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     }
 
     /**
-     * Setter for the B1/B3 Group Delay Differential (s).
-     * @param tgd the group delay differential to set
-     */
-    public void setTGD1(final T tgd) {
-        this.tgd1 = tgd;
-    }
-
-    /**
      * Getter for the estimated group delay differential TGD for B2I signal.
      * @return the estimated group delay differential TGD2 for B2I signal (s)
      */
     public T getTGD2() {
         return tgd2;
-    }
-
-    /**
-     * Setter for the B2/B3 Group Delay Differential (s).
-     * @param tgd the group delay differential to set
-     */
-    public void setTGD2(final T tgd) {
-        this.tgd2 = tgd;
     }
 
     /**
@@ -184,28 +150,12 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
         return svAccuracy;
     }
 
-    /**
-     * Setter for the user SV accuracy.
-     * @param svAccuracy the value to set
-     */
-    public void setSvAccuracy(final T svAccuracy) {
-        this.svAccuracy = svAccuracy;
-    }
-
     /** Get the health identifier.
      * @return health identifier
      * @since 14.0
      */
     public int getSatH1() {
         return satH1;
-    }
-
-    /** Set the health identifier.
-     * @param satH1 health identifier
-     * @since 14.0
-     */
-    public void setSatH1(final int satH1) {
-        this.satH1 = satH1;
     }
 
 }

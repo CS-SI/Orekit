@@ -29,7 +29,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class NavICL1NVNavigationMessageWriter
-    extends CivilianNavigationMessageWriter<NavICL1NvNavigationMessage> {
+    extends CivilianLevel1NavigationMessageWriter<NavICL1NvNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override

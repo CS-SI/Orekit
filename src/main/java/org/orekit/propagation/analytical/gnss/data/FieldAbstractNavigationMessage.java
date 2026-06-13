@@ -38,18 +38,13 @@ import java.util.function.Function;
  */
 public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElement<T>,
                                                      O extends AbstractNavigationMessage<O>>
-    extends FieldAbstractAlmanac<T, O> {
+    extends FieldGnssOrbitalElements<T, O> {
 
     /** Time of clock epoch. */
-    private FieldAbsoluteDate<T> epochToc;
+    private final FieldAbsoluteDate<T> epochToc;
 
     /** Transmission time. */
-    private T transmissionTime;
-
-    /** Message type.
-     * @since 14.0
-     */
-    private final String type;
+    private final T transmissionTime;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -57,9 +52,8 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      */
     protected FieldAbstractNavigationMessage(final Field<T> field, final O original) {
         super(field, original);
-        setEpochToc(new FieldAbsoluteDate<>(field, original.getEpochToc()));
-        setTransmissionTime(field.getZero().newInstance(original.getTransmissionTime()));
-        this.type = original.getNavigationMessageType();
+        epochToc         = new FieldAbsoluteDate<>(field, original.getEpochToc());
+        transmissionTime = field.getZero().newInstance(original.getTransmissionTime());
     }
 
     /** Constructor from different field instance.
@@ -70,17 +64,8 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
     protected <V extends CalculusFieldElement<V>> FieldAbstractNavigationMessage(final Function<V, T> converter,
                                                                                  final FieldAbstractNavigationMessage<V, O> original) {
         super(converter, original);
-        setEpochToc(new FieldAbsoluteDate<>(getMu().getField(), original.getEpochToc().toAbsoluteDate()));
-        setTransmissionTime(converter.apply(original.getTransmissionTime()));
-        this.type = original.getNavigationMessageType();
-    }
-
-    /** Get navigation message type.
-     * @return the navigation message type
-     * @since 14.0
-     */
-    public String getNavigationMessageType() {
-        return type;
+        epochToc         = new FieldAbsoluteDate<>(getToc().getField(), original.getEpochToc().toAbsoluteDate());
+        transmissionTime = converter.apply(original.getTransmissionTime());
     }
 
     /**
@@ -88,18 +73,7 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      * @return Square Root of Semi-Major Axis (√m)
      */
     public T getSqrtA() {
-        return FastMath.sqrt(getSma());
-    }
-
-    /**
-     * Setter for the Square Root of Semi-Major Axis (√m).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (√m)
-     */
-    public void setSqrtA(final T sqrtA) {
-        setSma(sqrtA.square());
+        return FastMath.sqrt(getOrbit().getA());
     }
 
     /**
@@ -111,38 +85,11 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
     }
 
     /**
-     * Setter for the time of clock epoch.
-     * @param epochToc the epoch to set
-     */
-    public void setEpochToc(final FieldAbsoluteDate<T> epochToc) {
-        this.epochToc = epochToc;
-    }
-
-    /**
      * Getter for transmission time.
      * @return transmission time
      */
     public T getTransmissionTime() {
         return transmissionTime;
-    }
-
-    /**
-     * Setter for transmission time.
-     * @param transmissionTime transmission time
-     */
-    public void setTransmissionTime(final T transmissionTime) {
-        this.transmissionTime = transmissionTime;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof FieldAbstractNavigationMessage) {
-            final FieldAbstractNavigationMessage<T, ?> m = (FieldAbstractNavigationMessage<T, ?>) original;
-            setEpochToc(m.getEpochToc());
-            setTransmissionTime(m.getTransmissionTime());
-        }
     }
 
 }

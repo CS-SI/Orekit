@@ -33,10 +33,10 @@ import java.util.function.Function;
  *
  */
 public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, BeidouAlmanac> {
+    extends FieldGnssOrbitalElements<T, BeidouAlmanac> {
 
     /** Health status. */
-    private int health;
+    private final int health;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -44,7 +44,7 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
      */
     public FieldBeidouAlmanac(final Field<T> field, final BeidouAlmanac original) {
         super(field, original);
-        setHealth(original.getHealth());
+        health = original.getHealth();
     }
 
     /** Constructor from different field instance.
@@ -55,7 +55,7 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
     public <V extends CalculusFieldElement<V>> FieldBeidouAlmanac(final Function<V, T> converter,
                                                                   final FieldBeidouAlmanac<V> original) {
         super(converter, original);
-        setHealth(original.getHealth());
+        health = original.getHealth();
     }
 
     /** {@inheritDoc} */
@@ -73,52 +73,12 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Sets the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final T sqrtA) {
-        setSma(sqrtA.square());
-    }
-
-    /**
-     * Sets the Inclination Angle at Reference Time (rad).
-     *
-     * @param inc the orbit reference inclination
-     * @param dinc the correction of orbit reference inclination at reference time
-     */
-    public void setI0(final T inc, final T dinc) {
-        setI0(inc.add(dinc));
-    }
-
-    /**
      * Gets the Health status.
      *
      * @return the Health status
      */
     public int getHealth() {
         return health;
-    }
-
-    /**
-     * Sets the health status.
-     *
-     * @param health the health status to set
-     */
-    public void setHealth(final int health) {
-        this.health = health;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof FieldBeidouAlmanac) {
-            final FieldBeidouAlmanac<?> b = (FieldBeidouAlmanac<?>) original;
-            setHealth(b.getHealth());
-        }
     }
 
 }
