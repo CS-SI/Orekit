@@ -17,8 +17,6 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -27,6 +25,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
+import java.util.function.DoubleFunction;
 
 /**
  * Container for data contained in a GPS navigation message.
@@ -119,34 +118,24 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSCivilianNavigationMessage, F>>
-        F toField(final Field<T> field) {
-        return (F) new FieldGPSCivilianNavigationMessage<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
-    }
-
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <P extends FieldGnssOrbitalElements<Gradient, GPSCivilianNavigationMessage, P>>
-        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
-        final int freeParameters = orbit.getMu().getFreeParameters();
+    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, GPSCivilianNavigationMessage, P>>
+    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldGPSCivilianNavigationMessage<>(isCnv2(),
                                                            getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                           getType(), getPrn(), getGnssDate(), orbit,
-                                                           nonKeplerian.toGradients(freeParameters),
-                                                           Gradient.constant(freeParameters, getTGD()),
-                                                           Gradient.constant(freeParameters, getToc()),
+                                                           getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                                           converter.apply(getTGD()),
+                                                           converter.apply(getToc()),
                                                            new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                    getEpochToc()),
-                                                           Gradient.constant(freeParameters, getTransmissionTime()),
-                                                           Gradient.constant(freeParameters, getSvAccuracy()),
+                                                           converter.apply(getTransmissionTime()),
+                                                           converter.apply(getSvAccuracy()),
                                                            getSvHealth(),
-                                                           Gradient.constant(freeParameters, getIscL1CA()),
-                                                           Gradient.constant(freeParameters, getIscL1CD()),
-                                                           Gradient.constant(freeParameters, getIscL1CP()),
-                                                           Gradient.constant(freeParameters, getIscL2C()),
-                                                           Gradient.constant(freeParameters, getIscL5I5()),
-                                                           Gradient.constant(freeParameters, getIscL5Q5()),
+                                                           converter.apply(getIscL1CA()),
+                                                           converter.apply(getIscL1CD()),
+                                                           converter.apply(getIscL1CP()),
+                                                           converter.apply(getIscL2C()),
+                                                           converter.apply(getIscL5I5()),
+                                                           converter.apply(getIscL5Q5()),
                                                            getUraiEd(), getUraiNed0(), getUraiNed1(), getUraiNed2(),
                                                            getFlags());
     }

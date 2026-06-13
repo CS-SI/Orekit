@@ -17,8 +17,6 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -26,6 +24,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+
+import java.util.function.DoubleFunction;
 
 /**
  * Container for data contained in a Beidou civilian navigation message.
@@ -213,36 +213,26 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouCivilianNavigationMessage, F>>
-        F toField(final Field<T> field) {
-        return (F) new FieldBeidouCivilianNavigationMessage<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
-    }
-
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <P extends FieldGnssOrbitalElements<Gradient, BeidouCivilianNavigationMessage, P>>
-        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
-        final int freeParameters = orbit.getMu().getFreeParameters();
+    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, BeidouCivilianNavigationMessage, P>>
+    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
                                                               getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                              getType(), getPrn(), getGnssDate(), orbit,
-                                                              nonKeplerian.toGradients(freeParameters),
-                                                              Gradient.constant(freeParameters, getTGD()),
-                                                              Gradient.constant(freeParameters, getToc()),
+                                                              getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                                              converter.apply(getTGD()),
+                                                              converter.apply(getToc()),
                                                               new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                       getEpochToc()),
-                                                              Gradient.constant(freeParameters, getTransmissionTime()),
+                                                              converter.apply(getTransmissionTime()),
                                                               getIODE(), getIODC(),
-                                                              Gradient.constant(freeParameters, getIscB1CD()),
-                                                              Gradient.constant(freeParameters, getIscB1CP()),
-                                                              Gradient.constant(freeParameters, getIscB2AD()),
+                                                              converter.apply(getIscB1CD()),
+                                                              converter.apply(getIscB1CP()),
+                                                              converter.apply(getIscB2AD()),
                                                               getSisaiOe(), getSisaiOcb(),
                                                               getSisaiOc1(), getSisaiOc2(),
                                                               getSismai(), getHealth(), getIntegrityFlags(),
-                                                              Gradient.constant(freeParameters, getTgdB1Cp()),
-                                                              Gradient.constant(freeParameters, getTgdB2ap()),
-                                                              Gradient.constant(freeParameters, getTgdB2bI()),
+                                                              converter.apply(getTgdB1Cp()),
+                                                              converter.apply(getTgdB2ap()),
+                                                              converter.apply(getTgdB2bI()),
                                                               getSatelliteType());
     }
 

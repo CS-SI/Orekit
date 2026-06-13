@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.util.MathArrays;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -29,6 +29,7 @@ import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.function.DoubleFunction;
 import java.util.function.ToDoubleFunction;
 
 /** This class provides the minimal set of orbital elements needed by the {@link GNSSPropagator}.
@@ -234,25 +235,39 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      * @return field version of the instance
      * @since 14.0
      */
-    public abstract <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, O, P>>
-        P toField(Field<T> field);
+    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, O, P>>
+        P toField(Field<T> field) {
+        final T zero = field.getZero();
+        final T[] parameters = MathArrays.buildArray(field, NonKeplerianDriversFactory.SIZE);
+        parameters[NonKeplerianDriversFactory.TIME_INDEX]         = zero.newInstance(getGnssDate().getSecondsInWeek());
+        parameters[NonKeplerianDriversFactory.A_DOT_INDEX]        = zero.newInstance(getADot());
+        parameters[NonKeplerianDriversFactory.DELTA_N0_INDEX]     = zero.newInstance(getDeltaN0());
+        parameters[NonKeplerianDriversFactory.DELTA_N0_DOT_INDEX] = zero.newInstance(getDeltaN0Dot());
+        parameters[NonKeplerianDriversFactory.I_DOT_INDEX]        = zero.newInstance(getIDot());
+        parameters[NonKeplerianDriversFactory.OMEGA_DOT_INDEX]    = zero.newInstance(getOmegaDot());
+        parameters[NonKeplerianDriversFactory.CUC_INDEX]          = zero.newInstance(getCuc());
+        parameters[NonKeplerianDriversFactory.CUS_INDEX]          = zero.newInstance(getCus());
+        parameters[NonKeplerianDriversFactory.CRC_INDEX]          = zero.newInstance(getCrc());
+        parameters[NonKeplerianDriversFactory.CRS_INDEX]          = zero.newInstance(getCrs());
+        parameters[NonKeplerianDriversFactory.CIC_INDEX]          = zero.newInstance(getCic());
+        parameters[NonKeplerianDriversFactory.CIS_INDEX]          = zero.newInstance(getCis());
+        parameters[NonKeplerianDriversFactory.AF0_INDEX]          = zero.newInstance(getAf0());
+        parameters[NonKeplerianDriversFactory.AF1_INDEX]          = zero.newInstance(getAf1());
+        parameters[NonKeplerianDriversFactory.AF2_INDEX]          = zero.newInstance(getAf2());
+        return toField(new FieldKeplerianOrbit<>(field, getOrbit()), parameters, zero::newInstance);
+    }
 
-    /**
-     * Create a gradient version of the instance.
-     * <p>
-     * This method uses the provided already converted orbit for the Keplerian parameters. The non-Keplerian parameters
-     * are initialized either as {@link Gradient#variable(int, int, double) gradient variables} or as
-     * {@link Gradient#constant(int, double) constants} depending on the corresponding parameter being selected or not.
-     * </p>
-     *
-     * @param <P>          type of the orbital elements (gradient version)
+    /** Create a field version of the instance.
+     * @param <T>          type of the field elements
+     * @param <P>          type of the orbital elements (field version)
      * @param orbit        orbit in the correct gradient field
-     * @param nonKeplerian factory for non-Keplerian terms
+     * @param nonKeplerian non-Keplerian parameters
+     * @param converter    converter for remaining elements
      * @return gradient version of the instance
      * @since 14.0
      */
-    public abstract <P extends FieldGnssOrbitalElements<Gradient, O, P>>
-        P toGradient(FieldKeplerianOrbit<Gradient> orbit, NonKeplerianDriversFactory nonKeplerian);
+    public abstract <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, O, P>>
+        P toField(FieldKeplerianOrbit<T> orbit, T[] nonKeplerian, DoubleFunction<T> converter);
 
     /** Get known time scales.
      * @return known time scales

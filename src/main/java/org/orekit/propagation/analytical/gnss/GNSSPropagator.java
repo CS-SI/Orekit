@@ -426,7 +426,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
 
         // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
-        Q gElements = convert(nonKeplerianElements, orbit, driversFactory);
+        FieldGnssOrbitalElements<Gradient, O, ?> gElements = convert(nonKeplerianElements, orbit, driversFactory);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
@@ -573,24 +573,26 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      * @since 14.0
      */
     private static <O extends GNSSOrbitalElements<O>>
-        FieldGnssOrbitalElements<Gradient, O, ?> convert(final O elements, final KeplerianOrbit orbit) {
+        FieldGnssOrbitalElements<Gradient, O, ?> convert(final O elements, final KeplerianOrbit orbit, final NonKeplerianDriversFactory driversFactory) {
         return elements.toField(new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(FREE_PARAMETERS, 0,
                                                                                                            orbit.getA()),
                                                                                          Gradient.variable(FREE_PARAMETERS, 1,
-                                                                                                           orbit.getE()),
+                                                                                                              orbit.getE()),
                                                                                          Gradient.variable(FREE_PARAMETERS, 2,
-                                                                                                           orbit.getI()),
+                                                                                                              orbit.getI()),
                                                                                          Gradient.variable(FREE_PARAMETERS, 3,
-                                                                                                           orbit.getPerigeeArgument()),
+                                                                                                              orbit.getPerigeeArgument()),
                                                                                          Gradient.variable(FREE_PARAMETERS, 4,
-                                                                                                           orbit.getRightAscensionOfAscendingNode()),
+                                                                                                              orbit.getRightAscensionOfAscendingNode()),
                                                                                          Gradient.variable(FREE_PARAMETERS, 5,
-                                                                                                           orbit.getMeanAnomaly()),
+                                                                                                              orbit.getMeanAnomaly()),
                                                                                          PositionAngleType.MEAN),
                                                           orbit.getFrame(),
                                                           new FieldAbsoluteDate<>(GradientField.getField(FREE_PARAMETERS),
-                                                                                  orbit.getDate()),
-                                                          Gradient.constant(FREE_PARAMETERS, orbit.getMu())));
+                                                                                     orbit.getDate()),
+                                                          Gradient.constant(FREE_PARAMETERS, orbit.getMu())),
+                                driversFactory.toGradients(FREE_PARAMETERS),
+                                d -> Gradient.constant(FREE_PARAMETERS, d));
     }
 
 }
