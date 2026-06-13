@@ -138,9 +138,9 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldBeidouLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                                  final T[] nonKeplerian,
-                                                  final DoubleFunction<T> converter) {
+        FieldBeidouLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                      final T[] nonKeplerian,
+                                                      final DoubleFunction<T> converter) {
         return new FieldBeidouLegacyNavigationMessage<>(isD2(),
                                                         getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                         getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,

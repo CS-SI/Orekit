@@ -446,7 +446,8 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
 
     /** {@inheritDoc} */
     @Override
-    public AbstractOrbitFactory<CircularOrbit> factory(PositionAngleType positionAngleType, double positionScale) {
+    public AbstractOrbitFactory<CircularOrbit> factory(final PositionAngleType positionAngleType,
+                                                       final double positionScale) {
         return new CircularOrbitFactory(this, positionScale, positionAngleType);
     }
 

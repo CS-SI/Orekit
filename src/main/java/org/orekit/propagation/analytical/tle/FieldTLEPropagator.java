@@ -25,7 +25,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Pair;
-import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -278,9 +277,9 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      */
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T>
-    selectExtrapolator(final FieldTLE<T> tle,
-                       final AttitudeProvider attitudeProvider,
-                       final T mass) {
+        selectExtrapolator(final FieldTLE<T> tle,
+                           final AttitudeProvider attitudeProvider,
+                           final T mass) {
         return selectExtrapolator(tle, attitudeProvider, mass,
                                   DataContext.getDefault().getFrames().getTEME());
     }
@@ -296,8 +295,8 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @since 14.0
      */
     public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T>
-    selectExtrapolator(final FieldTLE<T> tle, final AttitudeProvider attitudeProvider,
-                       final T mass, final Frame teme) {
+        selectExtrapolator(final FieldTLE<T> tle, final AttitudeProvider attitudeProvider,
+                           final T mass, final Frame teme) {
 
         final T xkeOverN = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE);
         final T a1 = xkeOverN.multiply(xkeOverN).cbrt();
@@ -574,13 +573,13 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     /** Initialization proper to each propagator (SGP or SDP).
      * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected abstract void sxpInitialize(final T bStar);
+    protected abstract void sxpInitialize(T bStar);
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param t the offset from initial epoch (min)
      * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected abstract void sxpPropagate(T t, final T bStar);
+    protected abstract void sxpPropagate(T t, T bStar);
 
     /** {@inheritDoc}
      * <p>

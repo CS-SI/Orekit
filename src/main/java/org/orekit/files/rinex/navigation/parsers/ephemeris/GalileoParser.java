@@ -51,7 +51,7 @@ public class GalileoParser
     public void parseLine01() {
         super.parseLine01();
         final GalileoNavigationMessageFactory factory = getFactory();
-        factory.setIODNav(getParseInfo().parseInt1());
+        factory.setIodNav(getParseInfo().parseInt1());
     }
 
     /** {@inheritDoc} */

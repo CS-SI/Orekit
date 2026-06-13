@@ -21,12 +21,10 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
-import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
-import java.util.Collections;
 import java.util.List;
 
 /** Converter for TLE propagator.

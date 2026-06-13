@@ -103,6 +103,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GN
      * <p>
      * The mass is set to the {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.
      * </p>
+     * @param field field to which elements belong
      * @param factory factory for the elements and frames
      * @since 14.0
      */
@@ -356,11 +357,11 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GN
      */
     public static <T extends CalculusFieldElement<T>,
                    O extends GNSSOrbitalElements<O>>
-       FieldGnssOrbitalElements<T, O> buildOrbitalElements(final FieldSpacecraftState<T> initialState,
-                                                           final FieldGnssOrbitalElements<T, O> nonKeplerianElements,
-                                                           final NonKeplerianDriversFactory driversFactory,
-                                                           final Frame ecef, final AttitudeProvider provider,
-                                                           final T mass) {
+        FieldGnssOrbitalElements<T, O> buildOrbitalElements(final FieldSpacecraftState<T> initialState,
+                                                            final FieldGnssOrbitalElements<T, O> nonKeplerianElements,
+                                                            final NonKeplerianDriversFactory driversFactory,
+                                                            final Frame ecef, final AttitudeProvider provider,
+                                                            final T mass) {
 
         final Field<T> field = initialState.getDate().getField();
 

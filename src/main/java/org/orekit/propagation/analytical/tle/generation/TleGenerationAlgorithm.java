@@ -212,13 +212,13 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
      * TLE are based on the provided state and not the template TLE.
      * </p>
      * @param state spacecraft state
-     * @param templateTLE template TLE
+     * @param newTemplateTLE template TLE
      * @return a TLE corresponding to the given state
      */
-    public TLE generate(SpacecraftState state, TLE templateTLE) {
+    public TLE generate(final SpacecraftState state, final TLE newTemplateTLE) {
         final KeplerianOrbit mean =
             (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        return TleGenerationUtil.newTLE(mean, templateTLE);
+        return TleGenerationUtil.newTLE(mean, newTemplateTLE);
     }
 
     /**
@@ -231,14 +231,14 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
      * </p>
      * @param <T> type of the elements
      * @param state spacecraft state
-     * @param templateTLE template TLE
+     * @param newTemplateTLE template TLE
      * @return a TLE corresponding to the given state
      */
-    public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(FieldSpacecraftState<T> state,
-                                                                    FieldTLE<T> templateTLE) {
+    public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
+                                                                    final FieldTLE<T> newTemplateTLE) {
         final FieldKeplerianOrbit<T> mean =
             (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        return TleGenerationUtil.newTLE(mean, templateTLE);
+        return TleGenerationUtil.newTLE(mean, newTemplateTLE);
     }
 
     /** {@inheritDoc} */

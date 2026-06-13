@@ -100,9 +100,9 @@ public class NavICLegacyNavigationMessage
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldNavicLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                                 final T[] nonKeplerian,
-                                                 final DoubleFunction<T> converter) {
+        FieldNavicLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                     final T[] nonKeplerian,
+                                                     final DoubleFunction<T> converter) {
         return new FieldNavicLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                        getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
                                                        converter.apply(getTgd()), toFieldToc(orbit),

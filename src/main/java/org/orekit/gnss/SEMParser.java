@@ -255,11 +255,11 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
 
             // Reads the SV number from the second line
             token = getTokens(reader);
-            factory.setSVN(Integer.parseInt(token[0].trim()));
+            factory.setSvn(Integer.parseInt(token[0].trim()));
 
             // Reads the average URA number from the third line
             token = getTokens(reader);
-            factory.setURA(Integer.parseInt(token[0].trim()));
+            factory.setUra(Integer.parseInt(token[0].trim()));
 
             // Reads the fourth line to get ecc, inc and dom
             token = getTokens(reader);

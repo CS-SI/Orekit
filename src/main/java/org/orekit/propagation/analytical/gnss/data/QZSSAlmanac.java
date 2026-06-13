@@ -96,9 +96,9 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldQZSSAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                final T[] nonKeplerian,
-                                final DoubleFunction<T> converter) {
+        FieldQZSSAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                    final T[] nonKeplerian,
+                                    final DoubleFunction<T> converter) {
         return new FieldQZSSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                       getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
                                       converter.apply(getTgd()), toFieldToc(orbit),

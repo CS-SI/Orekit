@@ -221,12 +221,12 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     }
 
     /** Set the reference Week of the orbit.
-     * @param week reference Week of the orbit
-     * @param time time within the week
+     * @param newWeek reference Week of the orbit
+     * @param newTime time within the week
      */
-    public void setWeekAndTime(final int week, final double time) {
-        this.week = week;
-        getTimeDriver().setValue(time);
+    public void setWeekAndTime(final int newWeek, final double newTime) {
+        this.week = newWeek;
+        getTimeDriver().setValue(newTime);
     }
 
     /** Get driver for reference time of the GNSS orbit as a duration from week start.

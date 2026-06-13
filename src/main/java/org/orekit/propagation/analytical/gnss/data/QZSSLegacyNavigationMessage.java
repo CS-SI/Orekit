@@ -97,10 +97,10 @@ public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage<QZSSLeg
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>>
-    FieldQZSSLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                                final T[] nonKeplerian,
-                                                final DoubleFunction<T> converter) {
+    public <T extends CalculusFieldElement<T>> FieldQZSSLegacyNavigationMessage<T>
+        toField(final FieldKeplerianOrbit<T> orbit,
+                final T[] nonKeplerian,
+                final DoubleFunction<T> converter) {
         return new FieldQZSSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                       getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
                                                       converter.apply(getTgd()), toFieldToc(orbit),

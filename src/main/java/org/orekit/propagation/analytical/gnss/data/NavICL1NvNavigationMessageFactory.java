@@ -111,14 +111,14 @@ public class NavICL1NvNavigationMessageFactory
     /** Get the estimated group delay differential TGD for S-L5 correction.
      * @return estimated group delay differential TGD for S-L3 correction (s)
      */
-    public double getTGDSL5() {
+    public double getTgdSL5() {
         return tgdSL5;
     }
 
     /** Set the estimated group delay differential TGD for S-L5 correction.
      * @param tgdSL5 estimated group delay differential TGD for S-L3 correction (s)
      */
-    public void setTGDSL5(final double tgdSL5) {
+    public void setTgdSL5(final double tgdSL5) {
         this.tgdSL5 = tgdSL5;
     }
 
@@ -194,7 +194,7 @@ public class NavICL1NvNavigationMessageFactory
                                               getTgd(), getToc(), getTransmissionTime(),
                                               getReferenceSignalFlag(),
                                               getUrai(), getL1SpsHealth(),
-                                              getTGDSL5(),
+                                              getTgdSL5(),
                                               getIscSL1P(), getIscL1DL1P(), getIscL1PS(), getIscL1DS());
     }
 

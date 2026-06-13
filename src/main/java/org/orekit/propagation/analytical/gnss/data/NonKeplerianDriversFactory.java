@@ -420,6 +420,7 @@ public class NonKeplerianDriversFactory {
      * @param <T> type of the field elements
      * @param field field to which elements belong
      * @param converter converter for parameters values
+     * @return non-Keplerian elements as a flat array
      */
     public <T extends CalculusFieldElement<T>> T[] toArray(final Field<T> field,
                                                            final DoubleFunction<T> converter) {
@@ -444,6 +445,7 @@ public class NonKeplerianDriversFactory {
 
     /** Get the non-Keplerian elements as gradient variables or constants, depending on selection status.
      * @param freeParameters total number of free parameters in the gradient
+     * @return non-Keplerian elements as gradient variables or constants
      */
     public Gradient[] toGradients(final int freeParameters) {
         final Filler filler = new Filler(freeParameters);
@@ -466,8 +468,10 @@ public class NonKeplerianDriversFactory {
     }
 
     /** Get the non-Keplerian elements as gradient variables or constants, depending on selection status.
+     * @param <T> type of the field elements
      * @param field field
      * @param freeParameters total number of free parameters in the gradient
+     * @return non-Keplerian elements as gradient variables or constants
      */
     public <T extends CalculusFieldElement<T>> FieldGradient<T>[] toGradients(final Field<T> field,
                                                                               final int freeParameters) {

@@ -98,9 +98,9 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldGPSLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                               final T[] nonKeplerian,
-                                               final DoubleFunction<T> converter) {
+        FieldGPSLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                   final T[] nonKeplerian,
+                                                   final DoubleFunction<T> converter) {
         return new FieldGPSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                      getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
                                                      converter.apply(getTgd()), toFieldToc(orbit),

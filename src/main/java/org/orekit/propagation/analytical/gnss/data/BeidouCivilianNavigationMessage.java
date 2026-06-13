@@ -210,9 +210,9 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldBeidouCivilianNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                                    final T[] nonKeplerian,
-                                                    final DoubleFunction<T> converter) {
+        FieldBeidouCivilianNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                        final T[] nonKeplerian,
+                                                        final DoubleFunction<T> converter) {
         return new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
                                                           getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                           getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,

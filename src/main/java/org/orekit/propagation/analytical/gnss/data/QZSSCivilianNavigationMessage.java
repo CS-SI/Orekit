@@ -116,9 +116,9 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldQZSSCivilianNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                                  final T[] nonKeplerian,
-                                                  final DoubleFunction<T> converter) {
+        FieldQZSSCivilianNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                      final T[] nonKeplerian,
+                                                      final DoubleFunction<T> converter) {
         return new FieldQZSSCivilianNavigationMessage<>(isCnv2(),
                                                         getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                         getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,

@@ -57,7 +57,7 @@ public class NavICL1NvParser
         factory.setUrai(parseInfo.parseInt1());
         factory.setL1SpsHealth(parseInfo.parseInt2());
         factory.setTgd(parseInfo.parseDouble3(Unit.SECOND));
-        factory.setTGDSL5(parseInfo.parseDouble4(Unit.SECOND));
+        factory.setTgdSL5(parseInfo.parseDouble4(Unit.SECOND));
     }
 
     /** {@inheritDoc} */

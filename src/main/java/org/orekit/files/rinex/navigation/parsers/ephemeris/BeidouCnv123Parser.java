@@ -128,7 +128,7 @@ public class BeidouCnv123Parser
         factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
         // field 2 is spare
         // field 3 is spare
-        factory.setIODE(parseInfo.parseInt4());
+        factory.setIode(parseInfo.parseInt4());
         parseInfo.closePendingRecord();
     }
 
@@ -147,7 +147,7 @@ public class BeidouCnv123Parser
         factory.setSismai(parseInfo.parseInt1());
         factory.setHealth(parseInfo.parseInt2());
         factory.setIntegrityFlags(parseInfo.parseInt3());
-        factory.setIODC(parseInfo.parseInt4());
+        factory.setIodc(parseInfo.parseInt4());
     }
 
 }

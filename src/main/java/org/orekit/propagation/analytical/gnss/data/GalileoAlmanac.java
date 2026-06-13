@@ -118,9 +118,9 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>>
-    FieldGalileoAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
-                                   final T[] nonKeplerian,
-                                   final DoubleFunction<T> converter) {
+        FieldGalileoAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                       final T[] nonKeplerian,
+                                       final DoubleFunction<T> converter) {
         return new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                          getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
                                          converter.apply(getTgd()), toFieldToc(orbit),
