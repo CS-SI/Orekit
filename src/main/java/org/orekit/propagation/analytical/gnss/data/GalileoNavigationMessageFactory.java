@@ -157,7 +157,7 @@ public class GalileoNavigationMessageFactory
                                             getCicDriver().getValue(), getCisDriver().getValue(),
                                             getAf0Driver().getValue(), getAf1Driver().getValue(),
                                             getAf2Driver().getValue(),
-                                            getTGD(), getToc(),
+                                            getTgd(), getToc(),
                                             getEpochToc(), getTransmissionTime(),
                                             getIODNav(), getDataSource(),
                                             getBGDE1E5a(), getBGDE5bE1(),

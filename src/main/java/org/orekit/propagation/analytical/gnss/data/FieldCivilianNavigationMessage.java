@@ -22,8 +22,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
-import java.util.function.Function;
-
 /**
  * Container for data contained in a GPS/QZNSS civilian navigation message.
  * @param <T> type of the field elements
@@ -82,28 +80,6 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
      */
     private final int flags;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    protected FieldCivilianNavigationMessage(final FieldKeplerianOrbit<T> orbit, final O original) {
-        super(orbit, original);
-        cnv2       = original.isCnv2();
-        svAccuracy = orbit.getMu().newInstance(original.getSvAccuracy());
-        svHealth   = original.getSvHealth();
-        iscL1CA    = orbit.getMu().newInstance(original.getIscL1CA());
-        iscL1CD    = orbit.getMu().newInstance(original.getIscL1CD());
-        iscL1CP    = orbit.getMu().newInstance(original.getIscL1CP());
-        iscL2C     = orbit.getMu().newInstance(original.getIscL2C());
-        iscL5I5    = orbit.getMu().newInstance(original.getIscL5I5());
-        iscL5Q5    = orbit.getMu().newInstance(original.getIscL5Q5());
-        uraiEd     = original.getUraiEd();
-        uraiNed0   = original.getUraiNed0();
-        uraiNed1   = original.getUraiNed1();
-        uraiNed2   = original.getUraiNed2();
-        flags      = original.getFlags();
-    }
-
     /** Creates a new instance.
      * @param cnv2             indicator for CNV2 messages
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
@@ -161,32 +137,6 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
         this.uraiNed2   = uraiNed2;
         this.flags      = flags;
     }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    protected <V extends CalculusFieldElement<V>> FieldCivilianNavigationMessage(final FieldKeplerianOrbit<T> orbit,
-                                                                                 final Function<V, T> converter,
-                                                                                 final FieldCivilianNavigationMessage<V, O, ?> original) {
-        super(orbit, converter, original);
-        cnv2 = original.isCnv2();
-        svAccuracy = converter.apply(original.getSvAccuracy());
-        svHealth   = original.getSvHealth();
-        iscL1CA    = converter.apply(original.getIscL1CA());
-        iscL1CD    = converter.apply(original.getIscL1CD());
-        iscL1CP    = converter.apply(original.getIscL1CP());
-        iscL2C     = converter.apply(original.getIscL2C());
-        iscL5I5    = converter.apply(original.getIscL5I5());
-        iscL5Q5    = converter.apply(original.getIscL5Q5());
-        uraiEd     = original.getUraiEd();
-        uraiNed0   = original.getUraiNed0();
-        uraiNed1   = original.getUraiNed1();
-        uraiNed2   = original.getUraiNed2();
-        flags      = original.getFlags();
-     }
 
     /** {@inheritDoc} */
     @Override

@@ -105,7 +105,7 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldGPSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                          getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                         converter.apply(getTGD()),
+                                                         converter.apply(getTgd()),
                                                          converter.apply(getToc()),
                                                          new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                  getEpochToc()),

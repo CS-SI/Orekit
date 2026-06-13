@@ -138,7 +138,7 @@ public class Rtcm1019Test {
         Assertions.assertEquals(0.30049130834913723, gpsMessage.getOrbit().getPerigeeArgument(), eps);
         Assertions.assertEquals(-5.855958209879004E-9, gpsMessage.getOmegaDot(), eps);
         Assertions.assertEquals(0.6980085385373721, gpsMessage.getOrbit().getRightAscensionOfAscendingNode(), eps);
-        Assertions.assertEquals(1.3969839E-9, gpsMessage.getTGD(), eps);
+        Assertions.assertEquals(1.3969839E-9, gpsMessage.getTgd(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getSvHealth(), eps);
 
         // Verify other data

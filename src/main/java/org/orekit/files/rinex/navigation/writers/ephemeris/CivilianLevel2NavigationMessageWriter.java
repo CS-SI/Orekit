@@ -53,7 +53,7 @@ public abstract class CivilianLevel2NavigationMessageWriter<T extends CivilianNa
         writer.indentLine(header);
         writer.writeInt(message.getUraiEd());
         writer.writeInt(message.getSvHealth());
-        writer.writeDouble(message.getTGD(), Unit.SECOND);
+        writer.writeDouble(message.getTgd(), Unit.SECOND);
         writer.writeInt(message.getUraiNed2());
         writer.finishLine();
     }

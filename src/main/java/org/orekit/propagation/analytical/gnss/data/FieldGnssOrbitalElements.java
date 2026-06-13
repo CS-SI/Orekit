@@ -145,16 +145,17 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @param toc             time of clock
      * @since 14.0
      */
-    public FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
-                                    final TimeScales timeScales, final String type, final int prn,
-                                    final FieldGNSSDate<T> gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                    final T aDot,
-                                    final T deltaN0, final T deltaN0Dot,
-                                    final T iDot, final T omegaDot,
-                                    final T cuc, final T cus,
-                                    final T crc, final T crs,
-                                    final T cic, final T cis,
-                                    final T af0, final T af1, final T af2, final T tgd, final T toc) {
+    protected FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
+                                       final TimeScales timeScales, final String type, final int prn,
+                                       final FieldGNSSDate<T> gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                       final T aDot,
+                                       final T deltaN0, final T deltaN0Dot,
+                                       final T iDot, final T omegaDot,
+                                       final T cuc, final T cus,
+                                       final T crc, final T crs,
+                                       final T cic, final T cis,
+                                       final T af0, final T af1, final T af2,
+                                       final T tgd, final T toc) {
 
         // system parameters
         this.angularVelocity = angularVelocity;
@@ -207,10 +208,10 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @param toc             time of clock
      * @since 14.0
      */
-    public FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
-                                    final TimeScales timeScales, final String type, final int prn,
-                                    final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                    final T[] nonKeplerian, final T tgd, final T toc) {
+    protected FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
+                                       final TimeScales timeScales, final String type, final int prn,
+                                       final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                       final T[] nonKeplerian, final T tgd, final T toc) {
         this(angularVelocity, weeksInCycle, timeScales, type, prn,
              new FieldGNSSDate<>(orbit.getDate().getField(),
                                  new GNSSDate(gnssDate.getWeekNumber(),
@@ -251,7 +252,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
              orbit.getMu().newInstance(original.getAf0()),
              orbit.getMu().newInstance(original.getAf1()),
              orbit.getMu().newInstance(original.getAf2()),
-             orbit.getMu().newInstance(original.getTGD()), orbit.getMu().newInstance(original.getToc()));
+             orbit.getMu().newInstance(original.getTgd()), orbit.getMu().newInstance(original.getToc()));
      }
 
     /** Constructor from different field instance.
@@ -275,7 +276,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
              converter.apply(original.getAf0()),
              converter.apply(original.getAf1()),
              converter.apply(original.getAf2()),
-             converter.apply(original.getTGD()),
+             converter.apply(original.getTgd()),
              converter.apply(original.getToc()));
     }
 
@@ -298,12 +299,15 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     public abstract O toNonField();
 
     /** Create another field version of the instance.
-     * @param <U>       type of the new field elements
-     * @param converter for field elements
+     * @param <U>          type of the new field elements
+     * @param <V>          type of the orbital elements (field version)
+     * @param orbit        orbit in the correct gradient field
+     * @param nonKeplerian non-Keplerian parameters
+     * @param converter    converter for remaining elements
      * @return field version of the instance
      */
     public abstract <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, O, V>>
-    V toField(FieldKeplerianOrbit<U> orbit, Function<T, U> converter);
+    V toField(FieldKeplerianOrbit<U> orbit, U[] nonKeplerian, Function<T, U> converter);
 
     /** Get known time scales.
      * @return known time scales
@@ -455,7 +459,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
 
     /** {@inheritDoc} */
     @Override
-    public T getTGD() {
+    public T getTgd() {
         return tgd;
     }
 

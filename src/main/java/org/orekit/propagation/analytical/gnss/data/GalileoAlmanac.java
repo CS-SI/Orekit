@@ -121,7 +121,7 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                              getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                             converter.apply(getTGD()),
+                                             converter.apply(getTgd()),
                                              converter.apply(getToc()),
                                              getHealthE5a(), getHealthE5b(), getHealthE1(),
                                              getIOD());

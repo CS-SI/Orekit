@@ -405,7 +405,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      * @param <Q> type of the orbital elements (gradient version)
      * @param initialState         initial state
      * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be overridden)
-     * @param driversFactory       factory for non-Kepleria drivers
+     * @param driversFactory       factory for non-Keplerian drivers
      * @param ecef                 Earth Centered Earth Fixed frame
      * @param provider             attitude provider
      * @param mass                 satellite mass (kg)
@@ -423,6 +423,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         // get approximate initial orbit
         final Frame frozenEcef = ecef.getFrozenFrame(initialState.getFrame(), initialState.getDate(), "frozen");
         final KeplerianOrbit orbit = approximateInitialOrbit(initialState, nonKeplerianElements, frozenEcef);
+        driversFactory.reset(nonKeplerianElements);
 
         // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
@@ -458,22 +459,22 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
             final FieldKeplerianOrbit<Gradient> previous = gElements.getOrbit();
             Gradient updatedA;
             Gradient updatedE;
-            int factor = 1;
+            double factor = 2;
             do {
                 // loop until eccentricity is valid
-                updatedA = previous.getA().add(correction.getEntry(0) / factor);
-                updatedE = previous.getE().add(correction.getEntry(1) / factor);
-                factor *= 2;
+                factor *= 0.5;
+                updatedA = previous.getA().add(correction.getEntry(0) * factor);
+                updatedE = previous.getE().add(correction.getEntry(1) * factor);
             } while (updatedA.getValue() < 0 || updatedE.getValue() < 0 || updatedE.getValue() >= 1);
 
             // update initial orbit
             final FieldKeplerianOrbit<Gradient> updated =
                 new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(updatedA,
                                                                          updatedE,
-                                                                         previous.getI().add(correction.getEntry(2) / factor),
-                                                                         previous.getPerigeeArgument().add(correction.getEntry(3) / factor),
-                                                                         previous.getRightAscensionOfAscendingNode().add(correction.getEntry(4) / factor),
-                                                                         previous.getMeanAnomaly().add(correction.getEntry(5) / factor),
+                                                                         previous.getI().add(correction.getEntry(2) * factor),
+                                                                         previous.getPerigeeArgument().add(correction.getEntry(3) * factor),
+                                                                         previous.getRightAscensionOfAscendingNode().add(correction.getEntry(4) * factor),
+                                                                         previous.getMeanAnomaly().add(correction.getEntry(5) * factor),
                                                                          PositionAngleType.MEAN),
                                           previous.getFrame(), previous.getDate(), previous.getMu());
             gElements = convert(nonKeplerianElements, updated.toOrbit(), driversFactory);

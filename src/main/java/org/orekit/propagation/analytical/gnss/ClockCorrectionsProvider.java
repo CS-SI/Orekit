@@ -35,7 +35,7 @@ import org.orekit.utils.PVCoordinates;
  *               {@link GNSSClockElements#getAf1() a₂} (t - {@link GNSSClockElements#getToc() toc})²
  *   </li>
  *   <li>at index 1 the relativistic clock correction due to eccentricity</li>
- *   <li>at index 2 the estimated group delay differential {@link GNSSClockElements#getTGD() TGD} for L1-L2 correction</li>
+ *   <li>at index 2 the estimated group delay differential {@link GNSSClockElements#getTgd() TGD} for L1-L2 correction</li>
  * </ul>
  * <p>
  * Since Orekit 10.3 the relativistic clock correction can be used as an
@@ -114,7 +114,7 @@ public class ClockCorrectionsProvider implements AdditionalDataProvider<double[]
                         (Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT);
 
         // estimated group delay differential
-        final double tg = gnssClk.getTGD();
+        final double tg = gnssClk.getTgd();
 
         return new double[] {
             dtSat, dtRel, tg

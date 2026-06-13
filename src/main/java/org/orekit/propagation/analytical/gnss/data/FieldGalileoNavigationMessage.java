@@ -51,20 +51,6 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     /** Satellite health status. */
     private final T svHealth;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    public FieldGalileoNavigationMessage(final FieldKeplerianOrbit<T> orbit, final GalileoNavigationMessage original) {
-        super(orbit, original);
-        iodNav     = original.getIODNav();
-        dataSource = original.getDataSource();
-        bgbE1E5a   = orbit.getMu().newInstance(original.getBGDE1E5a());
-        bgdE5bE1   = orbit.getMu().newInstance(original.getBGDE5bE1());
-        sisa       = orbit.getMu().newInstance(original.getSisa());
-        svHealth   = orbit.getMu().newInstance(original.getSvHealth());
-    }
-
     /** Creates a new instance.
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle     number of weeks in the GNSS cycle
@@ -104,24 +90,6 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
         this.svHealth   = svHealth;
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldGalileoNavigationMessage(final FieldKeplerianOrbit<T> orbit,
-                                                                             final Function<V, T> converter,
-                                                                             final FieldGalileoNavigationMessage<V> original) {
-        super(orbit, converter, original);
-        iodNav     = original.getIODNav();
-        dataSource = original.getDataSource();
-        bgbE1E5a   = converter.apply(original.getBGDE1E5a());
-        bgdE5bE1   = converter.apply(original.getBGDE5bE1());
-        sisa       = converter.apply(original.getSisa());
-        svHealth   = converter.apply(original.getSvHealth());
-    }
-
     /** {@inheritDoc} */
     @Override
     public GalileoNavigationMessage toNonField() {
@@ -132,8 +100,19 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, GalileoNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
-        return (V) new FieldGalileoNavigationMessage<>(orbit, converter, this);
+        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return (V) new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                       getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                       orbit, nonKeplerian,
+                                                       converter.apply(getTgd()), converter.apply(getToc()),
+                                                       new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                               getEpochToc().toAbsoluteDate()),
+                                                       converter.apply(getTransmissionTime()),
+                                                       getIODNav(), getDataSource(),
+                                                       converter.apply(getBGDE1E5a()),
+                                                       converter.apply(getBGDE5bE1()),
+                                                       converter.apply(getSisa()),
+                                                       converter.apply(getSvHealth()));
     }
 
     /**

@@ -98,6 +98,12 @@ public class MeanSmaChangeImpulseProvider extends AbstractInPlaneImpulseProvider
                                   double targetMeanSma) implements UnivariateDifferentiableFunction {
 
         @Override
+        public double value(double t) {
+            // this implementation is not used, but is required to match interface
+            return Double.NaN;
+        }
+
+        @Override
         public <T extends Derivative<T>> T value(final T t) throws MathIllegalArgumentException {
             final Field<T> field = t.getField();
             final FieldVector3D<T> velocity = new FieldVector3D<>(t, direction);

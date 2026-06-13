@@ -59,7 +59,7 @@ public class GPSCivilianNavigationMessageFactory
                                                 getCicDriver().getValue(), getCisDriver().getValue(),
                                                 getAf0Driver().getValue(), getAf1Driver().getValue(),
                                                 getAf2Driver().getValue(),
-                                                getTGD(), getToc(),
+                                                getTgd(), getToc(),
                                                 getEpochToc(), getTransmissionTime(),
                                                 getSvAccuracy(), getSvHealth(),
                                                 getIscL1CA(), getIscL1CD(), getIscL1CP(),

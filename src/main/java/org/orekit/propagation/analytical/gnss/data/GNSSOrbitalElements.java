@@ -23,7 +23,6 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitalParameters;
-import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
@@ -32,7 +31,8 @@ import org.orekit.utils.ParameterDriver;
 import java.util.function.DoubleFunction;
 import java.util.function.ToDoubleFunction;
 
-/** This class provides the minimal set of orbital elements needed by the {@link GNSSPropagator}.
+/** This class provides the minimal set of orbital elements needed by
+ * {@link org.orekit.propagation.analytical.gnss.GNSSPropagator}.
  * @param <O> type of the orbital elements
  * @author Pascal Parraud
  * @author Luc Maisonobe
@@ -211,7 +211,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
              original.getCrc().getReal(), original.getCrs().getReal(),
              original.getCic().getReal(), original.getCis().getReal(),
              original.getAf0().getReal(), original.getAf1().getReal(), original.getAf2().getReal(),
-             original.getTGD().getReal(), original.getToc().getReal());
+             original.getTgd().getReal(), original.getToc().getReal());
     }
 
     /** {@inheritDoc} */
@@ -257,7 +257,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         return toField(new FieldKeplerianOrbit<>(field, getOrbit()), parameters, zero::newInstance);
     }
 
-    /** Create a field version of the instance.
+    /** Create another field version of the instance.
      * @param <T>          type of the field elements
      * @param <P>          type of the orbital elements (field version)
      * @param orbit        orbit in the correct gradient field
@@ -419,7 +419,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
 
     /** {@inheritDoc} */
     @Override
-    public double getTGD() {
+    public double getTgd() {
         return tgd;
     }
 
@@ -478,7 +478,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         reset(factory.getAf0Driver(),        af0);
         reset(factory.getAf1Driver(),        af1);
         reset(factory.getAf2Driver(),        af2);
-        factory.setTGD(tgd);
+        factory.setTgd(tgd);
         factory.setToc(toc);
 
         return factory;

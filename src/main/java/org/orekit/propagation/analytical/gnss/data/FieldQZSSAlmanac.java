@@ -40,16 +40,6 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
     /** Health status. */
     private final int health;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    public FieldQZSSAlmanac(final FieldKeplerianOrbit<T> orbit, final QZSSAlmanac original) {
-        super(orbit, original);
-        source = original.getSource();
-        health = original.getHealth();
-    }
-
     /** Creates a new instance.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle    number of weeks in the GNSS cycle
@@ -75,20 +65,6 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
         this.health = health;
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldQZSSAlmanac(final FieldKeplerianOrbit<T> orbit,
-                                                                final Function<V, T> converter,
-                                                                final FieldQZSSAlmanac<V> original) {
-        super(orbit, converter, original);
-        source = original.getSource();
-        health = original.getHealth();
-    }
-
     /** {@inheritDoc} */
     @Override
     public QZSSAlmanac toNonField() {
@@ -99,8 +75,12 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, QZSSAlmanac, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
-        return (V) new FieldQZSSAlmanac<>(orbit, converter, this);
+        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return (V) new FieldQZSSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                          getType(), getPrn(), getGnssDate().getGnssDate(),
+                                          orbit, nonKeplerian,
+                                          converter.apply(getTgd()), converter.apply(getToc()),
+                                          getSource(), getHealth());
     }
 
     /**

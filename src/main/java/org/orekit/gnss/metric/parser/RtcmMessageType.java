@@ -162,7 +162,7 @@ public enum RtcmMessageType implements MessageType {
             factory.getCrcDriver().setValue(RtcmDataField.DF098.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE, RtcmDataField.DF099, encodedMessage);
             factory.getOmegaDotDriver().setValue(RtcmDataField.DF100.doubleValue(encodedMessage));
-            factory.setTGD(RtcmDataField.DF101.doubleValue(encodedMessage));
+            factory.setTgd(RtcmDataField.DF101.doubleValue(encodedMessage));
             factory.setSvHealth(RtcmDataField.DF102.intValue(encodedMessage));
 
             // L2 P data flag and fit interval
@@ -363,7 +363,7 @@ public enum RtcmMessageType implements MessageType {
             factory.setSvHealth(RtcmDataField.DF454.intValue(encodedMessage));
 
             // Tgd, IODC, and fit interval
-            factory.setTGD(RtcmDataField.DF455.doubleValue(encodedMessage));
+            factory.setTgd(RtcmDataField.DF455.doubleValue(encodedMessage));
             factory.setIODC(RtcmDataField.DF456.intValue(encodedMessage));
             factory.setFitInterval(RtcmDataField.DF457.intValue(encodedMessage));
 

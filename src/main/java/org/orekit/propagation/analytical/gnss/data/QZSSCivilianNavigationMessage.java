@@ -124,7 +124,7 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
         return (P) new FieldQZSSCivilianNavigationMessage<>(isCnv2(),
                                                             getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                             getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                            converter.apply(getTGD()),
+                                                            converter.apply(getTgd()),
                                                             converter.apply(getToc()),
                                                             new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                     getEpochToc()),

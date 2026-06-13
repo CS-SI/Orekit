@@ -99,7 +99,7 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldQZSSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                           getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                          converter.apply(getTGD()), converter.apply(getToc()),
+                                          converter.apply(getTgd()), converter.apply(getToc()),
                                           getSource(), getHealth());
     }
 

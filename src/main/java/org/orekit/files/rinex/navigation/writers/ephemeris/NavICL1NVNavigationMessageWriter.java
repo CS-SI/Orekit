@@ -72,7 +72,7 @@ public class NavICL1NVNavigationMessageWriter
 
         writer.writeInt(message.getUrai());
         writer.writeInt(message.getL1SpsHealth());
-        writer.writeDouble(message.getTGD(),    Unit.SECOND);
+        writer.writeDouble(message.getTgd(),    Unit.SECOND);
         writer.writeDouble(message.getTGDSL5(), Unit.SECOND);
         writer.finishLine();
     }

@@ -345,7 +345,7 @@ public class BeidouCivilianNavigationMessageFactory
                                                    getCicDriver().getValue(), getCisDriver().getValue(),
                                                    getAf0Driver().getValue(), getAf1Driver().getValue(),
                                                    getAf2Driver().getValue(),
-                                                   getTGD(), getToc(),
+                                                   getTgd(), getToc(),
                                                    getEpochToc(), getTransmissionTime(),
                                                    getIODE(), getIODC(),
                                                    getIscB1CD(), getIscB1CP(), getIscB2AD(),

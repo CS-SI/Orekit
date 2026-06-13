@@ -86,31 +86,6 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     /** Satellite type. */
     private final BeidouSatelliteType satelliteType;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    public FieldBeidouCivilianNavigationMessage(final FieldKeplerianOrbit<T> orbit, final BeidouCivilianNavigationMessage original) {
-        super(orbit, original);
-        this.beidouType     = original.getBeidouType();
-        this.iode           = original.getIODE();
-        this.iodc           = original.getIODC();
-        this.iscB1CD        = orbit.getMu().newInstance(original.getIscB1CD());
-        this.iscB1CP        = orbit.getMu().newInstance(original.getIscB1CP());
-        this.iscB2AD        = orbit.getMu().newInstance(original.getIscB2AD());
-        this.sisaiOe        = original.getSisaiOe();
-        this.sisaiOcb       = original.getSisaiOcb();
-        this.sisaiOc1       = original.getSisaiOc1();
-        this.sisaiOc2       = original.getSisaiOc2();
-        this.sismai         = original.getSismai();
-        this.health         = original.getHealth();
-        this.integrityFlags = original.getIntegrityFlags();
-        this.tgdB1Cp        = orbit.getMu().newInstance(original.getTgdB1Cp());
-        this.tgdB2ap        = orbit.getMu().newInstance(original.getTgdB2ap());
-        this.tgdB2bI        = orbit.getMu().newInstance(original.getTgdB2bI());
-        this.satelliteType  = original.getSatelliteType();
-    }
-
     /** Creates a new instance.
      * @param beidouType       Beidou civilian message type
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
@@ -177,35 +152,6 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
         this.satelliteType  = satelliteType;
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldBeidouCivilianNavigationMessage(final FieldKeplerianOrbit<T> orbit,
-                                                                                    final Function<V, T> converter,
-                                                                                    final FieldBeidouCivilianNavigationMessage<V> original) {
-        super(orbit, converter, original);
-        this.beidouType     = original.getBeidouType();
-        this.iode           = original.getIODE();
-        this.iodc           = original.getIODC();
-        this.iscB1CD        = converter.apply(original.getIscB1CD());
-        this.iscB1CP        = converter.apply(original.getIscB1CP());
-        this.iscB2AD        = converter.apply(original.getIscB2AD());
-        this.sisaiOe        = original.getSisaiOe();
-        this.sisaiOcb       = original.getSisaiOcb();
-        this.sisaiOc1       = original.getSisaiOc1();
-        this.sisaiOc2       = original.getSisaiOc2();
-        this.sismai         = original.getSismai();
-        this.health         = original.getHealth();
-        this.integrityFlags = original.getIntegrityFlags();
-        this.tgdB1Cp        = converter.apply(original.getTgdB1Cp());
-        this.tgdB2ap        = converter.apply(original.getTgdB2ap());
-        this.tgdB2bI        = converter.apply(original.getTgdB2bI());
-        this.satelliteType  = original.getSatelliteType();
-    }
-
     /** Get the Beidou civilian message type.
      * @return Beidou civilian message type
      * @since 14.0
@@ -230,8 +176,26 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, BeidouCivilianNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
-        return (V) new FieldBeidouCivilianNavigationMessage<>(orbit, converter, this);
+        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return (V) new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
+                                                              getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                              getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                              orbit, nonKeplerian,
+                                                              converter.apply(getTgd()), converter.apply(getToc()),
+                                                              new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                                      getEpochToc().toAbsoluteDate()),
+                                                              converter.apply(getTransmissionTime()),
+                                                              getIODE(), getIODC(),
+                                                              converter.apply(getIscB1CD()),
+                                                              converter.apply(getIscB1CP()),
+                                                              converter.apply(getIscB2AD()),
+                                                              getSisaiOe(), getSisaiOcb(),
+                                                              getSisaiOc1(), getSisaiOc2(),
+                                                              getSismai(), getHealth(), getIntegrityFlags(),
+                                                              converter.apply(getTgdB1Cp()),
+                                                              converter.apply(getTgdB2ap()),
+                                                              converter.apply(getTgdB2bI()),
+                                                              getSatelliteType());
     }
 
     /**

@@ -40,15 +40,6 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
     /** Health status. */
     private final int health;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    public FieldBeidouAlmanac(final FieldKeplerianOrbit<T> orbit, final BeidouAlmanac original) {
-        super(orbit, original);
-        health = original.getHealth();
-    }
-
     /** Creates a new instance.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle    number of weeks in the GNSS cycle
@@ -72,19 +63,6 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
         this.health = health;
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldBeidouAlmanac(final FieldKeplerianOrbit<T> orbit,
-                                                                  final Function<V, T> converter,
-                                                                  final FieldBeidouAlmanac<V> original) {
-        super(orbit, converter, original);
-        health = original.getHealth();
-    }
-
     /** {@inheritDoc} */
     @Override
     public BeidouAlmanac toNonField() {
@@ -95,13 +73,16 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, BeidouAlmanac, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
-        return (V) new FieldBeidouAlmanac<>(orbit, converter, this);
+        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return (V) new FieldBeidouAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                            getType(), getPrn(), getGnssDate().getGnssDate(),
+                                            orbit, nonKeplerian,
+                                            converter.apply(getTgd()),
+                                            converter.apply(getToc()),
+                                            getHealth());
     }
 
-    /**
-     * Gets the Health status.
-     *
+    /** Gets the Health status.
      * @return the Health status
      */
     public int getHealth() {

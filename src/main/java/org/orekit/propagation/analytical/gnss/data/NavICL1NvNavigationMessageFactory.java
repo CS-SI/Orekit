@@ -191,7 +191,7 @@ public class NavICL1NvNavigationMessageFactory
                                               getCicDriver().getValue(), getCisDriver().getValue(),
                                               getAf0Driver().getValue(), getAf1Driver().getValue(),
                                               getAf2Driver().getValue(),
-                                              getTGD(), getToc(),
+                                              getTgd(), getToc(),
                                               getEpochToc(), getTransmissionTime(),
                                               getReferenceSignalFlag(),
                                               getUrai(), getL1SpsHealth(),

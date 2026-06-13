@@ -33,14 +33,6 @@ import java.util.function.Function;
 public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
     extends FieldLegacyNavigationMessage<T, QZSSLegacyNavigationMessage, FieldQZSSLegacyNavigationMessage<T>> {
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    public FieldQZSSLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit, final QZSSLegacyNavigationMessage original) {
-        super(orbit, original);
-    }
-
     /** Creates a new instance.
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle     number of weeks in the GNSS cycle
@@ -76,18 +68,6 @@ public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
               iode, iodc, svAccuracy, svHealth, fitInterval, l2Codes, l2PFlags);
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldQZSSLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit,
-                                                                                final Function<V, T> converter,
-                                                                                final FieldQZSSLegacyNavigationMessage<V> original) {
-        super(orbit, converter, original);
-    }
-
     /** {@inheritDoc} */
     @Override
     public QZSSLegacyNavigationMessage toNonField() {
@@ -98,8 +78,18 @@ public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, QZSSLegacyNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
-        return (V) new FieldQZSSLegacyNavigationMessage<>(orbit, converter, this);
+        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return (V) new FieldQZSSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                          getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                          orbit, nonKeplerian,
+                                                          converter.apply(getTgd()), converter.apply(getToc()),
+                                                          new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                                  getEpochToc().toAbsoluteDate()),
+                                                          converter.apply(getTransmissionTime()),
+                                                          getIODE(), getIODC(),
+                                                          converter.apply(getSvAccuracy()),
+                                                          getSvHealth(), getFitInterval(),
+                                                          getL2Codes(), getL2PFlags());
     }
 
 }

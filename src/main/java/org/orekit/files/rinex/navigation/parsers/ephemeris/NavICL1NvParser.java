@@ -56,7 +56,7 @@ public class NavICL1NvParser
         final NavICL1NvNavigationMessageFactory factory = getFactory();
         factory.setUrai(parseInfo.parseInt1());
         factory.setL1SpsHealth(parseInfo.parseInt2());
-        factory.setTGD(parseInfo.parseDouble3(Unit.SECOND));
+        factory.setTgd(parseInfo.parseDouble3(Unit.SECOND));
         factory.setTGDSL5(parseInfo.parseDouble4(Unit.SECOND));
     }
 

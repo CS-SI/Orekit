@@ -122,7 +122,7 @@ public class GalileoAlmanacFactory extends GNSSOrbitalElementsFactory<GalileoAlm
                                   getCicDriver().getValue(), getCisDriver().getValue(),
                                   getAf0Driver().getValue(), getAf1Driver().getValue(),
                                   getAf2Driver().getValue(),
-                                  getTGD(), getToc(),
+                                  getTgd(), getToc(),
                                   getHealthE5a(), getHealthE5b(), getHealthE1(), getIOD());
     }
 

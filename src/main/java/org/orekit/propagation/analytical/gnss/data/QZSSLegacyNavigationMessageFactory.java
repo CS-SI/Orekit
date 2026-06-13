@@ -56,7 +56,7 @@ public class QZSSLegacyNavigationMessageFactory
                                                getCicDriver().getValue(), getCisDriver().getValue(),
                                                getAf0Driver().getValue(), getAf1Driver().getValue(),
                                                getAf2Driver().getValue(),
-                                               getTGD(), getToc(),
+                                               getTgd(), getToc(),
                                                getEpochToc(), getTransmissionTime(),
                                                getIODE(), getIODC(), getSvAccuracy(),
                                                getSvHealth(), getFitInterval(),

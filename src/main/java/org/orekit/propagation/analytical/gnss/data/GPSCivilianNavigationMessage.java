@@ -123,7 +123,7 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
         return (P) new FieldGPSCivilianNavigationMessage<>(isCnv2(),
                                                            getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                            getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                           converter.apply(getTGD()),
+                                                           converter.apply(getTgd()),
                                                            converter.apply(getToc()),
                                                            new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                    getEpochToc()),

@@ -146,7 +146,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
         return (P) new FieldBeidouLegacyNavigationMessage<>(isD2(),
                                                             getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                             getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                            converter.apply(getTGD()),
+                                                            converter.apply(getTgd()),
                                                             converter.apply(getToc()),
                                                             new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                     getEpochToc()),

@@ -162,7 +162,8 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
     public FieldGnssPropagator(final FieldSpacecraftState<T> initialState,
                                final P nonKeplerianElements,
                                final Frame ecef, final AttitudeProvider provider, final T mass) {
-        this(buildOrbitalElements(initialState, nonKeplerianElements, ecef, provider, mass),
+        this(buildOrbitalElements(initialState, nonKeplerianElements, new NonKeplerianDriversFactory(),
+                        ecef, provider, mass),
              initialState.getFrame(), ecef, provider, initialState.getMass());
     }
 
@@ -325,7 +326,8 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
     /** {@inheritDoc} */
     @Override
     public void resetInitialState(final FieldSpacecraftState<T> state) {
-        orbitalElements = buildOrbitalElements(state, orbitalElements, ecef, getAttitudeProvider(), state.getMass());
+        orbitalElements = buildOrbitalElements(state, orbitalElements, driversFactory,
+                ecef, getAttitudeProvider(), state.getMass());
         final FieldOrbit<T> orbit = propagateOrbit(orbitalElements.getDate(),
                                                    getParameters(orbitalElements.getDate().getField()));
         final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), orbit.getFrame());
@@ -349,11 +351,12 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
      * @param <O> type of the orbital elements (non-field version)
      * @param <P> type of the orbital elements (field version)
      * @param <Q> type of the orbital elements (field gradient version)
-     * @param initialState    initial state
+     * @param initialState         initial state
      * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be overridden)
-     * @param ecef            Earth Centered Earth Fixed frame
-     * @param provider        attitude provider
-     * @param mass            satellite mass (kg)
+     * @param driversFactory       factory for non-Keplerian drivers
+     * @param ecef                 Earth Centered Earth Fixed frame
+     * @param provider             attitude provider
+     * @param mass                 satellite mass (kg)
      * @return orbital elements that generate the {@code initialState} when used with a propagator
      */
     private static <T extends CalculusFieldElement<T>,
@@ -362,6 +365,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
                     Q extends FieldGnssOrbitalElements<FieldGradient<T>, O, Q>>
        P buildOrbitalElements(final FieldSpacecraftState<T> initialState,
                               final FieldGnssOrbitalElements<T, O, P> nonKeplerianElements,
+                              final NonKeplerianDriversFactory driversFactory,
                               final Frame ecef, final AttitudeProvider provider,
                               final T mass) {
 
@@ -372,10 +376,11 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
                                                      initialState.getDate().toAbsoluteDate(),
                                                      "frozen");
         final FieldKeplerianOrbit<T> orbit = approximateInitialOrbit(initialState, nonKeplerianElements, frozenEcef);
+        driversFactory.reset(nonKeplerianElements);
 
         // refine orbit using simple differential correction to reach target PV
         final FieldPVCoordinates<T> targetPV = initialState.getPVCoordinates();
-        Q gElements = convert(nonKeplerianElements, orbit);
+        Q gElements = convert(nonKeplerianElements, orbit, driversFactory);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
@@ -409,22 +414,22 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
             final FieldKeplerianOrbit<FieldGradient<T>> previous = gElements.getOrbit();
             T updatedA;
             T updatedE;
-            int factor = 1;
+            double factor = 2;
             do {
                 // loop until eccentricity is valid
-                updatedA = previous.getA().getValue().add(correction.getEntry(0).divide(factor));
-                updatedE = previous.getE().getValue().add(correction.getEntry(1).divide(factor));
-                factor *= 2;
+                factor *= 0.5;
+                updatedA = previous.getA().getValue().add(correction.getEntry(0).multiply(factor));
+                updatedE = previous.getE().getValue().add(correction.getEntry(1).multiply(factor));
             } while (updatedA.getReal() < 0 || updatedE.getReal() < 0 || updatedE.getReal() >= 1);
 
             // update initial orbit
             final FieldKeplerianOrbit<T> updated =
                 new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(updatedA,
                                                                          updatedE,
-                                                                         previous.getI().getValue().add(correction.getEntry(2).divide(factor)),
-                                                                         previous.getPerigeeArgument().getValue().add(correction.getEntry(3).divide(factor)),
-                                                                         previous.getRightAscensionOfAscendingNode().getValue().add(correction.getEntry(4).divide(factor)),
-                                                                         previous.getMeanAnomaly().getValue().add(correction.getEntry(5).divide(factor)),
+                                                                         previous.getI().getValue().add(correction.getEntry(2).multiply(factor)),
+                                                                         previous.getPerigeeArgument().getValue().add(correction.getEntry(3).multiply(factor)),
+                                                                         previous.getRightAscensionOfAscendingNode().getValue().add(correction.getEntry(4).multiply(factor)),
+                                                                         previous.getMeanAnomaly().getValue().add(correction.getEntry(5).multiply(factor)),
                                                                          PositionAngleType.MEAN),
                                           previous.getFrame(),
                                           new FieldAbsoluteDate<>(previous.getMu().getValue().getField(),
@@ -457,6 +462,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
                                                            new FieldAbsoluteDate<>(initialOrbit.getMu().getValue().getField(),
                                                                                    initialOrbit.getDate().toAbsoluteDate()),
                                                            initialOrbit.getMu().getValue()),
+                                 driversFactory.toArray(zero.getField(), zero::newInstance),
                                  FieldGradient::getValue);
 
     }
@@ -559,6 +565,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
                                                                                   getField(),
                                                                                   orbit.getDate().toAbsoluteDate()),
                                                           FieldGradient.constant(FREE_PARAMETERS, orbit.getMu())),
+                                driversFactory.toGradients(orbit.getMu().getField(), FREE_PARAMETERS),
                                 d -> FieldGradient.constant(FREE_PARAMETERS, d));
     }
 
