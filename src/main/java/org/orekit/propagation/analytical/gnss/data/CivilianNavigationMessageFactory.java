@@ -73,7 +73,6 @@ public abstract class CivilianNavigationMessageFactory<O extends CivilianNavigat
 
     /** Simple constructor.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle    duration of the GNSS cycle in weeks
      * @param timeScales      known time scales
      * @param system          satellite system to use for interpreting week number
      * @param type            message type (null if not a navigation message)
@@ -82,11 +81,11 @@ public abstract class CivilianNavigationMessageFactory<O extends CivilianNavigat
      * @param mu              central attraction coefficient (m³/s²)
      * @param cnv2            indicator for CNV 2 messages
      */
-    public CivilianNavigationMessageFactory(final double angularVelocity, final int weeksInCycle,
+    public CivilianNavigationMessageFactory(final double angularVelocity,
                                             final TimeScales timeScales, final SatelliteSystem system,
                                             final String type, final Frame inertial, final Frame bodyFixed,
                                             final double mu, final boolean cnv2) {
-        super(angularVelocity, weeksInCycle, timeScales, system, type, inertial, bodyFixed, mu);
+        super(angularVelocity, timeScales, system, type, inertial, bodyFixed, mu);
         this.cnv2 = cnv2;
     }
 

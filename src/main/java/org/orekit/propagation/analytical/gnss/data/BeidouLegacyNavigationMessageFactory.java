@@ -61,7 +61,7 @@ public class BeidouLegacyNavigationMessageFactory
     public BeidouLegacyNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
                                                 final String type, final Frame inertial, final Frame bodyFixed,
                                                 final boolean d2) {
-        super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system,
+        super(GNSSConstants.BEIDOU_AV, timeScales, system,
               type, inertial, bodyFixed, GNSSConstants.BEIDOU_MU);
         this.d2 = d2;
     }

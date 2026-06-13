@@ -93,7 +93,7 @@ public class BeidouCivilianNavigationMessageFactory
                                                   final String type, final Frame inertial, final Frame bodyFixed,
                                                   final BeidouCivilianType beidouType,
                                                   final BeidouSatelliteType satelliteType) {
-        super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system,
+        super(GNSSConstants.BEIDOU_AV, timeScales, system,
               type, inertial, bodyFixed, GNSSConstants.BEIDOU_MU);
         this.beidouType    = beidouType;
         this.satelliteType = satelliteType;

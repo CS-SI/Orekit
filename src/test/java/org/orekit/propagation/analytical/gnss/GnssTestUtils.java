@@ -32,7 +32,6 @@ import java.util.List;
 
 public class GnssTestUtils {
 
-    @SuppressWarnings("unchecked")
     public static <O extends GNSSOrbitalElements<O>>
     void checkFieldConversion(final O message) {
         try {

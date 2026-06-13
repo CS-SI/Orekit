@@ -40,7 +40,7 @@ public class GPSCivilianNavigationMessageFactory
     public GPSCivilianNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
                                                final String type, final Frame inertial, final Frame bodyFixed,
                                                final boolean cnv2) {
-        super(GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system,
+        super(GNSSConstants.GPS_AV, timeScales, system,
               type, inertial, bodyFixed, GNSSConstants.GPS_MU, cnv2);
     }
 

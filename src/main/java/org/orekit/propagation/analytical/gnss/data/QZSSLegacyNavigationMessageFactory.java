@@ -38,7 +38,7 @@ public class QZSSLegacyNavigationMessageFactory
      */
     public QZSSLegacyNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
                                               final String type, final Frame inertial, final Frame bodyFixed) {
-        super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system,
+        super(GNSSConstants.QZSS_AV, timeScales, system,
               type, inertial, bodyFixed, GNSSConstants.QZSS_MU);
     }
 

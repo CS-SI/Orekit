@@ -36,7 +36,6 @@ public abstract class AbstractNavigationMessageFactory<O extends AbstractNavigat
 
     /** Simple constructor.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle    duration of the GNSS cycle in weeks
      * @param timeScales      known time scales
      * @param system          satellite system to use for interpreting week number
      * @param type            message type (null if not a navigation message)
@@ -44,7 +43,7 @@ public abstract class AbstractNavigationMessageFactory<O extends AbstractNavigat
      * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
      * @param mu              central attraction coefficient (m³/s²)
      */
-    public AbstractNavigationMessageFactory(final double angularVelocity, final int weeksInCycle,
+    public AbstractNavigationMessageFactory(final double angularVelocity,
                                             final TimeScales timeScales, final SatelliteSystem system,
                                             final String type, final Frame inertial, final Frame bodyFixed,
                                             final double mu) {

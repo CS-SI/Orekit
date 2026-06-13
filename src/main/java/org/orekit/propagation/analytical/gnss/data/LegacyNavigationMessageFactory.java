@@ -52,7 +52,6 @@ public abstract class LegacyNavigationMessageFactory<O extends LegacyNavigationM
 
     /** Simple constructor.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle    duration of the GNSS cycle in weeks
      * @param timeScales      known time scales
      * @param system          satellite system to use for interpreting week number
      * @param type            message type (null if not a navigation message)
@@ -60,11 +59,11 @@ public abstract class LegacyNavigationMessageFactory<O extends LegacyNavigationM
      * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
      * @param mu              central attraction coefficient (m³/s²)
      */
-    public LegacyNavigationMessageFactory(final double angularVelocity, final int weeksInCycle,
+    public LegacyNavigationMessageFactory(final double angularVelocity,
                                           final TimeScales timeScales, final SatelliteSystem system,
                                           final String type, final Frame inertial, final Frame bodyFixed,
                                           final double mu) {
-        super(angularVelocity, weeksInCycle, timeScales, system, type, inertial, bodyFixed, mu);
+        super(angularVelocity, timeScales, system, type, inertial, bodyFixed, mu);
     }
 
     /** Get the Issue Of Data Ephemeris (IODE).

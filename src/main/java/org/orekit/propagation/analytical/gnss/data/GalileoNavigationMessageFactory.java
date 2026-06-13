@@ -56,7 +56,7 @@ public class GalileoNavigationMessageFactory
      */
     public GalileoNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
                                            final String type, final Frame inertial, final Frame bodyFixed) {
-        super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, system,
+        super(GNSSConstants.GALILEO_AV, timeScales, system,
               type, inertial, bodyFixed, GNSSConstants.GALILEO_MU);
     }
 

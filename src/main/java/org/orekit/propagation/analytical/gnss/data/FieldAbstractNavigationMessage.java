@@ -46,15 +46,6 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
     /** Transmission time. */
     private final T transmissionTime;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    protected FieldAbstractNavigationMessage(final FieldKeplerianOrbit<T> orbit, final O original) {
-        super(orbit, original);
-        transmissionTime = orbit.getMu().newInstance(original.getTransmissionTime());
-    }
-
     /** Creates a new instance.
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle     number of weeks in the GNSS cycle
@@ -76,19 +67,6 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
                                           final T transmissionTime) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian, tgd, toc);
         this.transmissionTime = transmissionTime;
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    protected <V extends CalculusFieldElement<V>> FieldAbstractNavigationMessage(final FieldKeplerianOrbit<T> orbit,
-                                                                                 final Function<V, T> converter,
-                                                                                 final FieldAbstractNavigationMessage<V, O, ?> original) {
-        super(orbit, converter, original);
-        transmissionTime = converter.apply(original.getTransmissionTime());
     }
 
     /**
