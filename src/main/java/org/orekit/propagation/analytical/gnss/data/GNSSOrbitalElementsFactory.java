@@ -61,8 +61,8 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     /** Name for mean anomaly at reference time parameter. */
     public static final String MEAN_ANOMALY = "GnssMeanAnomaly";
 
-    /** Prefix for frzen frame name. */
-    private static final String FROZEN = "frozen-";
+    /** Prefix for frozen frame name. */
+    public static final String FROZEN = "frozen-";
 
     /** Mean angular velocity of the Earth for the GNSS model. */
     private final double angularVelocity;

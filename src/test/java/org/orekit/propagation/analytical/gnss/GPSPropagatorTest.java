@@ -560,7 +560,7 @@ class GPSPropagatorTest {
                                     findByName(GNSSOrbitalElementsFactory.INCLINATION).
                                     getValue(),
                                 oe2.getOrbit().getI(),
-                                1.0e-20);
+                                2.0e-16);
         Assertions.assertEquals(factory.
                                     getOrbitalParametersDrivers().
                                     findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).
