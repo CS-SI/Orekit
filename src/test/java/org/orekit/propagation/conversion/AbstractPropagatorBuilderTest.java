@@ -86,7 +86,7 @@ public class AbstractPropagatorBuilderTest {
                                 0.);
         final double[] stateVector = new double[6];
         initialOrbit.getType().mapOrbitToArray(newOrbit.inFrame(context.initialOrbit.getFrame()),
-                PositionAngleType.TRUE, stateVector, null);
+                                               PositionAngleType.TRUE, stateVector, null);
         int i = 0;
         for (DelegatingDriver driver :
             propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {

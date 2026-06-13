@@ -113,7 +113,7 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
         for (int i = 0; i < 6; i++) {
             final ParameterDriver driver = getOrbitalParametersDrivers().getDrivers().get(i);
             driver.setReferenceValue(stateVector[i]);
-            driver.setValue(stateVector[i++], getDate());
+            driver.setValue(stateVector[i], getDate());
         }
 
         // fix date
