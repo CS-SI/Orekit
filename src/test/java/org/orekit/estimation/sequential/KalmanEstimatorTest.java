@@ -684,7 +684,8 @@ class KalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                        context.createNumerical(orbitType, positionAngleType, perfectStart,
+                                              minStep, maxStep, dP);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
                                                             LOFType.LVLH));
 

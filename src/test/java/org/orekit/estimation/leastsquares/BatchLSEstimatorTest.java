@@ -347,7 +347,7 @@ class BatchLSEstimatorTest {
         }
 
     }
-    
+
     /**
      * Perfect range measurements with a biased start
      */
@@ -448,7 +448,7 @@ class BatchLSEstimatorTest {
         }
 
     }
-    
+
      /**
      * Perfect range measurements with a biased start
      */

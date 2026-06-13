@@ -205,8 +205,10 @@ public class TLEKalmanEstimatorTest {
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(), LOFType.LVLH));
+        final TLEPropagatorBuilder propagatorBuilder =
+                        context.createTleBuilder(dP);
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
 
         // Antenna phase center definition
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
@@ -239,7 +241,8 @@ public class TLEKalmanEstimatorTest {
                         propagate(measurements.getLast().getDate()).getOrbit();
 
         // Change X position of 10m as in the batch test
-        ParameterDriver xDriver = propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver xDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -316,7 +319,8 @@ public class TLEKalmanEstimatorTest {
                         propagate(measurements.getLast().getDate()).getOrbit();
 
         // Change X position of 10m as in the batch test
-        ParameterDriver xDriver = propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver xDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
