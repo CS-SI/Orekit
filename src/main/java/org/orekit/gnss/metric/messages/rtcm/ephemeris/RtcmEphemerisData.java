@@ -27,46 +27,33 @@ import org.orekit.gnss.metric.messages.rtcm.RtcmData;
 public class RtcmEphemerisData extends RtcmData {
 
     /** Satellite ID. */
-    private int rtcmSatelliteId;
+    private final int satelliteId;
 
-    /** Accuracy indicator. */
-    private AccuracyProvider accuracy;
+    /** Accuracy provider. */
+    private final AccuracyProvider accuracyProvider;
 
-    /** Constructor. */
-    public RtcmEphemerisData() {
-        // Nothing to do ...
+    /** Constructor.
+     * @param satelliteId satellite ID
+     * @param accuracyProvider accuracy provider
+     * @since 14.0
+     */
+    public RtcmEphemerisData(final int satelliteId, final AccuracyProvider accuracyProvider) {
+        this.satelliteId      = satelliteId;
+        this.accuracyProvider = accuracyProvider;
     }
 
-    /**
-     * Get the satellite ID.
+    /** Get the satellite ID.
      * @return the satellite ID
      */
     public int getSatelliteID() {
-        return rtcmSatelliteId;
+        return satelliteId;
     }
 
-    /**
-     * Set the satellite ID.
-     * @param satelliteID the ID to set
-     */
-    public void setSatelliteID(final int satelliteID) {
-        this.rtcmSatelliteId = satelliteID;
-    }
-
-    /**
-     * Get the accuracy provider of the ephemeris message.
+    /** Get the accuracy provider of the ephemeris message.
      * @return the accuracy provider
      */
     public AccuracyProvider getAccuracyProvider() {
-        return accuracy;
-    }
-
-    /**
-     * Set the accuracy provider of the ephemeris message.
-     * @param provider the provider to set
-     */
-    public void setAccuracyProvider(final AccuracyProvider provider) {
-        this.accuracy = provider;
+        return accuracyProvider;
     }
 
 }

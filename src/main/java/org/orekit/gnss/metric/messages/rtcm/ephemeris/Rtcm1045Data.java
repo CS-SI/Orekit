@@ -16,6 +16,9 @@
  */
 package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
+
 /**
  * Container for RTCM 1045 data.
  * @author Bryan Cazabonne
@@ -26,9 +29,15 @@ public class Rtcm1045Data extends Rtcm1046Data {
     /** Galileo NAV Data Validity Status. */
     private int galileoDataValidityStatus;
 
-    /** Constructor. */
-    public Rtcm1045Data() {
-        // Nothing to do ...
+    /** Constructor.
+     * @param satelliteId satellite ID
+     * @param accuracyProvider accuracy provider
+     * @param factory factory for Galileo navigation message
+     * @since 14.0
+     */
+    public Rtcm1045Data(final int satelliteId, final AccuracyProvider accuracyProvider,
+                        final GalileoNavigationMessageFactory factory) {
+        super(satelliteId, accuracyProvider, factory);
     }
 
     /**

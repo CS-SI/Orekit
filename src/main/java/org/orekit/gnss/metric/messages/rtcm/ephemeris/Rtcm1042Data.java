@@ -16,13 +16,10 @@
  */
 package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
-import org.orekit.time.GNSSDate;
-import org.orekit.time.TimeScales;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessageFactory;
 
 /**
  * Container for RTCM 1042 data.
@@ -31,18 +28,19 @@ import org.orekit.time.TimeScales;
  */
 public class Rtcm1042Data extends RtcmEphemerisData {
 
-    /** Beidou navigation message. */
-    private BeidouLegacyNavigationMessage beidouNavigationMessage;
+    /** Factory for Beidou navigation message. */
+    private final BeidouLegacyNavigationMessageFactory factory;
 
-    /** Beidou Time of clock. */
-    private double beidouToc;
-
-    /** Satellite health status. */
-    private double svHealth;
-
-    /** Constructor. */
-    public Rtcm1042Data() {
-        // Nothing to do ...
+    /** Constructor.
+     * @param satelliteId satellite ID
+     * @param accuracyProvider accuracy provider
+     * @param factory factory for Beidou navigation message
+     * @since 14.0
+     */
+    public Rtcm1042Data(final int satelliteId, final AccuracyProvider accuracyProvider,
+                        final BeidouLegacyNavigationMessageFactory factory) {
+        super(satelliteId, accuracyProvider);
+        this.factory = factory;
     }
 
     /**
@@ -50,86 +48,10 @@ public class Rtcm1042Data extends RtcmEphemerisData {
      * <p>
      * This object can be used to initialize a {@link GNSSPropagator}
      * <p>
-     * This method uses the {@link DataContext#getDefault()} to initialize
-     * the time scales used to configure the reference epochs of the navigation
-     * message.
-     *
      * @return the Beidou navigation message
      */
-    @DefaultDataContext
     public BeidouLegacyNavigationMessage getBeidouNavigationMessage() {
-        return getBeidouNavigationMessage(DataContext.getDefault().getTimeScales());
-    }
-
-    /**
-     * Get the Beidou navigation message corresponding to the current RTCM data.
-     * <p>
-     * This object can be used to initialize a {@link GNSSPropagator}
-     * <p>
-     * When calling this method, the reference epochs of the navigation message
-     * (i.e. ephemeris and clock epochs) are initialized using the provided time scales.
-     *
-     * @param timeScales time scales to use for initializing epochs
-     * @return the Beidou navigation message
-     */
-    public BeidouLegacyNavigationMessage getBeidouNavigationMessage(final TimeScales timeScales) {
-
-        // Satellite system
-        final SatelliteSystem system = SatelliteSystem.BEIDOU;
-
-        // Week number and time of ephemeris
-        final int    week = beidouNavigationMessage.getWeek();
-
-        // Set the ephemeris reference data
-        beidouNavigationMessage.setEpochToc(new GNSSDate(week, beidouToc, system, timeScales).getDate());
-
-        // Return the navigation message
-        return beidouNavigationMessage;
-
-    }
-
-    /**
-     * Set the Beidou navigation message.
-     * @param beidouNavigationMessage the Beidou navigation message to set
-     */
-    public void setBeidouNavigationMessage(final BeidouLegacyNavigationMessage beidouNavigationMessage) {
-        this.beidouNavigationMessage = beidouNavigationMessage;
-    }
-
-    /**
-     * Get the Beidou time of clock.
-     * <p>
-     * The Beidou time of clock is given in seconds since
-     * the beginning of the Beidou week.
-     * </p>
-     * @return the Beidou time of clock
-     */
-    public double getBeidouToc() {
-        return beidouToc;
-    }
-
-    /**
-     * Set the Beidou time of clock.
-     * @param toc the time of clock to set
-     */
-    public void setBeidouToc(final double toc) {
-        this.beidouToc = toc;
-    }
-
-    /**
-     * Get the satellite health status.
-     * @return the satellite health status
-     */
-    public double getSvHealth() {
-        return svHealth;
-    }
-
-    /**
-     * Set the satellite health status.
-     * @param svHealth the health status to set
-     */
-    public void setSvHealth(final double svHealth) {
-        this.svHealth = svHealth;
+        return factory.createFromDrivers();
     }
 
 }

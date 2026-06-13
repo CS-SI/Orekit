@@ -19,8 +19,11 @@ package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -31,15 +34,24 @@ import org.orekit.time.TimeScales;
  */
 public class Rtcm1046Data extends RtcmEphemerisData {
 
-    /** Galileo navigation message. */
-    private GalileoNavigationMessage galileoNavigationMessage;
+    /** Factory for Galileo navigation message.
+     * @since 14.0
+     */
+    private final GalileoNavigationMessageFactory factory;
 
     /** Galileo Time of clock. */
     private double galileoToc;
 
-    /** Constructor. */
-    public Rtcm1046Data() {
-        // Nothing to do ...
+    /** Constructor.
+     * @param satelliteId satellite ID
+     * @param accuracyProvider accuracy provider
+     * @param factory factory for QZSS navigation message
+     * @since 14.0
+     */
+    public Rtcm1046Data(final int satelliteId, final AccuracyProvider accuracyProvider,
+                        final GalileoNavigationMessageFactory factory) {
+        super(satelliteId, accuracyProvider);
+        this.factory = factory;
     }
 
     /**
@@ -47,50 +59,10 @@ public class Rtcm1046Data extends RtcmEphemerisData {
      * <p>
      * This object can be used to initialize a {@link GNSSPropagator}
      * <p>
-     * This method uses the {@link DataContext#getDefault()} to initialize
-     * the time scales used to configure the reference epochs of the navigation
-     * message.
-     *
      * @return the Galileo navigation message
      */
-    @DefaultDataContext
     public GalileoNavigationMessage getGalileoNavigationMessage() {
-        return getGalileoNavigationMessage(DataContext.getDefault().getTimeScales());
-    }
-
-    /**
-     * Get the Galileo navigation message corresponding to the current RTCM data.
-     * <p>
-     * This object can be used to initialize a {@link GNSSPropagator}
-     * <p>
-     * When calling this method, the reference epochs of the navigation message
-     * (i.e. ephemeris and clock epochs) are initialized using the provided time scales.
-     *
-     * @param timeScales time scales to use for initializing epochs
-     * @return the Galileo navigation message
-     */
-    public GalileoNavigationMessage getGalileoNavigationMessage(final TimeScales timeScales) {
-
-        // Satellite system
-        final SatelliteSystem system = SatelliteSystem.GALILEO;
-
-        // Week number and time of ephemeris
-        final int    week = galileoNavigationMessage.getWeek();
-
-        // Set the ephemeris reference data
-        galileoNavigationMessage.setEpochToc(new GNSSDate(week, galileoToc, system, timeScales).getDate());
-
-        // Return the navigation message
-        return galileoNavigationMessage;
-
-    }
-
-    /**
-     * Set the Galileo navigation message.
-     * @param galileoNavigationMessage the Galileo navigation message to set
-     */
-    public void setGalileoNavigationMessage(final GalileoNavigationMessage galileoNavigationMessage) {
-        this.galileoNavigationMessage = galileoNavigationMessage;
+        return factory.createFromDrivers();
     }
 
     /**
@@ -112,4 +84,5 @@ public class Rtcm1046Data extends RtcmEphemerisData {
     public void setGalileoToc(final double toc) {
         this.galileoToc = toc;
     }
+
 }

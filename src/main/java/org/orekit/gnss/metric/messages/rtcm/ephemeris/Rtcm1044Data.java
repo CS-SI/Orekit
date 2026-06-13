@@ -16,13 +16,10 @@
  */
 package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
-import org.orekit.time.GNSSDate;
-import org.orekit.time.TimeScales;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory;
 
 /**
  * Container for RTCM 1044 data.
@@ -31,21 +28,21 @@ import org.orekit.time.TimeScales;
  */
 public class Rtcm1044Data extends RtcmEphemerisData {
 
-    /** QZSS navigation message. */
-    private QZSSLegacyNavigationMessage qzssNavigationMessage;
+    /** Factory for QZSS navigation message.
+     * @since 14.0
+     */
+    private final QZSSLegacyNavigationMessageFactory factory;
 
-    /** QZSS Time of clock. */
-    private double qzssToc;
-
-    /** QZSS code on L2 Channel. */
-    private int qzssCodeOnL2;
-
-    /** QZSS fit interval. */
-    private int qzssFitInterval;
-
-    /** Constructor. */
-    public Rtcm1044Data() {
-        // Nothing to do ...
+    /** Constructor.
+     * @param satelliteId satellite ID
+     * @param accuracyProvider accuracy provider
+     * @param factory factory for QZSS navigation message
+     * @since 14.0
+     */
+    public Rtcm1044Data(final int satelliteId, final AccuracyProvider accuracyProvider,
+                        final QZSSLegacyNavigationMessageFactory factory) {
+        super(satelliteId, accuracyProvider);
+        this.factory = factory;
     }
 
     /**
@@ -53,102 +50,10 @@ public class Rtcm1044Data extends RtcmEphemerisData {
      * <p>
      * This object can be used to initialize a {@link GNSSPropagator}
      * <p>
-     * This method uses the {@link DataContext#getDefault()} to initialize
-     * the time scales used to configure the reference epochs of the navigation
-     * message.
-     *
      * @return the QZSS navigation message
      */
-    @DefaultDataContext
     public QZSSLegacyNavigationMessage getQzssNavigationMessage() {
-        return getQzssNavigationMessage(DataContext.getDefault().getTimeScales());
-    }
-
-    /**
-     * Get the QZSS navigation message corresponding to the current RTCM data.
-     * <p>
-     * This object can be used to initialize a {@link GNSSPropagator}
-     * <p>
-     * When calling this method, the reference epochs of the navigation message
-     * (i.e. ephemeris and clock epochs) are initialized using the provided time scales.
-     *
-     * @param timeScales time scales to use for initializing epochs
-     * @return the QZSS navigation message
-     */
-    public QZSSLegacyNavigationMessage getQzssNavigationMessage(final TimeScales timeScales) {
-
-        // Satellite system
-        final SatelliteSystem system = SatelliteSystem.QZSS;
-
-        // Week number and time of ephemeris
-        final int    week = qzssNavigationMessage.getWeek();
-
-        // Set the ephemeris reference data
-        qzssNavigationMessage.setEpochToc(new GNSSDate(week, qzssToc, system, timeScales).getDate());
-
-        // Return the navigation message
-        return qzssNavigationMessage;
-
-    }
-
-    /**
-     * Set the QZSS navigation message.
-     * @param qzssNavigationMessage the QZSS navigation message to set
-     */
-    public void setQzssNavigationMessage(final QZSSLegacyNavigationMessage qzssNavigationMessage) {
-        this.qzssNavigationMessage = qzssNavigationMessage;
-    }
-
-    /**
-     * Get the QZSS time of clock.
-     * <p>
-     * The QZSS time of clock is given in seconds since
-     * the beginning of the QZSS week.
-     * </p>
-     * @return the QZSS time of clock
-     */
-    public double getQzssToc() {
-        return qzssToc;
-    }
-
-    /**
-     * Set the QZSS time of clock.
-     * @param toc the time of clock to set
-     */
-    public void setQzssToc(final double toc) {
-        this.qzssToc = toc;
-    }
-
-    /**
-     * Get the QZSS code on L2 Channel.
-     * @return the QZSS code on L2
-     */
-    public int getQzssCodeOnL2() {
-        return qzssCodeOnL2;
-    }
-
-    /**
-     * Set the QZSS code on L2.
-     * @param qzssCodeOnL2 the code to set
-     */
-    public void setQzssCodeOnL2(final int qzssCodeOnL2) {
-        this.qzssCodeOnL2 = qzssCodeOnL2;
-    }
-
-    /**
-     * Get the QZSS fit interval.
-     * @return the QZSS fit interval
-     */
-    public int getQzssFitInterval() {
-        return qzssFitInterval;
-    }
-
-    /**
-     * Set the QZSS fit interval.
-     * @param qzssFitInterval the QZSS fit interval to set
-     */
-    public void setQzssFitInterval(final int qzssFitInterval) {
-        this.qzssFitInterval = qzssFitInterval;
+        return factory.createFromDrivers();
     }
 
 }

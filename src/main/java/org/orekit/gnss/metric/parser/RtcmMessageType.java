@@ -83,12 +83,15 @@ import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmQzssHeader;
 import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmSbasHeader;
 import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmSignalId;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.ParameterDriversList;
 
 /** Enum containing the supported RTCM messages types.
 *
@@ -107,67 +110,63 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber,
-                                   final TimeScales timeScales) {
-
-            // Initialize data container and navigation message
-            final Rtcm1019Data         rtcm1019Data  = new Rtcm1019Data();
-            final GPSLegacyNavigationMessageFactory gpsNavFactory =
-                new GPSLegacyNavigationMessageFactory(timeScales, SatelliteSystem.GPS, GPSLegacyNavigationMessage.LNAV);
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Set the satellite ID
             final int gpsId = RtcmDataField.DF009.intValue(encodedMessage);
-            rtcm1019Data.setSatelliteID(gpsId);
+
+            // Accuracy provider
+            final AccuracyProvider gpsProvider = new UserRangeAccuracy(RtcmDataField.DF077.intValue(encodedMessage));
+
+            // Initialize data container and navigation message
+            final GPSLegacyNavigationMessageFactory gpsNavFactory =
+                new GPSLegacyNavigationMessageFactory(timeScales, SatelliteSystem.GPS,
+                                                      GPSLegacyNavigationMessage.LNAV,
+                                                      inertial, bodyFixed);
 
             // Week number
             final int gpsWeekNumber = RtcmDataField.DF076.intValue(encodedMessage);
             gpsNavFactory.setWeek(gpsWeekNumber);
 
-            // Accuracy provider
-            final AccuracyProvider gpsProvider = new UserRangeAccuracy(RtcmDataField.DF077.intValue(encodedMessage));
-            rtcm1019Data.setAccuracyProvider(gpsProvider);
-            gpsNavFactory.setSvAccuracy(gpsProvider.getAccuracy());
-
             // GPS Code on L2
-            rtcm1019Data.setGpsCodeOnL2(RtcmDataField.DF078.intValue(encodedMessage));
+            gpsNavFactory.setL2Codes(RtcmDataField.DF078.intValue(encodedMessage));
 
             // Fill navigation message
+            final ParameterDriversList orb = gpsNavFactory.getOrbitalParametersDrivers();
             gpsNavFactory.setPrn(gpsId);
             gpsNavFactory.getIDotDriver().setValue(RtcmDataField.DF079.doubleValue(encodedMessage));
             gpsNavFactory.setIODE(RtcmDataField.DF071.intValue(encodedMessage));
-            rtcm1019Data.setGpsToc(RtcmDataField.DF081.doubleValue(encodedMessage));
+            gpsNavFactory.setToc(RtcmDataField.DF081.doubleValue(encodedMessage));
             gpsNavFactory.setAf2(RtcmDataField.DF082.doubleValue(encodedMessage));
             gpsNavFactory.setAf1(RtcmDataField.DF083.doubleValue(encodedMessage));
             gpsNavFactory.setAf0(RtcmDataField.DF084.doubleValue(encodedMessage));
             gpsNavFactory.setIODC(RtcmDataField.DF085.intValue(encodedMessage));
             gpsNavFactory.setCrs(RtcmDataField.DF086.doubleValue(encodedMessage));
             gpsNavFactory.setDeltaN0(RtcmDataField.DF087.doubleValue(encodedMessage));
-            gpsNavFactory.setM0(RtcmDataField.DF088.doubleValue(encodedMessage));
+            setValue(orb, GNSSOrbitalElementsFactory.MEAN_ANOMALY, RtcmDataField.DF088, encodedMessage);
             gpsNavFactory.setCuc(RtcmDataField.DF089.doubleValue(encodedMessage));
-            gpsNavFactory.setE(RtcmDataField.DF090.doubleValue(encodedMessage));
+            setValue(orb, GNSSOrbitalElementsFactory.ECCENTRICITY, RtcmDataField.DF090, encodedMessage);
             gpsNavFactory.setCus(RtcmDataField.DF091.doubleValue(encodedMessage));
-            gpsNavFactory.setSqrtA(RtcmDataField.DF092.doubleValue(encodedMessage));
+            final double sqrtA = RtcmDataField.DF092.doubleValue(encodedMessage);
+            setValue(orb, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS, sqrtA * sqrtA);
             gpsNavFactory.setTime(RtcmDataField.DF093.doubleValue(encodedMessage));
             gpsNavFactory.setCic(RtcmDataField.DF094.doubleValue(encodedMessage));
-            gpsNavFactory.setOmega0(RtcmDataField.DF095.doubleValue(encodedMessage));
+            setValue(orb, GNSSOrbitalElementsFactory.NODE_LONGITUDE, RtcmDataField.DF095, encodedMessage);
             gpsNavFactory.setCis(RtcmDataField.DF096.doubleValue(encodedMessage));
-            gpsNavFactory.setI0(RtcmDataField.DF097.doubleValue(encodedMessage));
+            setValue(orb, GNSSOrbitalElementsFactory.INCLINATION, RtcmDataField.DF097, encodedMessage);
             gpsNavFactory.setCrc(RtcmDataField.DF098.doubleValue(encodedMessage));
-            gpsNavFactory.setPa(RtcmDataField.DF099.doubleValue(encodedMessage));
+            setValue(orb, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE, RtcmDataField.DF099, encodedMessage);
             gpsNavFactory.setOmegaDot(RtcmDataField.DF100.doubleValue(encodedMessage));
             gpsNavFactory.setTGD(RtcmDataField.DF101.doubleValue(encodedMessage));
             gpsNavFactory.setSvHealth(RtcmDataField.DF102.intValue(encodedMessage));
-
-            // Set the navigation message
-            rtcm1019Data.setGpsNavigationMessage(gpsNavFactory);
 
             // L2 P data flag and fit interval
             rtcm1019Data.setGpsL2PDataFlag(RtcmDataField.DF103.booleanValue(encodedMessage));
             rtcm1019Data.setGpsFitInterval(RtcmDataField.DF137.intValue(encodedMessage));
 
             // Return the parsed message
-            return new Rtcm1019(1019, rtcm1019Data);
+            return new Rtcm1019(1019, new Rtcm1019Data(gpsId, gpsProvider, gpsNavFactory));
 
         }
 
@@ -178,17 +177,19 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber,
-                                   final TimeScales timeScales) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
+
+            // satellite ID
+            final int glonassId = RtcmDataField.DF038.intValue(encodedMessage);
+
+            // Glonass accuracy
+            final int index = RtcmDataField.DF128.intValue(encodedMessage);
+            final GlonassUserRangeAccuracy accuracy = new GlonassUserRangeAccuracy(index);
 
             // Initialize data container and navigation message
-            final Rtcm1020Data             rtcm1020Data      = new Rtcm1020Data();
+            final Rtcm1020Data                 rtcm1020Data      = new Rtcm1020Data(glonassId, accuracy);
             final GLONASSFdmaNavigationMessage glonassNavMessage = new GLONASSFdmaNavigationMessage();
-
-            // Set the satellite ID
-            final int glonassId = RtcmDataField.DF038.intValue(encodedMessage);
-            rtcm1020Data.setSatelliteID(glonassId);
 
             // Read data
             glonassNavMessage.setPRN(glonassId);
@@ -218,9 +219,6 @@ public enum RtcmMessageType implements MessageType {
             rtcm1020Data.setEn(RtcmDataField.DF126.intValue(encodedMessage));
             rtcm1020Data.setP4(RtcmDataField.DF127.intValue(encodedMessage));
 
-            // Glonass accuracy
-            final int index = RtcmDataField.DF128.intValue(encodedMessage);
-            rtcm1020Data.setAccuracyProvider(new GlonassUserRangeAccuracy(index));
             rtcm1020Data.setFT(index);
 
             // Read other data
@@ -248,60 +246,55 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber,
-                                   final TimeScales timeScales) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
-            // Initialize data container and navigation message
-            final Rtcm1042Data            rtcm1042Data  = new Rtcm1042Data();
-            final BeidouLegacyNavigationMessage beidouNavMessage =
-                new BeidouLegacyNavigationMessage(false,
-                                                  timeScales, SatelliteSystem.BEIDOU,
-                                                  BeidouLegacyNavigationMessage.D1);
-
-            // Set the satellite ID
+            // Satellite ID
             final int beidouId = RtcmDataField.DF488.intValue(encodedMessage);
-            rtcm1042Data.setSatelliteID(beidouId);
-
-            // Week number
-            final int beidouWeekNumber = RtcmDataField.DF489.intValue(encodedMessage);
-            beidouNavMessage.setWeek(beidouWeekNumber);
 
             // Accuracy provider
             final AccuracyProvider beidouProvider = new UserRangeAccuracy(RtcmDataField.DF490.intValue(encodedMessage));
-            rtcm1042Data.setAccuracyProvider(beidouProvider);
-            beidouNavMessage.setSvAccuracy(beidouProvider.getAccuracy());
+
+            // Initialize data container and navigation message factory
+            final BeidouLegacyNavigationMessageFactory factory =
+                new BeidouLegacyNavigationMessageFactory(timeScales, SatelliteSystem.GPS,
+                                                         BeidouLegacyNavigationMessage.D1,
+                                                         inertial, bodyFixed);
+
+            // Week number
+            final int beidouWeekNumber = RtcmDataField.DF489.intValue(encodedMessage);
+            factory.setWeek(beidouWeekNumber);
 
             // Fill navigation message
-            beidouNavMessage.setPRN(beidouId);
-            beidouNavMessage.setIDot(RtcmDataField.DF491.doubleValue(encodedMessage));
-            beidouNavMessage.setAODE(RtcmDataField.DF492.intValue(encodedMessage));
-            rtcm1042Data.setBeidouToc(RtcmDataField.DF493.doubleValue(encodedMessage));
-            beidouNavMessage.setAf2(RtcmDataField.DF494.doubleValue(encodedMessage));
-            beidouNavMessage.setAf1(RtcmDataField.DF495.doubleValue(encodedMessage));
-            beidouNavMessage.setAf0(RtcmDataField.DF496.doubleValue(encodedMessage));
-            beidouNavMessage.setAODC(RtcmDataField.DF497.intValue(encodedMessage));
-            beidouNavMessage.setCrs(RtcmDataField.DF498.doubleValue(encodedMessage));
-            beidouNavMessage.setDeltaN0(RtcmDataField.DF499.doubleValue(encodedMessage));
-            beidouNavMessage.setM0(RtcmDataField.DF500.doubleValue(encodedMessage));
-            beidouNavMessage.setCuc(RtcmDataField.DF501.doubleValue(encodedMessage));
-            beidouNavMessage.setE(RtcmDataField.DF502.doubleValue(encodedMessage));
-            beidouNavMessage.setCus(RtcmDataField.DF503.doubleValue(encodedMessage));
-            beidouNavMessage.setSqrtA(RtcmDataField.DF504.doubleValue(encodedMessage));
-            beidouNavMessage.setTime(RtcmDataField.DF505.doubleValue(encodedMessage));
-            beidouNavMessage.setCic(RtcmDataField.DF506.doubleValue(encodedMessage));
-            beidouNavMessage.setOmega0(RtcmDataField.DF507.doubleValue(encodedMessage));
-            beidouNavMessage.setCis(RtcmDataField.DF508.doubleValue(encodedMessage));
-            beidouNavMessage.setI0(RtcmDataField.DF509.doubleValue(encodedMessage));
-            beidouNavMessage.setCrc(RtcmDataField.DF510.doubleValue(encodedMessage));
-            beidouNavMessage.setPa(RtcmDataField.DF511.doubleValue(encodedMessage));
-            beidouNavMessage.setOmegaDot(RtcmDataField.DF512.doubleValue(encodedMessage));
-            beidouNavMessage.setTGD1(RtcmDataField.DF513.doubleValue(encodedMessage));
-            beidouNavMessage.setTGD2(RtcmDataField.DF514.doubleValue(encodedMessage));
+            factory.setPrn(beidouId);
+            factory.setIDot(RtcmDataField.DF491.doubleValue(encodedMessage));
+            factory.setAODE(RtcmDataField.DF492.intValue(encodedMessage));
+            factory.setToc(RtcmDataField.DF493.doubleValue(encodedMessage));
+            factory.setAf2(RtcmDataField.DF494.doubleValue(encodedMessage));
+            factory.setAf1(RtcmDataField.DF495.doubleValue(encodedMessage));
+            factory.setAf0(RtcmDataField.DF496.doubleValue(encodedMessage));
+            factory.setAODC(RtcmDataField.DF497.intValue(encodedMessage));
+            factory.setCrs(RtcmDataField.DF498.doubleValue(encodedMessage));
+            factory.setDeltaN0(RtcmDataField.DF499.doubleValue(encodedMessage));
+            factory.setM0(RtcmDataField.DF500.doubleValue(encodedMessage));
+            factory.setCuc(RtcmDataField.DF501.doubleValue(encodedMessage));
+            factory.setE(RtcmDataField.DF502.doubleValue(encodedMessage));
+            factory.setCus(RtcmDataField.DF503.doubleValue(encodedMessage));
+            factory.setSqrtA(RtcmDataField.DF504.doubleValue(encodedMessage));
+            factory.setTime(RtcmDataField.DF505.doubleValue(encodedMessage));
+            factory.setCic(RtcmDataField.DF506.doubleValue(encodedMessage));
+            factory.setOmega0(RtcmDataField.DF507.doubleValue(encodedMessage));
+            factory.setCis(RtcmDataField.DF508.doubleValue(encodedMessage));
+            factory.setI0(RtcmDataField.DF509.doubleValue(encodedMessage));
+            factory.setCrc(RtcmDataField.DF510.doubleValue(encodedMessage));
+            factory.setPa(RtcmDataField.DF511.doubleValue(encodedMessage));
+            factory.setOmegaDot(RtcmDataField.DF512.doubleValue(encodedMessage));
+            factory.setTGD1(RtcmDataField.DF513.doubleValue(encodedMessage));
+            factory.setTGD2(RtcmDataField.DF514.doubleValue(encodedMessage));
             rtcm1042Data.setSvHealth(RtcmDataField.DF515.intValue(encodedMessage));
 
             // Set the navigation message
-            rtcm1042Data.setBeidouNavigationMessage(beidouNavMessage);
+            rtcm1042Data.setBeidouNavigationMessage(factory);
 
             // Return the parsed message
             return new Rtcm1042(1042, rtcm1042Data);
@@ -315,8 +308,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber, final TimeScales timeScales) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Initialize data container and navigation message
             final Rtcm1044Data          rtcm1044Data   = new Rtcm1044Data();
@@ -386,9 +379,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber,
-                                   final TimeScales timeScales) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Initialize data container and navigation message
             final Rtcm1045Data             rtcm1045Data      = new Rtcm1045Data();
@@ -498,7 +490,7 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1057Header = new RtcmOrbitCorrectionHeader();
@@ -559,7 +551,7 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final RtcmCorrectionHeader rtcm1058Header = new RtcmCorrectionHeader();
@@ -612,7 +604,7 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1060Header = new RtcmOrbitCorrectionHeader();
@@ -680,7 +672,7 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1063Header = new RtcmOrbitCorrectionHeader();
@@ -741,7 +733,7 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final RtcmCorrectionHeader rtcm1064Header = new RtcmCorrectionHeader();
@@ -794,7 +786,7 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1066Header = new RtcmOrbitCorrectionHeader();
@@ -981,7 +973,7 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1240Header = new RtcmOrbitCorrectionHeader();
@@ -1042,7 +1034,7 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final RtcmCorrectionHeader rtcm1241Header = new RtcmCorrectionHeader();
@@ -1095,7 +1087,7 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1243Header = new RtcmOrbitCorrectionHeader();
@@ -1180,6 +1172,28 @@ public enum RtcmMessageType implements MessageType {
      */
     public Pattern getPattern() {
         return pattern;
+    }
+
+    /**
+     * Set a parameter value.
+     *
+     * @param list    list containing the parameter driver
+     * @param name    of the driver
+     * @param field   to select in the message
+     * @param message encoded message
+     */
+    private static void setValue(final ParameterDriversList list, final String name,
+                                 final RtcmDataField field, final EncodedMessage message) {
+        setValue(list, name, field.doubleValue(message));
+    }
+
+    /** Set a parameter value.
+     * @param list list containing the parameter driver
+     * @param name of the driver
+     * @param value value to set
+     */
+    private static void setValue(final ParameterDriversList list, final String name, final double value) {
+        list.findByName(name).setValue(value);
     }
 
     /** Get the message type corresponding to a message number.

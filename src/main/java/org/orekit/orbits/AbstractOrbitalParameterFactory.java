@@ -34,10 +34,10 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
     private ParameterDriversList orbitalDrivers;
 
     /** Frame in which the orbital parameters are defined. */
-    private final Frame frame;
+    private Frame frame;
 
     /** Position angle type to use. */
-    private final PositionAngleType positionAngleType;
+    private PositionAngleType positionAngleType;
 
     /** Date of the orbital parameters. */
     private AbsoluteDate date;
@@ -98,8 +98,20 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
 
     /** {@inheritDoc} */
     @Override
+    public void setFrame(final Frame frame) {
+        this.frame = frame;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public PositionAngleType getPositionAngleType() {
         return positionAngleType;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setPositionAngleType(final PositionAngleType positionAngleType) {
+        this.positionAngleType = positionAngleType;
     }
 
     /** {@inheritDoc} */

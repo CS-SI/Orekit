@@ -19,6 +19,7 @@ package org.orekit.files.rinex.navigation.parsers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
 import org.orekit.utils.units.Unit;
 
 /** Parser for Galileo.
@@ -26,55 +27,58 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GalileoParser extends AbstractNavigationParser<GalileoNavigationMessage> {
+public class GalileoParser
+        extends AbstractNavigationParser<GalileoNavigationMessage, GalileoNavigationMessageFactory> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
-     * @param message container for navigation message
+     * @param factory factory for navigation message
      */
-    public GalileoParser(final ParseInfo parseInfo, final GalileoNavigationMessage message) {
-        super(parseInfo, message);
+    public GalileoParser(final ParseInfo parseInfo, final GalileoNavigationMessageFactory factory) {
+        super(parseInfo, factory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
         final ParseInfo parseInfo = getParseInfo();
-        final GalileoNavigationMessage message = getMessage();
-        parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, message);
+        final GalileoNavigationMessageFactory factory = getFactory();
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, factory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
         super.parseLine01();
-        getMessage().setIODNav(getParseInfo().parseInt1());
+        final GalileoNavigationMessageFactory factory = getFactory();
+        factory.setIODNav(getParseInfo().parseInt1());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
         super.parseLine05();
-        getMessage().setDataSource(getParseInfo().parseInt2());
+        final GalileoNavigationMessageFactory factory = getFactory();
+        factory.setDataSource(getParseInfo().parseInt2());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
         final ParseInfo parseInfo = getParseInfo();
-        final GalileoNavigationMessage message = getMessage();
-        message.setSisa(parseInfo.parseDouble1(Unit.METRE));
-        message.setSvHealth(parseInfo.parseDouble2(Unit.NONE));
-        message.setBGDE1E5a(parseInfo.parseDouble3(Unit.SECOND));
-        message.setBGDE5bE1(parseInfo.parseDouble4(Unit.SECOND));
+        final GalileoNavigationMessageFactory factory = getFactory();
+        factory.setSisa(parseInfo.parseDouble1(Unit.METRE));
+        factory.setSvHealth(parseInfo.parseDouble2(Unit.NONE));
+        factory.setBGDE1E5a(parseInfo.parseDouble3(Unit.SECOND));
+        factory.setBGDE5bE1(parseInfo.parseDouble4(Unit.SECOND));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
-        final GalileoNavigationMessage message = getMessage();
-        message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        final GalileoNavigationMessageFactory factory = getFactory();
+        factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
         parseInfo.closePendingRecord();
     }
 

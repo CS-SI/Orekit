@@ -34,7 +34,7 @@ public class BeidouCivilianNavigationMessageFactory
     private final BeidouCivilianType beidouType;
 
     /** Satellite type. */
-    private final BeidouSatelliteType satelliteType;
+    private BeidouSatelliteType satelliteType;
 
     /** Issue of Data, Ephemeris. */
     private int iode;
@@ -114,6 +114,13 @@ public class BeidouCivilianNavigationMessageFactory
      */
     public BeidouSatelliteType getSatelliteType() {
         return satelliteType;
+    }
+
+    /** Set satellite type.
+     * @param satelliteType  satellite type
+     */
+    public void setSatelliteType(final BeidouSatelliteType satelliteType) {
+        this.satelliteType = satelliteType;
     }
 
     /** Get the Issue Of Data Ephemeris (IODE).

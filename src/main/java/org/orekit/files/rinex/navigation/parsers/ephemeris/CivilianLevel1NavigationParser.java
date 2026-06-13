@@ -21,8 +21,6 @@ import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessageFactory;
-import org.orekit.propagation.analytical.gnss.data.CivilianNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.CivilianNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.utils.units.Unit;
 

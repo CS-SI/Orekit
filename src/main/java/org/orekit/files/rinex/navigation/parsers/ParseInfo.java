@@ -133,8 +133,10 @@ public class ParseInfo {
     private int recordLineNumber;
 
     /** Constructor, build the ParseInfo object.
-     * @param name name of the data source
+     * @param name       name of the data source
      * @param timeScales set of time scales for parsing dates
+     * @param inertial   reference inertial frame
+     * @param bodyFixed  body fixed frame (will be frozen at {@code date} to build the orbital elements
      */
     public ParseInfo(final String name, final TimeScales timeScales) {
         // Initialize default values for fields
