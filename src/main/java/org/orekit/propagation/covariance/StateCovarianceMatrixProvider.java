@@ -36,9 +36,8 @@ import org.orekit.time.AbsoluteDate;
  * {@link #stmName of the provider for the State Transition Matrix}. The STM is assumed to be the identity at the
  * covariance epoch, if it is not, results will not be consistent.
  * <p>
- * As the State Transition Matrix and the input state covariance matrix can be expressed in different orbit types, the
- * user must specify both orbit types when building the covariance provider. In addition, the position angle used in
- * both matrices must also be specified.
+ * The State Transition Matrix and the input state covariance matrix can be expressed in different orbit types,
+ * which is defined in the {@link MatricesHarvester matrix harvester} specified at construction time.
  * <p>
  * In order to add this additional state provider to an orbit propagator, user must use the
  * {@link Propagator#addAdditionalDataProvider(AdditionalDataProvider)} method.
@@ -99,13 +98,13 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
                                          final MatricesHarvester harvester, final StateCovariance covRef) {
         // Initialize fields
         this.additionalName = additionalName;
-        this.stmName = stmName;
-        this.harvester = harvester;
-        this.covRef = covRef;
-        this.covOrbitType = covRef.getOrbitType();
-        this.covAngleType = covRef.getPositionAngleType();
-        this.stmOrbitType = harvester.getOrbitType();
-        this.stmAngleType = harvester.getPositionAngleType();
+        this.stmName        = stmName;
+        this.harvester      = harvester;
+        this.covRef         = covRef;
+        this.covOrbitType   = covRef.getOrbitType();
+        this.covAngleType   = covRef.getPositionAngleType();
+        this.stmOrbitType   = harvester.getOrbitType();
+        this.stmAngleType   = harvester.getPositionAngleType();
     }
 
     /** {@inheritDoc} */

@@ -32,7 +32,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
@@ -127,6 +126,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
     /** {@inheritDoc} */
     @Override
     public RealMatrix getParametersJacobian(final SpacecraftState state) {
+
         // Update the partial derivatives if needed
         updateDerivativesIfNeeded(state);
 
@@ -151,6 +151,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
         // Return
         return dYdP;
+
     }
 
     /** {@inheritDoc} */
@@ -173,22 +174,13 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         final FieldSpacecraftState<Gradient> state      = gPropagator.getInitialState();
         final Gradient[]                     parameters = converter.getParameters(state, converter);
         final FieldOrbit<Gradient>           gOrbit     = gPropagator.propagateOrbit(start.shiftedBy(dt), parameters);
-        final FieldPVCoordinates<Gradient>   gPv        = gOrbit.getPVCoordinates();
-
-        final double[] derivativesX  = gPv.getPosition().getX().getGradient();
-        final double[] derivativesY  = gPv.getPosition().getY().getGradient();
-        final double[] derivativesZ  = gPv.getPosition().getZ().getGradient();
-        final double[] derivativesVx = gPv.getVelocity().getX().getGradient();
-        final double[] derivativesVy = gPv.getVelocity().getY().getGradient();
-        final double[] derivativesVz = gPv.getVelocity().getZ().getGradient();
+        Gradient[] derivatives = new Gradient[6];
+        getOrbitType().mapOrbitToArray(gOrbit, getPositionAngleType(), derivatives, null);
 
         // Update Jacobian with respect to state
-        addToRow(derivativesX,  0);
-        addToRow(derivativesY,  1);
-        addToRow(derivativesZ,  2);
-        addToRow(derivativesVx, 3);
-        addToRow(derivativesVy, 4);
-        addToRow(derivativesVz, 5);
+        for (int i = 0; i < derivatives.length; ++i) {
+            addToRow(derivatives[i].getGradient(), i);
+        }
 
         // Partial derivatives of the state with respect to propagation parameters
         int paramsIndex = converter.getFreeStateParameters();
@@ -208,8 +200,12 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
                     // add the contribution of the current force model
                     entry.increment(new double[] {
-                        derivativesX[paramsIndex], derivativesY[paramsIndex], derivativesZ[paramsIndex],
-                        derivativesVx[paramsIndex], derivativesVy[paramsIndex], derivativesVz[paramsIndex]
+                        derivatives[0].getPartialDerivative(paramsIndex),
+                        derivatives[1].getPartialDerivative(paramsIndex),
+                        derivatives[2].getPartialDerivative(paramsIndex),
+                        derivatives[3].getPartialDerivative(paramsIndex),
+                        derivatives[4].getPartialDerivative(paramsIndex),
+                        derivatives[5].getPartialDerivative(paramsIndex)
                     });
                     ++paramsIndex;
                 }
