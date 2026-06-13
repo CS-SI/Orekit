@@ -241,7 +241,7 @@ public abstract class GNSSOrbitalElementsDriversProvider
             @Override
             public void valueChanged(final double previousValue, final ParameterDriver driver,
                                      final AbsoluteDate date) {
-                setGnssDate(new GNSSDate(week, driver.getValue(), system, timeScales));
+                setDate(new GNSSDate(week, driver.getValue(), system, timeScales).getDate());
             }
 
             /** {@inheritDoc} */
@@ -272,10 +272,10 @@ public abstract class GNSSOrbitalElementsDriversProvider
         cisDriver.setSelected(original.cisDriver.isSelected());
     }
 
-    /** Set GNSS date.
-     * @param gnssDate GNSS date
+    /** Set date.
+     * @param date date
      */
-    protected abstract void setGnssDate(GNSSDate gnssDate);
+    protected abstract void setDate(AbsoluteDate date);
 
     /** Create parameter driver.
      * @param name name of the driver
@@ -417,7 +417,7 @@ public abstract class GNSSOrbitalElementsDriversProvider
      */
     public void setWeek(final int week) {
         this.week = week;
-        setGnssDate(new GNSSDate(week, timeDriver.getValue(), system, timeScales));
+        setDate(new GNSSDate(week, timeDriver.getValue(), system, timeScales).getDate());
     }
 
     /** Get the driver for reference time of the GNSS orbit as a duration from week start.

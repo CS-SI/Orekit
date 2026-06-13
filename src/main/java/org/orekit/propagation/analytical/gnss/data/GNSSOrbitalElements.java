@@ -23,7 +23,6 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.OrbitalParameters;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriver;
 
@@ -153,7 +152,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         F toField(Field<T> field);
 
     /** {@inheritDoc} */
-    protected void setGnssDate(final GNSSDate gnssDate) {
+    protected void setDate(final AbsoluteDate gnssDate) {
         this.date = gnssDate.getDate();
     }
 

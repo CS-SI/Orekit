@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.GNSSDate;
@@ -105,7 +106,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         copyNonKeplerian(original);
 
         // Keplerian orbital elements
-        setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
+        setDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()).
+                getDate());
         setSma(field.getZero().newInstance(original.getSma()));
         setE(field.getZero().newInstance(original.getE()));
         setI0(field.getZero().newInstance(original.getI0()));
@@ -133,7 +135,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         copyNonKeplerian(original);
 
         // Keplerian orbital elements
-        setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
+        setDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()).
+                getDate());
         setSma(converter.apply(original.getSma()));
         setE(converter.apply(original.getE()));
         setI0(converter.apply(original.getI0()));
@@ -163,7 +166,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         G changeField(Function<T, U> converter);
 
     /** {@inheritDoc} */
-    protected void setGnssDate(final GNSSDate gnssDate) {
+    protected void setDate(final AbsoluteDate gnssDate) {
         this.date = new FieldAbsoluteDate<>(mu.getField(), gnssDate.getDate());
     }
 
