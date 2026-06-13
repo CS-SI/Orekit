@@ -30,7 +30,6 @@ import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
@@ -92,11 +91,10 @@ public class Rtcm1042Test {
         final BeidouLegacyNavigationMessage beidouMessage = ephemerisData.getBeidouNavigationMessage();
 
         // Verify propagator initialization
-        final GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(beidouMessage,
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        final GNSSPropagator<BeidouLegacyNavigationMessage> propagator =
+            beidouMessage.builder(context.getFrames().getEME2000(),
+                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+            buildPropagator();
         Assertions.assertNotNull(propagator);
         final double eps = 1.0e-15;
         Assertions.assertEquals(0.0, beidouMessage.getDate().

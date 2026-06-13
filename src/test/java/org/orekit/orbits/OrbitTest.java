@@ -311,7 +311,11 @@ class OrbitTest {
 
         @Override
         public void addKeplerContribution(PositionAngleType type, double gm, double[] pDot) {
+        }
 
+        @Override
+        public AbstractOrbitFactory<TestOrbit> factory(PositionAngleType type, double positionScale) {
+            return null;
         }
     }
 

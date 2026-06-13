@@ -153,7 +153,7 @@ public class EstimationTestUtils {
         // key/first    = primary station that dates the measurement
         // value/second = secondary station associated
         context.FDOAstations = context.TDOAstations;
-        
+
         final Vector3D deltaP1 = new Vector3D(1000.0, 2000.0, 3000.0);
         final Vector3D deltaV1 = new Vector3D(0.1, 0.17, -0.03);
         final Vector3D deltaP2 = new Vector3D(-10000.0, -500.0, -6000.0);
@@ -338,15 +338,8 @@ public class EstimationTestUtils {
     public static Propagator createPropagator(final Orbit initialOrbit,
                                               final PropagatorBuilder propagatorBuilder) {
 
-        // Override orbital parameters
-        double[] orbitArray = new double[6];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
-                                                         propagatorBuilder.getPositionAngleType(),
-                                                         orbitArray, null);
-        for (int i = 0; i < orbitArray.length; ++i) {
-        	// Here orbital parameters drivers have only 1 estimated values on the all time period for orbit determination
-            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
-        }
+        // override orbital parameters
+        propagatorBuilder.getOrbitalParameterFactory().reset(initialOrbit);
 
         // Return the built propagator
         return propagatorBuilder.buildPropagator();

@@ -76,9 +76,9 @@ public class NumericalConverterTest {
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
-                                                       dp54Builder,
-                                                       PositionAngleType.TRUE, 1.0);
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, 1.0),
+                                                       dp54Builder);
         builder.addForceModel(gravity);
         // Verify that there is no Newtonian attraction force model
         Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
@@ -94,9 +94,9 @@ public class NumericalConverterTest {
     @Test
     public void testOnlyCartesianAllowed() {
         NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
-                                                       new LutherIntegratorBuilder(100.0),
-                                                       PositionAngleType.TRUE, 1.0);
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, 1.0),
+                                                       new LutherIntegratorBuilder(100.0));
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
         try {
@@ -215,9 +215,9 @@ public class NumericalConverterTest {
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
-                                                       dp54Builder,
-                                                       PositionAngleType.TRUE, 1.0);
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, 1.0),
+                                                       dp54Builder);
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
 
@@ -269,14 +269,14 @@ public class NumericalConverterTest {
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
-                                                       dp54Builder,
-                                                       PositionAngleType.TRUE, 1.0);
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, 1.0),
+                                                       dp54Builder);
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertFalse(driver.isSelected());
         }
     }
@@ -288,9 +288,9 @@ public class NumericalConverterTest {
         throws IOException, ParseException {
 
         NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
-                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       PositionAngleType.TRUE, dP);
+                        new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, dP),
+                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP));
 
         ForceModel guessedDrag = drag;
         ForceModel guessedGravity = gravity;
@@ -359,10 +359,9 @@ public class NumericalConverterTest {
 
     protected void checkFit(final ODEIntegratorBuilder foiBuilder) {
 
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
-                                                                            foiBuilder,
-                                                                            PositionAngleType.TRUE,
-                                                                            1.0);
+        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit).
+                                                                            factory(PositionAngleType.TRUE, 1.0),
+                                                                            foiBuilder);
 
         builder.addForceModel(drag);
         builder.addForceModel(gravity);

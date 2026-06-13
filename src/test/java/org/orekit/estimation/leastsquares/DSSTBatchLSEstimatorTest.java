@@ -227,7 +227,9 @@ class DSSTBatchLSEstimatorTest {
                 Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -243,7 +245,7 @@ class DSSTBatchLSEstimatorTest {
 
         final DSSTPropagatorBuilder propagatorBuilder =
                         context.createDsst(true, 60.0, 600.0, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(), LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
@@ -329,7 +331,9 @@ class DSSTBatchLSEstimatorTest {
                 Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 

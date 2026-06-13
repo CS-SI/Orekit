@@ -552,10 +552,15 @@ public class ParseInfo {
                                                                                   messageType));
                 } else {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
-                    return new BeidouCnv123Parser(this,
-                                                  new BeidouCivilianNavigationMessage(BeidouCivilianType.valueOf(messageType),
-                                                                                      timeScales,
-                                                                                      SatelliteSystem.BEIDOU));
+                    try {
+                        return new BeidouCnv123Parser(this,
+                                                      new BeidouCivilianNavigationMessage(BeidouCivilianType.valueOf(messageType),
+                                                                                          timeScales,
+                                                                                          SatelliteSystem.BEIDOU));
+                    } catch (IllegalArgumentException iae) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, name, line);
+                    }
                 }
             case NAVIC:
                 if (messageType == null || messageType.equals(NavICLegacyNavigationMessage.LNAV)) {

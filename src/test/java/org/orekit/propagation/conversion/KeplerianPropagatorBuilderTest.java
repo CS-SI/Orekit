@@ -41,7 +41,8 @@ public class KeplerianPropagatorBuilderTest {
 
         // Given
         final Orbit orbit = getOrbit();
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
+        final KeplerianPropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 1.0));
 
         // When
         final KeplerianPropagatorBuilder copyBuilder = builder.clone();
@@ -56,7 +57,8 @@ public class KeplerianPropagatorBuilderTest {
     void testClearImpulseManeuvers() {
         // Given
         final Orbit orbit = getOrbit();
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
+        final KeplerianPropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 1.0));
         final ImpulseManeuver mockedManeuver = Mockito.mock(ImpulseManeuver.class);
         builder.addImpulseManeuver(mockedManeuver);
 
@@ -72,7 +74,8 @@ public class KeplerianPropagatorBuilderTest {
     void testAddImpulseManeuver() {
         // Given
         final Orbit orbit = getOrbit();
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
+        final KeplerianPropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 1.0));
         final ImpulseManeuver mockedManeuver = Mockito.mock(ImpulseManeuver.class);
 
         // When
@@ -93,7 +96,8 @@ public class KeplerianPropagatorBuilderTest {
 
         // Given
         final Orbit orbit = getOrbit();
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
+        final KeplerianPropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 1.0));
 
         // When
         final KeplerianPropagatorBuilder copyBuilder = builder.clone();
@@ -106,7 +110,7 @@ public class KeplerianPropagatorBuilderTest {
         // Then
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
-        final PVCoordinates initialPv = builder.createInitialOrbit().getPVCoordinates();
+        final PVCoordinates initialPv = builder.getOrbitalParameterFactory().createFromDrivers().getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());
         final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
         final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());

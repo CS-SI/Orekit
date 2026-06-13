@@ -154,7 +154,8 @@ public class TLEKalmanEstimatorTest {
                         propagate(measurements.getLast().getDate()).getOrbit();
 
         // Change X position of 10m as in the batch test
-        ParameterDriver xDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver xDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -204,7 +205,7 @@ public class TLEKalmanEstimatorTest {
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(), LOFType.LVLH));
 
         // Antenna phase center definition
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
@@ -237,7 +238,7 @@ public class TLEKalmanEstimatorTest {
                         propagate(measurements.getLast().getDate()).getOrbit();
 
         // Change X position of 10m as in the batch test
-        ParameterDriver xDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver xDriver = propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -314,7 +315,7 @@ public class TLEKalmanEstimatorTest {
                         propagate(measurements.getLast().getDate()).getOrbit();
 
         // Change X position of 10m as in the batch test
-        ParameterDriver xDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver xDriver = propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 

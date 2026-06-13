@@ -33,7 +33,6 @@ import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
@@ -96,11 +95,10 @@ public class Rtcm1019Test {
         final GPSLegacyNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
 
         // Verify propagator initialization
-        final GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(gpsMessage,
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        final GNSSPropagator<GPSLegacyNavigationMessage> propagator =
+            gpsMessage.builder(context.getFrames().getEME2000(),
+                               context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+            buildPropagator();
         Assertions.assertNotNull(propagator);
         final double eps = 1.0e-15;
         Assertions.assertEquals(0.0, gpsMessage.getDate().

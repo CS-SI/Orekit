@@ -44,9 +44,9 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
+import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
@@ -78,7 +78,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                            final ODEIntegratorBuilder builder,
                                                            final double positionScale) {
-        return new TLEPropagatorBuilder(templateTLE, PositionAngleType.MEAN, positionScale,
+        return new TLEPropagatorBuilder(new TleParametersFactory(templateTLE, FramesFactory.getTEME()),
                                         new FixedPointTleGenerationAlgorithm());
     }
 

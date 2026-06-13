@@ -61,7 +61,7 @@ public class ShapiroInterSatellitePhaseModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(), LOFType.LVLH));
 
         // create perfect inter-satellites phase measurements without antenna offset
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();

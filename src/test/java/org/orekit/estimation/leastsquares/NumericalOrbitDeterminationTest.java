@@ -61,7 +61,6 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -92,8 +91,9 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
     protected NumericalPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                                  final ODEIntegratorBuilder builder,
                                                                  final double positionScale) {
-        return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngleType.MEAN,
-                                              positionScale);
+        return new NumericalPropagatorBuilder(referenceOrbit.factory(PositionAngleType.MEAN,
+                                                                     positionScale),
+                                              builder);
     }
 
     /** {@inheritDoc} */
@@ -303,8 +303,7 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
     @Test
     // Orbit determination for range, azimuth elevation measurements
     void testW3B()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-              OrekitException, ParseException {
+        throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();

@@ -33,7 +33,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
@@ -64,18 +63,16 @@ public class BrouwerLyddanePropagatorBuilderTest {
 
         // We propagate using a build version of the propagator
         // We shall have the same results than before
-        BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit,
-                                                                                      provider.getAe(),
-                                                                                      provider.getMu(),
-                                                                                      provider.getTideSystem(),
-                                                                                      harmonics.getUnnormalizedCnm(2, 0),
-                                                                                      harmonics.getUnnormalizedCnm(3, 0),
-                                                                                      harmonics.getUnnormalizedCnm(4, 0),
-                                                                                      harmonics.getUnnormalizedCnm(5, 0),
-                                                                                      OrbitType.KEPLERIAN,
-                                                                                      PositionAngleType.TRUE,
-                                                                                      1.0,
-                                                                                      BrouwerLyddanePropagator.M2);
+        BrouwerLyddanePropagatorBuilder builder =
+            new BrouwerLyddanePropagatorBuilder(orbit.factory(PositionAngleType.TRUE, 1.0),
+                                                provider.getAe(),
+                                                provider.getMu(),
+                                                provider.getTideSystem(),
+                                                harmonics.getUnnormalizedCnm(2, 0),
+                                                harmonics.getUnnormalizedCnm(3, 0),
+                                                harmonics.getUnnormalizedCnm(4, 0),
+                                                harmonics.getUnnormalizedCnm(5, 0),
+                                                BrouwerLyddanePropagator.M2);
 
         final Propagator prop = builder.buildPropagator();
         final Orbit orbitWithBuilder = prop.propagate(initDate.shiftedBy(60000)).getOrbit();
@@ -100,18 +97,16 @@ public class BrouwerLyddanePropagatorBuilderTest {
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(orbit.getDate());
 
         // Initialize propagator builder
-        BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit,
-                                                                                      provider.getAe(),
-                                                                                      provider.getMu(),
-                                                                                      provider.getTideSystem(),
-                                                                                      harmonics.getUnnormalizedCnm(2, 0),
-                                                                                      harmonics.getUnnormalizedCnm(3, 0),
-                                                                                      harmonics.getUnnormalizedCnm(4, 0),
-                                                                                      harmonics.getUnnormalizedCnm(5, 0),
-                                                                                      OrbitType.KEPLERIAN,
-                                                                                      PositionAngleType.TRUE,
-                                                                                      1.0,
-                                                                                      M2);
+        BrouwerLyddanePropagatorBuilder builder =
+            new BrouwerLyddanePropagatorBuilder(orbit.factory(PositionAngleType.TRUE, 1.0),
+                                                provider.getAe(),
+                                                provider.getMu(),
+                                                provider.getTideSystem(),
+                                                harmonics.getUnnormalizedCnm(2, 0),
+                                                harmonics.getUnnormalizedCnm(3, 0),
+                                                harmonics.getUnnormalizedCnm(4, 0),
+                                                harmonics.getUnnormalizedCnm(5, 0),
+                                                M2);
 
         // Set the M2 parameter to selected
         for (ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
@@ -167,8 +162,9 @@ public class BrouwerLyddanePropagatorBuilderTest {
                 new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
         final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
 
-        final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit, harmonicsProvider,
-                PositionAngleType.MEAN, 10.0, 1.0e-8);
+        final BrouwerLyddanePropagatorBuilder builder =
+            new BrouwerLyddanePropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 10.0),
+                                                harmonicsProvider, 1.0e-8);
         builder.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
 
         // When
@@ -195,8 +191,9 @@ public class BrouwerLyddanePropagatorBuilderTest {
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
         final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
 
-        final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit, harmonicsProvider,
-                                                                                            PositionAngleType.MEAN, 10.0, 1.0e-8);
+        final BrouwerLyddanePropagatorBuilder builder =
+            new BrouwerLyddanePropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 10.0),
+                                                harmonicsProvider, 1.0e-8);
         builder.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
 
         // When
@@ -209,7 +206,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
         // Then
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
-        final PVCoordinates initialPv = builder.createInitialOrbit().getPVCoordinates();
+        final PVCoordinates initialPv = builder.getOrbitalParameterFactory().createFromDrivers().getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());
         final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
         final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());

@@ -338,7 +338,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -549,7 +550,8 @@ class BatchLSEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
@@ -636,7 +638,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -790,7 +793,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -984,7 +988,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -1151,7 +1156,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -1426,7 +1432,8 @@ class BatchLSEstimatorTest {
                                                        new PVMeasurementCreator(),
                                                        0.0, 1.0, 300.0);
 
-        List<ParameterDriversList.DelegatingDriver> orbitalElementsDrivers = propagatorBuilder.getOrbitalParametersDrivers().getDrivers();
+        List<ParameterDriversList.DelegatingDriver> orbitalElementsDrivers =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers();
         IntStream.range(0, orbitalParametersEstimated.length).forEach(i -> {
             final ParameterDriver driver = orbitalElementsDrivers.get(i);
             if (orbitalParametersEstimated[i]) {

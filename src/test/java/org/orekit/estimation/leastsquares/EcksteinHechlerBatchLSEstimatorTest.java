@@ -175,7 +175,7 @@ class EcksteinHechlerBatchLSEstimatorTest {
 
         final EcksteinHechlerPropagatorBuilder propagatorBuilder =
                         context.createEcksteinHechler(PositionAngleType.MEAN, true, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(), LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset

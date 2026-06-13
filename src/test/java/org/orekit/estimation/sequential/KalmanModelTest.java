@@ -109,7 +109,6 @@ class KalmanModelTest {
      * Select estimation of radiation pressure reflection coefficient.
      * Select estimation of all orbital parameters.
      * Create a Kalman filter from this.
-     *
      * Create one perfect PV measurement at t0
      * Create one range measurement at t0 + 10s, modified by the satellite range bias mentionned above.
      */
@@ -500,7 +499,7 @@ class KalmanModelTest {
         final List<Double> scaleList = new ArrayList<>();
 
         // Orbital parameters
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
             	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
                     scaleList.add(driver.getScale());
@@ -553,7 +552,7 @@ class KalmanModelTest {
 
 
     /** Observer allowing to get Kalman model after a measurement was processed in the Kalman filter. */
-    public class ModelLogger implements KalmanObserver {
+    public static class ModelLogger implements KalmanObserver {
         KalmanEstimation estimation;
 
         @Override
@@ -569,7 +568,7 @@ class KalmanModelTest {
     @Test
     public void MassDepletionTest()  {
         // Add a maneuver with nonzero mass expenditure between the first and second measurement dates.
-        AbsoluteDate initialDate = this.propagatorBuilder.getInitialOrbitDate();
+        AbsoluteDate initialDate = this.propagatorBuilder.getOrbitalParameterFactory().getDate();
         double initialMass = this.propagatorBuilder.getMass();
         AbsoluteDate maneuverDate = initialDate.shiftedBy(5.0);
 

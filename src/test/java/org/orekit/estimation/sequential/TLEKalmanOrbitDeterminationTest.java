@@ -64,11 +64,11 @@ import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
+import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
@@ -106,7 +106,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                            final ODEIntegratorBuilder builder,
                                                            final double positionScale) {
-        return new TLEPropagatorBuilder(templateTLE, PositionAngleType.MEAN, positionScale,
+        return new TLEPropagatorBuilder(new TleParametersFactory(templateTLE, FramesFactory.getTEME()),
                                         new FixedPointTleGenerationAlgorithm());
     }
 
@@ -422,7 +422,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     public TimeStampedPVCoordinates createRef(final AbsoluteDate date, final Vector3D refPos0, final Vector3D refVel0) {
 
         // Initial orbit
-        final AbsoluteDate initDate = new AbsoluteDate(2016, 02, 14, 12, 14, 48.132, TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(2016, 2, 14, 12, 14, 48.132, TimeScalesFactory.getUTC());
         final CartesianOrbit initOrbit= new CartesianOrbit(new PVCoordinates(refPos0, refVel0), FramesFactory.getEME2000(), initDate, TLEConstants.MU);
         final SpacecraftState initState = new SpacecraftState(initOrbit);
 

@@ -294,7 +294,7 @@ public class Context implements StationDataProvider {
                                                    altitude);
         return new EarthBasedStation(new TopocentricFrame(earth, gp, name), ut1.getEOPHistory(), displacements);
     }
-    
+
     ObserverSatellite createObserverSatellite(final Vector3D deltaPosition, final Vector3D deltaVelocity,
             final String name, final Force... forces) {
 
@@ -322,7 +322,7 @@ public class Context implements StationDataProvider {
     public List<EarthBasedStation> getStations() {
         return stations;
     }
-    
+
     @Override
     public List<ObserverSatellite> getSatellites() {
         return satellites;

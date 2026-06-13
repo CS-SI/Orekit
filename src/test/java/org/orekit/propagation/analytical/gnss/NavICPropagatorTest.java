@@ -76,7 +76,7 @@ public class NavICPropagatorTest {
     @Test
     public void testNavICCycle() {
         // Builds the NavIC propagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<NavICAlmanac> propagator =
             almanac.getPropagator(frames.getEME2000(),
                                   frames.getITRF(IERSConventions.IERS_2010, false));
         // Propagate at the NavIC date and one NavIC cycle later
@@ -93,7 +93,7 @@ public class NavICPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the NavIC propagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<NavICAlmanac> propagator =
             almanac.getPropagator(frames.getEME2000(),
                                   frames.getITRF(IERSConventions.IERS_2010, true));
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
@@ -112,7 +112,7 @@ public class NavICPropagatorTest {
 
     @Test
     public void testResetInitialState() {
-        final GNSSPropagator propagator =
+        final GNSSPropagator<NavICAlmanac> propagator =
             almanac.getPropagator(frames.getEME2000(),
                                   frames.getITRF(IERSConventions.IERS_2010, false));
         final SpacecraftState old = propagator.getInitialState();
@@ -122,11 +122,10 @@ public class NavICPropagatorTest {
 
     @Test
     public void testResetIntermediateState() {
-        GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(almanac,
-                                      frames.getEME2000(),
-                                      frames.getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        GNSSPropagator<NavICAlmanac> propagator =
+            almanac.builder(frames.getEME2000(),
+                            frames.getITRF(IERSConventions.IERS_2010, false)).
+            buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),
                                           true);
@@ -140,7 +139,7 @@ public class NavICPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        final GNSSPropagator propagator =
+        final GNSSPropagator<NavICAlmanac> propagator =
             almanac.getPropagator(eme2000, frames.getITRF(IERSConventions.IERS_2010, true));
         GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.NAVIC).getDate();
@@ -172,7 +171,7 @@ public class NavICPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the NavICPropagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<NavICAlmanac> propagator =
             almanac.getPropagator(frames.getEME2000(),
                                   frames.getITRF(IERSConventions.IERS_2010, false));
         // In order to test the issue, we voluntary set a Double.NaN value in the date.

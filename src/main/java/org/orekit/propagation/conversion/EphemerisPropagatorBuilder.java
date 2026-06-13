@@ -145,7 +145,7 @@ public class EphemerisPropagatorBuilder
                                       final List<StateCovariance> covariances,
                                       final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator,
                                       final AttitudeProvider attitudeProvider) {
-        super((AbstractOrbitFactory<Orbit>) states.getFirst().getOrbit().factory(DEFAULT_SCALE, PositionAngleType.TRUE),
+        super((AbstractOrbitFactory<Orbit>) states.getFirst().getOrbit().factory(PositionAngleType.TRUE, DEFAULT_SCALE),
               false, attitudeProvider);
         deselectDynamicParameters();
 
