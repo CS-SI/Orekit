@@ -18,6 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -72,6 +75,51 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
         iscL1DL1P           = orbit.getMu().newInstance(original.getIscL1DL1P());
         iscL1PS             = orbit.getMu().newInstance(original.getIscL1PS());
         iscL1DS             = orbit.getMu().newInstance(original.getIscL1DS());
+    }
+
+    /** Creates a new instance.
+     * @param angularVelocity     mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle        number of weeks in the GNSS cycle
+     * @param timeScales          known time scales
+     * @param type                type (null if not a navigation message)
+     * @param prn                 PRN number of the satellite
+     * @param gnssDate            GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param orbit               Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian        15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd                 group delay differential TGD for L1-L2 correction
+     * @param toc                 time of clock
+     * @param epochToc            time of clock epoch
+     * @param transmissionTime    transmission time
+     * @param referenceSignalFlag reference signal flag
+     * @param urai                User Range Accuracy Index
+     * @param l1SpsHealth         L1 SPS health
+     * @param tgdSL5              estimated group delay differential TGD for S-L5 correction
+     * @param iscSL1P             inter signal delay for S L1P
+     * @param iscL1DL1P           inter signal delay for L1D L1P
+     * @param iscL1PS             inter signal delay for L1P S
+     * @param iscL1DS             inter signal delay for L1D S
+     * @since 14.0
+     */
+    public FieldNavicL1NvNavigationMessage(final double angularVelocity, final int weeksInCycle,
+                                           final TimeScales timeScales, final String type, final int prn,
+                                           final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                           final T[] nonKeplerian, final T tgd, final T toc,
+                                           final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                           final int referenceSignalFlag,
+                                           final int urai, final int l1SpsHealth,
+                                           final T tgdSL5,
+                                           final T iscSL1P, final T iscL1DL1P,
+                                           final T iscL1PS, final T iscL1DS) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
+              tgd, toc, epochToc, transmissionTime);
+        this.referenceSignalFlag = referenceSignalFlag;
+        this.urai                = urai;
+        this.l1SpsHealth         = l1SpsHealth;
+        this.tgdSL5              = tgdSL5;
+        this.iscSL1P             = iscSL1P;
+        this.iscL1DL1P           = iscL1DL1P;
+        this.iscL1PS             = iscL1PS;
+        this.iscL1DS             = iscL1DS;
     }
 
     /** Constructor from different field instance.

@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -95,8 +97,22 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSAlmanac, F>>
-        F toField(final FieldKeplerianOrbit<T> orbit) {
-        return (F) new FieldQZSSAlmanac<>(orbit, this);
+        F toField(final Field<T> field) {
+        return (F) new FieldQZSSAlmanac<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <P extends FieldGnssOrbitalElements<Gradient, QZSSAlmanac, P>>
+        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
+        final int freeParameters = orbit.getMu().getFreeParameters();
+        return (P) new FieldQZSSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                          getType(), getPrn(), getGnssDate(), orbit,
+                                          nonKeplerian.toGradients(freeParameters),
+                                          Gradient.constant(freeParameters, getTGD()),
+                                          Gradient.constant(freeParameters, getToc()),
+                                          getSource(), getHealth());
     }
 
     /** Get the source of this QZSS almanac.

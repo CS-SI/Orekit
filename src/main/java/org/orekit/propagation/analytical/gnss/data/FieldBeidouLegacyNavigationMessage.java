@@ -18,6 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -68,6 +71,47 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
         tgd1       = orbit.getMu().newInstance(original.getTGD1());
         tgd2       = orbit.getMu().newInstance(original.getTGD2());
         svAccuracy = orbit.getMu().newInstance(original.getSvAccuracy());
+    }
+
+    /** Creates a new instance.
+     * @param d2               indicator for D2 messages
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param epochToc         time of clock epoch
+     * @param transmissionTime transmission time
+     * @param aode             age of data, ephemeris
+     * @param aodc             age of data, clock
+     * @param satH1            health identifier
+     * @param tgd1             B1/B3 Group Delay Differential (s)
+     * @param tgd2             B2/B3 Group Delay Differential (s)
+     * @param svAccuracy       user SV accuracy (m)
+     * @since 14.0
+     */
+    public FieldBeidouLegacyNavigationMessage(final boolean d2,
+                                              final double angularVelocity, final int weeksInCycle,
+                                              final TimeScales timeScales, final String type, final int prn,
+                                              final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                              final T[] nonKeplerian, final T tgd, final T toc,
+                                              final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                              final int aode, final int aodc, final int satH1,
+                                              final T tgd1, final T tgd2, final T svAccuracy) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
+              tgd, toc, epochToc, transmissionTime);
+        this.d2         = d2;
+        this.aode       = aode;
+        this.aodc       = aodc;
+        this.satH1      = satH1;
+        this.tgd1       = tgd1;
+        this.tgd2       = tgd2;
+        this.svAccuracy = svAccuracy;
     }
 
     /** Constructor from different field instance.

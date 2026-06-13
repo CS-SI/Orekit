@@ -23,6 +23,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
@@ -61,7 +62,8 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>,
         // build propagator handling gradient
         final FieldKeplerianOrbit<Gradient> orbit =
             (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(state.getOrbit());
-        final P elements = propagator.getOrbitalElements().toField(orbit);
+        final NonKeplerianDriversFactory driversFactory = propagator.getDriversFactory();
+        final P elements = propagator.getOrbitalElements().toGradient(orbit, driversFactory);
         return new FieldGnssPropagator<>(state, elements,
                                          propagator.getECEF(), propagator.getAttitudeProvider(),
                                          state.getMass());

@@ -18,6 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -36,6 +39,41 @@ public class FieldGPSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
      */
     public FieldGPSLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit, final GPSLegacyNavigationMessage original) {
         super(orbit, original);
+    }
+
+    /** Creates a new instance.
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param epochToc         time of clock epoch
+     * @param transmissionTime transmission time
+     * @param iode             issue of data, ephemeris
+     * @param iodc             issue of data, clock
+     * @param svAccuracy       user SV accuracy (m)
+     * @param svHealth         satellite health status
+     * @param fitInterval      fit interval
+     * @param l2Codes          codes on L2 channel
+     * @param l2PFlags         L2 P data flags.
+     * @since 14.0
+     */
+    public FieldGPSLegacyNavigationMessage(final double angularVelocity, final int weeksInCycle,
+                                           final TimeScales timeScales, final String type, final int prn,
+                                           final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                           final T[] nonKeplerian, final T tgd, final T toc,
+                                           final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                           final int iode, final int iodc, final T svAccuracy,
+                                           final int svHealth, final int fitInterval,
+                                           final int l2Codes, final int l2PFlags) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
+              tgd, toc, epochToc, transmissionTime,
+              iode, iodc, svAccuracy, svHealth, fitInterval, l2Codes, l2PFlags);
     }
 
     /** Constructor from different field instance.

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
@@ -208,7 +209,8 @@ public class NonKeplerianDriversFactory {
 
     /** {@inheritDoc}
      * <p>
-     * Only the 12 non-Keplerian evolution parameters and 3 clock parameters are listed here:
+     * Only the 15 non-Keplerian parameters (12 evolution parameters and 3 clock parameters)
+     * are listed here:
      * Time driver at index {@link #TIME_INDEX},
      * ADot driver at index {@link #A_DOT_INDEX},
      * DeltaN0 driver at index {@link #DELTA_N0_INDEX},
@@ -355,6 +357,66 @@ public class NonKeplerianDriversFactory {
      */
     public ParameterDriver getAf2Driver() {
         return af2Driver;
+    }
+
+    /** Get the non-Keplerian elements as gradient variables or constants, depending on selection status.
+     * @param freeParameters total number of free parameters in the gradient
+     */
+    public Gradient[] toGradients(final int freeParameters) {
+        final Filler filler = new Filler(freeParameters);
+        filler.manage(timeDriver,       TIME_INDEX);
+        filler.manage(aDotDriver,       A_DOT_INDEX);
+        filler.manage(deltaN0Driver,    DELTA_N0_INDEX);
+        filler.manage(deltaN0DotDriver, DELTA_N0_DOT_INDEX);
+        filler.manage(iDotDriver,       I_DOT_INDEX);
+        filler.manage(domDriver,        OMEGA_DOT_INDEX);
+        filler.manage(cucDriver,        CUC_INDEX);
+        filler.manage(cusDriver,        CUS_INDEX);
+        filler.manage(crcDriver,        CRC_INDEX);
+        filler.manage(crsDriver,        CRS_INDEX);
+        filler.manage(cicDriver,        CIC_INDEX);
+        filler.manage(cisDriver,        CIS_INDEX);
+        filler.manage(af0Driver,        AF0_INDEX);
+        filler.manage(af1Driver,        AF1_INDEX);
+        filler.manage(af2Driver,        AF2_INDEX);
+        return filler.gradients;
+    }
+
+    private static class Filler {
+
+        /** Total number of free parameters in the gradient. */
+        private final int freeParameters;
+
+        /** Gradient array. */
+        private final Gradient[] gradients;
+
+        /** Partial derivative index. */
+        private int derivative;
+
+        /** Simple constructor.
+          * @param freeParameters total number of free parameters in the gradient
+          */
+        Filler(final int freeParameters) {
+            this.freeParameters = freeParameters;
+            this.gradients      = new Gradient[SIZE];
+            this.derivative     = 6;
+        }
+
+        /** Manage one driver.
+         * @param driver driver to manage
+         * @param index index of the driver in the array
+         */
+        private void manage(final ParameterDriver driver, final int index) {
+            if (driver.isSelected()) {
+                // this driver should be managed as a variable
+                gradients[index] = Gradient.variable(freeParameters, derivative, driver.getValue());
+                ++derivative;
+            } else {
+                // this driver should be managed as a constant
+                gradients[index] = Gradient.constant(freeParameters, driver.getValue());
+            }
+        }
+
     }
 
 }

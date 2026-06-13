@@ -17,10 +17,13 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -118,8 +121,35 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSCivilianNavigationMessage, F>>
-        F toField(final FieldKeplerianOrbit<T> orbit) {
-        return (F) new FieldQZSSCivilianNavigationMessage<>(orbit, this);
+        F toField(final Field<T> field) {
+        return (F) new FieldQZSSCivilianNavigationMessage<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <P extends FieldGnssOrbitalElements<Gradient, QZSSCivilianNavigationMessage, P>>
+        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
+        final int freeParameters = orbit.getMu().getFreeParameters();
+        return (P) new FieldQZSSCivilianNavigationMessage<>(isCnv2(),
+                                                            getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                            getType(), getPrn(), getGnssDate(), orbit,
+                                                            nonKeplerian.toGradients(freeParameters),
+                                                            Gradient.constant(freeParameters, getTGD()),
+                                                            Gradient.constant(freeParameters, getToc()),
+                                                            new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                                   getEpochToc()),
+                                                            Gradient.constant(freeParameters, getTransmissionTime()),
+                                                            Gradient.constant(freeParameters, getSvAccuracy()),
+                                                            getSvHealth(),
+                                                            Gradient.constant(freeParameters, getIscL1CA()),
+                                                            Gradient.constant(freeParameters, getIscL1CD()),
+                                                            Gradient.constant(freeParameters, getIscL1CP()),
+                                                            Gradient.constant(freeParameters, getIscL2C()),
+                                                            Gradient.constant(freeParameters, getIscL5I5()),
+                                                            Gradient.constant(freeParameters, getIscL5Q5()),
+                                                            getUraiEd(), getUraiNed0(), getUraiNed1(), getUraiNed2(),
+                                                            getFlags());
     }
 
     /** {@inheritDoc} */
