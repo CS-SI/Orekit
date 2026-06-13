@@ -57,8 +57,13 @@ public class GnssTestUtils {
                 final AbsoluteDate         date        = (AbsoluteDate) getter.invoke(message);
                 final FieldAbsoluteDate<?> fieldDate   = (FieldAbsoluteDate<?>) fieldGetter.invoke(intermediate);
                 final AbsoluteDate         rebuiltDate = (AbsoluteDate) getter.invoke(rebuilt);
-                Assertions.assertEquals(0.0, date.durationFrom(fieldDate.toAbsoluteDate()), 1.0e-15);
-                Assertions.assertEquals(0.0, date.durationFrom(rebuiltDate),                1.0e-15);
+                if (date == null) {
+                    Assertions.assertNull(fieldDate);
+                    Assertions.assertNull(rebuiltDate);
+                } else {
+                    Assertions.assertEquals(0.0, date.durationFrom(fieldDate.toAbsoluteDate()), 1.0e-15);
+                    Assertions.assertEquals(0.0, date.durationFrom(rebuiltDate),                1.0e-15);
+                }
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException nsme) {
             Assertions.fail(nsme.getLocalizedMessage());

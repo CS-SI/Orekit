@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -73,7 +74,7 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
                        final double crc, final double crs,
                        final double cic, final double cis,
                        final double af0, final double af1, final double af2,
-                       final double tgd, final double toc,
+                       final double tgd, final AbsoluteDate toc,
                        final String source, final int health) {
         super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, null, prn,
               gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
@@ -99,7 +100,7 @@ public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldQZSSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                           getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                          converter.apply(getTgd()), converter.apply(getToc()),
+                                          converter.apply(getTgd()), toFieldToc(orbit),
                                           getSource(), getHealth());
     }
 

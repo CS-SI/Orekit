@@ -37,9 +37,6 @@ import org.orekit.time.TimeScales;
 public abstract class AbstractNavigationMessage<O extends AbstractNavigationMessage<O>>
     extends GNSSOrbitalElements<O> implements NavigationMessage {
 
-    /** Time of clock epoch. */
-    private final AbsoluteDate epochToc;
-
     /** Transmission time.
      * @since 12.0
      */
@@ -70,7 +67,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      * @param af2              second order clock correction (s/s²)
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      */
     protected AbstractNavigationMessage(final double angularVelocity, final int weeksInCycle,
@@ -82,12 +78,10 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
                                         final double crc, final double crs,
                                         final double cic, final double cis,
                                         final double af0, final double af1, final double af2,
-                                        final double tgd, final double toc,
-                                        final AbsoluteDate epochToc, final double transmissionTime) {
+                                        final double tgd, final AbsoluteDate toc, final double transmissionTime) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn,
               gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
               cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc);
-        this.epochToc         = epochToc;
         this.transmissionTime = transmissionTime;
     }
 
@@ -99,7 +93,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     protected <T extends CalculusFieldElement<T>,
                A extends AbstractNavigationMessage<A>> AbstractNavigationMessage(final FieldAbstractNavigationMessage<T, A, ?> original) {
         super(original);
-        epochToc         = original.getEpochToc().toAbsoluteDate();
         transmissionTime = original.getTransmissionTime().getReal();
     }
 
@@ -113,13 +106,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     @Override
     public String getNavigationMessageSubType() {
         return null;
-    }
-
-    /** Get the time of clock epoch.
-     * @return the time of clock epoch
-     */
-    public AbsoluteDate getEpochToc() {
-        return epochToc;
     }
 
     /** Get transmission time.

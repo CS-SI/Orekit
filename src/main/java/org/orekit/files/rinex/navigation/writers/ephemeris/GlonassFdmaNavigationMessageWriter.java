@@ -43,7 +43,7 @@ public class GlonassFdmaNavigationMessageWriter
                                  final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
 
-        final DateTimeComponents dtc = message.getEpochToc().getComponents(writer.getTimeScales().getUTC());
+        final DateTimeComponents dtc = message.getToc().getComponents(writer.getTimeScales().getUTC());
         if (header.getFormatVersion() < 3.0) {
 
             writer.outputField(BaseRinexWriter.TWO_DIGITS_INTEGER, message.getPRN(), 2);

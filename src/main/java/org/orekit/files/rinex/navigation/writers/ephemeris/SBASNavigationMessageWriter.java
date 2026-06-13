@@ -45,7 +45,7 @@ public class SBASNavigationMessageWriter
         final TimeScale timeScale = (version100 == 301) ?
                                     writer.getTimeScales().getUTC() :
                                     writer.getTimeScales().getGPS();
-        writer.writeDate(message.getEpochToc().getComponents(timeScale));
+        writer.writeDate(message.getToc().getComponents(timeScale));
         writer.writeDouble(message.getAGf0(), Unit.SECOND);
         writer.writeDouble(message.getAGf1(), RinexNavigationParser.S_PER_S);
         writer.writeDouble(message.getTime(), Unit.SECOND);

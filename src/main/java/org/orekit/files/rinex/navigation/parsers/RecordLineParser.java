@@ -48,7 +48,7 @@ public abstract class RecordLineParser {
         final int    hours = ParsingUtils.parseInt(line,    11, 3);
         final int    min   = ParsingUtils.parseInt(line,    14, 3);
         final double sec   = ParsingUtils.parseDouble(line, 17, 5);
-        factory.setEpochToc(new AbsoluteDate(year, month, day, hours, min, sec, timeScale));
+        factory.setToc(new AbsoluteDate(year, month, day, hours, min, sec, timeScale));
 
         // clock
         factory.getAf0Driver().setValue(ParsingUtils.parseDouble(line, 22, 19));
@@ -70,7 +70,7 @@ public abstract class RecordLineParser {
         factory.setPrn(ParsingUtils.parseInt(parseInfo.getLine(), 1, 2));
 
         // Toc
-        factory.setEpochToc(parseInfo.parseDate(timeScale));
+        factory.setToc(parseInfo.parseDate(timeScale));
 
         // clock
         factory.getAf0Driver().setValue(parseInfo.parseDouble2(Unit.SECOND));

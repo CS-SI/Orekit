@@ -43,9 +43,6 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
                                                      P extends FieldAbstractNavigationMessage<T, O, P>>
     extends FieldGnssOrbitalElements<T, O, P> {
 
-    /** Time of clock epoch. */
-    private final FieldAbsoluteDate<T> epochToc;
-
     /** Transmission time. */
     private final T transmissionTime;
 
@@ -55,7 +52,6 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      */
     protected FieldAbstractNavigationMessage(final FieldKeplerianOrbit<T> orbit, final O original) {
         super(orbit, original);
-        epochToc         = new FieldAbsoluteDate<>(orbit.getDate().getField(), original.getEpochToc());
         transmissionTime = orbit.getMu().newInstance(original.getTransmissionTime());
     }
 
@@ -70,17 +66,15 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      * @since 14.0
      */
     public FieldAbstractNavigationMessage(final double angularVelocity, final int weeksInCycle,
                                           final TimeScales timeScales, final String type, final int prn,
                                           final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                          final T[] nonKeplerian, final T tgd, final T toc,
-                                          final FieldAbsoluteDate<T> epochToc, final T transmissionTime) {
+                                          final T[] nonKeplerian, final T tgd, final FieldAbsoluteDate<T> toc,
+                                          final T transmissionTime) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian, tgd, toc);
-        this.epochToc         = epochToc;
         this.transmissionTime = transmissionTime;
     }
 
@@ -94,16 +88,7 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
                                                                                  final Function<V, T> converter,
                                                                                  final FieldAbstractNavigationMessage<V, O, ?> original) {
         super(orbit, converter, original);
-        epochToc         = new FieldAbsoluteDate<>(getToc().getField(), original.getEpochToc().toAbsoluteDate());
         transmissionTime = converter.apply(original.getTransmissionTime());
-    }
-
-    /**
-     * Getter for the time of clock epoch.
-     * @return the time of clock epoch
-     */
-    public FieldAbsoluteDate<T> getEpochToc() {
-        return epochToc;
     }
 
     /**

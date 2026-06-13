@@ -70,7 +70,6 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
      * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      * @param aode             age of data, ephemeris
      * @param aodc             age of data, clock
@@ -84,12 +83,12 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
                                               final double angularVelocity, final int weeksInCycle,
                                               final TimeScales timeScales, final String type, final int prn,
                                               final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                              final T[] nonKeplerian, final T tgd, final T toc,
-                                              final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                              final T[] nonKeplerian, final T tgd,
+                                              final FieldAbsoluteDate<T> toc, final T transmissionTime,
                                               final int aode, final int aodc, final int satH1,
                                               final T tgd1, final T tgd2, final T svAccuracy) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
-              tgd, toc, epochToc, transmissionTime);
+              tgd, toc, transmissionTime);
         this.d2         = d2;
         this.aode       = aode;
         this.aodc       = aodc;
@@ -114,9 +113,9 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
                                                             getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                             getType(), getPrn(), getGnssDate().getGnssDate(),
                                                             orbit, nonKeplerian,
-                                                            converter.apply(getTgd()), converter.apply(getToc()),
+                                                            converter.apply(getTgd()),
                                                             new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                                    getEpochToc().toAbsoluteDate()),
+                                                                                    getToc().toAbsoluteDate()),
                                                             converter.apply(getTransmissionTime()),
                                                             getAODE(), getAODC(), getSatH1(),
                                                             converter.apply(getTGD1()),

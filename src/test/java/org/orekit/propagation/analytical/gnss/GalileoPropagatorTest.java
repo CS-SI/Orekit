@@ -86,7 +86,7 @@ public class GalileoPropagatorTest {
         factory.getCrsDriver().setValue(-18.78125);
         factory.getCicDriver().setValue(3.166496753692627E-8);
         factory.getCisDriver().setValue(-1.862645149230957E-8);
-        factory.setToc(new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO).getSecondsInWeek());
+        factory.setToc(new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO).getDate());
     }
 
     @BeforeAll

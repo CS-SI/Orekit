@@ -24,6 +24,7 @@ import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.LazyLoadedDataContext;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -139,7 +140,10 @@ public class Rtcm1044Test {
 
         // Verify other data
         Assertions.assertEquals(204,     ephemerisData.getSatelliteID());
-        Assertions.assertEquals(63216.0, ephemerisData.getQzssNavigationMessage().getToc(), eps);
+        Assertions.assertEquals(63216.0,
+                                new GNSSDate(ephemerisData.getQzssNavigationMessage().getToc(), SatelliteSystem.QZSS).
+                                    getSecondsInWeek(),
+                                eps);
         Assertions.assertEquals(2,       ephemerisData.getQzssNavigationMessage().getL2Codes());
         Assertions.assertEquals(0,       ephemerisData.getQzssNavigationMessage().getFitInterval());
         Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), qzssMessage.getSvAccuracy(), eps);

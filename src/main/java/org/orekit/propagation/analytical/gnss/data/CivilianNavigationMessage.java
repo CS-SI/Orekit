@@ -100,7 +100,6 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * @param af2              second order clock correction (s/s²)
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      * @param svAccuracy       user SV accuracy (m)
      * @param svHealth         satellite health status
@@ -126,8 +125,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
                                         final double crc, final double crs,
                                         final double cic, final double cis,
                                         final double af0, final double af1, final double af2,
-                                        final double tgd, final double toc,
-                                        final AbsoluteDate epochToc, final double transmissionTime,
+                                        final double tgd, final AbsoluteDate toc, final double transmissionTime,
                                         final double svAccuracy, final int svHealth,
                                         final double iscL1CA, final double iscL1CD, final double iscL1CP,
                                         final double iscL2C, final double iscL5I5, final double iscL5Q5,
@@ -135,7 +133,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
                                         final int flags) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn,
               gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
-              cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc, epochToc, transmissionTime);
+              cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc, transmissionTime);
         this.cnv2       = cnv2;
         this.svAccuracy = svAccuracy;
         this.svHealth   = svHealth;

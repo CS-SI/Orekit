@@ -106,7 +106,7 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
             final TimeScale ts = message.getGnssDate().getSystem() == SatelliteSystem.GLONASS ?
                                  writer.getTimeScales().getGLONASS() :
                                  writer.getTimeScales().getGPS();
-            final DateTimeComponents dtc = message.getEpochToc().getComponents(ts);
+            final DateTimeComponents dtc = message.getToc().getComponents(ts);
             writer.outputField(TWO_DIGITS_INTEGER, message.getPrn(), 2);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 5);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getMonth(),      8);
@@ -120,7 +120,7 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         } else {
             writer.outputField(identifier, 3, true);
             writer.outputField(' ', 4);
-            writer.writeDate(message.getEpochToc(), message.getGnssDate().getSystem());
+            writer.writeDate(message.getToc(), message.getGnssDate().getSystem());
             writer.writeDouble(message.getAf0(), Unit.SECOND);
             writer.writeDouble(message.getAf1(), RinexNavigationParser.S_PER_S);
             writer.writeDouble(message.getAf2(), RinexNavigationParser.S_PER_S2);

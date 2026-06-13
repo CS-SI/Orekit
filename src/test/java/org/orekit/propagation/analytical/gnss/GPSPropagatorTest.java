@@ -111,7 +111,7 @@ class GPSPropagatorTest {
             dtRelMax = FastMath.max(dtRelMax, corrections[1]);
             Assertions.assertEquals(0.0, corrections[2], Precision.SAFE_MIN);
         }
-        Assertions.assertEquals(0.0,        almanacs.getFirst().getToc(), 1.0e-12);
+        Assertions.assertEquals(0.0, new GNSSDate(almanacs.getFirst().getToc(), SatelliteSystem.GPS).getSecondsInWeek(), 1.0e-12);
         Assertions.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
         Assertions.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }
@@ -139,7 +139,9 @@ class GPSPropagatorTest {
             dtRelMax = FastMath.max(dtRelMax, corrections[1].getReal());
             Assertions.assertEquals(0.0, corrections[2].getReal(), Precision.SAFE_MIN);
         }
-        Assertions.assertEquals(0.0,        gpsAlmanac.getToc().getReal(), 1.0e-12);
+        Assertions.assertEquals(0.0,
+                                new GNSSDate(gpsAlmanac.getToc().toAbsoluteDate(), SatelliteSystem.GPS).getSecondsInWeek(),
+                                1.0e-12);
         Assertions.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
         Assertions.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }

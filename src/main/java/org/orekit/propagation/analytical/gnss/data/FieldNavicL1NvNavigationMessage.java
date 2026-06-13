@@ -72,7 +72,6 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
      * @param nonKeplerian        15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd                 group delay differential TGD for L1-L2 correction
      * @param toc                 time of clock
-     * @param epochToc            time of clock epoch
      * @param transmissionTime    transmission time
      * @param referenceSignalFlag reference signal flag
      * @param urai                User Range Accuracy Index
@@ -87,15 +86,15 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     public FieldNavicL1NvNavigationMessage(final double angularVelocity, final int weeksInCycle,
                                            final TimeScales timeScales, final String type, final int prn,
                                            final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                           final T[] nonKeplerian, final T tgd, final T toc,
-                                           final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                           final T[] nonKeplerian, final T tgd,
+                                           final FieldAbsoluteDate<T> toc, final T transmissionTime,
                                            final int referenceSignalFlag,
                                            final int urai, final int l1SpsHealth,
                                            final T tgdSL5,
                                            final T iscSL1P, final T iscL1DL1P,
                                            final T iscL1PS, final T iscL1DS) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
-              tgd, toc, epochToc, transmissionTime);
+              tgd, toc, transmissionTime);
         this.referenceSignalFlag = referenceSignalFlag;
         this.urai                = urai;
         this.l1SpsHealth         = l1SpsHealth;
@@ -120,9 +119,9 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
         return (V) new FieldNavicL1NvNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                          getType(), getPrn(), getGnssDate().getGnssDate(),
                                                          orbit, nonKeplerian,
-                                                         converter.apply(getTgd()), converter.apply(getToc()),
+                                                         converter.apply(getTgd()),
                                                          new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                                 getEpochToc().toAbsoluteDate()),
+                                                                                 getToc().toAbsoluteDate()),
                                                          converter.apply(getTransmissionTime()),
                                                          getReferenceSignalFlag(),
                                                          getUrai(), getL1SpsHealth(),

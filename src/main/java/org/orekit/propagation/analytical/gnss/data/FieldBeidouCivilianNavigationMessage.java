@@ -98,7 +98,6 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
      * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      * @param iode             issue of data, ephemeris
      * @param iodc             issue of data, clock
@@ -122,8 +121,8 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
                                                 final double angularVelocity, final int weeksInCycle,
                                                 final TimeScales timeScales, final String type, final int prn,
                                                 final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                                final T[] nonKeplerian, final T tgd, final T toc,
-                                                final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                                final T[] nonKeplerian, final T tgd,
+                                                final FieldAbsoluteDate<T> toc, final T transmissionTime,
                                                 final int iode, final int iodc,
                                                 final T iscB1CD, final T iscB1CP, final T iscB2AD,
                                                 final int sisaiOe, final int sisaiOcb,
@@ -132,7 +131,7 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
                                                 final T tgdB1Cp, final T tgdB2ap, final T tgdB2bI,
                                                 final BeidouSatelliteType satelliteType) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
-              tgd, toc, epochToc, transmissionTime);
+              tgd, toc, transmissionTime);
         this.beidouType     = beidouType;
         this.iode           = iode;
         this.iodc           = iodc;
@@ -181,9 +180,9 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
                                                               getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                               getType(), getPrn(), getGnssDate().getGnssDate(),
                                                               orbit, nonKeplerian,
-                                                              converter.apply(getTgd()), converter.apply(getToc()),
+                                                              converter.apply(getTgd()),
                                                               new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                                      getEpochToc().toAbsoluteDate()),
+                                                                                      getToc().toAbsoluteDate()),
                                                               converter.apply(getTransmissionTime()),
                                                               getIODE(), getIODC(),
                                                               converter.apply(getIscB1CD()),

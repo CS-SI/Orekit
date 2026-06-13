@@ -93,6 +93,7 @@ import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriversList;
 
@@ -140,7 +141,9 @@ public enum RtcmMessageType implements MessageType {
             factory.setPrn(gpsId);
             factory.getIDotDriver().setValue(RtcmDataField.DF079.doubleValue(encodedMessage));
             factory.setIODE(RtcmDataField.DF071.intValue(encodedMessage));
-            factory.setToc(RtcmDataField.DF081.doubleValue(encodedMessage));
+            factory.setToc(new GNSSDate(gpsWeekNumber,
+                                        RtcmDataField.DF081.doubleValue(encodedMessage),
+                                        SatelliteSystem.GPS, timeScales).getDate());
             factory.getAf2Driver().setValue(RtcmDataField.DF082.doubleValue(encodedMessage));
             factory.getAf1Driver().setValue(RtcmDataField.DF083.doubleValue(encodedMessage));
             factory.getAf0Driver().setValue(RtcmDataField.DF084.doubleValue(encodedMessage));
@@ -274,7 +277,9 @@ public enum RtcmMessageType implements MessageType {
             factory.setPrn(beidouId);
             factory.getIDotDriver().setValue(RtcmDataField.DF491.doubleValue(encodedMessage));
             factory.setAODE(RtcmDataField.DF492.intValue(encodedMessage));
-            factory.setToc(RtcmDataField.DF493.doubleValue(encodedMessage));
+            factory.setToc(new GNSSDate(beidouWeekNumber,
+                                        RtcmDataField.DF493.doubleValue(encodedMessage),
+                                        SatelliteSystem.BEIDOU, timeScales).getDate());
             factory.getAf2Driver().setValue(RtcmDataField.DF494.doubleValue(encodedMessage));
             factory.getAf1Driver().setValue(RtcmDataField.DF495.doubleValue(encodedMessage));
             factory.getAf0Driver().setValue(RtcmDataField.DF496.doubleValue(encodedMessage));
@@ -327,7 +332,7 @@ public enum RtcmMessageType implements MessageType {
             // Fill navigation message
             final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
             factory.setPrn(qzssId);
-            factory.setToc(RtcmDataField.DF430.doubleValue(encodedMessage));
+            final double toc = RtcmDataField.DF430.doubleValue(encodedMessage);
             factory.getAf2Driver().setValue(RtcmDataField.DF431.doubleValue(encodedMessage));
             factory.getAf1Driver().setValue(RtcmDataField.DF432.doubleValue(encodedMessage));
             factory.getAf0Driver().setValue(RtcmDataField.DF433.doubleValue(encodedMessage));
@@ -353,7 +358,9 @@ public enum RtcmMessageType implements MessageType {
             // QZSS Code on L2
             factory.setL2Codes(RtcmDataField.DF451.intValue(encodedMessage));
 
-            factory.setWeekAndTime(RtcmDataField.DF452.intValue(encodedMessage), time);
+            final int qzssWeek = RtcmDataField.DF452.intValue(encodedMessage);
+            factory.setWeekAndTime(qzssWeek, time);
+            factory.setToc(new GNSSDate(qzssWeek, toc, SatelliteSystem.QZSS, timeScales).getDate());
 
             // Accuracy provider
             final AccuracyProvider qzssProvider = new UserRangeAccuracy(RtcmDataField.DF453.intValue(encodedMessage));

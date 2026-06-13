@@ -25,6 +25,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -143,7 +144,10 @@ public class Rtcm1019Test {
 
         // Verify other data
         Assertions.assertEquals(12,    ephemerisData.getSatelliteID());
-        Assertions.assertEquals(63216, ephemerisData.getGpsNavigationMessage().getToc(), eps);
+        Assertions.assertEquals(63216,
+                                new GNSSDate(ephemerisData.getGpsNavigationMessage().getToc(), SatelliteSystem.GPS).
+                                    getSecondsInWeek(),
+                                eps);
         Assertions.assertEquals(3,     ephemerisData.getGpsNavigationMessage().getL2Codes());
         Assertions.assertEquals(0,     ephemerisData.getGpsNavigationMessage().getFitInterval());
         Assertions.assertEquals(0,     ephemerisData.getGpsNavigationMessage().getL2PFlags());

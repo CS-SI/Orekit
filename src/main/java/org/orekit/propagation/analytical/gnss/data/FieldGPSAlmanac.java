@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -74,7 +75,7 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
     public FieldGPSAlmanac(final double angularVelocity, final int weeksInCycle,
                            final TimeScales timeScales, final String type, final int prn,
                            final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                           final T[] nonKeplerian, final T tgd, final T toc,
+                           final T[] nonKeplerian, final T tgd, final FieldAbsoluteDate<T> toc,
                            final String source, final int svn,
                            final int health, final int ura, final int satConfiguration) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian, tgd, toc);
@@ -99,7 +100,9 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
         return (V) new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                          getType(), getPrn(), getGnssDate().getGnssDate(),
                                          orbit, nonKeplerian,
-                                         converter.apply(getTgd()), converter.apply(getToc()),
+                                         converter.apply(getTgd()),
+                                         new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                 getToc().toAbsoluteDate()),
                                          getSource(), getSVN(), getHealth(),
                                          getURA(), getSatConfiguration());
     }

@@ -162,7 +162,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final GPSLegacyNavigationMessage gps = file.getGPSLegacyNavigationMessages("G13").getFirst();
-        Assertions.assertEquals(0.0, gps.getEpochToc().durationFrom(new AbsoluteDate(1999, 9, 2, 19, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, gps.getToc().durationFrom(new AbsoluteDate(1999, 9, 2, 19, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(0.490025617182e-03,  gps.getAf0(), 1.0e-15);
         Assertions.assertEquals(0.204636307899e-11,  gps.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  gps.getAf2(), 1.0e-15);
@@ -195,7 +195,7 @@ public class NavigationFileParserTest {
                                                          gps.getGnssDate().getSecondsInWeek(),
                                                          SatelliteSystem.GPS).
                                             getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(gps.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(gps.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gps.getDate()), 1.0e-15);
         
@@ -249,13 +249,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getBDGIMMessages().size());
 
         final GPSLegacyNavigationMessage gpsL = file.getGPSLegacyNavigationMessages("G01").getFirst();
-        Assertions.assertEquals(0.0, gpsL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, gpsL.getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(0, gpsL.getSvHealth());
         Assertions.assertEquals(4, gpsL.getFitInterval());
 
         final List<GPSCivilianNavigationMessage> list = file.getGPSCivilianNavigationMessages("G01");
         Assertions.assertEquals(2, list.size());
-        Assertions.assertEquals(0.0, list.getFirst().getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.getFirst().getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(-6, list.getFirst().getUraiNed0());
         Assertions.assertEquals( 2, list.getFirst().getUraiNed1());
         Assertions.assertEquals( 7, list.getFirst().getUraiNed2());
@@ -266,7 +266,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(6.897607818246e-09,  list.getFirst().getIscL5Q5(), 1.0e-20);
         Assertions.assertEquals(259206.0, list.getFirst().getTransmissionTime(), 1.0e-10);
         Assertions.assertEquals(2230, list.getFirst().getGnssDate().getWeekNumber());
-        Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 3, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.get(1).getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 3, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertTrue(list.getFirst().isCivilianMessage());
         Assertions.assertTrue(list.getFirst().toField(Binary64Field.getInstance()).isCivilianMessage());
 
@@ -304,7 +304,7 @@ public class NavigationFileParserTest {
 
         final SBASNavigationMessage sbas = file.getSBASNavigationMessages("S27").getFirst();
         // BEWARE! in Rinex 3.01, the time scale for SBAS navigation is UTC
-        Assertions.assertEquals(0.0, sbas.getEpochToc().durationFrom(new AbsoluteDate(2015, 1, 4, 23, 58, 56.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, sbas.getToc().durationFrom(new AbsoluteDate(2015, 1, 4, 23, 58, 56.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(2.980232238770E-08,  sbas.getAGf0(), 1.0e-10);
         Assertions.assertEquals(1.182343112305E-11,  sbas.getAGf1(), 1.0e-10);
         Assertions.assertEquals(8.631300000000E+04,  sbas.getTime(), 1.0e-10);
@@ -371,7 +371,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final BeidouLegacyNavigationMessage bdt = file.getBeidouLegacyNavigationMessages("C02").getFirst();
-        Assertions.assertEquals(0.0, bdt.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 22, 22, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, bdt.getToc().durationFrom(new AbsoluteDate(2021, 2, 22, 22, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertEquals(4.916836041957e-04,  bdt.getAf0(), 1.0e-15);
         Assertions.assertEquals(-3.058442388237e-11, bdt.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  bdt.getAf2(), 1.0e-15);
@@ -403,7 +403,7 @@ public class NavigationFileParserTest {
         final AbsoluteDate obsRebuiltDate = new GNSSDate(bdt.getGnssDate().getWeekNumber(),
                                                          bdt.getGnssDate().getSecondsInWeek(),
                                                          SatelliteSystem.BEIDOU).getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(bdt.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(bdt.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(bdt.getDate()), 1.0e-15);
 
@@ -453,11 +453,11 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final BeidouLegacyNavigationMessage bdtL = file.getBeidouLegacyNavigationMessages().get("C06").getFirst();
-        Assertions.assertEquals(0.0, bdtL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, bdtL.getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
 
         final List<BeidouCivilianNavigationMessage> list = file.getBeidouCivilianNavigationMessages("C19");
         Assertions.assertEquals(6, list.size());
-        Assertions.assertEquals(0.0, list.getFirst().getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.getFirst().getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertTrue(list.getFirst().getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B1C, 1.0e-6));
         Assertions.assertEquals(-1.139640808105e-02, list.getFirst().getADot(),       1.0e-15);
         Assertions.assertEquals(-1.300156250000e+02, list.getFirst().getCrs(),        1.0e-15);
@@ -495,17 +495,17 @@ public class NavigationFileParserTest {
         Assertions.assertTrue(list.getFirst().isCivilianMessage());
         Assertions.assertTrue(list.getFirst().toField(Binary64Field.getInstance()).isCivilianMessage());
 
-        Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.get(1).getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertTrue(list.get(1).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B1C, 1.0e-6));
-        Assertions.assertEquals(0.0, list.get(2).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.get(2).getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertTrue(list.get(2).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B2A, 1.0e-6));
         Assertions.assertEquals(0.0,                 list.get(2).getIscB1CD(),    1.0e-15);
         Assertions.assertEquals(-2.735760062933e-09, list.get(2).getIscB2AD(),    1.0e-15);
-        Assertions.assertEquals(0.0, list.get(3).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.get(3).getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertTrue(list.get(3).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B2A));
-        Assertions.assertEquals(0.0, list.get(4).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.get(4).getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertTrue(list.get(4).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B2B));
-        Assertions.assertEquals(0.0, list.get(5).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.get(5).getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertTrue(list.get(5).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B2B));
 
     }
@@ -557,7 +557,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final GalileoNavigationMessage gal = file.getGalileoNavigationMessages("E08").get(3);
-        Assertions.assertEquals(0.0, gal.getEpochToc().durationFrom(new AbsoluteDate(2016, 4, 26, 5, 50, 0, TimeScalesFactory.getGST())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, gal.getToc().durationFrom(new AbsoluteDate(2016, 4, 26, 5, 50, 0, TimeScalesFactory.getGST())), Double.MIN_VALUE);
         Assertions.assertEquals(1.646681921557E-03,  gal.getAf0(), 1.0e-15);
         Assertions.assertEquals(3.988276375821E-10,  gal.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  gal.getAf2(), 1.0e-15);
@@ -588,7 +588,7 @@ public class NavigationFileParserTest {
                                                          gal.getGnssDate().getSecondsInWeek(),
                                                          SatelliteSystem.GPS).
                                             getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(gal.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(gal.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gal.getDate()), 1.0e-15);
 
@@ -638,7 +638,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final GalileoNavigationMessage galL = file.getGalileoNavigationMessages().get("E01").getFirst();
-        Assertions.assertEquals(0.0, galL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, galL.getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(516, galL.getDataSource());
 
     }
@@ -694,7 +694,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final QZSSLegacyNavigationMessage qzss = file.getQZSSLegacyNavigationMessages("J07").getFirst();
-        Assertions.assertEquals(0.0, qzss.getEpochToc().durationFrom(new AbsoluteDate(2020, 6, 9, 0, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, qzss.getToc().durationFrom(new AbsoluteDate(2020, 6, 9, 0, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
         Assertions.assertEquals(-0.214204192162e-07, qzss.getAf0(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  qzss.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  qzss.getAf2(), 1.0e-15);
@@ -723,7 +723,7 @@ public class NavigationFileParserTest {
         // check weeks reference in Rinex navigation are aligned with GPS weeks
         final AbsoluteDate obsRebuiltDate = new GNSSDate(qzss.getGnssDate().getWeekNumber(), qzss.getGnssDate().getSecondsInWeek(), SatelliteSystem.GPS).
                                             getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(qzss.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(qzss.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(qzss.getDate()), 1.0e-15);
 
@@ -776,13 +776,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final QZSSLegacyNavigationMessage qzssl = file.getQZSSLegacyNavigationMessages("J02").getFirst();
-        Assertions.assertEquals(0.0, qzssl.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, qzssl.getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
         Assertions.assertEquals(0, qzssl.getSvHealth());
         Assertions.assertEquals(0, qzssl.getFitInterval());
 
         final List<QZSSCivilianNavigationMessage> list = file.getQZSSCivilianNavigationMessages("J02");
         Assertions.assertEquals(4, list.size());
-        Assertions.assertEquals(0.0, list.getFirst().getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.getFirst().getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(-3, list.getFirst().getUraiNed0());
         Assertions.assertEquals( 0, list.getFirst().getUraiNed1());
         Assertions.assertEquals( 0, list.getFirst().getUraiNed2());
@@ -795,7 +795,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2230, list.getFirst().getGnssDate().getWeekNumber());
         Assertions.assertTrue(list.getFirst().isCivilianMessage());
         Assertions.assertTrue(list.getFirst().toField(Binary64Field.getInstance()).isCivilianMessage());
-        Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, list.get(1).getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
 
     }
 
@@ -836,7 +836,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final GLONASSFdmaNavigationMessage glo = file.getGlonassNavigationMessages("R02").getFirst();
-        Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, glo.getToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(-4.674419760704e-04, glo.getTN(), 1.0e-10);
         Assertions.assertEquals(9.094947017729e-13,  glo.getGammaN(), 1.0e-10);
         Assertions.assertEquals(84600.0,             glo.getTime(), 1.0e-10);
@@ -895,7 +895,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final NavICLegacyNavigationMessage navic = file.getNavICLegacyNavigationMessages("I05").getFirst();
-        Assertions.assertEquals(0.0, navic.getEpochToc().durationFrom(new AbsoluteDate(2019, 10, 27, 0, 0, 0, TimeScalesFactory.getNavIC())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, navic.getToc().durationFrom(new AbsoluteDate(2019, 10, 27, 0, 0, 0, TimeScalesFactory.getNavIC())), Double.MIN_VALUE);
         Assertions.assertEquals(4.232432693243e-04,  navic.getAf0(), 1.0e-15);
         Assertions.assertEquals(2.000888343900e-11,  navic.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  navic.getAf2(), 1.0e-15);
@@ -923,7 +923,7 @@ public class NavigationFileParserTest {
         // check weeks reference in Rinex navigation are aligned with GPS weeks
         final AbsoluteDate obsRebuiltDate = new GNSSDate(navic.getGnssDate().getWeekNumber(), navic.getGnssDate().getSecondsInWeek(), SatelliteSystem.GPS).
                                             getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(navic.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(navic.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(navic.getDate()), 1.0e-15);
 
@@ -974,7 +974,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final NavICLegacyNavigationMessage navICL = file.getNavICLegacyNavigationMessages().get("I02").getFirst();
-        Assertions.assertEquals(0.0, navICL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 5, 36, TimeScalesFactory.getNavIC())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, navICL.getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 5, 36, TimeScalesFactory.getNavIC())), Double.MIN_VALUE);
     }
 
     @Test
@@ -1011,7 +1011,7 @@ public class NavigationFileParserTest {
 
         final NavICL1NvNavigationMessage navICL1 = file.getNavICL1NVNavigationMessages("I10").getFirst();
         Assertions.assertEquals(0.0,
-                                navICL1.getEpochToc().durationFrom(new AbsoluteDate(2023, 6, 24, 0, 5, 0,
+                                navICL1.getToc().durationFrom(new AbsoluteDate(2023, 6, 24, 0, 5, 0,
                                                                                     TimeScalesFactory.getNavIC())),
                                 Double.MIN_VALUE);
         Assertions.assertEquals( 0.000000000000e+00, navICL1.getADot(),       1.0e-15);
@@ -1103,7 +1103,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final GLONASSFdmaNavigationMessage glo = file.getGlonassNavigationMessages("R05").getFirst();
-        Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2020, 2, 10, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, glo.getToc().durationFrom(new AbsoluteDate(2020, 2, 10, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(-0.447863712907e-04, glo.getTN(), 1.0e-10);
         Assertions.assertEquals(0.909494701773e-12,  glo.getGammaN(), 1.0e-10);
         Assertions.assertEquals(86370.0,             glo.getTime(), 1.0e-10);
@@ -1181,7 +1181,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final GLONASSFdmaNavigationMessage glo = file.getGlonassNavigationMessages("R01").getFirst();
-        Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2006, 10, 1, 0, 15, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, glo.getToc().durationFrom(new AbsoluteDate(2006, 10, 1, 0, 15, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals( 0.137668102980E-04,  glo.getTN(),      1.0e-10);
         Assertions.assertEquals(-0.454747350886E-11,  glo.getGammaN(),  1.0e-10);
         Assertions.assertEquals(90.0,                 glo.getTime(),    1.0e-10);
@@ -1234,7 +1234,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final QZSSLegacyNavigationMessage qzss = file.getQZSSLegacyNavigationMessages("J03").getFirst();
-        Assertions.assertEquals(0.0, qzss.getEpochToc().durationFrom(new AbsoluteDate(2020, 6, 9, 1, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, qzss.getToc().durationFrom(new AbsoluteDate(2020, 6, 9, 1, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
         Assertions.assertEquals(-3.880355507135e-06, qzss.getAf0(), 1.0e-15);
         Assertions.assertEquals(-4.547473508865e-13, qzss.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  qzss.getAf2(), 1.0e-15);
@@ -1263,7 +1263,7 @@ public class NavigationFileParserTest {
         // check weeks reference in Rinex navigation are aligned with GPS weeks
         final AbsoluteDate obsRebuiltDate = new GNSSDate(qzss.getGnssDate().getWeekNumber(), qzss.getGnssDate().getSecondsInWeek(), SatelliteSystem.GPS).
                                             getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(qzss.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(qzss.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(qzss.getDate()), 1.0e-15);
 
@@ -1331,7 +1331,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final GPSLegacyNavigationMessage gps = file.getGPSLegacyNavigationMessages("G01").getFirst();
-        Assertions.assertEquals(0.0, gps.getEpochToc().durationFrom(new AbsoluteDate(2021, 3, 5, 23, 59, 44, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, gps.getToc().durationFrom(new AbsoluteDate(2021, 3, 5, 23, 59, 44, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(7.477793842554E-04,  gps.getAf0(), 1.0e-15);
         Assertions.assertEquals(-8.412825991400E-12, gps.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  gps.getAf2(), 1.0e-15);
@@ -1360,7 +1360,7 @@ public class NavigationFileParserTest {
         // check weeks reference in Rinex navigation are aligned with GPS weeks
         final AbsoluteDate obsRebuiltDate = new GNSSDate(gps.getGnssDate().getWeekNumber(), gps.getGnssDate().getSecondsInWeek(), SatelliteSystem.GPS).
                                             getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(gps.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(gps.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gps.getDate()), 1.0e-15);
 
@@ -1417,7 +1417,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final GalileoNavigationMessage gal = file.getGalileoNavigationMessages("E13").get(1);
-        Assertions.assertEquals(0.0, gal.getEpochToc().durationFrom(new AbsoluteDate(2021, 3, 5, 22, 30, 0, TimeScalesFactory.getGST())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, gal.getToc().durationFrom(new AbsoluteDate(2021, 3, 5, 22, 30, 0, TimeScalesFactory.getGST())), Double.MIN_VALUE);
         Assertions.assertEquals(4.131024470553e-04,  gal.getAf0(), 1.0e-15);
         Assertions.assertEquals(5.400124791777e-13,  gal.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  gal.getAf2(), 1.0e-15);
@@ -1446,7 +1446,7 @@ public class NavigationFileParserTest {
         // check weeks reference in Rinex navigation are aligned with GPS weeks
         final AbsoluteDate obsRebuiltDate = new GNSSDate(gal.getGnssDate().getWeekNumber(), gal.getGnssDate().getSecondsInWeek(), SatelliteSystem.GPS).
                                             getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(gal.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(gal.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gal.getDate()), 1.0e-15);
 
@@ -1497,7 +1497,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final SBASNavigationMessage sbas = file.getSBASNavigationMessages("S36").getFirst();
-        Assertions.assertEquals(0.0, sbas.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 58, 56.0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, sbas.getToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 58, 56.0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(0.000000000000E+00, sbas.getAGf0(), 1.0e-10);
         Assertions.assertEquals(0.000000000000E+00, sbas.getAGf1(), 1.0e-10);
         Assertions.assertEquals(3.456150000000E+05, sbas.getTime(), 1.0e-10);
@@ -1570,7 +1570,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final SBASNavigationMessage sbas = file.getSBASNavigationMessages().get("S22").getFirst();
-        Assertions.assertEquals(0.0, sbas.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 32, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, sbas.getToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 32, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
 
     }
 
@@ -1605,7 +1605,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final NavICLegacyNavigationMessage navic = file.getNavICLegacyNavigationMessages("I05").getFirst();
-        Assertions.assertEquals(0.0, navic.getEpochToc().durationFrom(new AbsoluteDate(2021, 3, 7, 0, 0, 0, TimeScalesFactory.getNavIC())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, navic.getToc().durationFrom(new AbsoluteDate(2021, 3, 7, 0, 0, 0, TimeScalesFactory.getNavIC())), Double.MIN_VALUE);
         Assertions.assertEquals(6.514852866530e-04,  navic.getAf0(), 1.0e-15);
         Assertions.assertEquals(-7.560174708487e-11, navic.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  navic.getAf2(), 1.0e-15);
@@ -1633,7 +1633,7 @@ public class NavigationFileParserTest {
         // check weeks reference in Rinex navigation are aligned with GPS weeks
         final AbsoluteDate obsRebuiltDate = new GNSSDate(navic.getGnssDate().getWeekNumber(), navic.getGnssDate().getSecondsInWeek(), SatelliteSystem.GPS).
                                             getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(navic.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(navic.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(navic.getDate()), 1.0e-15);
 
@@ -1680,7 +1680,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final BeidouLegacyNavigationMessage bdt = file.getBeidouLegacyNavigationMessages("C19").getFirst();
-        Assertions.assertEquals(0.0, bdt.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 23, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, bdt.getToc().durationFrom(new AbsoluteDate(2021, 2, 23, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertEquals(7.378066657111e-04,  bdt.getAf0(), 1.0e-15);
         Assertions.assertEquals(1.382893799473e-11,  bdt.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  bdt.getAf2(), 1.0e-15);
@@ -1709,7 +1709,7 @@ public class NavigationFileParserTest {
         // check weeks reference in Rinex navigation are aligned with Beidou weeks (not GPS weeks as other systems)
         final AbsoluteDate obsRebuiltDate = new GNSSDate(bdt.getGnssDate().getWeekNumber(), bdt.getGnssDate().getSecondsInWeek(), SatelliteSystem.BEIDOU).
                                             getDate();
-        final double relativeTime = obsRebuiltDate.durationFrom(bdt.getEpochToc());
+        final double relativeTime = obsRebuiltDate.durationFrom(bdt.getToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
 
         // check the propagator

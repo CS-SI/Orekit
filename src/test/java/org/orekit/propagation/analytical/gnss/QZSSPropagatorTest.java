@@ -34,6 +34,7 @@ import org.orekit.propagation.analytical.gnss.data.QZSSAlmanacFactory;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -75,6 +76,7 @@ public class QZSSPropagatorTest {
         factory.getAf0Driver().setValue(-2.965927124E-04);
         factory.getAf1Driver().setValue(7.275957614E-12);
         factory.setHealth(0);
+        factory.setToc(new GNSSDate(7, 123456.0, SatelliteSystem.QZSS).getDate());
 
     }
 

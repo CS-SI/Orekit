@@ -678,7 +678,7 @@ public class RinexNavigationWriterTest {
         // check data specific to this message
         checkDouble(first.getOrbit().getA(), second.getOrbit().getA());
         checkDouble(first.getDeltaN0(), second.getDeltaN0());
-        checkDate(first.getEpochToc(), second.getEpochToc());
+        checkDate(first.getToc(), second.getToc());
         checkDouble(first.getTransmissionTime(), second.getTransmissionTime());
 
     }
@@ -723,13 +723,13 @@ public class RinexNavigationWriterTest {
         checkDouble(first.getAf1(), second.getAf1());
         checkDouble(first.getAf2(), second.getAf2());
         checkDouble(first.getTgd(), second.getTgd());
-        checkDouble(first.getToc(), second.getToc());
+        checkDate(first.getToc(), second.getToc());
     }
 
     private  void checkAbstractEphemeris(final AbstractEphemerisMessage first,
                                          final AbstractEphemerisMessage second) {
         checkDate(first.getDate(),              second.getDate());
-        checkDate(first.getEpochToc(),          second.getEpochToc());
+        checkDate(first.getToc(),               second.getToc());
         Assertions.assertEquals(first.getPRN(), second.getPRN());
         checkDouble(first.getX(),               second.getX());
         checkDouble(first.getXDot(),            second.getXDot());

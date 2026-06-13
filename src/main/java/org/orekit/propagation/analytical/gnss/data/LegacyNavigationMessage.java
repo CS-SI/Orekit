@@ -83,7 +83,6 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      * @param af2              second order clock correction (s/s²)
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      * @param iode             issue of data, ephemeris
      * @param iodc             issue of data, clock
@@ -102,14 +101,14 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
                                       final double crc, final double crs,
                                       final double cic, final double cis,
                                       final double af0, final double af1, final double af2,
-                                      final double tgd, final double toc,
-                                      final AbsoluteDate epochToc, final double transmissionTime,
+                                      final double tgd, final AbsoluteDate toc,
+                                      final double transmissionTime,
                                       final int iode, final int iodc, final double svAccuracy,
                                       final int svHealth, final int fitInterval,
                                       final int l2Codes, final int l2PFlags) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
-              af0, af1, af2, tgd, toc, epochToc, transmissionTime);
+              af0, af1, af2, tgd, toc, transmissionTime);
         this.iode        = iode;
         this.iodc        = iodc;
         this.svAccuracy  = svAccuracy;

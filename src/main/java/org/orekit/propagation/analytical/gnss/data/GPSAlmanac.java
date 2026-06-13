@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -89,7 +90,7 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
                       final double crc, final double crs,
                       final double cic, final double cis,
                       final double af0, final double af1, final double af2,
-                      final double tgd, final double toc,
+                      final double tgd, final AbsoluteDate toc,
                       final String source, final int svn,
                       final int health, final int ura, final int satConfiguration) {
         super(GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
@@ -123,8 +124,7 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                          getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                         converter.apply(getTgd()),
-                                         converter.apply(getToc()),
+                                         converter.apply(getTgd()), toFieldToc(orbit),
                                          getSource(), getSVN(),
                                          getHealth(), getURA(), getSatConfiguration());
     }
