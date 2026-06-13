@@ -120,7 +120,7 @@ public class GalileoPropagatorTest {
         Assertions.assertEquals(-7.275957614183E-12, almanac.getAf1(), 1.0e-15);
 
         // Builds the GalileoPropagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GalileoAlmanac> propagator =
             almanac.getPropagator(context.getFrames().getEME2000(),
                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         // Propagate at the Galileo date and one Galileo cycle later
@@ -189,7 +189,7 @@ public class GalileoPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the GalileoPropagator from the ephemeris
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GalileoNavigationMessage> propagator =
             goe.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
@@ -208,7 +208,7 @@ public class GalileoPropagatorTest {
 
     @Test
     public void testResetInitialState() {
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GalileoNavigationMessage> propagator =
             goe.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final SpacecraftState old = propagator.getInitialState();
@@ -235,7 +235,7 @@ public class GalileoPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GalileoNavigationMessage> propagator =
             goe.getPropagator(eme2000,
                               context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
@@ -269,7 +269,7 @@ public class GalileoPropagatorTest {
         // Date of the Galileo orbital elements, 10 April 2019 at 09:30:00 UTC
         final AbsoluteDate target = goe.getDate();
         // Build the Galileo propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GalileoNavigationMessage> propagator =
             goe.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         // Compute the PV coordinates at the date of the Galileo orbital elements
@@ -286,10 +286,10 @@ public class GalileoPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the GalileoPropagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GalileoNavigationMessage> propagator =
             goe.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
-        // In order to test the issue, we voluntary set a Double.NaN value in the date.
+        // In order to test the issue, we voluntarily set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
