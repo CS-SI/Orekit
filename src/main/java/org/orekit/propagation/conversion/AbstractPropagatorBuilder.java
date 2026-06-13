@@ -24,10 +24,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.NewtonianAttraction;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.OrbitalParameterFactory;
+import org.orekit.orbits.OrbitalParameters;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -57,32 +56,16 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
      */
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
-    /** Date of the initial orbit. */
-    private AbsoluteDate initialOrbitDate;
-
-    /** Frame in which the orbit is propagated. */
-    private final Frame frame;
-
-    /** Central attraction coefficient (m³/s²). */
-    private double mu;
+    /** Factory for initial orbit.
+     * @since 14.0
+     */
+    private final OrbitalParameterFactory<OrbitalParameters> factory;
 
     /** Initial mass. */
     private double mass;
 
-    /** Drivers for orbital parameters. */
-    private final ParameterDriversList orbitalDrivers;
-
     /** List of the supported parameters. */
     private final ParameterDriversList propagationDrivers;
-
-    /** Orbit type to use. */
-    private final OrbitType orbitType;
-
-    /** Position angle type to use. */
-    private final PositionAngleType positionAngleType;
-
-    /** Position scale to use for the orbital drivers. */
-    private final double positionScale;
 
     /** Attitude provider for the propagator. */
     private AttitudeProvider attitudeProvider;
@@ -94,138 +77,90 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
 
     /** Build a new instance.
      * <p>
-     * The template orbit is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, the orbit type, and is also
-     * used together with the {@code positionScale} to convert from the {@link
-     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters. The default attitude
-     * provider is aligned with the orbit's inertial frame.
-     * </p>
-     * <p>
-     * By default, all the {@link #getOrbitalParametersDrivers() orbital parameters drivers}
+     * By default, all the orbital parameters drivers
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParametersDrivers()} and then call
-     * {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
+     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getDrivers()}
+     * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
-     * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
+     * @param factory factory for initial orbit
      * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
-     * @since 8.0
-     * @see #AbstractPropagatorBuilder(Orbit, PositionAngleType, double, boolean,
-     * AttitudeProvider)
+     * @since 14.0
      */
-    protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngleType positionAngleType,
-                                        final double positionScale, final boolean addDriverForCentralAttraction) {
-        this(templateOrbit, positionAngleType, positionScale, addDriverForCentralAttraction,
-             new FrameAlignedProvider(templateOrbit.getFrame()), Propagator.DEFAULT_MASS);
+    protected AbstractPropagatorBuilder(final OrbitalParameterFactory<OrbitalParameters> factory,
+                                        final boolean addDriverForCentralAttraction) {
+        this(factory, addDriverForCentralAttraction,
+             new FrameAlignedProvider(factory.getFrame()), Propagator.DEFAULT_MASS);
     }
     /** Build a new instance.
      * <p>
-     * The template orbit is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, the orbit type, and is also
-     * used together with the {@code positionScale} to convert from the {@link
-     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
-     * </p>
-     * <p>
-     * By default, all the {@link #getOrbitalParametersDrivers() orbital parameters drivers}
+     * By default, all the orbital parameters drivers
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParametersDrivers()} and then call
-     * {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
+     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getDrivers()}
+     * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
-     * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
+     * @param factory factory for initial orbit
      * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
      * @param attitudeProvider for the propagator.
-     * @since 10.1
-     * @see #AbstractPropagatorBuilder(Orbit, PositionAngleType, double, boolean)
+     * @since 14.0
      */
-    protected AbstractPropagatorBuilder(final Orbit templateOrbit,
-                                        final PositionAngleType positionAngleType,
-                                        final double positionScale,
+    protected AbstractPropagatorBuilder(final OrbitalParameterFactory<OrbitalParameters> factory,
                                         final boolean addDriverForCentralAttraction,
                                         final AttitudeProvider attitudeProvider) {
-        this(templateOrbit, positionAngleType, positionScale, addDriverForCentralAttraction, attitudeProvider,
+        this(factory, addDriverForCentralAttraction, attitudeProvider,
                 Propagator.DEFAULT_MASS);
     }
 
     /** Build a new instance.
      * <p>
-     * The template orbit is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, the orbit type, and is also
-     * used together with the {@code positionScale} to convert from the {@link
-     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
-     * </p>
-     * <p>
-     * By default, all the {@link #getOrbitalParametersDrivers() orbital parameters drivers}
+     * By default, all the orbital parameters drivers
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParametersDrivers()} and then call
-     * {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
+     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getDrivers()}
+     * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
-     * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
+     * @param factory factory for initial orbit
      * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
      * @param attitudeProvider for the propagator.
      * @param initialMass mass
-     * @since 12.2
-     * @see #AbstractPropagatorBuilder(Orbit, PositionAngleType, double, boolean)
+     * @since 14.0
      */
-    protected AbstractPropagatorBuilder(final Orbit templateOrbit,
-                                        final PositionAngleType positionAngleType,
-                                        final double positionScale,
+    protected AbstractPropagatorBuilder(final OrbitalParameterFactory<OrbitalParameters> factory,
                                         final boolean addDriverForCentralAttraction,
                                         final AttitudeProvider attitudeProvider, final double initialMass) {
 
-        this.initialOrbitDate    = templateOrbit.getDate();
-        this.frame               = templateOrbit.getFrame();
-        this.mu                  = templateOrbit.getMu();
+        this.factory             = factory;
         this.propagationDrivers  = new ParameterDriversList();
-        this.orbitType           = templateOrbit.getType();
-        this.positionAngleType = positionAngleType;
-        this.positionScale       = positionScale;
-        this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngleType);
-        this.attitudeProvider = attitudeProvider;
-        this.mass         = initialMass;
-        for (final DelegatingDriver driver : orbitalDrivers.getDrivers()) {
+        this.attitudeProvider    = attitudeProvider;
+        this.mass                = initialMass;
+        for (final DelegatingDriver driver : factory.getDrivers().getDrivers()) {
             driver.setSelected(true);
         }
 
-        this.additionalDerivativesProviders  = new ArrayList<>();
+        this.additionalDerivativesProviders = new ArrayList<>();
 
         if (addDriverForCentralAttraction) {
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                                 mu, MU_SCALE, 0, Double.POSITIVE_INFINITY);
+                                                                 factory.getMu(), MU_SCALE, 0, Double.POSITIVE_INFINITY);
             muDriver.addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                     // getValue(), can be called without argument as mu driver should have only one span
-                    AbstractPropagatorBuilder.this.mu = driver.getValue();
+                    factory.setMu(driver.getValue());
                 }
 
                 @Override
                 public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap, final ParameterDriver driver) {
                     // getValue(), can be called without argument as mu driver should have only one span
-                    AbstractPropagatorBuilder.this.mu = driver.getValue();
+                    factory.setMu(driver.getValue());
                 }
             });
             propagationDrivers.add(muDriver);
@@ -249,28 +184,8 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
     }
 
     /** {@inheritDoc} */
-    public OrbitType getOrbitType() {
-        return orbitType;
-    }
-
-    /** {@inheritDoc} */
-    public PositionAngleType getPositionAngleType() {
-        return positionAngleType;
-    }
-
-    /** {@inheritDoc} */
-    public AbsoluteDate getInitialOrbitDate() {
-        return initialOrbitDate;
-    }
-
-    /** {@inheritDoc} */
-    public Frame getFrame() {
-        return frame;
-    }
-
-    /** {@inheritDoc} */
-    public ParameterDriversList getOrbitalParametersDrivers() {
-        return orbitalDrivers;
+    public OrbitalParameterFactory<OrbitalParameters> getOrbitalParameterFactory() {
+        return factory;
     }
 
     /** {@inheritDoc} */
@@ -309,19 +224,6 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         this.attitudeProvider = attitudeProvider;
     }
 
-    /** Get the position scale.
-     * @return the position scale used to scale the orbital drivers
-     */
-    public double getPositionScale() {
-        return positionScale;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getMu() {
-        return mu;
-    }
-
     /** Get the number of estimated values for selected parameters.
      * @return number of estimated values for selected parameters
      */
@@ -330,7 +232,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         int count = 0;
 
         // count orbital parameters
-        for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
+        for (final ParameterDriver driver : factory.getDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 count += driver.getNbOfValues();
             }
@@ -355,7 +257,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
 
         // fill data
         int index = 0;
-        for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
+        for (final ParameterDriver driver : factory.getDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 for (int spanNumber = 0; spanNumber < driver.getNbOfValues(); ++spanNumber ) {
                     selected[index++] = driver.getNormalizedValue(AbsoluteDate.ARBITRARY_EPOCH);
@@ -384,22 +286,6 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         return buildPropagator(getSelectedNormalizedParameters());
     }
 
-    /** Build an initial orbit using the current selected parameters.
-     * <p>
-     * This method is a stripped down version of {@link #buildPropagator(double[])}
-     * that only builds the initial orbit and not the full propagator.
-     * </p>
-     * @return an initial orbit
-     * @since 8.0
-     */
-    protected Orbit createInitialOrbit() {
-        final double[] unNormalized = new double[orbitalDrivers.getNbParams()];
-        for (int i = 0; i < unNormalized.length; ++i) {
-            unNormalized[i] = orbitalDrivers.getDrivers().get(i).getValue(initialOrbitDate);
-        }
-        return getOrbitType().mapArrayToOrbit(unNormalized, null, positionAngleType, initialOrbitDate, mu, frame);
-    }
-
     /** Set the selected parameters.
      * @param normalizedParameters normalized values for the selected parameters
      */
@@ -415,7 +301,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         int index = 0;
 
         // manage orbital parameters
-        for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
+        for (final ParameterDriver driver : factory.getDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 // If the parameter driver contains only 1 value to estimate over the all time range, which
                 // is normally always the case for orbital drivers
@@ -459,13 +345,14 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
     public void resetOrbit(final Orbit newOrbit) {
 
         // Map the new orbit in an array of double
-        final double[] orbitArray = new double[6];
-        final Orbit orbitInCorrectFrame = (newOrbit.getFrame() == frame) ? newOrbit : newOrbit.inFrame(frame);
-        orbitType.mapOrbitToArray(orbitInCorrectFrame, getPositionAngleType(), orbitArray, null);
+        final Orbit orbitInCorrectFrame = (newOrbit.getFrame() == factory.getFrame()) ?
+                                          newOrbit :
+                                          newOrbit.inFrame(factory.getFrame());
+        final double[] orbitArray = factory.toArray(orbitInCorrectFrame);
 
         // Update all the orbital drivers, selected or unselected
         // Reset values and reference values
-        final List<DelegatingDriver> orbitalDriversList = getOrbitalParametersDrivers().getDrivers();
+        final List<DelegatingDriver> orbitalDriversList = factory.getDrivers().getDrivers();
         int i = 0;
         for (DelegatingDriver driver : orbitalDriversList) {
             driver.setReferenceValue(orbitArray[i]);
@@ -473,7 +360,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         }
 
         // Change the initial orbit date in the builder
-        this.initialOrbitDate = newOrbit.getDate();
+        factory.setDate(newOrbit.getDate());
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
@@ -497,7 +384,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         for (ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
             driver.setSelected(false);
         }
-        for (ParameterDriver driver : getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : factory.getDrivers().getDrivers()) {
             driver.setSelected(false);
         }
     }
