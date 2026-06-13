@@ -438,7 +438,7 @@ public class UnscentedKalmanModelTest {
 
 
     /** Observer allowing to get Kalman model after a measurement was processed in the Kalman filter. */
-    public class ModelLogger implements KalmanObserver {
+    public static class ModelLogger implements KalmanObserver {
         KalmanEstimation estimation;
 
         @Override

@@ -685,7 +685,8 @@ class KalmanEstimatorTest {
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
 
         // Antenna phase center definition
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);

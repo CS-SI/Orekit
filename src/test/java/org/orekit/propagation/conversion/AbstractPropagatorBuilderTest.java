@@ -29,7 +29,6 @@ import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.AbstractOrbitalParameterFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CartesianOrbitFactory;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitalParameters;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractPropagator;
@@ -56,7 +55,7 @@ public class AbstractPropagatorBuilderTest {
         final CartesianOrbit initialOrbit = new CartesianOrbit(context.initialOrbit);
 
         final AbstractPropagatorBuilder<KeplerianPropagator, CartesianOrbit, CartesianOrbitFactory> propagatorBuilder =
-            new AbstractPropagatorBuilder<KeplerianPropagator, CartesianOrbit, CartesianOrbitFactory>
+            new AbstractPropagatorBuilder<>
                 ((CartesianOrbitFactory) initialOrbit.factory(PositionAngleType.TRUE, 10.), true) {
 
             @Override

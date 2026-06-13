@@ -58,7 +58,9 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.CartesianOrbitFactory;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -83,8 +85,9 @@ class BatchLSEstimatorTest {
         // GIVEN
         EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final KeplerianPropagatorBuilder propagatorBuilder = new KeplerianPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
-                PositionAngleType.TRUE, 1.);
+        final KeplerianPropagatorBuilder propagatorBuilder =
+            new KeplerianPropagatorBuilder(new CartesianOrbitFactory((CartesianOrbit) OrbitType.CARTESIAN.convertType(orbit),
+                                                                     1.0));
         final BatchLSEstimator estimator = new BatchLSEstimator(new GaussNewtonOptimizer(), propagatorBuilder);
         estimator.setParametersConvergenceThreshold(1e-2);
         estimator.setMaxIterations(100);
@@ -439,7 +442,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -533,7 +537,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -1386,7 +1391,10 @@ class BatchLSEstimatorTest {
                                       1.0e-6, 60.0, 1.0e-3);
 
         // Estimate orbital parameters
-        final List<DelegatingDriver> drivers = propagatorBuilder.getOrbitalParametersDrivers().getDrivers();
+        final List<DelegatingDriver> drivers = propagatorBuilder.
+                                               getOrbitalParameterFactory().
+                                               getOrbitalParametersDrivers().
+                                               getDrivers();
         drivers.forEach(driver -> driver.setSelected(true));
         drivers.forEach(driver -> driver.setValue(1.0001 * driver.getValue()));
 

@@ -16,13 +16,10 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -171,11 +168,13 @@ class NumericalPropagatorTest {
     @Test
     void testDependsOnTimeOnlyWrong() {
         // GIVEN
-        final AdditionalDataProvider<Boolean> dummyDataProvider = new AdditionalDataProvider<Boolean>() {
+        final AdditionalDataProvider<Boolean> dummyDataProvider = new AdditionalDataProvider<>() {
+
             @Override
             public String getName() {
                 return "dummy";
             }
+
             @Override
             public Boolean getAdditionalData(SpacecraftState state) {
                 return Boolean.TRUE;
@@ -224,10 +223,6 @@ class NumericalPropagatorTest {
                 return Stream.empty();
             }
 
-            @Override
-            public List<ParameterDriver> getParametersDrivers() {
-                return Collections.emptyList();
-            }
         };
         propagator.addForceModel(new Maneuver(null, triggers, new BasicConstantThrustPropulsionModel(0., 1., Vector3D.PLUS_I, "")));
         propagator.setupMatricesComputation("stm", MatrixUtils.createRealIdentityMatrix(6), new DoubleArrayDictionary());
@@ -726,8 +721,6 @@ class NumericalPropagatorTest {
                 private AbsoluteDate previousCall = null;
 
                 @Override
-                public void init(SpacecraftState s0, AbsoluteDate t) {
-                }
                 public void handleStep(OrekitStepInterpolator interpolator) {
                     if (previousCall != null) {
                         Assertions.assertTrue(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);

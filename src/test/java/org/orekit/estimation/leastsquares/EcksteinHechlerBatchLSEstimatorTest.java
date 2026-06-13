@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -304,6 +305,7 @@ class EcksteinHechlerBatchLSEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);

@@ -35,6 +35,8 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -163,10 +165,12 @@ public class Context implements StationDataProvider {
                                             final double minStep, final double maxStep, final double dP,
                                             final DSSTForce... forces) {
         // Initialize builder
+        final EquinoctialOrbit eo =
+            (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit(perfectStart));
         final DSSTPropagatorBuilder propagatorBuilder =
-                new DSSTPropagatorBuilder(createInitialOrbit(perfectStart),
+                new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(eo, dP, PositionAngleType.MEAN),
                                           new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                          dP,  propagationType, stateType);
+                                          propagationType, stateType);
         // Add force models
         for (DSSTForce force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
@@ -193,9 +197,9 @@ public class Context implements StationDataProvider {
                                                       final Force... forces) {
         // Initialize builder
         final NumericalPropagatorBuilder propagatorBuilder =
-                new NumericalPropagatorBuilder(orbitType.convertType(createInitialOrbit(perfectStart)),
-                                               new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                               positionAngleType, dP);
+                new NumericalPropagatorBuilder(orbitType.convertType(createInitialOrbit(perfectStart)).
+                                                                   factory(positionAngleType, dP),
+                                               new DormandPrince853IntegratorBuilder(minStep, maxStep, dP));
         // Add force models
         for (Force force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
@@ -205,7 +209,7 @@ public class Context implements StationDataProvider {
     }
 
     /**
-     * Creates a keplerian propagator builder.
+     * Creates a Keplerian propagator builder.
      *
      * @param angleType the position angle type to be used by the builder
      * @param perfectStart if false, orbit estimation will start from a wrong point
@@ -214,7 +218,7 @@ public class Context implements StationDataProvider {
      */
     public KeplerianPropagatorBuilder createKeplerian(final PositionAngleType angleType, final boolean perfectStart, final double dP) {
         // Return the configured builder
-        return new KeplerianPropagatorBuilder(createInitialOrbit(perfectStart), angleType, dP);
+        return new KeplerianPropagatorBuilder(createInitialOrbit(perfectStart).factory(angleType, dP));
     }
 
     /**
@@ -227,7 +231,8 @@ public class Context implements StationDataProvider {
      */
     public EcksteinHechlerPropagatorBuilder createEcksteinHechler(final PositionAngleType angleType, final boolean perfectStart, final double dP) {
         // Return the configured builder
-        return new EcksteinHechlerPropagatorBuilder(createInitialOrbit(perfectStart), unnormalizedProvider, angleType, dP);
+        return new EcksteinHechlerPropagatorBuilder(createInitialOrbit(perfectStart).factory(angleType, dP),
+                                                    unnormalizedProvider);
     }
 
     /**
@@ -240,7 +245,8 @@ public class Context implements StationDataProvider {
      */
     public BrouwerLyddanePropagatorBuilder createBrouwerLyddane(final PositionAngleType angleType, final boolean perfectStart, final double dP) {
         // Return the configured builder
-        return new BrouwerLyddanePropagatorBuilder(createInitialOrbit(perfectStart), unnormalizedProvider, angleType, dP, BrouwerLyddanePropagator.M2);
+        return new BrouwerLyddanePropagatorBuilder(createInitialOrbit(perfectStart).factory(angleType, dP),
+                                                   unnormalizedProvider, BrouwerLyddanePropagator.M2);
     }
 
     /**
@@ -250,7 +256,7 @@ public class Context implements StationDataProvider {
      * @return a configured TLEPropagatorBuilder instance
      */
     public TLEPropagatorBuilder createTleBuilder(final double dP) {
-        return new TLEPropagatorBuilder(initialTLE, PositionAngleType.MEAN, dP, new FixedPointTleGenerationAlgorithm());
+        return new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(initialTLE, PositionAngleType.MEAN, dP));
     }
 
     /**
@@ -308,9 +314,9 @@ public class Context implements StationDataProvider {
                 initialOrbit.getDate(),
                 initialOrbit.getMu());
 
-        final NumericalPropagatorBuilder propagatorBuilder = new NumericalPropagatorBuilder(orbit,
-                new DormandPrince853IntegratorBuilder(1.0, 5.0, 10.0),
-                PositionAngleType.TRUE, 10.0);
+        final NumericalPropagatorBuilder propagatorBuilder =
+            new NumericalPropagatorBuilder(orbit.factory(PositionAngleType.TRUE, 10.0),
+                                           new DormandPrince853IntegratorBuilder(1.0, 5.0, 10.0));
         for (Force force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
         }
