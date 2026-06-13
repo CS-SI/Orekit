@@ -19,7 +19,7 @@ package org.orekit.gnss.metric.messages.ssr;
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
@@ -36,6 +36,11 @@ import org.orekit.utils.IERSConventions;
 public class SsrIm201Test {
 
     private final double eps = 1.0e-13;
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("gnss");
+    }
 
     @Test
     public void testPerfectValue() {
