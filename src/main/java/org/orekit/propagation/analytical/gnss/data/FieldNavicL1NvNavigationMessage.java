@@ -232,4 +232,19 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
         this.iscL1DS = delay;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof FieldNavicL1NvNavigationMessage) {
+            final FieldNavicL1NvNavigationMessage<T> m = (FieldNavicL1NvNavigationMessage<T>) original;
+            setReferenceSignalFlag(m.getReferenceSignalFlag());
+            setTGDSL5(m.getTGDSL5());
+            setIscSL1P(m.getIscSL1P());
+            setIscL1DL1P(m.getIscL1DL1P());
+            setIscL1PS(m.getIscL1PS());
+            setIscL1DS(m.getIscL1DS());
+        }
+    }
+
 }

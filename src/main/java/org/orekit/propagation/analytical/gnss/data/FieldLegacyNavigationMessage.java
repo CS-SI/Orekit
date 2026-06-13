@@ -203,4 +203,20 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
         this.l2PFlags = l2PFlags;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof FieldLegacyNavigationMessage) {
+            final FieldLegacyNavigationMessage<T, ?> m = (FieldLegacyNavigationMessage<T, ?>) original;
+            setIODE(m.getSvAccuracy().newInstance(m.getIODE()));
+            setIODC(m.getIODC());
+            setSvAccuracy(m.getSvAccuracy());
+            setSvHealth(m.getSvHealth());
+            setFitInterval(m.getFitInterval());
+            setL2Codes(m.getL2Codes());
+            setL2PFlags(m.getL2PFlags());
+        }
+    }
+
 }

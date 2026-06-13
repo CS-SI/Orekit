@@ -148,4 +148,18 @@ public abstract class FieldCommonGnssData<T extends CalculusFieldElement<T>,
         return toc;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof FieldCommonGnssData) {
+            final FieldCommonGnssData<T, ?> cgd = (FieldCommonGnssData <T, ?>) original;
+            setAf0(cgd.getAf0());
+            setAf1(cgd.getAf1());
+            setAf1(cgd.getAf2());
+            setTGD(cgd.getTGD());
+            setToc(cgd.getToc());
+        }
+    }
+
 }

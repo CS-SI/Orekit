@@ -206,4 +206,20 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
         this.l2PFlags = l2PFlags;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof LegacyNavigationMessage) {
+            final LegacyNavigationMessage<?> m = (LegacyNavigationMessage<?>) original;
+            setIODE(m.getIODE());
+            setIODC(m.getIODC());
+            setSvAccuracy(m.getSvAccuracy());
+            setSvHealth(m.getSvHealth());
+            setFitInterval(m.getFitInterval());
+            setL2Codes(m.getL2Codes());
+            setL2PFlags(m.getL2PFlags());
+        }
+    }
+
 }

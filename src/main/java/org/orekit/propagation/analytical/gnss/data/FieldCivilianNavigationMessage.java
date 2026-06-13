@@ -344,4 +344,26 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
         this.flags = flags;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof FieldCivilianNavigationMessage) {
+            final FieldCivilianNavigationMessage<T, ?> m = (FieldCivilianNavigationMessage<T, ?>) original;
+            setSvAccuracy(m.getSvAccuracy());
+            setSvHealth(m.getSvHealth());
+            setIscL1CA(m.getIscL1CA());
+            setIscL1CD(m.getIscL1CD());
+            setIscL1CP(m.getIscL1CP());
+            setIscL2C(m.getIscL2C());
+            setIscL5I5(m.getIscL5I5());
+            setIscL5Q5(m.getIscL5Q5());
+            setUraiEd(m.getUraiEd());
+            setUraiNed0(m.getUraiNed0());
+            setUraiNed1(m.getUraiNed1());
+            setUraiNed2(m.getUraiNed2());
+            setFlags(m.getFlags());
+        }
+    }
+
 }

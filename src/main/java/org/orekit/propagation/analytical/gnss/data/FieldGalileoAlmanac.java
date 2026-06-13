@@ -190,4 +190,17 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
         this.healthE5b = healthE5b;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof FieldGalileoAlmanac) {
+            final FieldGalileoAlmanac<?> g = (FieldGalileoAlmanac<?>) original;
+            setHealthE5a(g.getHealthE5a());
+            setHealthE5b(g.getHealthE5b());
+            setHealthE1(g.getHealthE1());
+            setIOD(g.getIOD());
+        }
+    }
+
 }

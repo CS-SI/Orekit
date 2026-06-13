@@ -195,4 +195,18 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
         this.config = satConfiguration;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof FieldGPSAlmanac) {
+            final FieldGPSAlmanac<?> g = (FieldGPSAlmanac<?>) original;
+            setSource(g.getSource());
+            setSVN(g.getSVN());
+            setHealth(g.getHealth());
+            setURA(g.getURA());
+            setSatConfiguration(g.getSatConfiguration());
+        }
+    }
+
 }

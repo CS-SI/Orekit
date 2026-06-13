@@ -195,4 +195,18 @@ public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
                                            inertial, bodyFixed);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof GPSAlmanac) {
+            final GPSAlmanac g = (GPSAlmanac) original;
+            setSource(g.getSource());
+            setSVN(g.getSVN());
+            setHealth(g.getHealth());
+            setURA(g.getURA());
+            setSatConfiguration(g.getSatConfiguration());
+        }
+    }
+
 }

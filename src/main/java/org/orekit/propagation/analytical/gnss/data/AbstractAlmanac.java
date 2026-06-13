@@ -127,7 +127,12 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
         builder.setAttitudeProvider(provider);
         builder.setMass(mass);
 
-        return builder.buildPropagator();
+        final GNSSPropagator<O> propagator = builder.buildPropagator();
+
+        // set up non-propagation elements
+        propagator.getOrbitalElements().copyNonKeplerian(this);
+
+        return propagator;
 
     }
 

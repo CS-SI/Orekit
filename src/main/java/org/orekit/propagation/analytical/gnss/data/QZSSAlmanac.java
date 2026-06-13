@@ -124,4 +124,15 @@ public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
                                            inertial, bodyFixed);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof QZSSAlmanac) {
+            final QZSSAlmanac q = (QZSSAlmanac) original;
+            setSource(q.getSource());
+            setHealth(q.getHealth());
+        }
+    }
+
 }
