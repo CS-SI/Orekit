@@ -69,7 +69,7 @@ public class SsrIgm05Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(105);
         final LazyLoadedDataContext context = DataContext.getDefault();
-        final SsrIgm05 igm05 = (SsrIgm05) new IgsSsrMessagesParser(new ArrayList<>(),
+        final SsrIgm05 igm05 = (SsrIgm05) new IgsSsrMessagesParser(messages,
                                                                    context.getTimeScales(),
                                                                    context.getFrames().getEME2000(),
                                                                    context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
