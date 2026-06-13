@@ -22,6 +22,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.FieldMatrix;
@@ -406,15 +407,26 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
                                               getSolver().
                                               solve(residuals);
 
-            // update initial orbit
+            // prevent correction to produce invalid values
             final FieldKeplerianOrbit<FieldGradient<T>> previous = gElements.getOrbit();
+            T updatedA;
+            T updatedE;
+            int factor = 1;
+            do {
+                // loop until eccentricity is valid
+                updatedA = previous.getA().getValue().add(correction.getEntry(0).divide(factor));
+                updatedE = previous.getE().getValue().add(correction.getEntry(1).divide(factor));
+                factor *= 2;
+            } while (updatedA.getReal() < 0 || updatedE.getReal() < 0 || updatedE.getReal() >= 1);
+
+            // update initial orbit
             final FieldKeplerianOrbit<T> updated =
-                new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(previous.getA().getValue().add(correction.getEntry(0)),
-                                                                         previous.getE().getValue().add(correction.getEntry(1)),
-                                                                         previous.getI().getValue().add(correction.getEntry(2)),
-                                                                         previous.getPerigeeArgument().getValue().add(correction.getEntry(3)),
-                                                                         previous.getRightAscensionOfAscendingNode().getValue().add(correction.getEntry(4)),
-                                                                         previous.getMeanAnomaly().getValue().add(correction.getEntry(5)),
+                new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(updatedA,
+                                                                         updatedE,
+                                                                         previous.getI().getValue().add(correction.getEntry(2).divide(factor)),
+                                                                         previous.getPerigeeArgument().getValue().add(correction.getEntry(3).divide(factor)),
+                                                                         previous.getRightAscensionOfAscendingNode().getValue().add(correction.getEntry(4).divide(factor)),
+                                                                         previous.getMeanAnomaly().getValue().add(correction.getEntry(5).divide(factor)),
                                                                          PositionAngleType.MEAN),
                                           previous.getFrame(),
                                           new FieldAbsoluteDate<>(previous.getMu().getValue().getField(),
