@@ -83,11 +83,7 @@ public class BeidouPropagatorTest {
     @Test
     void testBeidouCycle() {
         // Builds the BeiDou propagator from the almanac
-        final GNSSPropagator<BeidouAlmanac> propagator =
-            new GNSSPropagator<>(new BeidouAlmanacFactory(context.getTimeScales(),
-                                                          SatelliteSystem.BEIDOU,
-                                                          context.getFrames().getEME2000(),
-                                                          context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
+        final GNSSPropagator<BeidouAlmanac> propagator = new GNSSPropagator<>(factory);
         // Intermediate verification
         Assertions.assertEquals(18, factory.getPrn());
         Assertions.assertEquals(0, factory.getHealth());
