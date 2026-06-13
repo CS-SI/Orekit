@@ -200,7 +200,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     protected <T extends CalculusFieldElement<T>,
                A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A, ?> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
-             original.getType(), original.getPRN(), original.getGnssDate(), original.getOrbit().toOrbit(),
+             original.getType(), original.getPrn(), original.getGnssDate(), original.getOrbit().toOrbit(),
              original.getADot().getReal(),
              original.getDeltaN0().getReal(), original.getDeltaN0Dot().getReal(),
              original.getIDot().getReal(), original.getOmegaDot().getReal(),
