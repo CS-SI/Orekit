@@ -54,4 +54,20 @@ public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbi
         return orbitType;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected double[] toArray(final Orbit orbit) {
+
+        // fix both frame and type
+        final Orbit partiallyConverted = orbit.getFrame() == getFrame() ? orbit : orbit.inFrame(getFrame());
+        final Orbit fullyConverted     = orbitType.convertType(partiallyConverted);
+
+        // retrieve orbital parameters
+        final double[] stateVector = new double[6];
+        orbitType.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
+
+        return stateVector;
+
+    }
+
 }

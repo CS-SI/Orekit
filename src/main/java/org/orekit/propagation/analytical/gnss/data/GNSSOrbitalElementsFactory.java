@@ -19,6 +19,8 @@ package org.orekit.propagation.analytical.gnss.data;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.AbstractOrbitalParameterFactory;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
@@ -67,7 +69,14 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     /** {@inheritDoc} */
     @Override
     public O createFromDrivers() {
+
+        // create empty message
         final O message = createEmptyMessage(timeScales, system, type);
+
+        // set the date
+        message.setDate(getDate());
+
+        // set the orbital elements
         final List<DelegatingDriver> drivers = getOrbitalParametersDrivers().getDrivers();
         message.getSmaDriver().setValue(drivers.get(0).getValue());
         message.getEDriver().setValue(drivers.get(1).getValue());
@@ -75,7 +84,25 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
         message.getPaDriver().setValue(drivers.get(3).getValue());
         message.getOmega0Driver().setValue(drivers.get(4).getValue());
         message.getM0Driver().setValue(drivers.get(5).getValue());
+
         return message;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected double[] toArray(final Orbit orbit) {
+
+        // fix both frame and type
+        final Orbit partiallyConverted = orbit.getFrame() == getFrame() ? orbit : orbit.inFrame(getFrame());
+        final Orbit fullyConverted     = OrbitType.KEPLERIAN.convertType(partiallyConverted);
+
+        // retrieve orbital parameters
+        final double[] stateVector = new double[6];
+        OrbitType.KEPLERIAN.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
+
+        return stateVector;
+
     }
 
     /** Create empty message.

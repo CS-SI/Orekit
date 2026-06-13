@@ -128,18 +128,6 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
      * @param orbit orbit to convert
      * @return arrays corresponding to orbit
      */
-    protected double[] toArray(final Orbit orbit) {
-
-        // fix both frame and type
-        final Orbit partiallyConverted = orbit.getFrame() == getFrame() ? orbit : orbit.inFrame(getFrame());
-        final KeplerianOrbit fullyConverted = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(partiallyConverted);
-
-        // retrieve Keplerian orbital parameters
-        final double[] stateVector = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
-
-        return stateVector;
-
-    }
+    protected abstract double[] toArray(Orbit orbit);
 
 }
