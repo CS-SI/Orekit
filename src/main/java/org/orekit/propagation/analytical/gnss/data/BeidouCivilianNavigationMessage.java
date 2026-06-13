@@ -18,12 +18,11 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
-
 
 /**
  * Container for data contained in a Beidou civilian navigation message.
@@ -89,10 +88,8 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Constructor.
      * @param beidouType       Beidou civilian message type
      * @param timeScales       known time scales
-     * @param system           satellite system to consider for interpreting week number
-     *                         (may be different from real system, for example in Rinex nav, weeks
-     *                         are always according to GPS)
      * @param prn              PRN number of the satellite
+     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
@@ -130,9 +127,9 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * @param satelliteType    satellite type
      */
     public BeidouCivilianNavigationMessage(final BeidouCivilianType beidouType,
-                                           final TimeScales timeScales, final SatelliteSystem system,
-                                           final int prn, final KeplerianOrbit orbit, final double aDot,
-                                           final double deltaN0, final double deltaN0Dot,
+                                           final TimeScales timeScales,  final int prn,
+                                           final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                           final double aDot, final double deltaN0, final double deltaN0Dot,
                                            final double iDot, final double omegaDot,
                                            final double cuc, final double cus,
                                            final double crc, final double crs,
@@ -148,7 +145,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
                                            final double tgdB1Cp, final double tgdB2ap, final double tgdB2bI,
                                            final BeidouSatelliteType satelliteType) {
         super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system, beidouType.name(), prn, orbit,
+              timeScales, beidouType.name(), prn, gnssDate, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, epochToc, transmissionTime);
         this.beidouType = beidouType;
@@ -333,7 +330,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     /** {@inheritDoc} */
     @Override
     public BeidouCivilianNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new BeidouCivilianNavigationMessageFactory(getTimeScales(), getSystem(), getType(),
+        return new BeidouCivilianNavigationMessageFactory(getTimeScales(), getGnssDate().getSystem(), getType(),
                                                           inertial, bodyFixed, getBeidouType(), getSatelliteType());
     }
 

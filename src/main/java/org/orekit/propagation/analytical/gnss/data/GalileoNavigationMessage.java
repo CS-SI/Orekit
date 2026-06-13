@@ -18,12 +18,11 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
-
 
 /**
  * Container for data contained in a Galileo navigation message.
@@ -64,11 +63,9 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
 
     /** Constructor.
      * @param timeScales       known time scales
-     * @param system           satellite system to consider for interpreting week number
-     *                         (may be different from real system, for example in Rinex nav, weeks
-     *                         are always according to GPS)
      * @param type             message type
      * @param prn              PRN number of the satellite
+     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
@@ -95,9 +92,9 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * @param sisa             signal in space accuracy
      * @param svHealth         satellite health status
      */
-    public GalileoNavigationMessage(final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                    final int prn, final KeplerianOrbit orbit, final double aDot,
-                                    final double deltaN0, final double deltaN0Dot,
+    public GalileoNavigationMessage(final TimeScales timeScales, final String type,
+                                    final int prn, final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                    final double aDot, final double deltaN0, final double deltaN0Dot,
                                     final double iDot, final double omegaDot,
                                     final double cuc, final double cus,
                                     final double crc, final double crs,
@@ -109,7 +106,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
                                     final double bgbE1E5a, final double bgdE5bE1,
                                     final double sisa, final double svHealth) {
         super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
-              timeScales, system, type, prn, orbit,
+              timeScales, type, prn, gnssDate, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, epochToc, transmissionTime);
         this.iodNav     = iodNav;
@@ -188,7 +185,8 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     /** {@inheritDoc} */
     @Override
     public GalileoNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new GalileoNavigationMessageFactory(getTimeScales(), getSystem(), getType(), inertial, bodyFixed);
+        return new GalileoNavigationMessageFactory(getTimeScales(), getGnssDate().getSystem(),
+                                                   getType(), inertial, bodyFixed);
     }
 
 }

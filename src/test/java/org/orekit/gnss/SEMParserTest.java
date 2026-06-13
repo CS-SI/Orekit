@@ -24,7 +24,9 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
+import org.orekit.time.DateComponents;
 import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeScalesFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,6 +72,7 @@ public class SEMParserTest {
 
     @Test
     public void testLoadData() throws IOException, ParseException, OrekitException {
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         // the parser for reading SEM files with *.sem as supported name for SEM files
         SEMParser reader = new SEMParser(".*\\.sem$");
         // the SEM file to read
@@ -104,7 +107,7 @@ public class SEMParserTest {
         Assertions.assertEquals(0, alm.getURA());
         Assertions.assertEquals(11, alm.getSatConfiguration());
         Assertions.assertEquals("SEM", alm.getSource());
-        Assertions.assertEquals(0, alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()), 0);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getGnssDate()), 0);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
@@ -116,6 +119,7 @@ public class SEMParserTest {
 
     @Test
     public void testLoadDefault() throws OrekitException {
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         // the parser for reading SEM files with default supported name *.al3 for SEM files
         SEMParser reader = new SEMParser(null);
         // Reads the SEM file
@@ -147,7 +151,7 @@ public class SEMParserTest {
         Assertions.assertEquals(0, alm.getURA());
         Assertions.assertEquals(11, alm.getSatConfiguration());
         Assertions.assertEquals("SEM", alm.getSource());
-        Assertions.assertEquals(0, alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getGnssDate()), 1.0e-15);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);

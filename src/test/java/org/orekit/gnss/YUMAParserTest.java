@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
+import org.orekit.time.DateComponents;
 import org.orekit.time.GNSSDate;
 
 import java.io.IOException;
@@ -68,6 +69,7 @@ public class YUMAParserTest {
 
     @Test
     public void testLoadData() throws IOException, ParseException, OrekitException {
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         // the parser for reading Yuma files with a pattern
         YUMAParser reader = new YUMAParser(".*\\.yum$");
         // the YUMA file to read
@@ -101,7 +103,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(-1, alm.getURA());
         Assertions.assertEquals(-1, alm.getSatConfiguration());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertEquals(0, alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getGnssDate()), 1.0e-15);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
@@ -113,6 +115,7 @@ public class YUMAParserTest {
 
     @Test
     public void testLoadDefault() throws OrekitException {
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         // the parser for reading Yuma files
         YUMAParser reader = new YUMAParser(null);
         reader.loadData();
@@ -142,7 +145,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(-1, alm.getURA());
         Assertions.assertEquals(-1, alm.getSatConfiguration());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertEquals(0, alm.getDate().durationFrom(new GNSSDate(866, 589824.0, SatelliteSystem.GPS).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getGnssDate()), 1.0e-15);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);

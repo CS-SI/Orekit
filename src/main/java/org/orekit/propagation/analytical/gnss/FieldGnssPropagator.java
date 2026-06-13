@@ -502,8 +502,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
         // recover plane orientation before correction
         // here, we know that tk = 0 since our orbital elements will be at initial state date
         final T i0  = ik.subtract(cs2phi.cos().multiply(nonKeplerianElements.getCic()).add(cs2phi.sin().multiply(nonKeplerianElements.getCis())));
-        final double toe = new GNSSDate(initialState.getDate().toAbsoluteDate(),
-                                        nonKeplerianElements.getSystem()).getSecondsInWeek();
+        final double toe = nonKeplerianElements.getGnssDate().getSecondsInWeek();
         final T om0 = FastMath.atan2(sin, cos).
                       add(nonKeplerianElements.getAngularVelocity() * toe);
 

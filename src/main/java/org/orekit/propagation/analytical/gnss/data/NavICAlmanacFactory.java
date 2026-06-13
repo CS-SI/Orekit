@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -45,7 +45,8 @@ public class NavICAlmanacFactory extends GNSSOrbitalElementsFactory<NavICAlmanac
     /** {@inheritDoc} */
     @Override
     public NavICAlmanac createFromDrivers() {
-        return new NavICAlmanac(getTimeScales(), getSystem(), getPrn(),
+        return new NavICAlmanac(getTimeScales(), getPrn(),
+                                new GNSSDate(getWeek(), getTimeDriver().getValue(), getSystem()),
                                 createOrbitFromDrivers(), getADotDriver().getValue(),
                                 getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                 getIDotDriver().getValue(), getOmegaDotDriver().getValue(),

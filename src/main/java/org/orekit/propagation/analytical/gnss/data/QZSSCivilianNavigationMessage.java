@@ -18,10 +18,10 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 
@@ -45,11 +45,9 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
     /** Constructor.
      * @param  cnv2            indicator for CNV2 messages
      * @param timeScales       known time scales
-     * @param system           satellite system to consider for interpreting week number
-     *                         (may be different from real system, for example in Rinex nav, weeks
-     *                         are always according to GPS)
      * @param type             message type
      * @param prn              PRN number of the satellite
+     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
@@ -84,8 +82,9 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
      * @param flags            flags
      */
     public QZSSCivilianNavigationMessage(final boolean cnv2,
-                                         final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                         final int prn, final KeplerianOrbit orbit, final double aDot,
+                                         final TimeScales timeScales, final String type,
+                                         final int prn, final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                         final double aDot,
                                          final double deltaN0, final double deltaN0Dot,
                                          final double iDot, final double omegaDot,
                                          final double cuc, final double cus,
@@ -100,7 +99,7 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
                                          final int uraiEd, final int uraiNed0, final int uraiNed1, final int uraiNed2,
                                          final int flags) {
         super(cnv2, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
-              timeScales, system, type, prn, orbit,
+              timeScales, type, prn, gnssDate, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, epochToc, transmissionTime,
               svAccuracy, svHealth, iscL1CA, iscL1CD, iscL1CP, iscL2C, iscL5I5, iscL5Q5,
@@ -126,7 +125,7 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
     /** {@inheritDoc} */
     @Override
     public QZSSCivilianNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new QZSSCivilianNavigationMessageFactory(getTimeScales(), getSystem(), getType(),
+        return new QZSSCivilianNavigationMessageFactory(getTimeScales(), getGnssDate().getSystem(), getType(),
                                                         inertial, bodyFixed, isCnv2());
     }
 
