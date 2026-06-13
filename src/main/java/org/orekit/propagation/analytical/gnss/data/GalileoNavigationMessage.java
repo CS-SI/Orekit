@@ -52,7 +52,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     private final int dataSource;
 
     /** E1/E5a broadcast group delay (s). */
-    private final double bgbE1E5a;
+    private final double bgdE1E5a;
 
     /** E5b/E1 broadcast group delay (s). */
     private final double bgdE5bE1;
@@ -88,7 +88,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * @param transmissionTime transmission time
      * @param iodNav           issue of Data of the navigation batch
      * @param dataSource       data source
-     * @param bgbE1E5a         E1/E5a broadcast group delay (s)
+     * @param bgdE1E5a         E1/E5a broadcast group delay (s)
      * @param bgdE5bE1         E5b/E1 broadcast group delay (s)
      * @param sisa             signal in space accuracy
      * @param svHealth         satellite health status
@@ -103,7 +103,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
                                     final double af0, final double af1, final double af2,
                                     final double tgd, final AbsoluteDate toc, final double transmissionTime,
                                     final int iodNav, final int dataSource,
-                                    final double bgbE1E5a, final double bgdE5bE1,
+                                    final double bgdE1E5a, final double bgdE5bE1,
                                     final double sisa, final double svHealth) {
         super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
               timeScales, type, prn, gnssDate, orbit,
@@ -111,7 +111,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
               af0, af1, af2, tgd, toc, transmissionTime);
         this.iodNav     = iodNav;
         this.dataSource = dataSource;
-        this.bgbE1E5a   = bgbE1E5a;
+        this.bgdE1E5a   = bgdE1E5a;
         this.bgdE5bE1   = bgdE5bE1;
         this.sisa       = sisa;
         this.svHealth   = svHealth;
@@ -125,7 +125,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
         super(original);
         iodNav     = original.getIODNav();
         dataSource = original.getDataSource();
-        bgbE1E5a   = original.getBGDE1E5a().getReal();
+        bgdE1E5a   = original.getBGDE1E5a().getReal();
         bgdE5bE1   = original.getBGDE5bE1().getReal();
         sisa       = original.getSisa().getReal();
         svHealth   = original.getSvHealth().getReal();
@@ -166,7 +166,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * @return the E1/E5a broadcast group delay (s)
      */
     public double getBGDE1E5a() {
-        return bgbE1E5a;
+        return bgdE1E5a;
     }
 
     /** Get the Broadcast Group Delay E5b/E1.
