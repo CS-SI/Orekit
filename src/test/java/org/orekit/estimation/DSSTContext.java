@@ -91,7 +91,7 @@ public class DSSTContext implements StationDataProvider {
                                                                   initialOrbit.getMu());
         }
         final DSSTPropagatorBuilder propagatorBuilder =
-                        new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(startOrbit, dP, PositionAngleType.ECCENTRIC),
+                        new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(startOrbit, dP, PositionAngleType.MEAN),
                                                   new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                   propagationType, stateType);
         for (DSSTForce force : forces) {
