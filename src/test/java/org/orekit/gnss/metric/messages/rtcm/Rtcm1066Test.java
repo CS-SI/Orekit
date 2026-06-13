@@ -27,10 +27,11 @@ import org.orekit.gnss.metric.messages.rtcm.correction.RtcmCombinedCorrectionDat
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
+import org.orekit.utils.IERSConventions;
 
 public class Rtcm1066Test {
 
-    private double eps = 1.0e-13;
+    private final double eps = 1.0e-13;
 
     private EncodedMessage message;
 
@@ -70,7 +71,12 @@ public class Rtcm1066Test {
 
     @Test
     public void testPerfectValue() {
-        final Rtcm1066 rtcm1066 = (Rtcm1066) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final DataContext context  = DataContext.getDefault();
+        final Rtcm1066 rtcm1066 = (Rtcm1066) new RtcmMessagesParser(messages,
+                                                                    context.getTimeScales(),
+                                                                    context.getFrames().getEME2000(),
+                                                                    context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                                false)).
                                   parse(message, false);
 
         // Verify size

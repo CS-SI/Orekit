@@ -27,16 +27,13 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.section.RinexComment;
-import org.orekit.propagation.analytical.gnss.data.AbstractAlmanac;
 import org.orekit.propagation.analytical.gnss.data.AbstractEphemerisMessage;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.CivilianNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.CommonGnssData;
 import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
-import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsDriversProvider;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
@@ -48,7 +45,8 @@ import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.GNSSDate;
+import org.orekit.utils.IERSConventions;
 
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
@@ -274,7 +272,11 @@ public class RinexNavigationWriterTest {
     private RinexNavigation load(final String name) throws IOException {
         final DataSource dataSource =
             new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        return new RinexNavigationParser(DataContext.getDefault().getTimeScales()).parse(dataSource);
+        final DataContext context = DataContext.getDefault();
+        return new RinexNavigationParser(context.getTimeScales(),
+                                         context.getFrames().getEME2000(),
+                                         context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+            parse(dataSource);
     }
 
     @DefaultDataContext
@@ -295,7 +297,11 @@ public class RinexNavigationWriterTest {
         // reparse the written file
         final byte[]          bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource      source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
-        final RinexNavigation rebuilt = new RinexNavigationParser(DataContext.getDefault().getTimeScales()).
+        final DataContext context = DataContext.getDefault();
+        final RinexNavigation rebuilt = new RinexNavigationParser(context.getTimeScales(),
+                                                                  context.getFrames().getEME2000(),
+                                                                  context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                              false)).
                                         parse(source);
 
         // check that the original and the reparsed files have the same content
@@ -567,7 +573,7 @@ public class RinexNavigationWriterTest {
     private void checkNavICL1Nv(final NavICL1NvNavigationMessage first, final NavICL1NvNavigationMessage second) {
 
         // check data inherited from base class
-        checkCivilian(first, second);
+        checkGNSSOrbitalElements(first, second);
 
         // check data specific to this message
         Assertions.assertEquals(first.getReferenceSignalFlag(), second.getReferenceSignalFlag());
@@ -665,13 +671,13 @@ public class RinexNavigationWriterTest {
                                                                                   final AbstractNavigationMessage<T> second) {
 
         // check data inherited from base class
-        checkAbstractAlmanac(first, second);
+        checkGNSSOrbitalElements(first, second);
 
         // check interface data
         checkNavigationMessage(first, second);
 
         // check data specific to this message
-        checkDouble(first.getSqrtA(), second.getSqrtA());
+        checkDouble(first.getOrbit().getA(), second.getOrbit().getA());
         checkDouble(first.getDeltaN0(), second.getDeltaN0());
         checkDate(first.getEpochToc(), second.getEpochToc());
         checkDouble(first.getTransmissionTime(), second.getTransmissionTime());
@@ -684,21 +690,36 @@ public class RinexNavigationWriterTest {
         Assertions.assertEquals(first.getNavigationMessageSubType(), second.getNavigationMessageSubType());
     }
 
-    private <T extends AbstractAlmanac<T>> void checkAbstractAlmanac(final AbstractAlmanac<T> first,
-                                                                     final AbstractAlmanac<T> second) {
+    private <T extends GNSSOrbitalElements<T>> void checkGNSSOrbitalElements(final GNSSOrbitalElements<T> first,
+                                                                             final GNSSOrbitalElements<T> second) {
 
-        // check data inherited from base class
-        checkCommonGnssData(first, second);
+        Assertions.assertEquals(first.getSystem(), second.getSystem());
+        Assertions.assertSame(first.getTimeScales(), second.getTimeScales());
+        Assertions.assertEquals(first.getAngularVelocity(), second.getAngularVelocity(),
+                                FastMath.ulp(first.getAngularVelocity()));
+        Assertions.assertEquals(first.getWeeksInCycle(), second.getWeeksInCycle());
+        Assertions.assertEquals(first.getCycleDuration(), second.getCycleDuration(),
+                                FastMath.ulp(first.getCycleDuration()));
+        Assertions.assertEquals(first.getPrn(), second.getPrn());
 
-        // there are no specific data to check at AbstractAlmanac level
+        final GNSSDate firstDate  = new GNSSDate(first.getDate(), first.getSystem());
+        final GNSSDate secondDate = new GNSSDate(second.getDate(), second.getSystem());
+        Assertions.assertEquals(firstDate.getWeekNumber(), secondDate.getWeekNumber());
+        checkDouble(firstDate.getSecondsInWeek(), secondDate.getSecondsInWeek());
+        checkDate(first.getDate(), second.getDate());
 
-    }
-
-    private <T extends CommonGnssData<T>> void checkCommonGnssData(final CommonGnssData<T> first,
-                                                                   final CommonGnssData<T> second) {
-
-        // check data inherited from base class
-        checkGNSSOrbitalElements(first, second);
+        // check data specific to this message
+        checkDouble(first.getOrbit().getMu(), second.getOrbit().getMu());
+        checkDouble(first.getOrbit().getA(), second.getOrbit().getA());
+        checkDouble(first.getADot(), second.getADot());
+        checkDouble(first.getOrbit().getKeplerianMeanMotion(), second.getOrbit().getKeplerianMeanMotion());
+        checkDouble(first.getDeltaN0(), second.getDeltaN0());
+        checkDouble(first.getDeltaN0Dot(), second.getDeltaN0Dot());
+        checkDouble(first.getOrbit().getE(), second.getOrbit().getE());
+        checkDouble(first.getOrbit().getI(), second.getOrbit().getI());
+        checkDouble(first.getOrbit().getRightAscensionOfAscendingNode(), second.getOrbit().getRightAscensionOfAscendingNode());
+        checkDouble(first.getOrbit().getPerigeeArgument(), second.getOrbit().getPerigeeArgument());
+        checkDouble(first.getOrbit().getMeanAnomaly(), second.getOrbit().getMeanAnomaly());
 
         // check data specific to this message
         checkDouble(first.getAf0(), second.getAf0());
@@ -706,47 +727,6 @@ public class RinexNavigationWriterTest {
         checkDouble(first.getAf2(), second.getAf2());
         checkDouble(first.getTGD(), second.getTGD());
         checkDouble(first.getToc(), second.getToc());
-
-    }
-
-    private <T extends GNSSOrbitalElements<T>> void checkGNSSOrbitalElements(final GNSSOrbitalElements<T> first,
-                                                                             final GNSSOrbitalElements<T> second) {
-
-        // check data inherited from base class
-        checkGNSSOrbitalElementsDriversProvider(first, second);
-
-        // check data specific to this message
-        checkDate(first.getDate(), second.getDate());
-        checkDouble(first.getMu(), second.getMu());
-        checkParameterDriver(first.getSmaDriver(), second.getSmaDriver());
-        checkDouble(first.getADot(), second.getADot());
-        checkDouble(first.getMeanMotion0(), second.getMeanMotion0());
-        checkDouble(first.getDeltaN0(), second.getDeltaN0());
-        checkDouble(first.getDeltaN0Dot(), second.getDeltaN0Dot());
-        checkParameterDriver(first.getEDriver(), second.getEDriver());
-        checkParameterDriver(first.getI0Driver(), second.getI0Driver());
-        checkParameterDriver(first.getOmega0Driver(), second.getOmega0Driver());
-        checkParameterDriver(first.getPaDriver(), second.getPaDriver());
-        checkParameterDriver(first.getM0Driver(), second.getM0Driver());
-
-    }
-
-    private void checkGNSSOrbitalElementsDriversProvider(final GNSSOrbitalElementsDriversProvider first,
-                                                         final GNSSOrbitalElementsDriversProvider second) {
-        Assertions.assertEquals(first.getSystem(), second.getSystem());
-        Assertions.assertSame(first.getTimeScales(), second.getTimeScales());
-        Assertions.assertEquals(first.getParametersDrivers().size(), second.getParametersDrivers().size());
-        for (int  i = 0; i < first.getParametersDrivers().size(); ++i) {
-            checkParameterDriver(first.getParametersDrivers().get(i), second.getParametersDrivers().get(i));
-        }
-        Assertions.assertEquals(first.getAngularVelocity(), second.getAngularVelocity(),
-                                FastMath.ulp(first.getAngularVelocity()));
-        Assertions.assertEquals(first.getWeeksInCycle(), second.getWeeksInCycle());
-        Assertions.assertEquals(first.getCycleDuration(), second.getCycleDuration(),
-                                FastMath.ulp(first.getCycleDuration()));
-        Assertions.assertEquals(first.getPRN(), second.getPRN());
-        Assertions.assertEquals(first.getWeek(), second.getWeek());
-
     }
 
     private  void checkAbstractEphemeris(final AbstractEphemerisMessage first,
@@ -764,11 +744,6 @@ public class RinexNavigationWriterTest {
         checkDouble(first.getZDot(),            second.getZDot());
         checkDouble(first.getZDotDot(),         second.getZDotDot());
         checkDouble(first.getHealth(),          second.getHealth());
-    }
-
-    private void checkParameterDriver(final ParameterDriver first, final ParameterDriver second) {
-        Assertions.assertEquals(first.getName(), second.getName());
-        checkArray(first.getValues(), second.getValues());
     }
 
     private <T extends TypeSvMessage> void checkMessages(final List<T> first, final List<T> second,

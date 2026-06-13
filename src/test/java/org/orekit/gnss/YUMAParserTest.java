@@ -83,18 +83,18 @@ public class YUMAParserTest {
 
         // Checks the last almanac read
         final GPSAlmanac alm = reader.getAlmanacs().get(reader.getAlmanacs().size() - 1);
-        Assertions.assertEquals(32, alm.getPRN());
+        Assertions.assertEquals(32, alm.getPrn());
         Assertions.assertEquals(-1, alm.getSVN());
-        Assertions.assertEquals(862, alm.getWeek());
-        Assertions.assertEquals(319488.0, alm.getTime(), 0.);
-        Assertions.assertEquals(5165.591309, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
-        Assertions.assertEquals(0.7963180542E-004, alm.getE(), FastMath.ulp(8E-05));
-        Assertions.assertEquals(0.9598609143,  alm.getI0(), 0.);
+        Assertions.assertEquals(862, alm.getGnssDate().getWeekNumber());
+        Assertions.assertEquals(319488.0, alm.getGnssDate().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(5165.591309, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
+        Assertions.assertEquals(0.7963180542E-004, alm.getOrbit().getE(), FastMath.ulp(8E-05));
+        Assertions.assertEquals(0.9598609143,  alm.getOrbit().getI(), 0.);
         Assertions.assertEquals(0., alm.getIDot(), 0.);
-        Assertions.assertEquals(0.1426272192E+001, alm.getOmega0(), 0.);
+        Assertions.assertEquals(0.1426272192E+001, alm.getOrbit().getRightAscensionOfAscendingNode(), 0.);
         Assertions.assertEquals(-0.7737465154E-008, alm.getOmegaDot(), FastMath.ulp(-8E-09));
-        Assertions.assertEquals(0.248929953, alm.getPa(), 0.);
-        Assertions.assertEquals(0.1209154364E+001, alm.getM0(), 0.);
+        Assertions.assertEquals(0.248929953, alm.getOrbit().getPerigeeArgument(), 0.);
+        Assertions.assertEquals(0.1209154364E+001, alm.getOrbit().getMeanAnomaly(), 0.);
         Assertions.assertEquals(0.9536743164E-005, alm.getAf0(), 0.);
         Assertions.assertEquals(0.3637978807E-011, alm.getAf1(), 0.);
         Assertions.assertEquals(63, alm.getHealth());
@@ -108,7 +108,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(0., alm.getCrs(), 0.);
         Assertions.assertEquals(0., alm.getCuc(), 0.);
         Assertions.assertEquals(0., alm.getCus(), 0.);
-        Assertions.assertEquals(1.4484676210186782E-4, alm.getMeanMotion0(), 0.);
+        Assertions.assertEquals(1.4484676210186782E-4, alm.getOrbit().getKeplerianMeanMotion(), 0.);
     }
 
     @Test
@@ -124,18 +124,18 @@ public class YUMAParserTest {
 
         // Checks the first almanac read
         final GPSAlmanac alm = reader.getAlmanacs().getFirst();
-        Assertions.assertEquals(1, alm.getPRN());
+        Assertions.assertEquals(1, alm.getPrn());
         Assertions.assertEquals(-1, alm.getSVN());
-        Assertions.assertEquals(866, alm.getWeek());
-        Assertions.assertEquals(589824.0, alm.getTime(), 0.);
-        Assertions.assertEquals(5153.602051, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
-        Assertions.assertEquals(0.5221366882E-02, alm.getE(), 0.);
-        Assertions.assertEquals(0.963785748,  alm.getI0(), 0.);
+        Assertions.assertEquals(866, alm.getGnssDate().getWeekNumber());
+        Assertions.assertEquals(589824.0, alm.getGnssDate().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(5153.602051, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
+        Assertions.assertEquals(0.5221366882E-02, alm.getOrbit().getE(), 0.);
+        Assertions.assertEquals(0.963785748,  alm.getOrbit().getI(), 0.);
         Assertions.assertEquals(0., alm.getIDot(), 0.);
-        Assertions.assertEquals(-1.159458779E+000, alm.getOmega0(), 1.e-9);
+        Assertions.assertEquals(-1.159458779E+000, alm.getOrbit().getRightAscensionOfAscendingNode(), 1.e-9);
         Assertions.assertEquals(-0.7897471819E-008, alm.getOmegaDot(), FastMath.ulp(-8E-09));
-        Assertions.assertEquals(0.451712027, alm.getPa(), 1.e-9);
-        Assertions.assertEquals(-0.2105941778E+001, alm.getM0(), 1.e-9);
+        Assertions.assertEquals(0.451712027, alm.getOrbit().getPerigeeArgument(), 1.e-9);
+        Assertions.assertEquals(-0.2105941778E+001, alm.getOrbit().getMeanAnomaly(), 1.e-9);
         Assertions.assertEquals(0.1621246338E-004, alm.getAf0(), 1.e-14);
         Assertions.assertEquals(0.0, alm.getAf1(), 0.);
         Assertions.assertEquals(0, alm.getHealth());
@@ -149,7 +149,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(0., alm.getCrs(), 0.);
         Assertions.assertEquals(0., alm.getCuc(), 0.);
         Assertions.assertEquals(0., alm.getCus(), 0.);
-        Assertions.assertEquals(1.45860023309E-4, alm.getMeanMotion0(), 1.e-15);
+        Assertions.assertEquals(1.45860023309E-4, alm.getOrbit().getKeplerianMeanMotion(), 1.e-15);
     }
 
 }

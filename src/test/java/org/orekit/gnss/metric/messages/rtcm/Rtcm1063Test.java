@@ -22,15 +22,17 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DataContext;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1063;
 import org.orekit.gnss.metric.messages.rtcm.correction.RtcmOrbitCorrectionData;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
+import org.orekit.utils.IERSConventions;
 
 public class Rtcm1063Test {
 
-    private double eps = 1.0e-13;
+    private final double eps = 1.0e-13;
 
     private EncodedMessage message;
 
@@ -67,7 +69,12 @@ public class Rtcm1063Test {
 
     @Test
     public void testPerfectValue() {
-        final Rtcm1063 rtcm1063 = (Rtcm1063) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+       final LazyLoadedDataContext context = DataContext.getDefault();
+        final Rtcm1063 rtcm1063 = (Rtcm1063) new RtcmMessagesParser(messages,
+                                                                    context.getTimeScales(),
+                                                                    context.getFrames().getEME2000(),
+                                                                    context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                                false)).
                                   parse(message, false);
 
         // Verify size

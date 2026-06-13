@@ -38,10 +38,10 @@ import org.orekit.time.TimeScales;
 public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
 
     /** Nominal inclination (Ref: Galileo ICD - Table 75). */
-    private static final double I0 = FastMath.toRadians(56.0);
+    public static final double I0 = FastMath.toRadians(56.0);
 
     /** Nominal semi-major axis in meters (Ref: Galileo ICD - Table 75). */
-    private static final double A0 = 29600000;
+    public static final double A0 = 29600000;
 
     /** Satellite E5a signal health status. */
     private final int healthE5a;

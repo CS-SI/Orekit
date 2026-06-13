@@ -35,10 +35,13 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.gnss.data.CommonGnssData;
-import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.FieldGalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
+import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
@@ -58,35 +61,39 @@ class GnssGradientConverterTest {
     public void setUp() {
         Utils.setDataRoot("regular-data");
         context = DataContext.getDefault();
-        final GalileoNavigationMessage goe = new GalileoNavigationMessage(context.getTimeScales(),
-                                                                          SatelliteSystem.GALILEO,
-                                                                          GalileoNavigationMessage.FNAV);
-        goe.setPRN(4);
-        goe.setWeek(1024);
-        goe.setTime(293400.0);
-        goe.setSqrtA(5440.602949142456);
-        goe.setDeltaN0(3.7394414770330066E-9);
-        goe.setE(2.4088891223073006E-4);
-        goe.setI0(0.9531656087278083);
-        goe.setIDot(-2.36081262303612E-10);
-        goe.setOmega0(-0.36639513583951266);
-        goe.setOmegaDot(-5.7695260382035525E-9);
-        goe.setPa(-1.6870064194345724);
-        goe.setM0(-0.38716557650888);
-        goe.setCuc(-8.903443813323975E-7);
-        goe.setCus(6.61797821521759E-6);
-        goe.setCrc(194.0625);
-        goe.setCrs(-18.78125);
-        goe.setCic(3.166496753692627E-8);
-        goe.setCis(-1.862645149230957E-8);
-        propagator = goe.builder(context.getFrames().getEME2000(),
-                                 context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                     buildPropagator();
+        final GalileoNavigationMessageFactory factory =
+            new GalileoNavigationMessageFactory(context.getTimeScales(),
+                                                SatelliteSystem.GALILEO,
+                                                GalileoNavigationMessage.FNAV,
+                                                context.getFrames().getEME2000(),
+                                                context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        factory.setPrn(4);
+        factory.setWeekAndTime(1024, 293400.0);
+        final double sqrtA = 5440.602949142456;
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
+        factory.getDeltaN0Driver().setValue(3.7394414770330066E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(2.4088891223073006E-4);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(0.9531656087278083);
+        factory.getIDotDriver().setValue(-2.36081262303612E-10);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(-0.36639513583951266);
+        factory.getOmegaDotDriver().setValue(-5.7695260382035525E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(-1.6870064194345724);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-0.38716557650888);
+        factory.getCucDriver().setValue(-8.903443813323975E-7);
+        factory.getCusDriver().setValue(6.61797821521759E-6);
+        factory.getCrcDriver().setValue(194.0625);
+        factory.getCrsDriver().setValue(-18.78125);
+        factory.getCicDriver().setValue(3.166496753692627E-8);
+        factory.getCisDriver().setValue(-1.862645149230957E-8);
+        propagator = new GNSSPropagator<>(factory);
     }
 
     @Test
     void testInitialStateStmNoSelectedParameters() {
-        final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter<>(propagator).getPropagator();
+        GnssGradientConverter<GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
+            converter = new GnssGradientConverter<>(propagator);
+        final FieldGnssPropagator<Gradient, GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
+            gPropagator = converter.getPropagator();
         Assertions.assertEquals(12, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(6, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
@@ -95,8 +102,11 @@ class GnssGradientConverterTest {
 
     @Test
     void testInitialStateStmAllParametersSelected() {
-        propagator.getOrbitalElements().getParametersDrivers().forEach(p -> p.setSelected(true));
-        final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter<>(propagator).getPropagator();
+        propagator.getParametersDrivers().forEach(p -> p.setSelected(true));
+        GnssGradientConverter<GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
+            converter = new GnssGradientConverter<>(propagator);
+        final FieldGnssPropagator<Gradient, GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
+            gPropagator = converter.getPropagator();
         Assertions.assertEquals(12, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(12, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(18, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
@@ -106,47 +116,48 @@ class GnssGradientConverterTest {
     @Test
     void testStmAndJacobian() {
         // Initial GPS orbital elements (Ref: IGS)
-        final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
-                                                                              SatelliteSystem.GPS,
-                                                                              GPSLegacyNavigationMessage.LNAV);
-        goe.setPRN(7);
-        goe.setWeek(0);
-        goe.setTime(288000);
-        goe.setSqrtA(5153.599830627441);
-        goe.setE(0.012442796607501805);
-        goe.setDeltaN0(4.419469802942352E-9);
-        goe.setI0(0.9558937988021613);
-        goe.setIDot(-2.4608167886110235E-10);
-        goe.setOmega0(1.0479401362158658);
-        goe.setOmegaDot(-7.967117576712062E-9);
-        goe.setPa(-2.4719019944000538);
-        goe.setM0(-1.0899023379614294);
-        goe.setCuc(4.3995678424835205E-6);
-        goe.setCus(1.002475619316101E-5);
-        goe.setCrc(183.40625);
-        goe.setCrs(87.03125);
-        goe.setCic(3.203749656677246E-7);
-        goe.setCis(4.0978193283081055E-8);
-        GNSSPropagator<GPSLegacyNavigationMessage> propagator =
-            goe.getPropagator(context.getFrames().getEME2000(),
-                              context.getFrames().getITRF(IERSConventions.IERS_2010, true));
+        final GPSLegacyNavigationMessageFactory factory =
+            new GPSLegacyNavigationMessageFactory(DataContext.getDefault().getTimeScales(),
+                                                  SatelliteSystem.GPS,
+                                                  GPSLegacyNavigationMessage.LNAV,
+                                                  context.getFrames().getEME2000(),
+                                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        factory.setPrn(7);
+        factory.setWeekAndTime(0, 288000);
+        final double sqrtA = 5153.599830627441;
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.012442796607501805);
+        factory.getDeltaN0Driver().setValue(4.419469802942352E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(0.9558937988021613);
+        factory.getIDotDriver().setValue(-2.4608167886110235E-10);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(1.0479401362158658);
+        factory.getOmegaDotDriver().setValue(-7.967117576712062E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(-2.4719019944000538);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-1.0899023379614294);
+        factory.getCucDriver().setValue(4.3995678424835205E-6);
+        factory.getCusDriver().setValue(1.002475619316101E-5);
+        factory.getCrcDriver().setValue(183.40625);
+        factory.getCrsDriver().setValue(87.03125);
+        factory.getCicDriver().setValue(3.203749656677246E-7);
+        factory.getCisDriver().setValue(4.0978193283081055E-8);
+        GNSSPropagator<GPSLegacyNavigationMessage> propagator = new GNSSPropagator<>(factory);
 
         // we want to compute the partial derivatives with respect to Crs and Crc parameters
-        Assertions.assertEquals(12, propagator.getOrbitalElements().getParameters().length);
-        propagator.getOrbitalElements().getParameterDriver(CommonGnssData.RADIUS_SINE).setSelected(true);
-        propagator.getOrbitalElements().getParameterDriver(CommonGnssData.RADIUS_COSINE).setSelected(true);
+        Assertions.assertEquals(12, propagator.getParameters().length);
+        propagator.getParametersDrivers().get(NonKeplerianDriversFactory.CRS_INDEX).setSelected(true);
+        propagator.getParametersDrivers().get(NonKeplerianDriversFactory.CRC_INDEX).setSelected(true);
         final DoubleArrayDictionary initialJacobianColumns = new DoubleArrayDictionary();
-        initialJacobianColumns.put(CommonGnssData.RADIUS_SINE,   new double[6]);
-        initialJacobianColumns.put(CommonGnssData.RADIUS_COSINE, new double[6]);
+        initialJacobianColumns.put(NonKeplerianDriversFactory.RADIUS_SINE,   new double[6]);
+        initialJacobianColumns.put(NonKeplerianDriversFactory.RADIUS_COSINE, new double[6]);
         final MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, initialJacobianColumns);
 
         // harvester sorts the columns lexicographically, and wraps them as SpanXxx##
         Assertions.assertEquals(2, harvester.getJacobiansColumnsNames().size());
-        Assertions.assertEquals("Span" + CommonGnssData.RADIUS_COSINE + "0", harvester.getJacobiansColumnsNames().getFirst());
-        Assertions.assertEquals("Span" + CommonGnssData.RADIUS_SINE   + "0", harvester.getJacobiansColumnsNames().get(1));
+        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_COSINE + "0", harvester.getJacobiansColumnsNames().get(0));
+        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_SINE   + "0", harvester.getJacobiansColumnsNames().get(1));
 
         // propagate orbit
-        final SpacecraftState state = propagator.propagate(goe.getDate().shiftedBy(3600.0));
+        final SpacecraftState state = propagator.propagate(factory.getDate().shiftedBy(3600.0));
 
         // check STM against finite differences
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
@@ -187,16 +198,16 @@ class GnssGradientConverterTest {
         double maxErrorV = 0.0;
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 2; j++) {
-                final ToDoubleFunction<GNSSOrbitalElements<?>> getter;
-                final BiConsumer<GNSSOrbitalElements<?>, Double> setter;
+                final ToDoubleFunction<GNSSOrbitalElementsFactory<?>> getter;
+                final BiConsumer<GNSSOrbitalElementsFactory<?>, Double> setter;
                 if (j == 0) {
-                    getter = GNSSOrbitalElements::getCrc;
-                    setter = GNSSOrbitalElements::setCrc;
+                    getter = f      -> f.getCrcDriver().getValue();
+                    setter = (f, d) -> f.getCrcDriver().setValue(d);
                 } else {
-                    getter = GNSSOrbitalElements::getCrs;
-                    setter = GNSSOrbitalElements::setCrs;
+                    getter = f      -> f.getCrsDriver().getValue();
+                    setter = (f, d) -> f.getCrsDriver().setValue(d);
                 }
-                final double error = differentiate(propagator, state.getDate(), getter, setter, h, i) -
+                final double error = differentiate(factory, state.getDate(), getter, setter, h, i) -
                                      jacobian.getEntry(i, j);
                 if (i < 3) {
                     maxErrorP = FastMath.max(maxErrorP, error);
@@ -283,9 +294,9 @@ class GnssGradientConverterTest {
 
     }
 
-    private double differentiate(final GNSSPropagator<?> basePropagator, final AbsoluteDate target,
-                                 final ToDoubleFunction<GNSSOrbitalElements<?>> getter,
-                                 final BiConsumer<GNSSOrbitalElements<?>, Double> setter,
+    private double differentiate(final GNSSOrbitalElementsFactory<?> factory, final AbsoluteDate target,
+                                 final ToDoubleFunction<GNSSOrbitalElementsFactory<?>> getter,
+                                 final BiConsumer<GNSSOrbitalElementsFactory<?>, Double> setter,
                                  final double step, final int outIndex) {
 
         // function that converts a shift in one element of initial state (i.e Px, Py, Pz, Vx, Vy, Vz)
@@ -293,16 +304,16 @@ class GnssGradientConverterTest {
         final UnivariateFunction f = h -> {
 
             // get initial parameter value
-            final double initialValue = getter.applyAsDouble(basePropagator.getOrbitalElements());
+            final double initialValue = getter.applyAsDouble(factory);
 
             // shift parameter
-            setter.accept(basePropagator.getOrbitalElements(), initialValue + h);
+            setter.accept(factory, initialValue + h);
 
             // propagated state
-            final SpacecraftState outState = basePropagator.propagate(target);
+            final SpacecraftState outState = new GNSSPropagator<>(factory).propagate(target);
 
             // reset parameter
-            setter.accept(basePropagator.getOrbitalElements(), initialValue);
+            setter.accept(factory, initialValue);
 
             // return desired coordinate
             final double[] out = new double[6];

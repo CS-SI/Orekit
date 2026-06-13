@@ -32,6 +32,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
@@ -40,8 +41,11 @@ import org.orekit.orbits.FieldKeplerianParameters;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
@@ -56,9 +60,13 @@ import org.orekit.utils.ParameterDriver;
  * @author Pascal Parraud
  * @author Luc Maisonobe
  * @param <T> type of the field elements
+ * @param <O> type of the orbital elements (non-field version)
+ * @param <P> type of the orbital elements (field version)
  * @since 13.0
  */
-public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
+public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
+                                 O extends GNSSOrbitalElements<O>,
+                                 P extends FieldGnssOrbitalElements<T, O, P>>
     extends FieldAbstractAnalyticalPropagator<T> {
 
     /** Maximum number of iterations for internal loops. */
@@ -77,7 +85,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
     private static final double EPS = 1.0e-12;
 
     /** The GNSS propagation model used. */
-    private FieldGnssOrbitalElements<T, ?, ?> orbitalElements;
+    private FieldGnssOrbitalElements<T, O, P> orbitalElements;
 
     /** Factory for non-Keplerian elements drivers.
      * @since 14.0
@@ -90,6 +98,26 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
     /** The ECEF frame used for GNSS propagation. */
     private final Frame ecef;
 
+    /** Build a new instance.
+     * <p>
+     * The attitude provider is set by default to be aligned with the provided inertial frame.
+     * This can be changed (typically to {@link org.orekit.gnss.attitude.GenericGNSS}) after
+     * construction by calling {@link #setAttitudeProvider(org.orekit.attitudes.AttitudeProvider)
+     * setAttitudeProvider}
+     * </p>
+     * <p>
+     * The mass is set to the {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.
+     * </p>
+     * @param factory factory for the elements and frames
+     * @since 14.0
+     */
+    public FieldGnssPropagator(final Field<T> field, final GNSSOrbitalElementsFactory<O> factory) {
+        this(factory.createFromDrivers().toField(field),
+             factory.getInertial(), factory.getBodyFixed(),
+             FrameAlignedProvider.of(factory.getInertial()),
+             field.getZero().newInstance(Propagator.DEFAULT_MASS));
+    }
+
     /**
      * Build a new instance.
      * @param orbitalElements GNSS orbital elements
@@ -98,7 +126,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
      * @param provider Attitude provider
      * @param mass Satellite mass (kg)
      */
-    public FieldGnssPropagator(final FieldGnssOrbitalElements<T, ?, ?> orbitalElements,
+    public FieldGnssPropagator(final P orbitalElements,
                                final Frame eci, final Frame ecef,
                                final AttitudeProvider provider, final T mass) {
         super(orbitalElements.getDate().getField(), provider);
@@ -133,7 +161,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
      * @param mass                 spacecraft mass
      */
     public FieldGnssPropagator(final FieldSpacecraftState<T> initialState,
-                               final FieldGnssOrbitalElements<T, ?, ?> nonKeplerianElements,
+                               final P nonKeplerianElements,
                                final Frame ecef, final AttitudeProvider provider, final T mass) {
         this(buildOrbitalElements(initialState, nonKeplerianElements, ecef, provider, mass),
              initialState.getFrame(), ecef, provider, initialState.getMass());
@@ -171,6 +199,14 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
      */
     public T getMU() {
         return orbitalElements.getOrbit().getMu();
+    }
+
+    /** Get the underlying GNSS propagation orbital elements.
+     * @return the underlying GNSS orbital elements
+     * @since 14.0
+     */
+    public FieldGnssOrbitalElements<T, O, P> getOrbitalElements() {
+        return orbitalElements;
     }
 
     /** {@inheritDoc} */
@@ -311,6 +347,9 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
      * </p>
      *
      * @param <T> type of the field elements
+     * @param <O> type of the orbital elements (non-field version)
+     * @param <P> type of the orbital elements (field version)
+     * @param <Q> type of the orbital elements (field gradient version)
      * @param initialState    initial state
      * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be overridden)
      * @param ecef            Earth Centered Earth Fixed frame
@@ -318,11 +357,14 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
      * @param mass            satellite mass (kg)
      * @return orbital elements that generate the {@code initialState} when used with a propagator
      */
-    private static <T extends CalculusFieldElement<T>> FieldGnssOrbitalElements<T, ?, ?>
-        buildOrbitalElements(final FieldSpacecraftState<T> initialState,
-                             final FieldGnssOrbitalElements<T, ?, ?> nonKeplerianElements,
-                             final Frame ecef, final AttitudeProvider provider,
-                             final T mass) {
+    private static <T extends CalculusFieldElement<T>,
+                    O extends GNSSOrbitalElements<O>,
+                    P extends FieldGnssOrbitalElements<T, O, P>,
+                    Q extends FieldGnssOrbitalElements<FieldGradient<T>, O, Q>>
+       P buildOrbitalElements(final FieldSpacecraftState<T> initialState,
+                              final FieldGnssOrbitalElements<T, O, P> nonKeplerianElements,
+                              final Frame ecef, final AttitudeProvider provider,
+                              final T mass) {
 
         final Field<T> field = initialState.getDate().getField();
 
@@ -334,11 +376,11 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
 
         // refine orbit using simple differential correction to reach target PV
         final FieldPVCoordinates<T> targetPV = initialState.getPVCoordinates();
-        FieldGnssOrbitalElements<FieldGradient<T>, ?, ?> gElements = convert(nonKeplerianElements, orbit);
+        Q gElements = convert(nonKeplerianElements, orbit);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
-            final FieldGnssPropagator<FieldGradient<T>> gPropagator =
+            final FieldGnssPropagator<FieldGradient<T>, O, Q> gPropagator =
                 new FieldGnssPropagator<>(gElements, initialState.getFrame(), ecef, provider,
                                           gElements.getOrbit().getMu().newInstance(mass));
             final FieldPVCoordinates<FieldGradient<T>> gPV = gPropagator.getInitialState().getPVCoordinates();

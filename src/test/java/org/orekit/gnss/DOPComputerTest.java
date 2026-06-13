@@ -28,6 +28,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -228,9 +229,9 @@ public class DOPComputerTest {
         // Creates the GPS propagators from the almanacs
         final List<Propagator> propagators = new ArrayList<>();
         for (GPSAlmanac almanac: almanacs) {
-            propagators.add(almanac.builder(context.getFrames().getEME2000(),
-                                            context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                            buildPropagator());
+            propagators.add(new GNSSPropagator<>(almanac.factory(context.getFrames().getEME2000(),
+                                                                 context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                             false))));
         }
         return propagators;
     }

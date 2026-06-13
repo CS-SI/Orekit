@@ -197,7 +197,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      */
     protected FieldGnssOrbitalElements(final FieldKeplerianOrbit<T> orbit, final O original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(),  original.getTimeScales(),
-             original.getSystem(), original.getType(), original.getPRN(),
+             original.getSystem(), original.getType(), original.getPrn(),
              orbit,
              orbit.getMu().newInstance(original.getADot()),
              orbit.getMu().newInstance(original.getDeltaN0()), orbit.getMu().newInstance(original.getDeltaN0Dot()),

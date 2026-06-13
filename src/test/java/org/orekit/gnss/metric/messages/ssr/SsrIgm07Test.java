@@ -19,6 +19,7 @@ package org.orekit.gnss.metric.messages.ssr;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DataContext;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -27,12 +28,13 @@ import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm07Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
+import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
 
 public class SsrIgm07Test {
 
-    private double eps = 1.0e-13;
+    private final double eps = 1.0e-13;
 
     @Test
     public void testPerfectValueGPS() {
@@ -58,7 +60,11 @@ public class SsrIgm07Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(27);
 
-        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                                parse(message, false);
 
         // Verify size
@@ -111,7 +117,11 @@ public class SsrIgm07Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(67);
 
-        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                                parse(message, false);
 
         // Verify size
@@ -164,7 +174,11 @@ public class SsrIgm07Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+       final LazyLoadedDataContext context = DataContext.getDefault();
+       final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages,
+                                                                  context.getTimeScales(),
+                                                                  context.getFrames().getEME2000(),
+                                                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                               parse(message, false);
 
        Assertions.assertNull(igm07);
@@ -175,7 +189,11 @@ public class SsrIgm07Test {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
-            new IgsSsrMessagesParser(new ArrayList<>(), DataContext.getDefault().getTimeScales()).
+            final LazyLoadedDataContext context = DataContext.getDefault();
+            new IgsSsrMessagesParser(new ArrayList<>(),
+                                     context.getTimeScales(),
+                                     context.getFrames().getEME2000(),
+                                     context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                 parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
