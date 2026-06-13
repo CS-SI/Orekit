@@ -41,7 +41,6 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldKeplerianParameters;
 import org.orekit.orbits.KeplerianAnomalyUtility;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.KeplerianParameters;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;

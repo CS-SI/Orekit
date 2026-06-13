@@ -54,7 +54,7 @@ public class GNSSPropagatorBuilder<O extends GNSSOrbitalElements<O>>
                                  getNonKeplerianParametersDrivers().
                                  getDrivers().
                                  stream().
-                                 map(d -> d.getRawDrivers().get(0)).
+                                 map(d -> d.getRawDrivers().getFirst()).
                                  collect(Collectors.toList()));
 
     }

@@ -32,8 +32,6 @@ import org.orekit.utils.IERSConventions;
 
 public class Rtcm1240Test {
 
-    private final double eps = 1.0e-13;
-
     private EncodedMessage message;
 
     private ArrayList<Integer> messages;
@@ -81,8 +79,9 @@ public class Rtcm1240Test {
 
         // Verify header
         Assertions.assertEquals(1240,                         rtcm1240.getTypeCode());
-        Assertions.assertEquals(64711.0,                      rtcm1240.getHeader().getEpochTime1s(), eps);
-        Assertions.assertEquals(30.0,                         rtcm1240.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
+        final double eps = 1.0e-13;
+        Assertions.assertEquals(64711.0, rtcm1240.getHeader().getEpochTime1s(), eps);
+        Assertions.assertEquals(30.0, rtcm1240.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
         Assertions.assertEquals(0,                            rtcm1240.getHeader().getMultipleMessageIndicator());
         Assertions.assertEquals(7,                            rtcm1240.getHeader().getIodSsr());
         Assertions.assertEquals(3951,                         rtcm1240.getHeader().getSsrProviderId());
@@ -93,12 +92,12 @@ public class Rtcm1240Test {
         final RtcmOrbitCorrectionData e01 = rtcm1240.getDataMap().get("E01").getFirst();
         Assertions.assertEquals(1,                            e01.getSatelliteID());
         Assertions.assertEquals(132,                          e01.getGnssIod());
-        Assertions.assertEquals(18.0095,                      e01.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
-        Assertions.assertEquals(122.8668,                     e01.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
-        Assertions.assertEquals(122.8668,                     e01.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
-        Assertions.assertEquals(0.090047,                     e01.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
-        Assertions.assertEquals(0.614332,                     e01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
-        Assertions.assertEquals(0.614332,                     e01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
+        Assertions.assertEquals(18.0095, e01.getOrbitCorrection().getDeltaOrbitRadial(), eps);
+        Assertions.assertEquals(122.8668, e01.getOrbitCorrection().getDeltaOrbitAlongTrack(), eps);
+        Assertions.assertEquals(122.8668, e01.getOrbitCorrection().getDeltaOrbitCrossTrack(), eps);
+        Assertions.assertEquals(0.090047, e01.getOrbitCorrection().getDotOrbitDeltaRadial(), eps);
+        Assertions.assertEquals(0.614332, e01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
+        Assertions.assertEquals(0.614332, e01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
     }
 
     private byte[] byteArrayFromBinary(String radix2Value) {

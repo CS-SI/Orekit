@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -60,7 +61,6 @@ import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CartesianOrbitFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.KeplerianOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -1219,6 +1219,7 @@ class BatchLSEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);

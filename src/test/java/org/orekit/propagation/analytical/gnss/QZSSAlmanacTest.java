@@ -62,7 +62,7 @@ public class QZSSAlmanacTest {
         Assertions.assertEquals(4, reader.getPRNNumbers().size());
 
         // Checks the last almanac read
-        final QZSSAlmanac alm = reader.getAlmanacs().get(reader.getAlmanacs().size() - 1);
+        final QZSSAlmanac alm = reader.getAlmanacs().getLast();
         Assertions.assertEquals(199, alm.getPrn());
         Assertions.assertEquals(1015, alm.getGnssDate().getWeekNumber());
         Assertions.assertEquals(262144.0, alm.getGnssDate().getSecondsInWeek(), 0.);

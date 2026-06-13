@@ -88,15 +88,6 @@ public class DSSTPropagatorBuilder
         this.stateType         = stateType;
     }
 
-    /** Copy constructor.
-     * @param builder builder to copy from
-     */
-    private DSSTPropagatorBuilder(final DSSTPropagatorBuilder builder) {
-        this(builder.getOrbitalParameterFactory(), builder.getIntegratorBuilder(),
-             builder.getPropagationType(),
-             builder.getStateType(), builder.getAttitudeProvider());
-    }
-
     /** {@inheritDoc}. */
     @Override
     public DSSTPropagatorBuilder clone() {

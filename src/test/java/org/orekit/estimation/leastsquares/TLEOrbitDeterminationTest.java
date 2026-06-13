@@ -79,7 +79,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
                                                            final double positionScale) {
         final TLEPropagatorBuilder tb =
             new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(templateTLE));
-        tb.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
+        tb.getPropagationParametersDrivers().getDrivers().getFirst().setSelected(true);
         return tb;
     }
 

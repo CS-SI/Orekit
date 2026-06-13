@@ -16,16 +16,10 @@
  */
 package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
-import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory;
-import org.orekit.time.GNSSDate;
-import org.orekit.time.TimeScales;
 
 /**
  * Container for RTCM 1046 data.
@@ -50,7 +44,8 @@ public class Rtcm1046Data extends RtcmEphemerisData {
      */
     public Rtcm1046Data(final int satelliteId, final AccuracyProvider accuracyProvider,
                         final GalileoNavigationMessageFactory factory) {
-        super(satelliteId, accuracyProvider);
+        super(satelliteId);
+        setAccuracyProvider(accuracyProvider);
         this.factory = factory;
     }
 

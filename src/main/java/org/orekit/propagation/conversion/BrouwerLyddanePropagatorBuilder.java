@@ -25,7 +25,6 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -192,24 +191,6 @@ public class BrouwerLyddanePropagatorBuilder
 
         // Return cloned builder
         return builder;
-    }
-
-    /** Override central attraction coefficient.
-     * @param templateOrbit template orbit
-     * @param provider gravity field provider
-     * @param positionAngleType position angle type to use
-     * @return orbit with overridden central attraction coefficient
-     */
-    private static Orbit overrideMu(final Orbit templateOrbit,
-                                    final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final PositionAngleType positionAngleType) {
-        final double[] parameters    = new double[6];
-        final double[] parametersDot = parameters.clone();
-        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngleType, parameters, parametersDot);
-        return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngleType,
-                                                       templateOrbit.getDate(),
-                                                       provider.getMu(),
-                                                       templateOrbit.getFrame());
     }
 
     /** {@inheritDoc} */

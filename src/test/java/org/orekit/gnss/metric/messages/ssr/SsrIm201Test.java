@@ -309,8 +309,4 @@ public class SsrIm201Test {
         return array;
     }
 
-    @BeforeAll
-    public static void setUp() {
-        Utils.setDataRoot("regular-data");
-    }
 }

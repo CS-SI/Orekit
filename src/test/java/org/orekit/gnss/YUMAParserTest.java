@@ -84,7 +84,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(31, reader.getPRNNumbers().size());
 
         // Checks the last almanac read
-        final GPSAlmanac alm = reader.getAlmanacs().get(reader.getAlmanacs().size() - 1);
+        final GPSAlmanac alm = reader.getAlmanacs().getLast();
         Assertions.assertEquals(32, alm.getPrn());
         Assertions.assertEquals(-1, alm.getSVN());
         Assertions.assertEquals(862, alm.getGnssDate().getWeekNumber());

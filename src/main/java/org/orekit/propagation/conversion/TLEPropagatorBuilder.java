@@ -38,7 +38,7 @@ public class TLEPropagatorBuilder
     private final DataContext dataContext;
 
     /** TLE generation algorithm. */
-    private TleGenerationAlgorithm generationAlgorithm;
+    private final TleGenerationAlgorithm generationAlgorithm;
 
     /** Build a new instance. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
@@ -115,8 +115,8 @@ public class TLEPropagatorBuilder
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), getMass(),
                                                                           getOrbitalParameterFactory().getFrame());
 
-        final boolean bStarSelected = this.getPropagationParametersDrivers().getDrivers().get(0).isSelected();
-        propagator.getParametersDrivers().get(0).setSelected(bStarSelected);
+        final boolean bStarSelected = this.getPropagationParametersDrivers().getDrivers().getFirst().isSelected();
+        propagator.getParametersDrivers().getFirst().setSelected(bStarSelected);
         getImpulseManeuvers().forEach(propagator::addEventDetector);
         return propagator;
     }

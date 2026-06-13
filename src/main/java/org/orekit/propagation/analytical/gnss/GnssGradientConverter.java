@@ -20,6 +20,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.FieldKeplerianParameters;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -74,13 +75,13 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
         final SpacecraftState s0    = propagator.getInitialState();
         final KeplerianOrbit  orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s0.getOrbit());
         final FieldKeplerianOrbit<Gradient> gOrbit =
-            new FieldKeplerianOrbit<>(Gradient.variable(nbParams, 0, orbit.getA()),
-                                      Gradient.variable(nbParams, 1, orbit.getE()),
-                                      Gradient.variable(nbParams, 2, orbit.getI()),
-                                      Gradient.variable(nbParams, 3, orbit.getPerigeeArgument()),
-                                      Gradient.variable(nbParams, 4, orbit.getRightAscensionOfAscendingNode()),
-                                      Gradient.variable(nbParams, 5, orbit.getMeanAnomaly()),
-                                      PositionAngleType.MEAN, PositionAngleType.MEAN,
+            new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(nbParams, 0, orbit.getA()),
+                                                                     Gradient.variable(nbParams, 1, orbit.getE()),
+                                                                     Gradient.variable(nbParams, 2, orbit.getI()),
+                                                                     Gradient.variable(nbParams, 3, orbit.getPerigeeArgument()),
+                                                                     Gradient.variable(nbParams, 4, orbit.getRightAscensionOfAscendingNode()),
+                                                                     Gradient.variable(nbParams, 5, orbit.getMeanAnomaly()),
+                                                                     PositionAngleType.MEAN),
                                       orbit.getFrame(),
                                       new FieldAbsoluteDate<>(GradientField.getField(nbParams), orbit.getDate()),
                                       Gradient.constant(nbParams, orbit.getMu()));
@@ -150,13 +151,13 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
 
         // fix the orbit derivatives
         final FieldKeplerianOrbit<Gradient> fixedOrbit    =
-            new FieldKeplerianOrbit<>(Gradient.variable(nbParams, 0, messedUpOrbit.getA().getValue()),
-                                      Gradient.variable(nbParams, 1, messedUpOrbit.getE().getValue()),
-                                      Gradient.variable(nbParams, 2, messedUpOrbit.getI().getValue()),
-                                      Gradient.variable(nbParams, 3, messedUpOrbit.getPerigeeArgument().getValue()),
-                                      Gradient.variable(nbParams, 4, messedUpOrbit.getRightAscensionOfAscendingNode().getValue()),
-                                      Gradient.variable(nbParams, 5, messedUpOrbit.getMeanAnomaly().getValue()),
-                                      PositionAngleType.MEAN, PositionAngleType.MEAN,
+            new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(nbParams, 0, messedUpOrbit.getA().getValue()),
+                                                                     Gradient.variable(nbParams, 1, messedUpOrbit.getE().getValue()),
+                                                                     Gradient.variable(nbParams, 2, messedUpOrbit.getI().getValue()),
+                                                                     Gradient.variable(nbParams, 3, messedUpOrbit.getPerigeeArgument().getValue()),
+                                                                     Gradient.variable(nbParams, 4, messedUpOrbit.getRightAscensionOfAscendingNode().getValue()),
+                                                                     Gradient.variable(nbParams, 5, messedUpOrbit.getMeanAnomaly().getValue()),
+                                                                     PositionAngleType.MEAN),
                                       messedUpOrbit.getFrame(),
                                       new FieldAbsoluteDate<>(GradientField.getField(nbParams),
                                                               messedUpOrbit.getDate().toAbsoluteDate()),

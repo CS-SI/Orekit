@@ -26,7 +26,6 @@ import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.time.DateComponents;
 import org.orekit.time.GNSSDate;
-import org.orekit.time.TimeScalesFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -132,7 +131,7 @@ public class SEMParserTest {
         Assertions.assertEquals(31, reader.getPRNNumbers().size());
 
         // Checks the last almanac read
-        final GPSAlmanac alm = reader.getAlmanacs().get(reader.getAlmanacs().size() - 1);
+        final GPSAlmanac alm = reader.getAlmanacs().getLast();
         Assertions.assertEquals(32, alm.getPrn());
         Assertions.assertEquals(70, alm.getSVN());
         Assertions.assertEquals(862, alm.getGnssDate().getWeekNumber());

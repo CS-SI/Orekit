@@ -120,9 +120,9 @@ class GPSPropagatorTest {
     @Test
     void testFieldClockCorrections() {
         final FieldGPSAlmanac<Binary64> gpsAlmanac =
-            (FieldGPSAlmanac<Binary64>) almanacs.get(0).toField(Binary64Field.getInstance());
+            (FieldGPSAlmanac<Binary64>) almanacs.getFirst().toField(Binary64Field.getInstance());
         final FieldGnssPropagator<Binary64, GPSAlmanac> propagator =
-            new FieldGnssPropagator<>(Binary64Field.getInstance(), almanacs.get(0)
+            new FieldGnssPropagator<>(Binary64Field.getInstance(), almanacs.getFirst()
                 .factory(context.getFrames().getEME2000(),
                          context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
         propagator.addAdditionalDataProvider(
@@ -622,7 +622,7 @@ class GPSPropagatorTest {
     void testFieldIssue544() {
         // Builds the GPSPropagator from the almanac
         final FieldGPSAlmanac<Binary64> a0 =
-            (FieldGPSAlmanac<Binary64>) almanacs.get(0).toField(Binary64Field.getInstance());
+            (FieldGPSAlmanac<Binary64>) almanacs.getFirst().toField(Binary64Field.getInstance());
         final FieldGnssPropagator<Binary64, GPSAlmanac> propagator =
             new FieldGnssPropagator<>(a0, context.getFrames().getEME2000(),
                                       context.getFrames().getITRF(IERSConventions.IERS_2010, false),
@@ -649,7 +649,7 @@ class GPSPropagatorTest {
         // Setup propagator
         final GNSSPropagator<GPSAlmanac>
             propagator =
-            new GNSSPropagator<>(almanacs.get(0).factory(context.getFrames().getEME2000(), context.getFrames()
+            new GNSSPropagator<>(almanacs.getFirst().factory(context.getFrames().getEME2000(), context.getFrames()
                 .getITRF(IERSConventions.IERS_2010, false)));
 
         // Setup additional data provider which use the initial state in its init method

@@ -125,7 +125,7 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
     private final Frame bodyFixed;
 
     /** Stop flag. */
-    private AtomicBoolean stop;
+    private final AtomicBoolean stop;
 
     /** Circular buffer. */
     private byte[] buffer;

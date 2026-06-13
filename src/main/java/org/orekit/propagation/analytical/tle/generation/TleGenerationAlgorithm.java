@@ -200,7 +200,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
      * @return current B-star value
      */
     protected double getBStar() {
-        return nonKeplerianDrivers.getDrivers().get(0).getValue();
+        return nonKeplerianDrivers.getDrivers().getFirst().getValue();
     }
 
     /**
@@ -249,7 +249,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
 
         // de-couple b-star driver
         final ParameterDriversList newDrivers = new ParameterDriversList();
-        final ParameterDriver driver = nonKeplerianDrivers.getDrivers().get(0);
+        final ParameterDriver driver = nonKeplerianDrivers.getDrivers().getFirst();
         newDrivers.add(new ParameterDriver(driver.getName(), driver.getValue(), driver.getScale(),
                                            driver.getMinValue(), driver.getMaxValue()));
         nonKeplerianDrivers = newDrivers;

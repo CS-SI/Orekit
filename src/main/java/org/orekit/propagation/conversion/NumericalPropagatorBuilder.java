@@ -78,16 +78,6 @@ public class NumericalPropagatorBuilder
         this.impulseManeuvers = new ArrayList<>();
     }
 
-    /** Copy constructor.
-     *
-     * @param builder builder to copy
-     */
-    private NumericalPropagatorBuilder(final NumericalPropagatorBuilder builder) {
-        this(builder.getOrbitalParameterFactory(),
-             builder.getIntegratorBuilder(),
-             builder.getAttitudeProvider());
-    }
-
     /** {@inheritDoc}. */
     @Override
     public NumericalPropagatorBuilder clone() {

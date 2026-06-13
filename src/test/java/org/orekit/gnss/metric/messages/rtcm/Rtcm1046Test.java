@@ -30,7 +30,6 @@ import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;

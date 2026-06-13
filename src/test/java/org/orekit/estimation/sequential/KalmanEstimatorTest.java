@@ -17,6 +17,7 @@
 package org.orekit.estimation.sequential;
 
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -1568,6 +1569,7 @@ class KalmanEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);

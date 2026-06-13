@@ -32,8 +32,6 @@ import org.orekit.utils.IERSConventions;
 
 public class Rtcm1241Test {
 
-    private final double eps = 1.0e-13;
-
     private EncodedMessage message;
 
     private ArrayList<Integer> messages;
@@ -76,8 +74,9 @@ public class Rtcm1241Test {
 
         // Verify header
         Assertions.assertEquals(1241,                         rtcm1241.getTypeCode());
-        Assertions.assertEquals(64711.0,                      rtcm1241.getHeader().getEpochTime1s(), eps);
-        Assertions.assertEquals(30.0,                         rtcm1241.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
+        final double eps = 1.0e-13;
+        Assertions.assertEquals(64711.0, rtcm1241.getHeader().getEpochTime1s(), eps);
+        Assertions.assertEquals(30.0, rtcm1241.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
         Assertions.assertEquals(0,                            rtcm1241.getHeader().getMultipleMessageIndicator());
         Assertions.assertEquals(7,                            rtcm1241.getHeader().getIodSsr());
         Assertions.assertEquals(3951,                         rtcm1241.getHeader().getSsrProviderId());
@@ -87,9 +86,9 @@ public class Rtcm1241Test {
         // Verify data for satellite E01
         final RtcmClockCorrectionData e01 = rtcm1241.getDataMap().get("E01").getFirst();
         Assertions.assertEquals(1,                            e01.getSatelliteID());
-        Assertions.assertEquals(96.6527,                      e01.getClockCorrection().getDeltaClockC0(),            eps);
-        Assertions.assertEquals(0.483263,                     e01.getClockCorrection().getDeltaClockC1(),            eps);
-        Assertions.assertEquals(0.61857734,                   e01.getClockCorrection().getDeltaClockC2(),            eps);
+        Assertions.assertEquals(96.6527, e01.getClockCorrection().getDeltaClockC0(), eps);
+        Assertions.assertEquals(0.483263, e01.getClockCorrection().getDeltaClockC1(), eps);
+        Assertions.assertEquals(0.61857734, e01.getClockCorrection().getDeltaClockC2(), eps);
     }
 
     private byte[] byteArrayFromBinary(String radix2Value) {

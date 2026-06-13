@@ -19,9 +19,7 @@ package org.orekit.propagation.analytical.tle;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
@@ -59,22 +57,6 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
     private T xmcof;
     private T c5;
     // CHECKSTYLE: resume JavadocVariable check
-
-    /** Constructor for a unique initial TLE.
-     *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param initialTLE the TLE to propagate.
-     * @param attitudeProvider provider for attitude computation
-     * @param mass spacecraft mass (kg)
-     * @see #FieldSGP4(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame)
-     * @since 14.0
-     */
-    @DefaultDataContext
-    public FieldSGP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider, final T mass) {
-        this(initialTLE, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME());
-    }
 
     /** Constructor for a unique initial TLE.
      * @param initialTLE the TLE to propagate.
