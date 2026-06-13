@@ -33,6 +33,8 @@ import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
+import org.orekit.time.DateComponents;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
@@ -93,6 +95,7 @@ public class Rtcm1019Test {
                                                                        context.getFrames().getITRF(IERSConventions.IERS_2010,
                                                                                                    false)).
                                      parse(message, false);
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         final Rtcm1019Data         ephemerisData = rtcm1019.getEphemerisData();
         final GPSLegacyNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
 
@@ -205,7 +208,7 @@ public class Rtcm1019Test {
     public void testDF103() {
         final String m = "1111111111111111";
         final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
-        Assertions.assertFalse(RtcmDataField.DF103.booleanValue(message));
+        Assertions.assertEquals(1, RtcmDataField.DF103.intValue(message));
     }
 
     @DefaultDataContext

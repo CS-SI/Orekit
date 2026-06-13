@@ -17,7 +17,7 @@
 package org.orekit.gnss.metric.messages.common;
 
 /**
- * This interface represents an accuracy providerused to validate RTCM ephemeris messages.
+ * This interface represents an accuracy provider used to validate RTCM ephemeris messages.
  * @author Bryan Cazabonne
  * @since 11.0
  */

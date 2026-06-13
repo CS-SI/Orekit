@@ -30,16 +30,14 @@ public class RtcmEphemerisData extends RtcmData {
     private final int satelliteId;
 
     /** Accuracy provider. */
-    private final AccuracyProvider accuracyProvider;
+    private AccuracyProvider accuracyProvider;
 
     /** Constructor.
      * @param satelliteId satellite ID
-     * @param accuracyProvider accuracy provider
      * @since 14.0
      */
-    public RtcmEphemerisData(final int satelliteId, final AccuracyProvider accuracyProvider) {
+    public RtcmEphemerisData(final int satelliteId) {
         this.satelliteId      = satelliteId;
-        this.accuracyProvider = accuracyProvider;
     }
 
     /** Get the satellite ID.
@@ -47,6 +45,13 @@ public class RtcmEphemerisData extends RtcmData {
      */
     public int getSatelliteID() {
         return satelliteId;
+    }
+
+    /** Set the accuracy provider of the ephemeris message.
+     * @param accuracyProvider accuracy provider
+     */
+    public void setAccuracyProvider(final AccuracyProvider accuracyProvider) {
+        this.accuracyProvider = accuracyProvider;
     }
 
     /** Get the accuracy provider of the ephemeris message.
