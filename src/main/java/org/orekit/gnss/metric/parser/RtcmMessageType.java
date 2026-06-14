@@ -411,9 +411,9 @@ public enum RtcmMessageType implements MessageType {
             // Fill navigation message
             factory.setPrn(galileoId);
             factory.getIDotDriver().setValue(RtcmDataField.DF292.doubleValue(encodedMessage));
-            factory.setToc(RtcmDataField.DF293.doubleValue(encodedMessage));
+            final double toc = RtcmDataField.DF293.doubleValue(encodedMessage);
+            factory.setWeekAndTime(galileoWeekNumber, toc);
             RtcmMessageType.fillGalileoNavigationMessagefactory(encodedMessage, factory);
-            factory.setWeekAndTime(galileoWeekNumber, factory.getToc());
             factory.setSvHealth(RtcmDataField.DF314.intValue(encodedMessage));
 
             // NAV data validity status
@@ -447,7 +447,7 @@ public enum RtcmMessageType implements MessageType {
             final int galileoWeekNumber = RtcmDataField.DF289.intValue(encodedMessage);
 
             // IODNav
-            factory.setIODNav(RtcmDataField.DF290.intValue(encodedMessage));
+            factory.setIodNav(RtcmDataField.DF290.intValue(encodedMessage));
 
             // Accuracy provider
             final AccuracyProvider galileoProvider = new SignalInSpaceAccuracy(RtcmDataField.DF286.intValue(encodedMessage));
@@ -456,7 +456,8 @@ public enum RtcmMessageType implements MessageType {
             // Fill navigation message
             factory.setPrn(galileoId);
             factory.getIDotDriver().setValue(RtcmDataField.DF292.doubleValue(encodedMessage));
-            factory.setToc(RtcmDataField.DF293.doubleValue(encodedMessage));
+            final double toc = RtcmDataField.DF293.doubleValue(encodedMessage);
+            factory.setWeekAndTime(galileoWeekNumber, toc);
             RtcmMessageType.fillGalileoNavigationMessagefactory(encodedMessage, factory);
             factory.setBGDE5bE1(RtcmDataField.DF313.doubleValue(encodedMessage));
 
