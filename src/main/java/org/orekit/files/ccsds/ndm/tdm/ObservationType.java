@@ -85,9 +85,9 @@ public enum ObservationType {
         @Override
         public double rawToSI(final RangeUnitsConverter ruConverter, final TdmMetadata metadata,
                               final AbsoluteDate date, final double rawValue) {
-            if (metadata.getRangeUnits().isEmpty()) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE);
-            }
+            metadata.
+                getRangeUnits().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE));
             if (metadata.getRangeUnits().get() == RangeUnits.km) {
                 return Unit.KILOMETRE.toSI(rawValue);
             } else if (metadata.getRangeUnits().get() == RangeUnits.s) {
@@ -104,9 +104,9 @@ public enum ObservationType {
         @Override
         public double siToRaw(final RangeUnitsConverter ruConverter, final TdmMetadata metadata,
                               final AbsoluteDate date, final double siValue) {
-            if (metadata.getRangeUnits().isEmpty()) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE);
-            }
+            metadata.
+                getRangeUnits().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE));
             if (metadata.getRangeUnits().get() == RangeUnits.km) {
                 return Unit.KILOMETRE.fromSI(siValue);
             } else if (metadata.getRangeUnits().get() == RangeUnits.s) {
