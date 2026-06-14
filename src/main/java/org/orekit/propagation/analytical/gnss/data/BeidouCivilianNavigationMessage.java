@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -91,7 +91,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * @param beidouType       Beidou civilian message type
      * @param timeScales       known time scales
      * @param prn              PRN number of the satellite
-     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
@@ -129,14 +129,14 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      */
     public BeidouCivilianNavigationMessage(final BeidouCivilianType beidouType,
                                            final TimeScales timeScales,  final int prn,
-                                           final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                           final GNSSDate toe, final KeplerianOrbit orbit,
                                            final double aDot, final double deltaN0, final double deltaN0Dot,
                                            final double iDot, final double omegaDot,
                                            final double cuc, final double cus,
                                            final double crc, final double crs,
                                            final double cic, final double cis,
                                            final double af0, final double af1, final double af2,
-                                           final double tgd, final AbsoluteDate toc, final double transmissionTime,
+                                           final double tgd, final GNSSDate toc, final GNSSDate  transmissionTime,
                                            final int iode, final int iodc,
                                            final double iscB1CD, final double iscB1CP, final double iscB2AD,
                                            final int sisaiOe, final int sisaiOcb,
@@ -145,7 +145,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
                                            final double tgdB1Cp, final double tgdB2ap, final double tgdB2bI,
                                            final BeidouSatelliteType satelliteType) {
         super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, beidouType.name(), prn, gnssDate, orbit,
+              timeScales, beidouType.name(), prn, toe, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, transmissionTime);
         this.beidouType = beidouType;
@@ -215,9 +215,12 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
                                                         final DoubleFunction<T> converter) {
         return new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
                                                           getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                          getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                          converter.apply(getTgd()), toFieldToc(orbit),
-                                                          converter.apply(getTransmissionTime()),
+                                                          getType(), getPrn(),
+                                                          new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                                          orbit, nonKeplerian,
+                                                          converter.apply(getTgd()),
+                                                          new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
+                                                          new FieldGNSSDate<>(orbit.getDate().getField(), getTransmissionTime()),
                                                           getIODE(), getIODC(),
                                                           converter.apply(getIscB1CD()),
                                                           converter.apply(getIscB1CP()),
@@ -346,7 +349,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     /** {@inheritDoc} */
     @Override
     public BeidouCivilianNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new BeidouCivilianNavigationMessageFactory(getTimeScales(), getGnssDate().getSystem(), getType(),
+        return new BeidouCivilianNavigationMessageFactory(getTimeScales(), getTimeOfEphemeris().getSystem(), getType(),
                                                           inertial, bodyFixed, getBeidouType(), getSatelliteType());
     }
 

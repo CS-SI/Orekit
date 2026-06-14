@@ -44,8 +44,8 @@ public class NavICL1NVNavigationMessageWriter
 
         // EPH MESSAGE LINE - 8
         writer.indentLine(header);
-        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
-        writer.writeInt(new GNSSDate(message.getDate(), SatelliteSystem.NAVIC).getWeekNumber());
+        writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
+        writer.writeInt(message.getTransmissionTime().getWeekNumber());
         writer.finishLine();
 
     }

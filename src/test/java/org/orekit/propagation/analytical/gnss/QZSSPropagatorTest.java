@@ -64,7 +64,7 @@ public class QZSSPropagatorTest {
                                          context.getFrames().getEME2000(),
                                          context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(193);
-        factory.setWeekAndTime(7, 348160.0);
+        factory.setTimeOfEphemeris(new GNSSDate(7, 348160.0, SatelliteSystem.QZSS));
         final double sqrtA = 6493.145996;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(7.579761505E-02);
@@ -76,7 +76,7 @@ public class QZSSPropagatorTest {
         factory.getAf0Driver().setValue(-2.965927124E-04);
         factory.getAf1Driver().setValue(7.275957614E-12);
         factory.setHealth(0);
-        factory.setToc(new GNSSDate(7, 123456.0, SatelliteSystem.QZSS).getDate());
+        factory.setTimeOfClock(new GNSSDate(7, 123456.0, SatelliteSystem.QZSS));
 
     }
 
@@ -178,7 +178,7 @@ public class QZSSPropagatorTest {
                                                    context.getFrames().getEME2000(),
                                                    context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         qoe.setPrn(195);
-        qoe.setWeekAndTime(21, 226800.0);
+        qoe.setTimeOfEphemeris(new GNSSDate(21, 226800.0, SatelliteSystem.QZSS));
         final double sqrtA = 6493.226968765259;
         qoe.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         qoe.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.07426900835707784);

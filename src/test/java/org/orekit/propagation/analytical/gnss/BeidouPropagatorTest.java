@@ -67,7 +67,7 @@ public class BeidouPropagatorTest {
                                            context.getFrames().getEME2000(),
                                            context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(18);
-        factory.setWeekAndTime(694, 4096.0);
+        factory.setTimeOfEphemeris(new GNSSDate(694, 4096.0, SatelliteSystem.BEIDOU));
         final double sqrtA = 6493.3076;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.00482368);
@@ -79,7 +79,7 @@ public class BeidouPropagatorTest {
         factory.getAf0Driver().setValue(0.0001096725);
         factory.getAf1Driver().setValue(7.27596e-12);
         factory.setHealth(0);
-        factory.setToc(new GNSSDate(694, 123456.0, SatelliteSystem.BEIDOU).getDate());
+        factory.setTimeOfClock(new GNSSDate(694, 123456.0, SatelliteSystem.BEIDOU));
     }
 
     @Test
@@ -192,7 +192,7 @@ public class BeidouPropagatorTest {
                                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false),
                                                      false);
         factory1.setPrn(7);
-        factory1.setWeekAndTime(713, 284400.0);
+        factory1.setTimeOfEphemeris(new GNSSDate(713, 284400.0, SatelliteSystem.BEIDOU));
         final double sqrtA = 6492.84515953064;
         factory1.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         factory1.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.00728036486543715);

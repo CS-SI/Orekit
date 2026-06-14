@@ -22,7 +22,6 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbitalParameters;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldGNSSDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
@@ -56,10 +55,10 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     /** PRN number of the satellite. */
     private final int prn;
 
-    /** GNSS Date.
+    /** Time of ephemeris.
      * @since 14.0
      */
-    private final FieldGNSSDate<T> gnssDate;
+    private final FieldGNSSDate<T> toe;
 
     /** Orbit. */
     private final FieldKeplerianOrbit<T> orbit;
@@ -112,11 +111,13 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     /** SV second order clock correction (s/s²). */
     private final T af2;
 
+    /** Time of clock.
+     * @since 14.0
+     */
+    private final FieldGNSSDate<T> toc;
+
     /** Group delay differential TGD for L1-L2 correction. */
     private final T tgd;
-
-    /** Time Of Clock. */
-    private final FieldAbsoluteDate<T> toc;
 
     /** Creates a new instance.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
@@ -124,7 +125,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @param timeScales      known time scales
      * @param type            type (null if not a navigation message)
      * @param prn             PRN number of the satellite
-     * @param gnssDate        GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe             time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit           Keplerian orbit in Earth-frozen frame
      * @param aDot            change rate in semi-major axis (m/s)
      * @param deltaN0         delta of satellite mean motion
@@ -146,7 +147,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      */
     protected FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
                                        final TimeScales timeScales, final String type, final int prn,
-                                       final FieldGNSSDate<T> gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                       final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
                                        final T aDot,
                                        final T deltaN0, final T deltaN0Dot,
                                        final T iDot, final T omegaDot,
@@ -154,7 +155,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
                                        final T crc, final T crs,
                                        final T cic, final T cis,
                                        final T af0, final T af1, final T af2,
-                                       final T tgd, final FieldAbsoluteDate<T> toc) {
+                                       final T tgd, final FieldGNSSDate<T> toc) {
 
         // system parameters
         this.angularVelocity = angularVelocity;
@@ -166,8 +167,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         // satellite identifier
         this.prn             = prn;
 
-        // date
-        this.gnssDate        = gnssDate;
+        // time of ephemeris
+        this.toe             = toe;
 
         // Keplerian orbit
         this.orbit           = orbit;
@@ -189,8 +190,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         this.af0             = af0;
         this.af1             = af1;
         this.af2             = af2;
-        this.tgd             = tgd;
         this.toc             = toc;
+        this.tgd             = tgd;
 
     }
 
@@ -200,7 +201,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @param timeScales      known time scales
      * @param type            type (null if not a navigation message)
      * @param prn             PRN number of the satellite
-     * @param gnssDate        GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe             time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit           Keplerian orbit in Earth-frozen frame
      * @param nonKeplerian    15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd             group delay differential TGD for L1-L2 correction
@@ -209,11 +210,10 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      */
     protected FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
                                        final TimeScales timeScales, final String type, final int prn,
-                                       final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                       final T[] nonKeplerian, final T tgd, final FieldAbsoluteDate<T> toc) {
+                                       final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                       final T[] nonKeplerian, final T tgd, final FieldGNSSDate<T> toc) {
         this(angularVelocity, weeksInCycle, timeScales, type, prn,
-             new FieldGNSSDate<>(orbit.getDate().getField(), gnssDate),
-             orbit,
+             toe, orbit,
              nonKeplerian[NonKeplerianDriversFactory.A_DOT_INDEX],
              nonKeplerian[NonKeplerianDriversFactory.DELTA_N0_INDEX],
              nonKeplerian[NonKeplerianDriversFactory.DELTA_N0_DOT_INDEX],
@@ -238,7 +238,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     protected FieldGnssOrbitalElements(final FieldKeplerianOrbit<T> orbit, final O original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
              original.getType(), original.getPrn(),
-             new FieldGNSSDate<>(orbit.getDate().getField(), original.getGnssDate()), orbit,
+             new FieldGNSSDate<>(orbit.getDate().getField(), original.getTimeOfEphemeris()), orbit,
              orbit.getMu().newInstance(original.getADot()),
              orbit.getMu().newInstance(original.getDeltaN0()), orbit.getMu().newInstance(original.getDeltaN0Dot()),
              orbit.getMu().newInstance(original.getIDot()), orbit.getMu().newInstance(original.getOmegaDot()),
@@ -249,7 +249,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
              orbit.getMu().newInstance(original.getAf1()),
              orbit.getMu().newInstance(original.getAf2()),
              orbit.getMu().newInstance(original.getTgd()),
-             new FieldAbsoluteDate<>(orbit.getDate().getField(), original.getToc()));
+             new FieldGNSSDate<>(orbit.getDate().getField(), original.getTimeOfClock()));
     }
 
     /** Constructor from different field instance.
@@ -263,7 +263,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
                                                                            final FieldGnssOrbitalElements<V, O> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
              original.getType(), original.getPrn(),
-             new FieldGNSSDate<>(orbit.getDate().getField(), original.getGnssDate().getGnssDate()), orbit,
+             new FieldGNSSDate<>(orbit.getDate().getField(), original.getTimeOfEphemeris().getGnssDate()),
+             orbit,
              converter.apply(original.getADot()),
              converter.apply(original.getDeltaN0()), converter.apply(original.getDeltaN0Dot()),
              converter.apply(original.getIDot()), converter.apply(original.getOmegaDot()),
@@ -274,20 +275,27 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
              converter.apply(original.getAf1()),
              converter.apply(original.getAf2()),
              converter.apply(original.getTgd()),
-             new FieldAbsoluteDate<>(orbit.getDate().getField(), original.getToc().toAbsoluteDate()));
+             new FieldGNSSDate<>(orbit.getDate().getField(), original.getTimeOfClock().getGnssDate()));
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldAbsoluteDate<T> getDate() {
-        return orbit.getDate();
+        return toe.getDate();
     }
 
-    /** Get the GNSS date.
-     * @return GNSS date
+    /** Get the time of ephemeris.
+     * @return time of ephemeris
      * @since 14.0
      */
-    public FieldGNSSDate<T> getGnssDate() {
-        return gnssDate;
+    public FieldGNSSDate<T> getTimeOfEphemeris() {
+        return toe;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldGNSSDate<T> getTimeOfClock() {
+        return toc;
     }
 
     /** Create a non-field version of the instance.
@@ -331,19 +339,6 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         FieldGnssOrbitalElements<U, O> toField(FieldKeplerianOrbit<U> keplerian,
                                                U[] nonKeplerian,
                                                Function<T, U> converter);
-
-    /** Convert TOC.
-     * @param <U>   type of the field elements
-     * @param keplerian orbit in the correct gradient field
-     * @return converted Time Of Clock
-     * @since 14.0
-     */
-    protected <U extends CalculusFieldElement<U>> FieldAbsoluteDate<U>
-        toFieldToc(final FieldKeplerianOrbit<U> keplerian) {
-        return getToc() == null ?
-               null :
-               new FieldAbsoluteDate<>(keplerian.getDate().getField(), getToc().toAbsoluteDate());
-    }
 
     /** Get known time scales.
      * @return known time scales
@@ -497,12 +492,6 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     @Override
     public T getTgd() {
         return tgd;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldAbsoluteDate<T> getToc() {
-        return toc;
     }
 
     /** Check if elements correspond to a civilian message.

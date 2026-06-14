@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -130,8 +129,7 @@ public class GPSAlmanacFactory extends GNSSOrbitalElementsFactory<GPSAlmanac> {
     /** {@inheritDoc} */
     @Override
     public GPSAlmanac createFromDrivers() {
-        return new GPSAlmanac(getTimeScales(), getPrn(),
-                              new GNSSDate(getWeek(), getTimeDriver().getValue(), getSystem()),
+        return new GPSAlmanac(getTimeScales(), getPrn(), getTimeOfEphemeris(),
                               createOrbitFromDrivers(),
                               getADotDriver().getValue(),
                               getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
@@ -141,8 +139,8 @@ public class GPSAlmanacFactory extends GNSSOrbitalElementsFactory<GPSAlmanac> {
                               getCicDriver().getValue(), getCisDriver().getValue(),
                               getAf0Driver().getValue(), getAf1Driver().getValue(),
                               getAf2Driver().getValue(),
-                              getTgd(), getToc(),
-                              getSource(), getSvn(), getHealth(), getUra(), getSatConfiguration());
+                              getTgd(), getTimeOfClock(), getSource(), getSvn(), getHealth(),
+                              getUra(), getSatConfiguration());
     }
 
 }

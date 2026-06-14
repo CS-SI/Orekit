@@ -25,6 +25,7 @@ import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessa
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianType;
 import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 /** Parser for Beidou-3 CNAV.
@@ -113,7 +114,9 @@ public class BeidouCnv123Parser
         final ParseInfo parseInfo = getParseInfo();
         final BeidouCivilianNavigationMessageFactory factory = getFactory();
         if (factory.getBeidouType() == BeidouCivilianType.CNV3) {
-            factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+            factory.setTransmissionTime(new GNSSDate(factory.getTimeOfEphemeris().getWeekNumber(),
+                                                     parseInfo.parseDouble1(Unit.SECOND),
+                                                     factory.getSystem()));
             parseInfo.closePendingRecord();
         } else {
             parseSismaiHealthIntegrity();
@@ -125,7 +128,9 @@ public class BeidouCnv123Parser
     public void parseLine09() {
         final ParseInfo parseInfo = getParseInfo();
         final BeidouCivilianNavigationMessageFactory factory = getFactory();
-        factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        factory.setTransmissionTime(new GNSSDate(factory.getTimeOfEphemeris().getWeekNumber(),
+                                                 parseInfo.parseDouble1(Unit.SECOND),
+                                                 factory.getSystem()));
         // field 2 is spare
         // field 3 is spare
         factory.setIode(parseInfo.parseInt4());

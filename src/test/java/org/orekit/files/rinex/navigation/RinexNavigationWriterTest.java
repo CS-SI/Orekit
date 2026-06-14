@@ -678,8 +678,8 @@ public class RinexNavigationWriterTest {
         // check data specific to this message
         checkDouble(first.getOrbit().getA(), second.getOrbit().getA());
         checkDouble(first.getDeltaN0(), second.getDeltaN0());
-        checkDate(first.getToc(), second.getToc());
-        checkDouble(first.getTransmissionTime(), second.getTransmissionTime());
+        checkDate(first.getTimeOfClock().getDate(), second.getTimeOfClock().getDate());
+        checkDate(first.getTransmissionTime().getDate(), second.getTransmissionTime().getDate());
 
     }
 
@@ -692,7 +692,7 @@ public class RinexNavigationWriterTest {
     private <T extends GNSSOrbitalElements<T>> void checkGNSSOrbitalElements(final GNSSOrbitalElements<T> first,
                                                                              final GNSSOrbitalElements<T> second) {
 
-        Assertions.assertEquals(first.getGnssDate().getSystem(), second.getGnssDate().getSystem());
+        Assertions.assertEquals(first.getTimeOfEphemeris().getSystem(), second.getTimeOfEphemeris().getSystem());
         Assertions.assertSame(first.getTimeScales(), second.getTimeScales());
         Assertions.assertEquals(first.getAngularVelocity(), second.getAngularVelocity(),
                                 FastMath.ulp(first.getAngularVelocity()));
@@ -701,8 +701,8 @@ public class RinexNavigationWriterTest {
                                 FastMath.ulp(first.getCycleDuration()));
         Assertions.assertEquals(first.getPrn(), second.getPrn());
 
-        Assertions.assertEquals(first.getGnssDate().getWeekNumber(), second.getGnssDate().getWeekNumber());
-        checkDouble(first.getGnssDate().getSecondsInWeek(), second.getGnssDate().getSecondsInWeek());
+        Assertions.assertEquals(first.getTimeOfEphemeris().getWeekNumber(), second.getTimeOfEphemeris().getWeekNumber());
+        checkDouble(first.getTimeOfEphemeris().getSecondsInWeek(), second.getTimeOfEphemeris().getSecondsInWeek());
         checkDate(first.getDate(), second.getDate());
 
         // check data specific to this message
@@ -723,7 +723,7 @@ public class RinexNavigationWriterTest {
         checkDouble(first.getAf1(), second.getAf1());
         checkDouble(first.getAf2(), second.getAf2());
         checkDouble(first.getTgd(), second.getTgd());
-        checkDate(first.getToc(), second.getToc());
+        checkDate(first.getTimeOfClock().getDate(), second.getTimeOfClock().getDate());
     }
 
     private  void checkAbstractEphemeris(final AbstractEphemerisMessage first,

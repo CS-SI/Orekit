@@ -20,6 +20,7 @@ import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.CivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.CivilianNavigationMessageFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 /** Parser for QZSS and GPS civilian messages.
@@ -99,8 +100,9 @@ public abstract class CivilianLevel2NavigationParser<T extends CivilianNavigatio
     protected void parseTransmissionTimeLine() {
         final F         factory   = getFactory();
         final ParseInfo parseInfo = getParseInfo();
-        factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-        factory.setWeekAndTime(parseInfo.parseInt2(), factory.getTimeDriver().getValue());
+        factory.setTransmissionTime(new GNSSDate(factory.getTimeOfEphemeris().getWeekNumber(),
+                                                 parseInfo.parseDouble1(Unit.SECOND),
+                                                 factory.getSystem()));
         factory.setFlags(getParseInfo().parseInt3());
         parseInfo.closePendingRecord();
     }

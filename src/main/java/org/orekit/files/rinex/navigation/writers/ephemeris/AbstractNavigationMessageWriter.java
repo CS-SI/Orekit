@@ -103,10 +103,10 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         throws IOException {
         if (header.getFormatVersion() < 3.0) {
             // Rinex 2 supports only Glonass and GPS
-            final TimeScale ts = message.getGnssDate().getSystem() == SatelliteSystem.GLONASS ?
+            final TimeScale ts = message.getTimeOfEphemeris().getSystem() == SatelliteSystem.GLONASS ?
                                  writer.getTimeScales().getGLONASS() :
                                  writer.getTimeScales().getGPS();
-            final DateTimeComponents dtc = message.getToc().getComponents(ts);
+            final DateTimeComponents dtc = message.getTimeOfClock().getDate().getComponents(ts);
             writer.outputField(TWO_DIGITS_INTEGER, message.getPrn(), 2);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 5);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getMonth(),      8);
@@ -120,7 +120,7 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         } else {
             writer.outputField(identifier, 3, true);
             writer.outputField(' ', 4);
-            writer.writeDate(message.getToc(), message.getGnssDate().getSystem());
+            writer.writeDate(message.getTimeOfClock().getDate(), message.getTimeOfClock().getSystem());
             writer.writeDouble(message.getAf0(), Unit.SECOND);
             writer.writeDouble(message.getAf1(), RinexNavigationParser.S_PER_S);
             writer.writeDouble(message.getAf2(), RinexNavigationParser.S_PER_S2);
@@ -180,7 +180,7 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
                                  final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        writer.writeDouble(message.getGnssDate().getSecondsInWeek(), Unit.SECOND);
+        writer.writeDouble(message.getTimeOfEphemeris().getSecondsInWeek(), Unit.SECOND);
         writer.writeDouble(message.getCic(), Unit.RADIAN);
         writer.writeDouble(message.getOrbit().getRightAscensionOfAscendingNode(), Unit.RADIAN);
         writer.writeDouble(message.getCis(), Unit.RADIAN);

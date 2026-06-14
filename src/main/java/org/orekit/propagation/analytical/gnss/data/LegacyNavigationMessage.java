@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -65,7 +64,7 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      * @param timeScales       known time scales
      * @param type             message type
      * @param prn              PRN number of the satellite
-     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
@@ -94,19 +93,18 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      */
     protected LegacyNavigationMessage(final double angularVelocity, final int weeksInCycle,
                                       final TimeScales timeScales, final String type,
-                                      final int prn, final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                      final int prn, final GNSSDate toe, final KeplerianOrbit orbit,
                                       final double aDot, final double deltaN0, final double deltaN0Dot,
                                       final double iDot, final double omegaDot,
                                       final double cuc, final double cus,
                                       final double crc, final double crs,
                                       final double cic, final double cis,
                                       final double af0, final double af1, final double af2,
-                                      final double tgd, final AbsoluteDate toc,
-                                      final double transmissionTime,
+                                      final double tgd, final GNSSDate toc, final GNSSDate  transmissionTime,
                                       final int iode, final int iodc, final double svAccuracy,
                                       final int svHealth, final int fitInterval,
                                       final int l2Codes, final int l2PFlags) {
-        super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit,
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, transmissionTime);
         this.iode        = iode;

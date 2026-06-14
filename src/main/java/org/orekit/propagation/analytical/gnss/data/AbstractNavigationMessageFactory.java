@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -32,7 +33,7 @@ public abstract class AbstractNavigationMessageFactory<O extends AbstractNavigat
     /** Transmission time.
      * @since 12.0
      */
-    private double transmissionTime;
+    private GNSSDate transmissionTime;
 
     /** Simple constructor.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
@@ -53,14 +54,14 @@ public abstract class AbstractNavigationMessageFactory<O extends AbstractNavigat
     /** Get transmission time.
      * @return transmission time
      */
-    public double getTransmissionTime() {
+    public GNSSDate getTransmissionTime() {
         return transmissionTime;
     }
 
     /** Set transmission time.
      * @param transmissionTime transmission time
      */
-    public void setTransmissionTime(final double transmissionTime) {
+    public void setTransmissionTime(final GNSSDate transmissionTime) {
         this.transmissionTime = transmissionTime;
     }
 

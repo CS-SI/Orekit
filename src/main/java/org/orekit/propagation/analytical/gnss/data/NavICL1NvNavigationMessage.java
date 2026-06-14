@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -31,8 +31,7 @@ import java.util.function.DoubleFunction;
  * @author Luc Maisonobe
  * @since 13.0
  */
-public class NavICL1NvNavigationMessage
-    extends AbstractNavigationMessage<NavICL1NvNavigationMessage> {
+public class NavICL1NvNavigationMessage extends AbstractNavigationMessage<NavICL1NvNavigationMessage> {
 
     /** Message type.
      * @since 14.0
@@ -71,7 +70,7 @@ public class NavICL1NvNavigationMessage
      * @param timeScales          known time scales
      * @param type                message type
      * @param prn                 PRN number of the satellite
-     * @param gnssDate            GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe                 time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit               Keplerian orbit in Earth-frozen frame
      * @param aDot                change rate in semi-major axis (m/s)
      * @param deltaN0             delta of satellite mean motion
@@ -100,21 +99,21 @@ public class NavICL1NvNavigationMessage
      * @param iscL1DS             inter signal delay for L1D S
      */
     public NavICL1NvNavigationMessage(final TimeScales timeScales, final String type,
-                                      final int prn, final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                      final int prn, final GNSSDate toe, final KeplerianOrbit orbit,
                                       final double aDot, final double deltaN0, final double deltaN0Dot,
                                       final double iDot, final double omegaDot,
                                       final double cuc, final double cus,
                                       final double crc, final double crs,
                                       final double cic, final double cis,
                                       final double af0, final double af1, final double af2,
-                                      final double tgd, final AbsoluteDate toc, final double transmissionTime,
+                                      final double tgd, final GNSSDate toc, final GNSSDate  transmissionTime,
                                       final int referenceSignalFlag,
                                       final int urai, final int l1SpsHealth,
                                       final double tgdSL5,
                                       final double iscSL1P, final double iscL1DL1P,
                                       final double iscL1PS, final double iscL1DS) {
         super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, type, prn, gnssDate, orbit,
+              timeScales, type, prn, toe, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, transmissionTime);
         this.referenceSignalFlag = referenceSignalFlag;
@@ -150,9 +149,12 @@ public class NavICL1NvNavigationMessage
                                                    final T[] nonKeplerian,
                                                    final DoubleFunction<T> converter) {
         return new FieldNavicL1NvNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                     getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                     converter.apply(getTgd()), toFieldToc(orbit),
-                                                     converter.apply(getTransmissionTime()),
+                                                     getType(), getPrn(),
+                                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                                     orbit, nonKeplerian,
+                                                     converter.apply(getTgd()),
+                                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
+                                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTransmissionTime()),
                                                      getReferenceSignalFlag(),
                                                      getUrai(), getL1SpsHealth(),
                                                      converter.apply(getTGDSL5()),
@@ -223,7 +225,7 @@ public class NavICL1NvNavigationMessage
     /** {@inheritDoc} */
     @Override
     public NavICL1NvNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new NavICL1NvNavigationMessageFactory(getTimeScales(), getGnssDate().getSystem(), getType(),
+        return new NavICL1NvNavigationMessageFactory(getTimeScales(), getTimeOfEphemeris().getSystem(), getType(),
                                                      inertial, bodyFixed);
     }
 

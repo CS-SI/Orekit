@@ -217,7 +217,7 @@ public class NonKeplerianDriversFactory {
      * @param elements elements to use for reset
      */
     public void reset(final GNSSOrbitalElements<?> elements) {
-        reset(timeDriver,       elements.getGnssDate().getSecondsInWeek());
+        reset(timeDriver,       elements.getTimeOfEphemeris().getSecondsInWeek());
         reset(aDotDriver,       elements.getADot());
         reset(deltaN0Driver,    elements.getDeltaN0());
         reset(deltaN0DotDriver, elements.getDeltaN0Dot());
@@ -238,7 +238,7 @@ public class NonKeplerianDriversFactory {
      * @param elements elements to use for reset
      */
     public void reset(final FieldGnssOrbitalElements<?, ?> elements) {
-        reset(timeDriver,       elements.getGnssDate().getGnssDate().getSecondsInWeek());
+        reset(timeDriver,       elements.getTimeOfEphemeris().getGnssDate().getSecondsInWeek());
         reset(aDotDriver,       elements.getADot().getReal());
         reset(deltaN0Driver,    elements.getDeltaN0().getReal());
         reset(deltaN0DotDriver, elements.getDeltaN0Dot().getReal());

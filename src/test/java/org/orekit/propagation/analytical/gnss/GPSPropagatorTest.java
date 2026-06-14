@@ -112,7 +112,8 @@ class GPSPropagatorTest {
             dtRelMax = FastMath.max(dtRelMax, corrections[1]);
             Assertions.assertEquals(0.0, corrections[2], Precision.SAFE_MIN);
         }
-        Assertions.assertNull(almanacs.getFirst().getToc());
+        Assertions.assertEquals(almanacs.getFirst().getTimeOfEphemeris().getDate(),
+                                almanacs.getFirst().getTimeOfClock().getDate());
         Assertions.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
         Assertions.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }
@@ -140,7 +141,8 @@ class GPSPropagatorTest {
             dtRelMax = FastMath.max(dtRelMax, corrections[1].getReal());
             Assertions.assertEquals(0.0, corrections[2].getReal(), Precision.SAFE_MIN);
         }
-        Assertions.assertNull(gpsAlmanac.getToc());
+        Assertions.assertEquals(gpsAlmanac.getTimeOfEphemeris().getGnssDate(),
+                                gpsAlmanac.getTimeOfClock().getGnssDate());
         Assertions.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
         Assertions.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }
@@ -348,7 +350,7 @@ class GPSPropagatorTest {
                                                   GPSLegacyNavigationMessage.LNAV, context.getFrames().getEME2000(),
                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(7);
-        factory.setWeekAndTime(0, 288000);
+        factory.setTimeOfEphemeris(new GNSSDate(0, 288000, SatelliteSystem.GPS));
         final double sqrtA = 5153.599830627441;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS)
             .setValue(sqrtA * sqrtA);
@@ -397,7 +399,7 @@ class GPSPropagatorTest {
                                                   GPSLegacyNavigationMessage.LNAV, context.getFrames().getEME2000(),
                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(7);
-        factory.setWeekAndTime(0, 288000);
+        factory.setTimeOfEphemeris(new GNSSDate(0, 288000, SatelliteSystem.GPS));
         final double sqrtA = 5153.599830627441;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS)
             .setValue(sqrtA * sqrtA);
@@ -512,7 +514,7 @@ class GPSPropagatorTest {
                                                   GPSLegacyNavigationMessage.LNAV, context.getFrames().getEME2000(),
                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(7);
-        factory.setWeekAndTime(0, 288000);
+        factory.setTimeOfEphemeris(new GNSSDate(0, 288000, SatelliteSystem.GPS));
         final double sqrtA = 5153.599830627441;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS)
             .setValue(sqrtA * sqrtA);
@@ -552,12 +554,12 @@ class GPSPropagatorTest {
 
         // general parameters
         Assertions.assertEquals(factory.getMu(), oe2.getOrbit().getMu(), 1.0e-20);
-        Assertions.assertEquals(factory.getSystem(), oe2.getGnssDate().getSystem());
+        Assertions.assertEquals(factory.getSystem(), oe2.getTimeOfEphemeris().getSystem());
         Assertions.assertEquals(factory.getPrn(), oe2.getPrn());
-        Assertions.assertEquals(factory.getWeek(), oe2.getGnssDate().getWeekNumber());
+        Assertions.assertEquals(factory.getTimeOfEphemeris().getWeekNumber(), oe2.getTimeOfEphemeris().getWeekNumber());
 
         // non-Keplerian parameters, which are just copied
-        Assertions.assertEquals(factory.getTimeDriver().getValue(), oe2.getGnssDate().getSecondsInWeek(), 1.0e-20);
+        Assertions.assertEquals(factory.getTimeDriver().getValue(), oe2.getTimeOfEphemeris().getSecondsInWeek(), 1.0e-20);
         Assertions.assertEquals(factory.getIDotDriver().getValue(), oe2.getIDot(), 1.0e-20);
         Assertions.assertEquals(factory.getOmegaDotDriver().getValue(), oe2.getOmegaDot(), 1.0e-20);
         Assertions.assertEquals(factory.getCucDriver().getValue(), oe2.getCuc(), 1.0e-20);

@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -161,8 +160,7 @@ public class BeidouLegacyNavigationMessageFactory
     @Override
     public BeidouLegacyNavigationMessage createFromDrivers() {
         return new BeidouLegacyNavigationMessage(isD2(),
-                                                 getTimeScales(), getType(), getPrn(),
-                                                 new GNSSDate(getWeek(), getTimeDriver().getValue(), getSystem()),
+                                                 getTimeScales(), getType(), getPrn(), getTimeOfEphemeris(),
                                                  createOrbitFromDrivers(),
                                                  getADotDriver().getValue(),
                                                  getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
@@ -172,7 +170,7 @@ public class BeidouLegacyNavigationMessageFactory
                                                  getCicDriver().getValue(), getCisDriver().getValue(),
                                                  getAf0Driver().getValue(), getAf1Driver().getValue(),
                                                  getAf2Driver().getValue(),
-                                                 getTgd(), getToc(), getTransmissionTime(),
+                                                 getTgd(), getTimeOfClock(), getTransmissionTime(),
                                                  getAode(), getAodc(), getSatH1(),
                                                  getTgd1(), getTgd2(), getSvAccuracy());
     }

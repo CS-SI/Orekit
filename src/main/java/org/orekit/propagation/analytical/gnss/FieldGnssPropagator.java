@@ -297,7 +297,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GN
      */
     private T getTk(final FieldAbsoluteDate<T> date) {
         // Time from ephemeris reference epoch
-        T tk = date.durationFrom(orbitalElements.getGnssDate());
+        T tk = date.durationFrom(orbitalElements.getTimeOfEphemeris());
         // Adjusts the time to take roll over week into account
         while (tk.getReal() > 0.5 * orbitalElements.getCycleDuration()) {
             tk = tk.subtract(orbitalElements.getCycleDuration());
@@ -512,7 +512,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GN
         // recover plane orientation before correction
         // here, we know that tk = 0 since our orbital elements will be at initial state date
         final T i0  = ik.subtract(cs2phi.cos().multiply(nonKeplerianElements.getCic()).add(cs2phi.sin().multiply(nonKeplerianElements.getCis())));
-        final double toe = nonKeplerianElements.getGnssDate().getGnssDate().getSecondsInWeek();
+        final double toe = nonKeplerianElements.getTimeOfEphemeris().getGnssDate().getSecondsInWeek();
         final T om0 = FastMath.atan2(sin, cos).
                       add(nonKeplerianElements.getAngularVelocity() * toe);
 

@@ -82,8 +82,8 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     /** Body-fixed frame. */
     private final Frame bodyFixed;
 
-    /** Reference Week of the orbit. */
-    private int week;
+    /** Time of ephemeris. */
+    private GNSSDate toe;
 
     /** PRN number of the satellite. */
     private int prn;
@@ -94,11 +94,11 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     /** Non-Keplerian drivers. */
     private final ParameterDriversList nonKeplerianParametersDrivers;
 
+    /** Time of clock. */
+    private GNSSDate toc;
+
     /** Group delay differential TGD for L1-L2 correction. */
     private double tgd;
-
-    /** Time Of Clock. */
-    private AbsoluteDate toc;
 
     /**
      * Simple constructor.
@@ -137,7 +137,11 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
             @Override
             public void valueChanged(final double previousValue, final ParameterDriver driver,
                                      final AbsoluteDate date) {
-                setDate(new GNSSDate(week, driver.getValue(), system, timeScales).getDate());
+                // the check for null toe allows to set u a dummy week number
+                // in case secondsInWeek is set *before* week is set
+                // (this can happen when parsing YUMA almanach for example)
+                final int weekNumber = toe == null ? 0 : toe.getWeekNumber();
+                setTimeOfEphemeris(new GNSSDate(weekNumber, driver.getValue(), system, timeScales));
             }
 
             /** {@inheritDoc} */
@@ -162,13 +166,6 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
      */
     public Frame getBodyFixed() {
         return bodyFixed;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setDate(final AbsoluteDate date) {
-        super.setDate(date);
-        setFrame(bodyFixed.getFrozenFrame(inertial, date, FROZEN + bodyFixed.getName()));
     }
 
     /** Get the mean angular velocity of the Earth for the GNSS model.
@@ -213,20 +210,34 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
         this.prn = prn;
     }
 
-    /** Get the reference Week of the orbit.
-     * @return reference Week of the orbit
-     */
-    public int getWeek() {
-        return week;
+    /** {@inheritDoc} */
+    @Override
+    public void setDate(final AbsoluteDate date) {
+        setTimeOfEphemeris(new GNSSDate(date, system, timeScales));
     }
 
-    /** Set the reference Week of the orbit.
-     * @param newWeek reference Week of the orbit
-     * @param newTime time within the week
+    /** Set the time of ephemeris.
+     * <p>
+     * If time of clock was not already set, it will be set to the same value as
+     * time of ephemeris as a side effect
+     * </p>
+     * @param toe time of ephemeris
      */
-    public void setWeekAndTime(final int newWeek, final double newTime) {
-        this.week = newWeek;
-        getTimeDriver().setValue(newTime);
+    public void setTimeOfEphemeris(final GNSSDate toe) {
+        super.setDate(toe.getDate());
+        this.toe = toe;
+        setFrame(bodyFixed.getFrozenFrame(inertial, toe.getDate(), FROZEN + bodyFixed.getName()));
+        if (toc == null) {
+            // set time of clock too
+            toc = toe;
+        }
+    }
+
+    /** Get the time of ephemeris.
+     * @return time of ephemeris
+     */
+    public GNSSDate getTimeOfEphemeris() {
+        return toe;
     }
 
     /** Get driver for reference time of the GNSS orbit as a duration from week start.
@@ -334,6 +345,28 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
         return driversFactory.getAf2Driver();
     }
 
+    /** Set the time of clock.
+     * <p>
+     * If time of ephemeris was not already set, it will be set to the same value as
+     * time of clock as a side effect
+     * </p>
+     * @param toc time of clock
+     */
+    public void setTimeOfClock(final GNSSDate toc) {
+        this.toc = toc;
+        if (toe == null) {
+            // set time of ephemeris too
+            setTimeOfEphemeris(toc);
+        }
+    }
+
+    /** Get the time of clock.
+     * @return time of clock
+     */
+    public GNSSDate getTimeOfClock() {
+        return toc;
+    }
+
     /** {@inheritDoc} */
     @Override
     public ParameterDriversList getNonKeplerianParametersDrivers() {
@@ -352,20 +385,6 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
      */
     public void setTgd(final double tgd) {
         this.tgd = tgd;
-    }
-
-    /** Get the time of clock epoch.
-     * @return the time of clock epoch
-     */
-    public AbsoluteDate getToc() {
-        return toc;
-    }
-
-    /** Set the time of clock.
-     * @param toc time of clock (s)
-     */
-    public void setToc(final AbsoluteDate toc) {
-        this.toc = toc;
     }
 
     /** {@inheritDoc} */

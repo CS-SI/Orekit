@@ -21,7 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -61,7 +61,7 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
      * Build a new almanac.
      * @param timeScales known time scales
      * @param prn        PRN number of the satellite
-     * @param gnssDate   GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe        time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit      Keplerian orbit in Earth-frozen frame
      * @param aDot       change rate in semi-major axis (m/s)
      * @param deltaN0    delta of satellite mean motion
@@ -85,17 +85,17 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
      * @param iod        issue of data
      */
     public GalileoAlmanac(final TimeScales timeScales, final int prn,
-                          final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                          final GNSSDate toe, final KeplerianOrbit orbit,
                           final double aDot, final double deltaN0, final double deltaN0Dot,
                           final double iDot, final double omegaDot,
                           final double cuc, final double cus,
                           final double crc, final double crs,
                           final double cic, final double cis,
                           final double af0, final double af1, final double af2,
-                          final double tgd, final AbsoluteDate toc,
+                          final double tgd, final GNSSDate toc,
                           final int healthE5a, final int healthE5b, final int healthE1, final int iod) {
         super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, null,
-              prn, gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
+              prn, toe, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
               cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc);
         this.healthE5a = healthE5a;
         this.healthE5b = healthE5b;
@@ -122,8 +122,11 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
                                        final T[] nonKeplerian,
                                        final DoubleFunction<T> converter) {
         return new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                         getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                         converter.apply(getTgd()), toFieldToc(orbit),
+                                         getType(), getPrn(),
+                                         new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                         orbit, nonKeplerian,
+                                         converter.apply(getTgd()),
+                                         new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
                                          getHealthE5a(), getHealthE5b(), getHealthE1(),
                                          getIOD());
     }
@@ -159,7 +162,7 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
     /** {@inheritDoc} */
     @Override
     public GalileoAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new GalileoAlmanacFactory(getTimeScales(), getGnssDate().getSystem(),
+        return new GalileoAlmanacFactory(getTimeScales(), getTimeOfEphemeris().getSystem(),
                                          inertial, bodyFixed);
     }
 

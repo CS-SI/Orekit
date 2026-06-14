@@ -18,8 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.GNSSDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -85,7 +84,7 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
      * @param timeScales       known time scales
      * @param type             type (null if not a navigation message)
      * @param prn              PRN number of the satellite
-     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd              group delay differential TGD for L1-L2 correction
@@ -109,15 +108,15 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     public FieldCivilianNavigationMessage(final boolean cnv2,
                                           final double angularVelocity, final int weeksInCycle,
                                           final TimeScales timeScales, final String type, final int prn,
-                                          final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                          final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
                                           final T[] nonKeplerian, final T tgd,
-                                          final FieldAbsoluteDate<T> toc, final T transmissionTime,
+                                          final FieldGNSSDate<T> toc, final FieldGNSSDate<T>  transmissionTime,
                                           final T svAccuracy, final int svHealth,
                                           final T iscL1CA, final T iscL1CD, final T iscL1CP,
                                           final T iscL2C, final T iscL5I5, final T iscL5Q5,
                                           final int uraiEd, final int uraiNed0, final int uraiNed1, final int uraiNed2,
                                           final int flags) {
-        super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian,
               tgd, toc, transmissionTime);
         this.cnv2       = cnv2;
         this.svAccuracy = svAccuracy;

@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.FieldTimeStamped;
 
 /** This interface provides the minimal set of clock elements needed by the
@@ -64,13 +64,11 @@ public interface FieldGNSSClockElements<T extends CalculusFieldElement<T>>
     T getTgd();
 
     /**
-     * Get the time of clock epoch.
-     * @return the time of clock epoch
-     * @see #getAf0()
-     * @see #getAf1()
-     * @see #getAf2()
+     * Get the time of clock.
+     * @return the time of clock
      * @since 14.0
      */
-    FieldAbsoluteDate<T> getToc();
+    FieldGNSSDate<T> getTimeOfClock();
+
 
 }

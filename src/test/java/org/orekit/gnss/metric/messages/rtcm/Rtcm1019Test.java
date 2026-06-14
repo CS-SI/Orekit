@@ -25,7 +25,6 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -89,6 +88,7 @@ public class Rtcm1019Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1019);
 
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         final DataContext context  = DataContext.getDefault();
         final Rtcm1019    rtcm1019 = (Rtcm1019) new RtcmMessagesParser(messages,
                                                                        context.getTimeScales(),
@@ -96,7 +96,6 @@ public class Rtcm1019Test {
                                                                        context.getFrames().getITRF(IERSConventions.IERS_2010,
                                                                                                    false)).
                                      parse(message, false);
-        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         final Rtcm1019Data         ephemerisData = rtcm1019.getEphemerisData();
         final GPSLegacyNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
 
@@ -107,7 +106,7 @@ public class Rtcm1019Test {
         Assertions.assertNotNull(propagator);
         final double eps = 1.0e-15;
         Assertions.assertEquals(0.0,
-                                gpsMessage.getDate().durationFrom(gpsMessage.getGnssDate()),
+                                gpsMessage.getDate().durationFrom(gpsMessage.getTimeOfEphemeris()),
                                 eps);
 
         // Verify message number
@@ -116,7 +115,7 @@ public class Rtcm1019Test {
 
         // Verify navigation message
         Assertions.assertEquals(12,                     gpsMessage.getPrn());
-        Assertions.assertEquals(1019,                   gpsMessage.getGnssDate().getWeekNumber());
+        Assertions.assertEquals(1019,                   gpsMessage.getTimeOfEphemeris().getWeekNumber());
         Assertions.assertEquals(2.1475894557210572E-9, gpsMessage.getIDot(), eps);
         Assertions.assertEquals(132, gpsMessage.getIODE(), eps);
         Assertions.assertEquals(3.524958E-15, gpsMessage.getAf2(), eps);
@@ -131,7 +130,7 @@ public class Rtcm1019Test {
         Assertions.assertEquals(0.03899807028938085, gpsMessage.getOrbit().getE(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getCus(), eps);
         Assertions.assertEquals(5153.562498092651, FastMath.sqrt(gpsMessage.getOrbit().getA()), eps);
-        Assertions.assertEquals(560688.0, gpsMessage.getGnssDate().getSecondsInWeek(), eps);
+        Assertions.assertEquals(560688.0, gpsMessage.getTimeOfEphemeris().getSecondsInWeek(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getCic(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getCis(), eps);
         Assertions.assertEquals(0.987714701321906, gpsMessage.getOrbit().getI(), eps);
@@ -145,8 +144,7 @@ public class Rtcm1019Test {
         // Verify other data
         Assertions.assertEquals(12,    ephemerisData.getSatelliteID());
         Assertions.assertEquals(63216,
-                                new GNSSDate(ephemerisData.getGpsNavigationMessage().getToc(), SatelliteSystem.GPS).
-                                    getSecondsInWeek(),
+                                ephemerisData.getGpsNavigationMessage().getTimeOfClock().getSecondsInWeek(),
                                 eps);
         Assertions.assertEquals(3,     ephemerisData.getGpsNavigationMessage().getL2Codes());
         Assertions.assertEquals(0,     ephemerisData.getGpsNavigationMessage().getFitInterval());

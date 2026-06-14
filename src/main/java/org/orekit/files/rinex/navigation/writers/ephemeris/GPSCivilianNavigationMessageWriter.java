@@ -49,8 +49,8 @@ public class GPSCivilianNavigationMessageWriter
             writer.finishLine();
         }
         writer.indentLine(header);
-        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
-        writer.writeInt(new GNSSDate(message.getDate(), SatelliteSystem.GPS).getWeekNumber());
+        writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
+        writer.writeInt(message.getTransmissionTime().getWeekNumber());
         writer.writeInt(message.getFlags());
         writer.finishLine();
 

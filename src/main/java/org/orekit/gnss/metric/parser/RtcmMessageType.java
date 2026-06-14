@@ -141,9 +141,9 @@ public enum RtcmMessageType implements MessageType {
             factory.setPrn(gpsId);
             factory.getIDotDriver().setValue(RtcmDataField.DF079.doubleValue(encodedMessage));
             factory.setIode(RtcmDataField.DF071.intValue(encodedMessage));
-            factory.setToc(new GNSSDate(gpsWeekNumber,
-                                        RtcmDataField.DF081.doubleValue(encodedMessage),
-                                        SatelliteSystem.GPS, timeScales).getDate());
+            factory.setTimeOfClock(new GNSSDate(gpsWeekNumber,
+                                                RtcmDataField.DF081.doubleValue(encodedMessage),
+                                                SatelliteSystem.GPS, timeScales));
             factory.getAf2Driver().setValue(RtcmDataField.DF082.doubleValue(encodedMessage));
             factory.getAf1Driver().setValue(RtcmDataField.DF083.doubleValue(encodedMessage));
             factory.getAf0Driver().setValue(RtcmDataField.DF084.doubleValue(encodedMessage));
@@ -156,8 +156,9 @@ public enum RtcmMessageType implements MessageType {
             factory.getCusDriver().setValue(RtcmDataField.DF091.doubleValue(encodedMessage));
             final double sqrtA = RtcmDataField.DF092.doubleValue(encodedMessage);
             setValue(orb, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS, sqrtA * sqrtA);
-            factory.setWeekAndTime(gpsWeekNumber,
-                                   RtcmDataField.DF093.doubleValue(encodedMessage));
+            factory.setTimeOfEphemeris(new GNSSDate(gpsWeekNumber,
+                                                    RtcmDataField.DF093.doubleValue(encodedMessage),
+                                                    SatelliteSystem.GPS, timeScales));
             factory.getCicDriver().setValue(RtcmDataField.DF094.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.NODE_LONGITUDE, RtcmDataField.DF095, encodedMessage);
             factory.getCisDriver().setValue(RtcmDataField.DF096.doubleValue(encodedMessage));
@@ -277,9 +278,9 @@ public enum RtcmMessageType implements MessageType {
             factory.setPrn(beidouId);
             factory.getIDotDriver().setValue(RtcmDataField.DF491.doubleValue(encodedMessage));
             factory.setAode(RtcmDataField.DF492.intValue(encodedMessage));
-            factory.setToc(new GNSSDate(beidouWeekNumber,
-                                        RtcmDataField.DF493.doubleValue(encodedMessage),
-                                        SatelliteSystem.BEIDOU, timeScales).getDate());
+            factory.setTimeOfClock(new GNSSDate(beidouWeekNumber,
+                                                RtcmDataField.DF493.doubleValue(encodedMessage),
+                                                SatelliteSystem.BEIDOU, timeScales));
             factory.getAf2Driver().setValue(RtcmDataField.DF494.doubleValue(encodedMessage));
             factory.getAf1Driver().setValue(RtcmDataField.DF495.doubleValue(encodedMessage));
             factory.getAf0Driver().setValue(RtcmDataField.DF496.doubleValue(encodedMessage));
@@ -292,8 +293,9 @@ public enum RtcmMessageType implements MessageType {
             factory.getCusDriver().setValue(RtcmDataField.DF503.doubleValue(encodedMessage));
             final double sqrtA = RtcmDataField.DF504.doubleValue(encodedMessage);
             setValue(orb, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS, sqrtA * sqrtA);
-            factory.setWeekAndTime(beidouWeekNumber,
-                                   RtcmDataField.DF505.doubleValue(encodedMessage));
+            factory.setTimeOfEphemeris(new GNSSDate(beidouWeekNumber,
+                                                    RtcmDataField.DF505.doubleValue(encodedMessage),
+                                                    SatelliteSystem.BEIDOU, timeScales));
             factory.getCicDriver().setValue(RtcmDataField.DF506.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.NODE_LONGITUDE, RtcmDataField.DF507, encodedMessage);
             factory.getCisDriver().setValue(RtcmDataField.DF508.doubleValue(encodedMessage));
@@ -345,7 +347,7 @@ public enum RtcmMessageType implements MessageType {
             factory.getCusDriver().setValue(RtcmDataField.DF440.doubleValue(encodedMessage));
             final double sqrtA = RtcmDataField.DF441.doubleValue(encodedMessage);
             setValue(orb, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS, sqrtA * sqrtA);
-            final double time = RtcmDataField.DF442.doubleValue(encodedMessage);
+            final double toe = RtcmDataField.DF442.doubleValue(encodedMessage);
             factory.getCicDriver().setValue(RtcmDataField.DF443.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.NODE_LONGITUDE, RtcmDataField.DF444, encodedMessage);
             factory.getCisDriver().setValue(RtcmDataField.DF445.doubleValue(encodedMessage));
@@ -359,8 +361,8 @@ public enum RtcmMessageType implements MessageType {
             factory.setL2Codes(RtcmDataField.DF451.intValue(encodedMessage));
 
             final int qzssWeek = RtcmDataField.DF452.intValue(encodedMessage);
-            factory.setWeekAndTime(qzssWeek, time);
-            factory.setToc(new GNSSDate(qzssWeek, toc, SatelliteSystem.QZSS, timeScales).getDate());
+            factory.setTimeOfEphemeris(new GNSSDate(qzssWeek, toe, SatelliteSystem.QZSS, timeScales));
+            factory.setTimeOfClock(new GNSSDate(qzssWeek, toc, SatelliteSystem.QZSS, timeScales));
 
             // Accuracy provider
             final AccuracyProvider qzssProvider = new UserRangeAccuracy(RtcmDataField.DF453.intValue(encodedMessage));
@@ -412,7 +414,7 @@ public enum RtcmMessageType implements MessageType {
             factory.setPrn(galileoId);
             factory.getIDotDriver().setValue(RtcmDataField.DF292.doubleValue(encodedMessage));
             final double toc = RtcmDataField.DF293.doubleValue(encodedMessage);
-            factory.setWeekAndTime(galileoWeekNumber, toc);
+            factory.setTimeOfClock(new GNSSDate(galileoWeekNumber, toc, SatelliteSystem.GALILEO, timeScales));
             RtcmMessageType.fillGalileoNavigationMessagefactory(encodedMessage, factory);
             factory.setSvHealth(RtcmDataField.DF314.intValue(encodedMessage));
 
@@ -457,7 +459,7 @@ public enum RtcmMessageType implements MessageType {
             factory.setPrn(galileoId);
             factory.getIDotDriver().setValue(RtcmDataField.DF292.doubleValue(encodedMessage));
             final double toc = RtcmDataField.DF293.doubleValue(encodedMessage);
-            factory.setWeekAndTime(galileoWeekNumber, toc);
+            factory.setTimeOfClock(new GNSSDate(galileoWeekNumber, toc, SatelliteSystem.GALILEO, timeScales));
             RtcmMessageType.fillGalileoNavigationMessagefactory(encodedMessage, factory);
             factory.setBGDE5bE1(RtcmDataField.DF313.doubleValue(encodedMessage));
 

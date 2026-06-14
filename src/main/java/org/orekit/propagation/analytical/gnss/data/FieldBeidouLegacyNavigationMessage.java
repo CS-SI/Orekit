@@ -18,8 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.GNSSDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
@@ -65,7 +64,7 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
      * @param timeScales       known time scales
      * @param type             type (null if not a navigation message)
      * @param prn              PRN number of the satellite
-     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd              group delay differential TGD for L1-L2 correction
@@ -82,12 +81,12 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     public FieldBeidouLegacyNavigationMessage(final boolean d2,
                                               final double angularVelocity, final int weeksInCycle,
                                               final TimeScales timeScales, final String type, final int prn,
-                                              final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                              final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
                                               final T[] nonKeplerian, final T tgd,
-                                              final FieldAbsoluteDate<T> toc, final T transmissionTime,
+                                              final FieldGNSSDate<T> toc, final FieldGNSSDate<T>  transmissionTime,
                                               final int aode, final int aodc, final int satH1,
                                               final T tgd1, final T tgd2, final T svAccuracy) {
-        super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian,
               tgd, toc, transmissionTime);
         this.d2         = d2;
         this.aode       = aode;
@@ -112,10 +111,15 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
                                                       final Function<T, U> converter) {
         return new FieldBeidouLegacyNavigationMessage<>(isD2(),
                                                         getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                        getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                        getType(), getPrn(),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                            getTimeOfEphemeris().getGnssDate()),
                                                         orbit, nonKeplerian,
-                                                        converter.apply(getTgd()), toFieldToc(orbit),
-                                                        converter.apply(getTransmissionTime()),
+                                                        converter.apply(getTgd()),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                            getTimeOfClock().getGnssDate()),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                            getTransmissionTime().getGnssDate()),
                                                         getAODE(), getAODC(), getSatH1(),
                                                         converter.apply(getTGD1()),
                                                         converter.apply(getTGD2()),

@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -101,7 +100,7 @@ public class Rtcm1045Test {
         Assertions.assertNotNull(propagator);
         final double eps = 8.2e-10;
         Assertions.assertEquals(0.0,
-                                galileoMessage.getDate().durationFrom(galileoMessage.getGnssDate()),
+                                galileoMessage.getDate().durationFrom(galileoMessage.getTimeOfEphemeris()),
                                 eps);
 
         // Verify message number
@@ -110,7 +109,7 @@ public class Rtcm1045Test {
 
         // Verify navigation message
         Assertions.assertEquals(12,                     galileoMessage.getPrn());
-        Assertions.assertEquals(4079,                   galileoMessage.getGnssDate().getWeekNumber());
+        Assertions.assertEquals(4079,                   galileoMessage.getTimeOfEphemeris().getWeekNumber());
         Assertions.assertEquals(2.1475894557210572E-9, galileoMessage.getIDot(), eps);
         Assertions.assertEquals(528, galileoMessage.getIODNav(), eps);
         Assertions.assertEquals(3.3776428E-17, galileoMessage.getAf2(), eps);
@@ -125,7 +124,7 @@ public class Rtcm1045Test {
         Assertions.assertEquals(0.0389980711042881, galileoMessage.getOrbit().getE(), eps);
         Assertions.assertEquals(0.0, galileoMessage.getCus(), eps);
         Assertions.assertEquals(5153.562498092651, FastMath.sqrt(galileoMessage.getOrbit().getA()), eps);
-        Assertions.assertEquals(525780.0, galileoMessage.getGnssDate().getSecondsInWeek(), eps);
+        Assertions.assertEquals(525780.0, galileoMessage.getTimeOfEphemeris().getSecondsInWeek(), eps);
         Assertions.assertEquals(0.0, galileoMessage.getCic(), eps);
         Assertions.assertEquals(0.0, galileoMessage.getCis(), eps);
         Assertions.assertEquals(0.987714701321906, galileoMessage.getOrbit().getI(), eps);
@@ -138,8 +137,7 @@ public class Rtcm1045Test {
         // Verify other data
         Assertions.assertEquals(12,      ephemerisData.getSatelliteID());
         Assertions.assertEquals(59220.0,
-                                new GNSSDate(ephemerisData.getGalileoNavigationMessage().getToc(), SatelliteSystem.GALILEO).
-                                    getSecondsInWeek(),
+                                ephemerisData.getGalileoNavigationMessage().getTimeOfClock().getSecondsInWeek(),
                                 eps);
         Assertions.assertEquals(0,       ephemerisData.getGalileoNavigationMessage().getSvHealth());
         Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), galileoMessage.getSisa(), eps);

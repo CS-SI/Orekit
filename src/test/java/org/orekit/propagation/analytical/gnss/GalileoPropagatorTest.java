@@ -69,7 +69,7 @@ public class GalileoPropagatorTest {
                                                       context.getFrames().getEME2000(),
                                                       context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(4);
-        factory.setWeekAndTime(1024, 293400.0);
+        factory.setTimeOfEphemeris(new GNSSDate(1024, 293400.0, SatelliteSystem.GALILEO));
         final double sqrtA = 5440.602949142456;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         factory.getDeltaN0Driver().setValue(3.7394414770330066E-9);
@@ -86,7 +86,8 @@ public class GalileoPropagatorTest {
         factory.getCrsDriver().setValue(-18.78125);
         factory.getCicDriver().setValue(3.166496753692627E-8);
         factory.getCisDriver().setValue(-1.862645149230957E-8);
-        factory.setToc(new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO).getDate());
+        factory.setTimeOfClock(new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO));
+        factory.setTransmissionTime(factory.getTimeOfEphemeris());
     }
 
     @BeforeAll
@@ -104,7 +105,8 @@ public class GalileoPropagatorTest {
                                       context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
         almanacFactory.setPrn(1);
-        almanacFactory.setWeekAndTime(1024, 293400.0);
+        // here, we set toc, this will set toe as a side effect
+        almanacFactory.setTimeOfClock(new GNSSDate(1024, 293400.0, SatelliteSystem.GALILEO));
         final double sqrtA = FastMath.sqrt(GalileoAlmanac.A0) + 0.013671875;
         orb.findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         orb.findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.000152587890625);
@@ -122,7 +124,7 @@ public class GalileoPropagatorTest {
 
         // Intermediate verification
         Assertions.assertEquals(1,                   almanacFactory.getPrn());
-        Assertions.assertEquals(1024,                almanacFactory.getWeek());
+        Assertions.assertEquals(1024,                almanacFactory.getTimeOfEphemeris().getWeekNumber());
         Assertions.assertEquals(4,                   almanacFactory.getIod());
         Assertions.assertEquals(0,                   almanacFactory.getHealthE1());
         Assertions.assertEquals(0,                   almanacFactory.getHealthE5a());
@@ -152,7 +154,8 @@ public class GalileoPropagatorTest {
                                       context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final ParameterDriversList orb = almanacFactory.getOrbitalParametersDrivers();
         almanacFactory.setPrn(1);
-        almanacFactory.setWeekAndTime(1024, 293400.0);
+        almanacFactory.setTimeOfClock(new GNSSDate(1024, 293400.0, SatelliteSystem.GALILEO));
+        almanacFactory.setTimeOfEphemeris(new GNSSDate(1024, 293400.0, SatelliteSystem.GALILEO));
         final double sqrtA = GalileoAlmanac.A0 + 0.013671875;
         orb.findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         orb.findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.000152587890625);
@@ -172,7 +175,7 @@ public class GalileoPropagatorTest {
 
         // Intermediate verification
         Assertions.assertEquals(1,                   almanacFactory.getPrn());
-        Assertions.assertEquals(1024,                almanacFactory.getWeek());
+        Assertions.assertEquals(1024,                almanacFactory.getTimeOfEphemeris().getWeekNumber());
         Assertions.assertEquals(4,                   almanac.getIOD());
         Assertions.assertEquals(0,                   almanac.getHealthE1());
         Assertions.assertEquals(0,                   almanac.getHealthE5a());

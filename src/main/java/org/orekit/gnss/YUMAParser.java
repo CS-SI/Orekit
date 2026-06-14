@@ -39,6 +39,7 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanacFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriversList;
@@ -333,7 +334,9 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
                     checks[11] = true;
                 } else if (lowerCaseKey.startsWith(KEY[12])) {
                     // Gets the week number
-                    factory.setWeekAndTime(Integer.parseInt(entry.getValue()), factory.getTimeDriver().getValue());
+                    factory.setTimeOfEphemeris(new GNSSDate(Integer.parseInt(entry.getValue()),
+                                                            factory.getTimeDriver().getValue(),
+                                                            factory.getSystem()));
                     checks[12] = true;
                 } else {
                     // Unknown entry: the file is not a YUMA file

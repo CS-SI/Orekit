@@ -20,6 +20,7 @@ import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessageFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 /** Parser for Beidou legacy.
@@ -70,7 +71,9 @@ public class BeidouD1D2Parser
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
         final BeidouLegacyNavigationMessageFactory factory = getFactory();
-        factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        factory.setTransmissionTime(new GNSSDate(factory.getTimeOfEphemeris().getWeekNumber(),
+                                                 parseInfo.parseDouble1(Unit.SECOND),
+                                                 factory.getSystem()));
         factory.setAodc(parseInfo.parseInt2());
         parseInfo.closePendingRecord();
     }

@@ -73,8 +73,9 @@ class GNSSExtendedPositionProviderTest {
                                          194.0625, -18.78125,
                                          3.166496753692627E-8, -1.862645149230957E-8,
                                          0.0, 0.0, 0.0, 0.0,
-                                         new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO).getDate(),
-                                         0.0, 0, 0, 0.0, 0.0, 0, 0.0);
+                                         new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO),
+                                         new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO),
+                                         0, 0, 0.0, 0.0, 0, 0.0);
         propagator = new GNSSPropagator<>(goe, context.getFrames().getGCRF(),
                                           context.getFrames().getFrame(Predefined.GTOD_CONVENTIONS_1996_ACCURATE_EOP),
                                           new GenericGNSS(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,

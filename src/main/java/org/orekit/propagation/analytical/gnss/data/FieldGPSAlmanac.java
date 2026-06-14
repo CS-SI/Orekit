@@ -18,8 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.GNSSDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
@@ -60,7 +59,7 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
      * @param timeScales       known time scales
      * @param type             type (null if not a navigation message)
      * @param prn              PRN number of the satellite
-     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd              group delay differential TGD for L1-L2 correction
@@ -74,11 +73,11 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
      */
     public FieldGPSAlmanac(final double angularVelocity, final int weeksInCycle,
                            final TimeScales timeScales, final String type, final int prn,
-                           final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                           final T[] nonKeplerian, final T tgd, final FieldAbsoluteDate<T> toc,
-                           final String source, final int svn,
+                           final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                           final T[] nonKeplerian, final T tgd,
+                           final FieldGNSSDate<T> toc, final String source, final int svn,
                            final int health, final int ura, final int satConfiguration) {
-        super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian, tgd, toc);
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian, tgd, toc);
         this.source           = source;
         this.svn              = svn;
         this.health           = health;
@@ -99,11 +98,13 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
                                    final U[] nonKeplerian,
                                    final Function<T, U> converter) {
         return new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                     getType(), getPrn(), getGnssDate().getGnssDate(),
+                                     getType(), getPrn(),
+                                     new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                         getTimeOfEphemeris().getGnssDate()),
                                      orbit, nonKeplerian,
                                      converter.apply(getTgd()),
-                                     new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                             getToc().toAbsoluteDate()),
+                                     new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                         getTimeOfClock().getGnssDate()),
                                      getSource(), getSVN(), getHealth(),
                                      getURA(), getSatConfiguration());
     }

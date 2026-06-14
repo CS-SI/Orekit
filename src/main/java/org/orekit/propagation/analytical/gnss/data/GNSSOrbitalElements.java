@@ -24,7 +24,6 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitalParameters;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriver;
@@ -57,10 +56,10 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     /** PRN number of the satellite. */
     private final int prn;
 
-    /** GNSS Date.
+    /** Time of ephemeris.
      * @since 14.0
      */
-    private final GNSSDate gnssDate;
+    private final GNSSDate toe;
 
     /** Orbit. */
     private final KeplerianOrbit orbit;
@@ -113,11 +112,13 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     /** SV second order clock correction (s/s²). */
     private final double af2;
 
+    /** Time of clock.
+     * @since 14.0
+     */
+    private final GNSSDate toc;
+
     /** Group delay differential TGD for L1-L2 correction. */
     private final double tgd;
-
-    /** Time Of Clock epoch. */
-    private final AbsoluteDate toc;
 
     /**
      * Creates a new instance.
@@ -127,7 +128,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      * @param timeScales      known time scales
      * @param type            type (null if not a navigation message)
      * @param prn             PRN number of the satellite
-     * @param gnssDate        GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe             time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit           Keplerian orbit in Earth-frozen frame
      * @param aDot            change rate in semi-major axis (m/s)
      * @param deltaN0         delta of satellite mean motion
@@ -149,14 +150,14 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      */
     protected GNSSOrbitalElements(final double angularVelocity, final int weeksInCycle,
                                   final TimeScales timeScales, final String type,
-                                  final int prn, final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                  final int prn, final GNSSDate toe, final KeplerianOrbit orbit,
                                   final double aDot, final double deltaN0, final double deltaN0Dot,
                                   final double iDot, final double omegaDot,
                                   final double cuc, final double cus,
                                   final double crc, final double crs,
                                   final double cic, final double cis,
                                   final double af0, final double af1, final double af2,
-                                  final double tgd, final AbsoluteDate toc) {
+                                  final double tgd, final GNSSDate toc) {
 
         // system parameters
         this.angularVelocity = angularVelocity;
@@ -168,7 +169,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         this.prn             = prn;
 
         // date
-        this.gnssDate        = gnssDate;
+        this.toe             = toe;
 
         // Keplerian orbit
         this.orbit           = orbit;
@@ -190,8 +191,8 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         this.af0             = af0;
         this.af1             = af1;
         this.af2             = af2;
-        this.tgd             = tgd;
         this.toc             = toc;
+        this.tgd             = tgd;
 
     }
 
@@ -204,7 +205,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
                A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
              original.getType(), original.getPrn(),
-             original.getGnssDate().getGnssDate(), original.getOrbit().toOrbit(),
+             original.getTimeOfEphemeris().getGnssDate(), original.getOrbit().toOrbit(),
              original.getADot().getReal(),
              original.getDeltaN0().getReal(), original.getDeltaN0Dot().getReal(),
              original.getIDot().getReal(), original.getOmegaDot().getReal(),
@@ -212,22 +213,27 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
              original.getCrc().getReal(), original.getCrs().getReal(),
              original.getCic().getReal(), original.getCis().getReal(),
              original.getAf0().getReal(), original.getAf1().getReal(), original.getAf2().getReal(),
-             original.getTgd().getReal(),
-             original.getToc() == null ? null : original.getToc().toAbsoluteDate());
+             original.getTgd().getReal(), original.getTimeOfClock().getGnssDate());
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getDate() {
-        return gnssDate.getDate();
+        return toe.getDate();
     }
 
-    /** Get the GNSS date.
-     * @return GNSS date
+    /** Get the time of ephemeris.
+     * @return time of ephemeris
      * @since 14.0
      */
-    public GNSSDate getGnssDate() {
-        return gnssDate;
+    public GNSSDate getTimeOfEphemeris() {
+        return toe;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSDate getTimeOfClock() {
+        return toc;
     }
 
     /** Create a field version of the instance.
@@ -240,7 +246,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         FieldGnssOrbitalElements<T, O> toField(final Field<T> field) {
         final T zero = field.getZero();
         final T[] parameters = MathArrays.buildArray(field, NonKeplerianDriversFactory.SIZE);
-        parameters[NonKeplerianDriversFactory.TIME_INDEX]         = zero.newInstance(getGnssDate().getSecondsInWeek());
+        parameters[NonKeplerianDriversFactory.TIME_INDEX]         = zero.newInstance(getTimeOfEphemeris().getSecondsInWeek());
         parameters[NonKeplerianDriversFactory.A_DOT_INDEX]        = zero.newInstance(getADot());
         parameters[NonKeplerianDriversFactory.DELTA_N0_INDEX]     = zero.newInstance(getDeltaN0());
         parameters[NonKeplerianDriversFactory.DELTA_N0_DOT_INDEX] = zero.newInstance(getDeltaN0Dot());
@@ -270,19 +276,6 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         FieldGnssOrbitalElements<T, O> toField(FieldKeplerianOrbit<T> keplerian,
                                                T[] nonKeplerian,
                                                DoubleFunction<T> converter);
-
-    /** Convert TOC.
-     * @param <T>   type of the field elements
-     * @param keplerian orbit in the correct gradient field
-     * @return converted Time Of Clock
-     * @since 14.0
-     */
-    protected <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T>
-        toFieldToc(final FieldKeplerianOrbit<T> keplerian) {
-        return getToc() == null ?
-               null :
-               new FieldAbsoluteDate<>(keplerian.getDate().getField(), getToc());
-    }
 
     /** Get known time scales.
      * @return known time scales
@@ -438,12 +431,6 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         return tgd;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public AbsoluteDate getToc() {
-        return toc;
-    }
-
     /** Check if elements correspond to a civilian message.
      * @return true if elements correspond to a civilian message
      */
@@ -463,7 +450,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         final GNSSOrbitalElementsFactory<O> factory = baseFactory(inertial, bodyFixed);
 
         // initialize date
-        factory.setWeekAndTime(gnssDate.getWeekNumber(), gnssDate.getSecondsInWeek());
+        factory.setTimeOfEphemeris(toe);
 
         // initialize the satellite identifier
         factory.setPrn(prn);
@@ -493,8 +480,8 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         reset(factory.getAf0Driver(),        af0);
         reset(factory.getAf1Driver(),        af1);
         reset(factory.getAf2Driver(),        af2);
+        factory.setTimeOfClock(toc);
         factory.setTgd(tgd);
-        factory.setToc(toc);
 
         return factory;
 

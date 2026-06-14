@@ -87,8 +87,8 @@ public class YUMAParserTest {
         final GPSAlmanac alm = reader.getAlmanacs().getLast();
         Assertions.assertEquals(32, alm.getPrn());
         Assertions.assertEquals(-1, alm.getSVN());
-        Assertions.assertEquals(862, alm.getGnssDate().getWeekNumber());
-        Assertions.assertEquals(319488.0, alm.getGnssDate().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(862, alm.getTimeOfEphemeris().getWeekNumber());
+        Assertions.assertEquals(319488.0, alm.getTimeOfEphemeris().getSecondsInWeek(), 0.);
         Assertions.assertEquals(5165.591309, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
         Assertions.assertEquals(0.7963180542E-004, alm.getOrbit().getE(), FastMath.ulp(8E-05));
         Assertions.assertEquals(0.9598609143,  alm.getOrbit().getI(), 0.);
@@ -103,7 +103,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(-1, alm.getURA());
         Assertions.assertEquals(-1, alm.getSatConfiguration());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getGnssDate()), 1.0e-15);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getTimeOfEphemeris()), 1.0e-15);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
@@ -129,8 +129,8 @@ public class YUMAParserTest {
         final GPSAlmanac alm = reader.getAlmanacs().getFirst();
         Assertions.assertEquals(1, alm.getPrn());
         Assertions.assertEquals(-1, alm.getSVN());
-        Assertions.assertEquals(866, alm.getGnssDate().getWeekNumber());
-        Assertions.assertEquals(589824.0, alm.getGnssDate().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(866, alm.getTimeOfEphemeris().getWeekNumber());
+        Assertions.assertEquals(589824.0, alm.getTimeOfEphemeris().getSecondsInWeek(), 0.);
         Assertions.assertEquals(5153.602051, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
         Assertions.assertEquals(0.5221366882E-02, alm.getOrbit().getE(), 0.);
         Assertions.assertEquals(0.963785748,  alm.getOrbit().getI(), 0.);
@@ -145,7 +145,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(-1, alm.getURA());
         Assertions.assertEquals(-1, alm.getSatConfiguration());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getGnssDate()), 1.0e-15);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getTimeOfEphemeris()), 1.0e-15);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);

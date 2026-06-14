@@ -76,7 +76,7 @@ public class GalileoNavigationMessageWriter
                               final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+        writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
         writer.finishLine();
 
     }

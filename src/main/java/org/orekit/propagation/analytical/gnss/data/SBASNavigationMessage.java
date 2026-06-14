@@ -36,7 +36,7 @@ public class SBASNavigationMessage extends AbstractEphemerisMessage implements S
      */
     public static final String SBAS = "SBAS";
 
-    /** Transmission time  of  message  (start  of  the message) in GPS seconds of the week. */
+    /** Transmission time of message (start  of  the message) in GPS seconds of the week. */
     private double time;
 
     /** SV clock bias (s). */

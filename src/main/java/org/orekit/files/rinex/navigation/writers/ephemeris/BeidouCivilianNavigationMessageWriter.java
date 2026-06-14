@@ -105,7 +105,7 @@ public class BeidouCivilianNavigationMessageWriter
         if (message.getBeidouType() == BeidouCivilianType.CNV3) {
             // EPH MESSAGE LINE - 8
             writer.indentLine(header);
-            writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+            writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
             writer.finishLine();
         } else {
 
@@ -116,7 +116,7 @@ public class BeidouCivilianNavigationMessageWriter
 
             // EPH MESSAGE LINE - 9
             writer.indentLine(header);
-            writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+            writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
             writer.writeEmpty();
             writer.writeEmpty();
             writer.writeInt(message.getIODE());

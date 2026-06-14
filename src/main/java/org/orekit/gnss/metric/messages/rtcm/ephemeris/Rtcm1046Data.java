@@ -33,9 +33,6 @@ public class Rtcm1046Data extends RtcmEphemerisData {
      */
     private final GalileoNavigationMessageFactory factory;
 
-    /** Galileo Time of clock. */
-    private double galileoToc;
-
     /** Constructor.
      * @param satelliteId satellite ID
      * @param accuracyProvider accuracy provider
@@ -58,26 +55,6 @@ public class Rtcm1046Data extends RtcmEphemerisData {
      */
     public GalileoNavigationMessage getGalileoNavigationMessage() {
         return factory.createFromDrivers();
-    }
-
-    /**
-     * Get the Galileo time of clock.
-     * <p>
-     * The Galileo time of clock is given in seconds since
-     * the beginning of the Galileo week.
-     * </p>
-     * @return the Galileo time of clock
-     */
-    public double getGalileoToc() {
-        return galileoToc;
-    }
-
-    /**
-     * Set the Galileo time of clock.
-     * @param toc the time of clock to set
-     */
-    public void setGalileoToc(final double toc) {
-        this.galileoToc = toc;
     }
 
 }

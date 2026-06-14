@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -45,8 +44,7 @@ public class GPSLegacyNavigationMessageFactory
     /** {@inheritDoc} */
     @Override
     public GPSLegacyNavigationMessage createFromDrivers() {
-        return new GPSLegacyNavigationMessage(getTimeScales(), getType(), getPrn(),
-                                              new GNSSDate(getWeek(), getTimeDriver().getValue(), getSystem()),
+        return new GPSLegacyNavigationMessage(getTimeScales(), getType(), getPrn(), getTimeOfEphemeris(),
                                               createOrbitFromDrivers(),
                                               getADotDriver().getValue(),
                                               getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
@@ -56,7 +54,7 @@ public class GPSLegacyNavigationMessageFactory
                                               getCicDriver().getValue(), getCisDriver().getValue(),
                                               getAf0Driver().getValue(), getAf1Driver().getValue(),
                                               getAf2Driver().getValue(),
-                                              getTgd(), getToc(), getTransmissionTime(),
+                                              getTgd(), getTimeOfClock(), getTransmissionTime(),
                                               getIode(), getIodc(), getSvAccuracy(),
                                               getSvHealth(), getFitInterval(),
                                               getL2Codes(), getL2PFlags());

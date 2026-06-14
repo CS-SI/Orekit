@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -42,7 +42,7 @@ public class NavICAlmanac extends GNSSOrbitalElements<NavICAlmanac> {
      * Constructor.
      * @param timeScales known time scales
      * @param prn        PRN number of the satellite
-     * @param gnssDate   GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe        time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit      Keplerian orbit in Earth-frozen frame
      * @param aDot       change rate in semi-major axis (m/s)
      * @param deltaN0    delta of satellite mean motion
@@ -62,16 +62,16 @@ public class NavICAlmanac extends GNSSOrbitalElements<NavICAlmanac> {
      * @param toc        time of clock
      */
     public NavICAlmanac(final TimeScales timeScales, final int prn,
-                        final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                        final GNSSDate toe, final KeplerianOrbit orbit,
                         final double aDot, final double deltaN0, final double deltaN0Dot,
                         final double iDot, final double omegaDot,
                         final double cuc, final double cus,
                         final double crc, final double crs,
                         final double cic, final double cis,
                         final double af0, final double af1, final double af2,
-                        final double tgd, final AbsoluteDate toc) {
+                        final double tgd, final GNSSDate toc) {
         super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, null, prn, gnssDate, orbit,
+              timeScales, null, prn, toe, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc);
     }
@@ -91,14 +91,17 @@ public class NavICAlmanac extends GNSSOrbitalElements<NavICAlmanac> {
                                      final T[] nonKeplerian,
                                      final DoubleFunction<T> converter) {
         return new FieldNavICAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                       getType(), getPrn(), getGnssDate(), orbit,  nonKeplerian,
-                                       converter.apply(getTgd()), toFieldToc(orbit));
+                                       getType(), getPrn(),
+                                       new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                       orbit,  nonKeplerian,
+                                       converter.apply(getTgd()),
+                                       new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()));
     }
 
     /** {@inheritDoc} */
     @Override
     public NavICAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new NavICAlmanacFactory(getTimeScales(), getGnssDate().getSystem(), inertial, bodyFixed);
+        return new NavICAlmanacFactory(getTimeScales(), getTimeOfEphemeris().getSystem(), inertial, bodyFixed);
     }
 
 }

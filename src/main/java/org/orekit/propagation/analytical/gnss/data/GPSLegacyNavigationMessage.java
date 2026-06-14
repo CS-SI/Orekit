@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -42,7 +42,7 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
      * @param timeScales       known time scales
      * @param type             message type
      * @param prn              PRN number of the satellite
-     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
@@ -70,19 +70,19 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
      * @param l2PFlags         L2 P data flags.
      */
     public GPSLegacyNavigationMessage(final TimeScales timeScales, final String type,
-                                      final int prn, final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                      final int prn, final GNSSDate toe, final KeplerianOrbit orbit,
                                       final double aDot, final double deltaN0, final double deltaN0Dot,
                                       final double iDot, final double omegaDot,
                                       final double cuc, final double cus,
                                       final double crc, final double crs,
                                       final double cic, final double cis,
                                       final double af0, final double af1, final double af2,
-                                      final double tgd, final AbsoluteDate toc, final double transmissionTime,
+                                      final double tgd, final GNSSDate toc, final GNSSDate  transmissionTime,
                                       final int iode, final int iodc, final double svAccuracy,
                                       final int svHealth, final int fitInterval,
                                       final int l2Codes, final int l2PFlags) {
         super(GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
-              timeScales, type, prn, gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus,
+              timeScales, type, prn, toe, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus,
               crc, crs, cic, cis, af0, af1, af2, tgd, toc, transmissionTime, iode, iodc, svAccuracy, svHealth,
               fitInterval, l2Codes, l2PFlags);
     }
@@ -102,9 +102,12 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
                                                    final T[] nonKeplerian,
                                                    final DoubleFunction<T> converter) {
         return new FieldGPSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                     getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                     converter.apply(getTgd()), toFieldToc(orbit),
-                                                     converter.apply(getTransmissionTime()),
+                                                     getType(), getPrn(),
+                                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                                     orbit, nonKeplerian,
+                                                     converter.apply(getTgd()),
+                                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
+                                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTransmissionTime()),
                                                      getIODE(), getIODC(),
                                                      converter.apply(getSvAccuracy()),
                                                      getSvHealth(), getFitInterval(),
@@ -114,7 +117,7 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
     /** {@inheritDoc} */
     @Override
     public GPSLegacyNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new GPSLegacyNavigationMessageFactory(getTimeScales(), getGnssDate().getSystem(), getType(),
+        return new GPSLegacyNavigationMessageFactory(getTimeScales(), getTimeOfEphemeris().getSystem(), getType(),
                                                      inertial, bodyFixed);
     }
 

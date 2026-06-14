@@ -102,7 +102,7 @@ public class Rtcm1042Test {
         Assertions.assertNotNull(propagator);
         final double eps = 1.0e-15;
         Assertions.assertEquals(0.0,
-                                beidouMessage.getDate().durationFrom(beidouMessage.getGnssDate()),
+                                beidouMessage.getDate().durationFrom(beidouMessage.getTimeOfEphemeris()),
                                 eps);
 
         // Verify message number
@@ -111,7 +111,7 @@ public class Rtcm1042Test {
 
         // Verify navigation message
         Assertions.assertEquals(12,                     beidouMessage.getPrn());
-        Assertions.assertEquals(8157,                   beidouMessage.getGnssDate().getWeekNumber());
+        Assertions.assertEquals(8157,                   beidouMessage.getTimeOfEphemeris().getWeekNumber());
         Assertions.assertEquals(2.1475894557210572E-9, beidouMessage.getIDot(), eps);
         Assertions.assertEquals(20, beidouMessage.getAODE(), eps);
         Assertions.assertEquals(1.3769368E-17, beidouMessage.getAf2(), eps);
@@ -126,7 +126,7 @@ public class Rtcm1042Test {
         Assertions.assertEquals(0.03899807028938085, beidouMessage.getOrbit().getE(), eps);
         Assertions.assertEquals(0.0, beidouMessage.getCus(), eps);
         Assertions.assertEquals(5153.562498092651, FastMath.sqrt(beidouMessage.getOrbit().getA()), eps);
-        Assertions.assertEquals(560696.0, beidouMessage.getGnssDate().getSecondsInWeek(), eps);
+        Assertions.assertEquals(560696.0, beidouMessage.getTimeOfEphemeris().getSecondsInWeek(), eps);
         Assertions.assertEquals(0.0, beidouMessage.getCic(), eps);
         Assertions.assertEquals(0.0, beidouMessage.getCis(), eps);
         Assertions.assertEquals(0.987714701321906, beidouMessage.getOrbit().getI(), eps);
@@ -141,8 +141,7 @@ public class Rtcm1042Test {
         Assertions.assertEquals(12,                     ephemerisData.getSatelliteID());
         Assertions.assertEquals(0.0, ephemerisData.getBeidouNavigationMessage().getSatH1(), eps);
         Assertions.assertEquals(63224,
-                                new GNSSDate(ephemerisData.getBeidouNavigationMessage().getToc(), SatelliteSystem.BEIDOU).
-                                    getSecondsInWeek(),
+                                ephemerisData.getBeidouNavigationMessage().getTimeOfClock().getSecondsInWeek(),
                                 eps);
         Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), beidouMessage.getSvAccuracy(), eps);
 

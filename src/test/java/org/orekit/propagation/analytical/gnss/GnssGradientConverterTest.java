@@ -45,6 +45,7 @@ import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
@@ -70,7 +71,7 @@ class GnssGradientConverterTest {
                                                 context.getFrames().getEME2000(),
                                                 context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(4);
-        factory.setWeekAndTime(1024, 293400.0);
+        factory.setTimeOfEphemeris(new GNSSDate(1024, 293400.0, SatelliteSystem.GALILEO));
         final double sqrtA = 5440.602949142456;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         factory.getDeltaN0Driver().setValue(3.7394414770330066E-9);
@@ -87,6 +88,8 @@ class GnssGradientConverterTest {
         factory.getCrsDriver().setValue(-18.78125);
         factory.getCicDriver().setValue(3.166496753692627E-8);
         factory.getCisDriver().setValue(-1.862645149230957E-8);
+        factory.setTimeOfClock(factory.getTimeOfEphemeris());
+        factory.setTransmissionTime(factory.getTimeOfEphemeris());
         propagator = new GNSSPropagator<>(factory);
     }
 
@@ -120,7 +123,7 @@ class GnssGradientConverterTest {
                                                   context.getFrames().getEME2000(),
                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(7);
-        factory.setWeekAndTime(0, 288000);
+        factory.setTimeOfEphemeris(new GNSSDate(0, 288000, SatelliteSystem.GPS));
         final double sqrtA = 5153.599830627441;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.012442796607501805);
@@ -137,6 +140,8 @@ class GnssGradientConverterTest {
         factory.getCrsDriver().setValue(87.03125);
         factory.getCicDriver().setValue(3.203749656677246E-7);
         factory.getCisDriver().setValue(4.0978193283081055E-8);
+        factory.setTimeOfClock(factory.getTimeOfEphemeris());
+        factory.setTransmissionTime(factory.getTimeOfEphemeris());
         GNSSPropagator<GPSLegacyNavigationMessage> propagator = new GNSSPropagator<>(factory);
 
         // we want to compute the partial derivatives with respect to Crs and Crc parameters

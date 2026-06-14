@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -69,7 +69,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * @param timeScales       known time scales
      * @param type             message type
      * @param prn              PRN number of the satellite
-     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
@@ -97,18 +97,18 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      */
     public BeidouLegacyNavigationMessage(final boolean d2,
                                          final TimeScales timeScales, final String type,
-                                         final int prn, final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                         final int prn, final GNSSDate toe, final KeplerianOrbit orbit,
                                          final double aDot, final double deltaN0, final double deltaN0Dot,
                                          final double iDot, final double omegaDot,
                                          final double cuc, final double cus,
                                          final double crc, final double crs,
                                          final double cic, final double cis,
                                          final double af0, final double af1, final double af2,
-                                         final double tgd, final AbsoluteDate toc, final double transmissionTime,
+                                         final double tgd, final GNSSDate toc, final GNSSDate  transmissionTime,
                                          final int aode, final int aodc, final int satH1,
                                          final double tgd1, final double tgd2, final double svAccuracy) {
         super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, type, prn, gnssDate, orbit,
+              timeScales, type, prn, toe, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, transmissionTime);
         this.d2         = d2;
@@ -143,9 +143,12 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
                                                       final DoubleFunction<T> converter) {
         return new FieldBeidouLegacyNavigationMessage<>(isD2(),
                                                         getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                        getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                        converter.apply(getTgd()), toFieldToc(orbit),
-                                                        converter.apply(getTransmissionTime()),
+                                                        getType(), getPrn(),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                                        orbit, nonKeplerian,
+                                                        converter.apply(getTgd()),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(), getTransmissionTime()),
                                                         getAODE(), getAODC(), getSatH1(),
                                                         converter.apply( getTGD1()),
                                                         converter.apply(getTGD2()),
@@ -212,7 +215,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     /** {@inheritDoc} */
     @Override
     public BeidouLegacyNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new BeidouLegacyNavigationMessageFactory(getTimeScales(), getGnssDate().getSystem(), getType(),
+        return new BeidouLegacyNavigationMessageFactory(getTimeScales(), getTimeOfEphemeris().getSystem(), getType(),
                                                         inertial, bodyFixed, isD2());
     }
 

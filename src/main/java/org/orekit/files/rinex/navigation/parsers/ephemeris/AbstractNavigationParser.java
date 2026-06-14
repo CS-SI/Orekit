@@ -22,6 +22,7 @@ import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 /** Parser for abstract navigation messages.
@@ -139,7 +140,8 @@ public abstract class AbstractNavigationParser<T extends AbstractNavigationMessa
     @Override
     public void parseLine05() {
         factory.getIDotDriver().setValue(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        factory.setWeekAndTime(parseInfo.parseInt3(), factory.getTimeDriver().getValue());
+        factory.setTimeOfEphemeris(new GNSSDate(parseInfo.parseInt3(), factory.getTimeDriver().getValue(),
+                                                factory.getSystem()));
     }
 
 }

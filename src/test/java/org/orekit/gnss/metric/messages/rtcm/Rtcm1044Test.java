@@ -24,7 +24,6 @@ import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.LazyLoadedDataContext;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -105,7 +104,7 @@ public class Rtcm1044Test {
                                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
         Assertions.assertNotNull(propagator);
         final double eps = 9.0e-10;
-        Assertions.assertEquals(0.0, qzssMessage.getDate().durationFrom(qzssMessage.getGnssDate()), eps);
+        Assertions.assertEquals(0.0, qzssMessage.getDate().durationFrom(qzssMessage.getTimeOfEphemeris()), eps);
 
         // Verify message number
         Assertions.assertEquals(1044,                   rtcm1044.getTypeCode());
@@ -113,7 +112,7 @@ public class Rtcm1044Test {
 
         // Verify navigation message
         Assertions.assertEquals(204,                    qzssMessage.getPrn());
-        Assertions.assertEquals(441,                    qzssMessage.getGnssDate().getWeekNumber());
+        Assertions.assertEquals(441,                    qzssMessage.getTimeOfEphemeris().getWeekNumber());
         Assertions.assertEquals(2.1475894557210572E-9, qzssMessage.getIDot(), eps);
         Assertions.assertEquals(132, qzssMessage.getIODE(), eps);
         Assertions.assertEquals(3.524958E-15, qzssMessage.getAf2(), eps);
@@ -128,7 +127,7 @@ public class Rtcm1044Test {
         Assertions.assertEquals(0.0389980711042881, qzssMessage.getOrbit().getE(), eps);
         Assertions.assertEquals(0.0, qzssMessage.getCus(), eps);
         Assertions.assertEquals(5153.562498092651, FastMath.sqrt(qzssMessage.getOrbit().getA()), eps);
-        Assertions.assertEquals(560688.0, qzssMessage.getGnssDate().getSecondsInWeek(), eps);
+        Assertions.assertEquals(560688.0, qzssMessage.getTimeOfEphemeris().getSecondsInWeek(), eps);
         Assertions.assertEquals(0.0, qzssMessage.getCic(), eps);
         Assertions.assertEquals(0.0, qzssMessage.getCis(), eps);
         Assertions.assertEquals(0.987714701321906, qzssMessage.getOrbit().getI(), eps);
@@ -141,8 +140,7 @@ public class Rtcm1044Test {
         // Verify other data
         Assertions.assertEquals(204,     ephemerisData.getSatelliteID());
         Assertions.assertEquals(63216.0,
-                                new GNSSDate(ephemerisData.getQzssNavigationMessage().getToc(), SatelliteSystem.QZSS).
-                                    getSecondsInWeek(),
+                                ephemerisData.getQzssNavigationMessage().getTimeOfClock().getSecondsInWeek(),
                                 eps);
         Assertions.assertEquals(2,       ephemerisData.getQzssNavigationMessage().getL2Codes());
         Assertions.assertEquals(0,       ephemerisData.getQzssNavigationMessage().getFitInterval());

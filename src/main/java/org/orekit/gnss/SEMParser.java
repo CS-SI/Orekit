@@ -38,6 +38,7 @@ import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanacFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriversList;
@@ -295,7 +296,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
             factory.setSatConfiguration(Integer.parseInt(token[0].trim()));
 
             // Adds the almanac to the list
-            factory.setWeekAndTime(week, toa);
+            factory.setTimeOfEphemeris(new GNSSDate(week, toa, factory.getSystem()));
             almanacs.add(factory.createFromDrivers());
 
             // Adds the PRN to the list

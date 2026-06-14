@@ -20,6 +20,7 @@ import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 /** Parser for Galileo.
@@ -78,7 +79,9 @@ public class GalileoParser
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
         final GalileoNavigationMessageFactory factory = getFactory();
-        factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        factory.setTransmissionTime(new GNSSDate(factory.getTimeOfEphemeris().getWeekNumber(),
+                                                 parseInfo.parseDouble1(Unit.SECOND),
+                                                 factory.getSystem()));
         parseInfo.closePendingRecord();
     }
 

@@ -64,8 +64,8 @@ public class QZSSAlmanacTest {
         // Checks the last almanac read
         final QZSSAlmanac alm = reader.getAlmanacs().getLast();
         Assertions.assertEquals(199, alm.getPrn());
-        Assertions.assertEquals(1015, alm.getGnssDate().getWeekNumber());
-        Assertions.assertEquals(262144.0, alm.getGnssDate().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(1015, alm.getTimeOfEphemeris().getWeekNumber());
+        Assertions.assertEquals(262144.0, alm.getTimeOfEphemeris().getSecondsInWeek(), 0.);
         Assertions.assertEquals(6493.484863, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
         Assertions.assertEquals(1.387596130E-04, alm.getOrbit().getE(), FastMath.ulp(8E-05));
         Assertions.assertEquals(0.0007490141,  alm.getOrbit().getI(), 0.);
@@ -298,8 +298,9 @@ public class QZSSAlmanacTest {
                         checks[11] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[12])) {
                         // Gets the week number
-                        factory.setWeekAndTime(Integer.parseInt(entry.getValue()),
-                                               factory.getTimeDriver().getValue());
+                        factory.setTimeOfEphemeris(new GNSSDate(Integer.parseInt(entry.getValue()),
+                                                                factory.getTimeDriver().getValue(),
+                                                                factory.getSystem(), factory.getTimeScales()));
                         checks[12] = true;
                     } else {
                         // Unknown entry: the file is not a YUMA file

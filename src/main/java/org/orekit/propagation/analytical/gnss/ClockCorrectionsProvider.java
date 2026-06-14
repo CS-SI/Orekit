@@ -31,8 +31,8 @@ import org.orekit.utils.PVCoordinates;
  * <ul>
  *   <li>at index 0, the polynomial satellite clock model
  *       Δtₛₐₜ = {@link GNSSClockElements#getAf0() a₀} +
- *               {@link GNSSClockElements#getAf1() a₁} (t - {@link GNSSClockElements#getToc() toc}) +
- *               {@link GNSSClockElements#getAf1() a₂} (t - {@link GNSSClockElements#getToc() toc})²
+ *               {@link GNSSClockElements#getAf1() a₁} (t - {@link GNSSClockElements#getTimeOfClock()}) +
+ *               {@link GNSSClockElements#getAf1() a₂} (t - {@link GNSSClockElements#getTimeOfClock()})²
  *   </li>
  *   <li>at index 1 the relativistic clock correction due to eccentricity</li>
  *   <li>at index 2 the estimated group delay differential {@link GNSSClockElements#getTgd() TGD} for L1-L2 correction</li>
@@ -56,9 +56,6 @@ public class ClockCorrectionsProvider implements AdditionalDataProvider<double[]
     /** The GPS clock elements. */
     private final GNSSClockElements gnssClk;
 
-    /** Clock reference epoch. */
-    private final AbsoluteDate clockRef;
-
     /** Duration of the GNSS cycle in seconds. */
     private final double cycleDuration;
 
@@ -69,7 +66,6 @@ public class ClockCorrectionsProvider implements AdditionalDataProvider<double[]
     public ClockCorrectionsProvider(final GNSSClockElements gnssClk,
                                     final double cycleDuration) {
         this.gnssClk       = gnssClk;
-        this.clockRef      = gnssClk.getDate();
         this.cycleDuration = cycleDuration;
     }
 
@@ -87,8 +83,8 @@ public class ClockCorrectionsProvider implements AdditionalDataProvider<double[]
      * @return the duration from clock Reference epoch (s)
      */
     private double getDT(final AbsoluteDate date) {
-        // Time from ephemeris reference epoch
-        double dt = date.durationFrom(clockRef);
+        // Time from clock reference epoch
+        double dt = date.durationFrom(gnssClk.getTimeOfClock());
         // Adjusts the time to take roll over week into account
         while (dt > 0.5 * cycleDuration) {
             dt -= cycleDuration;

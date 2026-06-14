@@ -73,7 +73,7 @@ public class BeidouLegacyNavigationMessageWriter
                                  final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+        writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
         writer.writeDouble(message.getAODC(),             Unit.SECOND);
         writer.finishLine();
     }

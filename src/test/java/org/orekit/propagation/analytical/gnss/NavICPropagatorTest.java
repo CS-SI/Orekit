@@ -34,6 +34,7 @@ import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.NavICAlmanac;
 import org.orekit.propagation.analytical.gnss.data.NavICAlmanacFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -63,7 +64,7 @@ public class NavICPropagatorTest {
                                           context.getFrames().getEME2000(),
                                           context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(1);
-        factory.setWeekAndTime(1786, 172800.0);
+        factory.setTimeOfEphemeris(new GNSSDate(1786, 172800.0, SatelliteSystem.NAVIC));
         final double sqrtA = 6.493487739563E03;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(2.257102518342E-03);
@@ -74,6 +75,7 @@ public class NavICPropagatorTest {
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-1.396094758025);
         factory.getAf0Driver().setValue(-9.473115205765e-04);
         factory.getAf1Driver().setValue(1.250555214938e-12);
+        factory.setTimeOfClock(factory.getTimeOfEphemeris());
 
         frames = context.getFrames();
     }

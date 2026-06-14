@@ -53,6 +53,7 @@ import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -114,7 +115,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      * <p>
      * Beware that since GNSS orbital elements refer to an Earth frame frozen at a specific date
      * to become an inertial frame, the factory date <em>must</em> have been initialized properly
-     * (by calling {@link GNSSOrbitalElementsFactory#setWeekAndTime(int, double)}). Setting the date
+     * (by calling {@link GNSSOrbitalElementsFactory#setTimeOfEphemeris(GNSSDate)}). Setting the date
      * allows the frozen frame to be set properly, otherwise a null pointer exception will be thrown
      * when the propagator builder attempts to use the frame.
      * </p>
@@ -332,7 +333,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         final UnivariateDerivative2 yk = csuk.sin().multiply(rk);
         // Corrected longitude of ascending node
         final double thetaDot = orbitalElements.getAngularVelocity();
-        final double toe = orbitalElements.getGnssDate().getSecondsInWeek();
+        final double toe = orbitalElements.getTimeOfEphemeris().getSecondsInWeek();
         final FieldSinCos<UnivariateDerivative2> csomk =
             FastMath.sinCos(tk.multiply(orbitalElements.getOmegaDot() - thetaDot).
                             add(orbit.getRightAscensionOfAscendingNode() - thetaDot * toe));
@@ -548,7 +549,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         final double i0  = ik - (cs2phi.cos() * nonKeplerianElements.getCic() + cs2phi.sin() * nonKeplerianElements.getCis());
         final double om0 = FastMath.atan2(sin, cos) +
                            nonKeplerianElements.getAngularVelocity() *
-                           nonKeplerianElements.getGnssDate().getSecondsInWeek();
+                           nonKeplerianElements.getTimeOfEphemeris().getSecondsInWeek();
 
         // recover eccentricity and anomaly
         final double mu = initialState.getOrbit().getMu();

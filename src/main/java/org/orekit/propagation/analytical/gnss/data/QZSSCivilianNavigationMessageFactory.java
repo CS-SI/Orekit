@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -48,8 +47,7 @@ public class QZSSCivilianNavigationMessageFactory
     @Override
     public QZSSCivilianNavigationMessage createFromDrivers() {
         return new QZSSCivilianNavigationMessage(isCnv2(),
-                                                 getTimeScales(), getType(), getPrn(),
-                                                 new GNSSDate(getWeek(), getTimeDriver().getValue(), getSystem()),
+                                                 getTimeScales(), getType(), getPrn(), getTimeOfEphemeris(),
                                                  createOrbitFromDrivers(),
                                                  getADotDriver().getValue(),
                                                  getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
@@ -59,7 +57,7 @@ public class QZSSCivilianNavigationMessageFactory
                                                  getCicDriver().getValue(), getCisDriver().getValue(),
                                                  getAf0Driver().getValue(), getAf1Driver().getValue(),
                                                  getAf2Driver().getValue(),
-                                                 getTgd(), getToc(), getTransmissionTime(),
+                                                 getTgd(), getTimeOfClock(), getTransmissionTime(),
                                                  getSvAccuracy(), getSvHealth(),
                                                  getIscL1CA(), getIscL1CD(), getIscL1CP(),
                                                  getIscL2C(), getIscL5I5(), getIscL5Q5(),

@@ -21,6 +21,7 @@ import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessageFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 /** Parser for NavIC legacy.
@@ -83,7 +84,9 @@ public class NavICLnavParser
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
         final NavICLegacyNavigationMessageFactory factory = getFactory();
-        factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        factory.setTransmissionTime(new GNSSDate(factory.getTimeOfEphemeris().getWeekNumber(),
+                                                 parseInfo.parseDouble1(Unit.SECOND),
+                                                 factory.getSystem()));
         // there is no fit interval in NavIC L message
         parseInfo.closePendingRecord();
     }

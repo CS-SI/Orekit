@@ -19,6 +19,7 @@ package org.orekit.files.rinex.navigation.parsers.ephemeris;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.LegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.LegacyNavigationMessageFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 /** Parser for legacy navigation messages.
@@ -73,7 +74,9 @@ public abstract class LegacyNavigationParser<T extends LegacyNavigationMessage<T
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
         final F factory = getFactory();
-        factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        factory.setTransmissionTime(new GNSSDate(factory.getTimeOfEphemeris().getWeekNumber(),
+                                                 parseInfo.parseDouble1(Unit.SECOND),
+                                                 factory.getSystem()));
         factory.setFitInterval(parseInfo.parseInt2());
         parseInfo.closePendingRecord();
     }

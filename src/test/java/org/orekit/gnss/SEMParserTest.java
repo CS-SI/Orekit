@@ -90,8 +90,8 @@ public class SEMParserTest {
         final GPSAlmanac alm = reader.getAlmanacs().getFirst();
         Assertions.assertEquals(1, alm.getPrn());
         Assertions.assertEquals(63, alm.getSVN());
-        Assertions.assertEquals(862, alm.getGnssDate().getWeekNumber());
-        Assertions.assertEquals(319488.0, alm.getGnssDate().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(862, alm.getTimeOfEphemeris().getWeekNumber());
+        Assertions.assertEquals(319488.0, alm.getTimeOfEphemeris().getSecondsInWeek(), 0.);
         Assertions.assertEquals(5.15360253906250E+03, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
         Assertions.assertEquals(5.10072708129883E-03, alm.getOrbit().getE(), FastMath.ulp(8E-05));
         Assertions.assertEquals(6.84547424316406E-03,  (alm.getOrbit().getI() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
@@ -106,7 +106,7 @@ public class SEMParserTest {
         Assertions.assertEquals(0, alm.getURA());
         Assertions.assertEquals(11, alm.getSatConfiguration());
         Assertions.assertEquals("SEM", alm.getSource());
-        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getGnssDate()), 0);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getTimeOfEphemeris()), 0);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
@@ -134,8 +134,8 @@ public class SEMParserTest {
         final GPSAlmanac alm = reader.getAlmanacs().getLast();
         Assertions.assertEquals(32, alm.getPrn());
         Assertions.assertEquals(70, alm.getSVN());
-        Assertions.assertEquals(862, alm.getGnssDate().getWeekNumber());
-        Assertions.assertEquals(319488.0, alm.getGnssDate().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(862, alm.getTimeOfEphemeris().getWeekNumber());
+        Assertions.assertEquals(319488.0, alm.getTimeOfEphemeris().getSecondsInWeek(), 0.);
         Assertions.assertEquals(5.16559130859375E+03, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
         Assertions.assertEquals(7.96318054199219E-05, alm.getOrbit().getE(), FastMath.ulp(8E-05));
         Assertions.assertEquals(5.53321838378906E-03,  (alm.getOrbit().getI() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
@@ -150,7 +150,7 @@ public class SEMParserTest {
         Assertions.assertEquals(0, alm.getURA());
         Assertions.assertEquals(11, alm.getSatConfiguration());
         Assertions.assertEquals("SEM", alm.getSource());
-        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getGnssDate()), 1.0e-15);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getTimeOfEphemeris()), 1.0e-15);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
