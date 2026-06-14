@@ -362,9 +362,9 @@ public class AdditionalParameters extends CommonPhysicalProperties {
         refuseFurtherComments();
 
         // Check key condition
-        if (getCovConfidence().isEmpty()) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, AdditionalParametersKey.COV_CONFIDENCE);
-        }
+        getCovConfidence().
+            orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                  AdditionalParametersKey.COV_CONFIDENCE));
 
         this.covConfidenceMethod = covConfidenceMethod;
     }

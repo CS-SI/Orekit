@@ -201,9 +201,10 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     @Override
     public void validate(final double version) {
         checkMandatoryEntriesExceptOrbitsCounter(version);
-        if (getOrbRevNum().isPresent() && getOrbRevNumBasis().isEmpty()) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                      TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name());
+        if (getOrbRevNum().isPresent()) {
+            getOrbRevNumBasis().
+            orElseThrow(() -> new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                                  TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name()));
         }
     }
 

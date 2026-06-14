@@ -40,10 +40,9 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
         if (orientation == null) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, NO_REFERENCE_FRAME);
         }
-        if (orientation.asFrame().isEmpty()) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, orientation.getName());
-        }
-        return orientation.asFrame().get();
+        return orientation.asFrame().
+            orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, orientation.getName()));
+
     }
 
     @Override
@@ -53,17 +52,17 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
         if (center == null) {
             throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, "No Orbit center name");
         }
-        if (center.getBody().isEmpty()) {
-            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, center.getName());
-        }
-        final CelestialBody body = center.getBody().get();
+        final CelestialBody body =
+            center.
+                getBody().
+                orElseThrow(() -> new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY,
+                                                      center.getName()));
         if (orientation == null) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, NO_REFERENCE_FRAME);
         }
-        if (orientation.asFrame().isEmpty()) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, orientation.getName());
-        }
-        final Frame frame = orientation.asFrame().get();
+        final Frame frame =
+            orientation.asFrame().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, orientation.getName()));
         // Just return frame if we don't need to shift the center based on CENTER_NAME
         // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
         final CelestialBodyFrame celestialBodyFrame = orientation.asCelestialBodyFrame().orElse(null);

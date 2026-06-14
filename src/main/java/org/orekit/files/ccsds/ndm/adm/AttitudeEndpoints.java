@@ -264,7 +264,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
         final TimeStampedAngularCoordinates att =
                         isExternal2SpacecraftBody() ? rawAttitude : rawAttitude.revert();
 
-        final FrameFacade        external = getExternalFrame();
+        final FrameFacade                  external = getExternalFrame();
         final Optional<OrbitRelativeFrame> orf      = external.asOrbitRelativeFrame();
         if (orf.isPresent()) {
             // this is an orbit-relative attitude
@@ -284,11 +284,11 @@ public class AttitudeEndpoints implements AttitudeBuilder {
 
         } else {
             // this is an absolute attitude
-            if (external.asFrame().isEmpty()) {
-                // unknown frame
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, external.getName());
-            }
-            final Attitude attitude = new Attitude(external.asFrame().get(), att);
+            final Frame externalFrame = external.
+                                        asFrame().
+                                        orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
+                                                                              external.getName()));
+            final Attitude attitude = new Attitude(externalFrame, att);
             return frame == null ? attitude : attitude.withReferenceFrame(frame);
         }
 
@@ -326,11 +326,12 @@ public class AttitudeEndpoints implements AttitudeBuilder {
 
         } else {
             // this is an absolute attitude
-            if (external.asFrame().isEmpty()) {
-                // this should never happen as all CelestialBodyFrame have an Orekit mapping
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, external.getName());
-            }
-            final FieldAttitude<T> attitude = new FieldAttitude<>(external.asFrame().get(), att);
+            // exception should never be thrown as all CelestialBodyFrame have an Orekit mapping
+            final Frame externalFrame = external.
+                                        asFrame().
+                                        orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
+                                                                              external.getName()));
+            final FieldAttitude<T> attitude = new FieldAttitude<>(externalFrame, att);
             return frame == null ? attitude : attitude.withReferenceFrame(frame);
         }
 

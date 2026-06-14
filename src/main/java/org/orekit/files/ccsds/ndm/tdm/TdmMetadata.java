@@ -679,7 +679,9 @@ public class TdmMetadata extends Metadata {
      */
     public Optional<Frame> getRadecFrame() {
         // TDM doesn't allow specifying an epoch
-        return getReferenceFrame().isEmpty() ? Optional.empty() : Optional.ofNullable(getFrameMapper().buildCcsdsFrame(getReferenceFrame().get(), null));
+        return getReferenceFrame().isEmpty() ?
+               Optional.empty() :
+               Optional.ofNullable(getFrameMapper().buildCcsdsFrame(getReferenceFrame().get(), null));
     }
 
     /**

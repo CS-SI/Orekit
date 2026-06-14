@@ -626,13 +626,14 @@ public class CdmMetadata extends Metadata {
     public void setAltCovRefFrame(final FrameFacade altCovRefFrame) {
         refuseFurtherComments();
 
-        if (getAltCovType().isEmpty()) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmMetadataKey.ALT_COV_TYPE);
-        }
+        getAltCovType().
+            orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                  CdmMetadataKey.ALT_COV_TYPE));
 
-        if (altCovRefFrame.asFrame().isEmpty()) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, altCovRefFrame.getName());
-        }
+        altCovRefFrame.
+            asFrame().
+            orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
+                                                  altCovRefFrame.getName()));
 
         // Only set the frame if within the allowed options: GCRF, EME2000, ITRF
         final CelestialBodyFrame celestialBodyFrame = altCovRefFrame.asCelestialBodyFrame().orElseThrow();
@@ -658,7 +659,9 @@ public class CdmMetadata extends Metadata {
      */
     public Optional<Frame> getAltCovFrame() {
         // Epoch of AltCovRefFrame can't be specified.
-        return getAltCovRefFrame().isEmpty() ? Optional.empty() : Optional.of(getFrameMapper().buildCcsdsFrame(getAltCovRefFrame().get(), null));
+        return getAltCovRefFrame().isEmpty() ?
+               Optional.empty() :
+               Optional.of(getFrameMapper().buildCcsdsFrame(getAltCovRefFrame().get(), null));
     }
 
     /** Get the unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message.

@@ -723,43 +723,43 @@ public class CdmRelativeMetadata {
 
         if (this.getScreenType().isPresent() &&  this.getScreenType().get() == ScreenType.SHAPE) {
 
-            if (this.getScreenEntryTime().isEmpty()) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_ENTRY_TIME);
-            }
+            getScreenEntryTime().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_ENTRY_TIME));
 
-            if (this.getScreenExitTime().isEmpty()) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_EXIT_TIME);
-            }
+            getScreenExitTime().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_EXIT_TIME));
 
-            if (this.getScreenVolumeShape().isEmpty()) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE);
-            }
+            getScreenVolumeShape().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE));
 
             if (this.getScreenVolumeShape().isPresent() && this.getScreenVolumeShape().get() == ScreenVolumeShape.SPHERE) {
 
-                if (this.getScreenVolumeRadius().isEmpty()) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS);
-                }
+                getScreenVolumeRadius().
+                orElseThrow(() ->  new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                       CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS));
 
             } else if (this.getScreenVolumeShape().isPresent() && (this.getScreenVolumeShape().get() == ScreenVolumeShape.ELLIPSOID ||
                     this.getScreenVolumeShape().get() == ScreenVolumeShape.BOX)) {
 
-                if (this.getScreenVolumeFrame().isEmpty()) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME);
-                }
-                if (this.getScreenVolumeX().isEmpty()) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_X);
-                }
-                if (this.getScreenVolumeY().isEmpty()) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_Y);
-                }
-                if (this.getScreenVolumeZ().isEmpty()) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_Z);
-                }
+                getScreenVolumeFrame().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME));
+                getScreenVolumeX().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_X));
+                getScreenVolumeY().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_Y));
+                getScreenVolumeZ().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_Z));
             }
 
-        } else if (this.getScreenType().isPresent() && (this.getScreenType().get() == ScreenType.PC ||
-                this.getScreenType().get() == ScreenType.PC_MAX)) {
+        } else if (this.getScreenType().isPresent() &&
+                   (this.getScreenType().get() == ScreenType.PC || this.getScreenType().get() == ScreenType.PC_MAX)) {
 
             if (this.getScreenPcThreshold().isEmpty()) {
                 throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_PC_THRESHOLD);
@@ -774,7 +774,6 @@ public class CdmRelativeMetadata {
      */
     public Optional<int[]> getCollisionPercentile() {
         return collisionPercentile == null ? Optional.empty() : Optional.ofNullable(collisionPercentile.clone());
-//        return collisionPercentile.map(int[]::clone);
     }
 
     /** Set the array of 1 to n elements indicating the percentile(s) for which estimates of the collision probability are provided in the
