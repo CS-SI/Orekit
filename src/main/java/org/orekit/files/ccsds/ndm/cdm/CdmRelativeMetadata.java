@@ -738,24 +738,24 @@ public class CdmRelativeMetadata {
             if (this.getScreenVolumeShape().isPresent() && this.getScreenVolumeShape().get() == ScreenVolumeShape.SPHERE) {
 
                 getScreenVolumeRadius().
-                orElseThrow(() ->  new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                                       CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS));
+                    orElseThrow(() ->  new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                           CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS));
 
             } else if (this.getScreenVolumeShape().isPresent() && (this.getScreenVolumeShape().get() == ScreenVolumeShape.ELLIPSOID ||
                     this.getScreenVolumeShape().get() == ScreenVolumeShape.BOX)) {
 
                 getScreenVolumeFrame().
-                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME));
+                    orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                          CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME));
                 getScreenVolumeX().
-                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_X));
+                    orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                          CdmRelativeMetadataKey.SCREEN_VOLUME_X));
                 getScreenVolumeY().
-                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_Y));
+                    orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                          CdmRelativeMetadataKey.SCREEN_VOLUME_Y));
                 getScreenVolumeZ().
-                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_Z));
+                    orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                          CdmRelativeMetadataKey.SCREEN_VOLUME_Z));
             }
 
         } else if (this.getScreenType().isPresent() &&
