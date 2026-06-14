@@ -87,9 +87,10 @@ public class Rtcm1042Test {
 
         final DataContext   context  = DataContext.getDefault();
         final Rtcm1042      rtcm1042 = (Rtcm1042) new RtcmMessagesParser(messages,
-                                                    context.getTimeScales(),
-                                                    context.getFrames().getEME2000(),
-                                                    context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+                                                                         context.getTimeScales(),
+                                                                         context.getFrames().getEME2000(),
+                                                                         context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                                     false)).
                                        parse(message, false);
         final Rtcm1042Data ephemerisData = rtcm1042.getEphemerisData();
         final BeidouLegacyNavigationMessage beidouMessage = ephemerisData.getBeidouNavigationMessage();

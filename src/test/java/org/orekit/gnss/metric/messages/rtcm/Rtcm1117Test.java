@@ -28,10 +28,9 @@ import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmSignalId;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
+import org.orekit.utils.IERSConventions;
 
 class Rtcm1117Test {
-
-    private double eps = 1.0e-13;
 
     private EncodedMessage message;
 
@@ -83,8 +82,13 @@ class Rtcm1117Test {
 
     @Test
     void testPerfectValue() {
-        final Rtcm1117 rtcm1117 = (Rtcm1117) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales())
-                .parse(message, false);
+        final DataContext   context  = DataContext.getDefault();
+        final Rtcm1117 rtcm1117 = (Rtcm1117) new RtcmMessagesParser(messages,
+                                                                    context.getTimeScales(),
+                                                                    context.getFrames().getEME2000(),
+                                                                    context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                                false)).
+                                       parse(message, false);
 
         // Verify header
         Assertions.assertEquals("837", rtcm1117.getHeader().getReferenceStation());
@@ -108,20 +112,21 @@ class Rtcm1117Test {
         Assertions.assertEquals(rtcm1117.getHeader().getNumberOfCells(), cells.size());
 
         // Verify first cell sat data
-        Assertions.assertEquals(new SatInSystem("J02"), cells.get(0).getSatelliteData().getSatellite());
-        Assertions.assertEquals(0.123, cells.get(0).getSatelliteData().getIntMillisRoughRange(), eps);
-        Assertions.assertEquals(0, cells.get(0).getSatelliteData().getExtendedSatelliteData());
-        Assertions.assertEquals(8.583984375e-4, cells.get(0).getSatelliteData().getModMillisRoughRange(), eps);
-        Assertions.assertEquals(79, cells.get(0).getSatelliteData().getRoughPhaserangeRate());
+        Assertions.assertEquals(new SatInSystem("J02"), cells.getFirst().getSatelliteData().getSatellite());
+        final double eps = 1.0e-13;
+        Assertions.assertEquals(0.123, cells.getFirst().getSatelliteData().getIntMillisRoughRange(), eps);
+        Assertions.assertEquals(0, cells.getFirst().getSatelliteData().getExtendedSatelliteData());
+        Assertions.assertEquals(8.583984375e-4, cells.getFirst().getSatelliteData().getModMillisRoughRange(), eps);
+        Assertions.assertEquals(79, cells.getFirst().getSatelliteData().getRoughPhaserangeRate());
 
         // Verify first cell sig data
-        Assertions.assertEquals(RtcmMsmSignalId.QZSS_1C, cells.get(0).getSignalData().getSignalId());
-        Assertions.assertEquals(0.2142, cells.get(0).getSignalData().getFinePhaserangeRate(), eps);
-        Assertions.assertEquals(9.98079776763916e-8, cells.get(0).getSignalData().getFinePseudorange(), eps);
-        Assertions.assertEquals(2.829674631357193e-7, cells.get(0).getSignalData().getFinePhaserange(), eps);
-        Assertions.assertEquals(704, cells.get(0).getSignalData().getLockTimeIndicator());
-        Assertions.assertEquals(36.8125, cells.get(0).getSignalData().getCnr(), eps);
-        Assertions.assertEquals(false, cells.get(0).getSignalData().getHalfCycleAmbiguityIndicator());
+        Assertions.assertEquals(RtcmMsmSignalId.QZSS_1C, cells.getFirst().getSignalData().getSignalId());
+        Assertions.assertEquals(0.2142, cells.getFirst().getSignalData().getFinePhaserangeRate(), eps);
+        Assertions.assertEquals(9.98079776763916e-8, cells.getFirst().getSignalData().getFinePseudorange(), eps);
+        Assertions.assertEquals(2.829674631357193e-7, cells.getFirst().getSignalData().getFinePhaserange(), eps);
+        Assertions.assertEquals(704, cells.getFirst().getSignalData().getLockTimeIndicator());
+        Assertions.assertEquals(36.8125, cells.getFirst().getSignalData().getCnr(), eps);
+        Assertions.assertEquals(false, cells.getFirst().getSignalData().getHalfCycleAmbiguityIndicator());
 
         // Verify last cell sat data
         Assertions.assertEquals(new SatInSystem("J03"), cells.get(3).getSatelliteData().getSatellite());

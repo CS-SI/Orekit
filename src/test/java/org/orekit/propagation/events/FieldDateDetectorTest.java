@@ -162,7 +162,7 @@ public class FieldDateDetectorTest {
         propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<>() {
             public String getName()                              { return "dummy"; }
             public int    getDimension()                         { return 1; }
-            public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<> s) {
+            public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
                 return new FieldCombinedDerivatives<>(MathArrays.buildArray(field, 1), null);
                 }
         });
