@@ -135,7 +135,9 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             SpacecraftState state   = updateAdditionalData(basicPropagate(start));
 
             // initialize event detectors
-            eventStates = getAttitudeProvider().getEventDetectors().map(EventState::new).collect(Collectors.toList());
+            eventStates = getAttitudeProvider() == null ?
+                          Collections.emptyList() :
+                          getAttitudeProvider().getEventDetectors().map(EventState::new).collect(Collectors.toList());
             eventStates.addAll(userEventStates);
             for (final EventState<?> es : eventStates) {
                 es.init(state, target);

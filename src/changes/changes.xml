@@ -352,7 +352,12 @@
           <action dev="bryan" type="fix" issue="1162">
               Throw OrekitException with clear message when getBody() is called with an unknown celestial body name.
           </action>
-      </release>
+    </release>
+    <release version="13.1.7" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1972">
+          Allow Ephemeris with null attitude providers to be used in AggregateBounedPropagator.
+      </action>
+    </release>
     <release version="13.1.6" date="2026-06-03" description="Orekit 13.1.6 is a patch release.
                                                              It solves various bugs related to CCSDS parsing and writing, DSST
                                                              propagation, and GNSS combination of measurements. This version
