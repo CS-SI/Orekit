@@ -33,6 +33,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -42,6 +43,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -428,6 +430,47 @@ public class AggregateBoundedPropagatorTest {
         Assertions.assertEquals(expectedPosition, actualPosition);
     }
 
+    @Test
+    public void testEmpty() {
+        try {
+            new AggregateBoundedPropagator(Collections.emptyList());
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_PROPAGATORS, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testBothNullAndNonNullProviders() {
+        KeplerianOrbit orbit = new KeplerianOrbit(6778137, 0, 0, 0, 0, 0,
+                                                  PositionAngleType.TRUE, frame,
+                                                  AbsoluteDate.ARBITRARY_EPOCH,
+                                                  Constants.EIGEN5C_EARTH_MU);
+
+        final Ephemeris ephemeris1 = new Ephemeris(states(orbit,  0.0,  60.0, 1.0), 2);
+        ephemeris1.setAttitudeProvider(null);
+        final Ephemeris ephemeris2 = new Ephemeris(states(orbit, 61.0, 120.0, 1.0), 2);
+        try {
+            new AggregateBoundedPropagator(Arrays.asList(ephemeris1, ephemeris2));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testNoAttitudeProvider() {
+        final KeplerianOrbit orbit = new KeplerianOrbit(6778137, 0, 0, 0, 0, 0,
+                                                        PositionAngleType.TRUE, frame,
+                                                        AbsoluteDate.ARBITRARY_EPOCH,
+                                                        Constants.EIGEN5C_EARTH_MU);
+        final Ephemeris ephemeris = new Ephemeris(states(orbit, 0.0, 60.0, 1.0), 2);
+        ephemeris.setAttitudeProvider(null);
+        Assertions.assertEquals(ephemeris.getMaxDate(), ephemeris.propagate(ephemeris.getMaxDate()).getDate());
+        final AggregateBoundedPropagator aggregated = new AggregateBoundedPropagator(Collections.singletonList(ephemeris));
+        Assertions.assertEquals(ephemeris.getMaxDate(), aggregated.propagate(ephemeris.getMaxDate()).getDate());
+    }
+
     private BoundedPropagator mockBoundedPropagator(final AbsoluteDate date, final SpacecraftState state) {
         final BoundedPropagator mockedBoundedPropagator = Mockito.mock(BoundedPropagator.class);
         Mockito.when(mockedBoundedPropagator.getMinDate()).thenReturn(AbsoluteDate.PAST_INFINITY);
@@ -435,6 +478,15 @@ public class AggregateBoundedPropagatorTest {
         Mockito.when(mockedBoundedPropagator.propagate(date)).thenReturn(state);
         Mockito.when(mockedBoundedPropagator.getInitialState()).thenReturn(state);
         return mockedBoundedPropagator;
+    }
+
+    private List<SpacecraftState> states(final Orbit orbit, double start, double end, double step)
+    {
+        final List<SpacecraftState> states = new ArrayList<>();
+        Propagator propagator =new KeplerianPropagator(orbit);
+        propagator.getMultiplexer().add(step, states::add);
+        propagator.propagate(orbit.getDate().shiftedBy(start), orbit.getDate().shiftedBy(end));
+        return states;
     }
 
 }
