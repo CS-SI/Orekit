@@ -37,6 +37,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -77,7 +78,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         super(null);
         map = new TimeSpanMap<>(null);
         propagators.forEach(p -> map.addValidAfter(p, p.getMinDate(), false));
-        setAttitudeProvider(new AggregateAttitudeProvider());
+        setAttitudeProvider();
         this.min = map.getFirstNonNullSpan().getData().getMinDate();
         this.max = map.getLastNonNullSpan().getData().getMaxDate();
         super.resetInitialState(getInitialState());
@@ -99,10 +100,50 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         super(null);
         map = new TimeSpanMap<>(null);
         propagators.forEach((d, p) -> map.addValidAfter(p, p.getMinDate(), false));
-        setAttitudeProvider(new AggregateAttitudeProvider());
+        setAttitudeProvider();
         this.min = min;
         this.max = max;
         super.resetInitialState(getInitialState());
+    }
+
+    /** Set the attitude provider.
+     * <p>
+     * Note that in order to be consistent with {@link Ephemeris}, we allow
+     * here to have a {@code null} attitude provider, when <em>all</em> constituent
+     * propagators have {@code null} attitude providers.
+     * </p>
+     */
+    private void setAttitudeProvider() {
+
+        // inspect all constituent propagators
+        boolean nullFound    = false;
+        boolean nonNullFound = false;
+        for (Span<BoundedPropagator> span = map.getFirstSpan(); span != null; span = span.next()) {
+            if (span.getData() != null) {
+                final AttitudeProvider attitudeProvider = span.getData().getAttitudeProvider();
+                nullFound    |=  attitudeProvider == null;
+                nonNullFound |=  attitudeProvider != null;
+            }
+        }
+
+        // check consistency
+        if (nullFound ) {
+            if (nonNullFound) {
+                throw new OrekitException(OrekitMessages.BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS);
+            } else {
+                // all attitude providers are null, we set up a null attitude provider too
+                setAttitudeProvider(null);
+            }
+        } else {
+            if (nonNullFound) {
+                // all attitude providers are non-null, we set up an aggregate provider
+                setAttitudeProvider(new AggregateAttitudeProvider());
+            } else {
+                // nothing found!
+                throw new OrekitException(OrekitMessages.NOT_ENOUGH_PROPAGATORS);
+            }
+        }
+
     }
 
     /** Get the propagators map.
@@ -121,7 +162,8 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         // do propagation
         final SpacecraftState state = getPropagator(date).propagate(date);
 
-        if (getAttitudeProvider() instanceof AggregateAttitudeProvider) {
+        if (getAttitudeProvider() == null ||
+            getAttitudeProvider() instanceof AggregateAttitudeProvider) {
             // we did not override attitude provider
             // don't waste time recomputed the already known attitude
             return state;
