@@ -102,6 +102,11 @@ class PropagatorTest {
         }
 
         @Override
+        public SpacecraftState getBaseInitialState() {
+            return null;
+        }
+
+        @Override
         public SpacecraftState getInitialState() {
             return null;
         }
