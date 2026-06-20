@@ -613,6 +613,9 @@ public enum OrekitMessages implements Localizable {
     /** NOT_ENOUGH_PROPAGATORS. */
     NOT_ENOUGH_PROPAGATORS("Creating an aggregate propagator requires at least one constituent propagator, but none were provided."),
 
+    /** BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS. */
+    BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS("aggregate propagator requires either all null or all non-null attitude providers"),
+
     /** NOT_ENOUGH_ATTITUDE_PROVIDERS. */
     NOT_ENOUGH_ATTITUDE_PROVIDERS("Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided."),
 

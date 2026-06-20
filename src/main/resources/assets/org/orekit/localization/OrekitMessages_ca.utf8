@@ -577,6 +577,9 @@ INCONSISTENT_NUMBER_OF_ELEMENTS=número d''elements incoherents: esperats {0}, d
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS=Per crear un propagador combinat es necesita al menys un propagador, però no s''en ha especificat cap.
 
+# aggregate propagator requires either all null or all non-null attitude providers
+BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS=
+
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
 NOT_ENOUGH_ATTITUDE_PROVIDERS=La creació d''un proveïdor d''actitud agregat necessita al menys un proveïdor d''actitud, però no se n''ha previst cap.
 
