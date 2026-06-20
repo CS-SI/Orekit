@@ -311,7 +311,7 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
                 }
                 return currentBlock.addData(metadata.getAttitudeType().parse(metadata.isFirst(),
                                                                              metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                             metadata.getEulerRotSeq(),
+                                                                             metadata.getEulerRotSeq().orElse(null),
                                                                              metadata.isSpacecraftBodyRate(),
                                                                              context, SPLIT_AT_BLANKS.split(token.getRawContent().trim())));
             } catch (NumberFormatException nfe) {

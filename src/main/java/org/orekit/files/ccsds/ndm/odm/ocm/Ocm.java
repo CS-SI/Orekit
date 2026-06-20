@@ -104,10 +104,10 @@ public class Ocm extends NdmConstituent<OdmHeader, Segment<OcmMetadata, OcmData>
         final String name;
         if (getMetadata().getObjectName() != null) {
             name = getMetadata().getObjectName();
-        } else if (getMetadata().getInternationalDesignator() != null) {
-            name = getMetadata().getInternationalDesignator();
-        } else if (getMetadata().getObjectDesignator() != null) {
-            name = getMetadata().getObjectDesignator();
+        } else if (getMetadata().getInternationalDesignator().isPresent()) {
+            name = getMetadata().getInternationalDesignator().get();
+        } else if (getMetadata().getObjectDesignator().isPresent()) {
+            name = getMetadata().getObjectDesignator().get();
         } else {
             name = UNKNOWN_OBJECT;
         }

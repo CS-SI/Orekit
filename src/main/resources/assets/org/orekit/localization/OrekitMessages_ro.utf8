@@ -577,6 +577,9 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=senzorul cu indice {0} este deja utilizat
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=lipsește senzorul cu indice {0}
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=numărul de elemente este inconsistent: așteptat {0}, existent {1}
 

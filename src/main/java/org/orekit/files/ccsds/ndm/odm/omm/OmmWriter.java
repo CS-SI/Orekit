@@ -99,30 +99,30 @@ public class OmmWriter extends AbstractMessageWriter<OdmHeader, Segment<OmmMetad
                                         getTimeConverter(), segment.getMetadata().theoryIsSgpSdp()).
         write(generator);
 
-        if (segment.getData().getSpacecraftParametersBlock() != null) {
+        if (segment.getData().getSpacecraftParametersBlock().isPresent()) {
             // write optional spacecraft parameters block
             new SpacecraftParametersWriter(XmlSubStructureKey.spacecraftParameters.name(), null,
-                                           segment.getData().getSpacecraftParametersBlock()).
+                                           segment.getData().getSpacecraftParametersBlock().get()).
             write(generator);
         }
 
-        if (segment.getData().getTLEBlock() != null) {
+        if (segment.getData().getTLEBlock().isPresent()) {
             new OmmTleWriter(XmlSubStructureKey.tleParameters.name(), null,
-                             segment.getData().getTLEBlock()).
+                             segment.getData().getTLEBlock().get()).
             write(generator);
         }
 
-        if (segment.getData().getCovarianceBlock() != null) {
+        if (segment.getData().getCovarianceBlock().isPresent()) {
             // write optional spacecraft parameters block
             new CartesianCovarianceWriter(XmlSubStructureKey.covarianceMatrix.name(), null,
-                                          segment.getData().getCovarianceBlock()).
+                                          segment.getData().getCovarianceBlock().get()).
             write(generator);
         }
 
-        if (segment.getData().getUserDefinedBlock() != null) {
+        if (segment.getData().getUserDefinedBlock().isPresent()) {
             // write optional user defined parameters block
             new UserDefinedWriter(XmlSubStructureKey.userDefinedParameters.name(), null,
-                                  segment.getData().getUserDefinedBlock()).
+                                  segment.getData().getUserDefinedBlock().get()).
             write(generator);
         }
 

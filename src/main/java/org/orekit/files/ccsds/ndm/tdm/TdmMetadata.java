@@ -20,8 +20,10 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
@@ -41,15 +43,18 @@ import org.orekit.utils.Constants;
 public class TdmMetadata extends Metadata {
 
     /** Identifier for the tracking data. */
+    @Nullable
     private String trackId;
 
     /** List of data types in the data section. */
     private List<ObservationType> dataTypes;
 
     /** Start epoch of total time span covered by observations block. */
+    @Nullable
     private AbsoluteDate startTime;
 
     /** End epoch of total time span covered by observations block. */
+    @Nullable
     private AbsoluteDate stopTime;
 
     /** Map of participants in the tracking data session (minimum 1 and up to 5).<p>
@@ -59,6 +64,7 @@ public class TdmMetadata extends Metadata {
     private Map<Integer, String> participants;
 
     /** Tracking mode. */
+    @Nullable
     private TrackingMode mode;
 
     /** The path shall reflect the signal path by listing the index of each participant
@@ -66,86 +72,107 @@ public class TdmMetadata extends Metadata {
      *  The integers 1, 2, 3, 4, 5 used to specify the signal path correlate
      *  with the indices of the PARTICIPANT keywords.<p>
      *  The first entry in the PATH shall be the transmit participant.<p>
-     *  The non-indexed ‘PATH’ keyword shall be used if the MODE is ‘SEQUENTIAL’.<p>
-     *  The indexed ‘PATH_1’ and ‘PATH_2’ keywords shall be used where the MODE is ‘SINGLE_DIFF’.
+     *  The non-indexed 'PATH' keyword shall be used if the MODE is 'SEQUENTIAL'.<p>
+     *  The indexed 'PATH_1' and 'PATH_2' keywords shall be used where the MODE is 'SINGLE_DIFF'.
      */
+    @Nullable
     private int[] path;
 
     /** Path 1 (see above). */
+    @Nullable
     private int[] path1;
 
     /** Path 2 (see above). */
+    @Nullable
     private int[] path2;
 
     /** Map of external ephemeris names for participants (minimum 1 and up to 5). */
     private Map<Integer, String> ephemerisNames;
 
     /** Frequency band for transmitted frequencies. */
+    @Nullable
     private String transmitBand;
 
     /** Frequency band for received frequencies. */
+    @Nullable
     private String receiveBand;
 
     /** Turn-around ratio numerator.<p>
      *  Numerator of the turn-around ratio that is necessary to calculate the coherent downlink from the uplink frequency.
      */
-    private int turnaroundNumerator;
+    @Nullable
+    private Integer turnaroundNumerator;
 
     /** Turn-around ratio denominator .*/
-    private int turnaroundDenominator;
+    @Nullable
+    private Integer turnaroundDenominator;
 
     /** Timetag reference.<p>
      *  Provides a reference for time tags in the tracking data.<p>
      *  It indicates whether the timetag associated with the data is the transmit time or the receive time.
      */
+    @Nullable
     private TimetagReference timetagRef;
 
     /** Integration interval. <p>
      *  Provides the Doppler count time in seconds for Doppler data or for the creation
      *  of normal points.
      */
-    private double integrationInterval;
+    @Nullable
+    private Double integrationInterval;
 
     /** Integration reference.<p>
      *  Used in conjunction with timetag reference and integration interval.<p>
      *  Indicates whether the timetag represents the start, middle or end of the integration interval.
      */
+    @Nullable
     private IntegrationReference integrationRef;
 
     /** Frequency offset.<p>
      *  A frequency in Hz that must be added to every RECEIVE_FREQ to reconstruct it.
      */
-    private double freqOffset;
+    @Nullable
+    private Double freqOffset;
 
     /** Range mode. */
+    @Nullable
     private RangeMode rangeMode;
 
     /** Raw range modulus (in RangeUnits). */
-    private double rawRangeModulus;
+    @Nullable
+    private Double rawRangeModulus;
 
     /** Range units. */
+    @Nullable
     private RangeUnits rangeUnits;
 
     /** Angle type. */
+    @Nullable
     private AngleType angleType;
 
     /** Reference frame in which data are given: used in combination with ANGLE_TYPE=RADEC. */
+    @Nullable
     private FrameFacade referenceFrame;
 
     /** The interpolation method to be used. */
+    @Nullable
     private String interpolationMethod;
 
     /** The interpolation degree. */
-    private int interpolationDegree;
+    @Nullable
+    private Integer interpolationDegree;
 
     /** Bias that was added to Doppler count in the data section. */
-    private double doppplerCountBias;
+    @Nullable
+    private Double doppplerCountBias;
 
     /** Scaled by which Doppler count was multiplied in the data section. */
-    private double dopplerCountScale;
+    @Nullable
+    private Double dopplerCountScale;
 
     /** Indicator for occurred rollover in Doppler count. */
-    private boolean doppplerCountRollover;
+    @Nullable
+    private Boolean doppplerCountRollover;
 
     /** Transmit delays map.<p>
      *  Specifies a fixed interval of time, in seconds, for the signal to travel from the transmitting
@@ -160,62 +187,74 @@ public class TdmMetadata extends Metadata {
     private Map<Integer, Double> receiveDelays;
 
     /** Data quality. */
+    @Nullable
     private DataQuality dataQuality;
 
     /** Correction angle 1.<p>
      *  Angle correction that has been added or should be added to the ANGLE_1 data.
      */
-    private double correctionAngle1;
+    @Nullable
+    private Double correctionAngle1;
 
     /** Correction angle 2.<p>
      *  Angle correction that has been added or should be added to the ANGLE_2 data.
      */
-    private double correctionAngle2;
+    @Nullable
+    private Double correctionAngle2;
 
     /** Correction Doppler.<p>
      *  Doppler correction that has been added or should be added to the DOPPLER data.
      */
-    private double correctionDoppler;
+    @Nullable
+    private Double correctionDoppler;
 
     /** Correction magnitude.<p>
      *  Magnitude correction that has been added or should be added to the MAGNITUDE data.
      */
-    private double correctionMagnitude;
+    @Nullable
+    private Double correctionMagnitude;
 
     /** Raw correction Range in {@link #getRangeUnits()}.<p>
      *  Range correction that has been added or should be added to the RANGE data.
      */
-    private double rawCorrectionRange;
+    @Nullable
+    private Double rawCorrectionRange;
 
     /** Correction radar cross section.<p>
      *  Radar cross section correction that has been added or should be added to the RCS data.
      */
-    private double correctionRcs;
+    @Nullable
+    private Double correctionRcs;
 
     /** Correction receive.<p>
      *  Receive correction that has been added or should be added to the RECEIVE data.
      */
-    private double correctionReceive;
+    @Nullable
+    private Double correctionReceive;
 
     /** Correction transmit.<p>
      *  Transmit correction that has been added or should be added to the TRANSMIT data.
      */
-    private double correctionTransmit;
+    @Nullable
+    private Double correctionTransmit;
 
     /** Yearly aberration correction.<p>
      *  Yearly correction that has been added or should be added to the ANGLE data.
      */
-    private double correctionAberrationYearly;
+    @Nullable
+    private Double correctionAberrationYearly;
 
     /** Diurnal aberration correction.<p>
      *  Diurnl correction that has been added or should be added to the ANGLE data.
      */
-    private double correctionAberrationDiurnal;
+    @Nullable
+    private Double correctionAberrationDiurnal;
 
     /** Correction applied ? YES/NO<p>
      *  Indicate whethers or not the values associated with the CORRECTION_* keywords have been
      *  applied to the tracking data.
      */
+    @Nullable
     private CorrectionApplied correctionsApplied;
 
     /**
@@ -226,13 +265,11 @@ public class TdmMetadata extends Metadata {
      */
     public TdmMetadata(final CcsdsFrameMapper frameMapper) {
         super(null, frameMapper);
-        participants          = new TreeMap<>();
-        ephemerisNames        = new TreeMap<>();
-        doppplerCountBias     = Double.NaN;
-        dopplerCountScale     = 1;
-        doppplerCountRollover = false;
-        transmitDelays        = new TreeMap<>();
-        receiveDelays         = new TreeMap<>();
+        dataTypes      = new ArrayList<>();
+        participants   = new TreeMap<>();
+        ephemerisNames = new TreeMap<>();
+        transmitDelays = new TreeMap<>();
+        receiveDelays  = new TreeMap<>();
     }
 
     /** {@inheritDoc} */
@@ -247,8 +284,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the tracking data identifier.
      * @return tracking data identifier
      */
-    public String getTrackId() {
-        return trackId;
+    public Optional<String> getTrackId() {
+        return Optional.ofNullable(trackId);
     }
 
     /** Setter for the tracking data identifier.
@@ -278,8 +315,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the startTime.
      * @return the startTime
      */
-    public AbsoluteDate getStartTime() {
-        return startTime;
+    public Optional<AbsoluteDate> getStartTime() {
+        return Optional.ofNullable(startTime);
     }
 
     /** Setter for the startTime.
@@ -293,8 +330,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the stopTime.
      * @return the stopTime
      */
-    public AbsoluteDate getStopTime() {
-        return stopTime;
+    public Optional<AbsoluteDate> getStopTime() {
+        return Optional.ofNullable(stopTime);
     }
 
     /** Setter for the stopTime.
@@ -333,8 +370,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the mode.
      * @return the mode
      */
-    public TrackingMode getMode() {
-        return mode;
+    public Optional<TrackingMode> getMode() {
+        return Optional.ofNullable(mode);
     }
 
     /** Setter for the mode.
@@ -348,8 +385,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the path.
      * @return the path
      */
-    public int[] getPath() {
-        return safeCopy(path);
+    public Optional<int[]> getPath() {
+        return Optional.ofNullable(path).map(int[]::clone);
     }
 
     /** Setter for the path.
@@ -357,14 +394,14 @@ public class TdmMetadata extends Metadata {
      */
     public void setPath(final int[] path) {
         refuseFurtherComments();
-        this.path = safeCopy(path);
+        this.path = path == null ? null : path.clone();
     }
 
     /** Getter for the path1.
      * @return the path1
      */
-    public int[] getPath1() {
-        return safeCopy(path1);
+    public Optional<int[]> getPath1() {
+        return Optional.ofNullable(path1).map(int[]::clone);
     }
 
     /** Setter for the path1.
@@ -372,14 +409,14 @@ public class TdmMetadata extends Metadata {
      */
     public void setPath1(final int[] path1) {
         refuseFurtherComments();
-        this.path1 = safeCopy(path1);
+        this.path1 = path1 == null ? null : path1.clone();
     }
 
     /** Getter for the path2.
      * @return the path2
      */
-    public int[] getPath2() {
-        return safeCopy(path2);
+    public Optional<int[]> getPath2() {
+        return Optional.ofNullable(path2).map(int[]::clone);
     }
 
     /** Setter for the path2.
@@ -387,7 +424,7 @@ public class TdmMetadata extends Metadata {
      */
     public void setPath2(final int[] path2) {
         refuseFurtherComments();
-        this.path2 = safeCopy(path2);
+        this.path2 = path2 == null ? null : path2.clone();
     }
 
     /** Getter for external ephemeris names for participants.
@@ -418,8 +455,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the transmitBand.
      * @return the transmitBand
      */
-    public String getTransmitBand() {
-        return transmitBand;
+    public Optional<String> getTransmitBand() {
+        return Optional.ofNullable(transmitBand);
     }
 
     /** Setter for the transmitBand.
@@ -427,14 +464,14 @@ public class TdmMetadata extends Metadata {
      */
     public void setTransmitBand(final String transmitBand) {
         refuseFurtherComments();
-        this.transmitBand = transmitBand;
+        this.transmitBand =  transmitBand;
     }
 
     /** Getter for the receiveBand.
      * @return the receiveBand
      */
-    public String getReceiveBand() {
-        return receiveBand;
+    public Optional<String> getReceiveBand() {
+        return Optional.ofNullable(receiveBand);
     }
 
     /** Setter for the receiveBand.
@@ -448,8 +485,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the turnaroundNumerator.
      * @return the turnaroundNumerator
      */
-    public int getTurnaroundNumerator() {
-        return turnaroundNumerator;
+    public Optional<Integer> getTurnaroundNumerator() {
+        return Optional.ofNullable(turnaroundNumerator);
     }
 
     /** Setter for the turnaroundNumerator.
@@ -463,8 +500,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the turnaroundDenominator.
      * @return the turnaroundDenominator
      */
-    public int getTurnaroundDenominator() {
-        return turnaroundDenominator;
+    public Optional<Integer> getTurnaroundDenominator() {
+        return Optional.ofNullable(turnaroundDenominator);
     }
 
     /** Setter for the turnaroundDenominator.
@@ -478,8 +515,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the timetagRef.
      * @return the timetagRef
      */
-    public TimetagReference getTimetagRef() {
-        return timetagRef;
+    public Optional<TimetagReference> getTimetagRef() {
+        return Optional.ofNullable(timetagRef);
     }
 
     /** Setter for the timetagRef.
@@ -493,8 +530,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the integrationInterval.
      * @return the integrationInterval
      */
-    public double getIntegrationInterval() {
-        return integrationInterval;
+    public Optional<Double> getIntegrationInterval() {
+        return Optional.ofNullable(integrationInterval);
     }
 
     /** Setter for the integrationInterval.
@@ -508,8 +545,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the integrationRef.
      * @return the integrationRef
      */
-    public IntegrationReference getIntegrationRef() {
-        return integrationRef;
+    public Optional<IntegrationReference> getIntegrationRef() {
+        return Optional.ofNullable(integrationRef);
     }
 
     /** Setter for the integrationRef.
@@ -523,8 +560,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the freqOffset.
      * @return the freqOffset
      */
-    public double getFreqOffset() {
-        return freqOffset;
+    public Optional<Double> getFreqOffset() {
+        return Optional.ofNullable(freqOffset);
     }
 
     /** Setter for the freqOffset.
@@ -538,8 +575,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the rangeMode.
      * @return the rangeMode
      */
-    public RangeMode getRangeMode() {
-        return rangeMode;
+    public Optional<RangeMode> getRangeMode() {
+        return Optional.ofNullable(rangeMode);
     }
 
     /** Setter for the rangeMode.
@@ -555,21 +592,21 @@ public class TdmMetadata extends Metadata {
      * are set to {@link RangeUnits#RU}
      * @return the range modulus in meters
      */
-    public double getRangeModulus(final RangeUnitsConverter converter) {
+    public Optional<Double> getRangeModulus(final RangeUnitsConverter converter) {
         if (rangeUnits == RangeUnits.km) {
-            return rawRangeModulus * 1000;
+            return Optional.ofNullable(rawRangeModulus * 1000);
         } else if (rangeUnits == RangeUnits.s) {
-            return rawRangeModulus * Constants.SPEED_OF_LIGHT;
+            return Optional.ofNullable(rawRangeModulus * Constants.SPEED_OF_LIGHT);
         } else {
-            return converter.ruToMeters(this, startTime, rawRangeModulus);
+            return Optional.ofNullable(converter.ruToMeters(this, startTime, rawRangeModulus));
         }
     }
 
     /** Getter for the raw range modulus.
      * @return the raw range modulus in range units
      */
-    public double getRawRangeModulus() {
-        return rawRangeModulus;
+    public Optional<Double> getRawRangeModulus() {
+        return Optional.ofNullable(rawRangeModulus);
     }
 
     /** Setter for the raw range modulus.
@@ -583,8 +620,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the rangeUnits.
      * @return the rangeUnits
      */
-    public RangeUnits getRangeUnits() {
-        return rangeUnits;
+    public Optional<RangeUnits> getRangeUnits() {
+        return Optional.ofNullable(rangeUnits);
     }
 
     /** Setter for the rangeUnits.
@@ -598,8 +635,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for angleType.
      * @return the angleType
      */
-    public AngleType getAngleType() {
-        return angleType;
+    public Optional<AngleType> getAngleType() {
+        return Optional.ofNullable(angleType);
     }
 
     /** Setter for the angleType.
@@ -614,8 +651,8 @@ public class TdmMetadata extends Metadata {
      * @return The reference frame specified by the {@code REFERENCE_FRAME} keyword.
      * @see #getRadecFrame()
      */
-    public FrameFacade getReferenceFrame() {
-        return referenceFrame;
+    public Optional<FrameFacade> getReferenceFrame() {
+        return  Optional.ofNullable(referenceFrame);
     }
 
     /** Set the reference frame in which data are given: used for RADEC tracking data.
@@ -640,9 +677,11 @@ public class TdmMetadata extends Metadata {
      * @see #getReferenceFrame()
      * @since 13.1.5
      */
-    public Frame getRadecFrame() {
+    public Optional<Frame> getRadecFrame() {
         // TDM doesn't allow specifying an epoch
-        return getFrameMapper().buildCcsdsFrame(getReferenceFrame(), null);
+        return getReferenceFrame().isEmpty() ?
+               Optional.empty() :
+               Optional.ofNullable(getFrameMapper().buildCcsdsFrame(getReferenceFrame().get(), null));
     }
 
     /**
@@ -650,8 +689,8 @@ public class TdmMetadata extends Metadata {
      *
      * @return the interpolation method
      */
-    public String getInterpolationMethod() {
-        return interpolationMethod;
+    public Optional<String> getInterpolationMethod() {
+        return Optional.ofNullable(interpolationMethod);
     }
 
     /**
@@ -667,8 +706,8 @@ public class TdmMetadata extends Metadata {
      * Get the interpolation degree.
      * @return the interpolation degree
      */
-    public int getInterpolationDegree() {
-        return interpolationDegree;
+    public Optional<Integer> getInterpolationDegree() {
+        return Optional.ofNullable(interpolationDegree);
     }
 
     /**
@@ -684,8 +723,8 @@ public class TdmMetadata extends Metadata {
      * Get the Doppler count bias.
      * @return the Doppler count bias in Hz
      */
-    public double getDopplerCountBias() {
-        return doppplerCountBias;
+    public Optional<Double> getDopplerCountBias() {
+        return Optional.ofNullable(doppplerCountBias);
     }
 
     /**
@@ -701,8 +740,8 @@ public class TdmMetadata extends Metadata {
      * Get the Doppler count scale.
      * @return the Doppler count scale
      */
-    public double getDopplerCountScale() {
-        return dopplerCountScale;
+    public Optional<Double> getDopplerCountScale() {
+        return Optional.ofNullable(dopplerCountScale);
     }
 
     /**
@@ -716,10 +755,10 @@ public class TdmMetadata extends Metadata {
 
     /**
      * Check if there is a Doppler count rollover.
-     * @return true if there is a Doppler count rollover
+     * @return an optional that is true if there is a Doppler count rollover
      */
-    public boolean hasDopplerCountRollover() {
-        return doppplerCountRollover;
+    public Optional<Boolean> hasDopplerCountRollover() {
+        return Optional.ofNullable(doppplerCountRollover);
     }
 
     /**
@@ -783,8 +822,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the dataQuality.
      * @return the dataQuality
      */
-    public DataQuality getDataQuality() {
-        return dataQuality;
+    public Optional<DataQuality> getDataQuality() {
+        return Optional.ofNullable(dataQuality);
     }
 
     /** Setter for the dataQuality.
@@ -798,8 +837,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the correctionAngle1.
      * @return the correctionAngle1 (in radians)
      */
-    public double getCorrectionAngle1() {
-        return correctionAngle1;
+    public Optional<Double> getCorrectionAngle1() {
+        return Optional.ofNullable(correctionAngle1);
     }
 
     /** Setter for the correctionAngle1.
@@ -813,8 +852,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the correctionAngle2.
      * @return the correctionAngle2 (in radians)
      */
-    public double getCorrectionAngle2() {
-        return correctionAngle2;
+    public Optional<Double> getCorrectionAngle2() {
+        return Optional.ofNullable(correctionAngle2);
     }
 
     /** Setter for the correctionAngle2.
@@ -828,8 +867,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the correctionDoppler.
      * @return the correctionDoppler (in m/s)
      */
-    public double getCorrectionDoppler() {
-        return correctionDoppler;
+    public Optional<Double> getCorrectionDoppler() {
+        return Optional.ofNullable(correctionDoppler);
     }
 
     /** Setter for the correctionDoppler.
@@ -843,8 +882,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the magnitude correction.
      * @return the magnitude correction
      */
-    public double getCorrectionMagnitude() {
-        return correctionMagnitude;
+    public Optional<Double> getCorrectionMagnitude() {
+        return Optional.ofNullable(correctionMagnitude);
     }
 
     /** Setter for the magnitude correction.
@@ -860,21 +899,21 @@ public class TdmMetadata extends Metadata {
      * are set to {@link RangeUnits#RU}
      * @return the raw correction for range in meters
      */
-    public double getCorrectionRange(final RangeUnitsConverter converter) {
+    public Optional<Double> getCorrectionRange(final RangeUnitsConverter converter) {
         if (rangeUnits == RangeUnits.km) {
-            return rawCorrectionRange * 1000;
+            return Optional.ofNullable(rawCorrectionRange * 1000);
         } else if (rangeUnits == RangeUnits.s) {
-            return rawCorrectionRange * Constants.SPEED_OF_LIGHT;
+            return Optional.ofNullable(rawCorrectionRange * Constants.SPEED_OF_LIGHT);
         } else {
-            return converter.ruToMeters(this, startTime, rawCorrectionRange);
+            return Optional.ofNullable(converter.ruToMeters(this, startTime, rawCorrectionRange));
         }
     }
 
     /** Getter for the raw correction for range.
      * @return the raw correction for range (in {@link #getRangeUnits()})
      */
-    public double getRawCorrectionRange() {
-        return rawCorrectionRange;
+    public Optional<Double> getRawCorrectionRange() {
+        return Optional.ofNullable(rawCorrectionRange);
     }
 
     /** Setter for the raw correction for range.
@@ -888,8 +927,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the radar cross section correction.
      * @return the radar cross section correction in m²
      */
-    public double getCorrectionRcs() {
-        return correctionRcs;
+    public Optional<Double> getCorrectionRcs() {
+        return Optional.ofNullable(correctionRcs);
     }
 
     /** Setter for the radar cross section correction.
@@ -903,8 +942,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the yearly aberration correction.
      * @return the yearly aberration correction in radians
      */
-    public double getCorrectionAberrationYearly() {
-        return correctionAberrationYearly;
+    public Optional<Double> getCorrectionAberrationYearly() {
+        return Optional.ofNullable(correctionAberrationYearly);
     }
 
     /** Setter for the yearly aberration correction.
@@ -918,8 +957,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the diurnal aberration correction.
      * @return the diurnal aberration correction in radians
      */
-    public double getCorrectionAberrationDiurnal() {
-        return correctionAberrationDiurnal;
+    public Optional<Double> getCorrectionAberrationDiurnal() {
+        return Optional.ofNullable(correctionAberrationDiurnal);
     }
 
     /** Setter for the diurnal aberration correction.
@@ -933,8 +972,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the correctionReceive.
      * @return the correctionReceive (in TDM units, without conversion)
      */
-    public double getCorrectionReceive() {
-        return correctionReceive;
+    public Optional<Double> getCorrectionReceive() {
+        return Optional.ofNullable(correctionReceive);
     }
 
     /** Setter for the correctionReceive.
@@ -948,8 +987,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the correctionTransmit.
      * @return the correctionTransmit (in TDM units, without conversion)
      */
-    public double getCorrectionTransmit() {
-        return correctionTransmit;
+    public Optional<Double> getCorrectionTransmit() {
+        return Optional.ofNullable(correctionTransmit);
     }
 
     /** Setter for the correctionTransmit.
@@ -963,8 +1002,8 @@ public class TdmMetadata extends Metadata {
     /** Getter for the correctionApplied.
      * @return the correctionApplied (in TDM units, without conversion)
      */
-    public CorrectionApplied getCorrectionsApplied() {
-        return correctionsApplied;
+    public Optional<CorrectionApplied> getCorrectionsApplied() {
+        return Optional.ofNullable(correctionsApplied);
     }
 
     /** Setter for the correctionApplied.
@@ -974,13 +1013,4 @@ public class TdmMetadata extends Metadata {
         refuseFurtherComments();
         this.correctionsApplied = correctionsApplied;
     }
-
-    /** Safe copy of an integer array.
-     * @param original original array
-     * @return copy of the array
-     */
-    private int[] safeCopy(final int[] original) {
-        return original == null ? null : original.clone();
-    }
-
 }

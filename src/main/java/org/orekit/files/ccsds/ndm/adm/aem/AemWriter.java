@@ -21,7 +21,9 @@ import java.util.Date;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
@@ -321,8 +323,8 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         // objects
         generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(),     metadata.getObjectName(), null, true);
         generator.writeEntry(AdmCommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   null, true);
-        if (metadata.getCenter() != null) {
-            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, false);
+        if (metadata.getCenter().isPresent()) {
+            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().get().getName(), null, false);
         }
 
         // frames
@@ -335,12 +337,8 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
         generator.writeEntry(AemMetadataKey.START_TIME.name(), getTimeConverter(), metadata.getStartTime(), false, true);
-        if (metadata.getUseableStartTime() != null) {
-            generator.writeEntry(AemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false, false);
-        }
-        if (metadata.getUseableStopTime() != null) {
-            generator.writeEntry(AemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false, false);
-        }
+        generator.writeOptionalDateEntry(AemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false, false);
+        generator.writeOptionalDateEntry(AemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false, false);
         generator.writeEntry(AemMetadataKey.STOP_TIME.name(), getTimeConverter(), metadata.getStopTime(), false, true);
 
         // types
@@ -360,11 +358,18 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
             attitudeType == AttitudeType.EULER_ANGLE_ANGVEL) {
             if (formatVersion < 2.0) {
                 generator.writeEntry(AemMetadataKey.EULER_ROT_SEQ.name(),
-                                     metadata.getEulerRotSeq().name().replace('X', '1').replace('Y', '2').replace('Z', '3'),
+                                     metadata.getEulerRotSeq()
+                                             .orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE))
+                                             .name()
+                                             .replace('X', '1')
+                                             .replace('Y', '2')
+                                             .replace('Z', '3'),
                                      null, false);
             } else {
                 generator.writeEntry(AemMetadataKey.EULER_ROT_SEQ.name(),
-                                     metadata.getEulerRotSeq().name(),
+                                     metadata.getEulerRotSeq()
+                                             .orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE))
+                                             .name(),
                                      null, false);
             }
         }
@@ -378,13 +383,15 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
             attitudeType == AttitudeType.EULER_ANGLE_ANGVEL) {
             generator.writeEntry(AemMetadataKey.ANGVEL_FRAME.name(),
-                                 metadata.getFrameAngvelFrame().getName(),
+                                 metadata.getFrameAngvelFrame()
+                                         .orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE))
+                                         .getName(),
                                  null, true);
         }
 
         // interpolation
-        if (metadata.getInterpolationMethod() != null) {
-            generator.writeEntry(AemMetadataKey.INTERPOLATION_METHOD.name(),
+        if (metadata.getInterpolationMethod().isPresent()) {
+            generator.writeOptionalStringEntry(AemMetadataKey.INTERPOLATION_METHOD.name(),
                                  metadata.getInterpolationMethod(),
                                  null, true);
             generator.writeEntry(AemMetadataKey.INTERPOLATION_DEGREE.name(),
@@ -413,7 +420,7 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         // Attitude data in CCSDS units
         final String[] data = metadata.getAttitudeType().createDataFields(metadata.isFirst(),
                                                                           metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                          metadata.getEulerRotSeq(),
+                                                                          metadata.getEulerRotSeq().orElse(null),
                                                                           metadata.isSpacecraftBodyRate(),
                                                                           attitude,
                                                                           generator.getFormatter());
@@ -443,19 +450,25 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
                     writeQuaternionDerivative(xmlGenerator, formatVersion, metadata.isFirst(), attitude.getDate(), data);
                     break;
                 case QUATERNION_EULER_RATES :
-                    writeQuaternionEulerRates(xmlGenerator, metadata.isFirst(), metadata.getEulerRotSeq(), attitude.getDate(), data);
+                    writeQuaternionEulerRates(xmlGenerator, metadata.isFirst(),
+                                              metadata.getEulerRotSeq().orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE)),
+                                              attitude.getDate(), data);
                     break;
                 case QUATERNION_ANGVEL :
                     writeQuaternionAngularVelocity(xmlGenerator, attitude.getDate(), data);
                     break;
                 case EULER_ANGLE :
-                    writeEulerAngle(xmlGenerator, formatVersion, metadata.getEulerRotSeq(), attitude.getDate(), data);
+                    writeEulerAngle(xmlGenerator, formatVersion,
+                                    metadata.getEulerRotSeq().orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE)),
+                                    attitude.getDate(), data);
                     break;
                 case EULER_ANGLE_DERIVATIVE :
-                    writeEulerAngleDerivative(xmlGenerator, formatVersion, metadata.getEulerRotSeq(), attitude.getDate(), data);
+                    writeEulerAngleDerivative(xmlGenerator, formatVersion,
+                                              metadata.getEulerRotSeq().orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE)),
+                                              attitude.getDate(), data);
                     break;
                 case EULER_ANGLE_ANGVEL :
-                    writeEulerAngleAngularVelocity(xmlGenerator, formatVersion, metadata.getEulerRotSeq(), attitude.getDate(), data);
+                    writeEulerAngleAngularVelocity(xmlGenerator, attitude.getDate(), data);
                     break;
                 case SPIN :
                     writeSpin(xmlGenerator, attitude.getDate(), data);
@@ -728,14 +741,11 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
 
     /** Write a Euler angles/angular velocity entry in XML.
      * @param xmlGenerator generator to use for producing output
-     * @param formatVersion format version to use
-     * @param order Euler rotation order
      * @param epoch of the entry
      * @param data entry data
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeEulerAngleAngularVelocity(final XmlGenerator xmlGenerator, final double formatVersion, final RotationOrder order,
-                                        final AbsoluteDate epoch, final String[] data)
+    void writeEulerAngleAngularVelocity(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
         throws IOException {
 
         // wrapping element

@@ -63,30 +63,30 @@ class AcmMetadataWriter extends AbstractWriter {
                              metadata.getObjectName(), null, false);
         generator.writeEntry(AcmMetadataKey.INTERNATIONAL_DESIGNATOR.name(),
                              metadata.getInternationalDesignator(), null, false);
-        generator.writeEntry(AcmMetadataKey.CATALOG_NAME.name(),
+        generator.writeOptionalStringEntry(AcmMetadataKey.CATALOG_NAME.name(),
                              metadata.getCatalogName(), null, false);
-        generator.writeEntry(AcmMetadataKey.OBJECT_DESIGNATOR.name(),
+        generator.writeOptionalStringEntry(AcmMetadataKey.OBJECT_DESIGNATOR.name(),
                              metadata.getObjectDesignator(), null, false);
 
         // originator
-        generator.writeEntry(AcmMetadataKey.ORIGINATOR_POC.name(),
+        generator.writeOptionalStringEntry(AcmMetadataKey.ORIGINATOR_POC.name(),
                              metadata.getOriginatorPOC(), null, false);
-        generator.writeEntry(AcmMetadataKey.ORIGINATOR_POSITION.name(),
+        generator.writeOptionalStringEntry(AcmMetadataKey.ORIGINATOR_POSITION.name(),
                              metadata.getOriginatorPosition(), null, false);
-        generator.writeEntry(AcmMetadataKey.ORIGINATOR_PHONE.name(),
+        generator.writeOptionalStringEntry(AcmMetadataKey.ORIGINATOR_PHONE.name(),
                              metadata.getOriginatorPhone(), null, false);
-        generator.writeEntry(AcmMetadataKey.ORIGINATOR_EMAIL.name(),
+        generator.writeOptionalStringEntry(AcmMetadataKey.ORIGINATOR_EMAIL.name(),
                              metadata.getOriginatorEmail(), null, false);
-        generator.writeEntry(AcmMetadataKey.ORIGINATOR_ADDRESS.name(),
+        generator.writeOptionalStringEntry(AcmMetadataKey.ORIGINATOR_ADDRESS.name(),
                              metadata.getOriginatorAddress(), null, false);
 
         // messages
-        generator.writeEntry(AcmMetadataKey.ODM_MSG_LINK.name(),
+        generator.writeOptionalStringEntry(AcmMetadataKey.ODM_MSG_LINK.name(),
                              metadata.getOdmMessageLink(), null, false);
 
         // time
-        if (metadata.getCenter() != null) {
-            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, false);
+        if (metadata.getCenter().isPresent()) {
+            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().get().getName(), null, false);
         }
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),
                              metadata.getTimeSystem(), false);
@@ -100,15 +100,14 @@ class AcmMetadataWriter extends AbstractWriter {
         }
 
         // other times
-        generator.writeEntry(AcmMetadataKey.START_TIME.name(), timeConverter,
+        generator.writeOptionalDateEntry(AcmMetadataKey.START_TIME.name(), timeConverter,
                              metadata.getStartTime(), false, false);
-        generator.writeEntry(AcmMetadataKey.STOP_TIME.name(), timeConverter,
+        generator.writeOptionalDateEntry(AcmMetadataKey.STOP_TIME.name(), timeConverter,
                              metadata.getStopTime(), false, false);
-        generator.writeEntry(AcmMetadataKey.TAIMUTC_AT_TZERO.name(), metadata.getTaimutcT0(), Unit.SECOND, false);
-        if (metadata.getNextLeapEpoch() != null) {
-            generator.writeEntry(AcmMetadataKey.NEXT_LEAP_EPOCH.name(), timeConverter,
-                                 metadata.getNextLeapEpoch(), true, true);
-            generator.writeEntry(AcmMetadataKey.NEXT_LEAP_TAIMUTC.name(), metadata.getNextLeapTaimutc(), Unit.SECOND, true);
+        generator.writeOptionalDoubleEntry(AcmMetadataKey.TAIMUTC_AT_TZERO.name(), metadata.getTaimutcT0(), Unit.SECOND, false);
+        if (metadata.getNextLeapEpoch().isPresent()) {
+            generator.writeEntry(AcmMetadataKey.NEXT_LEAP_EPOCH.name(), timeConverter,  metadata.getNextLeapEpoch().get(), true, true);
+            generator.writeOptionalDoubleEntry(AcmMetadataKey.NEXT_LEAP_TAIMUTC.name(), metadata.getNextLeapTaimutc(), Unit.SECOND, true);
         }
 
     }

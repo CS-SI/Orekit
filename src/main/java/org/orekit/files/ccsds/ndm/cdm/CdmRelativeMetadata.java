@@ -18,8 +18,10 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.PocMethodFacade;
@@ -45,133 +47,143 @@ public class CdmRelativeMetadata {
     private double missDistance;
 
     /** Norm of relative velocity vector at TCA. */
-    private double relativeSpeed;
+    @Nullable
+    private Double relativeSpeed;
 
     /** The length of the relative position vector, normalized to one-sigma dispersions of the combined error covariance
      * in the direction of the relative position vector. */
-    private double mahalanobisDistance;
+    @Nullable
+    private Double mahalanobisDistance;
 
-    /** The R component of Object2’s position relative to Object1’s position in the Radial/Transverse/Normal coordinate frame. */
-    private double relativePositionR;
+    /** The R component of Object2's position relative to Object1's position in the Radial/Transverse/Normal coordinate frame. */
+    @Nullable
+    private Double relativePositionR;
 
-    /** The T component of Object2’s position relative to Object1’s position in the Radial/Transverse/Normal coordinate frame. */
-    private double relativePositionT;
+    /** The T component of Object2's position relative to Object1's position in the Radial/Transverse/Normal coordinate frame. */
+    @Nullable
+    private Double relativePositionT;
 
-    /** The N component of Object2’s position relative to Object1’s position in the Radial/Transverse/Normal coordinate frame. */
-    private double relativePositionN;
+    /** The N component of Object2's position relative to Object1's position in the Radial/Transverse/Normal coordinate frame. */
+    @Nullable
+    private Double relativePositionN;
 
-    /** The R component of Object2’s velocity relative to Object1’s veloity in the Radial/Transverse/Normal coordinate frame. */
-    private double relativeVelocityR;
+    /** The R component of Object2's velocity relative to Object1's veloity in the Radial/Transverse/Normal coordinate frame. */
+    @Nullable
+    private Double relativeVelocityR;
 
-    /** The T component of Object2’s velocity relative to Object1’s veloity in the Radial/Transverse/Normal coordinate frame. */
-    private double relativeVelocityT;
+    /** The T component of Object2's velocity relative to Object1's veloity in the Radial/Transverse/Normal coordinate frame. */
+    @Nullable
+    private Double relativeVelocityT;
 
-    /** The N component of Object2’s velocity relative to Object1’s veloity in the Radial/Transverse/Normal coordinate frame. */
-    private double relativeVelocityN;
+    /** The N component of Object2's velocity relative to Object1's veloity in the Radial/Transverse/Normal coordinate frame. */
+    @Nullable
+    private Double relativeVelocityN;
 
     /** The start time in UTC of the screening period for the conjunction assessment. */
+    @Nullable
     private AbsoluteDate startScreenPeriod;
 
     /** The stop time in UTC of the screening period for the conjunction assessment. */
+    @Nullable
     private AbsoluteDate stopScreenPeriod;
 
     /** Shape of the screening volume. */
+    @Nullable
     private ScreenVolumeShape screenVolumeShape;
 
-    /** Shape of the screening volume. */
-    private double screenVolumeRadius;
+    /** Radius of the screening volume. */
+    @Nullable
+    private Double screenVolumeRadius;
 
     /** Name of the Object1 centered reference frame in which the screening volume data are given. */
+    @Nullable
     private ScreenVolumeFrame screenVolumeFrame;
 
     /** The R or T (depending on if RTN or TVN is selected) component size of the screening volume in the SCREEN_VOLUME_FRAME. */
-    private double screenVolumeX;
+    @Nullable
+    private Double screenVolumeX;
 
     /** The T or V (depending on if RTN or TVN is selected) component size of the screening volume in the SCREEN_VOLUME_FRAME. */
-    private double screenVolumeY;
+    @Nullable
+    private Double screenVolumeY;
 
     /** The N component size of the screening volume in the SCREEN_VOLUME_FRAME. */
-    private double screenVolumeZ;
+    @Nullable
+    private Double screenVolumeZ;
 
     /** The time in UTC when Object2 enters the screening volume. */
+    @Nullable
     private AbsoluteDate screenEntryTime;
 
     /** The time in UTC when Object2 exits the screening volume. */
+    @Nullable
     private AbsoluteDate screenExitTime;
 
-    /** The probability (denoted ‘p’ where 0.0<=p<=1.0), that Object1 and Object2 will collide. */
-    private double collisionProbability;
+    /** The probability (denoted 'p' where 0.0<=p<=1.0), that Object1 and Object2 will collide. */
+    @Nullable
+    private Double collisionProbability;
 
     /** The method that was used to calculate the collision probability. */
+    @Nullable
     private PocMethodFacade collisionProbabilityMethod;
 
-    /** the Originator’s ID that uniquely identifies the conjunction to which the message refers. */
+    /** the Originator's ID that uniquely identifies the conjunction to which the message refers. */
+    @Nullable
     private String conjunctionId;
 
     /** The approach angle computed between Objects 1 and 2 in the RTN coordinate frame relative to object 1. */
-    private double approachAngle;
+    @Nullable
+    private Double approachAngle;
 
     /** The type of screening to be used. */
+    @Nullable
     private ScreenType screenType;
 
     /** The maximum collision probability that Object1 and Object2 will collide. */
-    private double maxCollisionProbability;
+    @Nullable
+    private Double maxCollisionProbability;
 
     /** The method that was used to calculate the maximum collision probability. */
+    @Nullable
     private PocMethodFacade maxCollisionProbabilityMethod;
 
-   /**  The space environment fragmentation impact (SEFI) adjusted estimate of collision probability that Object1 and Object2 will collide. */
-    private double sefiCollisionProbability;
+    /**  The space environment fragmentation impact (SEFI) adjusted estimate of collision probability that Object1 and Object2 will collide. */
+    @Nullable
+    private Double sefiCollisionProbability;
 
     /** The method that was used to calculate the space environment fragmentation impact collision probability. */
+    @Nullable
     private PocMethodFacade sefiCollisionProbabilityMethod;
 
     /** The Space environment fragmentation model used. */
+    @Nullable
     private String sefiFragmentationModel;
 
     /** The collision probability screening threshold used to identify this conjunction. */
-    private double screenPcThreshold;
+    @Nullable
+    private Double screenPcThreshold;
 
     /** An array of 1 to n elements indicating the percentile(s) for which estimates of the collision probability are provided in the
      * COLLISION_PROBABILITY variable. */
+    @Nullable
     private int[] collisionPercentile;
 
     /** ID of previous CDM issued for event identified by CONJUNCTION_ID. */
+    @Nullable
     private String previousMessageId;
 
     /** UTC epoch of the previous CDM issued for the event identified by CONJUNCTION_ID. */
+    @Nullable
     private AbsoluteDate previousMessageEpoch;
 
     /** Scheduled UTC epoch of the next CDM associated with the event identified by CONJUNCTION_ID. */
+    @Nullable
     private AbsoluteDate nextMessageEpoch;
 
     /** Simple constructor.
      */
     public CdmRelativeMetadata() {
         this.comment = new ArrayList<>();
-
-        this.relativeSpeed        = Double.NaN;
-        this.relativePositionR    = Double.NaN;
-        this.relativePositionT    = Double.NaN;
-        this.relativePositionN    = Double.NaN;
-
-        this.relativeVelocityR    = Double.NaN;
-        this.relativeVelocityT    = Double.NaN;
-        this.relativeVelocityN    = Double.NaN;
-
-        this.approachAngle        = Double.NaN;
-        this.screenVolumeRadius   = Double.NaN;
-        this.screenPcThreshold    = Double.NaN;
-        this.mahalanobisDistance  = Double.NaN;
-
-
-        this.screenVolumeX        = Double.NaN;
-        this.screenVolumeY        = Double.NaN;
-        this.screenVolumeZ        = Double.NaN;
-        this.collisionProbability = Double.NaN;
-        this.maxCollisionProbability  = Double.NaN;
-        this.sefiCollisionProbability = Double.NaN;
-
     }
 
     /** Check is all mandatory entries have been initialized.
@@ -183,15 +195,15 @@ public class CdmRelativeMetadata {
     }
 
     /**
-     * Get the Originator’s ID that uniquely identifies the conjunction to which the message refers.
+     * Get the Originator's ID that uniquely identifies the conjunction to which the message refers.
      * @return the conjunction id
      */
-    public String getConjunctionId() {
-        return conjunctionId;
+    public Optional<String> getConjunctionId() {
+        return Optional.ofNullable(conjunctionId);
     }
 
     /**
-     * Set the Originator’s ID that uniquely identifies the conjunction to which the message refers.
+     * Set the Originator's ID that uniquely identifies the conjunction to which the message refers.
      * @param conjunctionId the conjunction id to be set
      */
     public void setConjunctionId(final String conjunctionId) {
@@ -234,8 +246,8 @@ public class CdmRelativeMetadata {
      * Get the norm of relative velocity vector at TCA.
      * @return the relative speed at TCA (in m/s)
      */
-    public double getRelativeSpeed() {
-        return relativeSpeed;
+    public Optional<Double> getRelativeSpeed() {
+        return Optional.ofNullable(relativeSpeed);
     }
 
     /**
@@ -251,8 +263,11 @@ public class CdmRelativeMetadata {
      * getY for T component, getZ for N component.
      * @return the relative speed vector at TCA (in m/s)
      */
-    public Vector3D getRelativeVelocity() {
-        return new Vector3D(relativeVelocityR, relativeVelocityT, relativeVelocityN);
+    public Optional<Vector3D> getRelativeVelocity() {
+        if (relativeVelocityR == null || relativeVelocityT == null || relativeVelocityN == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new Vector3D(relativeVelocityR, relativeVelocityT, relativeVelocityN));
     }
 
     /**
@@ -260,8 +275,11 @@ public class CdmRelativeMetadata {
      * getY for T component, getZ for N component.
      * @return the relative position vector at TCA (in m)
      */
-    public Vector3D getRelativePosition() {
-        return new Vector3D(relativePositionR, relativePositionT, relativePositionN);
+    public Optional<Vector3D> getRelativePosition() {
+        if (relativePositionR == null || relativePositionT == null || relativePositionN == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new Vector3D(relativePositionR, relativePositionT, relativePositionN));
     }
 
     /**
@@ -316,8 +334,8 @@ public class CdmRelativeMetadata {
      * Get the start time in UTC of the screening period for the conjunction assessment.
      * @return start time in UTC of the screening period
      */
-    public AbsoluteDate getStartScreenPeriod() {
-        return startScreenPeriod;
+    public Optional<AbsoluteDate> getStartScreenPeriod() {
+        return Optional.ofNullable(startScreenPeriod);
     }
 
     /**
@@ -332,8 +350,8 @@ public class CdmRelativeMetadata {
      * Get the stop time in UTC of the screening period for the conjunction assessment.
      * @return stop time in UTC of the screening period
      */
-    public AbsoluteDate getStopScreenPeriod() {
-        return stopScreenPeriod;
+    public Optional<AbsoluteDate> getStopScreenPeriod() {
+        return Optional.ofNullable(stopScreenPeriod);
     }
 
     /**
@@ -348,8 +366,8 @@ public class CdmRelativeMetadata {
      * Get the name of the Object1 centered reference frame in which the screening volume data are given.
      * @return name of screen volume frame
      */
-    public ScreenVolumeFrame getScreenVolumeFrame() {
-        return screenVolumeFrame;
+    public Optional<ScreenVolumeFrame> getScreenVolumeFrame() {
+        return Optional.ofNullable(screenVolumeFrame);
     }
 
     /**
@@ -364,8 +382,8 @@ public class CdmRelativeMetadata {
      * Get the shape of the screening volume.
      * @return shape of the screening volume
      */
-    public ScreenVolumeShape getScreenVolumeShape() {
-        return screenVolumeShape;
+    public Optional<ScreenVolumeShape> getScreenVolumeShape() {
+        return Optional.ofNullable(screenVolumeShape);
     }
 
     /**
@@ -380,9 +398,8 @@ public class CdmRelativeMetadata {
      * Get the R or T (depending on if RTN or TVN is selected) component size of the screening volume in the corresponding frame.
      * @return first component size of the screening volume (in m)
      */
-    public double getScreenVolumeX() {
-        return screenVolumeX;
-    }
+    public Optional<Double> getScreenVolumeX() {
+        return Optional.ofNullable(screenVolumeX);    }
 
     /**
      * Set the R or T (depending on if RTN or TVN is selected) component size of the screening volume in the corresponding frame.
@@ -393,11 +410,19 @@ public class CdmRelativeMetadata {
     }
 
     /**
+     * Set the R or T (depending on if RTN or TVN is selected) component size of the screening volume in the corresponding frame.
+     * @param screenVolumeX first component size of the screening volume (in m)
+     */
+    public void setScreenVolumeX(final Double screenVolumeX) {
+        this.screenVolumeX = screenVolumeX;
+    }
+
+    /**
      * Get the T or V (depending on if RTN or TVN is selected) component size of the screening volume in the corresponding frame.
      * @return second component size of the screening volume (in m)
      */
-    public double getScreenVolumeY() {
-        return screenVolumeY;
+    public Optional<Double> getScreenVolumeY() {
+        return Optional.ofNullable(screenVolumeY);
     }
 
     /**
@@ -409,11 +434,19 @@ public class CdmRelativeMetadata {
     }
 
     /**
+     * Set the T or V (depending on if RTN or TVN is selected) component size of the screening volume in the corresponding frame.
+     * @param screenVolumeY second component size of the screening volume (in m)
+     */
+    public void setScreenVolumeY(final Double screenVolumeY) {
+        this.screenVolumeY = screenVolumeY;
+    }
+
+    /**
      * Get the N component size of the screening volume in the corresponding frame.
      * @return third component size of the screening volume (in m)
      */
-    public double getScreenVolumeZ() {
-        return screenVolumeZ;
+    public Optional<Double> getScreenVolumeZ() {
+        return Optional.ofNullable(screenVolumeZ);
     }
 
     /**
@@ -425,11 +458,20 @@ public class CdmRelativeMetadata {
     }
 
     /**
+     * Set the N component size of the screening volume in the corresponding frame.
+     * @param screenVolumeZ third component size of the screening volume (in m)
+     */
+    public void setScreenVolumeZ(final Double screenVolumeZ) {
+        this.screenVolumeZ = screenVolumeZ;
+    }
+
+
+    /**
      * Get the time in UTC when Object2 enters the screening volume.
      * @return time in UTC when Object2 enters the screening volume
      */
-    public AbsoluteDate getScreenEntryTime() {
-        return screenEntryTime;
+    public Optional<AbsoluteDate> getScreenEntryTime() {
+        return Optional.ofNullable(screenEntryTime);
     }
 
     /**
@@ -444,8 +486,8 @@ public class CdmRelativeMetadata {
      * Get the time in UTC when Object2 exits the screening volume.
      * @return time in UTC when Object2 exits the screening volume
      */
-    public AbsoluteDate getScreenExitTime() {
-        return screenExitTime;
+    public Optional<AbsoluteDate> getScreenExitTime() {
+        return Optional.ofNullable(screenExitTime);
     }
 
     /**
@@ -460,8 +502,8 @@ public class CdmRelativeMetadata {
      * Get the probability (between 0.0 and 1.0) that Object1 and Object2 will collide.
      * @return probability of collision
      */
-    public double getCollisionProbability() {
-        return collisionProbability;
+    public Optional<Double> getCollisionProbability() {
+        return Optional.ofNullable(collisionProbability);
     }
 
     /**
@@ -476,8 +518,8 @@ public class CdmRelativeMetadata {
      * Get the method that was used to calculate the collision probability.
      * @return method to calculate probability of collision
      */
-    public PocMethodFacade getCollisionProbaMethod() {
-        return collisionProbabilityMethod;
+    public Optional<PocMethodFacade> getCollisionProbaMethod() {
+        return Optional.ofNullable(collisionProbabilityMethod);
     }
 
     /**
@@ -531,8 +573,8 @@ public class CdmRelativeMetadata {
     /** Get the approach angle computed between Objects 1 and 2 in the RTN coordinate frame relative to object 1.
      * @return the approachAngle
      */
-    public double getApproachAngle() {
-        return approachAngle;
+    public Optional<Double> getApproachAngle() {
+        return Optional.ofNullable(approachAngle);
     }
 
     /** Set the approach angle computed between Objects 1 and 2 in the RTN coordinate frame relative to object 1.
@@ -545,8 +587,8 @@ public class CdmRelativeMetadata {
     /** Get the type of screening to be used.
      * @return the screenType
      */
-    public ScreenType getScreenType() {
-        return screenType;
+    public Optional<ScreenType> getScreenType() {
+        return Optional.ofNullable(screenType);
     }
 
     /** Set the type of screening to be used.
@@ -559,8 +601,8 @@ public class CdmRelativeMetadata {
     /** Get max collision probability.
      * @return the max collision probability
      */
-    public double getMaxCollisionProbability() {
-        return maxCollisionProbability;
+    public Optional<Double> getMaxCollisionProbability() {
+        return Optional.ofNullable(maxCollisionProbability);
     }
 
     /** Set max collision probability.
@@ -573,8 +615,8 @@ public class CdmRelativeMetadata {
     /** Get max collision probability method.
      * @return the max collision probability method
      */
-    public PocMethodFacade getMaxCollisionProbabilityMethod() {
-        return maxCollisionProbabilityMethod;
+    public Optional<PocMethodFacade> getMaxCollisionProbabilityMethod() {
+        return Optional.ofNullable(maxCollisionProbabilityMethod);
     }
 
     /** Set max collision probability method.
@@ -587,8 +629,8 @@ public class CdmRelativeMetadata {
     /** Get the Space Environment Fragmentation Impact probability.
      * @return the Space Environment Fragmentation Impact probability
      */
-    public double getSefiCollisionProbability() {
-        return sefiCollisionProbability;
+    public Optional<Double> getSefiCollisionProbability() {
+        return Optional.ofNullable(sefiCollisionProbability);
     }
 
     /** Set the Space Environment Fragmentation Impact probability.
@@ -601,8 +643,8 @@ public class CdmRelativeMetadata {
     /** Get the Space Environment Fragmentation Impact probability method.
      * @return the Space Environment Fragmentation Impact probability method
      */
-    public PocMethodFacade getSefiCollisionProbabilityMethod() {
-        return sefiCollisionProbabilityMethod;
+    public Optional<PocMethodFacade> getSefiCollisionProbabilityMethod() {
+        return Optional.ofNullable(sefiCollisionProbabilityMethod);
     }
 
     /** Set the Space Environment Fragmentation Impact probability method.
@@ -615,8 +657,8 @@ public class CdmRelativeMetadata {
     /** Get the Space Environment Fragmentation Impact fragmentation model.
      * @return the Space Environment Fragmentation Impact fragmentation model
      */
-    public String getSefiFragmentationModel() {
-        return sefiFragmentationModel;
+    public Optional<String> getSefiFragmentationModel() {
+        return Optional.ofNullable(sefiFragmentationModel);
     }
 
     /** Set the Space Environment Fragmentation Impact fragmentation model.
@@ -630,8 +672,8 @@ public class CdmRelativeMetadata {
      * in the direction of the relative position vector.
      * @return the mahalanobisDistance
      */
-    public double getMahalanobisDistance() {
-        return mahalanobisDistance;
+    public Optional<Double> getMahalanobisDistance() {
+        return Optional.ofNullable(mahalanobisDistance);
     }
 
     /** Set the Mahalanobis Distance. The length of the relative position vector, normalized to one-sigma dispersions of the combined error covariance
@@ -645,8 +687,8 @@ public class CdmRelativeMetadata {
     /** Get the screen volume radius.
      * @return the screen volume radius
      */
-    public double getScreenVolumeRadius() {
-        return screenVolumeRadius;
+    public Optional<Double> getScreenVolumeRadius() {
+        return Optional.ofNullable(screenVolumeRadius);
     }
 
     /** set the screen volume radius.
@@ -659,8 +701,8 @@ public class CdmRelativeMetadata {
     /** Get the collision probability screening threshold used to identify this conjunction.
     * @return the screenPcThreshold
     */
-    public double getScreenPcThreshold() {
-        return screenPcThreshold;
+    public Optional<Double> getScreenPcThreshold() {
+        return Optional.ofNullable(screenPcThreshold);
     }
 
     /** Set the collision probability screening threshold used to identify this conjunction.
@@ -679,45 +721,47 @@ public class CdmRelativeMetadata {
      */
     public void checkScreenVolumeConditions() {
 
-        if (this.getScreenType() == ScreenType.SHAPE) {
+        if (this.getScreenType().isPresent() &&  this.getScreenType().get() == ScreenType.SHAPE) {
 
-            if (this.getScreenEntryTime() == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_ENTRY_TIME);
+            getScreenEntryTime().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_ENTRY_TIME));
+
+            getScreenExitTime().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_EXIT_TIME));
+
+            getScreenVolumeShape().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                      CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE));
+
+            if (this.getScreenVolumeShape().isPresent() && this.getScreenVolumeShape().get() == ScreenVolumeShape.SPHERE) {
+
+                getScreenVolumeRadius().
+                    orElseThrow(() ->  new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                           CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS));
+
+            } else if (this.getScreenVolumeShape().isPresent() && (this.getScreenVolumeShape().get() == ScreenVolumeShape.ELLIPSOID ||
+                    this.getScreenVolumeShape().get() == ScreenVolumeShape.BOX)) {
+
+                getScreenVolumeFrame().
+                    orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                          CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME));
+                getScreenVolumeX().
+                    orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                          CdmRelativeMetadataKey.SCREEN_VOLUME_X));
+                getScreenVolumeY().
+                    orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                          CdmRelativeMetadataKey.SCREEN_VOLUME_Y));
+                getScreenVolumeZ().
+                    orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                          CdmRelativeMetadataKey.SCREEN_VOLUME_Z));
             }
 
-            if (this.getScreenExitTime() == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_EXIT_TIME);
-            }
+        } else if (this.getScreenType().isPresent() &&
+                   (this.getScreenType().get() == ScreenType.PC || this.getScreenType().get() == ScreenType.PC_MAX)) {
 
-            if (this.getScreenVolumeShape() == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE);
-            }
-
-            if (this.getScreenVolumeShape() == ScreenVolumeShape.SPHERE) {
-
-                if (Double.isNaN(this.getScreenVolumeRadius())) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS);
-                }
-
-            } else if (this.getScreenVolumeShape() == ScreenVolumeShape.ELLIPSOID || this.getScreenVolumeShape() == ScreenVolumeShape.BOX) {
-
-                if (this.getScreenVolumeFrame() == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME);
-                }
-                if (Double.isNaN(this.getScreenVolumeX())) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_X);
-                }
-                if (Double.isNaN(this.getScreenVolumeY())) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_Y);
-                }
-                if (Double.isNaN(this.getScreenVolumeZ())) {
-                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_Z);
-                }
-            }
-
-        } else if (this.getScreenType() == ScreenType.PC || this.getScreenType() == ScreenType.PC_MAX) {
-
-            if (Double.isNaN(this.getScreenPcThreshold())) {
+            if (this.getScreenPcThreshold().isEmpty()) {
                 throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_PC_THRESHOLD);
             }
         }
@@ -728,8 +772,8 @@ public class CdmRelativeMetadata {
      * COLLISION_PROBABILITY variable.
      * @return the collisionPercentile
      */
-    public int[] getCollisionPercentile() {
-        return collisionPercentile == null ? null : collisionPercentile.clone();
+    public Optional<int[]> getCollisionPercentile() {
+        return collisionPercentile == null ? Optional.empty() : Optional.ofNullable(collisionPercentile.clone());
     }
 
     /** Set the array of 1 to n elements indicating the percentile(s) for which estimates of the collision probability are provided in the
@@ -743,8 +787,8 @@ public class CdmRelativeMetadata {
     /** Get the ID of previous CDM issued for event identified by CONJUNCTION_ID.
      * @return the previousMessageId
      */
-    public String getPreviousMessageId() {
-        return previousMessageId;
+    public Optional<String> getPreviousMessageId() {
+        return Optional.ofNullable(previousMessageId);
     }
 
     /** Set the ID of previous CDM issued for event identified by CONJUNCTION_ID.
@@ -757,8 +801,8 @@ public class CdmRelativeMetadata {
     /** Get the UTC epoch of the previous CDM issued for the event identified by CONJUNCTION_ID.
      * @return the previousMessageEpoch
      */
-    public AbsoluteDate getPreviousMessageEpoch() {
-        return previousMessageEpoch;
+    public Optional<AbsoluteDate> getPreviousMessageEpoch() {
+        return Optional.ofNullable(previousMessageEpoch);
     }
 
     /** Set the UTC epoch of the previous CDM issued for the event identified by CONJUNCTION_ID.
@@ -771,8 +815,8 @@ public class CdmRelativeMetadata {
     /** Get Scheduled UTC epoch of the next CDM associated with the event identified by CONJUNCTION_ID.
      * @return the nextMessageEpoch
      */
-    public AbsoluteDate getNextMessageEpoch() {
-        return nextMessageEpoch;
+    public Optional<AbsoluteDate> getNextMessageEpoch() {
+        return Optional.ofNullable(nextMessageEpoch);
     }
 
     /** Set Scheduled UTC epoch of the next CDM associated with the event identified by CONJUNCTION_ID.

@@ -50,7 +50,7 @@ public enum EulerKey {
     EULER_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             container.checkNotNull(container.getEndpoints().getFrameA(), EULER_FRAME_A.name());
-            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame().isPresent();
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }
@@ -63,7 +63,7 @@ public enum EulerKey {
     REF_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             container.checkNotNull(container.getEndpoints().getFrameA(), EULER_FRAME_A.name());
-            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame().isPresent();
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }

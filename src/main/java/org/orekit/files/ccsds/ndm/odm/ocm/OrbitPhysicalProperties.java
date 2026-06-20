@@ -19,10 +19,12 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.hipparchus.linear.DefaultRealMatrixChangingVisitor;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
 import org.orekit.frames.Frame;
@@ -36,79 +38,103 @@ import org.orekit.utils.Constants;
 public class OrbitPhysicalProperties extends CommonPhysicalProperties {
 
     /** Satellite manufacturer name. */
+    @Nullable
     private String manufacturer;
 
     /** Bus model name. */
+    @Nullable
     private String busModel;
 
     /** Other space objects this object is docked to. */
     private List<String> dockedWith;
 
     /** Attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB. */
-    private double dragConstantArea;
+    @Nullable
+    private Double dragConstantArea;
 
     /** Nominal drag coefficient. */
-    private double dragCoefficient;
+    @Nullable
+    private Double dragCoefficient;
 
     /** Drag coefficient 1σ uncertainty. */
-    private double dragUncertainty;
+    @Nullable
+    private Double dragUncertainty;
 
     /** Total mass at beginning of life. */
-    private double initialWetMass;
+    @Nullable
+    private Double initialWetMass;
 
     /** Total mass at T₀. */
-    private double wetMass;
+    @Nullable
+    private Double wetMass;
 
     /** Mass without propellant. */
-    private double dryMass;
+    @Nullable
+    private Double dryMass;
 
     /** Minimum cross-sectional area for collision probability estimation purposes. */
-    private double minAreaForCollisionProbability;
+    @Nullable
+    private Double minAreaForCollisionProbability;
 
     /** Maximum cross-sectional area for collision probability estimation purposes. */
-    private double maxAreaForCollisionProbability;
+    @Nullable
+    private Double maxAreaForCollisionProbability;
 
     /** Typical (50th percentile) cross-sectional area for collision probability estimation purposes. */
-    private double typAreaForCollisionProbability;
+    @Nullable
+    private Double typAreaForCollisionProbability;
 
     /** Attitude-independent SRP area, not already into attitude-dependent area along OEB. */
-    private double srpConstantArea;
+    @Nullable
+    private Double srpConstantArea;
 
     /** Nominal SRP coefficient. */
-    private double srpCoefficient;
+    @Nullable
+    private Double srpCoefficient;
 
     /** SRP coefficient 1σ uncertainty. */
-    private double srpUncertainty;
+    @Nullable
+    private Double srpUncertainty;
 
     /** Attitude control mode. */
+    @Nullable
     private String attitudeControlMode;
 
     /** Type of actuator for attitude control. */
+    @Nullable
     private String attitudeActuatorType;
 
     /** Accuracy of attitude knowledge. */
-    private double attitudeKnowledgeAccuracy;
+    @Nullable
+    private Double attitudeKnowledgeAccuracy;
 
     /** Accuracy of attitude control. */
-    private double attitudeControlAccuracy;
+    @Nullable
+    private Double attitudeControlAccuracy;
 
     /** Overall accuracy of spacecraft to maintain attitude. */
-    private double attitudePointingAccuracy;
+    @Nullable
+    private Double attitudePointingAccuracy;
 
     /** Average average frequency of orbit or attitude maneuvers (in SI units, hence per second). */
-    private double maneuversFrequency;
+    @Nullable
+    private Double maneuversFrequency;
 
     /** Maximum composite thrust the spacecraft can accomplish. */
-    private double maxThrust;
+    @Nullable
+    private Double maxThrust;
 
     /** Total ΔV capability at beginning of life. */
-    private double bolDv;
+    @Nullable
+    private Double bolDv;
 
     /** Total ΔV remaining for spacecraft. */
-    private double remainingDv;
+    @Nullable
+    private Double remainingDv;
 
     /** Inertia matrix. */
-    private final RealMatrix inertiaMatrix;
+    @Nullable
+    private RealMatrix inertiaMatrix;
 
     /**
      * Simple constructor.
@@ -121,48 +147,17 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
                                    final CcsdsFrameMapper frameMapper) {
 
         // Call to CommonPhysicalProperties constructor
-        super(frameMapper);
-
+        super(epochT0, frameMapper);
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        dockedWith                     = new ArrayList<>();
-        // 502.0-B-3 (page 6-22) says these drag values are optional.
-        dragConstantArea               = Double.NaN;
-        dragCoefficient                = Double.NaN;
-        dragUncertainty                = Double.NaN;
-        // 502.0-B-3 (page 6-25) says these SRP values are optional.
-        srpCoefficient                 = Double.NaN;
-        srpConstantArea                = Double.NaN;
-        srpUncertainty                 = Double.NaN;
-        initialWetMass                 = Double.NaN;
-        wetMass                        = Double.NaN;
-        dryMass                        = Double.NaN;
-        minAreaForCollisionProbability = Double.NaN;
-        maxAreaForCollisionProbability = Double.NaN;
-        typAreaForCollisionProbability = Double.NaN;
-        attitudeKnowledgeAccuracy      = Double.NaN;
-        attitudeControlAccuracy        = Double.NaN;
-        attitudePointingAccuracy       = Double.NaN;
-        maneuversFrequency             = Double.NaN;
-        maxThrust                      = Double.NaN;
-        bolDv                          = Double.NaN;
-        remainingDv                    = Double.NaN;
-        // 502.0-B-3 (page 6-27) says these inertia values are optional.
-        inertiaMatrix                  = MatrixUtils.createRealMatrix(3, 3);
-        // set all values to NaN
-        inertiaMatrix.walkInOptimizedOrder(new DefaultRealMatrixChangingVisitor() {
-            @Override
-            public double visit(final int i, final int j, final double v) {
-                return Double.NaN;
-            }
-        });
+        dockedWith = new ArrayList<>();
     }
 
     /** Get manufacturer name.
      * @return manufacturer name
      */
-    public String getManufacturer() {
-        return manufacturer;
+    public Optional<String> getManufacturer() {
+        return Optional.ofNullable(manufacturer);
     }
 
     /** Set manufacturer name.
@@ -176,8 +171,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the bus model name.
      * @return bus model name
      */
-    public String getBusModel() {
-        return busModel;
+    public Optional<String> getBusModel() {
+        return Optional.ofNullable(busModel);
     }
 
     /** Set the bus model name.
@@ -206,8 +201,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB.
      * @return attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB
      */
-    public double getDragConstantArea() {
-        return dragConstantArea;
+    public Optional<Double> getDragConstantArea() {
+        return Optional.ofNullable(dragConstantArea);
     }
 
     /** Set the attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB.
@@ -221,8 +216,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the nominal drag coefficient.
      * @return the nominal drag coefficient
      */
-    public double getDragCoefficient() {
-        return dragCoefficient;
+    public Optional<Double> getDragCoefficient() {
+        return Optional.ofNullable(dragCoefficient);
     }
 
     /** Set the the nominal drag coefficient.
@@ -236,8 +231,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the drag coefficient 1σ uncertainty.
      * @return drag coefficient 1σ uncertainty (in %)
      */
-    public double getDragUncertainty() {
-        return dragUncertainty;
+    public Optional<Double> getDragUncertainty() {
+        return Optional.ofNullable(dragUncertainty);
     }
 
     /** Set the drag coefficient 1σ uncertainty.
@@ -251,8 +246,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the total mass at beginning of life.
      * @return total mass at beginning of life
      */
-    public double getInitialWetMass() {
-        return initialWetMass;
+    public Optional<Double> getInitialWetMass() {
+        return Optional.ofNullable(initialWetMass);
     }
 
     /** Set the total mass at beginning of life.
@@ -266,8 +261,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the total mass at T₀.
      * @return total mass at T₀
      */
-    public double getWetMass() {
-        return wetMass;
+    public Optional<Double> getWetMass() {
+        return Optional.ofNullable(wetMass);
     }
 
     /** Set the total mass at T₀.
@@ -281,8 +276,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the mass without propellant.
      * @return mass without propellant
      */
-    public double getDryMass() {
-        return dryMass;
+    public Optional<Double> getDryMass() {
+        return Optional.ofNullable(dryMass);
     }
 
     /** Set the mass without propellant.
@@ -296,8 +291,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the minimum cross-sectional area for collision probability estimation purposes.
      * @return minimum cross-sectional area for collision probability estimation purposes
      */
-    public double getMinAreaForCollisionProbability() {
-        return minAreaForCollisionProbability;
+    public Optional<Double> getMinAreaForCollisionProbability() {
+        return Optional.ofNullable(minAreaForCollisionProbability);
     }
 
     /** Set the minimum cross-sectional area for collision probability estimation purposes.
@@ -311,8 +306,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the maximum cross-sectional area for collision probability estimation purposes.
      * @return maximum cross-sectional area for collision probability estimation purposes
      */
-    public double getMaxAreaForCollisionProbability() {
-        return maxAreaForCollisionProbability;
+    public Optional<Double> getMaxAreaForCollisionProbability() {
+        return Optional.ofNullable(maxAreaForCollisionProbability);
     }
 
     /** Set the maximum cross-sectional area for collision probability estimation purposes.
@@ -326,8 +321,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the typical (50th percentile) cross-sectional area for collision probability estimation purposes.
      * @return typical (50th percentile) cross-sectional area for collision probability estimation purposes
      */
-    public double getTypAreaForCollisionProbability() {
-        return typAreaForCollisionProbability;
+    public Optional<Double> getTypAreaForCollisionProbability() {
+        return Optional.ofNullable(typAreaForCollisionProbability);
     }
 
     /** Get the typical (50th percentile) cross-sectional area for collision probability estimation purposes.
@@ -341,8 +336,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the attitude-independent SRP area, not already into attitude-dependent area along OEB.
      * @return attitude-independent SRP area, not already into attitude-dependent area along OEB
      */
-    public double getSrpConstantArea() {
-        return srpConstantArea;
+    public Optional<Double> getSrpConstantArea() {
+        return Optional.ofNullable(srpConstantArea);
     }
 
     /** Set the attitude-independent SRP area, not already into attitude-dependent area along OEB.
@@ -356,8 +351,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the nominal SRP coefficient.
      * @return nominal SRP coefficient
      */
-    public double getSrpCoefficient() {
-        return srpCoefficient;
+    public Optional<Double> getSrpCoefficient() {
+        return Optional.ofNullable(srpCoefficient);
     }
 
     /** Set the nominal SRP coefficient.
@@ -371,8 +366,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the SRP coefficient 1σ uncertainty.
      * @return SRP coefficient 1σ uncertainty
      */
-    public double getSrpUncertainty() {
-        return srpUncertainty;
+    public Optional<Double> getSrpUncertainty() {
+        return Optional.ofNullable(srpUncertainty);
     }
 
     /** Set the SRP coefficient 1σ uncertainty.
@@ -386,8 +381,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the attitude control mode.
      * @return attitude control mode
      */
-    public String getAttitudeControlMode() {
-        return attitudeControlMode;
+    public Optional<String> getAttitudeControlMode() {
+        return Optional.ofNullable(attitudeControlMode);
     }
 
     /** Set the attitude control mode.
@@ -401,8 +396,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the type of actuator for attitude control.
      * @return type of actuator for attitude control
      */
-    public String getAttitudeActuatorType() {
-        return attitudeActuatorType;
+    public Optional<String> getAttitudeActuatorType() {
+        return Optional.ofNullable(attitudeActuatorType);
     }
 
     /** Set the type of actuator for attitude control.
@@ -416,8 +411,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the accuracy of attitude knowledge.
      * @return accuracy of attitude knowledge
      */
-    public double getAttitudeKnowledgeAccuracy() {
-        return attitudeKnowledgeAccuracy;
+    public Optional<Double> getAttitudeKnowledgeAccuracy() {
+        return Optional.ofNullable(attitudeKnowledgeAccuracy);
     }
 
     /** Set the accuracy of attitude knowledge.
@@ -431,8 +426,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the accuracy of attitude control.
      * @return accuracy of attitude control
      */
-    public double getAttitudeControlAccuracy() {
-        return attitudeControlAccuracy;
+    public Optional<Double> getAttitudeControlAccuracy() {
+        return Optional.ofNullable(attitudeControlAccuracy);
     }
 
     /** Set the accuracy of attitude control.
@@ -446,8 +441,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the overall accuracy of spacecraft to maintain attitude.
      * @return overall accuracy of spacecraft to maintain attitude
      */
-    public double getAttitudePointingAccuracy() {
-        return attitudePointingAccuracy;
+    public Optional<Double> getAttitudePointingAccuracy() {
+        return Optional.ofNullable(attitudePointingAccuracy);
     }
 
     /** Set the overall accuracy of spacecraft to maintain attitude.
@@ -461,15 +456,15 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the average number of orbit or attitude maneuvers per year.
      * @return average number of orbit or attitude maneuvers per year.
      */
-    public double getManeuversPerYear() {
-        return maneuversFrequency * Constants.JULIAN_YEAR;
+    public Optional<Double> getManeuversPerYear() {
+        return maneuversFrequency != null ? Optional.of(maneuversFrequency * Constants.JULIAN_YEAR) : Optional.empty();
     }
 
     /** Get the average frequency of orbit or attitude maneuvers (in SI units, hence per second).
      * @return average frequency of orbit or attitude maneuvers (in SI units, hence per second).
      */
-    public double getManeuversFrequency() {
-        return maneuversFrequency;
+    public Optional<Double> getManeuversFrequency() {
+        return Optional.ofNullable(maneuversFrequency);
     }
 
     /** Set the average frequency of orbit or attitude maneuvers (in SI units, hence per second).
@@ -483,8 +478,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the maximum composite thrust the spacecraft can accomplish.
      * @return maximum composite thrust the spacecraft can accomplish
      */
-    public double getMaxThrust() {
-        return maxThrust;
+    public Optional<Double> getMaxThrust() {
+        return Optional.ofNullable(maxThrust);
     }
 
     /** Set the maximum composite thrust the spacecraft can accomplish.
@@ -498,8 +493,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the total ΔV capability at beginning of life.
      * @return total ΔV capability at beginning of life
      */
-    public double getBolDv() {
-        return bolDv;
+    public Optional<Double> getBolDv() {
+        return Optional.ofNullable(bolDv);
     }
 
     /** Set the total ΔV capability at beginning of life.
@@ -513,8 +508,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the total ΔV remaining for spacecraft.
      * @return total ΔV remaining for spacecraft
      */
-    public double getRemainingDv() {
-        return remainingDv;
+    public Optional<Double> getRemainingDv() {
+        return Optional.ofNullable(remainingDv);
     }
 
     /** Set the total ΔV remaining for spacecraft.
@@ -528,8 +523,8 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     /** Get the inertia matrix.
      * @return the inertia matrix
      */
-    public RealMatrix getInertiaMatrix() {
-        return inertiaMatrix;
+    public Optional<RealMatrix> getInertiaMatrix() {
+        return Optional.ofNullable(inertiaMatrix);
     }
 
     /** Set an entry in the inertia matrix.
@@ -542,6 +537,16 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
      */
     public void setInertiaMatrixEntry(final int j, final int k, final double entry) {
         refuseFurtherComments();
+        if (inertiaMatrix == null) {
+            inertiaMatrix = MatrixUtils.createRealMatrix(3, 3);
+            // set all values to NaN
+            inertiaMatrix.walkInOptimizedOrder(new DefaultRealMatrixChangingVisitor() {
+                @Override
+                public double visit(final int i, final int j, final double v) {
+                    return Double.NaN;
+                }
+            });
+        }
         inertiaMatrix.setEntry(j, k, entry);
         inertiaMatrix.setEntry(k, j, entry);
     }

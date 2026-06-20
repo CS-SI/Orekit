@@ -126,7 +126,7 @@ public class EphemerisOcmWriterTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             Assertions.assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
-            Assertions.assertEquals(dummyMetadata().getInternationalDesignator(), oiae.getParts()[0]);
+            Assertions.assertEquals(dummyMetadata().getInternationalDesignator().orElseThrow(), oiae.getParts()[0]);
         }
 
     }
@@ -165,12 +165,12 @@ public class EphemerisOcmWriterTest {
 
     @Test
     public void testGenerateKVN() throws IOException {
-        doTestGenerate(FileFormat.KVN, 45);
+        doTestGenerate(FileFormat.KVN, 47);
     }
 
     @Test
     public void testGenerateXML() throws IOException {
-        doTestGenerate(FileFormat.XML, 55);
+        doTestGenerate(FileFormat.XML, 57);
     }
 
     private void doTestGenerate(FileFormat format, int expectedLines) throws IOException {
@@ -312,7 +312,7 @@ public class EphemerisOcmWriterTest {
         metadata.setObjectName("transgalactic");
         metadata.setEpochT0(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStartTime(metadata.getEpochT0());
-        metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
+        metadata.setStopTime(metadata.getStartTime().orElseThrow().shiftedBy(Constants.JULIAN_YEAR));
         return metadata;
     }
 

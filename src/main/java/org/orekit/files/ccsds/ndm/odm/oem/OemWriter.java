@@ -299,25 +299,17 @@ public class OemWriter extends AbstractMessageWriter<OdmHeader, OemSegment, Oem>
 
         // frames
         generator.writeEntry(CommonMetadataKey.REF_FRAME.name(), metadata.getReferenceFrame().getName(), null, true);
-        if (metadata.getFrameEpoch() != null) {
-            generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(),
-                                 getTimeConverter(), metadata.getFrameEpoch(),
-                                 true, false);
-        }
+        generator.writeOptionalDateEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), getTimeConverter(), metadata.getFrameEpoch(), true, false);
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
         generator.writeEntry(OemMetadataKey.START_TIME.name(), getTimeConverter(), metadata.getStartTime(), false, true);
-        if (metadata.getUseableStartTime() != null) {
-            generator.writeEntry(OemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false, false);
-        }
-        if (metadata.getUseableStopTime() != null) {
-            generator.writeEntry(OemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false, false);
-        }
+        generator.writeOptionalDateEntry(OemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false, false);
+        generator.writeOptionalDateEntry(OemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false, false);
         generator.writeEntry(OemMetadataKey.STOP_TIME.name(), getTimeConverter(), metadata.getStopTime(), false, true);
 
         // interpolation
-        generator.writeEntry(OemMetadataKey.INTERPOLATION.name(), metadata.getInterpolationMethod(), false);
+        generator.writeOptionalEnumEntry(OemMetadataKey.INTERPOLATION.name(), metadata.getInterpolationMethod(), false);
         // treat degree < 0 as equivalent to null
         if (metadata.getInterpolationDegree() >= 0) {
             generator.writeEntry(OemMetadataKey.INTERPOLATION_DEGREE.name(),

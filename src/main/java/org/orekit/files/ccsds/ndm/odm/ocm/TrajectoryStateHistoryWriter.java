@@ -83,11 +83,11 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // identifiers
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_ID.name(),       metadata.getTrajID(),      null, false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_PREV_ID.name(),  metadata.getTrajPrevID(),  null, false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_NEXT_ID.name(),  metadata.getTrajNextID(),  null, false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_BASIS.name(),    metadata.getTrajBasis(),   null, false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_BASIS_ID.name(), metadata.getTrajBasisID(), null, false);
+        generator.writeOptionalStringEntry(TrajectoryStateHistoryMetadataKey.TRAJ_ID.name(),       metadata.getTrajID(),      null, false);
+        generator.writeOptionalStringEntry(TrajectoryStateHistoryMetadataKey.TRAJ_PREV_ID.name(),  metadata.getTrajPrevID(),  null, false);
+        generator.writeOptionalStringEntry(TrajectoryStateHistoryMetadataKey.TRAJ_NEXT_ID.name(),  metadata.getTrajNextID(),  null, false);
+        generator.writeOptionalStringEntry(TrajectoryStateHistoryMetadataKey.TRAJ_BASIS.name(),    metadata.getTrajBasis(),   null, false);
+        generator.writeOptionalStringEntry(TrajectoryStateHistoryMetadataKey.TRAJ_BASIS_ID.name(), metadata.getTrajBasisID(), null, false);
 
         // interpolation
         if (metadata.getInterpolationMethod() != TrajectoryStateHistoryMetadata.DEFAULT_INTERPOLATION_METHOD ||
@@ -97,7 +97,7 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         }
 
         // propagation
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.PROPAGATOR.name(),       metadata.getPropagator(), null, false);
+        generator.writeOptionalStringEntry(TrajectoryStateHistoryMetadataKey.PROPAGATOR.name(),       metadata.getPropagator(), null, false);
 
         // references
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.CENTER_NAME.name(),      metadata.getCenter().getName(),              null, false);
@@ -107,13 +107,13 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         }
 
         // time
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_START_TIME.name(), timeConverter, metadata.getUseableStartTime(), false, false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_STOP_TIME.name(),  timeConverter, metadata.getUseableStopTime(),  false, false);
+        generator.writeOptionalDateEntry(TrajectoryStateHistoryMetadataKey.USEABLE_START_TIME.name(), timeConverter, metadata.getUseableStartTime(), false, false);
+        generator.writeOptionalDateEntry(TrajectoryStateHistoryMetadataKey.USEABLE_STOP_TIME.name(),  timeConverter, metadata.getUseableStopTime(),  false, false);
 
         // revolution  numbers
-        if (metadata.getOrbRevNum() > 0) {
-            generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM.name(),       metadata.getOrbRevNum(),      false);
-            generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name(), metadata.getOrbRevNumBasis(), false);
+        if (metadata.getOrbRevNum().isPresent()) {
+            generator.writeOptionalIntEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM.name(),       metadata.getOrbRevNum(),      false);
+            generator.writeOptionalIntEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name(), metadata.getOrbRevNumBasis(), false);
         }
 
         // elements

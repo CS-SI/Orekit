@@ -315,8 +315,8 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                                                  currentTrajectoryStateHistoryMetadata.getFrame()) :
                             null;
             anticipateNext(structureProcessor);
-            if (currentTrajectoryStateHistoryMetadata.getCenter().getBody() != null) {
-                setMuCreated(currentTrajectoryStateHistoryMetadata.getCenter().getBody().getGM());
+            if (currentTrajectoryStateHistoryMetadata.getCenter().getBody().isPresent()) {
+                setMuCreated(currentTrajectoryStateHistoryMetadata.getCenter().getBody().get().getGM());
             }
             // we temporarily set gravitational parameter to NaN,
             // as we may get a proper one in the perturbations section
@@ -408,7 +408,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         if (starting) {
             if (perturbationsBlock == null) {
                 // this is the first (and unique) perturbations parameters block, we need to allocate the container
-                perturbationsBlock = new Perturbations(context.getDataContext().getCelestialBodies());
+                perturbationsBlock = new Perturbations();
             }
             anticipateNext(this::processPerturbationToken);
         } else {
@@ -471,7 +471,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         } else {
             if (perturbationsBlock != null) {
                 // this may be Double.NaN, but it will be handled correctly
-                setMuParsed(perturbationsBlock.getGm());
+                setMuParsed(perturbationsBlock.getGm().orElse(Double.NaN));
             }
             mu = getSelectedMu();
         }

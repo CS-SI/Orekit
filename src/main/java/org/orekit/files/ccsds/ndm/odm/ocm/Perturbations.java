@@ -19,8 +19,9 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-import org.orekit.bodies.CelestialBodies;
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
@@ -46,128 +47,141 @@ import org.orekit.time.AbsoluteDate;
 public class Perturbations extends CommentsContainer {
 
     /** Name of atmospheric model. */
+    @Nullable
     private String atmosphericModel;
 
     /** Gravity model name. */
+    @Nullable
     private String gravityModel;
 
     /** Degree of the gravity model. */
-    private int gravityDegree;
+    @Nullable
+    private Integer gravityDegree;
 
     /** Order of the gravity model. */
-    private int gravityOrder;
+    @Nullable
+    private Integer gravityOrder;
 
     /** Oblate spheroid equatorial radius of central body. */
-    private double equatorialRadius;
+    @Nullable
+    private Double equatorialRadius;
 
     /** Gravitational coefficient of attracting body. */
-    private double gm;
+    @Nullable
+    private Double gm;
 
     /** N-body perturbation bodies. */
     private List<BodyFacade> nBodyPerturbations;
 
     /** Central body angular rotation rate. */
-    private double centralBodyRotation;
+    @Nullable
+    private Double centralBodyRotation;
 
     /** Central body oblate spheroid oblateness. */
-    private double oblateFlattening;
+    @Nullable
+    private Double oblateFlattening;
 
     /** Ocean tides model. */
+    @Nullable
     private String oceanTidesModel;
 
     /** Solid tides model. */
+    @Nullable
     private String solidTidesModel;
 
     /** Reduction theory used for precession and nutation modeling. */
+    @Nullable
     private String reductionTheory;
 
     /** Albedo model. */
+    @Nullable
     private String albedoModel;
 
     /** Albedo grid size. Optional in 502.0-B-3 with no default. */
+    @Nullable
     private Integer albedoGridSize;
 
     /** Shadow model used for solar radiation pressure. */
+    @Nullable
     private ShadowModel shadowModel;
 
     /** Celestial bodies casting shadow. */
     private List<BodyFacade> shadowBodies;
 
     /** Solar Radiation Pressure model. */
+    @Nullable
     private String srpModel;
 
     /** Space Weather data source. */
+    @Nullable
     private String spaceWeatherSource;
 
     /** Epoch of the Space Weather data. */
+    @Nullable
     private AbsoluteDate spaceWeatherEpoch;
 
     /** Interpolation method for Space Weather data. */
+    @Nullable
     private String interpMethodSW;
 
     /** Fixed (time invariant) value of the planetary 3-hour-range geomagnetic index Kₚ. */
-    private double fixedGeomagneticKp;
+    @Nullable
+    private Double fixedGeomagneticKp;
 
     /** Fixed (time invariant) value of the planetary 3-hour-range geomagnetic index aₚ. */
-    private double fixedGeomagneticAp;
+    @Nullable
+    private Double fixedGeomagneticAp;
 
     /** Fixed (time invariant) value of the planetary 1-hour-range geomagnetic index Dst. */
-    private double fixedGeomagneticDst;
+    @Nullable
+    private Double fixedGeomagneticDst;
 
     /** Fixed (time invariant) value of the Solar Flux Unit daily proxy F10.7. */
-    private double fixedF10P7;
+    @Nullable
+    private Double fixedF10P7;
 
     /** Fixed (time invariant) value of the Solar Flux Unit 81-day running center-average proxy F10.7. */
-    private double fixedF10P7Mean;
+    @Nullable
+    private Double fixedF10P7Mean;
 
     /** Fixed (time invariant) value of the Solar Flux daily proxy M10.7. */
-    private double fixedM10P7;
+    @Nullable
+    private Double fixedM10P7;
 
     /** Fixed (time invariant) value of the Solar Flux 81-day running center-average proxy M10.7. */
-    private double fixedM10P7Mean;
+    @Nullable
+    private Double fixedM10P7Mean;
 
     /** Fixed (time invariant) value of the Solar Flux daily proxy S10.7. */
-    private double fixedS10P7;
+    @Nullable
+    private Double fixedS10P7;
 
     /** Fixed (time invariant) value of the Solar Flux 81-day running center-average proxy S10.7. */
-    private double fixedS10P7Mean;
+    @Nullable
+    private Double fixedS10P7Mean;
 
     /** Fixed (time invariant) value of the Solar Flux daily proxy Y10.7. */
-    private double fixedY10P7;
+    @Nullable
+    private Double fixedY10P7;
 
     /** Fixed (time invariant) value of the Solar Flux 81-day running center-average proxy Y10.7. */
-    private double fixedY10P7Mean;
+    @Nullable
+    private Double fixedY10P7Mean;
 
-    /** Simple constructor.
-     * @param celestialBodies factory for celestial bodies
-     */
-    public Perturbations(final CelestialBodies celestialBodies) {
+    /** Simple constructor. */
+    public Perturbations() {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        equatorialRadius    = Double.NaN;
-        gm                  = Double.NaN;
-        centralBodyRotation = Double.NaN;
-        oblateFlattening    = Double.NaN;
-        fixedGeomagneticKp  = Double.NaN;
-        fixedGeomagneticAp  = Double.NaN;
-        fixedGeomagneticDst = Double.NaN;
-        fixedF10P7          = Double.NaN;
-        fixedF10P7Mean      = Double.NaN;
-        fixedM10P7          = Double.NaN;
-        fixedM10P7Mean      = Double.NaN;
-        fixedS10P7          = Double.NaN;
-        fixedS10P7Mean      = Double.NaN;
-        fixedY10P7          = Double.NaN;
-        fixedY10P7Mean      = Double.NaN;
         // In 502.0-B-3 (p. 6-50) SHADOW_BODIES is optional with no default
-        shadowBodies = Collections.emptyList();
+        shadowBodies       = Collections.emptyList();
+        nBodyPerturbations = Collections.emptyList();
     }
 
     /** Get name of atmospheric model.
      * @return name of atmospheric model
      */
-    public String getAtmosphericModel() {
-        return atmosphericModel;
+    public Optional<String> getAtmosphericModel() {
+        return Optional.ofNullable(atmosphericModel);
     }
 
     /** Set name of atmospheric model.
@@ -180,22 +194,22 @@ public class Perturbations extends CommentsContainer {
     /** Get gravity model name.
      * @return gravity model name
      */
-    public String getGravityModel() {
-        return gravityModel;
+    public Optional<String> getGravityModel() {
+        return Optional.ofNullable(gravityModel);
     }
 
     /** Get degree of the gravity model.
      * @return degree of the gravity model
      */
-    public int getGravityDegree() {
-        return gravityDegree;
+    public Optional<Integer> getGravityDegree() {
+        return Optional.ofNullable(gravityDegree);
     }
 
     /** Get order of the gravity model.
      * @return order of the gravity model
      */
-    public int getGravityOrder() {
-        return gravityOrder;
+    public Optional<Integer> getGravityOrder() {
+        return Optional.ofNullable(gravityOrder);
     }
 
     /** Set gravity model.
@@ -212,8 +226,8 @@ public class Perturbations extends CommentsContainer {
     /** Get oblate spheroid equatorial radius of central body.
      * @return oblate spheroid equatorial radius of central body
      */
-    public double getEquatorialRadius() {
-        return equatorialRadius;
+    public Optional<Double> getEquatorialRadius() {
+        return Optional.ofNullable(equatorialRadius);
     }
 
     /** Set oblate spheroid equatorial radius of central body.
@@ -226,8 +240,8 @@ public class Perturbations extends CommentsContainer {
     /** Get gravitational coefficient of attracting body.
      * @return gravitational coefficient of attracting body
      */
-    public double getGm() {
-        return gm;
+    public Optional<Double> getGm() {
+        return Optional.ofNullable(gm);
     }
 
     /** Set gravitational coefficient of attracting body.
@@ -254,8 +268,8 @@ public class Perturbations extends CommentsContainer {
     /** Get central body angular rotation rate.
      * @return central body angular rotation rate
      */
-    public double getCentralBodyRotation() {
-        return centralBodyRotation;
+    public Optional<Double> getCentralBodyRotation() {
+        return Optional.ofNullable(centralBodyRotation);
     }
 
     /** Set central body angular rotation rate.
@@ -268,8 +282,8 @@ public class Perturbations extends CommentsContainer {
     /** Get central body oblate spheroid oblateness.
      * @return central body oblate spheroid oblateness
      */
-    public double getOblateFlattening() {
-        return oblateFlattening;
+    public Optional<Double> getOblateFlattening() {
+        return Optional.ofNullable(oblateFlattening);
     }
 
     /** Set central body oblate spheroid oblateness.
@@ -282,8 +296,8 @@ public class Perturbations extends CommentsContainer {
     /** Get ocean tides model.
      * @return ocean tides model
      */
-    public String getOceanTidesModel() {
-        return oceanTidesModel;
+    public Optional<String> getOceanTidesModel() {
+        return Optional.ofNullable(oceanTidesModel);
     }
 
     /** Set ocean tides model.
@@ -296,8 +310,8 @@ public class Perturbations extends CommentsContainer {
     /** Get solid tides model.
      * @return solid tides model
      */
-    public String getSolidTidesModel() {
-        return solidTidesModel;
+    public Optional<String> getSolidTidesModel() {
+        return Optional.ofNullable(solidTidesModel);
     }
 
     /** Set solid tides model.
@@ -310,8 +324,8 @@ public class Perturbations extends CommentsContainer {
     /** Get reduction theory used for precession and nutation modeling.
      * @return reduction theory used for precession and nutation modeling
      */
-    public String getReductionTheory() {
-        return reductionTheory;
+    public Optional<String> getReductionTheory() {
+        return Optional.ofNullable(reductionTheory);
     }
 
     /** Set reduction theory used for precession and nutation modeling.
@@ -324,8 +338,8 @@ public class Perturbations extends CommentsContainer {
     /** Get albedo model.
      * @return albedo model
      */
-    public String getAlbedoModel() {
-        return albedoModel;
+    public Optional<String> getAlbedoModel() {
+        return Optional.ofNullable(albedoModel);
     }
 
     /** Set albedo model.
@@ -338,8 +352,8 @@ public class Perturbations extends CommentsContainer {
     /** Get albedo grid size.
      * @return albedo grid size
      */
-    public Integer getAlbedoGridSize() {
-        return albedoGridSize;
+    public Optional<Integer> getAlbedoGridSize() {
+        return Optional.ofNullable(albedoGridSize);
     }
 
     /** Set albedo grid size.
@@ -352,8 +366,8 @@ public class Perturbations extends CommentsContainer {
     /** Get shadow model used for solar radiation pressure.
      * @return shadow model used for solar radiation pressure
      */
-    public ShadowModel getShadowModel() {
-        return shadowModel;
+    public Optional<ShadowModel> getShadowModel() {
+        return Optional.ofNullable(shadowModel);
     }
 
     /** Set shadow model used for solar radiation pressure.
@@ -380,8 +394,8 @@ public class Perturbations extends CommentsContainer {
     /** Get Solar Radiation Pressure model.
      * @return Solar Radiation Pressure model
      */
-    public String getSrpModel() {
-        return srpModel;
+    public Optional<String> getSrpModel() {
+        return Optional.ofNullable(srpModel);
     }
 
     /** Set Solar Radiation Pressure model.
@@ -394,8 +408,8 @@ public class Perturbations extends CommentsContainer {
     /** Get Space Weather data source.
      * @return Space Weather data source
      */
-    public String getSpaceWeatherSource() {
-        return spaceWeatherSource;
+    public Optional<String> getSpaceWeatherSource() {
+        return Optional.ofNullable(spaceWeatherSource);
     }
 
     /** Set Space Weather data source.
@@ -408,8 +422,8 @@ public class Perturbations extends CommentsContainer {
     /** Get epoch of the Space Weather data.
      * @return epoch of the Space Weather data
      */
-    public AbsoluteDate getSpaceWeatherEpoch() {
-        return spaceWeatherEpoch;
+    public Optional<AbsoluteDate> getSpaceWeatherEpoch() {
+        return Optional.ofNullable(spaceWeatherEpoch);
     }
 
     /** Set epoch of the Space Weather data.
@@ -422,8 +436,8 @@ public class Perturbations extends CommentsContainer {
     /** Get the interpolation method for Space Weather data.
      * @return interpolation method for Space Weather data
      */
-    public String getInterpMethodSW() {
-        return interpMethodSW;
+    public Optional<String> getInterpMethodSW() {
+        return Optional.ofNullable(interpMethodSW);
     }
 
     /** Set the interpolation method for Space Weather data.
@@ -437,8 +451,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the planetary 3-hour-range geomagnetic index Kₚ.
      * @return fixed (time invariant) value of the planetary 3-hour-range geomagnetic index Kₚ
      */
-    public double getFixedGeomagneticKp() {
-        return fixedGeomagneticKp;
+    public Optional<Double> getFixedGeomagneticKp() {
+        return Optional.ofNullable(fixedGeomagneticKp);
     }
 
     /** Set fixed (time invariant) value of the planetary 3-hour-range geomagnetic index Kₚ.
@@ -451,8 +465,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the planetary 3-hour-range geomagnetic index aₚ.
      * @return fixed (time invariant) value of the planetary 3-hour-range geomagnetic index aₚ
      */
-    public double getFixedGeomagneticAp() {
-        return fixedGeomagneticAp;
+    public Optional<Double> getFixedGeomagneticAp() {
+        return Optional.ofNullable(fixedGeomagneticAp);
     }
 
     /** Set fixed (time invariant) value of the planetary 3-hour-range geomagnetic index aₚ.
@@ -465,8 +479,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the planetary 1-hour-range geomagnetic index Dst.
      * @return fixed (time invariant) value of the planetary 1-hour-range geomagnetic index Dst
      */
-    public double getFixedGeomagneticDst() {
-        return fixedGeomagneticDst;
+    public Optional<Double> getFixedGeomagneticDst() {
+        return Optional.ofNullable(fixedGeomagneticDst);
     }
 
     /** Set fixed (time invariant) value of the planetary 1-hour-range geomagnetic index Dst.
@@ -479,8 +493,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the Solar Flux Unit daily proxy F10.7.
      * @return fixed (time invariant) value of the Solar Flux Unit daily proxy F10.7
      */
-    public double getFixedF10P7() {
-        return fixedF10P7;
+    public Optional<Double> getFixedF10P7() {
+        return Optional.ofNullable(fixedF10P7);
     }
 
     /** Set fixed (time invariant) value of the Solar Flux Unit daily proxy F10.7.
@@ -493,8 +507,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the Solar Flux Unit 81-day running center-average proxy F10.7.
      * @return fixed (time invariant) value of the Solar Flux Unit 81-day running center-average proxy F10.7
      */
-    public double getFixedF10P7Mean() {
-        return fixedF10P7Mean;
+    public Optional<Double> getFixedF10P7Mean() {
+        return Optional.ofNullable(fixedF10P7Mean);
     }
 
     /** Set fixed (time invariant) value of the Solar Flux Unit 81-day running center-average proxy F10.7.
@@ -507,8 +521,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the Solar Flux daily proxy M10.7.
      * @return fixed (time invariant) value of the Solar Flux daily proxy M10.7
      */
-    public double getFixedM10P7() {
-        return fixedM10P7;
+    public Optional<Double> getFixedM10P7() {
+        return Optional.ofNullable(fixedM10P7);
     }
 
     /** Set fixed (time invariant) value of the Solar Flux daily proxy M10.7.
@@ -521,8 +535,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the Solar Flux 81-day running center-average proxy M10.7.
      * @return fixed (time invariant) value of the Solar Flux 81-day running center-average proxy M10.7
      */
-    public double getFixedM10P7Mean() {
-        return fixedM10P7Mean;
+    public Optional<Double> getFixedM10P7Mean() {
+        return Optional.ofNullable(fixedM10P7Mean);
     }
 
     /** Set fixed (time invariant) value of the Solar Flux 81-day running center-average proxy M10.7.
@@ -535,8 +549,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the Solar Flux daily proxy S10.7.
      * @return fixed (time invariant) value of the Solar Flux daily proxy S10.7
      */
-    public double getFixedS10P7() {
-        return fixedS10P7;
+    public Optional<Double> getFixedS10P7() {
+        return Optional.ofNullable(fixedS10P7);
     }
 
     /** Set fixed (time invariant) value of the Solar Flux daily proxy S10.7.
@@ -549,8 +563,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the Solar Flux 81-day running center-average proxy S10.7.
      * @return fixed (time invariant) value of the Solar Flux 81-day running center-average proxy S10.7
      */
-    public double getFixedS10P7Mean() {
-        return fixedS10P7Mean;
+    public Optional<Double> getFixedS10P7Mean() {
+        return Optional.ofNullable(fixedS10P7Mean);
     }
 
     /** Set fixed (time invariant) value of the Solar Flux 81-day running center-average proxy S10.7.
@@ -563,8 +577,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the Solar Flux daily proxy Y10.7.
      * @return fixed (time invariant) value of the Solar Flux daily proxy Y10.7
      */
-    public double getFixedY10P7() {
-        return fixedY10P7;
+    public Optional<Double> getFixedY10P7() {
+        return Optional.ofNullable(fixedY10P7);
     }
 
     /** Set fixed (time invariant) value of the Solar Flux daily proxy Y10.7.
@@ -577,8 +591,8 @@ public class Perturbations extends CommentsContainer {
     /** Get fixed (time invariant) value of the Solar Flux 81-day running center-average proxy Y10.7.
      * @return fixed (time invariant) value of the Solar Flux 81-day running center-average proxy Y10.7
      */
-    public double getFixedY10P7Mean() {
-        return fixedY10P7Mean;
+    public Optional<Double> getFixedY10P7Mean() {
+        return Optional.ofNullable(fixedY10P7Mean);
     }
 
     /** Set fixed (time invariant) value of the Solar Flux 81-day running center-average proxy Y10.7.

@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
@@ -58,23 +60,23 @@ class PerturbationsWriter extends AbstractWriter {
         generator.writeComments(perturbations.getComments());
 
         // atmosphere
-        generator.writeEntry(PerturbationsKey.ATMOSPHERIC_MODEL.name(), perturbations.getAtmosphericModel(), null, false);
+        generator.writeOptionalStringEntry(PerturbationsKey.ATMOSPHERIC_MODEL.name(), perturbations.getAtmosphericModel(), null, false);
 
         // gravity
-        if (perturbations.getGravityModel() != null) {
+        if (perturbations.getGravityModel().isPresent()) {
             final String model =
                             new StringBuilder().
-                            append(perturbations.getGravityModel()).
+                            append(perturbations.getGravityModel().get()).
                             append(": ").
-                            append(perturbations.getGravityDegree()).
+                            append(perturbations.getGravityDegree().orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE))).
                             append("D ").
-                            append(perturbations.getGravityOrder()).
+                            append(perturbations.getGravityOrder().orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE))).
                             append('O').
                             toString();
             generator.writeEntry(PerturbationsKey.GRAVITY_MODEL.name(), model, null, false);
         }
-        generator.writeEntry(PerturbationsKey.EQUATORIAL_RADIUS.name(),    perturbations.getEquatorialRadius(), Unit.KILOMETRE, false);
-        generator.writeEntry(PerturbationsKey.GM.name(),                   perturbations.getGm(), Units.KM3_PER_S2,             false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.EQUATORIAL_RADIUS.name(),    perturbations.getEquatorialRadius(), Unit.KILOMETRE, false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.GM.name(),                   perturbations.getGm(), Units.KM3_PER_S2,             false);
         if (perturbations.getNBodyPerturbations() != null && !perturbations.getNBodyPerturbations().isEmpty()) {
             final List<String> names = new ArrayList<>();
             for (BodyFacade bf : perturbations.getNBodyPerturbations()) {
@@ -82,16 +84,16 @@ class PerturbationsWriter extends AbstractWriter {
             }
             generator.writeEntry(PerturbationsKey.N_BODY_PERTURBATIONS.name(), names, false);
         }
-        generator.writeEntry(PerturbationsKey.CENTRAL_BODY_ROTATION.name(), perturbations.getCentralBodyRotation(), Units.DEG_PER_S,       false);
-        generator.writeEntry(PerturbationsKey.OBLATE_FLATTENING.name(),     perturbations.getOblateFlattening(), Unit.ONE,                 false);
-        generator.writeEntry(PerturbationsKey.OCEAN_TIDES_MODEL.name(),     perturbations.getOceanTidesModel(),                      null, false);
-        generator.writeEntry(PerturbationsKey.SOLID_TIDES_MODEL.name(),     perturbations.getSolidTidesModel(),                      null, false);
-        generator.writeEntry(PerturbationsKey.REDUCTION_THEORY.name(),      perturbations.getReductionTheory(),                      null, false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.CENTRAL_BODY_ROTATION.name(), perturbations.getCentralBodyRotation(), Units.DEG_PER_S,       false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.OBLATE_FLATTENING.name(),     perturbations.getOblateFlattening(), Unit.ONE,                 false);
+        generator.writeOptionalStringEntry(PerturbationsKey.OCEAN_TIDES_MODEL.name(),     perturbations.getOceanTidesModel(),                      null, false);
+        generator.writeOptionalStringEntry(PerturbationsKey.SOLID_TIDES_MODEL.name(),     perturbations.getSolidTidesModel(),                      null, false);
+        generator.writeOptionalStringEntry(PerturbationsKey.REDUCTION_THEORY.name(),      perturbations.getReductionTheory(),                      null, false);
 
         // radiation
-        generator.writeEntry(PerturbationsKey.ALBEDO_MODEL.name(),      perturbations.getAlbedoModel(),    null, false);
-        generator.writeEntry(PerturbationsKey.ALBEDO_GRID_SIZE.name(),  perturbations.getAlbedoGridSize(),       false);
-        generator.writeEntry(PerturbationsKey.SHADOW_MODEL.name(),      perturbations.getShadowModel(),          false);
+        generator.writeOptionalStringEntry(PerturbationsKey.ALBEDO_MODEL.name(),    perturbations.getAlbedoModel(),    null, false);
+        generator.writeOptionalIntEntry(PerturbationsKey.ALBEDO_GRID_SIZE.name(),   perturbations.getAlbedoGridSize(),       false);
+        generator.writeOptionalEnumEntry(PerturbationsKey.SHADOW_MODEL.name(),      perturbations.getShadowModel(),          false);
         if (perturbations.getShadowBodies() != null && !perturbations.getShadowBodies().isEmpty()) {
             final List<String> names = new ArrayList<>();
             for (BodyFacade bf : perturbations.getShadowBodies()) {
@@ -99,23 +101,23 @@ class PerturbationsWriter extends AbstractWriter {
             }
             generator.writeEntry(PerturbationsKey.SHADOW_BODIES.name(), names, false);
         }
-        generator.writeEntry(PerturbationsKey.SRP_MODEL.name(),          perturbations.getSrpModel(), null, false);
+        generator.writeOptionalStringEntry(PerturbationsKey.SRP_MODEL.name(),          perturbations.getSrpModel(), null, false);
 
         // data source
-        generator.writeEntry(PerturbationsKey.SW_DATA_SOURCE.name(),    perturbations.getSpaceWeatherSource(),                    null, false);
-        generator.writeEntry(PerturbationsKey.SW_DATA_EPOCH.name(),     timeConverter, perturbations.getSpaceWeatherEpoch(),      true, false);
-        generator.writeEntry(PerturbationsKey.SW_INTERP_METHOD.name(),  perturbations.getInterpMethodSW(),                        null, false);
-        generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_KP.name(),   perturbations.getFixedGeomagneticKp(), Units.NANO_TESLA,        false);
-        generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_AP.name(),   perturbations.getFixedGeomagneticAp(), Units.NANO_TESLA,        false);
-        generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_DST.name(),  perturbations.getFixedGeomagneticDst(), Units.NANO_TESLA,       false);
-        generator.writeEntry(PerturbationsKey.FIXED_F10P7.name(),       perturbations.getFixedF10P7(), Unit.SOLAR_FLUX_UNIT,            false);
-        generator.writeEntry(PerturbationsKey.FIXED_F10P7_MEAN.name(),  perturbations.getFixedF10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
-        generator.writeEntry(PerturbationsKey.FIXED_M10P7.name(),       perturbations.getFixedM10P7(), Unit.SOLAR_FLUX_UNIT,            false);
-        generator.writeEntry(PerturbationsKey.FIXED_M10P7_MEAN.name(),  perturbations.getFixedM10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
-        generator.writeEntry(PerturbationsKey.FIXED_S10P7.name(),       perturbations.getFixedS10P7(), Unit.SOLAR_FLUX_UNIT,            false);
-        generator.writeEntry(PerturbationsKey.FIXED_S10P7_MEAN.name(),  perturbations.getFixedS10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
-        generator.writeEntry(PerturbationsKey.FIXED_Y10P7.name(),       perturbations.getFixedY10P7(), Unit.SOLAR_FLUX_UNIT,            false);
-        generator.writeEntry(PerturbationsKey.FIXED_Y10P7_MEAN.name(),  perturbations.getFixedY10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
+        generator.writeOptionalStringEntry(PerturbationsKey.SW_DATA_SOURCE.name(),    perturbations.getSpaceWeatherSource(),                    null, false);
+        generator.writeOptionalDateEntry(PerturbationsKey.SW_DATA_EPOCH.name(),       timeConverter, perturbations.getSpaceWeatherEpoch(),      true, false);
+        generator.writeOptionalStringEntry(PerturbationsKey.SW_INTERP_METHOD.name(),  perturbations.getInterpMethodSW(),                        null, false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_GEOMAG_KP.name(),   perturbations.getFixedGeomagneticKp(), Units.NANO_TESLA,        false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_GEOMAG_AP.name(),   perturbations.getFixedGeomagneticAp(), Units.NANO_TESLA,        false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_GEOMAG_DST.name(),  perturbations.getFixedGeomagneticDst(), Units.NANO_TESLA,       false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_F10P7.name(),       perturbations.getFixedF10P7(), Unit.SOLAR_FLUX_UNIT,            false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_F10P7_MEAN.name(),  perturbations.getFixedF10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_M10P7.name(),       perturbations.getFixedM10P7(), Unit.SOLAR_FLUX_UNIT,            false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_M10P7_MEAN.name(),  perturbations.getFixedM10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_S10P7.name(),       perturbations.getFixedS10P7(), Unit.SOLAR_FLUX_UNIT,            false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_S10P7_MEAN.name(),  perturbations.getFixedS10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_Y10P7.name(),       perturbations.getFixedY10P7(), Unit.SOLAR_FLUX_UNIT,            false);
+        generator.writeOptionalDoubleEntry(PerturbationsKey.FIXED_Y10P7_MEAN.name(),  perturbations.getFixedY10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
 
     }
 

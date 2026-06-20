@@ -17,6 +17,9 @@
 
 package org.orekit.files.ccsds.ndm.odm.omm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /** Container for TLE data.
@@ -86,23 +89,28 @@ public class OmmTle extends CommentsContainer {
     private int revAtEpoch;
 
     /** SGP/SGP4 drag-like coefficient (in units 1/[Earth radii]), only required if MEAN_ELEMENT_THEORY = SGP/SGP4. */
-    private double bStar;
+    @Nullable
+    private Double bStar;
 
     /** SGP4-XP drag-like coefficient (in m²/kg), only required if MEAN_ELEMENT_THEORY = SGP4-XP.
      * @since 12.0
      */
-    private double bTerm;
+    @Nullable
+    private Double bTerm;
 
     /** First Time Derivative of the Mean Motion, only required if MEAN_ELEMENT_THEORY = SGP. */
-    private double meanMotionDot;
+    @Nullable
+    private Double meanMotionDot;
 
     /** Second Time Derivative of Mean Motion, only required if MEAN_ELEMENT_THEORY = SGP. */
-    private double meanMotionDotDot;
+    @Nullable
+    private Double meanMotionDotDot;
 
     /** SGP4-XP solar radiation pressure-like coefficient Aγ/m (in m²/kg), only required if MEAN_ELEMENT_THEORY = SGP4-XP.
      * @since 12.0
      */
-    private double agOm;
+    @Nullable
+    private Double agOm;
 
     /** Create an empty data set.
      */
@@ -112,11 +120,6 @@ public class OmmTle extends CommentsContainer {
         noradID            = -1;
         elementSetNo       = -1;
         revAtEpoch         = -1;
-        bStar              =  Double.NaN;
-        bTerm              =  Double.NaN;
-        meanMotionDot      =  Double.NaN;
-        meanMotionDotDot   =  Double.NaN;
-        agOm               =  Double.NaN;
     }
 
     /** {@inheritDoc} */
@@ -129,19 +132,19 @@ public class OmmTle extends CommentsContainer {
         checkNotNegative(revAtEpoch,   OmmTleKey.REV_AT_EPOCH.name());
 
         if (ephemerisType == EPHEMERIS_TYPE_SGP4) {
-            checkNotNaN(bStar, OmmTleKey.BSTAR.name());
+            checkNotNaN(getBStar().orElse(Double.NaN), OmmTleKey.BSTAR.name());
         } else if (ephemerisType == EPHEMERIS_TYPE_SGP4_XP) {
-            checkNotNaN(bTerm, OmmTleKey.BTERM.name());
+            checkNotNaN(getBTerm().orElse(Double.NaN), OmmTleKey.BTERM.name());
         }
 
         if (ephemerisType == EPHEMERIS_TYPE_SGP  || ephemerisType == EPHEMERIS_TYPE_PPT3) {
-            checkNotNaN(meanMotionDot, OmmTleKey.MEAN_MOTION_DOT.name());
+            checkNotNaN(getMeanMotionDot().orElse(Double.NaN), OmmTleKey.MEAN_MOTION_DOT.name());
         }
 
         if (ephemerisType == EPHEMERIS_TYPE_SGP  || ephemerisType == EPHEMERIS_TYPE_PPT3) {
-            checkNotNaN(meanMotionDotDot, OmmTleKey.MEAN_MOTION_DDOT.name());
+            checkNotNaN(getMeanMotionDotDot().orElse(Double.NaN), OmmTleKey.MEAN_MOTION_DDOT.name());
         } else if (ephemerisType == EPHEMERIS_TYPE_SGP4_XP) {
-            checkNotNaN(agOm, OmmTleKey.AGOM.name());
+            checkNotNaN(getAGoM().orElse(Double.NaN), OmmTleKey.AGOM.name());
         }
 
     }
@@ -224,8 +227,8 @@ public class OmmTle extends CommentsContainer {
     /** Get the SGP/SGP4 drag-like coefficient.
      * @return the SGP/SGP4 drag-like coefficient
      */
-    public double getBStar() {
-        return bStar;
+    public Optional<Double> getBStar() {
+        return Optional.ofNullable(bStar);
     }
 
     /** Set the SGP/SGP4 drag-like coefficient.
@@ -240,8 +243,8 @@ public class OmmTle extends CommentsContainer {
      * @return the SGP4-XP drag-like coefficient
      * @since 12.0
      */
-    public double getBTerm() {
-        return bTerm;
+    public Optional<Double> getBTerm() {
+        return Optional.ofNullable(bTerm);
     }
 
     /** Set the SGP4-XP drag-like coefficient.
@@ -256,8 +259,8 @@ public class OmmTle extends CommentsContainer {
     /** Get the first time derivative of the mean motion.
      * @return the first time derivative of the mean motion
      */
-    public double getMeanMotionDot() {
-        return meanMotionDot;
+    public Optional<Double> getMeanMotionDot() {
+        return Optional.ofNullable(meanMotionDot);
     }
 
     /** Set the first time derivative of the mean motion.
@@ -271,8 +274,8 @@ public class OmmTle extends CommentsContainer {
     /** Get the second time derivative of the mean motion.
      * @return the second time derivative of the mean motion
      */
-    public double getMeanMotionDotDot() {
-        return meanMotionDotDot;
+    public Optional<Double> getMeanMotionDotDot() {
+        return Optional.ofNullable(meanMotionDotDot);
     }
 
     /** Set the second time derivative of the mean motion.
@@ -287,8 +290,8 @@ public class OmmTle extends CommentsContainer {
      * @return the SGP4-XP solar radiation pressure-like coefficient Aγ/m
      * @since 12.0
      */
-    public double getAGoM() {
-        return agOm;
+    public Optional<Double> getAGoM() {
+        return Optional.ofNullable(agOm);
     }
 
     /** Set the SGP4-XP solar radiation pressure-like coefficient Aγ/m.

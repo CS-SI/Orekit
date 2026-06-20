@@ -40,6 +40,7 @@ import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.ssa.metrics.FieldProbabilityOfCollision;
 import org.orekit.ssa.metrics.ProbabilityOfCollision;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.Fieldifier;
 import org.orekit.utils.PVCoordinates;
 
@@ -228,11 +229,11 @@ public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTerm
                                           final DataContext cdmDataContext) {
 
         // Extract orbit
-        final Frame        frame = cdmMetadata.getRefFrame().asFrame();
+        final Frame        frame = cdmMetadata.getRefFrame().asFrame().orElseThrow(); // CdmMetadata validates is not null
         final AbsoluteDate tca   = cdmRelativeMetadata.getTca();
         final PVCoordinates pvInFrame = new PVCoordinates(cdmData.getStateVectorBlock().getPositionVector(),
                                                           cdmData.getStateVectorBlock().getVelocityVector());
-        final double mu = cdmMetadata.getOrbitCenter().getBody().getGM();
+        final double mu = cdmMetadata.getOrbitCenter().isPresent() ? cdmMetadata.getOrbitCenter().get().getBody().orElseThrow().getGM() : Constants.WGS84_EARTH_MU;
 
         // Simple case where the reference frame is already pseudo-inertial
         if (frame.isPseudoInertial()) {

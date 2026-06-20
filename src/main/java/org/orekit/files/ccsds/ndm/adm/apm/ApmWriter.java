@@ -98,38 +98,38 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
             generator.writeEntry("EPOCH", getTimeConverter(), segment.getData().getEpoch(), false, true);
         }
 
-        if (segment.getData().getQuaternionBlock() != null) {
+        if (segment.getData().getQuaternionBlock().isPresent()) {
             // write quaternion block
             final String xmlTag = ApmDataSubStructureKey.quaternionState.name();
             final String kvnTag = formatVersion < 2.0 ? null : ApmDataSubStructureKey.QUAT.name();
             new ApmQuaternionWriter(formatVersion, xmlTag, kvnTag,
-                                    segment.getData().getQuaternionBlock(),
+                                    segment.getData().getQuaternionBlock().get(),
                                     formatVersion >= 2.0 ? null : segment.getData().getEpoch(),
                                                          getTimeConverter()).
             write(generator);
         }
 
-        if (segment.getData().getEulerBlock() != null) {
+        if (segment.getData().getEulerBlock().isPresent()) {
             // write optional Euler block for three axis stabilized satellites
             final String xmlTag = formatVersion < 2.0 ?
                                   ApmDataSubStructureKey.eulerElementsThree.name() :
                                   ApmDataSubStructureKey.eulerAngleState.name();
             final String kvnTag = formatVersion < 2.0 ? null : ApmDataSubStructureKey.EULER.name();
             new EulerWriter(formatVersion, xmlTag, kvnTag,
-                            segment.getData().getEulerBlock()).
+                            segment.getData().getEulerBlock().get()).
             write(generator);
         }
 
-        if (segment.getData().getAngularVelocityBlock() != null) {
+        if (segment.getData().getAngularVelocityBlock().isPresent()) {
             // write optional angular velocity block
             final String xmlTag = ApmDataSubStructureKey.angularVelocity.name();
             final String kvnTag = ApmDataSubStructureKey.ANGVEL.name();
             new AngularVelocityWriter(xmlTag, kvnTag,
-                                      segment.getData().getAngularVelocityBlock()).
+                                      segment.getData().getAngularVelocityBlock().get()).
             write(generator);
         }
 
-        if (segment.getData().getSpinStabilizedBlock() != null) {
+        if (segment.getData().getSpinStabilizedBlock().isPresent()) {
             // write optional block for spin stabilized satellites
             final String xmlTag;
             final String kvnTag;
@@ -141,18 +141,18 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
                 kvnTag = ApmDataSubStructureKey.SPIN.name();
             }
             new SpinStabilizedWriter(formatVersion, xmlTag, kvnTag,
-                                     segment.getData().getSpinStabilizedBlock()).
+                                     segment.getData().getSpinStabilizedBlock().get()).
             write(generator);
         }
 
-        if (segment.getData().getInertiaBlock() != null) {
+        if (segment.getData().getInertiaBlock().isPresent()) {
             // write optional spacecraft parameters block
             final String xmlTag = formatVersion < 2.0 ?
                                   ApmDataSubStructureKey.spacecraftParameters.name() :
                                   ApmDataSubStructureKey.inertia.name();
             final String kvnTag = formatVersion < 2.0 ? null : ApmDataSubStructureKey.INERTIA.name();
             new InertiaWriter(formatVersion, xmlTag, kvnTag,
-                              segment.getData().getInertiaBlock()).
+                              segment.getData().getInertiaBlock().get()).
             write(generator);
         }
 

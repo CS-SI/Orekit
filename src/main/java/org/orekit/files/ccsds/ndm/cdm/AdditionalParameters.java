@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
@@ -30,51 +33,67 @@ import org.orekit.frames.Frame;
 public class AdditionalParameters extends CommonPhysicalProperties {
 
     /** The actual area of the object. */
-    private double areaPC;
+    @Nullable
+    private Double areaPC;
 
     /** The minimum area of the object to be used to compute the collision probability. */
-    private double areaPCMin;
+    @Nullable
+    private Double areaPCMin;
 
     /** The maximum area of the object to be used to compute the collision probability. */
-    private double areaPCMax;
+    @Nullable
+    private Double areaPCMax;
 
     /** The effective area of the object exposed to atmospheric drag. */
-    private double areaDRG;
+    @Nullable
+    private Double areaDRG;
 
     /** The effective area of the object exposed to solar radiation pressure. */
-    private double areaSRP;
+    @Nullable
+    private Double areaSRP;
 
     /** The object hard body radius. */
-    private double hbr;
+    @Nullable
+    private Double hbr;
 
     /** The mass of the object. */
-    private double mass;
+    @Nullable
+    private Double mass;
 
     /** The object’s Cd x A/m used to propagate the state vector and covariance to TCA. */
-    private double cdAreaOverMass;
+    @Nullable
+    private Double cdAreaOverMass;
 
     /** The object’s Cr x A/m used to propagate the state vector and covariance to TCA. */
-    private double crAreaOverMass;
+    @Nullable
+    private Double crAreaOverMass;
 
     /** The object’s acceleration due to in-track thrust used to propagate the state vector and covariance to TCA. */
-    private double thrustAcceleration;
+    @Nullable
+    private Double thrustAcceleration;
 
     /** The amount of energy being removed from the object’s orbit by atmospheric drag. This value is an average calculated during the OD. */
-    private double sedr;
+    @Nullable
+    private Double sedr;
 
     /** The distance of the furthest point in the objects orbit above the equatorial radius of the central body. */
-    private double apoapsisAltitude;
+    @Nullable
+    private Double apoapsisAltitude;
 
     /** The distance of the closest point in the objects orbit above the equatorial radius of the central body . */
-    private double periapsisAltitude;
+    @Nullable
+    private Double periapsisAltitude;
 
     /** The angle between the objects orbit plane and the orbit centers equatorial plane. */
-    private double inclination;
+    @Nullable
+    private Double inclination;
 
     /** A measure of the confidence in the covariance errors matching reality. */
-    private double covConfidence;
+    @Nullable
+    private Double covConfidence;
 
     /** The method used for the calculation of COV_CONFIDENCE. */
+    @Nullable
     private String covConfidenceMethod;
 
     /**
@@ -84,33 +103,16 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      * @since 13.1.5
      */
     public AdditionalParameters(final CcsdsFrameMapper frameMapper) {
-
-       // Call to CommonPhysicalProperties constructor
-        super(frameMapper);
-
-        // we don't call the setXxx() methods in order to avoid
-        // calling refuseFurtherComments as a side effect
-        areaPC              = Double.NaN;
-        areaDRG             = Double.NaN;
-        areaSRP             = Double.NaN;
-        mass                = Double.NaN;
-        cdAreaOverMass      = Double.NaN;
-        crAreaOverMass      = Double.NaN;
-        thrustAcceleration  = Double.NaN;
-        sedr                = Double.NaN;
-        hbr                 = Double.NaN;
-        apoapsisAltitude  = Double.NaN;
-        periapsisAltitude = Double.NaN;
-        inclination       = Double.NaN;
-        covConfidence       = Double.NaN;
+        // Call to CommonPhysicalProperties constructor
+        super(null, frameMapper);
     }
 
     /**
      * Get the actual area of the object.
      * @return the object area (in m²)
      */
-    public double getAreaPC() {
-        return areaPC;
+    public Optional<Double> getAreaPC() {
+        return Optional.ofNullable(areaPC);
     }
 
     /**
@@ -126,8 +128,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      * Get the effective area of the object exposed to atmospheric drag.
      * @return the object area (in m²) exposed to atmospheric drag
      */
-    public double getAreaDRG() {
-        return areaDRG;
+    public Optional<Double> getAreaDRG() {
+        return Optional.ofNullable(areaDRG);
     }
 
     /**
@@ -143,8 +145,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      * Get the effective area of the object exposed to solar radiation pressure.
      * @return the object area (in m²) exposed to solar radiation pressure
      */
-    public double getAreaSRP() {
-        return areaSRP;
+    public Optional<Double> getAreaSRP() {
+        return Optional.ofNullable(areaSRP);
     }
 
     /**
@@ -160,8 +162,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      * Get the mass of the object.
      * @return the mass (in kg) of the object
      */
-    public double getMass() {
-        return mass;
+    public Optional<Double> getMass() {
+        return Optional.ofNullable(mass);
     }
 
     /**
@@ -177,8 +179,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      * Get the object’s Cd x A/m used to propagate the state vector and covariance to TCA.
      * @return the object’s Cd x A/m (in m²/kg)
      */
-    public double getCDAreaOverMass() {
-        return cdAreaOverMass;
+    public Optional<Double> getCDAreaOverMass() {
+        return Optional.ofNullable(cdAreaOverMass);
     }
 
     /**
@@ -194,8 +196,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      * Get the object’s Cr x A/m used to propagate the state vector and covariance to TCA.
      * @return the object’s Cr x A/m (in m²/kg)
      */
-    public double getCRAreaOverMass() {
-        return crAreaOverMass;
+    public Optional<Double> getCRAreaOverMass() {
+        return Optional.ofNullable(crAreaOverMass);
     }
 
     /**
@@ -211,8 +213,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      * Get the object’s acceleration due to in-track thrust used to propagate the state vector and covariance to TCA.
      * @return the object’s acceleration (in m/s²) due to in-track thrust
      */
-    public double getThrustAcceleration() {
-        return thrustAcceleration;
+    public Optional<Double> getThrustAcceleration() {
+        return Optional.ofNullable(thrustAcceleration);
     }
 
     /**
@@ -229,8 +231,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      * calculated during the OD. SEDR = Specific Energy Dissipation Rate.
      * @return the amount of energy (in W/kg) being removed from the object’s orbit by atmospheric drag
      */
-    public double getSedr() {
-        return sedr;
+    public Optional<Double> getSedr() {
+        return Optional.ofNullable(sedr);
     }
 
     /**
@@ -246,8 +248,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** Set the minimum area of the object to be used to compute the collision probability.
      * @return the areaPCMin
      */
-    public double getAreaPCMin() {
-        return areaPCMin;
+    public Optional<Double> getAreaPCMin() {
+        return Optional.ofNullable(areaPCMin);
     }
 
     /** Get the minimum area of the object to be used to compute the collision probability.
@@ -260,8 +262,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** Get the maximum area of the object to be used to compute the collision probability.
      * @return the areaPCMax
      */
-    public double getAreaPCMax() {
-        return areaPCMax;
+    public Optional<Double> getAreaPCMax() {
+        return Optional.ofNullable(areaPCMax);
     }
 
     /** Set the maximum area for the object to be used to compute the collision probability.
@@ -274,8 +276,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
      /** Get the object hard body radius.
      * @return the object hard body radius.
      */
-    public double getHbr() {
-        return hbr;
+    public Optional<Double> getHbr() {
+        return Optional.ofNullable(hbr);
     }
 
     /** Set the object hard body radius.
@@ -289,8 +291,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** Get the distance of the furthest point in the objects orbit above the equatorial radius of the central body.
      * @return the apoapsisAltitude
      */
-    public double getApoapsisAltitude() {
-        return apoapsisAltitude;
+    public Optional<Double> getApoapsisAltitude() {
+        return Optional.ofNullable(apoapsisAltitude);
     }
 
     /** Set the distance of the furthest point in the objects orbit above the equatorial radius of the central body.
@@ -304,8 +306,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** Get the distance of the closest point in the objects orbit above the equatorial radius of the central body.
      * @return the periapsissAltitude
      */
-    public double getPeriapsisAltitude() {
-        return periapsisAltitude;
+    public Optional<Double> getPeriapsisAltitude() {
+        return Optional.ofNullable(periapsisAltitude);
     }
 
     /** Set the distance of the closest point in the objects orbit above the equatorial radius of the central body.
@@ -319,8 +321,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** Get the angle between the objects orbit plane and the orbit centers equatorial plane.
      * @return the inclination
      */
-    public double getInclination() {
-        return inclination;
+    public Optional<Double> getInclination() {
+        return Optional.ofNullable(inclination);
     }
 
     /** Set the angle between the objects orbit plane and the orbit centers equatorial plane.
@@ -334,8 +336,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** Get the measure of the confidence in the covariance errors matching reality.
      * @return the covConfidence
      */
-    public double getCovConfidence() {
-        return covConfidence;
+    public Optional<Double> getCovConfidence() {
+        return Optional.ofNullable(covConfidence);
     }
 
     /** Set the measure of the confidence in the covariance errors matching reality.
@@ -349,8 +351,8 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** Get the method used for the calculation of COV_CONFIDENCE.
      * @return the covConfidenceMethod
      */
-    public String getCovConfidenceMethod() {
-        return covConfidenceMethod;
+    public Optional<String> getCovConfidenceMethod() {
+        return Optional.ofNullable(covConfidenceMethod);
     }
 
     /** Set the method used for the calculation of COV_CONFIDENCE.
@@ -360,9 +362,9 @@ public class AdditionalParameters extends CommonPhysicalProperties {
         refuseFurtherComments();
 
         // Check key condition
-        if (Double.isNaN(getCovConfidence())) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, AdditionalParametersKey.COV_CONFIDENCE);
-        }
+        getCovConfidence().
+            orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                  AdditionalParametersKey.COV_CONFIDENCE));
 
         this.covConfidenceMethod = covConfidenceMethod;
     }

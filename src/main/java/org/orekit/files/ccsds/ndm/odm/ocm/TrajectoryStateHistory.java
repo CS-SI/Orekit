@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.files.ccsds.utils.Initializer;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -59,7 +60,7 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
                                   final List<TrajectoryState> states,
                                   final OneAxisEllipsoid body, final double mu) {
         this.metadata = metadata;
-        this.states   = states;
+        this.states   = Initializer.emptyListIfNull(states);
         this.mu       = mu;
         this.body     = body;
     }

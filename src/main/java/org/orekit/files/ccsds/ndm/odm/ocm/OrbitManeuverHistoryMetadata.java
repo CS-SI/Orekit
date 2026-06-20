@@ -19,8 +19,10 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
@@ -66,24 +68,30 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     private String manID;
 
     /** Identification number of previous maneuver. */
+    @Nullable
     private String manPrevID;
 
     /** Identification number of next maneuver. */
+    @Nullable
     private String manNextID;
 
     /** Basis of this maneuver history data. */
+    @Nullable
     private ManBasis manBasis;
 
     /** Identification number of the orbit determination or simulation upon which this maneuver is based. */
+    @Nullable
     private String manBasisID;
 
     /** Identifier of the device used for this maneuver. */
     private String manDeviceID;
 
     /** Completion time of previous maneuver. */
+    @Nullable
     private AbsoluteDate manPrevEpoch;
 
     /** Start time of next maneuver. */
+    @Nullable
     private AbsoluteDate manNextEpoch;
 
     /** Reference frame of the maneuver. */
@@ -96,55 +104,71 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     private List<String> manPurpose;
 
     /** Prediction source on which this maneuver is based. */
+    @Nullable
     private String manPredSource;
 
     /** Origin of maneuver gravitational assist body. */
+    @Nullable
     private BodyFacade gravitationalAssist;
 
     /** Type of duty cycle. */
     private DutyCycleType dcType;
 
     /** Start time of duty cycle-based maneuver window. */
+    @Nullable
     private AbsoluteDate dcWindowOpen;
 
     /** End time of duty cycle-based maneuver window. */
+    @Nullable
     private AbsoluteDate dcWindowClose;
 
     /** Minimum number of "ON" duty cycles. */
-    private int dcMinCycles;
+    @Nullable
+    private Integer dcMinCycles;
 
     /** Maximum number of "ON" duty cycles. */
-    private int dcMaxCycles;
+    @Nullable
+    private Integer dcMaxCycles;
 
     /** Start time of initial duty cycle-based maneuver execution. */
+    @Nullable
     private AbsoluteDate dcExecStart;
 
     /** End time of final duty cycle-based maneuver execution. */
+    @Nullable
     private AbsoluteDate dcExecStop;
 
     /** Duty cycle thrust reference time. */
+    @Nullable
     private AbsoluteDate dcRefTime;
 
     /** Duty cycle pulse "ON" duration. */
-    private double dcTimePulseDuration;
+    @Nullable
+    private Double dcTimePulseDuration;
 
     /** Duty cycle elapsed time between start of a pulse and start of next pulse. */
-    private double dcTimePulsePeriod;
+    @Nullable
+    private Double dcTimePulsePeriod;
 
     /** Reference direction for triggering duty cycle. */
+    @Nullable
     private Vector3D dcRefDir;
 
     /** Spacecraft body frame in which {@link #dcBodyTrigger} is specified. */
+    @Nullable
     private SpacecraftBodyFrame dcBodyFrame;
 
     /** Direction in {@link #dcBodyFrame body frame} for triggering duty cycle. */
+    @Nullable
     private Vector3D dcBodyTrigger;
 
     /** Phase angle of pulse start. */
-    private double dcPhaseStartAngle;
+    @Nullable
+    private Double dcPhaseStartAngle;
 
     /** Phase angle of pulse stop. */
-    private double dcPhaseStopAngle;
+    @Nullable
+    private Double dcPhaseStopAngle;
 
     /** Maneuver elements of information. */
     private List<ManeuverFieldType> manComposition;
@@ -170,45 +194,43 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
                                               OrbitRelativeFrame.TNW_INERTIAL, null,
                                               OrbitRelativeFrame.TNW_INERTIAL.name());
         manFrameEpoch       = epochT0;
+        manUnits            = Collections.emptyList();
         manPurpose          = Collections.emptyList();
+        manComposition      = Collections.emptyList();
         dcType              = DEFAULT_DC_TYPE;
-        dcMinCycles         = -1;
-        dcMaxCycles         = -1;
-        dcTimePulseDuration = Double.NaN;
-        dcTimePulsePeriod   = Double.NaN;
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(manID,          OrbitManeuverHistoryMetadataKey.MAN_ID.name());
-        checkNotNull(manDeviceID,    OrbitManeuverHistoryMetadataKey.MAN_DEVICE_ID.name());
+        checkNotNull(manID,       OrbitManeuverHistoryMetadataKey.MAN_ID.name());
+        checkNotNull(manDeviceID, OrbitManeuverHistoryMetadataKey.MAN_DEVICE_ID.name());
 
         if (dcType != DutyCycleType.CONTINUOUS) {
-            checkNotNull(dcWindowOpen,       OrbitManeuverHistoryMetadataKey.DC_WIN_OPEN.name());
-            checkNotNull(dcWindowClose,      OrbitManeuverHistoryMetadataKey.DC_WIN_CLOSE.name());
-            checkNotNull(dcExecStart,        OrbitManeuverHistoryMetadataKey.DC_EXEC_START.name());
-            checkNotNull(dcExecStop,         OrbitManeuverHistoryMetadataKey.DC_EXEC_STOP.name());
-            checkNotNull(dcRefTime,          OrbitManeuverHistoryMetadataKey.DC_REF_TIME.name());
-            checkNotNaN(dcTimePulseDuration, OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name());
-            checkNotNaN(dcTimePulsePeriod,   OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name());
+            checkNotNull(dcWindowOpen,  OrbitManeuverHistoryMetadataKey.DC_WIN_OPEN.name());
+            checkNotNull(dcWindowClose, OrbitManeuverHistoryMetadataKey.DC_WIN_CLOSE.name());
+            checkNotNull(dcExecStart,   OrbitManeuverHistoryMetadataKey.DC_EXEC_START.name());
+            checkNotNull(dcExecStop,    OrbitManeuverHistoryMetadataKey.DC_EXEC_STOP.name());
+            checkNotNull(dcRefTime,     OrbitManeuverHistoryMetadataKey.DC_REF_TIME.name());
+            checkNotNaN(getDcTimePulseDuration().orElse(Double.NaN), OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name());
+            checkNotNaN(getDcTimePulsePeriod().orElse(Double.NaN),   OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name());
         }
         if (dcType == DutyCycleType.TIME_AND_ANGLE) {
-            checkNotNull(dcRefDir,           OrbitManeuverHistoryMetadataKey.DC_REF_DIR.name());
-            checkNotNull(dcBodyFrame,        OrbitManeuverHistoryMetadataKey.DC_BODY_FRAME.name());
-            checkNotNull(dcBodyTrigger,      OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name());
-            checkNotNull(dcPhaseStartAngle,  OrbitManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name());
-            checkNotNull(dcPhaseStopAngle,   OrbitManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name());
+            checkNotNull(dcRefDir,      OrbitManeuverHistoryMetadataKey.DC_REF_DIR.name());
+            checkNotNull(dcBodyFrame,   OrbitManeuverHistoryMetadataKey.DC_BODY_FRAME.name());
+            checkNotNull(dcBodyTrigger, OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name());
+            checkNotNaN(getDcPhaseStartAngle().orElse(Double.NaN), OrbitManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name());
+            checkNotNaN(getDcPhaseStopAngle().orElse(Double.NaN),  OrbitManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name());
         }
 
-        checkNotNull(manComposition, OrbitManeuverHistoryMetadataKey.MAN_COMPOSITION.name());
+        checkNotEmpty(manComposition, OrbitManeuverHistoryMetadataKey.MAN_COMPOSITION.name());
         if (!manComposition.get(0).isTime()) {
             throw new OrekitException(OrekitMessages.CCSDS_MANEUVER_MISSING_TIME, manID);
         }
         final int firstNonTime = (manComposition.size() > 1 && manComposition.get(1).isTime()) ? 2 : 1;
 
-        if (manUnits != null) {
+        if (!manUnits.isEmpty()) {
             if (manUnits.size() != manComposition.size() - firstNonTime) {
                 throw new OrekitException(OrekitMessages.CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS,
                                           manID);
@@ -237,8 +259,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get identification number of previous maneuver.
      * @return identification number of previous maneuver
      */
-    public String getManPrevID() {
-        return manPrevID;
+    public Optional<String> getManPrevID() {
+        return Optional.ofNullable(manPrevID);
     }
 
     /** Set identification number of previous maneuver.
@@ -252,8 +274,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get identification number of next maneuver.
      * @return identification number of next maneuver
      */
-    public String getManNextID() {
-        return manNextID;
+    public Optional<String> getManNextID() {
+        return Optional.ofNullable(manNextID);
     }
 
     /** Set identification number of next maneuver.
@@ -267,8 +289,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get basis of this maneuver history data.
      * @return basis of this maneuver history data
      */
-    public ManBasis getManBasis() {
-        return manBasis;
+    public Optional<ManBasis> getManBasis() {
+        return Optional.ofNullable(manBasis);
     }
 
     /** Set basis of this maneuver history data.
@@ -282,8 +304,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get identification number of the orbit determination or simulation upon which this maneuver is based.
      * @return identification number of the orbit determination or simulation upon which this maneuver is based
      */
-    public String getManBasisID() {
-        return manBasisID;
+    public Optional<String> getManBasisID() {
+        return Optional.ofNullable(manBasisID);
     }
 
     /** Set identification number of the orbit determination or simulation upon which this maneuver is based.
@@ -312,8 +334,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get completion time of previous maneuver.
      * @return completion time of previous maneuver
      */
-    public AbsoluteDate getManPrevEpoch() {
-        return manPrevEpoch;
+    public Optional<AbsoluteDate> getManPrevEpoch() {
+        return Optional.ofNullable(manPrevEpoch);
     }
 
     /** Set completion time of previous maneuver.
@@ -327,8 +349,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get start time of next maneuver.
      * @return start time of next maneuver
      */
-    public AbsoluteDate getManNextEpoch() {
-        return manNextEpoch;
+    public Optional<AbsoluteDate> getManNextEpoch() {
+        return Optional.ofNullable(manNextEpoch);
     }
 
     /** Set start time of next maneuver.
@@ -356,8 +378,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get prediction source on which this maneuver is based.
      * @return prediction source on which this maneuver is based
      */
-    public String getManPredSource() {
-        return manPredSource;
+    public Optional<String> getManPredSource() {
+        return Optional.ofNullable(manPredSource);
     }
 
     /** Set prediction source on which this maneuver is based.
@@ -427,8 +449,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get the origin of gravitational assist.
      * @return the origin of gravitational assist.
      */
-    public BodyFacade getGravitationalAssist() {
-        return gravitationalAssist;
+    public Optional<BodyFacade> getGravitationalAssist() {
+        return Optional.ofNullable(gravitationalAssist);
     }
 
     /** Set the origin of gravitational assist.
@@ -456,8 +478,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get the start time of duty cycle-based maneuver window.
      * @return start time of duty cycle-based maneuver window
      */
-    public AbsoluteDate getDcWindowOpen() {
-        return dcWindowOpen;
+    public Optional<AbsoluteDate> getDcWindowOpen() {
+        return Optional.ofNullable(dcWindowOpen);
     }
 
     /** Set the start time of duty cycle-based maneuver window.
@@ -470,8 +492,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get the end time of duty cycle-based maneuver window.
      * @return end time of duty cycle-based maneuver window
      */
-    public AbsoluteDate getDcWindowClose() {
-        return dcWindowClose;
+    public Optional<AbsoluteDate> getDcWindowClose() {
+        return Optional.ofNullable(dcWindowClose);
     }
 
     /** Set the end time of duty cycle-based maneuver window.
@@ -484,8 +506,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get the minimum number of "ON" duty cycles.
      * @return minimum number of "ON" duty cycles (-1 if not set)
      */
-    public int getDcMinCycles() {
-        return dcMinCycles;
+    public Optional<Integer> getDcMinCycles() {
+        return Optional.ofNullable(dcMinCycles);
     }
 
     /** Set the minimum number of "ON" duty cycles.
@@ -498,8 +520,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get the maximum number of "ON" duty cycles.
      * @return maximum number of "ON" duty cycles (-1 if not set)
      */
-    public int getDcMaxCycles() {
-        return dcMaxCycles;
+    public Optional<Integer> getDcMaxCycles() {
+        return Optional.ofNullable(dcMaxCycles);
     }
 
     /** Set the maximum number of "ON" duty cycles.
@@ -512,8 +534,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get the start time of initial duty cycle-based maneuver execution.
      * @return start time of initial duty cycle-based maneuver execution
      */
-    public AbsoluteDate getDcExecStart() {
-        return dcExecStart;
+    public Optional<AbsoluteDate> getDcExecStart() {
+        return Optional.ofNullable(dcExecStart);
     }
 
     /** Set the start time of initial duty cycle-based maneuver execution.
@@ -526,8 +548,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get the end time of final duty cycle-based maneuver execution.
      * @return end time of final duty cycle-based maneuver execution
      */
-    public AbsoluteDate getDcExecStop() {
-        return dcExecStop;
+    public Optional<AbsoluteDate> getDcExecStop() {
+        return Optional.ofNullable(dcExecStop);
     }
 
     /** Set the end time of final duty cycle-based maneuver execution.
@@ -540,8 +562,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get duty cycle thrust reference time.
      * @return duty cycle thrust reference time
      */
-    public AbsoluteDate getDcRefTime() {
-        return dcRefTime;
+    public Optional<AbsoluteDate> getDcRefTime() {
+        return Optional.ofNullable(dcRefTime);
     }
 
     /** Set duty cycle thrust reference time.
@@ -554,8 +576,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get duty cycle pulse "ON" duration.
      * @return duty cycle pulse "ON" duration
      */
-    public double getDcTimePulseDuration() {
-        return dcTimePulseDuration;
+    public Optional<Double> getDcTimePulseDuration() {
+        return Optional.ofNullable(dcTimePulseDuration);
     }
 
     /** Set duty cycle pulse "ON" duration.
@@ -568,8 +590,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get duty cycle elapsed time between start of a pulse and start of next pulse.
      * @return duty cycle elapsed time between start of a pulse and start of next pulse
      */
-    public double getDcTimePulsePeriod() {
-        return dcTimePulsePeriod;
+    public Optional<Double> getDcTimePulsePeriod() {
+        return Optional.ofNullable(dcTimePulsePeriod);
     }
 
     /** Set duty cycle elapsed time between start of a pulse and start of next pulse.
@@ -582,8 +604,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get reference direction for triggering duty cycle.
      * @return reference direction for triggering duty cycle
      */
-    public Vector3D getDcRefDir() {
-        return dcRefDir;
+    public Optional<Vector3D> getDcRefDir() {
+        return Optional.ofNullable(dcRefDir);
     }
 
     /** Set reference direction for triggering duty cycle.
@@ -596,8 +618,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get spacecraft body frame in which {@link #getDcBodyTrigger()} is specified.
      * @return spacecraft body frame in which {@link #getDcBodyTrigger()} is specified
      */
-    public SpacecraftBodyFrame getDcBodyFrame() {
-        return dcBodyFrame;
+    public Optional<SpacecraftBodyFrame> getDcBodyFrame() {
+        return Optional.ofNullable(dcBodyFrame);
     }
 
     /** Set spacecraft body frame in which {@link #getDcBodyTrigger()} is specified.
@@ -610,8 +632,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get direction in {@link #getDcBodyFrame() body frame} for triggering duty cycle.
      * @return direction in {@link #getDcBodyFrame() body frame} for triggering duty cycle
      */
-    public Vector3D getDcBodyTrigger() {
-        return  dcBodyTrigger;
+    public Optional<Vector3D> getDcBodyTrigger() {
+        return Optional.ofNullable(dcBodyTrigger);
     }
 
     /** Set direction in {@link #getDcBodyFrame() body frame} for triggering duty cycle.
@@ -624,8 +646,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get phase angle of pulse start.
      * @return phase angle of pulse start
      */
-    public double getDcPhaseStartAngle() {
-        return dcPhaseStartAngle;
+    public Optional<Double> getDcPhaseStartAngle() {
+        return Optional.ofNullable(dcPhaseStartAngle);
     }
 
     /** Set phase angle of pulse start.
@@ -638,8 +660,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     /** Get phase angle of pulse stop.
      * @return phase angle of pulse stop
      */
-    public double getDcPhaseStopAngle() {
-        return dcPhaseStopAngle;
+    public Optional<Double> getDcPhaseStopAngle() {
+        return Optional.ofNullable(dcPhaseStopAngle);
     }
 
     /** Set phase angle of pulse stop.

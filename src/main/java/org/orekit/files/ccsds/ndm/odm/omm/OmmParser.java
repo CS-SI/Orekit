@@ -27,10 +27,10 @@ import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.OdmParser;
@@ -219,8 +219,8 @@ public class OmmParser extends OdmParser<Omm, OmmParser> {
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.validate(header.getFormatVersion());
-        if (metadata.getCenter().getBody() != null) {
-            setMuCreated(metadata.getCenter().getBody().getGM());
+        if (metadata.getCenter().getBody().isPresent()) {
+            setMuCreated(metadata.getCenter().getBody().get().getGM());
         }
         return true;
     }
@@ -247,11 +247,11 @@ public class OmmParser extends OdmParser<Omm, OmmParser> {
                 userDefinedBlock = null;
             }
             if (tleBlock != null) {
-                if (Double.isNaN(keplerianElementsBlock.getMu())) {
+                if (keplerianElementsBlock.getMu().isEmpty()) {
                     keplerianElementsBlock.setMu(TLEPropagator.getMU());
                 }
-                final double mu = keplerianElementsBlock.getMu();
-                final double n  = keplerianElementsBlock.getMeanMotion();
+                final double mu = keplerianElementsBlock.getMu().get();
+                final double n  = keplerianElementsBlock.getMeanMotion().orElseThrow(); // mandatory of OMM
                 keplerianElementsBlock.setA(FastMath.cbrt(mu / (n * n)));
                 setMuParsed(mu);
             }
@@ -278,7 +278,7 @@ public class OmmParser extends OdmParser<Omm, OmmParser> {
         // OMM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
-        return new Omm(header, segments, getConventions(), getDataContext());
+        return new Omm(header, segments, getConventions(), getDataContext(), getSelectedMu());
     }
 
     /** Manage Keplerian elements section.

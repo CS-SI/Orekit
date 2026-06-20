@@ -77,6 +77,16 @@ public class CommentsContainer implements Section {
         }
     }
 
+    /** Complain if a field is null.
+     * @param field field to check
+     * @param key key associated with the field
+     */
+    public void checkNotEmpty(final List<?> field, final String key) {
+        if (field.isEmpty()) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key);
+        }
+    }
+
     /** Complain if a key is not allowed.
      * @param version format version
      * @param field field to check

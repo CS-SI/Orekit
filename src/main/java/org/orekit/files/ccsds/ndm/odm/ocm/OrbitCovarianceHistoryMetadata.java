@@ -17,8 +17,11 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
@@ -51,18 +54,23 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     private final CcsdsFrameMapper frameMapper;
 
     /** Covariance identification number. */
+    @Nullable
     private String covID;
 
     /** Identification number of previous covariance. */
+    @Nullable
     private String covPrevID;
 
     /** Identification number of next covariance. */
+    @Nullable
     private String covNextID;
 
     /** Basis of this covariance time history data. */
+    @Nullable
     private String covBasis;
 
     /** Identification number of the covariance determination or simulation upon which this covariance is based. */
+    @Nullable
     private String covBasisID;
 
     /** Reference frame of the covariance. */
@@ -72,13 +80,16 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     private AbsoluteDate covFrameEpoch;
 
     /** Minimum scale factor to apply to achieve realism. */
-    private double covScaleMin;
+    @Nullable
+    private Double covScaleMin;
 
     /** Maximum scale factor to apply to achieve realism. */
-    private double covScaleMax;
+    @Nullable
+    private Double covScaleMax;
 
     /** Measure of confidence in covariance error matching reality. */
-    private double covConfidence;
+    @Nullable
+    private Double covConfidence;
 
     /** Covariance element set type. */
     private OrbitElementsType covType;
@@ -101,23 +112,20 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         this.frameMapper  = frameMapper;
-        covBasis          = null;
         covReferenceFrame = new FrameFacade(null, null,
                                             OrbitRelativeFrame.TNW_INERTIAL, null,
                                             OrbitRelativeFrame.TNW_INERTIAL.name());
-        covFrameEpoch     = epochT0;
-        covScaleMin       = Double.NaN;
-        covScaleMax       = Double.NaN;
-        covConfidence     = Double.NaN;
-        covType           = OrbitElementsType.CARTPV;
-        covOrdering       = Ordering.LTM;
+        covUnits      = new ArrayList<>();
+        covFrameEpoch = epochT0;
+        covType       = OrbitElementsType.CARTPV;
+        covOrdering   = Ordering.LTM;
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
         super.validate(version);
-        if (covUnits != null) {
+        if (!covUnits.isEmpty()) {
             Unit.ensureCompatible(covType.toString(), covType.getUnits(), false, covUnits);
         }
     }
@@ -125,8 +133,8 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     /** Get covariance identification number.
      * @return covariance identification number
      */
-    public String getCovID() {
-        return covID;
+    public Optional<String> getCovID() {
+        return Optional.ofNullable(covID);
     }
 
     /** Set covariance identification number.
@@ -140,8 +148,8 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     /** Get identification number of previous covariance.
      * @return identification number of previous covariance
      */
-    public String getCovPrevID() {
-        return covPrevID;
+    public Optional<String> getCovPrevID() {
+        return Optional.ofNullable(covPrevID);
     }
 
     /** Set identification number of previous covariance.
@@ -155,8 +163,8 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     /** Get identification number of next covariance.
      * @return identification number of next covariance
      */
-    public String getCovNextID() {
-        return covNextID;
+    public Optional<String> getCovNextID() {
+        return Optional.ofNullable(covNextID);
     }
 
     /** Set identification number of next covariance.
@@ -170,8 +178,8 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     /** Get basis of this covariance time history data.
      * @return basis of this covariance time history data
      */
-    public String getCovBasis() {
-        return covBasis;
+    public Optional<String> getCovBasis() {
+        return Optional.ofNullable(covBasis);
     }
 
     /** Set basis of this covariance time history data.
@@ -185,8 +193,8 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     /** Get identification number of the orbit determination or simulation upon which this covariance is based.
      * @return identification number of the orbit determination or simulation upon which this covariance is based
      */
-    public String getCovBasisID() {
-        return covBasisID;
+    public Optional<String> getCovBasisID() {
+        return Optional.ofNullable(covBasisID);
     }
 
     /** Set identification number of the orbit determination or simulation upon which this covariance is based.
@@ -263,8 +271,8 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     /** Get the minimum scale factor to apply to achieve realism.
      * @return minimum scale factor to apply to achieve realism
      */
-    public double getCovScaleMin() {
-        return covScaleMin;
+    public Optional<Double> getCovScaleMin() {
+        return Optional.ofNullable(covScaleMin);
     }
 
     /** Set the maximum scale factor to apply to achieve realism.
@@ -277,8 +285,8 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     /** Get the maximum scale factor to apply to achieve realism.
      * @return maximum scale factor to apply to achieve realism
      */
-    public double getCovScaleMax() {
-        return covScaleMax;
+    public Optional<Double> getCovScaleMax() {
+        return Optional.ofNullable(covScaleMax);
     }
 
     /** Set the measure of confidence in covariance error matching reality.
@@ -291,8 +299,8 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     /** Get the measure of confidence in covariance error matching reality.
      * @return measure of confidence in covariance error matching reality
      */
-    public double getCovConfidence() {
-        return covConfidence;
+    public Optional<Double> getCovConfidence() {
+        return Optional.ofNullable(covConfidence);
     }
 
     /** Get covariance element set type.

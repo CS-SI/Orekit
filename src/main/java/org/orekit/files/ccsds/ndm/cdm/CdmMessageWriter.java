@@ -168,11 +168,11 @@ public abstract class CdmMessageWriter implements MessageWriter<CdmHeader, CdmSe
                              null, true);
 
         if (header != null) {
-            generator.writeEntry(CdmHeaderKey.MESSAGE_FOR.name(), header.getMessageFor(), null, false);
+            generator.writeOptionalStringEntry(CdmHeaderKey.MESSAGE_FOR.name(), header.getMessageFor(), null, false);
         }
 
         if (header != null) {
-            generator.writeEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), null, false);
+            generator.writeOptionalStringEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), null, false);
         }
 
         if (generator.getFormat() == FileFormat.XML) {

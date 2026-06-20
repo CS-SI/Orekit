@@ -60,24 +60,24 @@ class OrbitCovarianceHistoryWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // identifiers
-        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_ID.name(),       metadata.getCovID(),      null, false);
-        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_PREV_ID.name(),  metadata.getCovPrevID(),  null, false);
-        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_NEXT_ID.name(),  metadata.getCovNextID(),  null, false);
-        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_BASIS.name(),    metadata.getCovBasis(),   null, false);
-        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_BASIS_ID.name(), metadata.getCovBasisID(), null, false);
+        generator.writeOptionalStringEntry(OrbitCovarianceHistoryMetadataKey.COV_ID.name(),       metadata.getCovID(),      null, false);
+        generator.writeOptionalStringEntry(OrbitCovarianceHistoryMetadataKey.COV_PREV_ID.name(),  metadata.getCovPrevID(),  null, false);
+        generator.writeOptionalStringEntry(OrbitCovarianceHistoryMetadataKey.COV_NEXT_ID.name(),  metadata.getCovNextID(),  null, false);
+        generator.writeOptionalStringEntry(OrbitCovarianceHistoryMetadataKey.COV_BASIS.name(),    metadata.getCovBasis(),   null, false);
+        generator.writeOptionalStringEntry(OrbitCovarianceHistoryMetadataKey.COV_BASIS_ID.name(), metadata.getCovBasisID(), null, false);
 
         // references
         generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_REF_FRAME.name(),   metadata.getCovReferenceFrame().getName(),  null, false);
         if (!metadata.getCovFrameEpoch().equals(timeConverter.getReferenceDate()) &&
-            metadata.getCovReferenceFrame().asOrbitRelativeFrame() == null &&
-            metadata.getCovReferenceFrame().asSpacecraftBodyFrame() == null) {
+            metadata.getCovReferenceFrame().asOrbitRelativeFrame().isEmpty() &&
+            metadata.getCovReferenceFrame().asSpacecraftBodyFrame().isEmpty()) {
             generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_FRAME_EPOCH.name(), timeConverter, metadata.getCovFrameEpoch(), true, false);
         }
 
         // scaling
-        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_SCALE_MIN.name(),  metadata.getCovScaleMin(), Unit.ONE,       false);
-        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_SCALE_MAX.name(),  metadata.getCovScaleMax(), Unit.ONE,       false);
-        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_CONFIDENCE.name(), metadata.getCovConfidence(), Unit.PERCENT, false);
+        generator.writeOptionalDoubleEntry(OrbitCovarianceHistoryMetadataKey.COV_SCALE_MIN.name(),  metadata.getCovScaleMin(), Unit.ONE,       false);
+        generator.writeOptionalDoubleEntry(OrbitCovarianceHistoryMetadataKey.COV_SCALE_MAX.name(),  metadata.getCovScaleMax(), Unit.ONE,       false);
+        generator.writeOptionalDoubleEntry(OrbitCovarianceHistoryMetadataKey.COV_CONFIDENCE.name(), metadata.getCovConfidence(), Unit.PERCENT, false);
 
         // elements
         generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_TYPE.name(),     metadata.getCovType(),                                     false);
