@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  * <p>The purpose of this annotation is to avoid using {@link java.util.Optional} on class fields and to provide
  * a clear indication that the field can be {@code null}.
  * </p>
- * <p>Using <code>Optional</code> on class fields is not recommended:
+ * Using <code>Optional</code> on class fields is not recommended:
  * <ul>
  *     <li>Java architecture intent: <code>Optional</code> has been initially introduced to provide a clear
  *     return type of methods that might not return a value</li>
@@ -37,7 +37,6 @@ import java.lang.annotation.Target;
  *     <li>Serialization: <code>Optional</code> is not serializable</li>
  * </ul>
  * An example of the annotation us is presented below:
- * </p>
  * <p>Non-compliant code</p>
  * <pre>
  * {@code
