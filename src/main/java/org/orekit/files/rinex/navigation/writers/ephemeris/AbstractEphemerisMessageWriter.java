@@ -34,6 +34,11 @@ import java.io.IOException;
 public abstract class AbstractEphemerisMessageWriter<T extends AbstractEphemerisMessage>
     extends NavigationMessageWriter<T> {
 
+    /** Simple constructor. */
+    protected AbstractEphemerisMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final T message,

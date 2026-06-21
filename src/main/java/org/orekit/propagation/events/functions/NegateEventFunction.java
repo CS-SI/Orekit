@@ -21,6 +21,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 
 /** Negated event function.
+ * @param <S> type of the base event function
  * @author Romain Serra
  * @since 14.0
  */

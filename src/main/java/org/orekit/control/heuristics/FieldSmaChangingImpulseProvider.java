@@ -29,6 +29,7 @@ import org.orekit.propagation.FieldSpacecraftState;
  * A constraint on the maximum magnitude can be optionally set.
  * @see FieldAbstractInPlaneImpulseProvider
  * @see OsculatingSmaChangeImpulseProvider
+ * @param <T> type of the field element
  * @author Romain Serra
  * @since 14.0
  */

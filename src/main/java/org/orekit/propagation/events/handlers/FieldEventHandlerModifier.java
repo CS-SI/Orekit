@@ -26,6 +26,7 @@ import org.orekit.time.FieldAbsoluteDate;
 /** An interface defining an event handler wrapping another one, possibly modifying the outputs or extracting information.
  * By default, all methods delegate to the original handler.
  *
+ * @param <T> type of the field element
  * @author Romain Serra
  *
  * @see EventHandlerModifier

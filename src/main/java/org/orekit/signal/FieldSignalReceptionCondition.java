@@ -28,6 +28,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @param receptionDate    Signal reception date.
  * @param receiverPosition Receiver position's vector at signal reception.
  * @param referenceFrame   Frame where position is given.
+ * @param <T> type of the field element
  * @author Romain Serra
  * @see SignalReceptionCondition
  * @since 14.0

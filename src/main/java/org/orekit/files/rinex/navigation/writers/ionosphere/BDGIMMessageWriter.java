@@ -32,6 +32,11 @@ import java.io.IOException;
 public class BDGIMMessageWriter
     extends NavigationMessageWriter<IonosphereBDGIMMessage> {
 
+    /** Simple constructor. */
+    public BDGIMMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final IonosphereBDGIMMessage message,

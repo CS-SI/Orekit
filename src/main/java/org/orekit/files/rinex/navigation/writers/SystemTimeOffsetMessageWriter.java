@@ -32,6 +32,11 @@ import java.io.IOException;
 public class SystemTimeOffsetMessageWriter
     extends NavigationMessageWriter<SystemTimeOffsetMessage> {
 
+    /** Simple constructor. */
+    public SystemTimeOffsetMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final SystemTimeOffsetMessage message,

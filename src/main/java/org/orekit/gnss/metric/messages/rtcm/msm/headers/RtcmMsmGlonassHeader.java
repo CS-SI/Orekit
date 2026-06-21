@@ -45,6 +45,11 @@ public class RtcmMsmGlonassHeader extends RtcmMsmHeader {
     /** GLONASS day of week. */
     private int dayOfWeek;
 
+    /** Simple constructor. */
+    public RtcmMsmGlonassHeader() {
+        // nothing to do
+    }
+
     /**
      * Get the GLONASS day of week.
      * @return GLONASS day of week

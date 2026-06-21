@@ -32,6 +32,11 @@ import org.orekit.utils.AbsolutePVCoordinates;
  */
 public abstract class AbstractIntegratorBuilder<T extends AbstractIntegrator> implements ODEIntegratorBuilder {
 
+    /** Simple constructor. */
+    protected AbstractIntegratorBuilder() {
+        // nothing to do
+    }
+
     @Override
     public abstract T buildIntegrator(Orbit orbit, OrbitType orbitType, PositionAngleType angleType);
 

@@ -23,6 +23,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 
 /** Finder for plane crossing events.
+ * @param <T> type of the field element
  * @author Romain Serra
  * @since 14.0
  * @see PlaneCrossingDetector

@@ -41,6 +41,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * For the latter, a signal is emitted by a sensor, reflected on the spacecraft and received by the same sensor.
  * For the former, a signal is emitted by the spacecraft and receiver by the sensor.
  *
+ * @param <T> type of the measurement
  * @author Romain Serra
  * @since 14.0
  */

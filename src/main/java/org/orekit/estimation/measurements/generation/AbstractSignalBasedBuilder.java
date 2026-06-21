@@ -22,6 +22,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.signal.SignalTravelTimeModel;
 
 /** Abstract builder for physical measurements (based on signal transmission).
+ * @param <T> type of the measurement
  * @author Romain Serra
  * @since 14.0
  */

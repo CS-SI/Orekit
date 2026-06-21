@@ -40,6 +40,11 @@ public abstract class AbstractCartesianAdjointEquationTerm implements CartesianA
     /** Dimension of gradient. */
     private static final int GRADIENT_DIMENSION = 6;
 
+    /** Simple constructor. */
+    protected AbstractCartesianAdjointEquationTerm() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public double[] getRatesContribution(final AbsoluteDate date, final double[] stateVariables,

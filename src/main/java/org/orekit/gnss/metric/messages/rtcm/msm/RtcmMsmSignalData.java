@@ -47,6 +47,11 @@ public class RtcmMsmSignalData {
     /** GNSS signal fine Phaserange Rates (DF404). */
     private double finePhaserangeRate;
 
+    /** Simple constructor. */
+    public RtcmMsmSignalData() {
+        // nothing to do
+    }
+
     /**
      * Get the MSM signal identifier.
      * @return MSM signal identifier

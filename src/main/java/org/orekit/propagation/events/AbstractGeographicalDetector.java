@@ -22,6 +22,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 
 /** Abstract class for detectors using a body shape.
  *
+ * @param <T> type of the detector
  * @author Romain Serra
  * @since 14.0
  * @see BodyShape

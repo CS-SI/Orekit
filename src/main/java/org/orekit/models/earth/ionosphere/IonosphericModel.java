@@ -51,13 +51,22 @@ public interface IonosphericModel extends ParameterDriversProvider {
      */
     @FunctionalInterface
     interface DelayCalculator {
+        /** Apply delay calculation.
+         * @param pos position in Earth frame
+         * @return path delay
+         */
         Double apply(Vector3D pos);
     }
 
     /** Lambda header for calculating the path delay.
+     * @param <T> type of the field element
      */
     @FunctionalInterface
     interface FieldDelayCalculator<T extends CalculusFieldElement<T>> {
+        /** Apply delay calculation.
+         * @param pos position in Earth frame
+         * @return path delay
+         */
         T apply(FieldVector3D<T> pos);
     }
 

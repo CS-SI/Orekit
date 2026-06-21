@@ -29,6 +29,11 @@ import java.io.IOException;
 public class QZSSLegacyNavigationMessageWriter
     extends LegacyNavigationMessageWriter<QZSSLegacyNavigationMessage> {
 
+    /** Simple constructor. */
+    public QZSSLegacyNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeURA(final QZSSLegacyNavigationMessage message, final RinexNavigationWriter writer)

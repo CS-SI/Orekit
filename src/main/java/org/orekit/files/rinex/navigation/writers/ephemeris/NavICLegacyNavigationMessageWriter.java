@@ -38,6 +38,11 @@ public class NavICLegacyNavigationMessageWriter
     };
     // CHECKSTYLE: resume Indentation check
 
+    /** Simple constructor. */
+    public NavICLegacyNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeURA(final NavICLegacyNavigationMessage message, final RinexNavigationWriter writer)

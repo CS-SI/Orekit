@@ -37,6 +37,11 @@ public class RegionalAij extends IonosphereAij {
     /** MODIP max. */
     private double modipMax;
 
+    /** Simple constructor. */
+    public RegionalAij() {
+        // nothing to do
+    }
+
     /** Get IDF.
      * @return IDF
      */

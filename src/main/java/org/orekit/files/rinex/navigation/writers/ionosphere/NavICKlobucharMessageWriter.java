@@ -33,6 +33,11 @@ import java.io.IOException;
 public class NavICKlobucharMessageWriter
     extends NavigationMessageWriter<IonosphereNavICKlobucharMessage> {
 
+    /** Simple constructor. */
+    public NavICKlobucharMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final IonosphereNavICKlobucharMessage message,

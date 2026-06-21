@@ -32,6 +32,11 @@ import java.io.IOException;
 public class EarthOrientationParametersMessageWriter
     extends NavigationMessageWriter<EarthOrientationParameterMessage> {
 
+    /** Simple constructor. */
+    public EarthOrientationParametersMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final EarthOrientationParameterMessage message,

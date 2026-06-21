@@ -30,6 +30,11 @@ import java.io.IOException;
 public class GPSCivilianNavigationMessageWriter
     extends CivilianNavigationMessageWriter<GPSCivilianNavigationMessage> {
 
+    /** Simple constructor. */
+    public GPSCivilianNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final GPSCivilianNavigationMessage message,

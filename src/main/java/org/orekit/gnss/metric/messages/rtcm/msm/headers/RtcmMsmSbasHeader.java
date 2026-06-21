@@ -42,6 +42,11 @@ public class RtcmMsmSbasHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(24,  RtcmMsmSignalId.SBAS_5X);
     }
 
+    /** Simple constructor. */
+    public RtcmMsmSbasHeader() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

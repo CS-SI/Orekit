@@ -724,7 +724,9 @@ public class LambertSolver {
         return intermediate.multiply(inverse);
     }
 
-    /* Get the gravitational constant. */
+    /** Get the gravitational constant.
+     * @return gravitational constant
+     */
     public double getMu() {
         return mu;
     }
