@@ -94,15 +94,16 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
     @Override
     protected EstimatedMeasurementBase<RangeRate> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                           final int evaluation,
-                                                                                          final SpacecraftState[] states) {
+                                                                                          final SpacecraftState[] states,
+                                                                                          final boolean fillParticipants) {
         // compute reception date
         final double clockOffset = getObserver().getOffsetValue(getDate());
         final AbsoluteDate receptionDate = getDate().shiftedBy(-clockOffset);
 
         if (isTwoWay()) {
-            return twoWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0]);
+            return twoWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0], fillParticipants);
         } else {
-            return oneWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0]);
+            return oneWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0], fillParticipants);
         }
 
     }
@@ -112,15 +113,17 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
      * @param evaluation evaluations counter
      * @param receptionDate signal final reception date
      * @param state state
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
      * @return theoretical value
      * @since 14.0
      */
     private EstimatedMeasurementBase<RangeRate> twoWayTheoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                               final int evaluation,
                                                                                               final AbsoluteDate receptionDate,
-                                                                                              final SpacecraftState state) {
-        final EstimatedMeasurementBase<RangeRate> estimated = initializeTwoWayTheoreticalEvaluation(this, iteration, evaluation,
-                receptionDate, state);
+                                                                                              final SpacecraftState state,
+                                                                                              final boolean fillParticipants) {
+        EstimatedMeasurementBase<RangeRate> estimated = initializeTwoWayTheoreticalEvaluation(this, iteration, evaluation,
+                receptionDate, state, true);
 
         // Compute range rate
         final TwoLeggedSignalTimer twoLeggedSignalTimer = new TwoLeggedSignalTimer(getSignalTravelTimeModel().getWarmedUpModel());
@@ -131,6 +134,11 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
         final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final double rangeRate = rangeRateModel.value(state.getFrame(), participantsPV[2], receptionDate,
                 satellitePVProvider, transitDate, getObserver().getPVCoordinatesProvider(), emissionDate) / 2.;
+
+        if (!fillParticipants) {
+            estimated = new EstimatedMeasurementBase<>(estimated.getObservedMeasurement(),
+                    iteration, evaluation, estimated.getStates(), new TimeStampedPVCoordinates[0]);
+        }
         estimated.setEstimatedValue(rangeRate);
         return estimated;
     }
@@ -140,15 +148,17 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
      * @param evaluation evaluations counter
      * @param receptionDate signal reception date
      * @param state state
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
      * @return theoretical value
      * @since 14.0
      */
     private EstimatedMeasurementBase<RangeRate> oneWayTheoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                               final int evaluation,
                                                                                               final AbsoluteDate receptionDate,
-                                                                                              final SpacecraftState state) {
-        final EstimatedMeasurementBase<RangeRate> estimated = initializeOneWayTheoreticalEvaluation(this, iteration, evaluation,
-                receptionDate, state);
+                                                                                              final SpacecraftState state,
+                                                                                              final boolean fillParticipants) {
+        EstimatedMeasurementBase<RangeRate> estimated = initializeOneWayTheoreticalEvaluation(this, iteration, evaluation,
+                receptionDate, state, true);
 
         // physical range rate value
         final OneLeggedRangeRateModel rangeRateModel = new OneLeggedRangeRateModel(getSignalTravelTimeModel().getWarmedUpModel());
@@ -166,6 +176,10 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
         final double clockDriftBias = (dtgDot - dtsDot) * Constants.SPEED_OF_LIGHT;
         rangeRate += clockDriftBias;
 
+        if (!fillParticipants) {
+            estimated = new EstimatedMeasurementBase<>(estimated.getObservedMeasurement(), iteration, evaluation,
+                    estimated.getStates(), new TimeStampedPVCoordinates[0]);
+        }
         estimated.setEstimatedValue(rangeRate);
         return estimated;
     }

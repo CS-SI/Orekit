@@ -16,12 +16,12 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 /** Class holding an estimated theoretical value associated to an {@link ObservedMeasurement observed measurement}.
  * @param <T> the type of the measurement
@@ -42,7 +42,7 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
     /** States of the spacecrafts. */
     private final SpacecraftState[] states;
 
-    /** Coordinates of the participants in signal travel order. */
+    /** Coordinates of the participants in signal travel order (can be empty if not computed for performance). */
     private final TimeStampedPVCoordinates[] participants;
 
     /** Original estimated value prior to any modification.
@@ -117,11 +117,12 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
     }
 
     /** Get the coordinates of the measurements participants in signal travel order.
+     * Can be empty if not computed beforehand for performance reasons.
      * <p>
      * First participant (at index 0) emits the signal (it is for example a ground
      * station for two-way range measurement). Last participant receives the signal
      * (it is also the ground station for two-way range measurement, but a few
-     * milliseconds later). Intermediate participants relfect the signal (it is the
+     * milliseconds later). Intermediate participants reflect the signal (it is the
      * spacecraft for two-way range measurement).
      * </p>
      * @return coordinates of the measurements participants in signal travel order

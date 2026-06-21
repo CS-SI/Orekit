@@ -80,4 +80,9 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifier extends AbstractRel
         estimated.modifyEstimatedValue(this, newValue);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

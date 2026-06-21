@@ -76,4 +76,9 @@ public class RelativisticJ2ClockInterSatellitesRangeModifier extends AbstractRel
         estimated.modifyEstimatedValue(this, newValue);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

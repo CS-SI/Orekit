@@ -183,11 +183,10 @@ class InterSatellitesRangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.
-                        estimateWithoutDerivatives(new SpacecraftState[] {
+                    final EstimatedMeasurementBase<?> estimated = ((InterSatellitesRange) measurement).
+                        theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] {
                                                        state,
-                                                       ephemeris.propagate(state.getDate())
-                                                   });
+                                                       ephemeris.propagate(state.getDate()) }, true);
 
                     final InterSatellitesRange isr = (InterSatellitesRange) estimated.getObservedMeasurement();
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
@@ -615,7 +614,7 @@ class InterSatellitesRangeTest {
         sat1.getClockBiasDriver().setReferenceDate(epoch);
         // WHEN
         final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, twoWay, epoch, 0., 1., 1.);
-        final EstimatedMeasurementBase<InterSatellitesRange> estimatedWithoutDerivatives = range.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<InterSatellitesRange> estimatedWithoutDerivatives = range.theoreticalEvaluationWithoutDerivatives(0, 0, state, true);
         // THEN
         final EstimatedMeasurement<InterSatellitesRange> estimated = range.estimate(0, 0, state);
         assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-7);

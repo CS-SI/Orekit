@@ -175,13 +175,12 @@ public class OneWayGNSSWindUpTest {
         double max = Double.NEGATIVE_INFINITY;
         for (EstimatedMeasurementBase<?> m : measurements) {
             final OneWayGNSSPhase phase = (OneWayGNSSPhase) m.getObservedMeasurement();
-            @SuppressWarnings("unchecked")
             final EstimatedMeasurementBase<OneWayGNSSPhase> estimated =
-                (EstimatedMeasurementBase<OneWayGNSSPhase>) m.
-                    getObservedMeasurement().
-                    estimateWithoutDerivatives(new SpacecraftState[] {
-                                                   leoPropagator.propagate(phase.getDate())
-                                               });
+                    ((OneWayGNSSPhase) m.
+                        getObservedMeasurement()).
+                        theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] {
+                                                       leoPropagator.propagate(phase.getDate())
+                                                   }, true);
             final double original   = estimated.getEstimatedValue()[0];
             windUp.modifyWithoutDerivatives(estimated);
             final double modified   = estimated.getEstimatedValue()[0];

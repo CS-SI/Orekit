@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.signal.FieldSignalReceptionCondition;
@@ -34,7 +35,6 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Class modeling a bistatic measurement using an emitting observer and a receiving observer.
@@ -146,35 +146,27 @@ public abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurem
     }
 
     /**
-     * Method returning the full kinematic coordinates of signal participants at transmission dates.
+     * Method computing consecutive Field time shifts of participants, starting from observation date.
      * @param state observable state
      * @param emitterPVProvider emitter coordinates provider
      * @param receiverPVProvider receiver coordinates provider
      * @return signal participants
      */
-    protected TimeStampedPVCoordinates[] getParticipants(final SpacecraftState state,
-                                                         final PVCoordinatesProvider emitterPVProvider,
-                                                         final PVCoordinatesProvider receiverPVProvider) {
+    protected double[] getShifts(final SpacecraftState state, final PVCoordinatesProvider emitterPVProvider,
+                                 final PVCoordinatesProvider receiverPVProvider) {
         // Compute actual reception date
         final AbsoluteDate receptionDate = getReceiver().getCorrectedReceptionDate(getDate());
 
         // Compute light time delays
         final Frame frame = state.getFrame();
-        final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
+        final Vector3D receiverPosition = receiverPVProvider.getPosition(receptionDate, frame);
         final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
-        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPV.getPosition(),
+        final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate, receiverPosition,
                 frame);
         final double[] delays = getTwoLeggedSignalTimer().computeDelays(receptionCondition, satellitePVProvider, emitterPVProvider);
 
-        // Form dates
-        final AbsoluteDate transitDate = receptionDate.shiftedBy(-delays[1]);
-        final AbsoluteDate emissionDate = transitDate.shiftedBy(-delays[0]);
-
-        final double shift = transitDate.durationFrom(state);
-        final SpacecraftState transitState = state.shiftedBy(shift);
-        return new TimeStampedPVCoordinates[] { emitterPVProvider.getPVCoordinates(emissionDate, frame),
-                transitState.getPVCoordinates(), receiverPV };
+        return new double[] { receptionDate.durationFrom(getDate()), -delays[1], -delays[0] };
     }
 
     /**

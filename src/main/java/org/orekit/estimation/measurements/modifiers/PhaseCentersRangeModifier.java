@@ -65,4 +65,9 @@ public class PhaseCentersRangeModifier
                                        estimated.getEstimatedValue()[0] + delta);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

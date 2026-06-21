@@ -160,7 +160,8 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
     @Override
     protected EstimatedMeasurementBase<TurnAroundRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                 final int evaluation,
-                                                                                                final SpacecraftState[] states) {
+                                                                                                final SpacecraftState[] states,
+                                                                                                final boolean fillParticipants) {
 
         final SpacecraftState state = states[0];
 
@@ -286,14 +287,14 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
                         new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        transitStateLeg2.shiftedBy(-secondaryTauU)
-                                                   },
+                                                   }, fillParticipants ?
                                                    new TimeStampedPVCoordinates[] {
                                                        checkPrimaryDeparture,
                                                        transitStateLeg1PV,
                                                        secondaryRebound,
                                                        transitStateLeg2.getPVCoordinates(),
                                                        primaryArrival
-                                                   });
+                                                   } : new TimeStampedPVCoordinates[0]);
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2 and multiplied by c
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;

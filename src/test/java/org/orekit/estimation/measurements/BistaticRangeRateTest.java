@@ -444,7 +444,8 @@ class BistaticRangeRateTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final BistaticRangeRate bistaticDoppler = new BistaticRangeRate(emitter, receiver, epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurementBase<BistaticRangeRate> estimatedWithoutDerivatives = bistaticDoppler.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<BistaticRangeRate> estimatedWithoutDerivatives = bistaticDoppler
+                .theoreticalEvaluationWithoutDerivatives(0, 0, state, true);
         // THEN
         final EstimatedMeasurement<BistaticRangeRate> estimated = bistaticDoppler.estimate(0, 0, state);
         assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-7);

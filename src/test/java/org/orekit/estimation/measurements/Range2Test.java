@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -40,12 +45,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
 
 public class Range2Test {
 
@@ -213,12 +212,6 @@ public class Range2Test {
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
                     final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
-
-                    final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-                    Assertions.assertEquals(2, participants.length);
-                    Assertions.assertEquals(Constants.SPEED_OF_LIGHT * participants[1].getDate().durationFrom(participants[0].getDate()),
-                                        estimated.getEstimatedValue()[0],
-                                        2.0e-8);
 
                     // the real state used for estimation is adjusted according to downlink delay
                     double adjustment = state.getDate().durationFrom(estimated.getStates()[0].getDate());

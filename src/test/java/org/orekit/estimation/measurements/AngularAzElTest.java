@@ -95,8 +95,6 @@ class AngularAzElTest {
 
             // Check dates
             Assertions.assertNotEquals(state, estimated.getStates()[0]);
-            Assertions.assertTrue(state.getDate().isAfter(estimated.getParticipants()[0].getDate()));
-            Assertions.assertEquals(state.getDate(), estimated.getParticipants()[1].getDate());
 
             // Store the difference between estimated and observed values in the stats
             azDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -364,7 +362,7 @@ class AngularAzElTest {
         // WHEN
         final AngularAzEl angularAzEl = new AngularAzEl(station, epoch, new double[2],
                 new double[]{1., 1.}, new double[]{1., 1.}, satellite);
-        final EstimatedMeasurementBase<AngularAzEl> estimatedWithoutDerivatives = angularAzEl.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<AngularAzEl> estimatedWithoutDerivatives = angularAzEl.theoreticalEvaluationWithoutDerivatives(0, 0, state, true);
         // THEN
         final EstimatedMeasurement<AngularAzEl> estimated = angularAzEl.estimate(0, 0, state);
         assertArrayEquals(estimated.getEstimatedValue(), estimatedWithoutDerivatives.getEstimatedValue());

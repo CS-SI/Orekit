@@ -75,4 +75,9 @@ public abstract class AbstractShapiroBaseModifier<T extends ObservedMeasurement<
         return shapiroModel.computeEquivalentRange(positionEmitter, positionReceiver);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

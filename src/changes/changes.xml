@@ -23,6 +23,9 @@
           <action dev="luc" type="fix" issue="1974">
               Added getBaseInitialState to Propagator.
           </action>
+          <action dev="serrof" type="update" issue="1973">
+              Introduce flag for performance in measurement modifier and use it when possible .
+          </action>
           <action dev="luc" type="fix" issue="1971">
               Allow to use object name as a key in OEM and AEM messages.
           </action>

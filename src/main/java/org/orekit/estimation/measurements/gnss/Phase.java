@@ -149,7 +149,8 @@ public class Phase extends SignalBasedMeasurement<Phase> {
     @Override
     protected EstimatedMeasurementBase<Phase> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                       final int evaluation,
-                                                                                      final SpacecraftState[] states) {
+                                                                                      final SpacecraftState[] states,
+                                                                                      final boolean fillParticipants) {
         // Coordinates of the measured spacecraft
         final SpacecraftState state = states[0];
         final Frame frame = state.getFrame();
@@ -180,13 +181,9 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         final SpacecraftState transitState      = states[0].shiftedBy(deltaMTauD);
 
         // prepare the evaluation
-        final EstimatedMeasurementBase<Phase> estimated =
-                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
-                                                       new SpacecraftState[] {
-                                                           transitState
-                                                       }, new TimeStampedPVCoordinates[] {
-                                                           transitState.getPVCoordinates(), satelliteDownlink
-                                                       });
+        final EstimatedMeasurementBase<Phase> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] { transitState }, fillParticipants ? new TimeStampedPVCoordinates[] {
+                                                           transitState.getPVCoordinates(), satelliteDownlink } : new TimeStampedPVCoordinates[0]);
 
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().getFirst();

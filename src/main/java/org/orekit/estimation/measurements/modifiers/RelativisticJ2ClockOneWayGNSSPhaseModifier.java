@@ -80,4 +80,9 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifier extends AbstractRelativi
         estimated.modifyEstimatedValue(this, newValue);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

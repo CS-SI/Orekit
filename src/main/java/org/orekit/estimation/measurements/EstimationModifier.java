@@ -59,4 +59,14 @@ public interface EstimationModifier<T extends ObservedMeasurement<T>> extends Pa
         modifyWithoutDerivatives(estimated);
     }
 
+    /**
+     * Method stating if the modifier requires for its computation the storage of the measurement's participants
+     * full dynamical states (position, velocity and acceleration) rather than the date, the non-modified value, etc.
+     * The negative case shall be exploited for performance and is the default implementation.
+     * @return dependence flag
+     * @since 14.0
+     */
+    default boolean dependsOnParticipantsStates() {
+        return false;
+    }
 }

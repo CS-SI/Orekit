@@ -124,7 +124,8 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
     @Override
     protected EstimatedMeasurementBase<OneWayGNSSPhase> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                 final int evaluation,
-                                                                                                final SpacecraftState[] states) {
+                                                                                                final SpacecraftState[] states,
+                                                                                                final boolean fillParticipants) {
 
         final CommonParametersWithoutDerivatives common =
             computeLocalParametersWithout(states, getSatellites().getFirst(), getDate());
@@ -134,10 +135,9 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
                         new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
                                                            common.getState()
-                                                       }, new TimeStampedPVCoordinates[] {
-                                                           common.getRemotePV(),
-                                                           common.getTransitPV()
-                                                       });
+                                                       }, fillParticipants ? new TimeStampedPVCoordinates[] {
+                                                           common.getRemotePV(), common.getTransitPV()
+                                                       } : new TimeStampedPVCoordinates[0]);
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;

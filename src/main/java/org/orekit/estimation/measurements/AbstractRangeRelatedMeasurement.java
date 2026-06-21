@@ -96,12 +96,14 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
      * @param evaluation evaluation
      * @param receptionDate signal reception date
      * @param state estimated state
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
      * @return partially filled estimated measurement
      */
     protected EstimatedMeasurementBase<T> initializeTwoWayTheoreticalEvaluation(final T measurement,
                                                                                 final int iteration, final int evaluation,
                                                                                 final AbsoluteDate receptionDate,
-                                                                                final SpacecraftState state) {
+                                                                                final SpacecraftState state,
+                                                                                final boolean fillParticipants) {
         // Compute light time delays
         final Frame frame = state.getFrame();
         final PVCoordinatesProvider observerPVProvider = getObserver().getPVCoordinatesProvider();
@@ -120,8 +122,9 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
         final SpacecraftState transitState = state.shiftedBy(transitDate.durationFrom(state));
         final TimeStampedPVCoordinates emissionPV = observerPVProvider.getPVCoordinates(emissionDate, frame);
         return new EstimatedMeasurementBase<>(measurement, iteration, evaluation,
-                new SpacecraftState[] { transitState },
-                new TimeStampedPVCoordinates[] {emissionPV, transitState.getPVCoordinates(), receiverPV});
+                new SpacecraftState[] { transitState }, fillParticipants ?
+                new TimeStampedPVCoordinates[] {emissionPV, transitState.getPVCoordinates(), receiverPV} :
+                new TimeStampedPVCoordinates[0]);
     }
 
     /**
@@ -131,12 +134,14 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
      * @param evaluation evaluation
      * @param receptionDate signal reception date
      * @param state estimated state
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
      * @return partially filled estimated measurement
      */
     protected EstimatedMeasurementBase<T> initializeOneWayTheoreticalEvaluation(final T measurement,
                                                                                 final int iteration, final int evaluation,
                                                                                 final AbsoluteDate receptionDate,
-                                                                                final SpacecraftState state) {
+                                                                                final SpacecraftState state,
+                                                                                final boolean fillParticipants) {
         // compute light time delay
         final Frame frame = state.getFrame();
         final PVCoordinatesProvider observablePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
@@ -151,8 +156,9 @@ public abstract class AbstractRangeRelatedMeasurement<T extends AbstractRangeRel
         final AbsoluteDate emissionDate = receptionDate.shiftedBy(-delay);
         final SpacecraftState emissionState = state.shiftedBy(emissionDate.durationFrom(state));
         return new EstimatedMeasurementBase<>(measurement, iteration, evaluation,
-                new SpacecraftState[] { emissionState },
-                new TimeStampedPVCoordinates[] { emissionState.getPVCoordinates(), observerPVAtReception });
+                new SpacecraftState[] { emissionState }, fillParticipants ?
+                new TimeStampedPVCoordinates[] { emissionState.getPVCoordinates(), observerPVAtReception } :
+                new TimeStampedPVCoordinates[0]);
     }
 
     /** {@inheritDoc} */

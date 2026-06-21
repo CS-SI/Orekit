@@ -62,4 +62,8 @@ public class RelativisticClockOneWayGNSSRangeRateModifier
 
     }
 
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }

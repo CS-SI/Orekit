@@ -30,6 +30,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Abstract class handling measurements boilerplate.
  * @param <T> the type of the measurement
@@ -194,9 +195,31 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
     protected EstimatedMeasurementBase<T> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                   final int evaluation,
                                                                                   final SpacecraftState[] states) {
+        return theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states, true);
+    }
+
+    /** Estimate the theoretical value without derivatives.
+     * The default implementation uses the computation with derivatives and ought to be overwritten for performance.
+     * <p>
+     * The theoretical value does not have <em>any</em> modifiers applied.
+     * </p>
+     * @param iteration iteration number
+     * @param evaluation evaluation number
+     * @param states orbital states at measurement date
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
+     * @return theoretical value
+     * @see #estimate(int, int, SpacecraftState[])
+     * @since 14.0
+     */
+    protected EstimatedMeasurementBase<T> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                  final int evaluation,
+                                                                                  final SpacecraftState[] states,
+                                                                                  final boolean fillParticipants) {
         final EstimatedMeasurement<T> estimatedMeasurement = theoreticalEvaluation(iteration, evaluation, states);
+        final TimeStampedPVCoordinates[] participants = fillParticipants ? estimatedMeasurement.getParticipants() :
+                new TimeStampedPVCoordinates[0];
         final EstimatedMeasurementBase<T> estimatedMeasurementBase = new EstimatedMeasurementBase<>(estimatedMeasurement.getObservedMeasurement(),
-                iteration, evaluation, states, estimatedMeasurement.getParticipants());
+                iteration, evaluation, states, participants);
         estimatedMeasurementBase.setEstimatedValue(estimatedMeasurement.getEstimatedValue());
         estimatedMeasurementBase.setStatus(estimatedMeasurement.getStatus());
         return estimatedMeasurementBase;
@@ -214,12 +237,19 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      */
     protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states);
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * For the sake of computational performance, the output will contain the participant's states only if at least
+     * one measurement modifier explicitly requires it (note that the estimated states can still be accessed {@link EstimatedMeasurementBase#getStates()}).
+     * </p>
+     */
     @Override
-    public EstimatedMeasurementBase<T> estimateWithoutDerivatives(final int iteration, final int evaluation, final SpacecraftState[] states) {
+    public EstimatedMeasurementBase<T> estimateWithoutDerivatives(final int iteration, final int evaluation,
+                                                                  final SpacecraftState[] states) {
 
         // compute the theoretical value
-        final EstimatedMeasurementBase<T> estimation = theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states);
+        final boolean fillParticipants = modifiers.stream().anyMatch(EstimationModifier::dependsOnParticipantsStates);
+        final EstimatedMeasurementBase<T> estimation = theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states, fillParticipants);
 
         // apply the modifiers
         for (final EstimationModifier<T> modifier : modifiers) {

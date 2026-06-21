@@ -38,6 +38,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 /**
@@ -159,6 +162,17 @@ public class RelativisticJ2ClockRangeModifierTest {
         //          The computed value is equal to 63.3 ps, therefore lying in the supposed range.
         Assertions.assertEquals(-0.019414, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-6);
 
+    }
+
+    @Test
+    void testDepends() {
+        // GIVEN
+        final RelativisticJ2ClockRangeModifier modifier = mock();
+        when(modifier.dependsOnParticipantsStates()).thenCallRealMethod();
+        // WHEN
+        final boolean flag = modifier.dependsOnParticipantsStates();
+        // THEN
+        assertTrue(flag);
     }
 
     @BeforeEach

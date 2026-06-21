@@ -120,19 +120,16 @@ public class Position extends PseudoMeasurement<Position> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurementBase<Position> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
-                                                                                         final SpacecraftState[] states) {
-
-        // PV value
-        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
+                                                                                         final SpacecraftState[] states,
+                                                                                         final boolean fillParticipants) {
+        final SpacecraftState state = states[0];
 
         // prepare the evaluation
-        final EstimatedMeasurementBase<Position> estimated =
-                        new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
-                                                       new TimeStampedPVCoordinates[] {
-                                                           pv
-                                                       });
+        final EstimatedMeasurementBase<Position> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
+                fillParticipants ? new TimeStampedPVCoordinates[] { state.getPVCoordinates() } : new TimeStampedPVCoordinates[0]);
 
-        estimated.setEstimatedValue(pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ());
+        final Vector3D position = state.getPosition();
+        estimated.setEstimatedValue(position.toArray());
 
         return estimated;
 

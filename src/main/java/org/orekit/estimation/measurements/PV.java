@@ -195,7 +195,8 @@ public class PV extends PseudoMeasurement<PV> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurementBase<PV> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
-                                                                                   final SpacecraftState[] states) {
+                                                                                   final SpacecraftState[] states,
+                                                                                   final boolean fillParticipants) {
 
         // PV value
         final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
@@ -203,9 +204,7 @@ public class PV extends PseudoMeasurement<PV> {
         // prepare the evaluation
         final EstimatedMeasurementBase<PV> estimated =
                         new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
-                                                       new TimeStampedPVCoordinates[] {
-                                                           pv
-                                                       });
+                                                       fillParticipants ? new TimeStampedPVCoordinates[] { pv } : new TimeStampedPVCoordinates[0]);
 
         estimated.setEstimatedValue(pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
                 pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ());

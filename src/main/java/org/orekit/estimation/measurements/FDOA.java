@@ -103,22 +103,24 @@ public class FDOA extends DualReceiverMeasurement<FDOA> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurementBase<FDOA> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
-                                                                                     final SpacecraftState[] states) {
+                                                                                     final SpacecraftState[] states,
+                                                                                     final boolean fillParticipants) {
         // Evaluate the TDOA value
         final TDOA tdoa = new TDOA(getPrimeObserver(), getSecondObserver(), getDate(), 0., new MeasurementQuality(1),
                 getSignalTravelTimeModel(), getSatellites().getFirst());
         final EstimatedMeasurementBase<TDOA> estimatedTdoa = tdoa.theoreticalEvaluationWithoutDerivatives(iteration,
-                evaluation, states);
+                evaluation, states, true);
 
         // Prepare the FDOA model
+        final TimeStampedPVCoordinates[] participants = estimatedTdoa.getParticipants();
         final EstimatedMeasurement<FDOA> estimated =
                 new EstimatedMeasurement<>(this, iteration, evaluation, estimatedTdoa.getStates(),
-                        estimatedTdoa.getParticipants());
+                        fillParticipants ? participants : new TimeStampedPVCoordinates[0]);
 
         // Range-rate components
-        final PVCoordinates emitterPV = estimated.getParticipants()[0];
-        final PVCoordinates primePV = estimated.getParticipants()[1];
-        final PVCoordinates secondPV = estimated.getParticipants()[2];
+        final PVCoordinates emitterPV = participants[0];
+        final PVCoordinates primePV = participants[1];
+        final PVCoordinates secondPV = participants[2];
         final Vector3D primeDirection = primePV.getPosition().subtract(emitterPV.getPosition()).normalize();
         final Vector3D secondDirection = secondPV.getPosition().subtract(emitterPV.getPosition()).normalize();
         final Vector3D primeVelocity = primePV.getVelocity().subtract(emitterPV.getVelocity());

@@ -34,6 +34,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.Constants;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check against prediction in
@@ -84,6 +87,17 @@ public class RelativisticJ2ClockOneWayGNSSRangeModifierTest {
                                 estimatedAfter.getAppliedEffects().entrySet().stream().
                                 filter(e -> e.getKey().getEffectName().equals("J₂ clock relativity")).count());
 
+    }
+
+    @Test
+    void testDepends() {
+        // GIVEN
+        final RelativisticJ2ClockOneWayGNSSRangeModifier modifier = mock();
+        when(modifier.dependsOnParticipantsStates()).thenCallRealMethod();
+        // WHEN
+        final boolean flag = modifier.dependsOnParticipantsStates();
+        // THEN
+        assertTrue(flag);
     }
 
     @BeforeEach

@@ -77,4 +77,10 @@ public class RelativisticJ2ClockPhaseModifier extends AbstractRelativisticJ2Cloc
         newValue[0] = newValue[0] - dtJ2 * cOverLambda;
         estimated.modifyEstimatedValue(this, newValue);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
 }
