@@ -46,19 +46,17 @@ class KeplerianConverterTest {
 
     @Test
     void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 7.812e-9);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.268e-8);
     }
 
     @Test
     void testConversionPositionOnly() {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.337e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.177e-8);
     }
 
     @Test
     void testConversionWithFreeParameter() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto");
-        });
+        Assertions.assertThrows(OrekitException.class, () -> checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto"));
     }
 
     protected void checkFit(final Orbit orbit,
@@ -71,7 +69,7 @@ class KeplerianConverterTest {
         {
 
         Propagator p = new KeplerianPropagator(orbit);
-        List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
+        List<SpacecraftState> sample = new ArrayList<>();
         for (double dt = 0; dt < duration; dt += stepSize) {
             sample.add(p.propagate(orbit.getDate().shiftedBy(dt)));
         }

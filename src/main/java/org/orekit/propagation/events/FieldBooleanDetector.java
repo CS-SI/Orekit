@@ -139,7 +139,7 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
     public static <T extends CalculusFieldElement<T>> FieldBooleanDetector<T> andCombine(final Collection<? extends FieldEventDetector<T>> detectors) {
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.AND,
-                                          new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
+                                           new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
                                                   .map(FieldEventDetector::getMaxCheckInterval).toArray(FieldAdaptableInterval[]::new)),
                                           detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get(),
                                           detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get()),

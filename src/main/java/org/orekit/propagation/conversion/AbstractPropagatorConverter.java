@@ -313,7 +313,14 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         final double[] initial = builder.getSelectedNormalizedParameters();
 
         // warm-up iterations, using only a few points
-        setSample(states.subList(0, onlyPosition ? 2 : 1));
+        final int dataPerPoint = onlyPosition ? 3 : 6;
+        final int neededPoints = FastMath.max(2, (initial.length + dataPerPoint - 1) / dataPerPoint);
+        final int subSampling  = (states.size() - 1) / (neededPoints - 1);
+        final List<SpacecraftState> subSampledStates = new ArrayList<>(neededPoints);
+        for (int i = 0; i < neededPoints; i++) {
+            subSampledStates.add(states.get(subSampling * i));
+        }
+        setSample(subSampledStates);
         final double[] intermediate = fit(initial);
 
         // final search using all points
