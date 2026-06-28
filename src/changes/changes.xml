@@ -369,10 +369,13 @@
           </action>
     </release>
     <release version="13.1.7" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1977">
+          Fixed AbstractPropagatorConverter.getRMS().
+      </action>
       <action dev="luc" type="fix" issue="1976">
           Fixed initial warm-up fitting in AbstractPropagatorConverter.
       </action>
-      <action dev="luc" type="fix" issue="1972">
+       <action dev="luc" type="fix" issue="1972">
           Allow Ephemeris with null attitude providers to be used in AggregateBounedPropagator.
       </action>
     </release>
