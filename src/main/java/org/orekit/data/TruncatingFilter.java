@@ -44,7 +44,7 @@ public class TruncatingFilter implements DataFilter {
 
     /** {@inheritDoc} */
     @Override
-    public DataSource filter(final DataSource original) throws IOException {
+    public DataSource filter(final DataSource original) {
         return new DataSource(original.getName() + "-truncated-after-line-" + nbLines,
                               () -> new TruncatingReader(original.getOpener().openReaderOnce()));
     }

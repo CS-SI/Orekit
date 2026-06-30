@@ -16,7 +16,6 @@
  */
 package org.orekit.files.sp3;
 
-import java.io.IOException;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,7 +66,7 @@ public class NsgfV00Filter implements DataFilter {
 
     /** {@inheritDoc} */
     @Override
-    public DataSource filter(final DataSource original) throws IOException {
+    public DataSource filter(final DataSource original) {
         final Matcher matcher = pattern.matcher(original.getName());
         if (matcher.matches()) {
             // this is a v00 file from NSGF
