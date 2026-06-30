@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="fix" issue="1978">
+              Removed IOException from DataFilter.filter(DataSource).
+          </action>
           <action dev="luc" type="fix" issue="1974">
               Added getBaseInitialState to Propagator.
           </action>
