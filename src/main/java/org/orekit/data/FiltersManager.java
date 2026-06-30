@@ -16,7 +16,6 @@
  */
 package org.orekit.data;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,13 +69,11 @@ public class FiltersManager {
      * </p>
      * @param original original data source
      * @return fully filtered data source
-     * @exception IOException if some data stream cannot be filtered
      * @see #addFilter(DataFilter)
      * @see #clearFilters()
      * @since 9.2
      */
-    public DataSource applyRelevantFilters(final DataSource original)
-        throws IOException {
+    public DataSource applyRelevantFilters(final DataSource original) {
         DataSource top = original;
         for (boolean filtering = true; filtering;) {
             filtering = false;

@@ -16,7 +16,6 @@
  */
 package org.orekit.files.rinex.clock;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -1036,7 +1035,7 @@ public class ClockFileParserTest {
     }
 
     @Test
-    public void testMixedSystem() throws IOException {
+    public void testMixedSystem() {
 
         // Parse file
         final String ex = "/gnss/clock/issue1356.clk.gz";
