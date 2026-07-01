@@ -70,7 +70,7 @@ import java.util.function.BiFunction;
 public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader> {
 
     /** Format for one 9 digits integer field. */
-    private static final FastLongFormatter NINE_DIGITS_INTEGER = new FastLongFormatter(9, false);
+    private static final FastLongFormatter NINE_DIGITS_INTEGER = new FastLongFormatter(9, false, true);
 
     /** Format for one 12 digits float field. */
     private static final FastDoubleFormatter TWELVE_DIGITS_SCIENTIFIC = new FastScientificFormatter(12);

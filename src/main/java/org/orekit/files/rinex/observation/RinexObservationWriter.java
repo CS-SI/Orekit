@@ -61,7 +61,7 @@ import org.orekit.utils.formatting.FastLongFormatter;
 public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHeader> implements AutoCloseable {
 
     /** Format for one 1 digit integer field. */
-    private static final FastLongFormatter ONE_DIGIT_INTEGER = new FastLongFormatter(1, false);
+    private static final FastLongFormatter ONE_DIGIT_INTEGER = new FastLongFormatter(1, false, true);
 
     /** Format for one 8.3 digits float field. */
     private static final FastDoubleFormatter EIGHT_THREE_DIGITS_FLOAT = new FastDecimalFormatter(8, 3);

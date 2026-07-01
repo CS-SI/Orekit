@@ -18,59 +18,73 @@ package org.orekit.utils.formatting;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 public class FastLongFormatterTest {
 
     @Test
     public void testRegularPositive() {
-        Assertions.assertEquals(   "3", new FastLongFormatter(1, false).toString(3));
-        Assertions.assertEquals(   "3", new FastLongFormatter(1, true).toString(3));
-        Assertions.assertEquals(  " 3", new FastLongFormatter(2, false).toString(3));
-        Assertions.assertEquals(  "03", new FastLongFormatter(2, true).toString(3));
-        Assertions.assertEquals( "  3", new FastLongFormatter(3, false).toString(3));
-        Assertions.assertEquals( "003", new FastLongFormatter(3, true).toString(3));
-        Assertions.assertEquals("   3", new FastLongFormatter(4, false).toString(3));
-        Assertions.assertEquals("0003", new FastLongFormatter(4, true).toString(3));
+        Assertions.assertEquals(   "3", new FastLongFormatter(1, false, false).toString(3));
+        Assertions.assertEquals(   "3", new FastLongFormatter(1, true, false).toString(3));
+        Assertions.assertEquals(  " 3", new FastLongFormatter(2, false, false).toString(3));
+        Assertions.assertEquals(  "03", new FastLongFormatter(2, true, false).toString(3));
+        Assertions.assertEquals( "  3", new FastLongFormatter(3, false, false).toString(3));
+        Assertions.assertEquals( "003", new FastLongFormatter(3, true, false).toString(3));
+        Assertions.assertEquals("   3", new FastLongFormatter(4, false, false).toString(3));
+        Assertions.assertEquals("0003", new FastLongFormatter(4, true, false).toString(3));
     }
 
     @Test
     public void testRegularNegative() {
-        Assertions.assertEquals(  "-3", new FastLongFormatter(1, false).toString(-3));
-        Assertions.assertEquals(  "-3", new FastLongFormatter(1, true).toString(-3));
-        Assertions.assertEquals(  "-3", new FastLongFormatter(2, false).toString(-3));
-        Assertions.assertEquals(  "-3", new FastLongFormatter(2, true).toString(-3));
-        Assertions.assertEquals( " -3", new FastLongFormatter(3, false).toString(-3));
-        Assertions.assertEquals( "-03", new FastLongFormatter(3, true).toString(-3));
-        Assertions.assertEquals("  -3", new FastLongFormatter(4, false).toString(-3));
-        Assertions.assertEquals("-003", new FastLongFormatter(4, true).toString(-3));
+        Assertions.assertEquals(  "-3", new FastLongFormatter(1, false, false).toString(-3));
+        Assertions.assertEquals(  "-3", new FastLongFormatter(1, true, false).toString(-3));
+        Assertions.assertEquals(  "-3", new FastLongFormatter(2, false, false).toString(-3));
+        Assertions.assertEquals(  "-3", new FastLongFormatter(2, true, false).toString(-3));
+        Assertions.assertEquals( " -3", new FastLongFormatter(3, false, false).toString(-3));
+        Assertions.assertEquals( "-03", new FastLongFormatter(3, true, false).toString(-3));
+        Assertions.assertEquals("  -3", new FastLongFormatter(4, false, false).toString(-3));
+        Assertions.assertEquals("-003", new FastLongFormatter(4, true, false).toString(-3));
     }
 
     @Test
     public void testSpecialNumbers() {
-        Assertions.assertEquals(                   "0", new FastLongFormatter(1, false).toString(0));
-        Assertions.assertEquals(                 "000", new FastLongFormatter(3, true).toString(0));
-        Assertions.assertEquals(                 "  0", new FastLongFormatter(3, false).toString(0));
-        Assertions.assertEquals("-9223372036854775808", new FastLongFormatter(1, false).toString(Long.MIN_VALUE));
-        Assertions.assertEquals( "9223372036854775807", new FastLongFormatter(1, false).toString(Long.MAX_VALUE));
+        Assertions.assertEquals(                   "0", new FastLongFormatter(1, false, false).toString(0));
+        Assertions.assertEquals(                 "000", new FastLongFormatter(3, true, false).toString(0));
+        Assertions.assertEquals(                 "  0", new FastLongFormatter(3, false, false).toString(0));
+        Assertions.assertEquals("-9223372036854775808", new FastLongFormatter(1, false, false).toString(Long.MIN_VALUE));
+        Assertions.assertEquals( "9223372036854775807", new FastLongFormatter(1, false, false).toString(Long.MAX_VALUE));
     }
 
     @Test
     public void testChainCalls() {
         Assertions.assertEquals(" 1 -02 04",
                                 new StringBuilder().
-                                        append(new FastLongFormatter(2, false).toString(1)).
+                                        append(new FastLongFormatter(2, false, false).toString(1)).
                                         append(' ').
-                                        append(new FastLongFormatter(3, true).toString(-2)).
+                                        append(new FastLongFormatter(3, true, false).toString(-2)).
                                         append(' ').
-                                        append(new FastLongFormatter(2, true).toString(4)).
+                                        append(new FastLongFormatter(2, true, false).toString(4)).
                                         toString());
     }
 
     @Test
+    public void testExceedWidth() {
+        try {
+            new FastLongFormatter(3, true, true).toString(-123);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException e) {
+            Assertions.assertEquals(OrekitMessages.WIDTH_EXCEEDED, e.getSpecifier());
+            Assertions.assertEquals("-123", e.getParts()[0]);
+            Assertions.assertEquals(3,      (Integer) e.getParts()[1]);
+        }
+    }
+
+    @Test
     public void testGetters() {
-        Assertions.assertEquals(4, new FastLongFormatter(4, true).getWidth());
-        Assertions.assertTrue(new FastLongFormatter(4, true).hasZeroPadding());
-        Assertions.assertFalse(new FastLongFormatter(4, false).hasZeroPadding());
+        Assertions.assertEquals(4, new FastLongFormatter(4, true, false).getWidth());
+        Assertions.assertTrue(new FastLongFormatter(4, true, false).hasZeroPadding());
+        Assertions.assertFalse(new FastLongFormatter(4, false, false).hasZeroPadding());
     }
 
 }

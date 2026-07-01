@@ -26,6 +26,9 @@
           <action dev="luc" type="fix" issue="1978">
               Removed IOException from DataFilter.filter(DataSource).
           </action>
+          <action dev="luc" type="fix" issue="1975">
+              Added width check to FastLongFormatter.
+          </action>
           <action dev="luc" type="fix" issue="1974">
               Added getBaseInitialState to Propagator.
           </action>

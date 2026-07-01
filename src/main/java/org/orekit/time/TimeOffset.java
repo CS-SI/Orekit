@@ -167,12 +167,12 @@ public class TimeOffset
     /** Formatter for seconds.
      * @since 13.0.3
      */
-    private static final FastLongFormatter SECONDS_FORMATTER = new FastLongFormatter(1, false);
+    private static final FastLongFormatter SECONDS_FORMATTER = new FastLongFormatter(1, false, false);
 
     /** Formatter for attoseconds.
      * @since 13.0.3
      */
-    private static final FastLongFormatter ATTOSECONDS_FORMATTER = new FastLongFormatter(18, true);
+    private static final FastLongFormatter ATTOSECONDS_FORMATTER = new FastLongFormatter(18, true, true);
 
     /** NaN. */
     private static final String NAN_STRING = "NaN";

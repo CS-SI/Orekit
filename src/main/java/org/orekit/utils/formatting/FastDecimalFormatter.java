@@ -83,9 +83,9 @@ public class FastDecimalFormatter extends FastDoubleFormatter {
 
         this.scaling         = SCALING[precision];
         this.beforeFormatter = precision == 0 ?
-                               new FastLongFormatter(width, false) :
-                               new FastLongFormatter(width - precision - 1, false);
-        this.afterFormatter  = new FastLongFormatter(precision, true);
+                               new FastLongFormatter(width, false, false) :
+                               new FastLongFormatter(width - precision - 1, false, false);
+        this.afterFormatter  = new FastLongFormatter(precision, true, false);
     }
 
     /** Get the precision.
