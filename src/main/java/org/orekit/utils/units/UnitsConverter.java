@@ -91,6 +91,14 @@ public class UnitsConverter {
         this.factor = from.getScale() / to.getScale();
     }
 
+    /** Get inverse converter.
+     * @return converter in the opposite direction
+     * @since 14.0
+     */
+    public UnitsConverter getInverse() {
+        return new UnitsConverter(to, from);
+    }
+
     /** Get the source unit.
      * @return source unit
      */
