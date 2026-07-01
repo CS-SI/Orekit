@@ -110,12 +110,12 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Format for one 4 digits integer field.
      * @since 13.0.3
      */
-    private static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true);
+    private static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true, false);
 
     /** Format for one 2 digits integer field.
      * @since 13.0.3
      */
-    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
+    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true, true);
 
     /** Serializable UID. */
     @Serial

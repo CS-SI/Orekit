@@ -1018,6 +1018,11 @@ public enum OrekitMessages implements Localizable {
     /** INVALID_FORMAT. */
     INVALID_FORMAT("invalid format: width = {0}, precision = {1}"),
 
+    /** WIDTH_EXCEEDED.
+     * @since 14.0
+     */
+    WIDTH_EXCEEDED("width exceeded: value {0} cannot fit in a field {1} characters wide"),
+
     /** OUTPUT_ALREADY_CLOSED. */
     OUTPUT_ALREADY_CLOSED("output {0} has already been closed"),
 

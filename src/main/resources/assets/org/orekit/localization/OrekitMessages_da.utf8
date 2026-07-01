@@ -978,6 +978,9 @@ WRONG_SATELLITES_NUMBER=
 # invalid format: width = {0}, precision = {1}
 INVALID_FORMAT=
 
+# width exceeded: value {0} cannot fit in a field {1} characters wide
+WIDTH_EXCEEDED=
+
 # output {0} has already been closed
 OUTPUT_ALREADY_CLOSED=
 

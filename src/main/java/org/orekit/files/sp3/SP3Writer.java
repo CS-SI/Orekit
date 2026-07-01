@@ -56,10 +56,10 @@ public class SP3Writer {
     private static final String ADDITIONAL_PARAMETERS_LINE = "%i    0    0    0    0      0      0      0      0         0";
 
     /** Format for one 2 digits integer field. */
-    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
+    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false, true);
 
     /** Format for one 3 digits integer field. */
-    private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
+    private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false, true);
 
     /** Format for one 14.6 digits float field. */
     private static final FastDoubleFormatter FOURTEEN_SIX_DIGITS_FLOAT = new FastDecimalFormatter(14, 6);
