@@ -42,7 +42,17 @@ public class UnitsConverterTest {
 
     @Test
     public void testRotationRate() {
+        final UnitsConverter rpm2dps = new UnitsConverter(Unit.parse("rev / min"),
+                                                          Unit.parse("°/s"));
+        Assertions.assertEquals(6.0, rpm2dps.convert(1.0), 1.0e-12);
+    }
 
+    @Test
+    public void testInverse() {
+        final UnitsConverter dps2rpm =
+            new UnitsConverter(Unit.parse("rev / min"), Unit.parse("°/s")).
+            getInverse();
+        Assertions.assertEquals(1.0, dps2rpm.convert(6.0), 1.0e-12);
     }
 
     @Test
