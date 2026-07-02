@@ -19,7 +19,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.1.7" date="TBD" description="TBD">
+    <release version="13.1.7" date="2026-07-03" description="Orekit 13.1.7 is a patch release. It solves various bugs related to propagators, solid tides and Alpha-5 parsing.">
       <action dev="luc" type="fix" issue="1977">
           Fixed AbstractPropagatorConverter.getRMS().
       </action>
@@ -27,7 +27,7 @@
           Fixed initial warm-up fitting in AbstractPropagatorConverter.
       </action>
        <action dev="luc" type="fix" issue="1972">
-          Allow Ephemeris with null attitude providers to be used in AggregateBounedPropagator.
+          Allow Ephemeris with null attitude providers to be used in AggregateBoundedPropagator.
       </action>
        <action dev="rafa" type="add" issue="1925">
           Add constructors with custom Love numbers in SolidTides.
