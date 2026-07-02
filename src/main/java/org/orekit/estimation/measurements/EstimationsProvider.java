@@ -17,6 +17,8 @@
 package org.orekit.estimation.measurements;
 
 
+import java.util.stream.IntStream;
+
 /** Interface for retrieving estimated measurements during orbit determination.
  * <p>
  * Implementations of this interface are provided by the orbit
@@ -34,6 +36,17 @@ public interface EstimationsProvider {
      * @return number of evaluations available
      */
     int getNumber();
+
+    /**
+     * Form the indices of rejected measurements.
+     * @return indices
+     * @since 14.0
+     */
+    default int[] getRejectedIndices() {
+        return IntStream.range(0, getNumber())
+                .filter(index -> getEstimatedMeasurement(index).getStatus() == EstimatedMeasurementBase.Status.REJECTED)
+                .toArray();
+    }
 
     /** Get one estimated measurement.
      * @param index index of the estimated measurement, must be between 0
