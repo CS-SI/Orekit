@@ -190,6 +190,9 @@ NOT_POSITIVE_SPACECRAFT_MASS=La massa del veicolo spaziale non è positiva: {0} 
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=eccentricità eccessiva per il modello di propagazione: e = {0}
 
+# too large eccentricity for teardrop motion: e > 1e-4
+TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION=eccentricità troppo grande per il moto a forma di lacrima: e > 1e-4
+
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE=attività solare non disponibile il {0}, dati disponibili unicamente per l''intervallo [{1}, {2}]
 

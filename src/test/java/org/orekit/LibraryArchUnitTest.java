@@ -31,6 +31,7 @@ class LibraryArchUnitTest {
     private static final String FILES_NAME = "..files..";
     private static final String ESTIMATION_NAME = "..estimation..";
     private static final String PROPAGATION_NAME = "..propagation..";
+    private static final String PROPAGATION_RELATIVE_NAME = "..propagation.relative..";
     private static final String FORCES_NAME = "..forces..";
     private static final String ATTITUDES_NAME = "..attitudes..";
     private static final String DATA_NAME = "..data..";
@@ -69,7 +70,7 @@ class LibraryArchUnitTest {
         // WHEN
         final ArchRule myRule = classes()
                 .that().resideInAPackage(CONTROL_NAME).and().resideOutsideOfPackage(INDIRECT_NAME)
-                .should().onlyBeAccessed().byAnyPackage(CONTROL_NAME, ESTIMATION_NAME);
+                .should().onlyBeAccessed().byAnyPackage(CONTROL_NAME, ESTIMATION_NAME, PROPAGATION_RELATIVE_NAME);
         // THEN
         myRule.check(IMPORTED_CLASSES);
     }
