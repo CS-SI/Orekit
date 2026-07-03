@@ -3,7 +3,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>13.1.6</version>
+  <version>13.1.7</version>
   <name>OREKIT</name>
   <url>https://www.orekit.org/</url>
 
@@ -340,6 +340,9 @@
     </contributor>
     <contributor>
       <name>Lukas Matt</name>
+    </contributor>
+    <contributor>
+      <name>Rodrigo Marcelino</name>
     </contributor>
     <contributor>
       <name>Tanner Mills</name>

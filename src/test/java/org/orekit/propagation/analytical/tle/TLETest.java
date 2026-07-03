@@ -616,6 +616,44 @@ public class TLETest {
         Assertions.assertEquals(reconstructedExactDate, parsedTle.getDate());
     }
 
+    @Test
+    void testParseSatelliteNumber() {
+
+        // 1. Nominal Cases
+        // Source: https://www.space-track.org/documentation#tle-alpha5
+        final String satNum1 = "25544"; // ISS
+        final String satNum2 = "A0001"; // First Alpha-5
+
+        Assertions.assertEquals(25544, TLE.parseSatelliteNumber(satNum1));
+        // A=10. Formula: 10 * 10000 + 1 = 100001.
+        Assertions.assertEquals(100001, TLE.parseSatelliteNumber(satNum2));
+        Assertions.assertEquals(100001, TLE.parseSatelliteNumber(satNum2));
+
+        // 2. Boundary/Edge Cases
+        Assertions.assertEquals(1, TLE.parseSatelliteNumber("00001"), 0);
+        Assertions.assertEquals(99999, TLE.parseSatelliteNumber("99999"), 0);
+        // Minimum Alpha-5 ('A' = 10 -> 100000)
+        Assertions.assertEquals(100000, TLE.parseSatelliteNumber("A0000"), 0);
+        // Maximum Alpha-5 ('Z' = 33 -> 339999)
+        Assertions.assertEquals(339999, TLE.parseSatelliteNumber("Z9999"), 0);
+
+        // 3. Exception Handling
+        try {
+            TLE.parseSatelliteNumber("I1234");
+            Assertions.fail("an exception should have been thrown");
+        } catch (NumberFormatException nfe) {
+            // expected :)
+        }
+
+        try {
+            TLE.parseSatelliteNumber("NOTNUM");
+            Assertions.fail("an exception should have been thrown");
+        } catch (NumberFormatException nfe) {
+            // expected too
+        }
+
+    }
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
