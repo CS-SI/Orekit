@@ -41,6 +41,5 @@
  *  applies only to circular target orbits.
  *  </li>
  * </ul>
- * <p>
  */
 package org.orekit.control.relative;

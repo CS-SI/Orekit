@@ -30,6 +30,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * stored in this object in addition to the ΔV vectors, it is possible to reconstruct the orbit of the chaser before and
  * after the transfer.
  *
+ * @param <T> Any scalar field
+ *
  * @author Jérôme Tabeaud
  * @author Romain Cuvillon
  * @since 14.0
@@ -198,6 +200,7 @@ public class FieldTwoImpulseTransfer<T extends CalculusFieldElement<T>> {
     }
 
     /**
+     * Returns the duration of the transfer between the two impulses.
      * @return The duration of the transfer between the two impulses
      */
     public T getDuration() {

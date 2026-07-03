@@ -39,6 +39,7 @@ import java.util.List;
  * (circular orbit).
  * </p>
  *
+ * @param <T> Any scalar field
  * @author Romain Cuvillon
  * @since 14.0
  */

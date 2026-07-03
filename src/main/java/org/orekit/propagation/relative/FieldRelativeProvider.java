@@ -34,7 +34,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * propagator where the additional data is added.
  * </p>
  *
- * @param <T> Any scalar field.
+ * @param <T> Any scalar field
  * @author Romain Cuvillon
  * @since 14.0
  */

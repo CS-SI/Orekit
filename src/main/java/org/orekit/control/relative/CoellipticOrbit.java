@@ -42,7 +42,6 @@ import org.orekit.orbits.PositionAngleType;
  *     <li>gamma: angle from the RAAN to the target andchaser orbit planes line-of-intersection depending on the
  *     corresponding quadrant.</li>
  * </ul>
- * </p>
  *
  * @author Romain Cuvillon
  * @since 14.0

@@ -255,6 +255,7 @@ public class TwoImpulseTransfer {
     }
 
     /**
+     * Returns the PVT of the chaser just before the injection maneuver into the transfer orbit.
      * @return The PVT before the injection maneuver into the transfer orbit
      */
     public TimeStampedPVCoordinates getPvt1BeforeMan() {
@@ -262,6 +263,7 @@ public class TwoImpulseTransfer {
     }
 
     /**
+     * Returns the PVT of the chaser just after the velocity-synchronization maneuver into the target orbit.
      * @return The PVT after the velocity-synchronization maneuver into the target orbit
      */
     public TimeStampedPVCoordinates getPvt2AfterMan() {
