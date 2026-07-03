@@ -52,6 +52,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 public class FieldYamanakaAnkersenRendezVous<T extends CalculusFieldElement<T>> {
 
+    /** Empty constructor. */
     public FieldYamanakaAnkersenRendezVous() {
     }
 

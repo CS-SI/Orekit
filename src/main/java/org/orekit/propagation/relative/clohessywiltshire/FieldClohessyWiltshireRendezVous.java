@@ -41,6 +41,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 public class FieldClohessyWiltshireRendezVous<T extends CalculusFieldElement<T>> {
 
+    /** Empty constructor. */
     public FieldClohessyWiltshireRendezVous() {
     }
 

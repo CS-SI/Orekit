@@ -32,7 +32,6 @@
  *  </li>
  * </ul>
  * <p>
- * <p>
  * All the references for the equations in the code come from : <br>
  * NEW STATE TRANSITION MATRIX FOR RELATIVE MOTION ON AN ARBITRARY ELLIPTICAL ORBIT <br>
  * Koji Yamanaka, Finn Ankersen <br>

@@ -31,7 +31,6 @@
  *        <li>{@link org.orekit.propagation.relative.yamanakaankersen}; Yamanaka-Ankersen equations for elliptical
  *        orbits, based on [2]</li>
  *    </ol>
- * </p>
  * <p>
  *    Package {@link org.orekit.propagation.relative.maneuver} provides relative maneuvers applied to the chase S/C.
  *    These are impulse maneuvers implemented as EventDetector added to the main propagator (i.e. the target S/C).
@@ -45,7 +44,5 @@
  *       <li>[2]. New State Transition Matrix For Relative Motion On An Arbitrary Elliptical Orbit: Koji Yamanaka,
  *       Finn Ankersen, Journal of Guidance, Control, and Dynamics, Vol. 25, No. 1, January-February 2002.</li>
  *    </ul>
- *
- * </p>
  */
 package org.orekit.propagation.relative;
