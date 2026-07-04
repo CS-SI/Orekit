@@ -501,9 +501,16 @@ public class SinexParserTest {
         final AbsoluteDate start = new AbsoluteDate(new DateComponents(startYear, startDay),
                                                     new TimeComponents(secInStartDay),
                                                     TimeScalesFactory.getUTC());
-        final AbsoluteDate end = new AbsoluteDate(new DateComponents(endYear, endDay),
-                                                  new TimeComponents(secInEndDay),
-                                                  TimeScalesFactory.getUTC());
+        final AbsoluteDate end;
+        if ((endYear == Integer.MAX_VALUE) || (endDay == Integer.MAX_VALUE) || (secInEndDay == Integer.MAX_VALUE)) {
+            end = AbsoluteDate.FUTURE_INFINITY;
+            assertEquals(station.getValidUntil(), AbsoluteDate.FUTURE_INFINITY);
+        } else {
+            end = new AbsoluteDate(new DateComponents(endYear, endDay),
+                                                    new TimeComponents(secInEndDay),
+                                                    TimeScalesFactory.getUTC());
+            assertEquals(0., end.durationFrom(station.getValidUntil()),  1.0e-10);
+        }
         final AbsoluteDate epoch = new AbsoluteDate(new DateComponents(epochYear, epochDay),
                                                     new TimeComponents(secInEpoch),
                                                     TimeScalesFactory.getUTC());
@@ -511,7 +518,6 @@ public class SinexParserTest {
         final AbsoluteDate midDate = start.shiftedBy(0.5 * end.durationFrom(start));
 
         assertEquals(0., start.durationFrom(station.getValidFrom()), 1.0e-10);
-        assertEquals(0., end.durationFrom(station.getValidUntil()),  1.0e-10);
         assertEquals(0., epoch.durationFrom(station.getEpoch()),     1.0e-10);
         assertEquals(siteCode, station.getSiteCode());
         assertEquals(refDomes, station.getDomes());
