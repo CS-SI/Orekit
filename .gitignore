@@ -12,3 +12,5 @@ target
 *.iml
 hs_err_pid*
 replay_pid*
+
+python_test/__pycache__/
