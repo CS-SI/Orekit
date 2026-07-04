@@ -115,6 +115,31 @@ public class SinexParserTest {
     }
 
     @Test
+    public void testSLRSinexFileIssue1982() {
+
+        final Sinex sinex = load("/sinex/SLRF2020_POS+VEL_2025.05.13.snx");
+
+        // Test date computation using format description
+        ParseInfo<AbstractSinex> parseInfo = new ParseInfo<AbstractSinex>(TimeScalesFactory.getTimeScales()) {
+            /** {@inheritDoc} */
+            @Override
+            protected AbstractSinex build() {
+                return null;
+            }
+        };
+        parseInfo.setTimeScale(TimeScalesFactory.getUTC());
+
+        // Test some values
+        checkStation(sinex.getStations().get("7840"), 1983, 101, 9984, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 2015, 1, 0,
+                     "7840", "13212S001", null,
+                     new Vector3D(0.403346347630212E+07, 0.236627872673329E+05, 0.492430535075408E+07),
+                     new Vector3D(-.131572303249976E-01 / Constants.JULIAN_YEAR,
+                                  0.170848681043556E-01 / Constants.JULIAN_YEAR,
+                                  0.981395859644500E-02 / Constants.JULIAN_YEAR),
+                     null, null, null);
+    }
+
+    @Test
     public void testStationEccentricityXYZFile() {
 
         // Load file (it corresponds to a small version of the real complete file)
