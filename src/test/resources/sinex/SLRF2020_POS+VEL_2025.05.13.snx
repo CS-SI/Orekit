@@ -1,0 +1,2260 @@
+%=SNX 2.02 DGF 25:145:43200 DGF 79:329:00000 00:000:00000 C 01416 2 S
+*-------------------------------------------------------------------------------
+*        1         2         3         4         5         6         7         8
+*2345678901234567890123456789012345678901234567890123456789012345678901234567890
+*-------------------------------------------------------------------------------
++FILE/REFERENCE
+ DESCRIPTION        Expanded set of SLR stations in ITRF2020 frame
+                    includes historical sites NOT in ITRF2020 and some very
+                    recently installed sites that came online recently.
+                    A small number of sites require special treatment
+                    with the addition of corrections to their "mean"
+                    positions from the ITRS-distributed PSD model,
+                    due to "events" (e.g., e-quakes) or changes at the site.
+                    Users must apply these corrections cumulatively, to the 
+                    linearly propagated positions from this file, by themselves.
+                    For more details, s/w and relevant correction files
+                    please visit the official ITRS site on ITRF2020 at:
+
+                    https://itrf.ign.fr/en/solutions/ITRF2020
+
+ OUTPUT             SLRF2020 (SSC/SSV)
+ VERSION            250513
+ CONTACT            mathis.blossfeld@tum.de
+ INPUT              SLRF2020 + updated station coordinates
+ CREDITS            ITRS PC, IGN-IPGP, France
+                    CGS, Agenzia Spaziale Italiana (ASI), Matera, IT
+                    GESTAR II/UMBC - NASA Goddard, Baltimore, MD, USA
+                    DGFI-TUM, Munich, Germany
+-FILE/REFERENCE
+*-------------------------------------------------------------------------------
++FILE/COMMENT
+*
+* File originally created by CATREF software (Z.Altamimi)
+*
+* File modifications:
+*
+*      2025.05.13: M. Blossfeld added new Japanese SLR site Ishioka (7317) with 
+*                  coordinates provided by T. Otsubo. For vel, the values of the 
+*                  colocated GNSS station ISHI (A04) are used. The reference 
+*                  epoch is 15:001.
+*
+*                  The coordinates for A02 of Tsukuba (7306) had been updated 
+*                  again to correct for error found by JCET CC.
+*
+*      2025.04.08: M. Blossfeld added new Chinese SLR site Xian (7329) with very
+*                  high STDs for pos (1m) and vel (0.5m/y). The vel is currently
+*                  set to zero since no GNSS colocation is available.
+*                  The reference epoch is 25:098.
+*
+*      2025.02.21: M. Blossfeld to add newly introduced discontinuities of
+*      ITRF2020-u2023:   1890  A01 -> A02 at 22:264:00000
+*                        7105  A01 -> A02 at 20:232:00000
+*                        7396  A01 -> A02 at 20:274:00000
+*                        7501  A02 -> A03 at 21:104:00000
+*                        7835  A02 -> A03 at 94:012:00000
+*                        7841  A01 -> A02 at 11:121:00000
+*
+*      2025.02.05: M. Blossfeld to update the coordinates of four sites, i.e.,
+*      Tsukuba (Japan, 7306)         - new coordinates needed after earthquake  
+*                                      and quarantine release; this results in a 
+*                                      discontinuity introduced for 7306 at 
+*                                      2024.0 (and consequently two different 
+*                                      sets of coordinates),
+*      Yebes (Spain, 7817)           - initial coordinates updated,
+*      Mt. Stromlo (Australia, 7825) - no updates needed after quarantine 
+*                                      release,
+*      Matera (Italy, 7941)          - no updates needed after quarantine
+*                                      release,
+*      Izana (Spain, 7701)           - no updates needed.
+*
+*      2023.10.02: E. C. Pavlis to reorder site parameters by CDP No. and
+*      to include 35 historical sites (not included in ITRF2020), the 
+*      new ESA site at Izana, Tenerife, the new Japanese site 7306 at Tsukuba,
+*      and “place holders” for the upcoming sites at Metsahovi, Finland 7807,
+*      Stuttgart, Germany 7816 and Yebes, Spain 7817.
+*
+* The formation of SLRF2020 follows that of SLRF2005, SLRF2008 and SLRF2014,
+* based on the decision taken within the ILRS ASC to fill-in the gap in ITRF 
+* models due to the non-selection of a small subset of historical SLR sites in 
+* the official ITRF models. This is an attempt to deliver a complete reference
+* frame with nearly all the SLR sites ever having tracked the LAGEOS and other
+* laser-ranged satellites of geodetic interest.
+*
+* The archive contains positions and velocities for 184 unique sites.
+* 
+* Each release carries now a "VERSION" (date of release), since it is our
+* intention to periodically update it with the inclusion of additional sites
+* as they become active within ILRS or improved coordinates/velocities for 
+* recent sites with a limited data record in ITRF2020 or those activated after
+* the release of SLRF2020. Comments on future updates will appear under NOTES.
+*
+*-------------------------------------------------------------------------------
+*
+*   For SLR applications it is necessary to adapt your analysis to follow 
+*   the modeling used by the ILRS ASC during the reduction of the SLR data
+*   over the period 1993.0 - 2021.0 and beyond as follows:
+*
+*   (1) The Data Handling file recommended by the ILRS ASC should be used
+*
+*******************************************************************************
+**                                                                           **
+** IMPORTANT:   Use Data Handling File Release  250408  or  later !!!        **
+**                                                                           **
+*******************************************************************************
+*
+*   (2) Use the "Target Signature Correction" model release 2023.11.27 & beyond
+*       available from:
+*
+*       https://edc.dgfi.tum.de/en/ilrs-ac under the category "space segment".
+*
+*-------------------------------------------------------------------------------
+* 
+-FILE/COMMENT
+*-------------------------------------------------------------------------------
++SITE/ID
+*CODE PT __DOMES__ T _STATION DESCRIPTION__ APPROX_LON_ APPROX_LAT_ _APP_H_     _SOD#___
+ 1181  A 14106S001 L Potsdam    GDR FIXED    13  3 55.0  52 22 48.9   148.5     11813901
+ 1824  A 12356S001 L Kiev       KIEV FIXED   30 29 45.1  50 21 47.2   213.1     18248101
+ 1831  A 12368S001 L Lviv       LVIV         23 57 15.8  49 55  3.2   359.8     18318501
+ 1863  A 12340S001 L Maidanak   MDN. FIXED   66 56 35.3  38 41  8.6  2712.0     18635101
+ 1864  A 12340S002 L Maidanak   MDN2 FIXED   66 56 35.1  38 41  5.6  2714.2     18645401
+ 1868  A 12341S001 L Komsomolsk KOM. FIXED  136 44 37.7  50 41 40.6   270.1     18685901
+ 1873  A 12337S003 L Simeiz     SIM. FIXED   33 59 27.4  44 24 47.4   365.3     18734901
+ 1874  A 12309S003 L Mendeleev2 MDVS         37 13 24.4  56  1 39.3   257.3     18748301
+ 1879  A 12372S001 L Altay      ALTL         82 10 38.3  51 20 38.0   270.0     18799401
+ 1884  A 12302S002 L Riga       RIGA FIXED   24  3 31.0  56 56 55.3    31.7     18844401
+ 1885  A 12302S006 L Riga       RIGA         24  3 31.1  56 56 55.4    31.5     18856701
+ 1886  A 12373S001 L Arkhyz     ARKL         41 25 53.3  43 38 59.4  2078.2     18869601
+ 1887  A 25603S001 L Baikonur   BAIL         63 20 31.9  45 42 16.9    98.3     18879701
+ 1888  A 12350S002 L Svetloe    QUASAR       29 47 00.0  60 32 00.0   100.0     18889801
+ 1889  A 12351S002 L Zelenchuks QUASAR       41 34 00.0  43 47 00.0  1000.0     18899901
+ 1890  A 12338S004 L Badary     QUASAR      102 14  7.3  51 46 12.1   100.0     18900901
+ 1891  A 12313S007 L Irkutsk    IRKL FIXED  104 18 59.0  52 13  8.8   505.6     18915301
+ 1893  A 12337S006 L Katzively  CRIMEA FIX   33 58 12.4  44 23 35.4    68.7     18931801
+ 1953  A 40701S001 L Santiago D CUBA FIXED  284 14 16.0  20  0 43.0    18.3     19532001
+ 7035  A 40436M003 L Otay Mount TLRS-3      243  9 32.9  34 22 55.2  2200.0     70351301
+ 7046  A 40438M002 L Bear Lake  TLRS-4      248 34 45.4  41 56  0.7  1963.9     70461402
+ 7046  A 40438M002 L Bear Lake  MTLRS-1     248 34 45.4  41 56  0.8  1060.7     70461501
+ 7051  A 40433M001 L Quincy     MOBLAS-1    239  3 37.6  39 58 24.5  1060.7     70510101
+ 7051  A 40433M001 L Quincy     MOBLAS-2    239  3 37.6  39 58 24.5  1060.7     70510202
+ 7051  A 40433M001 L Quincy     MOBLAS-2    239  3 37.6  39 58 24.5  1060.7     70510203
+ 7051  A 40433M001 L Quincy     MOBLAS-8    239  3 37.6  39 58 24.5  1060.7     70510804
+ 7062  A 40436M002 L Otay Mount MOBLAS-2    243  9 32.8  32 36  2.6   989.0     70620201
+ 7062  A 40436M002 L Otay Mount MOBLAS-3    243  9 32.8  32 36  2.6   989.0     70620302
+ 7062  A 40436M002 L Otay Mount MOBLAS-3    243  9 32.8  32 36  2.6   989.0     70620303
+ 7062  A 40436M002 L Otay Mount TLRS-1      243  9 32.8  32 36  2.6   989.0     70621104
+ 7062  A 40436M002 L Otay Mount TLRS-2      243  9 32.8  32 36  2.6   989.0     70621205
+ 7063  A 40451M112 L Greenbelt  GSFC FIXED  283 10 19.9  39  1 13.3    19.9     70632101
+ 7065  A 40451M108 L Greenbelt  MOBLAS-2    283 10 19.1  39  1 14.4    18.6     70650201
+ 7065  A 40451M108 L Greenbelt  MOBLAS-2    283 10 19.1  39  1 14.4    18.6     70650203
+ 7065  A 40451M108 L Greenbelt  MOBLAS-3    283 10 19.1  39  1 14.4    18.6     70650302
+ 7067  A 42501M001 L Bermuda    MOBLAS-1    295 20 37.6  32 21 12.8   -20.5     70670101
+ 7067  A 42501M001 L Bermuda    MOBLAS-1    295 20 37.6  32 21 12.8   -20.5     70670102
+ 7068  A 43602M002 L Grand Turk MOBLAS-2    288 52  5.1  21 27 37.7   -17.6     70680201
+ 7068  A 43602M002 L Grand Turk MOBLAS-2    288 52  5.1  21 27 37.7   -17.6     70680202
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802401
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802402
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802403
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802404
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802405
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802406
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802407
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802408
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802409
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802410
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802411
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802412
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802413
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802414
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802415
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802416
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802417
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802418
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802419
+ 7082  A 40438M001 L Bear Lake  MOBLAS-1    248 34 45.6  41 56  0.8  1963.7     70820101
+ 7082  A 40438M001 L Bear Lake  MOBLAS-1    248 34 45.6  41 56  0.8  1963.7     70820102
+ 7082  A 40438M001 L Bear Lake  TLRS-1      248 34 45.6  41 56  0.8  1963.7     70821103
+ 7082  A 40438M001 L Bear Lake  TLRS-1      248 34 45.6  41 56  0.8  1963.7     70821104
+ 7084  A 40439M003 L Owens Vall MOBLAS-2    241 42 15.2  37 13 55.6  1178.7     70840201
+ 7085  A 40405M001 L Goldstone  MOBLAS-1    243  6 49.0  35 25 27.9   966.7     70850101
+ 7086  A 40442M001 L Mcdonald   MOBLAS-1    255 59  2.6  30 40 37.3  1962.1     70860101
+ 7086  A 40442M001 L Mcdonald   TLRS-1      255 59  2.6  30 40 37.3  1962.1     70861102
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862403
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862404
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862405
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862406
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862407
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862408
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900501
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900502
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900503
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900504
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900505
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900506
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900507
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900508
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900509
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900510
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900511
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900512
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900513
+ 7091  A 40440M001 L Westford   MOBLAS-3    288 30 44.4  42 37 21.7    92.8     70910301
+ 7091  A 40440M001 L Westford   MOBLAS-7    288 30 44.4  42 37 21.7    92.8     70910702
+ 7091  A 40440M001 L Westford   TLRS-1      288 30 44.4  42 37 21.7    92.8     70911103
+ 7091  A 40440M001 L Westford   TLRS-1      288 30 44.4  42 37 21.7    92.8     70911104
+ 7092  A 50505M001 L Kwajalein  MOBLAS-8    167 28 32.5   9 23 37.6    31.3     70920801
+ 7096  A 50503M001 L American N-MOBLAS-6    189 16 30.4 -14-20 -7.4    45.5     70960601
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971201
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971202
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971203
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971204
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971205
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971206
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971207
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971208
+ 7100  A 40451M106 L Greenbelt  MOBLAS-3    283 10 47.7  39  1 15.4    10.8     71000301
+ 7100  A 40451M106 L Greenbelt  MOBLAS-4    283 10 47.7  39  1 15.4    10.8     71000402
+ 7101  A 40451M101 L Greenbelt  MOBLAS-6    283 10 43.0  39  1 16.2     8.1     71010602
+ 7101  A 40451M101 L Greenbelt  MOBLAS-8    283 10 43.0  39  1 16.2     8.1     71010801
+ 7102  A 40451M102 L Greenbelt  MOBLAS-3    283 10 18.9  39  1 14.4    19.1     71020305
+ 7102  A 40451M102 L Greenbelt  MOBLAS-4    283 10 18.9  39  1 14.4    19.1     71020402
+ 7102  A 40451M102 L Greenbelt  MOBLAS-4    283 10 18.9  39  1 14.4    19.1     71020403
+ 7102  A 40451M102 L Greenbelt  MOBLAS-4    283 10 18.9  39  1 14.4    19.1     71020404
+ 7102  A 40451M102 L Greenbelt  MOBLAS-5    283 10 18.9  39  1 14.4    19.1     71020501
+ 7102  A 40451M102 L Greenbelt  TLRS-1      283 10 18.9  39  1 14.4    19.1     71021106
+ 7102  A 40451M102 L Greenbelt  TLRS-1      283 10 18.9  39  1 14.4    19.1     71021107
+ 7103  A 40451M103 L Greenbelt  MOBLAS-6    283 10 18.9  39  1 14.6    18.1     71030601
+ 7103  A 40451M103 L Greenbelt  MOBLAS-6    283 10 18.9  39  1 14.6    18.1     71030602
+ 7104  A 40451M104 L Greenbelt  MOBLAS-7    283 10 36.9  39  1 17.0    11.9     71040701
+ 7105  A 40451M105 L Greenbelt  MOBLAS-2    283 10 20.3  39  1 14.1    19.8     71050207
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050701
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050702
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050703
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050704
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050705
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050708
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050709
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050710
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050711
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050712
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050713
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050714
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050715
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050716
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050717
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050718
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050719
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050720
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050721
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050722
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050723
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050724
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050725
+ 7105  A 40451M105 L Greenbelt  TLRS-2      283 10 20.3  39  1 14.1    19.8     71051206
+ 7106  A 40451M113 L Greenbelt  48-INCH     283 10 17.7  39  1 17.3    20.0     71065601
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090801
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090802
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090803
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090804
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090805
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090806
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090807
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090808
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090809
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090810
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090812
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090813
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090814
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090815
+ 7109  A 40433M002 L Quincy     TLRS-4      239  3 19.0  39 58 30.0  1107.0     71091411
+ 7110  A 40497M001 L Monument P MOBLAS-3    243 34 38.3  32 53 30.2  1839.7     71100301
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100402
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100403
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100404
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100405
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100406
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100407
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100408
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100409
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100410
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100411
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100412
+ 7112  A 40496M001 L Plattevill MOBLAS-2    255 16 26.4  40 10 58.0  1502.2     71120201
+ 7112  A 40496M001 L Plattevill TLRS-1      255 16 26.4  40 10 58.0  1502.2     71121105
+ 7112  A 40496M001 L Plattevill TLRS-4      255 16 26.4  40 10 58.0  1502.2     71121403
+ 7112  A 40496M001 L Plattevill MTLRS-1     255 16 26.4  40 10 58.0  1502.2     71121502
+ 7112  A 40496M001 L Plattevill MTLRS-1     255 16 26.4  40 10 58.0  1502.2     71121504
+ 7114  A 40439M001 L Owens Vall MOBLAS-2    241 42 22.3  37 13 57.2  1178.6     71140201
+ 7114  A 40439M001 L Owens Vall TLRS-1      241 42 22.3  37 13 57.2  1178.6     71141102
+ 7114  A 40439M001 L Owens Vall TLRS-1      241 42 22.3  37 13 57.2  1178.6     71141103
+ 7115  A 40405M002 L Goldstone  MOBLAS-3    243 12 29.1  35 14 53.9  1037.6     71150301
+ 7119  A 40445M004 L Haleakala  TLRS-4      203 44 35.2  20 42 27.4  3068.5     71191401
+ 7119  A 40445M004 L Haleakala  TLRS-4      203 44 35.2  20 42 27.4  3068.5     71191402
+ 7120  A 40445M002 L Haleakala  MOBLAS-1    203 44 38.2  20 42 27.4  3069.6     71200101
+ 7121  A 92202M002 L Huahine    MOBLAS-1    208 57 31.9 -16-44 -0.6    44.3     71210101
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220601
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220602
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220603
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220604
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220605
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220606
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220607
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220608
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220609
+ 7122  A 40504M001 L Mazatlan   TLRS-4      253 32 27.3  23 20 34.2    31.6     71221410
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231201
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231202
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231203
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231204
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231205
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231206
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231207
+ 7124  A 92201M007 L Papeete    MOBLAS-8    210 23 37.6 -17-34-36.5    95.1     71240801
+ 7124  A 92201M007 L Papeete    MOBLAS-8    210 23 37.6 -17-34-36.5    95.1     71240802
+ 7125  A 40451M114 L Greenbelt  TLRS-3      283 10 21.2  39  1 12.9    19.0     71251302
+ 7125  A 40451M114 L Greenbelt  MTLRS-1     283 10 21.2  39  1 12.9    19.0     71251501
+ 7125  A 40451M114 L Greenbelt  NGSLR01     283 10 21.2  39  1 12.9    19.0     71259301
+ 7130  A 40451M116 L Greenbelt  TLRS-2      283 10 21.1  39  1 15.2    19.6     71301201
+ 7130  A 40451M116 L Greenbelt  TLRS-4      283 10 21.1  39  1 15.2    19.6     71301402
+ 7130  A 40451M116 L Greenbelt  TLRS-4      283 10 21.1  39  1 15.2    19.6     71301403
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102301
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102302
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102303
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102304
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102305
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102306
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102307
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102308
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102309
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102310
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102311
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102312
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102313
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201101
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201102
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201103
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201104
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201105
+ 7231  A 21602S004 L Wuhan      WUHAN       114 29 22.8  30 30 56.4    87.1     72312901
+ 7236  A 21602S003 L Wuhan      WUH. FIXED  114 20 46.5  30 32 30.4    39.4     72362901
+ 7237  A 21611S001 L Changchun  CHALAS      125 26 36.4  43 47 25.8   274.9     72371901
+ 7249  A 21601S004 L Beijing    BEIJ FIXED  115 53 31.3  39 36 24.9    82.3     72496101
+ 7249  A 21601S004 L Beijing    BEIJ FIXED  115 53 31.3  39 36 24.9    82.3     72496102
+ 7265  A 40405M006 L Mojave     TLRS-1      243  6 31.3  35 19 52.3   896.7     72651101
+ 7274  A 40497M003 L Monument P TLRS-1      243 34 37.8  32 53 30.3  1839.4     72741101
+ 7288  A 40405M013 L Mojave     TLRS-3      243  6 30.5  35 19 52.4   896.8     72881301
+ 7288  A 40405M013 L Mojave     TLRS-4      243  6 30.5  35 19 52.4   896.8     72881402
+ 7288  A 40405M013 L Mojave     TLRS-4      243  6 30.5  35 19 52.4   896.8     72881403
+ 7288  A 40405M013 L Mojave     TLRS-4      243  6 30.5  35 19 52.4   896.8     72881404
+ 7295  A 40499M002 L Richmond   TLRS-1      279 36 57.1  25 36 48.0   -22.0     72951102
+ 7295  A 40499M002 L Richmond   TLRS-4      279 36 57.1  25 36 48.0   -22.0     72951403
+ 7295  A 40499M002 L Richmond   MTLRS-1     279 36 57.1  25 36 48.0   -22.0     72951501
+ 7306  A 21797S001 L Tsukuba_SC TKBLAS      140 07 52.6  36 04  3.1    68.2     73069301
+ 7307  B 21736S003 L Isigaki Sh HTLRS-1     124 12 51.4  24 22  9.1   100.8     73071702
+ 7307  D 21736S005 L Isigaki Sh HTLRS-1     124 12 51.4  24 22  9.1   100.8     73071704
+ 7308  A 21704S002 L Koganei    CRLLAS      139 29 20.8  35 42 36.3   123.1     73085001
+ 7317  A 21791M008 L Ishioka    ISHL        140 13  5.2  36 12 32.4   156.5     73179501
+ 7328  A 21704M001 L Koganei    KOGLAS      139 29 16.6  35 42 36.6   115.1     73287101
+ 7329  A 21614S001 L Xian       NTSC        109 12 51.8  34 21  6.1   940.3     73298401
+ 7335  A 21701M002 L Kashima    KASH. FIXD  140 39 27.3  35 57 22.2    66.4     73357201
+ 7337  A 21739M001 L Miura      MIULAS      139 39  1.4  35 12 24.2    99.1     73377301
+ 7339  A 21740M001 L Tateyama   TATLAS      139 50 53.3  34 56 12.9   120.3     73397401
+ 7355  A 21612M002 L Urumqi     TROS         87 42 19.3  43 48 49.0   846.1     73558401
+ 7355  A 21612M002 L Urumqi     TROS         87 42 19.3  43 48 49.0   846.1     73558402
+ 7356  A 21613M003 L Lhasa      TROS         91  2 15.5  29 38  5.4  3601.5     73568401
+ 7357  A 21601S005 L Beijing    BEIJING-A   115 53 33.6  39 36 27.8    72.7     73578801
+ 7358  A 21749S001 L Tanegashim GUTS        131  0 55.5  30 33 30.4   140.7     73588901
+ 7359  A 23902S002 L Daedeok    DAEK        127 22 28.9  36 23 56.5   116.6     73592601
+ 7370  A 50186M001 L BurnieTS   FTLRS       145 52 53.0 -41 -3-44.0   129.6     73706901
+ 7394  A 23907S002 L Sejong     SEJL        127 18 10.5  36 31 15.6   176.4     73942601
+ 7395  A 23910S001 L Geochang   GEOL        127 55 12.4  35 35 24.7   934.1     73956501
+ 7396  A 21602S008 L Wuhan      JFNL FIXED  114 29 24.7  30 30 59.5    77.4     73964701
+ 7400  A 41705M001 L Santiago   TLRS-1      289 19 52.9 -33 -8-58.6   723.4     74001101
+ 7401  A 41706M001 L Cerro Tolo TLRS-1      289 11 59.8 -30-10-20.8  2155.9     74011101
+ 7401  A 41706M001 L Cerro Tolo TLRS-3      289 11 59.8 -30-10-20.8  2155.9     74011302
+ 7401  A 41706M001 L Cerro Tolo TLRS-3      289 11 59.8 -30-10-20.8  2155.9     74011303
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031301
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031302
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031303
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031304
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031305
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031306
+ 7404  A 41705M004 L Santiago   TLRS-2      289 19 53.5 -33 -8-58.6   724.5     74041201
+ 7404  A 41705M004 L Santiago   TLRS-2      289 19 53.5 -33 -8-58.6   724.5     74041202
+ 7405  A 41719M001 L Concepcion TIGO        286 58 28.8 -36-50-34.8   170.0     74057901
+ 7405  A 41719M001 L Concepcion TIGO        286 58 28.8 -36-50-34.8   170.0     74057902
+ 7405  A 41719M001 L Concepcion TIGO        286 58 28.8 -36-50-34.8   170.0     74057903
+ 7405  A 41719M001 L Concepcion TIGO        286 58 28.8 -36-50-34.8   170.0     74057904
+ 7406  A 41508S003 L San Juan   BEIJING-A   291 22 36.6 -31-30-31.0   727.2     74068801
+ 7407  A 48081S001 L Brazilia   BRAL        312 08 04.9 -15-46-23.0  1028.8     74072701
+ 7410  A 40104M003 L Algonquin  TLRS-4      281 55 46.9  45 57 20.1   195.9     74101401
+ 7411  A 40132M001 L La Grande  TLRS-4      281 25 43.4  53 41 53.6    20.2     74111401
+ 7411  A 40132M001 L La Grande  TLRS-4      281 25 43.4  53 41 53.6    20.2     74111402
+ 7501  A 30302M003 L Hartebeest MOBLAS-6     27 41 10.2 -25-53-22.9  1407.5     75010602
+ 7501  A 30302M003 L Hartebeest MTLRS-1      27 41 10.2 -25-53-22.9  1407.5     75011501
+ 7502  A 30314M001 L Sutherland MTLRS-1      20 48  8.9 -32-22-45.0  1730.0     75021501
+ 7503  A 30301S010 L HartebRUSL HRTL         27 41 10.0 -25-53-21.1  1414.0     75036401
+ 7505  A 11101M001 L Sofia      MTLRS-1      23 23 41.0  42 33 20.4  1113.9     75051501
+ 7510  A 12612M001 L Askites    MTLRS-1      25 33 58.4  40 55 40.8   183.2     75101501
+ 7510  A 12612M001 L Askites    MTLRS-1      25 33 58.4  40 55 40.8   183.2     75101504
+ 7510  A 12612M001 L Askites    MTLRS-1      25 33 58.4  40 55 40.8   183.2     75101505
+ 7510  A 12612M001 L Askites    MTLRS-1      25 33 58.4  40 55 40.8   183.2     75101506
+ 7510  A 12612M001 L Askites    MTLRS-2      25 33 58.4  40 55 40.8   183.2     75101602
+ 7510  A 12612M001 L Askites    MTLRS-2      25 33 58.4  40 55 40.8   183.2     75101603
+ 7512  A 12615M001 L Katavia    MTLRS-1      27 46 50.8  35 57  5.4    74.6     75121501
+ 7512  A 12615M001 L Katavia    MTLRS-1      27 46 50.8  35 57  5.4    74.6     75121503
+ 7512  A 12615M001 L Katavia    MTLRS-1      27 46 50.8  35 57  5.4    74.6     75121504
+ 7512  A 12615M001 L Katavia    MTLRS-2      27 46 50.8  35 57  5.4    74.6     75121602
+ 7515  A 12602M002 L Dionysos   MTLRS-1      23 55 56.8  38  4 42.9   511.2     75151501
+ 7515  A 12602M002 L Dionysos   MTLRS-1      23 55 56.8  38  4 42.9   511.2     75151502
+ 7515  A 12602M002 L Dionysos   MTLRS-1      23 55 56.8  38  4 42.9   511.2     75151503
+ 7515  A 12602M002 L Dionysos   MTLRS-2      23 55 56.8  38  4 42.9   511.2     75151604
+ 7517  A 12613M001 L Roumelli   TLRS-1       24 41 39.0  35 24 15.2   103.3     75171102
+ 7517  A 12613M001 L Roumelli   TLRS-1       24 41 39.0  35 24 15.2   103.3     75171104
+ 7517  A 12613M001 L Roumelli   TLRS-1       24 41 39.0  35 24 15.2   103.3     75171105
+ 7517  A 12613M001 L Roumelli   MTLRS-1      24 41 39.0  35 24 15.2   103.3     75171503
+ 7517  A 12613M001 L Roumelli   MTLRS-2      24 41 39.0  35 24 15.2   103.3     75171601
+ 7520  A 12614M001 L Karitsa    MTLRS-1      20 39 53.4  39 44  3.3   599.3     75201501
+ 7520  A 12614M001 L Karitsa    MTLRS-1      20 39 53.4  39 44  3.3   599.3     75201502
+ 7520  A 12614M001 L Karitsa    MTLRS-1      20 39 53.4  39 44  3.3   599.3     75201503
+ 7525  A 12616M001 L Xrisokelar TLRS-1       21 52 39.4  36 47 29.2   476.8     75251104
+ 7525  A 12616M001 L Xrisokelar TLRS-1       21 52 39.4  36 47 29.2   476.8     75251105
+ 7525  A 12616M001 L Xrisokelar TLRS-1       21 52 39.4  36 47 29.2   476.8     75251106
+ 7525  A 12616M001 L Xrisokelar TLRS-1       21 52 39.4  36 47 29.2   476.8     75251107
+ 7525  A 12616M001 L Xrisokelar MTLRS-2      21 52 39.4  36 47 29.2   476.8     75251601
+ 7525  A 12616M001 L Xrisokelar MTLRS-2      21 52 39.4  36 47 29.2   476.8     75251602
+ 7525  A 12616M001 L Xrisokelar MTLRS-2      21 52 39.4  36 47 29.2   476.8     75251603
+ 7530  A 20702M001 L Bar Giyyor MOBLAS-2     35  5 18.7  31 43 20.6   773.7     75300201
+ 7530  A 20702M001 L Bar Giyyor MOBLAS-2     35  5 18.7  31 43 20.6   773.7     75300202
+ 7530  A 20702M001 L Bar Giyyor MOBLAS-2     35  5 18.7  31 43 20.6   773.7     75300203
+ 7530  A 20702M001 L Bar Giyyor MOBLAS-2     35  5 18.7  31 43 20.6   773.7     75300204
+ 7540  A 12734M005 L Matera     MTLRS-1      16 42 16.1  40 38 54.7   529.3     75401501
+ 7541  A 12734M004 L Matera     TLRS-1       16 42 15.4  40 38 54.7   529.0     75411102
+ 7541  A 12734M004 L Matera     TLRS-1       16 42 15.4  40 38 54.7   529.0     75411103
+ 7541  A 12734M004 L Matera     MTLRS-2      16 42 15.4  40 38 54.7   529.0     75411601
+ 7542  A 12749M001 L Monte Vend MTLRS-2      11 41 34.9  45 19 18.6   524.0     75421601
+ 7543  A 12717M001 L Noto       TLRS-1       14 59 18.2  36 52 35.7   126.4     75431102
+ 7543  A 12717M001 L Noto       MTLRS-2      14 59 18.2  36 52 35.7   126.4     75431601
+ 7544  A 12706M001 L Lampedusa  MTLRS-1      12 34  2.8  35 31  3.9   112.6     75441502
+ 7544  A 12706M001 L Lampedusa  MTLRS-1      12 34  2.8  35 31  3.9   112.6     75441503
+ 7544  A 12706M001 L Lampedusa  MTLRS-1      12 34  2.8  35 31  3.9   112.6     75441504
+ 7544  A 12706M001 L Lampedusa  MTLRS-2      12 34  2.8  35 31  3.9   112.6     75441601
+ 7545  A 12725M002 L Punta Sa M TLRS-1        8 58 22.7  39  8  7.7   230.7     75451103
+ 7545  A 12725M002 L Punta Sa M TLRS-1        8 58 22.7  39  8  7.7   230.7     75451104
+ 7545  A 12725M002 L Punta Sa M MTLRS-2       8 58 22.7  39  8  7.7   230.7     75451601
+ 7545  A 12725M002 L Punta Sa M MTLRS-2       8 58 22.7  39  8  7.7   230.7     75451602
+ 7546  A 12711M002 L Medicina   TLRS-1       11 38 47.3  44 31 12.1    50.1     75461102
+ 7546  A 12711M002 L Medicina   MTLRS-2      11 38 47.3  44 31 12.1    50.1     75461601
+ 7548  A 12725S013 L Cagliari   CAGLAS        8 58 19.3  39  8 11.9   252.8     75486201
+ 7550  A 12718M002 L Basovizza  MTLRS-2      13 52 32.0  45 38 34.6   447.9     75501601
+ 7550  A 12718M002 L Basovizza  MTLRS-2      13 52 32.0  45 38 34.6   447.9     75501602
+ 7560  A 12302M001 L Riga       MTLRS-1      24  3 30.9  56 56 54.4    30.0     75601501
+ 7561  A 12337M001 L Simeiz     MTLRS-1      33 59 29.7  44 24 55.2   387.1     75611501
+ 7575  A 20801M001 L Diyarbakir MTLRS-1      40 11 41.6  37 55 12.8   725.5     75751501
+ 7575  A 20801M001 L Diyarbakir MTLRS-1      40 11 41.6  37 55 12.8   725.5     75751502
+ 7580  A 20803M001 L Melengicli TLRS-1       33 11 28.5  37 22 39.5  1358.3     75801101
+ 7580  A 20803M001 L Melengicli TLRS-1       33 11 28.5  37 22 39.5  1358.3     75801102
+ 7580  A 20803M001 L Melengicli TLRS-1       33 11 28.5  37 22 39.5  1358.3     75801103
+ 7580  A 20803M001 L Melengicli TLRS-1       33 11 28.5  37 22 39.5  1358.3     75801104
+ 7585  A 20802M001 L Yozgat     MTLRS-1      34 48 46.8  39 48  1.9  1677.6     75851501
+ 7585  A 20802M001 L Yozgat     MTLRS-1      34 48 46.8  39 48  1.9  1677.6     75851502
+ 7585  A 20802M001 L Yozgat     MTLRS-1      34 48 46.8  39 48  1.9  1677.6     75851503
+ 7587  A 20804M001 L Yigilca    TLRS-1       31 26 19.6  40 56 13.1   823.3     75871101
+ 7587  A 20804M001 L Yigilca    TLRS-1       31 26 19.6  40 56 13.1   823.3     75871102
+ 7587  A 20804M001 L Yigilca    TLRS-1       31 26 19.6  40 56 13.1   823.3     75871103
+ 7587  A 20804M001 L Yigilca    MTLRS-1      31 26 19.6  40 56 13.1   823.3     75871504
+ 7589  A 20805M001 L Ankara     TLRS-1       32 45 30.8  39 53 15.0   974.5     75891101
+ 7594  A 14201M200 L Wettzell   TIGO         12 52 38.0  49  8 39.4   659.3     75947901
+ 7596  A 14201M004 L Wettzell   MTLRS-1      12 52 43.2  49  8 38.9   659.4     75961502
+ 7596  A 14201M004 L Wettzell   MTLRS-1      12 52 43.2  49  8 38.9   659.4     75961503
+ 7596  A 14201M004 L Wettzell   MTLRS-2      12 52 43.2  49  8 38.9   659.4     75961601
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971501
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971502
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971503
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971504
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971505
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971506
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971507
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971508
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971509
+ 7599  A 14201M007 L Wettzell   MTLRS-1      12 52 39.9  49  8 42.5   657.8     75991501
+ 7602  A 10302M002 L Tromso     MTLRS-2      18 56 21.9  69 39 46.7   133.7     76021601
+ 7604  A 10004M002 L Brest      FTLRS       355 29 46.2  48 24 28.2   104.8     76046901
+ 7701  A 31336S001 L Izana      IZ1L        343 29 21.8  28 17 58.6  2429.7     77015701
+ 7805  A 10503S001 L Metsahovi  FIN. FIXED   24 23 40.3  60 13  2.3    79.0     78053301
+ 7806  A 10503S014 L Metsahovi  METLAS       24 23 40.3  60 13  1.7    74.7     78067601
+ 7807  A 10503S018 L Metsahovi3 METNSLR      24 23 40.3  60 13  1.7    74.7     78077501
+ 7810  A 14001S001 L Zimmerwald SWI. FIXED    7 27 54.7  46 52 38.0   951.7     78104801
+ 7810  B 14001S007 L Zimmerwald SWI2 FIXED    7 27 54.7  46 52 38.0   951.7     78106801
+ 7811  A 12205S001 L Borowiec   POL. FIXED   17  4 28.5  52 16 37.1   123.3     78113801
+ 7811  A 12205S001 L Borowiec   POL. FIXED   17  4 28.5  52 16 37.1   123.3     78113802
+ 7816  A 10916S001 L Stuttgart2 SMILAS        9 06 09.4  48 44 56.0   533.2     78165201
+ 7817  A 13420S021 L Yebes      YLARA       356 54 34.2  40 31 28.2   915.0     78176201
+ 7819  A 21609S004 L Kunming2   KUNMING2    102 47 50.7  25  1 47.8  1993.6     78198201
+ 7820  A 21609S002 L Kunming    KUNMING     102 47 50.7  25  1 47.8  1993.6     78208201
+ 7821  A 21605S010 L Shanghai   SO FIXED    121 11 11.8  31  5 45.9   100.9     78212801
+ 7822  A 92201M017 L Papeete    FTLRS       210 23 37.6 -17-34-36.5    95.1     78226901
+ 7823  A 13402M005 L San Fernan FTLRS       353 47 40.8  36 27 54.9    98.6     78236901
+ 7824  A 13402S004 L San Fernan SPN. FIXED  353 47 40.8  36 27 54.9    98.6     78244501
+ 7824  B 13402S007 L San Fernan SPN. FIXED  353 47 40.8  36 27 54.9    98.6     78244502
+ 7825  A 50119S003 L Mount Stro STR2 FIXED  149  0 35.5 -35-18-58.1   805.6     78259001
+ 7827  A 14201S045 L Wettzell   SOSW         12 52 41.2  49  8 41.8   663.2     78272201
+ 7830  A 12617M002 L Chania     FTLRS        24  4 13.9  35 31 58.9   160.9     78306901
+ 7831  A 30101S001 L Helwan     EGY. FIXED   31 20 33.7  29 51 32.4   132.5     78314601
+ 7832  A 20101S001 L Riyadh     SALRO        46 24  1.3  24 54 37.9   760.8     78325501
+ 7833  A 13504S001 L Kootwijk   NL. FIXED     5 48 35.3  52 10 42.2    94.5     78333201
+ 7834  A 14201S002 L Wettzell   GER. FIXED   12 52 41.1  49  8 41.7   661.8     78343001
+ 7835  A 10002S001 L Grasse     FRA. FIXED    6 55 16.0  43 45 16.8  1323.5     78353101
+ 7835  A 10002S001 L Grasse     FRA. FIXED    6 55 16.0  43 45 16.8  1323.5     78353102
+ 7836  A 14106S009 L Potsdam    GFZLAS       13  3 53.6  52 22 48.0   134.2     78365801
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78372804
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78372805
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78373701
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78373702
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78373703
+ 7838  A 21726S001 L Simosato   SHO FIXED   135 56 13.3  33 34 39.6   102.3     78383601
+ 7838  A 21726S001 L Simosato   SHO FIXED   135 56 13.3  33 34 39.6   102.3     78383602
+ 7838  A 21726S001 L Simosato   SHO FIXED   135 56 13.3  33 34 39.6   102.3     78383603
+ 7839  A 11001S002 L Graz       GRAZ FIXED   15 29 36.0  47  4  1.6   540.1     78393401
+ 7839  A 11001S002 L Graz       GRAZ FIXED   15 29 36.0  47  4  1.6   540.1     78393402
+ 7840  A 13212S001 L Herstmonce RGO FIXED     0 20 10.0  50 52  2.5    76.1     78403501
+ 7841  A 14106S011 L Potsdam    GFZLAS3      13  3 41.1  52 22 58.8   127.9     78418701
+ 7843  A 50103S007 L Orroral    NLRS        148 56 21.5 -35-38-10.5  1350.6     78432501
+ 7843  A 50103S007 L Orroral    NLRS        148 56 21.5 -35-38-10.5  1350.6     78432502
+ 7845  A 10002S002 L Grasse     GRASLLR       6 55 17.6  43 45 16.6  1324.0     78457801
+ 7847  A 50107S009 L Yarragadee PSLR        115 20 48.5 -29 -2-46.6   243.1     78477001
+ 7848  A 10077M002 L Ajaccio    FTLRS         8 45 45.6  41 55 38.5    97.5     78486901
+ 7848  A 10077M002 L Ajaccio    FTLRS         8 45 45.6  41 55 38.5    97.5     78486902
+ 7848  A 10077M002 L Ajaccio    FTLRS         8 45 45.6  41 55 38.5    97.5     78486903
+ 7848  A 10077M002 L Ajaccio    FTLRS         8 45 45.6  41 55 38.5    97.5     78486904
+ 7849  A 50119S001 L Mount Stro STR. FIXED  149  0 35.5 -35-18-58.1   804.7     78498001
+ 7850  A 40442M008 L Mcdonald   TLRS-4      255 59  5.6  30 40 49.7  2004.9     78501401
+ 7853  A 40439M004 L Owens Vall MTLRS-1     241 42 22.3  37 13 57.3  1178.7     78531501
+ 7853  A 40439M004 L Owens Vall MTLRS-1     241 42 22.3  37 13 57.3  1178.7     78531502
+ 7865  A 49654M001 L NRL OTF    NRL OTF     282 37 44.0  38 29 57.1    24.6     78658601
+ 7882  A 40505M001 L Cabo San L TLRS-1      250  8  8.0  22 55  3.1   112.3     78821102
+ 7882  A 40505M001 L Cabo San L TLRS-2      250  8  8.0  22 55  3.1   112.3     78821201
+ 7882  A 40505M001 L Cabo San L TLRS-4      250  8  8.0  22 55  3.1   112.3     78821403
+ 7882  A 40505M001 L Cabo San L TLRS-4      250  8  8.0  22 55  3.1   112.3     78821404
+ 7883  A 40506M001 L Ensenada   TLRS-4      243 50 21.3  31 15 23.9   165.6     78831401
+ 7883  A 40506M001 L Ensenada   TLRS-4      243 50 21.3  31 15 23.9   165.6     78831402
+ 7883  A 40506M001 L Ensenada   TLRS-4      243 50 21.3  31 15 23.9   165.6     78831403
+ 7883  A 40506M001 L Ensenada   TLRS-4      243 50 21.3  31 15 23.9   165.6     78831404
+ 7884  A 40429S001 L Albuquerqu STARFIRE    253 32  9.9  34 57 51.2  1876.1     78846601
+ 7885  A 40442M005 L Mcdonald   TLRS-1      255 59  2.6  30 40 37.3  1962.0     78851101
+ 7886  A 40433M005 L Quincy     TLRS-1      239  3 18.7  39 58 30.0  1107.3     78861101
+ 7886  A 40433M005 L Quincy     TLRS-1      239  3 18.7  39 58 30.0  1107.3     78861102
+ 7886  A 40433M005 L Quincy     TLRS-1      239  3 18.7  39 58 30.0  1107.3     78861103
+ 7886  A 40433M005 L Quincy     TLRS-1      239  3 18.7  39 58 30.0  1107.3     78861104
+ 7888  A 40434M002 L Mount Hopk TLRS-1      249  7 18.6  31 41  6.4  2330.8     78881101
+ 7891  A 40491M002 L Flagstaff  TLRS-1      248 21 55.7  35 12 52.3  2145.1     78911101
+ 7892  A 40492M001 L Vernal     TLRS-1      250 25 45.0  40 19 36.6  1589.8     78921101
+ 7892  A 40492M001 L Vernal     TLRS-1      250 25 45.0  40 19 36.6  1589.8     78921102
+ 7894  A 40493M001 L Yuma       TLRS-1      245 47 48.7  32 56 20.8   237.6     78941101
+ 7896  A 40400M001 L Pasadena   TLRS-1      241 49 39.7  34 12 19.9   442.9     78961101
+ 7899  A 40451M111 L Greenbelt  TLRS-1      283 10 48.1  39  1 15.3    10.2     78991101
+ 7899  A 40451M111 L Greenbelt  TLRS-1      283 10 48.1  39  1 15.3    10.2     78991102
+ 7907  A 42202S001 L Arequipa   SAO-2       288 30 24.7 -16-27-56.6  2492.9     79074001
+ 7907  A 42202S001 L Arequipa   SAO-2       288 30 24.7 -16-27-56.6  2492.9     79074002
+ 7907  A 42202S001 L Arequipa   SAO-2       288 30 24.7 -16-27-56.6  2492.9     79074003
+ 7918  A 40451M120 L Greenbelt  MOBLAS-6    283 10 19.7  39  1 14.5    19.4     79180608
+ 7918  A 40451M120 L Greenbelt  MOBLAS-6    283 10 19.7  39  1 14.5    19.4     79180609
+ 7918  A 40451M120 L Greenbelt  TLRS-3      283 10 19.7  39  1 14.5    19.4     79181301
+ 7918  A 40451M120 L Greenbelt  TLRS-3      283 10 19.7  39  1 14.5    19.4     79181302
+ 7918  A 40451M120 L Greenbelt  TLRS-3      283 10 19.7  39  1 14.5    19.4     79181306
+ 7918  A 40451M120 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    19.4     79181403
+ 7918  A 40451M120 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    19.4     79181404
+ 7918  A 40451M120 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    19.4     79181405
+ 7918  A 40451M120 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    19.4     79181407
+ 7919  A 40451M121 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    21.9     79191401
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201101
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201102
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201103
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201104
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201105
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201110
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201111
+ 7920  A 40451M117 L Greenbelt  TLRS-3      283 10 21.0  39  1 12.9    19.3     79201306
+ 7920  A 40451M117 L Greenbelt  TLRS-3      283 10 21.0  39  1 12.9    19.3     79201307
+ 7920  A 40451M117 L Greenbelt  TLRS-3      283 10 21.0  39  1 12.9    19.3     79201308
+ 7920  A 40451M117 L Greenbelt  TLRS-3      283 10 21.0  39  1 12.9    19.3     79201309
+ 7920  A 40451M117 L Greenbelt  TLRS-4      283 10 21.0  39  1 12.9    19.3     79201414
+ 7920  A 40451M117 L Greenbelt  SALRO       283 10 21.0  39  1 12.9    19.3     79205512
+ 7920  A 40451M117 L Greenbelt  SALRO       283 10 21.0  39  1 12.9    19.3     79205513
+ 7921  A 40434S001 L Mount Hopk SAO-4       249  7 18.9  31 41  3.2  2358.2     79214301
+ 7929  A 41604S001 L Natal      SAO-1       324 50  7.3  -5-55-40.1    42.6     79294101
+ 7939  A 12734S001 L Matera     SAO-1        16 42 16.8  40 38 55.7   536.5     79394101
+ 7940  A 12602S001 L Dionysos   GRE. FIXED   23 55 57.9  38  4 42.3   511.9     79404701
+ 7941  A 12734S008 L Matera     MLRO         16 42 16.5  40 38 55.2   537.6     79417701
+ 7943  A 50103S003 L Orroral    SAO-3       148 57 17.2 -35-37-29.7   950.3     79434201
+ 8833  A 13504M002 L Kootwijk   MTLRS-1       5 48 36.6  52 10 41.4    89.2     88331501
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331602
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331603
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331604
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331605
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331606
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331607
+ 8834  A 14201S018 L Wettzell   WLRS         12 52 40.8  49  8 39.9   666.0     88341001
+-SITE/ID
+*-------------------------------------------------------------------------------
++SOLUTION/EPOCHS
+*Code PT SOLN T Data_start__ Data_end____ Mean_epoch__
+ 1181  A    1 C 83:341:43163 91:262:14964 87:301:72263
+ 1824  A    1 C 01:021:37855 00:000:00000 10:163:58661
+ 1831  A    1 C 02:169:75370 09:332:70053 06:068:72712
+ 1863  A    1 C 01:217:11182 04:017:73831 02:299:85706
+ 1864  A    1 C 93:283:30534 08:292:79898 01:105:12016
+ 1868  A    1 C 93:311:32081 03:158:03672 98:234:61077
+ 1868  A    2 C 03:271:36854 00:000:00000 12:137:56826
+ 1873  A    1 C 95:155:79616 00:000:00000 08:077:62480
+ 1874  A    1 C 13:156:74689 00:000:00000 17:067:72521
+ 1879  A    1 C 08:280:33850 00:000:00000 14:324:12098
+ 1884  A    1 C 94:240:17919 00:000:00000 07:257:03440
+ 1885  A    1 C 96:305:80829 96:356:80030 96:331:37230
+ 1886  A    1 C 11:037:48534 00:000:00000 16:017:65500
+ 1887  A    1 C 11:296:01103 00:000:00000 16:145:23144
+ 1888  A    1 C 12:036:74821 00:000:00000 16:195:59955
+ 1889  A    1 C 12:173:66427 00:000:00000 15:345:68264
+ 1890  A    1 C 12:004:45914 22:266:10120 17:134:71217
+ 1890  A    2 C 22:268:82372 00:000:00000 23:130:75131
+ 1891  A    1 C 14:237:70981 00:000:00000 17:297:39468
+ 1893  A    1 C 98:194:76552 08:298:11360 03:246:43956
+ 1893  A    2 C 08:300:68983 00:000:00000 14:334:24338
+ 1953  A    1 C 88:294:08380 95:119:29040 92:024:18710
+ 7035  A    1 C 88:225:29655 88:264:18201 88:244:67128
+ 7046  A    1 C 90:215:22884 91:288:25939 91:069:24411
+ 7051  A    1 C 76:240:19433 81:136:43342 80:346:08578
+ 7062  A    1 C 83:259:42743 83:364:35303 83:311:82223
+ 7063  A    1 C 76:131:21060 81:240:14121 79:306:42007
+ 7065  A    1 C 76:125:00000 77:325:86399 77:042:43200
+ 7067  A    1 C 76:177:11520 78:269:11416 78:192:21857
+ 7068  A    1 C 78:245:13278 78:269:11107 78:254:55582
+ 7080  A    1 C 88:032:76174 15:339:80186 02:003:34980
+ 7082  A    1 C 83:313:29851 84:004:46557 83:341:38204
+ 7084  A    1 C 78:045:08301 78:088:37824 78:073:27741
+ 7085  A    1 C 78:065:11664 78:089:21643 78:079:77682
+ 7086  A    1 C 82:364:15470 88:029:55364 85:196:35417
+ 7090  A    1 C 83:011:70773 00:000:00000 02:007:23100
+ 7091  A    1 C 88:244:25710 90:345:65056 89:294:45383
+ 7092  A    1 C 80:012:55411 80:305:48214 80:208:32890
+ 7096  A    1 C 79:228:29110 80:310:00823 80:127:11692
+ 7097  A    1 C 87:329:20649 95:091:78546 91:210:49598
+ 7100  A    1 C 77:291:20028 77:304:22128 77:297:40359
+ 7101  A    1 C 79:032:37144 82:124:29443 79:255:66292
+ 7102  A    1 C 83:147:81498 92:169:57905 87:341:26502
+ 7103  A    1 C 79:036:29379 82:302:30314 81:345:19707
+ 7104  A    1 C 79:033:31307 79:129:55422 79:102:57998
+ 7105  A    1 C 82:364:15978 20:234:35558 01:298:68968
+ 7105  A    2 C 20:236:07858 00:000:00000 22:120:50998
+ 7106  A    1 C 95:300:00000 95:365:86399 95:332:43200
+ 7109  A    1 C 82:362:63551 97:130:73312 90:064:25231
+ 7110  A    1 C 82:362:51341 99:289:56376 91:143:53858
+ 7110  A    2 C 99:290:00238 10:099:51758 05:011:69198
+ 7110  A    3 C 10:102:60385 19:187:10717 14:327:35551
+ 7110  A    4 C 19:189:73912 00:000:00000 20:095:44378
+ 7112  A    1 C 88:226:26076 91:358:23906 90:109:24991
+ 7114  A    1 C 83:004:18059 83:020:41248 83:012:11594
+ 7115  A    1 C 79:270:35345 81:101:49898 80:160:63153
+ 7119  A    1 C 06:309:07245 00:000:00000 13:337:21291
+ 7120  A    1 C 80:207:12072 82:006:19135 81:125:30828
+ 7121  A    1 C 83:206:00054 86:114:78188 84:343:39121
+ 7122  A    1 C 83:131:27819 85:269:81800 84:201:11609
+ 7122  A    2 C 85:270:06036 91:103:68003 88:187:37020
+ 7122  A    3 C 92:264:66826 93:016:09806 92:323:38316
+ 7123  A    1 C 87:215:09314 93:310:42948 90:262:69331
+ 7124  A    1 C 97:320:72215 01:152:39536 99:237:12675
+ 7124  A    2 C 01:303:36997 00:000:00000 11:145:67354
+ 7125  A    1 C 85:130:21719 14:129:39372 99:312:73745
+ 7130  A    1 C 05:212:80286 06:076:57809 05:327:25847
+ 7210  A    1 C 82:362:38946 89:248:56303 86:123:04425
+ 7210  A    2 C 89:266:56862 94:022:84441 91:327:70652
+ 7210  A    3 C 94:023:77449 00:266:33904 97:144:55676
+ 7210  A    4 C 00:268:06977 04:156:04092 02:211:48734
+ 7220  A    1 C 83:246:78930 83:303:66818 83:275:29674
+ 7231  A    1 C 00:117:56682 04:345:37480 02:231:03881
+ 7236  A    1 C 93:042:10457 97:312:71591 95:177:84224
+ 7237  A    1 C 96:056:81496 11:071:33673 03:246:57585
+ 7237  A    2 C 11:079:00872 00:000:00000 16:041:39221
+ 7249  A    1 C 99:230:82665 11:042:78264 05:136:37265
+ 7249  A    2 C 11:136:79172 00:000:00000 16:069:20840
+ 7265  A    1 C 84:022:21377 84:062:29790 84:042:25583
+ 7274  A    1 C 85:136:00000 85:199:86399 85:167:43200
+ 7288  A    1 C 88:062:43464 91:046:13227 89:236:28346
+ 7295  A    1 C 88:090:00006 95:112:79272 91:283:82839
+ 7306  A    1 L 22:289:00000 23:365:00000 23:145:00000
+ 7306  A    2 L 24:001:00000 00:000:00000 00:000:00000
+ 7307  D    1 C 99:255:00676 99:314:80675 99:284:83875
+ 7308  A    1 C 95:066:57785 04:057:42910 99:244:50348
+ 7308  A    2 C 04:333:00135 11:057:34065 08:012:60300
+ 7308  A    3 C 11:179:12696 14:071:29244 12:308:20970
+ 7317  A    1 C 25:040:00000 00:000:00000 00:000:00000
+ 7328  A    1 C 98:315:08474 00:213:21451 99:264:14962
+ 7328  A    2 C 10:321:19554 11:049:52632 11:002:79293
+ 7329  A    1 C 25:098:00000 00:000:00000 00:000:00000
+ 7335  A    1 C 99:103:27315 01:020:77752 00:062:52534
+ 7337  A    1 C 98:314:44199 00:124:27445 99:219:35822
+ 7339  A    1 C 98:249:64624 01:286:70400 00:086:24312
+ 7355  A    1 C 03:124:52328 03:304:11947 03:214:32137
+ 7356  A    1 C 01:236:58793 01:355:48477 01:296:10435
+ 7357  A    1 C 03:209:55504 03:290:67899 03:250:18502
+ 7358  A    1 C 04:245:38239 11:064:68353 07:337:53296
+ 7358  A    2 C 11:101:21281 14:207:40385 12:337:30833
+ 7358  A    3 C 16:110:30411 18:335:64061 17:222:47236
+ 7358  A    4 C 19:048:03148 19:348:79941 19:198:41544
+ 7359  A    1 C 13:223:04188 14:323:07533 14:090:49061
+ 7370  A    1 L 07:364:00000 08:110:86399 08:054:86399
+ 7394  A    1 C 16:032:59624 00:000:00000 18:171:79841
+ 7395  A    1 L 17:268:00000 00:000:00000 00:000:00000
+ 7396  A    1 C 19:183:43537 20:256:83499 20:037:63518
+ 7396  A    2 C 20:274:45820 00:000:00000 22:139:70780
+ 7400  A    1 C 84:070:03893 84:130:83849 84:100:43871
+ 7401  A    1 C 84:136:29314 91:068:28499 87:284:72107
+ 7403  A    1 C 90:184:32719 94:162:58371 92:174:02345
+ 7403  A    2 C 94:163:81159 96:321:26813 95:242:53986
+ 7403  A    3 C 96:322:00753 01:166:19457 99:061:53305
+ 7403  A    5 C 01:267:28657 07:230:24379 04:249:26518
+ 7403  A    6 C 07:233:20468 14:093:41469 10:345:74169
+ 7403  A    7 C 14:098:05995 00:000:00000 17:210:14527
+ 7404  A    1 C 95:218:05958 96:251:84706 96:052:45332
+ 7405  A    1 C 04:304:02271 10:058:19781 07:181:11026
+ 7405  A    4 C 10:103:83744 11:043:33075 10:256:15210
+ 7405  A    5 C 11:072:00706 14:088:63107 12:263:31906
+ 7406  A    1 C 06:058:08012 10:051:83878 08:055:45945
+ 7406  A    2 C 10:059:03545 14:326:86261 12:193:44903
+ 7407  A    1 C 14:131:75547 00:000:00000 17:190:44924
+ 7410  A    1 C 93:162:41733 93:261:82639 93:212:18986
+ 7411  A    1 C 94:193:04557 94:260:16284 94:226:53621
+ 7501  A    1 C 93:180:60520 12:098:76160 02:322:25140
+ 7501  A    2 C 12:099:00609 21:107:66312 16:286:33460
+ 7501  A    3 C 21:111:85075 00:000:00000 22:231:31250
+ 7502  A    1 C 93:229:71847 93:287:78809 93:258:75328
+ 7503  A    1 C 17:141:73484 00:000:00000 19:061:62538
+ 7505  A    1 C 95:267:00219 95:303:14894 95:285:07557
+ 7510  A    1 C 86:148:75182 92:172:74643 89:160:31712
+ 7512  A    1 C 86:265:08857 92:122:78876 89:193:43867
+ 7515  A    1 C 86:213:47514 92:162:72468 89:187:59991
+ 7517  A    1 C 86:150:76647 92:217:69728 89:183:73188
+ 7520  A    1 C 86:088:77263 95:259:68630 90:356:72947
+ 7525  A    1 C 86:251:50758 94:281:58191 90:266:54474
+ 7530  A    1 C 90:185:84905 94:261:00000 92:223:85652
+ 7540  A    1 C 86:014:61512 86:071:85933 86:042:55410
+ 7541  A    1 C 86:010:54181 94:167:10497 90:088:75539
+ 7542  A    1 C 91:214:86371 91:252:78658 91:233:82515
+ 7543  A    1 C 90:321:64626 93:288:19649 92:122:85337
+ 7544  A    1 C 87:260:73912 92:274:56289 90:084:65101
+ 7545  A    1 C 85:311:63731 94:071:28867 90:009:03099
+ 7546  A    1 C 88:122:13869 88:155:17395 88:138:58832
+ 7548  A    1 C 01:205:24874 02:081:77599 01:326:08036
+ 7550  A    1 C 86:115:47022 89:184:62491 87:333:11557
+ 7560  A    1 C 91:227:85425 91:274:82685 91:251:40855
+ 7561  A    1 C 91:289:72516 91:326:13829 91:307:86373
+ 7575  A    1 C 87:112:64279 89:269:14878 88:191:39579
+ 7580  A    1 C 87:095:01948 92:348:47963 90:038:68156
+ 7585  A    1 C 87:155:55741 89:248:28335 88:202:42038
+ 7587  A    1 C 87:156:64002 92:303:53624 90:047:15613
+ 7589  A    1 C 93:066:55338 93:171:00003 93:118:70870
+ 7594  A    1 C 98:082:68601 98:084:04693 98:083:36647
+ 7596  A    1 C 85:075:48886 85:082:16976 85:078:76131
+ 7597  A    1 C 94:213:08109 96:348:83658 95:281:02684
+ 7599  A    1 C 84:245:00000 84:366:86399 84:306:43200
+ 7602  A    1 C 89:211:54604 92:243:79703 91:045:23953
+ 7604  A    1 C 04:291:04128 04:295:86095 04:295:52253
+ 7701  A    1 L 21:172:00000 00:000:00000 00:000:00000
+ 7805  A    1 C 83:060:76754 96:104:38844 89:264:57799
+ 7806  A    1 C 98:064:81227 04:310:69311 01:187:32069
+ 7807  A    1 L 23:060:00000 00:000:00000 00:000:00000
+ 7810  A    1 C 84:156:11347 92:359:28327 88:257:63037
+ 7810  B    1 C 97:362:14877 00:000:00000 09:179:11293
+ 7811  A    1 C 93:200:74261 02:208:75079 98:022:31470
+ 7811  A    2 C 02:303:64193 00:000:00000 11:328:76332
+ 7816  A    1 L 22:032:00000 00:000:00000 00:000:00000
+ 7817  A    1 L 23:060:00000 00:000:00000 00:000:00000
+ 7819  A    1 C 17:023:46796 00:000:00000 19:013:56286
+ 7820  A    1 C 00:296:05392 02:101:66737 01:198:36065
+ 7820  A    2 C 07:353:42679 14:144:79037 11:066:60858
+ 7821  A    1 C 05:345:00170 08:004:43642 06:357:21906
+ 7821  A    2 C 08:111:05914 11:068:71078 09:271:81696
+ 7821  A    3 C 11:093:28591 00:000:00000 16:048:47158
+ 7822  A    1 C 11:170:10779 11:274:82049 11:222:46414
+ 7823  A    1 C 04:165:24936 04:178:01369 04:171:56353
+ 7824  A    1 C 97:119:25823 98:318:54560 98:036:40191
+ 7824  B    1 C 99:102:74011 00:000:00000 09:337:29028
+ 7825  A    1 C 04:214:45529 00:000:00000 12:291:03329
+ 7827  A    1 C 14:107:31677 00:000:00000 17:213:12266
+ 7830  A    1 C 03:096:19520 03:291:48919 03:193:77419
+ 7831  A    1 C 87:170:01771 00:309:84169 94:056:86170
+ 7832  A    1 C 01:017:25379 10:247:32487 05:314:72133
+ 7833  A    1 C 83:019:74300 84:305:70940 83:345:29420
+ 7834  A    1 C 83:035:72134 91:043:61383 87:039:66758
+ 7835  A    1 C 84:276:00000 90:078:80307 87:177:40153
+ 7835  A    2 C 90:079:03683 94:015:12307 92:047:51195
+ 7835  A    3 C 94:018:08797 99:338:33388 96:361:21093
+ 7835  A    4 C 99:339:67428 05:190:74686 02:265:27857
+ 7836  A    1 C 93:003:15233 04:164:76001 98:266:45617
+ 7837  A    1 C 84:237:58258 95:231:86245 90:051:72252
+ 7837  A    2 C 95:303:22881 05:106:76392 00:205:49636
+ 7838  A    1 C 82:361:59406 04:247:69523 93:304:21265
+ 7838  A    2 C 04:250:43250 11:049:56193 07:332:49721
+ 7838  A    3 C 11:081:23906 16:091:09136 13:268:16521
+ 7838  A    4 C 16:096:29558 00:000:00000 18:228:52983
+ 7839  A    1 C 83:252:38470 00:000:00000 02:124:14213
+ 7840  A    1 C 83:101:09984 00:000:00000 02:050:73792
+ 7841  A    1 C 04:050:57193 11:110:45794 07:263:08294
+ 7841  A    2 C 11:241:22827 00:000:00000 17:302:47366
+ 7843  A    1 C 85:120:22779 87:289:27767 86:204:68473
+ 7843  A    2 C 88:211:07340 92:128:86337 90:169:46839
+ 7843  A    3 C 92:129:24136 98:304:73640 95:217:05688
+ 7845  A    1 C 97:327:11667 00:000:00000 09:159:63809
+ 7847  A    1 C 96:098:46968 96:104:77349 96:101:62159
+ 7848  A    1 C 02:041:56997 05:302:56997 03:355:13797
+ 7849  A    1 C 98:186:77626 03:018:54630 00:285:66128
+ 7850  A    1 C 93:032:17699 93:120:49935 93:076:33817
+ 7853  A    1 C 88:287:17161 90:211:68098 89:248:85830
+ 7865  A    1 C 15:232:00000 00:000:00000 00:000:00000
+ 7882  A    1 C 84:051:19368 94:134:29583 89:092:24475
+ 7883  A    1 C 89:131:50745 94:042:64147 91:270:14246
+ 7884  A    1 C 95:134:09757 97:053:44172 96:094:26965
+ 7885  A    1 C 82:211:20267 82:278:22026 82:236:37077
+ 7886  A    1 C 83:223:40469 84:305:84045 84:082:19057
+ 7888  A    1 C 82:028:42762 82:105:46072 82:066:14996
+ 7891  A    1 C 81:173:12491 81:212:25105 81:188:19025
+ 7892  A    1 C 81:128:17371 82:197:38103 81:300:51107
+ 7894  A    1 C 83:092:18306 88:296:71316 86:011:44811
+ 7896  A    1 C 80:301:26233 80:357:43924 80:330:46628
+ 7899  A    1 C 80:241:30070 80:282:30272 80:262:31689
+ 7907  A    1 C 82:361:28889 88:104:30650 85:232:29770
+ 7907  A    2 C 88:105:07975 92:215:49526 90:159:71951
+ 7918  A    1 C 90:096:12356 97:193:76964 93:327:44660
+ 7919  A    1 C 85:322:00000 87:092:86399 86:207:43200
+ 7920  A    1 C 89:282:78016 94:253:85113 92:086:38365
+ 7921  A    1 C 76:128:23503 82:063:37019 77:212:22057
+ 7929  A    1 C 76:133:81209 81:270:84712 78:118:36908
+ 7939  A    1 C 83:244:10510 00:328:17852 92:103:57381
+ 7940  A    1 C 84:147:83849 84:169:77706 84:165:40065
+ 7941  A    1 C 01:183:14649 00:000:00000 11:093:38264
+ 7943  A    1 C 76:269:64866 82:056:62144 79:047:04773
+ 8833  A    1 C 84:116:03080 95:203:73377 89:341:81429
+ 8834  A    1 C 90:365:63516 00:000:00000 05:281:36797
+-SOLUTION/EPOCHS
+*-------------------------------------------------------------------------------
++SOLUTION/ESTIMATE
+*INDEX TYPE__ CODE PT SOLN _REF_EPOCH__ UNIT S __ESTIMATED VALUE____ _STD_DEV___
+     1 STAX   1181  A    1 15:001:00000 m    2 0.380062089164670E+07 0.27901E-01
+     2 STAY   1181  A    1 15:001:00000 m    2 0.882005760976942E+06 0.14421E-01
+     3 STAZ   1181  A    1 15:001:00000 m    2 0.502885981049015E+07 0.36193E-01
+     4 VELX   1181  A    1 15:001:00000 m/y  2 -.160170976196750E-01 0.79661E-04
+     5 VELY   1181  A    1 15:001:00000 m/y  2 0.160261367019588E-01 0.78850E-04
+     6 VELZ   1181  A    1 15:001:00000 m/y  2 0.937618529471823E-02 0.77720E-04
+     7 VELX   1824  A    1 15:001:00000 m/y  2 -.214790307454950E-01 0.25810E-02
+     8 VELY   1824  A    1 15:001:00000 m/y  2 0.113243580063917E-01 0.19185E-02
+     9 VELZ   1824  A    1 15:001:00000 m/y  2 0.101322246366372E-01 0.33708E-02
+    10 STAX   1824  A    1 15:001:00000 m    2 0.351298899436947E+07 0.12883E-01
+    11 STAY   1824  A    1 15:001:00000 m    2 0.206896897775854E+07 0.10185E-01
+    12 STAZ   1824  A    1 15:001:00000 m    2 0.488881745632122E+07 0.17787E-01
+    13 STAX   1831  A    1 15:001:00000 m    2 0.376067458739834E+07 0.63613E-01
+    14 STAY   1831  A    1 15:001:00000 m    2 0.167077667831623E+07 0.74082E-01
+    15 STAZ   1831  A    1 15:001:00000 m    2 0.485716585082575E+07 0.57952E-01
+    16 VELX   1831  A    1 15:001:00000 m/y  2 -.154313652579644E-01 0.66512E-02
+    17 VELY   1831  A    1 15:001:00000 m/y  2 0.259627449234721E-01 0.78128E-02
+    18 VELZ   1831  A    1 15:001:00000 m/y  2 0.389768235653479E-01 0.61580E-02
+    19 STAX   1863  A    1 15:001:00000 m    2 0.195326219443926E+07 0.10035E-01
+    20 STAY   1863  A    1 15:001:00000 m    2 0.458892042125981E+07 0.14919E-01
+    21 STAZ   1863  A    1 15:001:00000 m    2 0.396684116951583E+07 0.13743E-01
+    22 VELX   1863  A    1 15:001:00000 m/y  2 -.257947956066508E-01 0.71770E-03
+    23 VELY   1863  A    1 15:001:00000 m/y  2 0.931341523322734E-02 0.11650E-02
+    24 VELZ   1863  A    1 15:001:00000 m/y  2 0.563582262506060E-02 0.10857E-02
+    25 STAX   1864  A    1 15:001:00000 m    2 0.195328531085879E+07 0.99570E-02
+    26 STAY   1864  A    1 15:001:00000 m    2 0.458897396924292E+07 0.16024E-01
+    27 STAZ   1864  A    1 15:001:00000 m    2 0.396676775505896E+07 0.14912E-01
+    28 VELX   1864  A    1 15:001:00000 m/y  2 -.257947956432773E-01 0.71770E-03
+    29 VELY   1864  A    1 15:001:00000 m/y  2 0.931341530836283E-02 0.11650E-02
+    30 VELZ   1864  A    1 15:001:00000 m/y  2 0.563582267099191E-02 0.10857E-02
+    31 STAX   1868  A    1 15:001:00000 m    2 -.294854505348155E+07 0.19338E-01
+    32 STAY   1868  A    1 15:001:00000 m    2 0.277431239862889E+07 0.18907E-01
+    33 STAZ   1868  A    1 15:001:00000 m    2 0.491230279701180E+07 0.27745E-01
+    34 VELX   1868  A    1 15:001:00000 m/y  2 -.210984110088682E-01 0.10093E-02
+    35 VELY   1868  A    1 15:001:00000 m/y  2 -.776024029698246E-02 0.96214E-03
+    36 VELZ   1868  A    1 15:001:00000 m/y  2 -.962517229958086E-02 0.14096E-02
+    37 STAX   1868  A    2 15:001:00000 m    2 -.294854566037533E+07 0.41618E-02
+    38 STAY   1868  A    2 15:001:00000 m    2 0.277431294261114E+07 0.40864E-02
+    39 STAZ   1868  A    2 15:001:00000 m    2 0.491230236655236E+07 0.57792E-02
+    40 VELX   1868  A    2 15:001:00000 m/y  2 -.210984111294326E-01 0.10093E-02
+    41 VELY   1868  A    2 15:001:00000 m/y  2 -.776024053637078E-02 0.96214E-03
+    42 VELZ   1868  A    2 15:001:00000 m/y  2 -.962517248926851E-02 0.14096E-02
+    43 STAX   1873  A    1 15:001:00000 m    2 0.378390205981579E+07 0.56735E-02
+    44 STAY   1873  A    1 15:001:00000 m    2 0.255140520217084E+07 0.41980E-02
+    45 STAZ   1873  A    1 15:001:00000 m    2 0.444125759174746E+07 0.66313E-02
+    46 VELX   1873  A    1 15:001:00000 m/y  2 -.181162476158894E-01 0.40596E-03
+    47 VELY   1873  A    1 15:001:00000 m/y  2 0.175720457359060E-01 0.40032E-03
+    48 VELZ   1873  A    1 15:001:00000 m/y  2 0.553382519561190E-02 0.36183E-03
+    49 STAX   1874  A    1 15:001:00000 m    2 0.284459155674653E+07 0.24761E-02
+    50 STAY   1874  A    1 15:001:00000 m    2 0.216111203153206E+07 0.25041E-02
+    51 STAZ   1874  A    1 15:001:00000 m    2 0.526635688248374E+07 0.21639E-02
+    52 VELX   1874  A    1 15:001:00000 m/y  2 -.204475534314629E-01 0.70012E-03
+    53 VELY   1874  A    1 15:001:00000 m/y  2 0.132088734131031E-01 0.71301E-03
+    54 VELZ   1874  A    1 15:001:00000 m/y  2 0.725283327515465E-02 0.63404E-03
+    55 STAX   1879  A    1 15:001:00000 m    2 0.543405677659866E+06 0.19193E-02
+    56 STAY   1879  A    1 15:001:00000 m    2 0.395530231386923E+07 0.20372E-02
+    57 STAZ   1879  A    1 15:001:00000 m    2 0.495782103149902E+07 0.22787E-02
+    58 VELX   1879  A    1 15:001:00000 m/y  2 -.261457670359297E-01 0.59785E-03
+    59 VELY   1879  A    1 15:001:00000 m/y  2 0.378913561242249E-02 0.69997E-03
+    60 VELZ   1879  A    1 15:001:00000 m/y  2 0.123719799054105E-03 0.67800E-03
+    61 STAX   1884  A    1 15:001:00000 m    2 0.318389560620424E+07 0.43558E-02
+    62 STAY   1884  A    1 15:001:00000 m    2 0.142149730366854E+07 0.32327E-02
+    63 STAZ   1884  A    1 15:001:00000 m    2 0.532280392371518E+07 0.53306E-02
+    64 VELX   1884  A    1 15:001:00000 m/y  2 -.184043361432878E-01 0.33122E-03
+    65 VELY   1884  A    1 15:001:00000 m/y  2 0.142495181087769E-01 0.24638E-03
+    66 VELZ   1884  A    1 15:001:00000 m/y  2 0.753024287848528E-02 0.41467E-03
+    67 STAX   1885  A    1 15:001:00000 m    2 0.318389211646574E+07 0.39074E-01
+    68 STAY   1885  A    1 15:001:00000 m    2 0.142146605169599E+07 0.37197E-01
+    69 STAZ   1885  A    1 15:001:00000 m    2 0.532281413072257E+07 0.20961E-01
+    70 VELX   1885  A    1 15:001:00000 m/y  2 -.184043361388516E-01 0.33122E-03
+    71 VELY   1885  A    1 15:001:00000 m/y  2 0.142495181081321E-01 0.24638E-03
+    72 VELZ   1885  A    1 15:001:00000 m/y  2 0.753024288329997E-02 0.41467E-03
+    73 STAX   1886  A    1 15:001:00000 m    2 0.346677319734031E+07 0.45986E-02
+    74 STAY   1886  A    1 15:001:00000 m    2 0.305975790426137E+07 0.39163E-02
+    75 STAZ   1886  A    1 15:001:00000 m    2 0.438145677850297E+07 0.55896E-02
+    76 VELX   1886  A    1 15:001:00000 m/y  2 -.216903112398283E-01 0.14488E-02
+    77 VELY   1886  A    1 15:001:00000 m/y  2 0.148474573028066E-01 0.13003E-02
+    78 VELZ   1886  A    1 15:001:00000 m/y  2 0.934672341310303E-02 0.18192E-02
+    79 STAX   1887  A    1 15:001:00000 m    2 0.200187321038948E+07 0.17021E-02
+    80 STAY   1887  A    1 15:001:00000 m    2 0.398763344506253E+07 0.20426E-02
+    81 STAZ   1887  A    1 15:001:00000 m    2 0.454247772730126E+07 0.14129E-02
+    82 VELX   1887  A    1 15:001:00000 m/y  2 -.259393068931403E-01 0.52097E-03
+    83 VELY   1887  A    1 15:001:00000 m/y  2 0.770115039168297E-02 0.60868E-03
+    84 VELZ   1887  A    1 15:001:00000 m/y  2 0.310314376848623E-02 0.51764E-03
+    85 STAX   1888  A    1 15:001:00000 m    2 0.273013881972999E+07 0.14528E-02
+    86 STAY   1888  A    1 15:001:00000 m    2 0.156232881991015E+07 0.14041E-02
+    87 STAZ   1888  A    1 15:001:00000 m    2 0.552999870923209E+07 0.13029E-02
+    88 VELX   1888  A    1 15:001:00000 m/y  2 -.189505079954330E-01 0.30070E-03
+    89 VELY   1888  A    1 15:001:00000 m/y  2 0.133213451461675E-01 0.30057E-03
+    90 VELZ   1888  A    1 15:001:00000 m/y  2 0.773065067603716E-02 0.28980E-03
+    91 STAX   1889  A    1 15:001:00000 m    2 0.345113587724811E+07 0.15545E-02
+    92 STAY   1889  A    1 15:001:00000 m    2 0.306033528619936E+07 0.15805E-02
+    93 STAZ   1889  A    1 15:001:00000 m    2 0.439197036111544E+07 0.14899E-02
+    94 VELX   1889  A    1 15:001:00000 m/y  2 -.243327853544779E-01 0.74430E-03
+    95 VELY   1889  A    1 15:001:00000 m/y  2 0.131956940109334E-01 0.74983E-03
+    96 VELZ   1889  A    1 15:001:00000 m/y  2 0.579528930365917E-02 0.75186E-03
+    97 VELX   1890  A    1 15:001:00000 m/y  2 -.277900420466623E-01 0.43114E-03
+    98 VELY   1890  A    1 15:001:00000 m/y  2 -.130581528540402E-02 0.39217E-03
+    99 VELZ   1890  A    1 15:001:00000 m/y  2 -.644636928803311E-02 0.39968E-03
+   100 STAX   1890  A    2 15:001:00000 m    2 -.838300108819253E+06 0.62039E-02
+   101 STAY   1890  A    2 15:001:00000 m    2 0.386573887963871E+07 0.62272E-02
+   102 STAZ   1890  A    2 15:001:00000 m    2 0.498764090455208E+07 0.49781E-02
+   103 VELX   1890  A    2 15:001:00000 m/y  2 -.277900420038253E-01 0.43114E-03
+   104 VELY   1890  A    2 15:001:00000 m/y  2 -.130581529034790E-02 0.39217E-03
+   105 VELZ   1890  A    2 15:001:00000 m/y  2 -.644636927872040E-02 0.39968E-03
+   106 STAX   1890  A    1 15:001:00000 m    2 -.838300108754105E+06 0.18908E-02
+   107 STAY   1890  A    1 15:001:00000 m    2 0.386573886457690E+07 0.17064E-02
+   108 STAZ   1890  A    1 15:001:00000 m    2 0.498764088896296E+07 0.17134E-02
+   109 STAX   1891  A    1 15:001:00000 m    2 -.968340368460649E+06 0.20900E-02
+   110 STAY   1891  A    1 15:001:00000 m    2 0.379441509842140E+07 0.20642E-02
+   111 STAZ   1891  A    1 15:001:00000 m    2 0.501817811712325E+07 0.18923E-02
+   112 VELX   1891  A    1 15:001:00000 m/y  2 -.257969026096636E-01 0.65807E-03
+   113 VELY   1891  A    1 15:001:00000 m/y  2 -.227194022615419E-02 0.64807E-03
+   114 VELZ   1891  A    1 15:001:00000 m/y  2 -.554198935848783E-02 0.56840E-03
+   115 STAX   1893  A    1 15:001:00000 m    2 0.378594424040478E+07 0.56592E-02
+   116 STAY   1893  A    1 15:001:00000 m    2 0.255078087096382E+07 0.58937E-02
+   117 STAZ   1893  A    1 15:001:00000 m    2 0.443946141977272E+07 0.50439E-02
+   118 VELX   1893  A    1 15:001:00000 m/y  2 -.181162441881848E-01 0.40596E-03
+   119 VELY   1893  A    1 15:001:00000 m/y  2 0.175720472003862E-01 0.40032E-03
+   120 VELZ   1893  A    1 15:001:00000 m/y  2 0.553382081140174E-02 0.36182E-03
+   121 STAX   1893  A    2 15:001:00000 m    2 0.378594423758986E+07 0.19258E-02
+   122 STAY   1893  A    2 15:001:00000 m    2 0.255078086984654E+07 0.20141E-02
+   123 STAZ   1893  A    2 15:001:00000 m    2 0.443946139949633E+07 0.16042E-02
+   124 VELX   1893  A    2 15:001:00000 m/y  2 -.181162410345722E-01 0.40596E-03
+   125 VELY   1893  A    2 15:001:00000 m/y  2 0.175720482497944E-01 0.40032E-03
+   126 VELZ   1893  A    2 15:001:00000 m/y  2 0.553381632471278E-02 0.36182E-03
+   127 STAX   1953  A    1 15:001:00000 m    2 0.147454752610548E+07 0.20420E+00
+   128 STAY   1953  A    1 15:001:00000 m    2 -.581124238022920E+07 0.17566E+00
+   129 STAZ   1953  A    1 15:001:00000 m    2 0.216894560160966E+07 0.19789E+00
+   130 VELX   1953  A    1 15:001:00000 m/y  2 -.369367232064565E-01 0.99482E-02
+   131 VELY   1953  A    1 15:001:00000 m/y  2 -.140062711645192E-03 0.78919E-02
+   132 VELZ   1953  A    1 15:001:00000 m/y  2 0.297404779742215E-01 0.95951E-02
+   133 STAX   7035  A    1 15:001:00000 m    2 -.242882531657719E+07 0.13331E+02
+   134 STAY   7035  A    1 15:001:00000 m    2 -.479974315912924E+07 0.11111E+02
+   135 STAZ   7035  A    1 15:001:00000 m    2 0.341726052593736E+07 0.11845E+02
+   136 VELX   7035  A    1 15:001:00000 m/y  2 0.502865030538700E-01 0.50641E+00
+   137 VELY   7035  A    1 15:001:00000 m/y  2 0.424570295668776E+00 0.42209E+00
+   138 VELZ   7035  A    1 15:001:00000 m/y  2 -.249754694814361E+00 0.44999E+00
+   139 STAX   7046  A    1 15:001:00000 m    2 -.173600331417414E+07 0.78771E+00
+   140 STAY   7046  A    1 15:001:00000 m    2 -.442504936403147E+07 0.78181E+00
+   141 STAZ   7046  A    1 15:001:00000 m    2 0.424142655808184E+07 0.57468E+00
+   142 VELX   7046  A    1 15:001:00000 m/y  2 -.120744495234176E-01 0.33316E-01
+   143 VELY   7046  A    1 15:001:00000 m/y  2 0.106439435299461E-01 0.32979E-01
+   144 VELZ   7046  A    1 15:001:00000 m/y  2 -.219792997276206E-01 0.24208E-01
+   145 STAX   7051  A    1 15:001:00000 m    2 -.251689365804784E+07 0.31051E-02
+   146 STAY   7051  A    1 15:001:00000 m    2 -.419884482503978E+07 0.31466E-02
+   147 STAZ   7051  A    1 15:001:00000 m    2 0.407641141969462E+07 0.31401E-02
+   148 VELX   7051  A    1 15:001:00000 m/y  2 -.193147848993600E-01 0.13158E+00
+   149 VELY   7051  A    1 15:001:00000 m/y  2 0.907602256368000E-02 0.16160E+00
+   150 VELZ   7051  A    1 15:001:00000 m/y  2 -.515053798632000E-02 0.15785E+00
+   151 STAX   7062  A    1 15:001:00000 m    2 -.242882411724668E+07 0.15788E+02
+   152 STAY   7062  A    1 15:001:00000 m    2 -.479973730613136E+07 0.13175E+02
+   153 STAZ   7062  A    1 15:001:00000 m    2 0.341726481554568E+07 0.14036E+02
+   154 VELX   7062  A    1 15:001:00000 m/y  2 0.502865030538560E-01 0.50641E+00
+   155 VELY   7062  A    1 15:001:00000 m/y  2 0.424570295668894E+00 0.42209E+00
+   156 VELZ   7062  A    1 15:001:00000 m/y  2 -.249754694814430E+00 0.44999E+00
+   157 STAX   7063  A    1 15:001:00000 m    2 0.113071441742830E+07 0.29745E-02
+   158 STAY   7063  A    1 15:001:00000 m    2 -.483136773515584E+07 0.30261E-02
+   159 STAZ   7063  A    1 15:001:00000 m    2 0.399408745270446E+07 0.30122E-02
+   160 VELX   7063  A    1 15:001:00000 m/y  2 -.147571700364000E-01 0.70854E+00
+   161 VELY   7063  A    1 15:001:00000 m/y  2 -.455833437624000E-04 0.95466E+00
+   162 VELZ   7063  A    1 15:001:00000 m/y  2 0.219044646705600E-02 0.90118E+00
+   163 STAX   7065  A    1 15:001:00000 m    2 0.113069095670848E+07 0.30106E-02
+   164 STAY   7065  A    1 15:001:00000 m    2 -.483135106893923E+07 0.30446E-02
+   165 STAZ   7065  A    1 15:001:00000 m    2 0.399411202372393E+07 0.30362E-02
+   166 VELX   7065  A    1 15:001:00000 m/y  2 -.147574941296330E-01 0.70045E-04
+   167 VELY   7065  A    1 15:001:00000 m/y  2 -.507865998200918E-04 0.94811E-04
+   168 VELZ   7065  A    1 15:001:00000 m/y  2 0.219337331399868E-02 0.89510E-04
+   169 STAX   7067  A    1 15:001:00000 m    2 0.230853821911956E+07 0.43514E+00
+   170 STAY   7067  A    1 15:001:00000 m    2 -.487408003143882E+07 0.95664E+00
+   171 STAZ   7067  A    1 15:001:00000 m    2 0.339362877879250E+07 0.61806E+00
+   172 VELX   7067  A    1 15:001:00000 m/y  2 -.127280447582400E-01 0.28326E+00
+   173 VELY   7067  A    1 15:001:00000 m/y  2 -.943882135632000E-03 0.49949E+00
+   174 VELZ   7067  A    1 15:001:00000 m/y  2 0.790924973040000E-02 0.35284E+00
+   175 STAX   7068  A    1 15:001:00000 m    2 0.192048033838498E+07 0.55825E+02
+   176 STAY   7068  A    1 15:001:00000 m    2 -.561947937878864E+07 0.56026E+02
+   177 STAZ   7068  A    1 15:001:00000 m    2 0.231891464417112E+07 0.55770E+02
+   178 VELX   7068  A    1 15:001:00000 m/y  2 -.719115023088000E-01 0.30490E+00
+   179 VELY   7068  A    1 15:001:00000 m/y  2 -.151788647779200E-01 0.30511E+00
+   180 VELZ   7068  A    1 15:001:00000 m/y  2 0.588711130488000E-02 0.30432E+00
+   181 STAX   7080  A    1 15:001:00000 m    2 -.133002129397443E+07 0.95394E-03
+   182 STAY   7080  A    1 15:001:00000 m    2 -.532840183889575E+07 0.85425E-03
+   183 STAZ   7080  A    1 15:001:00000 m    2 0.323648069680191E+07 0.92860E-03
+   184 VELX   7080  A    1 15:001:00000 m/y  2 -.125832069153610E-01 0.66851E-04
+   185 VELY   7080  A    1 15:001:00000 m/y  2 0.812698001397215E-03 0.65349E-04
+   186 VELZ   7080  A    1 15:001:00000 m/y  2 -.485007413513979E-02 0.72396E-04
+   187 STAX   7082  A    1 15:001:00000 m    2 -.173599742222992E+07 0.10365E+01
+   188 STAY   7082  A    1 15:001:00000 m    2 -.442504800870167E+07 0.10275E+01
+   189 STAZ   7082  A    1 15:001:00000 m    2 0.424142991638590E+07 0.75330E+00
+   190 VELX   7082  A    1 15:001:00000 m/y  2 -.120744495234510E-01 0.33316E-01
+   191 VELY   7082  A    1 15:001:00000 m/y  2 0.106439435300057E-01 0.32979E-01
+   192 VELZ   7082  A    1 15:001:00000 m/y  2 -.219792997270291E-01 0.24208E-01
+   193 STAX   7084  A    1 15:001:00000 m    2 -.241059072157502E+07 0.49031E-02
+   194 STAY   7084  A    1 15:001:00000 m    2 -.447774494855774E+07 0.67834E-02
+   195 STAZ   7084  A    1 15:001:00000 m    2 0.383864872324732E+07 0.60539E-02
+   196 VELX   7084  A    1 15:001:00000 m/y  2 -.169775028129600E-01 0.14834E+00
+   197 VELY   7084  A    1 15:001:00000 m/y  2 0.885422628360000E-02 0.25146E+00
+   198 VELZ   7084  A    1 15:001:00000 m/y  2 -.597526746048000E-02 0.22006E+00
+   199 STAX   7085  A    1 15:001:00000 m    2 -.235339454826586E+07 0.42933E-02
+   200 STAY   7085  A    1 15:001:00000 m    2 -.464152940345940E+07 0.58505E-02
+   201 STAZ   7085  A    1 15:001:00000 m    2 0.367689908417530E+07 0.58693E-02
+   202 VELX   7085  A    1 15:001:00000 m/y  2 -.160165865160000E-01 0.15911E+00
+   203 VELY   7085  A    1 15:001:00000 m/y  2 0.629405917992000E-02 0.25972E+00
+   204 VELZ   7085  A    1 15:001:00000 m/y  2 -.405246920400000E-02 0.23732E+00
+   205 STAX   7086  A    1 15:001:00000 m    2 -.133012563845698E+07 0.46548E-02
+   206 STAY   7086  A    1 15:001:00000 m    2 -.532852663546391E+07 0.68698E-02
+   207 STAZ   7086  A    1 15:001:00000 m    2 0.323615016076078E+07 0.59671E-02
+   208 VELX   7086  A    1 15:001:00000 m/y  2 -.125832072747571E-01 0.66858E-04
+   209 VELY   7086  A    1 15:001:00000 m/y  2 0.812698553508573E-03 0.65356E-04
+   210 VELZ   7086  A    1 15:001:00000 m/y  2 -.485007384231102E-02 0.72403E-04
+   211 STAX   7090  A    1 15:001:00000 m    2 -.238900777005032E+07 0.69543E-03
+   212 STAY   7090  A    1 15:001:00000 m    2 0.504332948581405E+07 0.59590E-03
+   213 STAZ   7090  A    1 15:001:00000 m    2 -.307852397088064E+07 0.69866E-03
+   214 VELX   7090  A    1 15:001:00000 m/y  2 -.468239683104311E-01 0.52896E-04
+   215 VELY   7090  A    1 15:001:00000 m/y  2 0.797007645988301E-02 0.45572E-04
+   216 VELZ   7090  A    1 15:001:00000 m/y  2 0.509599889854529E-01 0.59966E-04
+   217 STAX   7091  A    1 15:001:00000 m    2 0.149245330069501E+07 0.86320E+00
+   218 STAY   7091  A    1 15:001:00000 m    2 -.445727876480065E+07 0.80826E+00
+   219 STAZ   7091  A    1 15:001:00000 m    2 0.429681609472303E+07 0.56029E+00
+   220 VELX   7091  A    1 15:001:00000 m/y  2 -.164145355856329E-01 0.35385E-01
+   221 VELY   7091  A    1 15:001:00000 m/y  2 0.114584797458214E-02 0.33062E-01
+   222 VELZ   7091  A    1 15:001:00000 m/y  2 0.592146195839611E-02 0.22883E-01
+   223 STAX   7092  A    1 15:001:00000 m    2 -.614344675501766E+07 0.93125E-01
+   224 STAY   7092  A    1 15:001:00000 m    2 0.136470204413184E+07 0.26783E-01
+   225 STAZ   7092  A    1 15:001:00000 m    2 0.103416394919920E+07 0.34973E-01
+   226 VELX   7092  A    1 15:001:00000 m/y  2 0.188982340466400E-01 0.86684E+00
+   227 VELY   7092  A    1 15:001:00000 m/y  2 0.705931835688000E-01 0.24518E+00
+   228 VELZ   7092  A    1 15:001:00000 m/y  2 0.275499204976800E-01 0.33642E+00
+   229 STAX   7096  A    1 15:001:00000 m    2 -.610005074390662E+07 0.37304E+01
+   230 STAY   7096  A    1 15:001:00000 m    2 -.996200977582260E+06 0.23038E+01
+   231 STAZ   7096  A    1 15:001:00000 m    2 -.156897539279856E+07 0.21207E+01
+   232 VELX   7096  A    1 15:001:00000 m/y  2 -.145900662328800E+00 0.22366E+00
+   233 VELY   7096  A    1 15:001:00000 m/y  2 0.768317739552000E-01 0.13858E+00
+   234 VELZ   7096  A    1 15:001:00000 m/y  2 0.319501449864000E-01 0.12752E+00
+   235 STAX   7097  A    1 15:001:00000 m    2 -.188498262235783E+07 0.57706E-01
+   236 STAY   7097  A    1 15:001:00000 m    2 -.535760872412878E+07 0.52553E-01
+   237 STAZ   7097  A    1 15:001:00000 m    2 -.289285357861354E+07 0.50142E-01
+   238 VELX   7097  A    1 15:001:00000 m/y  2 0.642134966854717E-01 0.27459E-02
+   239 VELY   7097  A    1 15:001:00000 m/y  2 -.200508683038447E-01 0.24910E-02
+   240 VELZ   7097  A    1 15:001:00000 m/y  2 -.859924594555540E-02 0.23619E-02
+   241 STAX   7100  A    1 15:001:00000 m    2 0.113135517712228E+07 0.30822E-02
+   242 STAY   7100  A    1 15:001:00000 m    2 -.483116834363438E+07 0.31156E-02
+   243 STAZ   7100  A    1 15:001:00000 m    2 0.399413174286356E+07 0.31074E-02
+   244 VELX   7100  A    1 15:001:00000 m/y  2 -.147577727865600E-01 0.69615E+00
+   245 VELY   7100  A    1 15:001:00000 m/y  2 -.534372730200000E-04 0.94467E+00
+   246 VELZ   7100  A    1 15:001:00000 m/y  2 0.219635625880800E-02 0.89187E+00
+   247 STAX   7101  A    1 15:001:00000 m    2 0.113123994113306E+07 0.30597E-02
+   248 STAY   7101  A    1 15:001:00000 m    2 -.483117974765610E+07 0.30935E-02
+   249 STAZ   7101  A    1 15:001:00000 m    2 0.399414853978586E+07 0.30852E-02
+   250 VELX   7101  A    1 15:001:00000 m/y  2 -.147566935166400E-01 0.71951E+00
+   251 VELY   7101  A    1 15:001:00000 m/y  2 -.556095404160000E-04 0.96196E+00
+   252 VELZ   7101  A    1 15:001:00000 m/y  2 0.219858674997600E-02 0.91056E+00
+   253 STAX   7102  A    1 15:001:00000 m    2 0.113068623984926E+07 0.54840E-02
+   254 STAY   7102  A    1 15:001:00000 m    2 -.483135302991472E+07 0.14819E-01
+   255 STAZ   7102  A    1 15:001:00000 m    2 0.399411097466330E+07 0.11571E-01
+   256 VELX   7102  A    1 15:001:00000 m/y  2 -.150358297933242E-01 0.53951E-04
+   257 VELY   7102  A    1 15:001:00000 m/y  2 0.169174435320610E-03 0.48837E-04
+   258 VELZ   7102  A    1 15:001:00000 m/y  2 0.227664087299590E-02 0.60092E-04
+   259 STAX   7103  A    1 15:001:00000 m    2 0.113068529782764E+07 0.29981E-02
+   260 STAY   7103  A    1 15:001:00000 m    2 -.483134870465478E+07 0.30396E-02
+   261 STAZ   7103  A    1 15:001:00000 m    2 0.399411641778376E+07 0.30297E-02
+   262 VELX   7103  A    1 15:001:00000 m/y  2 -.147572363073600E-01 0.70564E+00
+   263 VELY   7103  A    1 15:001:00000 m/y  2 -.554775980904000E-04 0.95157E+00
+   264 VELZ   7103  A    1 15:001:00000 m/y  2 0.219837657636000E-02 0.89957E+00
+   265 STAX   7104  A    1 15:001:00000 m    2 0.113109547412312E+07 0.30377E-02
+   266 STAY   7104  A    1 15:001:00000 m    2 -.483119694664892E+07 0.30719E-02
+   267 STAZ   7104  A    1 15:001:00000 m    2 0.399417080678462E+07 0.30635E-02
+   268 VELX   7104  A    1 15:001:00000 m/y  2 -.147576875810400E-01 0.69870E+00
+   269 VELY   7104  A    1 15:001:00000 m/y  2 -.548928357624000E-04 0.94636E+00
+   270 VELZ   7104  A    1 15:001:00000 m/y  2 0.219846115072800E-02 0.89406E+00
+   271 STAX   7105  A    1 15:001:00000 m    2 0.113071936205696E+07 0.71462E-03
+   272 STAY   7105  A    1 15:001:00000 m    2 -.483135057522763E+07 0.66131E-03
+   273 STAZ   7105  A    1 15:001:00000 m    2 0.399410658447205E+07 0.59819E-03
+   274 VELX   7105  A    1 15:001:00000 m/y  2 -.150305215554971E-01 0.46315E-04
+   275 VELY   7105  A    1 15:001:00000 m/y  2 0.141286617254269E-03 0.48255E-04
+   276 VELZ   7105  A    1 15:001:00000 m/y  2 0.225320950383261E-02 0.44550E-04
+   277 STAX   7105  A    2 15:001:00000 m    2 0.113071935771710E+07 0.11730E-02
+   278 STAY   7105  A    2 15:001:00000 m    2 -.483135057003218E+07 0.10383E-02
+   279 STAZ   7105  A    2 15:001:00000 m    2 0.399410657919949E+07 0.89651E-03
+   280 VELX   7105  A    2 15:001:00000 m/y  2 -.150305223826928E-01 0.46326E-04
+   281 VELY   7105  A    2 15:001:00000 m/y  2 0.141281596750852E-03 0.48265E-04
+   282 VELZ   7105  A    2 15:001:00000 m/y  2 0.225320877712521E-02 0.44562E-04
+   283 STAX   7106  A    1 15:001:00000 m    2 0.113064606672318E+07 0.30127E-02
+   284 STAY   7106  A    1 15:001:00000 m    2 -.483130447682218E+07 0.30467E-02
+   285 STAZ   7106  A    1 15:001:00000 m    2 0.399418283264793E+07 0.30383E-02
+   286 VELX   7106  A    1 15:001:00000 m/y  2 -.147566604754309E-01 0.71238E-04
+   287 VELY   7106  A    1 15:001:00000 m/y  2 -.436060461763832E-04 0.95778E-04
+   288 VELZ   7106  A    1 15:001:00000 m/y  2 0.218896911933759E-02 0.90405E-04
+   289 STAX   7109  A    1 15:001:00000 m    2 -.251723521429797E+07 0.60003E-02
+   290 STAY   7109  A    1 15:001:00000 m    2 -.419855602003943E+07 0.66614E-02
+   291 STAZ   7109  A    1 15:001:00000 m    2 0.407656955811747E+07 0.66467E-02
+   292 VELX   7109  A    1 15:001:00000 m/y  2 -.179562114450241E-01 0.28574E-03
+   293 VELY   7109  A    1 15:001:00000 m/y  2 0.901036300008246E-02 0.32156E-03
+   294 VELZ   7109  A    1 15:001:00000 m/y  2 -.597003686057442E-02 0.32677E-03
+   295 STAX   7110  A    1 15:001:00000 m    2 -.238627875112565E+07 0.32876E-02
+   296 STAY   7110  A    1 15:001:00000 m    2 -.480235365861609E+07 0.33993E-02
+   297 STAZ   7110  A    1 15:001:00000 m    2 0.344488186410130E+07 0.32123E-02
+   298 VELX   7110  A    1 15:001:00000 m/y  2 -.299719550092641E-01 0.17952E-03
+   299 VELY   7110  A    1 15:001:00000 m/y  2 0.270740929749646E-01 0.18559E-03
+   300 VELZ   7110  A    1 15:001:00000 m/y  2 0.145845601135634E-01 0.17888E-03
+   301 STAX   7110  A    2 15:001:00000 m    2 -.238627876266935E+07 0.16895E-02
+   302 STAY   7110  A    2 15:001:00000 m    2 -.480235368593289E+07 0.16161E-02
+   303 STAZ   7110  A    2 15:001:00000 m    2 0.344488186381700E+07 0.15264E-02
+   304 VELX   7110  A    2 15:001:00000 m/y  2 -.307701304820486E-01 0.14389E-03
+   305 VELY   7110  A    2 15:001:00000 m/y  2 0.254089802825626E-01 0.13681E-03
+   306 VELZ   7110  A    2 15:001:00000 m/y  2 0.139238733135981E-01 0.13154E-03
+   307 STAX   7110  A    3 15:001:00000 m    2 -.238627876874619E+07 0.79622E-03
+   308 STAY   7110  A    3 15:001:00000 m    2 -.480235367416650E+07 0.78678E-03
+   309 STAZ   7110  A    3 15:001:00000 m    2 0.344488185177113E+07 0.76743E-03
+   310 VELX   7110  A    3 15:001:00000 m/y  2 -.307701145168543E-01 0.14389E-03
+   311 VELY   7110  A    3 15:001:00000 m/y  2 0.254090044192518E-01 0.13681E-03
+   312 VELZ   7110  A    3 15:001:00000 m/y  2 0.139238311283307E-01 0.13154E-03
+   313 STAX   7110  A    4 15:001:00000 m    2 -.238627876756282E+07 0.20671E-02
+   314 STAY   7110  A    4 15:001:00000 m    2 -.480235367239530E+07 0.18352E-02
+   315 STAZ   7110  A    4 15:001:00000 m    2 0.344488184657152E+07 0.16837E-02
+   316 VELX   7110  A    4 15:001:00000 m/y  2 -.307701147706984E-01 0.14389E-03
+   317 VELY   7110  A    4 15:001:00000 m/y  2 0.254090034463330E-01 0.13681E-03
+   318 VELZ   7110  A    4 15:001:00000 m/y  2 0.139238319451037E-01 0.13155E-03
+   319 STAX   7112  A    1 15:001:00000 m    2 -.124067849274417E+07 0.46527E+00
+   320 STAY   7112  A    1 15:001:00000 m    2 -.472046316744387E+07 0.49194E+00
+   321 STAZ   7112  A    1 15:001:00000 m    2 0.409448011700599E+07 0.34914E+00
+   322 VELX   7112  A    1 15:001:00000 m/y  2 -.117866610671620E-01 0.19283E-01
+   323 VELY   7112  A    1 15:001:00000 m/y  2 0.878738616554561E-02 0.19949E-01
+   324 VELZ   7112  A    1 15:001:00000 m/y  2 -.201349952798892E-01 0.14540E-01
+   325 STAX   7114  A    1 15:001:00000 m    2 -.241042229485483E+07 0.16777E+01
+   326 STAY   7114  A    1 15:001:00000 m    2 -.447780269862651E+07 0.16776E+01
+   327 STAZ   7114  A    1 15:001:00000 m    2 0.383868671167469E+07 0.16775E+01
+   328 VELX   7114  A    1 15:001:00000 m/y  2 -.127814415785521E-03 0.62243E-01
+   329 VELY   7114  A    1 15:001:00000 m/y  2 -.114774795918378E-03 0.62243E-01
+   330 VELZ   7114  A    1 15:001:00000 m/y  2 -.111531162629904E-03 0.62241E-01
+   331 STAX   7115  A    1 15:001:00000 m    2 -.235086199426438E+07 0.28271E-02
+   332 STAY   7115  A    1 15:001:00000 m    2 -.465554611746336E+07 0.37955E-02
+   333 STAZ   7115  A    1 15:001:00000 m    2 0.366099777106670E+07 0.33338E-02
+   334 VELX   7115  A    1 15:001:00000 m/y  2 -.160164381952800E-01 0.15880E+00
+   335 VELY   7115  A    1 15:001:00000 m/y  2 0.629366470992000E-02 0.25953E+00
+   336 VELZ   7115  A    1 15:001:00000 m/y  2 -.405333072648000E-02 0.23711E+00
+   337 STAX   7119  A    1 15:001:00000 m    2 -.546606562309179E+07 0.71722E-03
+   338 STAY   7119  A    1 15:001:00000 m    2 -.240433771540291E+07 0.86977E-03
+   339 STAZ   7119  A    1 15:001:00000 m    2 0.224210855313640E+07 0.72268E-03
+   340 VELX   7119  A    1 15:001:00000 m/y  2 -.128732327825463E-01 0.80611E-04
+   341 VELY   7119  A    1 15:001:00000 m/y  2 0.621711100789901E-01 0.79263E-04
+   342 VELZ   7119  A    1 15:001:00000 m/y  2 0.319387579011579E-01 0.76768E-04
+   343 STAX   7120  A    1 15:001:00000 m    2 -.546599875559444E+07 0.32024E-02
+   344 STAY   7120  A    1 15:001:00000 m    2 -.240440691819082E+07 0.27457E-02
+   345 STAZ   7120  A    1 15:001:00000 m    2 0.224222930920114E+07 0.28483E-02
+   346 VELX   7120  A    1 15:001:00000 m/y  2 -.102994444447200E-01 0.22900E+00
+   347 VELY   7120  A    1 15:001:00000 m/y  2 0.623809177632000E-01 0.17041E+00
+   348 VELZ   7120  A    1 15:001:00000 m/y  2 0.304401138264000E-01 0.17409E+00
+   349 STAX   7121  A    1 15:001:00000 m    2 -.534586636988782E+07 0.13365E+00
+   350 STAY   7121  A    1 15:001:00000 m    2 -.295824524939915E+07 0.95342E-01
+   351 STAZ   7121  A    1 15:001:00000 m    2 -.182462293437206E+07 0.81527E-01
+   352 VELX   7121  A    1 15:001:00000 m/y  2 -.398044019965722E-01 0.43617E-02
+   353 VELY   7121  A    1 15:001:00000 m/y  2 0.524537806443519E-01 0.31250E-02
+   354 VELZ   7121  A    1 15:001:00000 m/y  2 0.327005356805120E-01 0.26808E-02
+   355 STAX   7122  A    1 15:001:00000 m    2 -.166008950564980E+07 0.60258E-01
+   356 STAY   7122  A    1 15:001:00000 m    2 -.561910029733772E+07 0.98072E-01
+   357 STAZ   7122  A    1 15:001:00000 m    2 0.251163764983935E+07 0.68141E-01
+   358 VELX   7122  A    1 15:001:00000 m/y  2 -.704139963443979E-02 0.19780E-02
+   359 VELY   7122  A    1 15:001:00000 m/y  2 0.520100711486059E-02 0.32036E-02
+   360 VELZ   7122  A    1 15:001:00000 m/y  2 -.863328993809484E-02 0.22359E-02
+   361 STAX   7122  A    2 15:001:00000 m    2 -.166008949480540E+07 0.53303E-01
+   362 STAY   7122  A    2 15:001:00000 m    2 -.561910031216525E+07 0.86207E-01
+   363 STAZ   7122  A    2 15:001:00000 m    2 0.251163767120130E+07 0.60159E-01
+   364 VELX   7122  A    2 15:001:00000 m/y  2 -.704139993944036E-02 0.19780E-02
+   365 VELY   7122  A    2 15:001:00000 m/y  2 0.520100728076467E-02 0.32036E-02
+   366 VELZ   7122  A    2 15:001:00000 m/y  2 -.863329008308723E-02 0.22359E-02
+   367 STAX   7122  A    3 15:001:00000 m    2 -.166008951257820E+07 0.45228E-01
+   368 STAY   7122  A    3 15:001:00000 m    2 -.561910035630588E+07 0.72389E-01
+   369 STAZ   7122  A    3 15:001:00000 m    2 0.251163769814569E+07 0.50753E-01
+   370 VELX   7122  A    3 15:001:00000 m/y  2 -.704139995693357E-02 0.19780E-02
+   371 VELY   7122  A    3 15:001:00000 m/y  2 0.520100724295347E-02 0.32036E-02
+   372 VELZ   7122  A    3 15:001:00000 m/y  2 -.863329007535212E-02 0.22359E-02
+   373 STAX   7123  A    1 15:001:00000 m    2 -.534586783797521E+07 0.96777E-01
+   374 STAY   7123  A    1 15:001:00000 m    2 -.295824605814945E+07 0.71893E-01
+   375 STAZ   7123  A    1 15:001:00000 m    2 -.182462343417101E+07 0.62546E-01
+   376 VELX   7123  A    1 15:001:00000 m/y  2 -.398044019971554E-01 0.43617E-02
+   377 VELY   7123  A    1 15:001:00000 m/y  2 0.524537806693293E-01 0.31250E-02
+   378 VELZ   7123  A    1 15:001:00000 m/y  2 0.327005357928254E-01 0.26808E-02
+   379 STAX   7124  A    1 15:001:00000 m    2 -.524640749642865E+07 0.29908E-02
+   380 STAY   7124  A    1 15:001:00000 m    2 -.307728404158549E+07 0.32947E-02
+   381 STAZ   7124  A    1 15:001:00000 m    2 -.191381358311899E+07 0.29860E-02
+   382 VELX   7124  A    1 15:001:00000 m/y  2 -.412927775375415E-01 0.14033E-03
+   383 VELY   7124  A    1 15:001:00000 m/y  2 0.522017006631632E-01 0.14862E-03
+   384 VELZ   7124  A    1 15:001:00000 m/y  2 0.329883746282099E-01 0.14389E-03
+   385 STAX   7124  A    2 15:001:00000 m    2 -.524640750393198E+07 0.10276E-02
+   386 STAY   7124  A    2 15:001:00000 m    2 -.307728404969793E+07 0.11184E-02
+   387 STAZ   7124  A    2 15:001:00000 m    2 -.191381359101442E+07 0.10557E-02
+   388 VELX   7124  A    2 15:001:00000 m/y  2 -.412927764499626E-01 0.14032E-03
+   389 VELY   7124  A    2 15:001:00000 m/y  2 0.522017013015128E-01 0.14862E-03
+   390 VELZ   7124  A    2 15:001:00000 m/y  2 0.329883745786130E-01 0.14389E-03
+   391 STAX   7125  A    1 15:001:00000 m    2 0.113074540236071E+07 0.63944E-02
+   392 STAY   7125  A    1 15:001:00000 m    2 -.483136802600235E+07 0.56785E-02
+   393 STAZ   7125  A    1 15:001:00000 m    2 0.399407718754172E+07 0.51916E-02
+   394 VELX   7125  A    1 15:001:00000 m/y  2 -.150358286071138E-01 0.53951E-04
+   395 VELY   7125  A    1 15:001:00000 m/y  2 0.169174715449923E-03 0.48837E-04
+   396 VELZ   7125  A    1 15:001:00000 m/y  2 0.227664080993442E-02 0.60093E-04
+   397 STAX   7130  A    1 15:001:00000 m    2 0.113073494651597E+07 0.61421E-02
+   398 STAY   7130  A    1 15:001:00000 m    2 -.483132463836470E+07 0.53138E-02
+   399 STAZ   7130  A    1 15:001:00000 m    2 0.399413243429027E+07 0.46010E-02
+   400 VELX   7130  A    1 15:001:00000 m/y  2 -.150358284377951E-01 0.53960E-04
+   401 VELY   7130  A    1 15:001:00000 m/y  2 0.169174585608837E-03 0.48847E-04
+   402 VELZ   7130  A    1 15:001:00000 m/y  2 0.227664037540292E-02 0.60101E-04
+   403 STAX   7210  A    1 15:001:00000 m    2 -.546600688855414E+07 0.14082E-01
+   404 STAY   7210  A    1 15:001:00000 m    2 -.240442626356109E+07 0.14110E-01
+   405 STAZ   7210  A    1 15:001:00000 m    2 0.224218834547873E+07 0.14214E-01
+   406 VELX   7210  A    1 15:001:00000 m/y  2 -.131739327242879E-01 0.45196E-03
+   407 VELY   7210  A    1 15:001:00000 m/y  2 0.633123277238397E-01 0.48644E-03
+   408 VELZ   7210  A    1 15:001:00000 m/y  2 0.322689384599308E-01 0.48931E-03
+   409 STAX   7210  A    2 15:001:00000 m    2 -.546600683623836E+07 0.10181E-01
+   410 STAY   7210  A    2 15:001:00000 m    2 -.240442627087622E+07 0.10695E-01
+   411 STAZ   7210  A    2 15:001:00000 m    2 0.224218833912971E+07 0.10735E-01
+   412 VELX   7210  A    2 15:001:00000 m/y  2 -.131739326634317E-01 0.45196E-03
+   413 VELY   7210  A    2 15:001:00000 m/y  2 0.633123251062068E-01 0.48644E-03
+   414 VELZ   7210  A    2 15:001:00000 m/y  2 0.322689390186536E-01 0.48931E-03
+   415 STAX   7210  A    3 15:001:00000 m    2 -.546600684624243E+07 0.83774E-02
+   416 STAY   7210  A    3 15:001:00000 m    2 -.240442627967957E+07 0.89954E-02
+   417 STAZ   7210  A    3 15:001:00000 m    2 0.224218834108165E+07 0.90366E-02
+   418 VELX   7210  A    3 15:001:00000 m/y  2 -.131739340219842E-01 0.45196E-03
+   419 VELY   7210  A    3 15:001:00000 m/y  2 0.633123215532639E-01 0.48644E-03
+   420 VELZ   7210  A    3 15:001:00000 m/y  2 0.322689396145516E-01 0.48931E-03
+   421 STAX   7210  A    4 15:001:00000 m    2 -.546600684658715E+07 0.12884E-02
+   422 STAY   7210  A    4 15:001:00000 m    2 -.240442630285235E+07 0.12699E-02
+   423 STAZ   7210  A    4 15:001:00000 m    2 0.224218833654448E+07 0.11897E-02
+   424 VELX   7210  A    4 15:001:00000 m/y  2 -.128732239585332E-01 0.80617E-04
+   425 VELY   7210  A    4 15:001:00000 m/y  2 0.621711156569416E-01 0.79269E-04
+   426 VELZ   7210  A    4 15:001:00000 m/y  2 0.319387508169326E-01 0.76774E-04
+   427 STAX   7220  A    1 15:001:00000 m    2 -.238629304704227E+07 0.27386E-01
+   428 STAY   7220  A    1 15:001:00000 m    2 -.480234674323262E+07 0.24284E-01
+   429 STAZ   7220  A    1 15:001:00000 m    2 0.344488126856395E+07 0.22967E-01
+   430 VELX   7220  A    1 15:001:00000 m/y  2 -.299719550090509E-01 0.17952E-03
+   431 VELY   7220  A    1 15:001:00000 m/y  2 0.270740929737297E-01 0.18559E-03
+   432 VELZ   7220  A    1 15:001:00000 m/y  2 0.145845601137346E-01 0.17889E-03
+   433 STAX   7231  A    1 15:001:00000 m    2 -.227971471235033E+07 0.28712E-01
+   434 STAY   7231  A    1 15:001:00000 m    2 0.500476733888046E+07 0.28653E-01
+   435 STAZ   7231  A    1 15:001:00000 m    2 0.321979382915727E+07 0.28383E-01
+   436 VELX   7231  A    1 15:001:00000 m/y  2 -.298232022586235E-01 0.22087E-02
+   437 VELY   7231  A    1 15:001:00000 m/y  2 -.779020260083816E-02 0.21323E-02
+   438 VELZ   7231  A    1 15:001:00000 m/y  2 -.123233141225707E-01 0.21180E-02
+   439 STAX   7236  A    1 15:001:00000 m    2 -.226655641656472E+07 0.14294E+00
+   440 STAY   7236  A    1 15:001:00000 m    2 0.500907947032100E+07 0.23027E+00
+   441 STAZ   7236  A    1 15:001:00000 m    2 0.322226581728106E+07 0.18284E+00
+   442 VELX   7236  A    1 15:001:00000 m/y  2 -.346981933459066E-01 0.74133E-02
+   443 VELY   7236  A    1 15:001:00000 m/y  2 0.715020709792963E-02 0.11983E-01
+   444 VELZ   7236  A    1 15:001:00000 m/y  2 -.136639873783957E-01 0.94810E-02
+   445 STAX   7237  A    1 15:001:00000 m    2 -.267438720125589E+07 0.27686E-02
+   446 STAY   7237  A    1 15:001:00000 m    2 0.375718915137639E+07 0.28398E-02
+   447 STAZ   7237  A    1 15:001:00000 m    2 0.439150824162111E+07 0.22765E-02
+   448 VELX   7237  A    1 15:001:00000 m/y  2 -.259817096990427E-01 0.23436E-03
+   449 VELY   7237  A    1 15:001:00000 m/y  2 -.893088434138234E-02 0.23808E-03
+   450 VELZ   7237  A    1 15:001:00000 m/y  2 -.941000379059348E-02 0.19577E-03
+   451 STAX   7237  A    2 15:001:00000 m    2 -.267438721870738E+07 0.10807E-02
+   452 STAY   7237  A    2 15:001:00000 m    2 0.375718914162846E+07 0.11279E-02
+   453 STAZ   7237  A    2 15:001:00000 m    2 0.439150823959986E+07 0.97531E-03
+   454 VELX   7237  A    2 15:001:00000 m/y  2 -.275005036684614E-01 0.30799E-03
+   455 VELY   7237  A    2 15:001:00000 m/y  2 -.881177916682457E-02 0.31890E-03
+   456 VELZ   7237  A    2 15:001:00000 m/y  2 -.896407307456240E-02 0.25810E-03
+   457 STAX   7249  A    1 15:001:00000 m    2 -.214876091605905E+07 0.30585E-02
+   458 STAY   7249  A    1 15:001:00000 m    2 0.442675954089374E+07 0.47028E-02
+   459 STAZ   7249  A    1 15:001:00000 m    2 0.404450957781932E+07 0.45520E-02
+   460 VELX   7249  A    1 15:001:00000 m/y  2 -.315954828487909E-01 0.16164E-03
+   461 VELY   7249  A    1 15:001:00000 m/y  2 -.430780956818783E-02 0.24756E-03
+   462 VELZ   7249  A    1 15:001:00000 m/y  2 -.672016161744423E-02 0.22158E-03
+   463 STAX   7249  A    2 15:001:00000 m    2 -.214876091906564E+07 0.33784E-02
+   464 STAY   7249  A    2 15:001:00000 m    2 0.442675951574541E+07 0.49074E-02
+   465 STAZ   7249  A    2 15:001:00000 m    2 0.404450956014570E+07 0.50148E-02
+   466 VELX   7249  A    2 15:001:00000 m/y  2 -.320883821030485E-01 0.10669E-02
+   467 VELY   7249  A    2 15:001:00000 m/y  2 -.517377630645166E-02 0.16143E-02
+   468 VELZ   7249  A    2 15:001:00000 m/y  2 -.530135408530377E-02 0.16178E-02
+   469 STAX   7265  A    1 15:001:00000 m    2 -.235647594268618E+07 0.48271E+00
+   470 STAY   7265  A    1 15:001:00000 m    2 -.464661815927850E+07 0.31388E+00
+   471 STAZ   7265  A    1 15:001:00000 m    2 0.366842495293160E+07 0.36168E+00
+   472 VELX   7265  A    1 15:001:00000 m/y  2 -.106085621317221E-01 0.15574E-01
+   473 VELY   7265  A    1 15:001:00000 m/y  2 0.597269487836563E-02 0.10052E-01
+   474 VELZ   7265  A    1 15:001:00000 m/y  2 0.566246802047600E-02 0.11663E-01
+   475 STAX   7274  A    1 15:001:00000 m    2 -.238629014778855E+07 0.16180E-02
+   476 STAY   7274  A    1 15:001:00000 m    2 -.480234588785068E+07 0.23973E-02
+   477 STAZ   7274  A    1 15:001:00000 m    2 0.344488440043038E+07 0.20065E-02
+   478 VELX   7274  A    1 15:001:00000 m/y  2 -.304744403158973E-01 0.63767E-04
+   479 VELY   7274  A    1 15:001:00000 m/y  2 0.254648969422491E-01 0.84443E-04
+   480 VELZ   7274  A    1 15:001:00000 m/y  2 0.152994965688000E-01 0.82086E-04
+   481 STAX   7288  A    1 15:001:00000 m    2 -.235649433604058E+07 0.38250E+00
+   482 STAY   7288  A    1 15:001:00000 m    2 -.464660756055577E+07 0.24775E+00
+   483 STAZ   7288  A    1 15:001:00000 m    2 0.366842678979319E+07 0.28665E+00
+   484 VELX   7288  A    1 15:001:00000 m/y  2 -.106085621315733E-01 0.15574E-01
+   485 VELY   7288  A    1 15:001:00000 m/y  2 0.597269487840154E-02 0.10052E-01
+   486 VELZ   7288  A    1 15:001:00000 m/y  2 0.566246802028916E-02 0.11663E-01
+   487 STAX   7295  A    1 15:001:00000 m    2 0.961318757529907E+06 0.72975E-01
+   488 STAY   7295  A    1 15:001:00000 m    2 -.567409112517611E+07 0.56876E-01
+   489 STAZ   7295  A    1 15:001:00000 m    2 0.274048966765345E+07 0.62764E-01
+   490 VELX   7295  A    1 15:001:00000 m/y  2 -.947206753312412E-02 0.35491E-02
+   491 VELY   7295  A    1 15:001:00000 m/y  2 -.678050323904429E-02 0.27476E-02
+   492 VELZ   7295  A    1 15:001:00000 m/y  2 0.299087592356380E-02 0.30687E-02
+   493 STAX   7306  A    1 15:001:00000 m    2 -.396164092453464E+07 0.10000E-01
+   494 STAY   7306  A    1 15:001:00000 m    2 0.330877467709879E+07 0.10000E-01
+   495 STAZ   7306  A    1 15:001:00000 m    2 0.373429147340933E+07 0.10000E-01
+   496 VELX   7306  A    1 15:001:00000 m/y  2 -.010540000000000E+00 0.50000E-00
+   497 VELY   7306  A    1 15:001:00000 m/y  2 -.006350000000000E+00 0.50000E-00
+   498 VELZ   7306  A    1 15:001:00000 m/y  2 -.004150000000000E+00 0.50000E-00
+   499 STAX   7306  A    2 15:001:00000 m    2 -.396164092750000E+07 0.14211E+00
+   500 STAY   7306  A    2 15:001:00000 m    2 0.330877447730000E+07 0.16392E+00
+   501 STAZ   7306  A    2 15:001:00000 m    2 0.373429149360000E+07 0.11348E+00
+   502 VELX   7306  A    2 15:001:00000 m/y  2 -.010540000000000E+00 0.50000E-00
+   503 VELY   7306  A    2 15:001:00000 m/y  2 -.006350000000000E+00 0.50000E-00
+   504 VELZ   7306  A    2 15:001:00000 m/y  2 -.004150000000000E+00 0.50000E-00
+   505 STAX   7307  D    1 15:001:00000 m    2 -.326875163772874E+07 0.15091E+01
+   506 STAY   7307  D    1 15:001:00000 m    2 0.480723940611462E+07 0.15038E+01
+   507 STAZ   7307  D    1 15:001:00000 m    2 0.261562876006234E+07 0.14866E+01
+   508 VELX   7307  D    1 15:001:00000 m/y  2 -.429316534287237E-01 0.99122E-01
+   509 VELY   7307  D    1 15:001:00000 m/y  2 -.783087292916760E-03 0.98840E-01
+   510 VELZ   7307  D    1 15:001:00000 m/y  2 -.465750054817341E-01 0.97655E-01
+   511 STAX   7308  A    1 15:001:00000 m    2 -.394202012120036E+07 0.20825E-01
+   512 STAY   7308  A    1 15:001:00000 m    2 0.336809762327376E+07 0.18877E-01
+   513 STAZ   7308  A    1 15:001:00000 m    2 0.370219098175894E+07 0.20743E-01
+   514 VELX   7308  A    1 15:001:00000 m/y  2 0.121554564493909E-02 0.14438E-02
+   515 VELY   7308  A    1 15:001:00000 m/y  2 0.223168161082030E-02 0.13308E-02
+   516 VELZ   7308  A    1 15:001:00000 m/y  2 -.465029700521201E-02 0.14282E-02
+   517 STAX   7308  A    2 15:001:00000 m    2 -.394202016573220E+07 0.13654E-01
+   518 STAY   7308  A    2 15:001:00000 m    2 0.336809763998318E+07 0.12438E-01
+   519 STAZ   7308  A    2 15:001:00000 m    2 0.370219100555921E+07 0.14404E-01
+   520 VELX   7308  A    2 15:001:00000 m/y  2 -.140750786410333E-02 0.21477E-02
+   521 VELY   7308  A    2 15:001:00000 m/y  2 0.208224187341185E-02 0.19495E-02
+   522 VELZ   7308  A    2 15:001:00000 m/y  2 -.299518857483546E-02 0.22214E-02
+   523 STAX   7308  A    3 15:001:00000 m    2 -.394202031817628E+07 0.12032E-01
+   524 STAY   7308  A    3 15:001:00000 m    2 0.336809743302940E+07 0.11601E-01
+   525 STAZ   7308  A    3 15:001:00000 m    2 0.370219108669574E+07 0.12628E-01
+   526 VELX   7308  A    3 15:001:00000 m/y  2 -.874868860797584E-02 0.49506E-02
+   527 VELY   7308  A    3 15:001:00000 m/y  2 0.363601256486337E-02 0.46290E-02
+   528 VELZ   7308  A    3 15:001:00000 m/y  2 0.758976407996250E-02 0.49806E-02
+   529 STAX   7317  A    1 15:001:00000 m    0 -3.95959111594458e+06 2.90193e-02
+   530 STAY   7317  A    1 15:001:00000 m    0  3.29688618886574e+06 2.34129e-02
+   531 STAZ   7317  A    1 15:001:00000 m    0  3.74702108335625e+06 2.88613e-02
+   532 VELX   7317  A    1 15:001:00000 m/y  2 -.761286268545044E-02 0.40818E-03
+   533 VELY   7317  A    1 15:001:00000 m/y  2 0.655181753883088E-02 0.35172E-03
+   534 VELZ   7317  A    1 15:001:00000 m/y  2 -.547566411966562E-02 0.37853E-03
+   535 STAX   7328  A    1 15:001:00000 m    2 -.394194121906761E+07 0.22253E-01
+   536 STAY   7328  A    1 15:001:00000 m    2 0.336816957087702E+07 0.20468E-01
+   537 STAZ   7328  A    1 15:001:00000 m    2 0.370219561434941E+07 0.21844E-01
+   538 VELX   7328  A    1 15:001:00000 m/y  2 0.121554574588926E-02 0.14438E-02
+   539 VELY   7328  A    1 15:001:00000 m/y  2 0.223168152753607E-02 0.13308E-02
+   540 VELZ   7328  A    1 15:001:00000 m/y  2 -.465029717096965E-02 0.14282E-02
+   541 STAX   7328  A    2 15:001:00000 m    2 -.394194126784369E+07 0.16382E-01
+   542 STAY   7328  A    2 15:001:00000 m    2 0.336816958482579E+07 0.14495E-01
+   543 STAZ   7328  A    2 15:001:00000 m    2 0.370219563423050E+07 0.14785E-01
+   544 VELX   7328  A    2 15:001:00000 m/y  2 -.140750786494053E-02 0.21477E-02
+   545 VELY   7328  A    2 15:001:00000 m/y  2 0.208224187440424E-02 0.19495E-02
+   546 VELZ   7328  A    2 15:001:00000 m/y  2 -.299518857468637E-02 0.22214E-02
+   547 STAX   7329  A    1 25:098:00000 m    2 -.173504690000000E+07 1.00000E+00
+   548 STAY   7329  A    1 25:098:00000 m    2 0.497843710000000E+07 1.00000E+00
+   549 STAZ   7329  A    1 25:098:00000 m    2 0.357925630000000E+07 1.00000E+00
+   550 VELX   7329  A    1 25:098:00000 m/y  2 0.000000000000000E+00 0.50000E+00
+   551 VELY   7329  A    1 25:098:00000 m/y  2 0.000000000000000E+00 0.50000E+00
+   552 VELZ   7329  A    1 25:098:00000 m/y  2 0.000000000000000E+00 0.50000E+00
+   553 STAX   7335  A    1 15:001:00000 m    2 -.399748433522952E+07 0.58590E-01
+   554 STAY   7335  A    1 15:001:00000 m    2 0.327684693753262E+07 0.60277E-01
+   555 STAZ   7335  A    1 15:001:00000 m    2 0.372429650831282E+07 0.53172E-01
+   556 VELX   7335  A    1 15:001:00000 m/y  2 -.571399050709829E-03 0.39273E-02
+   557 VELY   7335  A    1 15:001:00000 m/y  2 0.361732031963455E-02 0.40530E-02
+   558 VELZ   7335  A    1 15:001:00000 m/y  2 -.594910992489485E-02 0.35700E-02
+   559 STAX   7337  A    1 15:001:00000 m    2 -.397616151984751E+07 0.13710E+00
+   560 STAY   7337  A    1 15:001:00000 m    2 0.337795044256759E+07 0.14148E+00
+   561 STAZ   7337  A    1 15:001:00000 m    2 0.365668734875822E+07 0.13070E+00
+   562 VELX   7337  A    1 15:001:00000 m/y  2 0.963404992434969E-02 0.90949E-02
+   563 VELY   7337  A    1 15:001:00000 m/y  2 0.336236062096701E-02 0.94135E-02
+   564 VELZ   7337  A    1 15:001:00000 m/y  2 0.281283432950335E-02 0.87109E-02
+   565 STAX   7339  A    1 15:001:00000 m    2 -.400095495827795E+07 0.47158E-01
+   566 STAY   7339  A    1 15:001:00000 m    2 0.337531012200206E+07 0.50540E-01
+   567 STAZ   7339  A    1 15:001:00000 m    2 0.363220121616605E+07 0.43023E-01
+   568 VELX   7339  A    1 15:001:00000 m/y  2 0.135471726400236E-01 0.32053E-02
+   569 VELY   7339  A    1 15:001:00000 m/y  2 -.210075418814896E-01 0.34377E-02
+   570 VELZ   7339  A    1 15:001:00000 m/y  2 0.218339339221005E-01 0.29561E-02
+   571 STAX   7355  A    1 15:001:00000 m    2 0.184592013090235E+06 0.39930E+00
+   572 STAY   7355  A    1 15:001:00000 m    2 0.460675167725783E+07 0.37351E+00
+   573 STAZ   7355  A    1 15:001:00000 m    2 0.439375629825793E+07 0.34716E+00
+   574 VELX   7355  A    1 15:001:00000 m/y  2 0.672374700239131E-02 0.34872E-01
+   575 VELY   7355  A    1 15:001:00000 m/y  2 0.417431960559898E-01 0.32705E-01
+   576 VELZ   7355  A    1 15:001:00000 m/y  2 -.129498231371572E-01 0.30433E-01
+   577 STAX   7356  A    1 15:001:00000 m    2 -.100536986390655E+06 0.80838E+00
+   578 STAY   7356  A    1 15:001:00000 m    2 0.555060056230080E+07 0.69993E+00
+   579 STAZ   7356  A    1 15:001:00000 m    2 0.313703755998872E+07 0.81470E+00
+   580 VELX   7356  A    1 15:001:00000 m/y  2 -.889508523134776E-01 0.61099E-01
+   581 VELY   7356  A    1 15:001:00000 m/y  2 -.119211234515669E+00 0.52954E-01
+   582 VELZ   7356  A    1 15:001:00000 m/y  2 0.586923470276649E-01 0.61496E-01
+   583 STAX   7357  A    1 15:001:00000 m    2 -.214878196870147E+07 0.11192E-01
+   584 STAY   7357  A    1 15:001:00000 m    2 0.442667814317241E+07 0.11621E-01
+   585 STAZ   7357  A    1 15:001:00000 m    2 0.404457148201150E+07 0.11525E-01
+   586 VELX   7357  A    1 15:001:00000 m/y  2 -.315954828514345E-01 0.16165E-03
+   587 VELY   7357  A    1 15:001:00000 m/y  2 -.430780957055427E-02 0.24757E-03
+   588 VELZ   7357  A    1 15:001:00000 m/y  2 -.672016162659823E-02 0.22159E-03
+   589 STAX   7358  A    1 15:001:00000 m    2 -.360765183294009E+07 0.11270E-01
+   590 STAY   7358  A    1 15:001:00000 m    2 0.414787385831085E+07 0.11715E-01
+   591 STAZ   7358  A    1 15:001:00000 m    2 0.322372267377524E+07 0.97175E-02
+   592 VELX   7358  A    1 15:001:00000 m/y  2 -.305817248111532E-01 0.15899E-02
+   593 VELY   7358  A    1 15:001:00000 m/y  2 -.119956502284815E-01 0.17276E-02
+   594 VELZ   7358  A    1 15:001:00000 m/y  2 -.200826457964102E-01 0.14766E-02
+   595 STAX   7358  A    2 15:001:00000 m    2 -.360765182846499E+07 0.29119E-01
+   596 STAY   7358  A    2 15:001:00000 m    2 0.414787384575935E+07 0.26662E-01
+   597 STAZ   7358  A    2 15:001:00000 m    2 0.322372267911311E+07 0.24856E-01
+   598 VELX   7358  A    2 15:001:00000 m/y  2 -.275162807608032E-01 0.73846E-02
+   599 VELY   7358  A    2 15:001:00000 m/y  2 -.127762999176538E-01 0.10198E-01
+   600 VELZ   7358  A    2 15:001:00000 m/y  2 -.191875786400843E-01 0.83574E-02
+   601 STAX   7358  A    3 15:001:00000 m    2 -.360765184271237E+07 0.17651E-01
+   602 STAY   7358  A    3 15:001:00000 m    2 0.414787385196298E+07 0.26177E-01
+   603 STAZ   7358  A    3 15:001:00000 m    2 0.322372267916598E+07 0.20432E-01
+   604 VELX   7358  A    3 15:001:00000 m/y  2 -.275162807721449E-01 0.73846E-02
+   605 VELY   7358  A    3 15:001:00000 m/y  2 -.127762999102181E-01 0.10198E-01
+   606 VELZ   7358  A    3 15:001:00000 m/y  2 -.191875786444474E-01 0.83574E-02
+   607 STAX   7358  A    4 15:001:00000 m    2 -.360765186122153E+07 0.35543E-01
+   608 STAY   7358  A    4 15:001:00000 m    2 0.414787385020612E+07 0.47387E-01
+   609 STAZ   7358  A    4 15:001:00000 m    2 0.322372267863510E+07 0.38773E-01
+   610 VELX   7358  A    4 15:001:00000 m/y  2 -.275162807777598E-01 0.73846E-02
+   611 VELY   7358  A    4 15:001:00000 m/y  2 -.127762999128521E-01 0.10198E-01
+   612 VELZ   7358  A    4 15:001:00000 m/y  2 -.191875786478840E-01 0.83574E-02
+   613 STAX   7359  A    1 15:001:00000 m    2 -.312007333854583E+07 0.72674E-02
+   614 STAY   7359  A    1 15:001:00000 m    2 0.408462184066474E+07 0.79797E-02
+   615 STAZ   7359  A    1 15:001:00000 m    2 0.376399063384740E+07 0.74886E-02
+   616 VELX   7359  A    1 15:001:00000 m/y  2 -.261707497104547E-01 0.74287E-02
+   617 VELY   7359  A    1 15:001:00000 m/y  2 -.120473823182406E-01 0.79378E-02
+   618 VELZ   7359  A    1 15:001:00000 m/y  2 -.153559544976123E-01 0.70524E-02
+   619 STAX   7370  A    1 15:001:00000 m    2 -.398718846580316E+07 0.31240E-02
+   620 STAY   7370  A    1 15:001:00000 m    2 0.270141840496667E+07 0.23494E-02
+   621 STAZ   7370  A    1 15:001:00000 m    2 -.416771992434104E+07 0.34175E-02
+   622 VELX   7370  A    1 15:001:00000 m/y  2 -.383300000000000E-01 0.17574E-02
+   623 VELY   7370  A    1 15:001:00000 m/y  2 0.762000000000000E-02 0.17574E-02
+   624 VELZ   7370  A    1 15:001:00000 m/y  2 0.416100000000000E-01 0.17574E-02
+   625 STAX   7394  A    1 15:001:00000 m    2 -.311010839998623E+07 0.45011E-02
+   626 STAY   7394  A    1 15:001:00000 m    2 0.408217033585630E+07 0.47545E-02
+   627 STAZ   7394  A    1 15:001:00000 m    2 0.377491180238825E+07 0.47328E-02
+   628 VELX   7394  A    1 15:001:00000 m/y  2 -.271794045642128E-01 0.88557E-03
+   629 VELY   7394  A    1 15:001:00000 m/y  2 -.122093713696980E-01 0.90006E-03
+   630 VELZ   7394  A    1 15:001:00000 m/y  2 -.873679723049868E-02 0.91433E-03
+   631 STAX   7395  A    1 15:001:00000 m    2 -.319163599445000E+07 0.10000E-01
+   632 STAY   7395  A    1 15:001:00000 m    2 0.409687640705000E+07 0.10000E-01
+   633 STAZ   7395  A    1 15:001:00000 m    2 0.369185140240000E+07 0.10000E-01
+   634 VELX   7395  A    1 15:001:00000 m/y  2 -.248100000000000E-01 0.50000E-02
+   635 VELY   7395  A    1 15:001:00000 m/y  2 -.104100000000000E-01 0.50000E-02
+   636 VELZ   7395  A    1 15:001:00000 m/y  2 -.990000000000000E-02 0.50000E-02
+   637 STAX   7396  A    1 15:001:00000 m    2 -.227975583430552E+07 0.82659E-02
+   638 STAY   7396  A    1 15:001:00000 m    2 0.500473742564508E+07 0.93407E-02
+   639 STAZ   7396  A    1 15:001:00000 m    2 0.321979164759691E+07 0.83362E-02
+   640 VELX   7396  A    1 15:001:00000 m/y  2 -.315213744287097E-01 0.13201E-02
+   641 VELY   7396  A    1 15:001:00000 m/y  2 -.675036678962801E-02 0.12587E-02
+   642 VELZ   7396  A    1 15:001:00000 m/y  2 -.958777656248929E-02 0.11737E-02
+   643 STAX   7396  A    2 15:001:00000 m    2 -.227975583041411E+07 0.99249E-02
+   644 STAY   7396  A    2 15:001:00000 m    2 0.500473740654288E+07 0.94611E-02
+   645 STAZ   7396  A    2 15:001:00000 m    2 0.321979163161461E+07 0.87768E-02
+   646 VELX   7396  A    2 15:001:00000 m/y  2 -.315213748912419E-01 0.13201E-02
+   647 VELY   7396  A    2 15:001:00000 m/y  2 -.675036617580483E-02 0.12587E-02
+   648 VELZ   7396  A    2 15:001:00000 m/y  2 -.958777597510178E-02 0.11737E-02
+   649 STAX   7400  A    1 15:001:00000 m    2 0.176970120514409E+07 0.89513E+00
+   650 STAY   7400  A    1 15:001:00000 m    2 -.504461398111101E+07 0.73432E+00
+   651 STAZ   7400  A    1 15:001:00000 m    2 -.346825959733640E+07 0.64938E+00
+   652 VELX   7400  A    1 15:001:00000 m/y  2 0.460419896728696E-01 0.29011E-01
+   653 VELY   7400  A    1 15:001:00000 m/y  2 -.345501763147410E-01 0.23808E-01
+   654 VELZ   7400  A    1 15:001:00000 m/y  2 0.150117949876872E-01 0.21020E-01
+   655 STAX   7401  A    1 15:001:00000 m    2 0.181551763265283E+07 0.10627E+00
+   656 STAY   7401  A    1 15:001:00000 m    2 -.521346465231060E+07 0.86220E-01
+   657 STAZ   7401  A    1 15:001:00000 m    2 -.318799876625622E+07 0.90453E-01
+   658 VELX   7401  A    1 15:001:00000 m/y  2 0.145504126231697E-01 0.42024E-02
+   659 VELY   7401  A    1 15:001:00000 m/y  2 0.752139791363941E-02 0.33921E-02
+   660 VELZ   7401  A    1 15:001:00000 m/y  2 0.203549202463743E-01 0.36087E-02
+   661 STAX   7403  A    1 15:001:00000 m    2 0.194280829877562E+07 0.13629E-01
+   662 STAY   7403  A    1 15:001:00000 m    2 -.580406964599068E+07 0.13102E-01
+   663 STAZ   7403  A    1 15:001:00000 m    2 -.179691518949879E+07 0.12218E-01
+   664 VELX   7403  A    1 15:001:00000 m/y  2 0.107676841010414E-01 0.60912E-03
+   665 VELY   7403  A    1 15:001:00000 m/y  2 0.283151117389344E-02 0.59785E-03
+   666 VELZ   7403  A    1 15:001:00000 m/y  2 0.149632891303262E-01 0.54600E-03
+   667 STAX   7403  A    2 15:001:00000 m    2 0.194280830959140E+07 0.12204E-01
+   668 STAY   7403  A    2 15:001:00000 m    2 -.580406964988962E+07 0.11809E-01
+   669 STAZ   7403  A    2 15:001:00000 m    2 -.179691519395092E+07 0.10923E-01
+   670 VELX   7403  A    2 15:001:00000 m/y  2 0.107676836428983E-01 0.60912E-03
+   671 VELY   7403  A    2 15:001:00000 m/y  2 0.283151087897694E-02 0.59785E-03
+   672 VELZ   7403  A    2 15:001:00000 m/y  2 0.149632904695468E-01 0.54600E-03
+   673 STAX   7403  A    3 15:001:00000 m    2 0.194280830618840E+07 0.10472E-01
+   674 STAY   7403  A    3 15:001:00000 m    2 -.580406965601263E+07 0.99745E-02
+   675 STAZ   7403  A    3 15:001:00000 m    2 -.179691519080871E+07 0.93548E-02
+   676 VELX   7403  A    3 15:001:00000 m/y  2 0.107676815213477E-01 0.60912E-03
+   677 VELY   7403  A    3 15:001:00000 m/y  2 0.283151420015011E-02 0.59785E-03
+   678 VELZ   7403  A    3 15:001:00000 m/y  2 0.149632938048636E-01 0.54600E-03
+   679 STAX   7403  A    5 15:001:00000 m    2 0.194280788306454E+07 0.43249E-02
+   680 STAY   7403  A    5 15:001:00000 m    2 -.580406965572707E+07 0.38939E-02
+   681 STAZ   7403  A    5 15:001:00000 m    2 -.179691554755750E+07 0.41361E-02
+   682 VELX   7403  A    5 15:001:00000 m/y  2 0.147043728102435E-01 0.32759E-03
+   683 VELY   7403  A    5 15:001:00000 m/y  2 0.527761848232262E-02 0.31685E-03
+   684 VELZ   7403  A    5 15:001:00000 m/y  2 0.118966574556975E-01 0.32010E-03
+   685 STAX   7403  A    6 15:001:00000 m    2 0.194280788034689E+07 0.20499E-02
+   686 STAY   7403  A    6 15:001:00000 m    2 -.580406965747844E+07 0.16309E-02
+   687 STAZ   7403  A    6 15:001:00000 m    2 -.179691555169649E+07 0.17993E-02
+   688 VELX   7403  A    6 15:001:00000 m/y  2 0.147043717529070E-01 0.32759E-03
+   689 VELY   7403  A    6 15:001:00000 m/y  2 0.527762196695557E-02 0.31685E-03
+   690 VELZ   7403  A    6 15:001:00000 m/y  2 0.118966589483659E-01 0.32010E-03
+   691 STAX   7403  A    7 15:001:00000 m    2 0.194280788000972E+07 0.34779E-02
+   692 STAY   7403  A    7 15:001:00000 m    2 -.580406965991387E+07 0.69951E-02
+   693 STAZ   7403  A    7 15:001:00000 m    2 -.179691554600302E+07 0.35704E-02
+   694 VELX   7403  A    7 15:001:00000 m/y  2 0.153578689090635E-01 0.15594E-02
+   695 VELY   7403  A    7 15:001:00000 m/y  2 0.657459794828575E-03 0.33622E-02
+   696 VELZ   7403  A    7 15:001:00000 m/y  2 0.124562916720383E-01 0.15054E-02
+   697 STAX   7404  A    1 15:001:00000 m    2 0.176971534229604E+07 0.54728E+00
+   698 STAY   7404  A    1 15:001:00000 m    2 -.504461013009091E+07 0.44857E+00
+   699 STAZ   7404  A    1 15:001:00000 m    2 -.346826029989682E+07 0.39697E+00
+   700 VELX   7404  A    1 15:001:00000 m/y  2 0.460419896729807E-01 0.29011E-01
+   701 VELY   7404  A    1 15:001:00000 m/y  2 -.345501763142624E-01 0.23808E-01
+   702 VELZ   7404  A    1 15:001:00000 m/y  2 0.150117949881032E-01 0.21020E-01
+   703 STAX   7405  A    1 15:001:00000 m    2 0.149203337850167E+07 0.39058E-02
+   704 STAY   7405  A    1 15:001:00000 m    2 -.488794609673925E+07 0.39245E-02
+   705 STAZ   7405  A    1 15:001:00000 m    2 -.380356573356003E+07 0.33944E-02
+   706 VELX   7405  A    1 15:001:00000 m/y  2 0.345184998911161E-01 0.48815E-03
+   707 VELY   7405  A    1 15:001:00000 m/y  2 -.150305116351817E-02 0.50854E-03
+   708 VELZ   7405  A    1 15:001:00000 m/y  2 0.167403868160938E-01 0.44227E-03
+   709 STAX   7405  A    4 15:001:00000 m    2 0.149203034289198E+07 0.68151E-02
+   710 STAY   7405  A    4 15:001:00000 m    2 -.488794654030984E+07 0.65026E-02
+   711 STAZ   7405  A    4 15:001:00000 m    2 -.380356622981007E+07 0.58746E-02
+   712 VELX   7405  A    4 15:001:00000 m/y  2 0.258661650932309E-01 0.14658E-02
+   713 VELY   7405  A    4 15:001:00000 m/y  2 0.212970275831619E-02 0.14019E-02
+   714 VELZ   7405  A    4 15:001:00000 m/y  2 0.205780604958393E-01 0.12677E-02
+   715 STAX   7405  A    5 15:001:00000 m    2 0.149203032363117E+07 0.37621E-02
+   716 STAY   7405  A    5 15:001:00000 m    2 -.488794654178379E+07 0.36169E-02
+   717 STAZ   7405  A    5 15:001:00000 m    2 -.380356622620035E+07 0.33242E-02
+   718 VELX   7405  A    5 15:001:00000 m/y  2 0.258661650036300E-01 0.14658E-02
+   719 VELY   7405  A    5 15:001:00000 m/y  2 0.212970278737654E-02 0.14019E-02
+   720 VELZ   7405  A    5 15:001:00000 m/y  2 0.205780605757972E-01 0.12677E-02
+   721 STAX   7406  A    1 15:001:00000 m    2 0.198410442925551E+07 0.46925E-02
+   722 STAY   7406  A    1 15:001:00000 m    2 -.506886724455085E+07 0.48972E-02
+   723 STAZ   7406  A    1 15:001:00000 m    2 -.331448242486297E+07 0.41787E-02
+   724 VELX   7406  A    1 15:001:00000 m/y  2 0.977180742546671E-02 0.65496E-03
+   725 VELY   7406  A    1 15:001:00000 m/y  2 -.490708421969317E-02 0.68374E-03
+   726 VELZ   7406  A    1 15:001:00000 m/y  2 0.108596522181518E-01 0.58576E-03
+   727 STAX   7406  A    2 15:001:00000 m    2 0.198410440651403E+07 0.21357E-02
+   728 STAY   7406  A    2 15:001:00000 m    2 -.506886725086766E+07 0.24218E-02
+   729 STAZ   7406  A    2 15:001:00000 m    2 -.331448245394230E+07 0.20475E-02
+   730 VELX   7406  A    2 15:001:00000 m/y  2 0.977180676257105E-02 0.65496E-03
+   731 VELY   7406  A    2 15:001:00000 m/y  2 -.490708455075025E-02 0.68374E-03
+   732 VELZ   7406  A    2 15:001:00000 m/y  2 0.108596512011287E-01 0.58576E-03
+   733 STAX   7407  A    1 15:001:00000 m    2 0.411950209464938E+07 0.33345E-02
+   734 STAY   7407  A    1 15:001:00000 m    2 -.455359524763796E+07 0.33246E-02
+   735 STAZ   7407  A    1 15:001:00000 m    2 -.172285508359516E+07 0.31096E-02
+   736 VELX   7407  A    1 15:001:00000 m/y  2 -.281075022968236E-02 0.11992E-02
+   737 VELY   7407  A    1 15:001:00000 m/y  2 -.317154005624129E-02 0.10721E-02
+   738 VELZ   7407  A    1 15:001:00000 m/y  2 0.120155580614028E-01 0.10540E-02
+   739 STAX   7410  A    1 15:001:00000 m    2 0.918212164003041E+06 0.16286E+01
+   740 STAY   7410  A    1 15:001:00000 m    2 -.434606673663826E+07 0.17103E+01
+   741 STAZ   7410  A    1 15:001:00000 m    2 0.456195735822406E+07 0.13732E+01
+   742 VELX   7410  A    1 15:001:00000 m/y  2 -.423351202589233E-01 0.76069E-01
+   743 VELY   7410  A    1 15:001:00000 m/y  2 -.801326420795608E-02 0.79908E-01
+   744 VELZ   7410  A    1 15:001:00000 m/y  2 -.147966918308642E-01 0.64136E-01
+   745 STAX   7411  A    1 15:001:00000 m    2 0.749864269015980E+06 0.37682E+01
+   746 STAY   7411  A    1 15:001:00000 m    2 -.370931199634210E+07 0.26872E+01
+   747 STAZ   7411  A    1 15:001:00000 m    2 0.511694634216293E+07 0.30390E+01
+   748 VELX   7411  A    1 15:001:00000 m/y  2 -.313532459697675E-01 0.18526E+00
+   749 VELY   7411  A    1 15:001:00000 m/y  2 -.577598906166274E-01 0.13203E+00
+   750 VELZ   7411  A    1 15:001:00000 m/y  2 0.174380098006014E-01 0.14941E+00
+   751 STAX   7501  A    1 15:001:00000 m    2 0.508540110009643E+07 0.14052E-02
+   752 STAY   7501  A    1 15:001:00000 m    2 0.266833043423230E+07 0.14005E-02
+   753 STAZ   7501  A    1 15:001:00000 m    2 -.276868858225771E+07 0.15036E-02
+   754 VELX   7501  A    1 15:001:00000 m/y  2 -.668735019527248E-03 0.12760E-03
+   755 VELY   7501  A    1 15:001:00000 m/y  2 0.197410487971297E-01 0.13426E-03
+   756 VELZ   7501  A    1 15:001:00000 m/y  2 0.156246374374440E-01 0.12571E-03
+   757 STAX   7501  A    2 15:001:00000 m    2 0.508540109249649E+07 0.99675E-03
+   758 STAY   7501  A    2 15:001:00000 m    2 0.266833042953486E+07 0.10497E-02
+   759 STAZ   7501  A    2 15:001:00000 m    2 -.276868857437266E+07 0.10158E-02
+   760 VELX   7501  A    2 15:001:00000 m/y  2 -.668738447142322E-03 0.12760E-03
+   761 VELY   7501  A    2 15:001:00000 m/y  2 0.197410378798764E-01 0.13427E-03
+   762 VELZ   7501  A    2 15:001:00000 m/y  2 0.156246484759028E-01 0.12571E-03
+   763 STAX   7501  A    3 15:001:00000 m    2 0.508540108107151E+07 0.39224E-02
+   764 STAY   7501  A    3 15:001:00000 m    2 0.266833042048306E+07 0.28035E-02
+   765 STAZ   7501  A    3 15:001:00000 m    2 -.276868857012181E+07 0.29366E-02
+   766 VELX   7501  A    3 15:001:00000 m/y  2 -.668738468500045E-03 0.12760E-03
+   767 VELY   7501  A    3 15:001:00000 m/y  2 0.197410383485407E-01 0.13427E-03
+   768 VELZ   7501  A    3 15:001:00000 m/y  2 0.156246487169585E-01 0.12572E-03
+   769 STAX   7502  A    1 15:001:00000 m    2 0.504154042593566E+07 0.16696E+01
+   770 STAY   7502  A    1 15:001:00000 m    2 0.191535249095931E+07 0.18426E+01
+   771 STAZ   7502  A    1 15:001:00000 m    2 -.339693998813037E+07 0.17165E+01
+   772 VELX   7502  A    1 15:001:00000 m/y  2 -.138510447155918E+00 0.78394E-01
+   773 VELY   7502  A    1 15:001:00000 m/y  2 -.262428175266295E-01 0.86523E-01
+   774 VELZ   7502  A    1 15:001:00000 m/y  2 0.111786212843380E+00 0.80593E-01
+   775 STAX   7503  A    1 15:001:00000 m    2 0.508542844410449E+07 0.17229E-01
+   776 STAY   7503  A    1 15:001:00000 m    2 0.266834076536624E+07 0.14431E-01
+   777 STAZ   7503  A    1 15:001:00000 m    2 -.276864134552425E+07 0.13573E-01
+   778 VELX   7503  A    1 15:001:00000 m/y  2 0.330168724950458E-02 0.38116E-02
+   779 VELY   7503  A    1 15:001:00000 m/y  2 0.211666143949420E-01 0.30773E-02
+   780 VELZ   7503  A    1 15:001:00000 m/y  2 0.189899251838240E-01 0.29559E-02
+   781 STAX   7505  A    1 15:001:00000 m    2 0.431939753692823E+07 0.18861E+01
+   782 STAY   7505  A    1 15:001:00000 m    2 0.186869818336560E+07 0.18986E+01
+   783 STAZ   7505  A    1 15:001:00000 m    2 0.429202529502876E+07 0.18777E+01
+   784 VELX   7505  A    1 15:001:00000 m/y  2 0.104639606364858E-03 0.98113E-01
+   785 VELY   7505  A    1 15:001:00000 m/y  2 0.130074000108098E-01 0.98766E-01
+   786 VELZ   7505  A    1 15:001:00000 m/y  2 0.244245335676565E-01 0.97683E-01
+   787 STAX   7510  A    1 15:001:00000 m    2 0.435344447325772E+07 0.20016E+00
+   788 STAY   7510  A    1 15:001:00000 m    2 0.208266675838792E+07 0.24580E+00
+   789 STAZ   7510  A    1 15:001:00000 m    2 0.415650702476087E+07 0.19416E+00
+   790 VELX   7510  A    1 15:001:00000 m/y  2 -.154655472508010E-01 0.76119E-02
+   791 VELY   7510  A    1 15:001:00000 m/y  2 0.172384780852634E-01 0.93145E-02
+   792 VELZ   7510  A    1 15:001:00000 m/y  2 0.121879725607266E-01 0.73383E-02
+   793 STAX   7512  A    1 15:001:00000 m    2 0.457340003121687E+07 0.16370E+00
+   794 STAY   7512  A    1 15:001:00000 m    2 0.240932281276686E+07 0.18530E+00
+   795 STAZ   7512  A    1 15:001:00000 m    2 0.372388152539334E+07 0.14804E+00
+   796 VELX   7512  A    1 15:001:00000 m/y  2 0.305411285495453E-04 0.63689E-02
+   797 VELY   7512  A    1 15:001:00000 m/y  2 0.222806585182385E-01 0.72675E-02
+   798 VELZ   7512  A    1 15:001:00000 m/y  2 -.102390466414389E-01 0.58039E-02
+   799 STAX   7515  A    1 15:001:00000 m    2 0.459521636814489E+07 0.23373E+00
+   800 STAY   7515  A    1 15:001:00000 m    2 0.203943562513313E+07 0.28680E+00
+   801 STAZ   7515  A    1 15:001:00000 m    2 0.391262942926090E+07 0.23308E+00
+   802 VELX   7515  A    1 15:001:00000 m/y  2 -.174739246812145E-02 0.89247E-02
+   803 VELY   7515  A    1 15:001:00000 m/y  2 0.112978823717073E-01 0.10891E-01
+   804 VELZ   7515  A    1 15:001:00000 m/y  2 -.424919184239910E-02 0.88363E-02
+   805 STAX   7517  A    1 15:001:00000 m    2 0.472869495517199E+07 0.13470E+00
+   806 STAY   7517  A    1 15:001:00000 m    2 0.217437375157222E+07 0.17678E+00
+   807 STAZ   7517  A    1 15:001:00000 m    2 0.367457283565101E+07 0.14715E+00
+   808 VELX   7517  A    1 15:001:00000 m/y  2 0.103302988293043E-01 0.53372E-02
+   809 VELY   7517  A    1 15:001:00000 m/y  2 0.140268563953954E-01 0.69411E-02
+   810 VELZ   7517  A    1 15:001:00000 m/y  2 -.585300141852561E-02 0.57883E-02
+   811 STAX   7520  A    1 15:001:00000 m    2 0.459604224604542E+07 0.58045E-01
+   812 STAY   7520  A    1 15:001:00000 m    2 0.173347720754486E+07 0.69491E-01
+   813 STAZ   7520  A    1 15:001:00000 m    2 0.405572117467394E+07 0.52648E-01
+   814 VELX   7520  A    1 15:001:00000 m/y  2 -.139698493062458E-01 0.28807E-02
+   815 VELY   7520  A    1 15:001:00000 m/y  2 0.176755565563989E-01 0.34977E-02
+   816 VELZ   7520  A    1 15:001:00000 m/y  2 0.101957590174128E-01 0.26213E-02
+   817 STAX   7525  A    1 15:001:00000 m    2 0.474594964273382E+07 0.69329E-01
+   818 STAY   7525  A    1 15:001:00000 m    2 0.190570607663684E+07 0.75077E-01
+   819 STAZ   7525  A    1 15:001:00000 m    2 0.379916887762156E+07 0.60165E-01
+   820 VELX   7525  A    1 15:001:00000 m/y  2 0.390316760038554E-02 0.32719E-02
+   821 VELY   7525  A    1 15:001:00000 m/y  2 0.502942684361195E-02 0.35375E-02
+   822 VELZ   7525  A    1 15:001:00000 m/y  2 -.770983651798888E-02 0.28365E-02
+   823 STAX   7530  A    1 15:001:00000 m    2 0.444396505139995E+07 0.26987E+00
+   824 STAY   7530  A    1 15:001:00000 m    2 0.312194572676820E+07 0.26596E+00
+   825 STAZ   7530  A    1 15:001:00000 m    2 0.333469411902916E+07 0.21635E+00
+   826 VELX   7530  A    1 15:001:00000 m/y  2 -.375124856820702E-01 0.12837E-01
+   827 VELY   7530  A    1 15:001:00000 m/y  2 0.212422512025672E-01 0.12650E-01
+   828 VELZ   7530  A    1 15:001:00000 m/y  2 0.169489580199609E-01 0.10263E-01
+   829 STAX   7540  A    1 15:001:00000 m    2 0.464198407782294E+07 0.72387E-02
+   830 STAY   7540  A    1 15:001:00000 m    2 0.139305825399237E+07 0.65657E-02
+   831 STAZ   7540  A    1 15:001:00000 m    2 0.413323387860014E+07 0.46697E-02
+   832 VELX   7540  A    1 15:001:00000 m/y  2 -.188093954467886E-01 0.40468E-04
+   833 VELY   7540  A    1 15:001:00000 m/y  2 0.190431474745875E-01 0.49685E-04
+   834 VELZ   7540  A    1 15:001:00000 m/y  2 0.144922353939751E-01 0.37327E-04
+   835 STAX   7541  A    1 15:001:00000 m    2 0.464198980003161E+07 0.56137E-02
+   836 STAY   7541  A    1 15:001:00000 m    2 0.139304281254270E+07 0.29813E-02
+   837 STAZ   7541  A    1 15:001:00000 m    2 0.413323228947262E+07 0.63774E-02
+   838 VELX   7541  A    1 15:001:00000 m/y  2 -.186283104553431E-01 0.60877E-04
+   839 VELY   7541  A    1 15:001:00000 m/y  2 0.190569180957413E-01 0.59769E-04
+   840 VELZ   7541  A    1 15:001:00000 m/y  2 0.146220868946098E-01 0.62832E-04
+   841 STAX   7542  A    1 15:001:00000 m    2 0.439936348979766E+07 0.23152E+01
+   842 STAY   7542  A    1 15:001:00000 m    2 0.910506522828053E+06 0.23285E+01
+   843 STAZ   7542  A    1 15:001:00000 m    2 0.451294104080010E+07 0.23214E+01
+   844 VELX   7542  A    1 15:001:00000 m/y  2 -.276366183734010E-02 0.99150E-01
+   845 VELY   7542  A    1 15:001:00000 m/y  2 0.637231409669052E-03 0.99723E-01
+   846 VELZ   7542  A    1 15:001:00000 m/y  2 0.295951407101209E-02 0.99419E-01
+   847 STAX   7543  A    1 15:001:00000 m    2 0.493452833074873E+07 0.21189E+00
+   848 STAY   7543  A    1 15:001:00000 m    2 0.132113368893158E+07 0.23062E+00
+   849 STAZ   7543  A    1 15:001:00000 m    2 0.380652261412263E+07 0.18824E+00
+   850 VELX   7543  A    1 15:001:00000 m/y  2 -.273372145191940E-01 0.98308E-02
+   851 VELY   7543  A    1 15:001:00000 m/y  2 0.182932334125774E-01 0.10717E-01
+   852 VELZ   7543  A    1 15:001:00000 m/y  2 -.163178877168403E-02 0.87745E-02
+   853 STAX   7544  A    1 15:001:00000 m    2 0.507283162948869E+07 0.23257E+00
+   854 STAY   7544  A    1 15:001:00000 m    2 0.113088703651369E+07 0.24819E+00
+   855 STAZ   7544  A    1 15:001:00000 m    2 0.368483773411213E+07 0.20166E+00
+   856 VELX   7544  A    1 15:001:00000 m/y  2 -.133747378026927E-01 0.95468E-02
+   857 VELY   7544  A    1 15:001:00000 m/y  2 0.300158246074442E-01 0.10246E-01
+   858 VELZ   7544  A    1 15:001:00000 m/y  2 0.274220570632834E-01 0.81794E-02
+   859 STAX   7545  A    1 15:001:00000 m    2 0.489339772491602E+07 0.54557E-01
+   860 STAY   7545  A    1 15:001:00000 m    2 0.772673810433558E+06 0.61848E-01
+   861 STAZ   7545  A    1 15:001:00000 m    2 0.400414129388793E+07 0.47563E-01
+   862 VELX   7545  A    1 15:001:00000 m/y  2 -.136528521654190E-01 0.27380E-02
+   863 VELY   7545  A    1 15:001:00000 m/y  2 0.188500032054892E-01 0.31202E-02
+   864 VELZ   7545  A    1 15:001:00000 m/y  2 0.977777467576446E-02 0.23687E-02
+   865 STAX   7546  A    1 15:001:00000 m    2 0.446139916716593E+07 0.26699E+01
+   866 STAY   7546  A    1 15:001:00000 m    2 0.919567414954743E+06 0.26864E+01
+   867 STAZ   7546  A    1 15:001:00000 m    2 0.444951080035184E+07 0.26683E+01
+   868 VELX   7546  A    1 15:001:00000 m/y  2 -.181128508459130E-01 0.99986E-01
+   869 VELY   7546  A    1 15:001:00000 m/y  2 0.191606465504005E-01 0.99996E-01
+   870 VELZ   7546  A    1 15:001:00000 m/y  2 0.113672005348949E-01 0.99992E-01
+   871 STAX   7548  A    1 15:001:00000 m    2 0.489334695341715E+07 0.43408E+00
+   872 STAY   7548  A    1 15:001:00000 m    2 0.772583301512130E+06 0.74513E-01
+   873 STAZ   7548  A    1 15:001:00000 m    2 0.400425531851147E+07 0.18096E+00
+   874 VELX   7548  A    1 15:001:00000 m/y  2 -.136528521650962E-01 0.27380E-02
+   875 VELY   7548  A    1 15:001:00000 m/y  2 0.188500032044237E-01 0.31202E-02
+   876 VELZ   7548  A    1 15:001:00000 m/y  2 0.977777467619199E-02 0.23687E-02
+   877 STAX   7550  A    1 15:001:00000 m    2 0.433673843135077E+07 0.60077E+00
+   878 STAY   7550  A    1 15:001:00000 m    2 0.107127203018962E+07 0.79912E+00
+   879 STAZ   7550  A    1 15:001:00000 m    2 0.453791125063909E+07 0.52069E+00
+   880 VELX   7550  A    1 15:001:00000 m/y  2 -.632441238003132E-02 0.21699E-01
+   881 VELY   7550  A    1 15:001:00000 m/y  2 0.206973981098318E-01 0.28791E-01
+   882 VELZ   7550  A    1 15:001:00000 m/y  2 0.660301063319504E-02 0.18799E-01
+   883 STAX   7560  A    1 15:001:00000 m    2 0.318391386316404E+07 0.89057E-01
+   884 STAY   7560  A    1 15:001:00000 m    2 0.142147379472885E+07 0.57450E-01
+   885 STAZ   7560  A    1 15:001:00000 m    2 0.532279697023225E+07 0.34189E-01
+   886 VELX   7560  A    1 15:001:00000 m/y  2 -.184043361432112E-01 0.33122E-03
+   887 VELY   7560  A    1 15:001:00000 m/y  2 0.142495181086990E-01 0.24638E-03
+   888 VELZ   7560  A    1 15:001:00000 m/y  2 0.753024287847774E-02 0.41467E-03
+   889 STAX   7561  A    1 15:001:00000 m    2 0.378374614808806E+07 0.32695E-01
+   890 STAY   7561  A    1 15:001:00000 m    2 0.255136298660902E+07 0.34533E-01
+   891 STAZ   7561  A    1 15:001:00000 m    2 0.444144521343163E+07 0.26136E-01
+   892 VELX   7561  A    1 15:001:00000 m/y  2 -.181162476163537E-01 0.40596E-03
+   893 VELY   7561  A    1 15:001:00000 m/y  2 0.175720457354993E-01 0.40032E-03
+   894 VELZ   7561  A    1 15:001:00000 m/y  2 0.553382519497048E-02 0.36183E-03
+   895 STAX   7575  A    1 15:001:00000 m    2 0.384863514749058E+07 0.52385E+00
+   896 STAY   7575  A    1 15:001:00000 m    2 0.325176089178352E+07 0.57911E+00
+   897 STAZ   7575  A    1 15:001:00000 m    2 0.389890919861238E+07 0.45769E+00
+   898 VELX   7575  A    1 15:001:00000 m/y  2 -.295723140827629E-01 0.19951E-01
+   899 VELY   7575  A    1 15:001:00000 m/y  2 -.132313148389601E-02 0.22267E-01
+   900 VELZ   7575  A    1 15:001:00000 m/y  2 -.316765888461321E-02 0.17300E-01
+   901 STAX   7580  A    1 15:001:00000 m    2 0.424761966696105E+07 0.28839E+00
+   902 STAY   7580  A    1 15:001:00000 m    2 0.277863884314255E+07 0.30892E+00
+   903 STAZ   7580  A    1 15:001:00000 m    2 0.385160754165774E+07 0.24225E+00
+   904 VELX   7580  A    1 15:001:00000 m/y  2 -.304583796819952E-01 0.11170E-01
+   905 VELY   7580  A    1 15:001:00000 m/y  2 -.477042276736313E-02 0.11923E-01
+   906 VELZ   7580  A    1 15:001:00000 m/y  2 -.310994124933095E-03 0.91997E-02
+   907 STAX   7585  A    1 15:001:00000 m    2 0.402972982528619E+07 0.89982E+00
+   908 STAY   7585  A    1 15:001:00000 m    2 0.280209283211050E+07 0.11077E+01
+   909 STAZ   7585  A    1 15:001:00000 m    2 0.406206827527702E+07 0.58447E+00
+   910 VELX   7585  A    1 15:001:00000 m/y  2 -.303344661057754E-01 0.35217E-01
+   911 VELY   7585  A    1 15:001:00000 m/y  2 -.174614932318492E-01 0.43520E-01
+   912 VELZ   7585  A    1 15:001:00000 m/y  2 0.876502392990084E-02 0.22779E-01
+   913 STAX   7587  A    1 15:001:00000 m    2 0.411736096013161E+07 0.18029E+00
+   914 STAY   7587  A    1 15:001:00000 m    2 0.251707702088679E+07 0.20270E+00
+   915 STAZ   7587  A    1 15:001:00000 m    2 0.415767903729630E+07 0.17079E+00
+   916 VELX   7587  A    1 15:001:00000 m/y  2 -.393291562057211E-01 0.75002E-02
+   917 VELY   7587  A    1 15:001:00000 m/y  2 0.624613686266851E-02 0.83052E-02
+   918 VELZ   7587  A    1 15:001:00000 m/y  2 -.238531535227730E-02 0.70097E-02
+   919 STAX   7589  A    1 15:001:00000 m    2 0.412193451257138E+07 0.16114E+01
+   920 STAY   7589  A    1 15:001:00000 m    2 0.265218926959730E+07 0.16267E+01
+   921 STAZ   7589  A    1 15:001:00000 m    2 0.406903434081481E+07 0.11890E+01
+   922 VELX   7589  A    1 15:001:00000 m/y  2 0.122437845064271E-01 0.74159E-01
+   923 VELY   7589  A    1 15:001:00000 m/y  2 -.248361221693606E-01 0.74894E-01
+   924 VELZ   7589  A    1 15:001:00000 m/y  2 -.271776480121008E-01 0.54858E-01
+   925 STAX   7594  A    1 15:001:00000 m    2 0.407559478142764E+07 0.23825E+00
+   926 STAY   7594  A    1 15:001:00000 m    2 0.931733268938857E+06 0.14616E+00
+   927 STAZ   7594  A    1 15:001:00000 m    2 0.480156774467729E+07 0.62000E-01
+   928 VELX   7594  A    1 15:001:00000 m/y  2 -.158058459000890E-01 0.55467E-04
+   929 VELY   7594  A    1 15:001:00000 m/y  2 0.171114017658723E-01 0.54512E-04
+   930 VELZ   7594  A    1 15:001:00000 m/y  2 0.100899851573047E-01 0.60217E-04
+   931 STAX   7596  A    1 15:001:00000 m    2 0.407558214965882E+07 0.88382E-01
+   932 STAY   7596  A    1 15:001:00000 m    2 0.931837729742235E+06 0.28253E+00
+   933 STAZ   7596  A    1 15:001:00000 m    2 0.480156010202143E+07 0.19375E+00
+   934 VELX   7596  A    1 15:001:00000 m/y  2 -.158058458886135E-01 0.55485E-04
+   935 VELY   7596  A    1 15:001:00000 m/y  2 0.171114017878938E-01 0.54531E-04
+   936 VELZ   7596  A    1 15:001:00000 m/y  2 0.100899851139996E-01 0.60234E-04
+   937 STAX   7597  A    1 15:001:00000 m    2 0.407560160968986E+07 0.91749E-02
+   938 STAY   7597  A    1 15:001:00000 m    2 0.931826852708826E+06 0.83446E-02
+   939 STAZ   7597  A    1 15:001:00000 m    2 0.480154797911653E+07 0.72535E-02
+   940 VELX   7597  A    1 15:001:00000 m/y  2 -.158058458886293E-01 0.55476E-04
+   941 VELY   7597  A    1 15:001:00000 m/y  2 0.171114017879109E-01 0.54521E-04
+   942 VELZ   7597  A    1 15:001:00000 m/y  2 0.100899851140097E-01 0.60226E-04
+   943 STAX   7599  A    1 15:001:00000 m    2 0.407551489661637E+07 0.13654E+01
+   944 STAY   7599  A    1 15:001:00000 m    2 0.931753969699139E+06 0.33187E+00
+   945 STAZ   7599  A    1 15:001:00000 m    2 0.480163166072295E+07 0.16464E+01
+   946 VELX   7599  A    1 15:001:00000 m/y  2 -.143165884610449E-01 0.81211E-04
+   947 VELY   7599  A    1 15:001:00000 m/y  2 0.170951341386918E-01 0.52896E-04
+   948 VELZ   7599  A    1 15:001:00000 m/y  2 0.116254631143867E-01 0.93734E-04
+   949 STAX   7602  A    1 15:001:00000 m    2 0.210290367231394E+07 0.15079E+00
+   950 STAY   7602  A    1 15:001:00000 m    2 0.721602965236688E+06 0.10391E+00
+   951 STAZ   7602  A    1 15:001:00000 m    2 0.595820146383881E+07 0.25305E+00
+   952 VELX   7602  A    1 15:001:00000 m/y  2 -.201352886797967E-01 0.64378E-02
+   953 VELY   7602  A    1 15:001:00000 m/y  2 0.208307870631607E-01 0.45123E-02
+   954 VELZ   7602  A    1 15:001:00000 m/y  2 0.772706237251362E-02 0.10387E-01
+   955 STAX   7604  A    1 15:001:00000 m    2 0.422887798753326E+07 0.25925E-01
+   956 STAY   7604  A    1 15:001:00000 m    2 -.333103970756786E+06 0.15223E-01
+   957 STAZ   7604  A    1 15:001:00000 m    2 0.474718249662446E+07 0.30082E-01
+   958 VELX   7604  A    1 15:001:00000 m/y  2 -.114466736563200E-01 0.12479E+00
+   959 VELY   7604  A    1 15:001:00000 m/y  2 0.162343213329600E-01 0.43168E+00
+   960 VELZ   7604  A    1 15:001:00000 m/y  2 0.131424465384000E-01 0.13377E+00
+   961 STAX   7701  A    1 15:001:00000 m    2 0.539037592910000E+07 0.56000E-02
+   962 STAY   7701  A    1 15:001:00000 m    2 -.159778819920000E+07 0.30000E-02
+   963 STAZ   7701  A    1 15:001:00000 m    2 0.300693180030000E+07 0.42000E-02
+   964 VELX   7701  A    1 15:001:00000 m/y  2 -.519287586745642E-02 0.10000E-04
+   965 VELY   7701  A    1 15:001:00000 m/y  2 0.174972623673026E-01 0.10000E-04
+   966 VELZ   7701  A    1 15:001:00000 m/y  2 0.137607283782413E-01 0.10000E-04
+   967 STAX   7805  A    1 15:001:00000 m    2 0.289259504539903E+07 0.16436E-01
+   968 STAY   7805  A    1 15:001:00000 m    2 0.131180800547917E+07 0.16914E-01
+   969 STAZ   7805  A    1 15:001:00000 m    2 0.551261104637663E+07 0.14706E-01
+   970 VELX   7805  A    1 15:001:00000 m/y  2 -.164200884343197E-01 0.96546E-04
+   971 VELY   7805  A    1 15:001:00000 m/y  2 0.145318060408883E-01 0.93551E-04
+   972 VELZ   7805  A    1 15:001:00000 m/y  2 0.996857074516257E-02 0.11097E-03
+   973 STAX   7806  A    1 15:001:00000 m    2 0.289260684451745E+07 0.48980E-02
+   974 STAY   7806  A    1 15:001:00000 m    2 0.131181333353710E+07 0.36204E-02
+   975 STAZ   7806  A    1 15:001:00000 m    2 0.551259884753032E+07 0.72516E-02
+   976 VELX   7806  A    1 15:001:00000 m/y  2 -.164200884983727E-01 0.96541E-04
+   977 VELY   7806  A    1 15:001:00000 m/y  2 0.145318060158576E-01 0.93546E-04
+   978 VELZ   7806  A    1 15:001:00000 m/y  2 0.996857072572376E-02 0.11097E-03
+   979 STAX   7807  A    1 15:001:00000 m    2 0.289260684451745E+07 0.50000E+04
+   980 STAY   7807  A    1 15:001:00000 m    2 0.131181333353710E+07 0.50000E+04
+   981 STAZ   7807  A    1 15:001:00000 m    2 0.551259884753032E+07 0.50000E+04
+   982 VELX   7807  A    1 15:001:00000 m/y  2 -.164200884983727E-01 0.10000E-00
+   983 VELY   7807  A    1 15:001:00000 m/y  2 0.145318060158576E-01 0.10000E-00
+   984 VELZ   7807  A    1 15:001:00000 m/y  2 0.996857072572376E-02 0.10000E-00
+   985 STAX   7810  A    1 15:001:00000 m    2 0.433128325895698E+07 0.58843E-02
+   986 STAX   7810  B    1 15:001:00000 m    2 0.433128342145029E+07 0.59591E-03
+   987 STAY   7810  A    1 15:001:00000 m    2 0.567550050608142E+06 0.31947E-02
+   988 STAY   7810  B    1 15:001:00000 m    2 0.567550071067797E+06 0.64584E-03
+   989 STAZ   7810  A    1 15:001:00000 m    2 0.463314031183305E+07 0.68043E-02
+   990 STAZ   7810  B    1 15:001:00000 m    2 0.463314047683769E+07 0.63941E-03
+   991 VELX   7810  A    1 15:001:00000 m/y  2 -.137154519682416E-01 0.53153E-04
+   992 VELX   7810  B    1 15:001:00000 m/y  2 -.137154525889936E-01 0.53143E-04
+   993 VELY   7810  A    1 15:001:00000 m/y  2 0.180894641817387E-01 0.51086E-04
+   994 VELY   7810  B    1 15:001:00000 m/y  2 0.180894623901205E-01 0.51076E-04
+   995 VELZ   7810  A    1 15:001:00000 m/y  2 0.117122694682477E-01 0.58746E-04
+   996 VELZ   7810  B    1 15:001:00000 m/y  2 0.117122702530516E-01 0.58738E-04
+   997 STAX   7811  A    1 15:001:00000 m    2 0.373833250808579E+07 0.19511E-02
+   998 STAY   7811  A    1 15:001:00000 m    2 0.114824676961849E+07 0.19843E-02
+   999 STAZ   7811  A    1 15:001:00000 m    2 0.502181617739638E+07 0.17248E-02
+  1000 VELX   7811  A    1 15:001:00000 m/y  2 -.172687379476872E-01 0.82017E-04
+  1001 VELY   7811  A    1 15:001:00000 m/y  2 0.157511770035456E-01 0.81084E-04
+  1002 VELZ   7811  A    1 15:001:00000 m/y  2 0.865870541806165E-02 0.84323E-04
+  1003 STAX   7811  A    2 15:001:00000 m    2 0.373833251340761E+07 0.13639E-02
+  1004 STAY   7811  A    2 15:001:00000 m    2 0.114824677335821E+07 0.14038E-02
+  1005 STAZ   7811  A    2 15:001:00000 m    2 0.502181618686968E+07 0.11740E-02
+  1006 VELX   7811  A    2 15:001:00000 m/y  2 -.172687240863723E-01 0.82012E-04
+  1007 VELY   7811  A    2 15:001:00000 m/y  2 0.157511819220885E-01 0.81078E-04
+  1008 VELZ   7811  A    2 15:001:00000 m/y  2 0.865872618452913E-02 0.84318E-04
+  1009 VELX   7816  A    1 15:001:00000 m/y  2 -.015340001039280E-00 0.10000E-04
+  1010 VELY   7816  A    1 15:001:00000 m/y  2 0.017379717048000E-00 0.10000E-04
+  1011 VELZ   7816  A    1 15:001:00000 m/y  2 0.010950001212960E-00 0.10000E-04
+  1012 STAX   7816  A    1 15:001:00000 m    2 0.416075525520000E+07 0.20000E-01
+  1013 STAY   7816  A    1 15:001:00000 m    2 0.066663857800000E+07 0.20000E-01
+  1014 STAZ   7816  A    1 15:001:00000 m    2 0.477259319140000E+07 0.20000E-01
+  1015 STAX   7817  A    1 15:001:00000 m    2 0.484874727429865E+07 0.13557E+00
+  1016 STAY   7817  A    1 15:001:00000 m    2 -.261792739757094E+06 0.08498E+00
+  1017 STAZ   7817  A    1 15:001:00000 m    2 0.412306034557260E+07 0.11831E+00
+  1018 VELX   7817  A    1 15:001:00000 m/y  2 -.010000000000000E-00 0.10000E-00
+  1019 VELY   7817  A    1 15:001:00000 m/y  2 0.019890000000000E-00 0.10000E-00
+  1020 VELZ   7817  A    1 15:001:00000 m/y  2 -.013020000000000E-00 0.10000E-00
+  1021 STAX   7819  A    1 15:001:00000 m    2 -.128130139465048E+07 0.46367E-02
+  1022 STAY   7819  A    1 15:001:00000 m    2 0.564072441463983E+07 0.10260E-01
+  1023 STAZ   7819  A    1 15:001:00000 m    2 0.268290549142501E+07 0.63867E-02
+  1024 VELX   7819  A    1 15:001:00000 m/y  2 -.343513042859992E-01 0.91871E-03
+  1025 VELY   7819  A    1 15:001:00000 m/y  2 0.464295000066848E-02 0.20389E-02
+  1026 VELZ   7819  A    1 15:001:00000 m/y  2 -.122182947361672E-01 0.12123E-02
+  1027 STAX   7820  A    1 15:001:00000 m    2 -.128127629219484E+07 0.13250E-01
+  1028 STAY   7820  A    1 15:001:00000 m    2 0.564072728372401E+07 0.29466E-01
+  1029 STAZ   7820  A    1 15:001:00000 m    2 0.268292564863904E+07 0.17613E-01
+  1030 VELX   7820  A    1 15:001:00000 m/y  2 -.343513042729695E-01 0.91871E-03
+  1031 VELY   7820  A    1 15:001:00000 m/y  2 0.464295013432287E-02 0.20389E-02
+  1032 VELZ   7820  A    1 15:001:00000 m/y  2 -.122182947211206E-01 0.12123E-02
+  1033 STAX   7820  A    2 15:001:00000 m    2 -.128127626850831E+07 0.85163E-02
+  1034 STAY   7820  A    2 15:001:00000 m    2 0.564072721257463E+07 0.18521E-01
+  1035 STAZ   7820  A    2 15:001:00000 m    2 0.268292559578749E+07 0.12825E-01
+  1036 VELX   7820  A    2 15:001:00000 m/y  2 -.343513042695988E-01 0.91871E-03
+  1037 VELY   7820  A    2 15:001:00000 m/y  2 0.464295017576789E-02 0.20389E-02
+  1038 VELZ   7820  A    2 15:001:00000 m/y  2 -.122182948388036E-01 0.12123E-02
+  1039 STAX   7821  A    1 15:001:00000 m    2 -.283074474525818E+07 0.16322E-01
+  1040 STAY   7821  A    1 15:001:00000 m    2 0.467658016969120E+07 0.22480E-01
+  1041 STAZ   7821  A    1 15:001:00000 m    2 0.327507272042700E+07 0.15845E-01
+  1042 VELX   7821  A    1 15:001:00000 m/y  2 -.299508630558029E-01 0.29901E-03
+  1043 VELY   7821  A    1 15:001:00000 m/y  2 -.124922672045861E-01 0.29168E-03
+  1044 VELZ   7821  A    1 15:001:00000 m/y  2 -.119422939976782E-01 0.27466E-03
+  1045 STAX   7821  A    2 15:001:00000 m    2 -.283074474753825E+07 0.76639E-02
+  1046 STAY   7821  A    2 15:001:00000 m    2 0.467658017750188E+07 0.11586E-01
+  1047 STAZ   7821  A    2 15:001:00000 m    2 0.327507272573082E+07 0.99612E-02
+  1048 VELX   7821  A    2 15:001:00000 m/y  2 -.299508631667609E-01 0.29901E-03
+  1049 VELY   7821  A    2 15:001:00000 m/y  2 -.124922667774966E-01 0.29168E-03
+  1050 VELZ   7821  A    2 15:001:00000 m/y  2 -.119422919640073E-01 0.27466E-03
+  1051 STAX   7821  A    3 15:001:00000 m    2 -.283074475604725E+07 0.16803E-02
+  1052 STAY   7821  A    3 15:001:00000 m    2 0.467658017256024E+07 0.16706E-02
+  1053 STAZ   7821  A    3 15:001:00000 m    2 0.327507273511217E+07 0.15423E-02
+  1054 VELX   7821  A    3 15:001:00000 m/y  2 -.299508633215054E-01 0.29901E-03
+  1055 VELY   7821  A    3 15:001:00000 m/y  2 -.124922664157664E-01 0.29168E-03
+  1056 VELZ   7821  A    3 15:001:00000 m/y  2 -.119422898734197E-01 0.27466E-03
+  1057 STAX   7822  A    1 15:001:00000 m    2 -.524641565706278E+07 0.10437E-01
+  1058 STAY   7822  A    1 15:001:00000 m    2 -.307727433646302E+07 0.13698E-01
+  1059 STAZ   7822  A    1 15:001:00000 m    2 -.191380744273652E+07 0.10992E-01
+  1060 VELX   7822  A    1 15:001:00000 m/y  2 -.412927764503172E-01 0.14033E-03
+  1061 VELY   7822  A    1 15:001:00000 m/y  2 0.522017013002010E-01 0.14862E-03
+  1062 VELZ   7822  A    1 15:001:00000 m/y  2 0.329883745787780E-01 0.14389E-03
+  1063 STAX   7823  A    1 15:001:00000 m    2 0.510560286960754E+07 0.24143E-01
+  1064 STAY   7823  A    1 15:001:00000 m    2 -.555206516455194E+06 0.20637E-01
+  1065 STAZ   7823  A    1 15:001:00000 m    2 0.376965473031228E+07 0.19783E-01
+  1066 VELX   7823  A    1 15:001:00000 m/y  2 -.944914602441557E-02 0.25993E-03
+  1067 VELY   7823  A    1 15:001:00000 m/y  2 0.177494757752083E-01 0.23989E-03
+  1068 VELZ   7823  A    1 15:001:00000 m/y  2 0.134366784945170E-01 0.21853E-03
+  1069 STAX   7824  A    1 15:001:00000 m    2 0.510547354093503E+07 0.18249E-01
+  1070 STAX   7824  B    1 15:001:00000 m    2 0.510547382072155E+07 0.21957E-02
+  1071 STAY   7824  A    1 15:001:00000 m    2 -.555110375171094E+06 0.92623E-02
+  1072 STAY   7824  B    1 15:001:00000 m    2 -.555110397923416E+06 0.23551E-02
+  1073 STAZ   7824  A    1 15:001:00000 m    2 0.376989285754083E+07 0.15360E-01
+  1074 STAZ   7824  B    1 15:001:00000 m    2 0.376989306097817E+07 0.18737E-02
+  1075 VELX   7824  A    1 15:001:00000 m/y  2 -.944914602453614E-02 0.25993E-03
+  1076 VELX   7824  B    1 15:001:00000 m/y  2 -.944914600562709E-02 0.25993E-03
+  1077 VELY   7824  A    1 15:001:00000 m/y  2 0.177494757751177E-01 0.23989E-03
+  1078 VELY   7824  B    1 15:001:00000 m/y  2 0.177494757697342E-01 0.23989E-03
+  1079 VELZ   7824  A    1 15:001:00000 m/y  2 0.134366784943803E-01 0.21853E-03
+  1080 VELZ   7824  B    1 15:001:00000 m/y  2 0.134366784821561E-01 0.21852E-03
+  1081 STAX   7825  A    1 15:001:00000 m    2 -.446706496633839E+07 0.63019E-03
+  1082 STAY   7825  A    1 15:001:00000 m    2 0.268303489063348E+07 0.66084E-03
+  1083 STAZ   7825  A    1 15:001:00000 m    2 -.366700709481525E+07 0.67441E-03
+  1084 VELX   7825  A    1 15:001:00000 m/y  2 -.364538637292298E-01 0.59657E-04
+  1085 VELY   7825  A    1 15:001:00000 m/y  2 0.339279264977202E-03 0.58746E-04
+  1086 VELZ   7825  A    1 15:001:00000 m/y  2 0.455194046775138E-01 0.63105E-04
+  1087 STAX   7827  A    1 15:001:00000 m    2 0.407553092071179E+07 0.97922E-03
+  1088 STAY   7827  A    1 15:001:00000 m    2 0.931782012930952E+06 0.10280E-02
+  1089 STAZ   7827  A    1 15:001:00000 m    2 0.480162004978419E+07 0.95208E-03
+  1090 VELX   7827  A    1 15:001:00000 m/y  2 -.158058462106353E-01 0.55458E-04
+  1091 VELY   7827  A    1 15:001:00000 m/y  2 0.171114028760406E-01 0.54503E-04
+  1092 VELZ   7827  A    1 15:001:00000 m/y  2 0.100899852246289E-01 0.60209E-04
+  1093 STAX   7830  A    1 15:001:00000 m    2 0.474455259862460E+07 0.24965E-01
+  1094 STAY   7830  A    1 15:001:00000 m    2 0.211941466274568E+07 0.25754E-01
+  1095 STAZ   7830  A    1 15:001:00000 m    2 0.368624503743268E+07 0.24346E-01
+  1096 VELX   7830  A    1 15:001:00000 m/y  2 0.279213380791806E-02 0.20056E-02
+  1097 VELY   7830  A    1 15:001:00000 m/y  2 0.100393181821270E-01 0.20023E-02
+  1098 VELZ   7830  A    1 15:001:00000 m/y  2 -.100667886028579E-01 0.20013E-02
+  1099 STAX   7831  A    1 15:001:00000 m    2 0.472828302414088E+07 0.30821E-01
+  1100 STAY   7831  A    1 15:001:00000 m    2 0.287967068092244E+07 0.31777E-01
+  1101 STAZ   7831  A    1 15:001:00000 m    2 0.315689502577572E+07 0.27574E-01
+  1102 VELX   7831  A    1 15:001:00000 m/y  2 -.187649723544748E-01 0.14605E-02
+  1103 VELY   7831  A    1 15:001:00000 m/y  2 0.146319551085049E-01 0.15149E-02
+  1104 VELZ   7831  A    1 15:001:00000 m/y  2 0.180399124893653E-01 0.13274E-02
+  1105 STAX   7832  A    1 15:001:00000 m    2 0.399210047480901E+07 0.21696E-02
+  1106 STAY   7832  A    1 15:001:00000 m    2 0.419217275536212E+07 0.21942E-02
+  1107 STAZ   7832  A    1 15:001:00000 m    2 0.267041119976509E+07 0.21602E-02
+  1108 VELX   7832  A    1 15:001:00000 m/y  2 -.314465727947555E-01 0.21026E-03
+  1109 VELY   7832  A    1 15:001:00000 m/y  2 0.130567805345996E-01 0.21176E-03
+  1110 VELZ   7832  A    1 15:001:00000 m/y  2 0.263027633520882E-01 0.21079E-03
+  1111 STAX   7833  A    1 15:001:00000 m    2 0.389922392354425E+07 0.21930E+00
+  1112 STAY   7833  A    1 15:001:00000 m    2 0.396743353045147E+06 0.21325E+00
+  1113 STAZ   7833  A    1 15:001:00000 m    2 0.501507413993959E+07 0.12991E+00
+  1114 VELX   7833  A    1 15:001:00000 m/y  2 -.112737203021677E-01 0.68709E-02
+  1115 VELY   7833  A    1 15:001:00000 m/y  2 0.178795492934129E-01 0.67409E-02
+  1116 VELZ   7833  A    1 15:001:00000 m/y  2 0.680758580170788E-02 0.41486E-02
+  1117 STAX   7834  A    1 15:001:00000 m    2 0.407552960891183E+07 0.86862E-02
+  1118 STAY   7834  A    1 15:001:00000 m    2 0.931781726820042E+06 0.45251E-02
+  1119 STAZ   7834  A    1 15:001:00000 m    2 0.480161849901382E+07 0.10686E-01
+  1120 VELX   7834  A    1 15:001:00000 m/y  2 -.158058459115646E-01 0.55458E-04
+  1121 VELY   7834  A    1 15:001:00000 m/y  2 0.171114017438508E-01 0.54503E-04
+  1122 VELZ   7834  A    1 15:001:00000 m/y  2 0.100899852006098E-01 0.60209E-04
+  1123 STAX   7835  A    1 15:001:00000 m    2 0.458169139414055E+07 0.45543E-02
+  1124 STAY   7835  A    1 15:001:00000 m    2 0.556159886781365E+06 0.30059E-02
+  1125 STAZ   7835  A    1 15:001:00000 m    2 0.438935971548991E+07 0.48033E-02
+  1126 VELX   7835  A    1 15:001:00000 m/y  2 -.137704942261710E-01 0.51284E-04
+  1127 VELY   7835  A    1 15:001:00000 m/y  2 0.189022996429658E-01 0.45833E-04
+  1128 VELZ   7835  A    1 15:001:00000 m/y  2 0.112382858672066E-01 0.46550E-04
+  1129 STAX   7835  A    2 15:001:00000 m    2 0.458169143144968E+07 0.39815E-02
+  1130 STAY   7835  A    2 15:001:00000 m    2 0.556159885920482E+06 0.24678E-02
+  1131 STAZ   7835  A    2 15:001:00000 m    2 0.438935972498620E+07 0.42129E-02
+  1132 VELX   7835  A    2 15:001:00000 m/y  2 -.137704939532982E-01 0.51275E-04
+  1133 VELY   7835  A    2 15:001:00000 m/y  2 0.189022999847052E-01 0.45822E-04
+  1134 VELZ   7835  A    2 15:001:00000 m/y  2 0.112382855344155E-01 0.46539E-04
+  1135 STAX   7835  A    3 15:001:00000 m    2 0.458169139931194E+07 0.13153E-02
+  1136 STAY   7835  A    3 15:001:00000 m    2 0.556159883122174E+06 0.12861E-02
+  1137 STAZ   7835  A    3 15:001:00000 m    2 0.438935969982621E+07 0.11341E-02
+  1138 VELX   7835  A    3 15:001:00000 m/y  2 -.137704935290519E-01 0.51265E-04
+  1139 VELY   7835  A    3 15:001:00000 m/y  2 0.189023001768171E-01 0.45811E-04
+  1140 VELZ   7835  A    3 15:001:00000 m/y  2 0.112382851263159E-01 0.46529E-04
+  1141 STAX   7835  A    4 15:001:00000 m    2 0.458169139568374E+07 0.10863E-02
+  1142 STAY   7835  A    4 15:001:00000 m    2 0.556159881623697E+06 0.10508E-02
+  1143 STAZ   7835  A    4 15:001:00000 m    2 0.438935970441012E+07 0.94906E-03
+  1144 VELX   7835  A    4 15:001:00000 m/y  2 -.137705065162384E-01 0.51255E-04
+  1145 VELY   7835  A    4 15:001:00000 m/y  2 0.189023018466464E-01 0.45801E-04
+  1146 VELZ   7835  A    4 15:001:00000 m/y  2 0.112382567478146E-01 0.46518E-04
+  1147 STAX   7836  A    1 15:001:00000 m    2 0.380063938975990E+07 0.15549E-02
+  1148 STAY   7836  A    1 15:001:00000 m    2 0.881982330547158E+06 0.15577E-02
+  1149 STAZ   7836  A    1 15:001:00000 m    2 0.502883186028822E+07 0.13753E-02
+  1150 VELX   7836  A    1 15:001:00000 m/y  2 -.160170976168469E-01 0.79654E-04
+  1151 VELY   7836  A    1 15:001:00000 m/y  2 0.160261366145643E-01 0.78843E-04
+  1152 VELZ   7836  A    1 15:001:00000 m/y  2 0.937618527643022E-02 0.77714E-04
+  1153 STAX   7837  A    1 15:001:00000 m    2 -.283108862102613E+07 0.74223E-02
+  1154 STAY   7837  A    1 15:001:00000 m    2 0.467620310848342E+07 0.70983E-02
+  1155 STAZ   7837  A    1 15:001:00000 m    2 0.327517261097443E+07 0.65760E-02
+  1156 VELX   7837  A    1 15:001:00000 m/y  2 -.299508631780300E-01 0.29901E-03
+  1157 VELY   7837  A    1 15:001:00000 m/y  2 -.124922664365185E-01 0.29168E-03
+  1158 VELZ   7837  A    1 15:001:00000 m/y  2 -.119422952063216E-01 0.27466E-03
+  1159 STAX   7837  A    2 15:001:00000 m    2 -.283108862439912E+07 0.43022E-02
+  1160 STAY   7837  A    2 15:001:00000 m    2 0.467620311535159E+07 0.40868E-02
+  1161 STAZ   7837  A    2 15:001:00000 m    2 0.327517260914881E+07 0.38814E-02
+  1162 VELX   7837  A    2 15:001:00000 m/y  2 -.299508629191580E-01 0.29901E-03
+  1163 VELY   7837  A    2 15:001:00000 m/y  2 -.124922675979460E-01 0.29168E-03
+  1164 VELZ   7837  A    2 15:001:00000 m/y  2 -.119422960487207E-01 0.27466E-03
+  1165 STAX   7838  A    1 15:001:00000 m    2 -.382238829733018E+07 0.36797E-02
+  1166 STAY   7838  A    1 15:001:00000 m    2 0.369936368040946E+07 0.37477E-02
+  1167 STAZ   7838  A    1 15:001:00000 m    2 0.350757308575680E+07 0.33456E-02
+  1168 VELX   7838  A    1 15:001:00000 m/y  2 0.410968003401444E-02 0.23753E-03
+  1169 VELY   7838  A    1 15:001:00000 m/y  2 0.574618748692623E-02 0.23948E-03
+  1170 VELZ   7838  A    1 15:001:00000 m/y  2 -.361575600407611E-02 0.22183E-03
+  1171 STAX   7838  A    2 15:001:00000 m    2 -.382238828867473E+07 0.23561E-02
+  1172 STAY   7838  A    2 15:001:00000 m    2 0.369936368579092E+07 0.23571E-02
+  1173 STAZ   7838  A    2 15:001:00000 m    2 0.350757305692899E+07 0.20512E-02
+  1174 VELX   7838  A    2 15:001:00000 m/y  2 0.410968094627855E-02 0.23753E-03
+  1175 VELY   7838  A    2 15:001:00000 m/y  2 0.574619348909757E-02 0.23948E-03
+  1176 VELZ   7838  A    2 15:001:00000 m/y  2 -.361576033586856E-02 0.22183E-03
+  1177 STAX   7838  A    3 15:001:00000 m    2 -.382238830297548E+07 0.12800E-02
+  1178 STAY   7838  A    3 15:001:00000 m    2 0.369936365523252E+07 0.13461E-02
+  1179 STAZ   7838  A    3 15:001:00000 m    2 0.350757304566781E+07 0.12037E-02
+  1180 VELX   7838  A    3 15:001:00000 m/y  2 0.263906634960141E-02 0.50383E-03
+  1181 VELY   7838  A    3 15:001:00000 m/y  2 0.470577149830492E-02 0.51235E-03
+  1182 VELZ   7838  A    3 15:001:00000 m/y  2 -.353103565041891E-02 0.46072E-03
+  1183 STAX   7838  A    4 15:001:00000 m    2 -.382238830511058E+07 0.19265E-02
+  1184 STAY   7838  A    4 15:001:00000 m    2 0.369936365468743E+07 0.19502E-02
+  1185 STAZ   7838  A    4 15:001:00000 m    2 0.350757304426192E+07 0.17341E-02
+  1186 VELX   7838  A    4 15:001:00000 m/y  2 0.263906591938926E-02 0.50383E-03
+  1187 VELY   7838  A    4 15:001:00000 m/y  2 0.470577240887996E-02 0.51235E-03
+  1188 VELZ   7838  A    4 15:001:00000 m/y  2 -.353103378128631E-02 0.46072E-03
+  1189 STAX   7839  A    1 15:001:00000 m    2 0.419442621299162E+07 0.67699E-03
+  1190 STAY   7839  A    1 15:001:00000 m    2 0.116269435703709E+07 0.70288E-03
+  1191 STAZ   7839  A    1 15:001:00000 m    2 0.464724684303809E+07 0.68829E-03
+  1192 VELX   7839  A    1 15:001:00000 m/y  2 -.169475196163750E-01 0.52863E-04
+  1193 VELY   7839  A    1 15:001:00000 m/y  2 0.178948924955752E-01 0.50710E-04
+  1194 VELZ   7839  A    1 15:001:00000 m/y  2 0.104131812643129E-01 0.58086E-04
+  1195 STAX   7840  A    1 15:001:00000 m    2 0.403346347630212E+07 0.61390E-03
+  1196 STAY   7840  A    1 15:001:00000 m    2 0.236627872673329E+05 0.65693E-03
+  1197 STAZ   7840  A    1 15:001:00000 m    2 0.492430535075408E+07 0.65568E-03
+  1198 VELX   7840  A    1 15:001:00000 m/y  2 -.131572303249976E-01 0.49144E-04
+  1199 VELY   7840  A    1 15:001:00000 m/y  2 0.170848681043556E-01 0.48038E-04
+  1200 VELZ   7840  A    1 15:001:00000 m/y  2 0.981395859644500E-02 0.55278E-04
+  1201 STAX   7841  A    1 15:001:00000 m    2 0.380043202330437E+07 0.12703E-02
+  1202 STAY   7841  A    1 15:001:00000 m    2 0.881692255339616E+06 0.12177E-02
+  1203 STAZ   7841  A    1 15:001:00000 m    2 0.502903022895043E+07 0.10796E-02
+  1204 VELX   7841  A    1 15:001:00000 m/y  2 -.158063431713723E-01 0.86002E-04
+  1205 VELY   7841  A    1 15:001:00000 m/y  2 0.160432663221865E-01 0.82916E-04
+  1206 VELZ   7841  A    1 15:001:00000 m/y  2 0.959627842709940E-02 0.80235E-04
+  1207 STAX   7841  A    2 15:001:00000 m    2 0.380043201889346E+07 0.90357E-03
+  1208 STAY   7841  A    2 15:001:00000 m    2 0.881692254393670E+06 0.83332E-03
+  1209 STAZ   7841  A    2 15:001:00000 m    2 0.502903022550340E+07 0.78239E-03
+  1210 VELX   7841  A    2 15:001:00000 m/y  2 -.158063132827234E-01 0.86005E-04
+  1211 VELY   7841  A    2 15:001:00000 m/y  2 0.160432684272607E-01 0.82919E-04
+  1212 VELZ   7841  A    2 15:001:00000 m/y  2 0.959632930203064E-02 0.80236E-04
+  1213 STAX   7843  A    1 15:001:00000 m    2 -.444647786369229E+07 0.17652E-01
+  1214 STAY   7843  A    1 15:001:00000 m    2 0.267812710809172E+07 0.17312E-01
+  1215 STAZ   7843  A    1 15:001:00000 m    2 -.369625050903316E+07 0.15537E-01
+  1216 VELX   7843  A    1 15:001:00000 m/y  2 -.388959943334119E-01 0.58509E-03
+  1217 VELY   7843  A    1 15:001:00000 m/y  2 0.294176989520336E-02 0.58260E-03
+  1218 VELZ   7843  A    1 15:001:00000 m/y  2 0.438103209924712E-01 0.50386E-03
+  1219 STAX   7843  A    2 15:001:00000 m    2 -.444647780097092E+07 0.16566E-01
+  1220 STAY   7843  A    2 15:001:00000 m    2 0.267812707679407E+07 0.15968E-01
+  1221 STAZ   7843  A    2 15:001:00000 m    2 -.369625047056202E+07 0.14906E-01
+  1222 VELX   7843  A    2 15:001:00000 m/y  2 -.388959942776313E-01 0.58509E-03
+  1223 VELY   7843  A    2 15:001:00000 m/y  2 0.294176981529593E-02 0.58260E-03
+  1224 VELZ   7843  A    2 15:001:00000 m/y  2 0.438103208364656E-01 0.50385E-03
+  1225 STAX   7843  A    3 15:001:00000 m    2 -.444647776795102E+07 0.11127E-01
+  1226 STAY   7843  A    3 15:001:00000 m    2 0.267812705656814E+07 0.11050E-01
+  1227 STAZ   7843  A    3 15:001:00000 m    2 -.369625044799435E+07 0.95404E-02
+  1228 VELX   7843  A    3 15:001:00000 m/y  2 -.388959943234748E-01 0.58509E-03
+  1229 VELY   7843  A    3 15:001:00000 m/y  2 0.294176971720028E-02 0.58260E-03
+  1230 VELZ   7843  A    3 15:001:00000 m/y  2 0.438103207800176E-01 0.50385E-03
+  1231 STAX   7845  A    1 15:001:00000 m    2 0.458169193890718E+07 0.65397E-03
+  1232 STAY   7845  A    1 15:001:00000 m    2 0.556196367763775E+06 0.69902E-03
+  1233 STAZ   7845  A    1 15:001:00000 m    2 0.438935528687361E+07 0.68281E-03
+  1234 VELX   7845  A    1 15:001:00000 m/y  2 -.138759655685487E-01 0.59241E-04
+  1235 VELY   7845  A    1 15:001:00000 m/y  2 0.188580698734343E-01 0.58352E-04
+  1236 VELZ   7845  A    1 15:001:00000 m/y  2 0.111704255241751E-01 0.62608E-04
+  1237 STAX   7847  A    1 15:001:00000 m    2 -.238901883437599E+07 0.43946E-01
+  1238 STAY   7847  A    1 15:001:00000 m    2 0.504333713137298E+07 0.41969E-01
+  1239 STAZ   7847  A    1 15:001:00000 m    2 -.307850515040117E+07 0.36956E-01
+  1240 VELX   7847  A    1 15:001:00000 m/y  2 -.468239683103843E-01 0.52906E-04
+  1241 VELY   7847  A    1 15:001:00000 m/y  2 0.797007645987504E-02 0.45583E-04
+  1242 VELZ   7847  A    1 15:001:00000 m/y  2 0.509599889854020E-01 0.59975E-04
+  1243 STAX   7848  A    1 15:001:00000 m    2 0.469699177778554E+07 0.14092E-01
+  1244 STAY   7848  A    1 15:001:00000 m    2 0.724001854469230E+06 0.18946E-01
+  1245 STAZ   7848  A    1 15:001:00000 m    2 0.423967175848212E+07 0.13078E-01
+  1246 VELX   7848  A    1 15:001:00000 m/y  2 -.135862467078966E-01 0.98786E-03
+  1247 VELY   7848  A    1 15:001:00000 m/y  2 0.187703397392346E-01 0.13037E-02
+  1248 VELZ   7848  A    1 15:001:00000 m/y  2 0.112046352236908E-01 0.93077E-03
+  1249 STAX   7849  A    1 15:001:00000 m    2 -.446706430487199E+07 0.11100E-02
+  1250 STAY   7849  A    1 15:001:00000 m    2 0.268303448717177E+07 0.11858E-02
+  1251 STAZ   7849  A    1 15:001:00000 m    2 -.366700654216407E+07 0.10521E-02
+  1252 VELX   7849  A    1 15:001:00000 m/y  2 -.364538634475735E-01 0.59665E-04
+  1253 VELY   7849  A    1 15:001:00000 m/y  2 0.339280474689753E-03 0.58754E-04
+  1254 VELZ   7849  A    1 15:001:00000 m/y  2 0.455194041019274E-01 0.63113E-04
+  1255 STAX   7850  A    1 15:001:00000 m    2 -.133000842409653E+07 0.50269E-02
+  1256 STAY   7850  A    1 15:001:00000 m    2 -.532839157662132E+07 0.48056E-02
+  1257 STAZ   7850  A    1 15:001:00000 m    2 0.323650263118085E+07 0.43355E-02
+  1258 VELX   7850  A    1 15:001:00000 m/y  2 -.125832069128489E-01 0.66858E-04
+  1259 VELY   7850  A    1 15:001:00000 m/y  2 0.812697997992134E-03 0.65356E-04
+  1260 VELZ   7850  A    1 15:001:00000 m/y  2 -.485007413604520E-02 0.72403E-04
+  1261 STAX   7853  A    1 15:001:00000 m    2 -.241042123391913E+07 0.94470E+00
+  1262 STAY   7853  A    1 15:001:00000 m    2 -.447779921085449E+07 0.91296E+00
+  1263 STAZ   7853  A    1 15:001:00000 m    2 0.383868954189216E+07 0.72176E+00
+  1264 VELX   7853  A    1 15:001:00000 m/y  2 -.239673072144658E-02 0.37636E-01
+  1265 VELY   7853  A    1 15:001:00000 m/y  2 0.472619042346857E-01 0.36067E-01
+  1266 VELZ   7853  A    1 15:001:00000 m/y  2 -.309265375994103E-01 0.28859E-01
+  1267 STAX   7865  A    1 15:001:00000 m    2 0.109277129550000E+07 0.10000E-01
+  1268 STAY   7865  A    1 15:001:00000 m    2 -.487722415600000E+07 0.10000E-01
+  1269 STAZ   7865  A    1 15:001:00000 m    2 0.394897781740000E+07 0.10000E-01
+  1270 VELX   7865  A    1 15:001:00000 m/y  2 -.150000000000000E-01 0.50000E-02
+  1271 VELY   7865  A    1 15:001:00000 m/y  2 -.000000000000000E+00 0.50000E-02
+  1272 VELZ   7865  A    1 15:001:00000 m/y  2 0.200000000000000E-02 0.50000E-02
+  1273 STAX   7882  A    1 15:001:00000 m    2 -.199724285986778E+07 0.17246E+00
+  1274 STAY   7882  A    1 15:001:00000 m    2 -.552804076831699E+07 0.13753E+00
+  1275 STAZ   7882  A    1 15:001:00000 m    2 0.246835583682841E+07 0.14903E+00
+  1276 VELX   7882  A    1 15:001:00000 m/y  2 -.399881136469422E-01 0.82351E-02
+  1277 VELY   7882  A    1 15:001:00000 m/y  2 0.182935310896172E-01 0.65358E-02
+  1278 VELZ   7882  A    1 15:001:00000 m/y  2 0.212599572968600E-01 0.71127E-02
+  1279 STAX   7883  A    1 15:001:00000 m    2 -.240612761440911E+07 0.13969E+00
+  1280 STAY   7883  A    1 15:001:00000 m    2 -.489836777678952E+07 0.12790E+00
+  1281 STAZ   7883  A    1 15:001:00000 m    2 0.329033714566237E+07 0.11654E+00
+  1282 VELX   7883  A    1 15:001:00000 m/y  2 -.308621915942426E-01 0.66034E-02
+  1283 VELY   7883  A    1 15:001:00000 m/y  2 0.231440975130837E-01 0.60468E-02
+  1284 VELZ   7883  A    1 15:001:00000 m/y  2 0.205200622246538E-01 0.55158E-02
+  1285 STAX   7884  A    1 15:001:00000 m    2 -.148344295895374E+07 0.17863E+00
+  1286 STAY   7884  A    1 15:001:00000 m    2 -.501962573800476E+07 0.17591E+00
+  1287 STAZ   7884  A    1 15:001:00000 m    2 0.363569199429889E+07 0.14961E+00
+  1288 VELX   7884  A    1 15:001:00000 m/y  2 -.619469649076390E-02 0.94294E-02
+  1289 VELY   7884  A    1 15:001:00000 m/y  2 -.450296881326614E-02 0.93468E-02
+  1290 VELZ   7884  A    1 15:001:00000 m/y  2 -.121704959967625E-02 0.79380E-02
+  1291 STAX   7885  A    1 15:001:00000 m    2 -.133012562048948E+07 0.34285E-02
+  1292 STAY   7885  A    1 15:001:00000 m    2 -.532852661552210E+07 0.36045E-02
+  1293 STAZ   7885  A    1 15:001:00000 m    2 0.323615012500876E+07 0.34892E-02
+  1294 VELX   7885  A    1 15:001:00000 m/y  2 -.123289484140800E-01 0.63147E+00
+  1295 VELY   7885  A    1 15:001:00000 m/y  2 0.967790173392000E-03 0.92099E+00
+  1296 VELZ   7885  A    1 15:001:00000 m/y  2 -.575912314656000E-02 0.80882E+00
+  1297 STAX   7886  A    1 15:001:00000 m    2 -.251724282116721E+07 0.31170E-01
+  1298 STAY   7886  A    1 15:001:00000 m    2 -.419855073419573E+07 0.25867E-01
+  1299 STAZ   7886  A    1 15:001:00000 m    2 0.407657019698040E+07 0.19896E-01
+  1300 VELX   7886  A    1 15:001:00000 m/y  2 -.179562114444305E-01 0.28574E-03
+  1301 VELY   7886  A    1 15:001:00000 m/y  2 0.901036300196472E-02 0.32156E-03
+  1302 VELZ   7886  A    1 15:001:00000 m/y  2 -.597003683893029E-02 0.32678E-03
+  1303 STAX   7888  A    1 15:001:00000 m    2 -.193674395582214E+07 0.70099E+00
+  1304 STAY   7888  A    1 15:001:00000 m    2 -.507763406170010E+07 0.14266E+01
+  1305 STAZ   7888  A    1 15:001:00000 m    2 0.333199220305254E+07 0.10030E+01
+  1306 VELX   7888  A    1 15:001:00000 m/y  2 0.628778552904000E-02 0.45976E+00
+  1307 VELY   7888  A    1 15:001:00000 m/y  2 0.150409990908000E+00 0.92182E+00
+  1308 VELZ   7888  A    1 15:001:00000 m/y  2 -.514147464360000E-01 0.65131E+00
+  1309 STAX   7891  A    1 15:001:00000 m    2 -.192397707832760E+07 0.28823E-01
+  1310 STAY   7891  A    1 15:001:00000 m    2 -.485087175040426E+07 0.68798E-01
+  1311 STAZ   7891  A    1 15:001:00000 m    2 0.365857476371962E+07 0.54115E-01
+  1312 VELX   7891  A    1 15:001:00000 m/y  2 -.181727595360000E-01 0.31541E+00
+  1313 VELY   7891  A    1 15:001:00000 m/y  2 -.799042534488000E-02 0.76060E+00
+  1314 VELZ   7891  A    1 15:001:00000 m/y  2 -.138803831452800E-02 0.58722E+00
+  1315 STAX   7892  A    1 15:001:00000 m    2 -.163148520302460E+07 0.11480E+00
+  1316 STAY   7892  A    1 15:001:00000 m    2 -.458913444125257E+07 0.30063E+00
+  1317 STAZ   7892  A    1 15:001:00000 m    2 0.410674982517884E+07 0.27748E+00
+  1318 VELX   7892  A    1 15:001:00000 m/y  2 -.168124597207200E-01 0.42277E+00
+  1319 VELY   7892  A    1 15:001:00000 m/y  2 -.888525687168000E-02 0.10700E+00
+  1320 VELZ   7892  A    1 15:001:00000 m/y  2 0.477883995048000E-03 0.91442E+00
+  1321 STAX   7894  A    1 15:001:00000 m    2 -.219677819584269E+07 0.11095E+00
+  1322 STAY   7894  A    1 15:001:00000 m    2 -.488733696881184E+07 0.19261E+00
+  1323 STAZ   7894  A    1 15:001:00000 m    2 0.344842500967126E+07 0.15348E+00
+  1324 VELX   7894  A    1 15:001:00000 m/y  2 -.128510204257927E-01 0.38655E-02
+  1325 VELY   7894  A    1 15:001:00000 m/y  2 0.350864818602156E-02 0.65747E-02
+  1326 VELZ   7894  A    1 15:001:00000 m/y  2 -.843686571057253E-02 0.53150E-02
+  1327 STAX   7896  A    1 15:001:00000 m    2 -.249321263219512E+07 0.38829E-02
+  1328 STAY   7896  A    1 15:001:00000 m    2 -.465522888153480E+07 0.42260E-02
+  1329 STAZ   7896  A    1 15:001:00000 m    2 0.356557472992422E+07 0.39599E-02
+  1330 VELX   7896  A    1 15:001:00000 m/y  2 -.290295111967200E-01 0.36828E+00
+  1331 VELY   7896  A    1 15:001:00000 m/y  2 0.246965201748000E-01 0.58798E+00
+  1332 VELZ   7896  A    1 15:001:00000 m/y  2 0.938242161360000E-02 0.45140E+00
+  1333 STAX   7899  A    1 15:001:00000 m    2 0.113136440002896E+07 0.30808E-02
+  1334 STAY   7899  A    1 15:001:00000 m    2 -.483116879437942E+07 0.31157E-02
+  1335 STAZ   7899  A    1 15:001:00000 m    2 0.399412899072698E+07 0.31070E-02
+  1336 VELX   7899  A    1 15:001:00000 m/y  2 -.147571037654400E-01 0.70457E+00
+  1337 VELY   7899  A    1 15:001:00000 m/y  2 -.479427477264000E-04 0.95144E+00
+  1338 VELZ   7899  A    1 15:001:00000 m/y  2 0.219269841739200E-02 0.89820E+00
+  1339 STAX   7907  A    1 15:001:00000 m    2 0.194279228187272E+07 0.18463E-01
+  1340 STAY   7907  A    1 15:001:00000 m    2 -.580407755973805E+07 0.18743E-01
+  1341 STAZ   7907  A    1 15:001:00000 m    2 -.179691883216949E+07 0.16547E-01
+  1342 VELX   7907  A    1 15:001:00000 m/y  2 0.107676853436250E-01 0.60912E-03
+  1343 VELY   7907  A    1 15:001:00000 m/y  2 0.283151095622906E-02 0.59786E-03
+  1344 VELZ   7907  A    1 15:001:00000 m/y  2 0.149632888225854E-01 0.54600E-03
+  1345 STAX   7907  A    2 15:001:00000 m    2 0.194279228553494E+07 0.16154E-01
+  1346 STAY   7907  A    2 15:001:00000 m    2 -.580407757119591E+07 0.17613E-01
+  1347 STAZ   7907  A    2 15:001:00000 m    2 -.179691883451752E+07 0.14509E-01
+  1348 VELX   7907  A    2 15:001:00000 m/y  2 0.107676847120107E-01 0.60912E-03
+  1349 VELY   7907  A    2 15:001:00000 m/y  2 0.283151105118290E-02 0.59785E-03
+  1350 VELZ   7907  A    2 15:001:00000 m/y  2 0.149632888907196E-01 0.54600E-03
+  1351 STAX   7918  A    1 15:001:00000 m    2 0.113070494562690E+07 0.33413E-02
+  1352 STAY   7918  A    1 15:001:00000 m    2 -.483134544626454E+07 0.29998E-02
+  1353 STAZ   7918  A    1 15:001:00000 m    2 0.399411604228886E+07 0.28111E-02
+  1354 VELX   7918  A    1 15:001:00000 m/y  2 -.150358282069072E-01 0.53979E-04
+  1355 VELY   7918  A    1 15:001:00000 m/y  2 0.169174378594151E-03 0.48868E-04
+  1356 VELZ   7918  A    1 15:001:00000 m/y  2 0.227663950898690E-02 0.60117E-04
+  1357 STAX   7919  A    1 15:001:00000 m    2 0.113070543624622E+07 0.14258E+00
+  1358 STAY   7919  A    1 15:001:00000 m    2 -.483134767713299E+07 0.59720E+00
+  1359 STAZ   7919  A    1 15:001:00000 m    2 0.399411782229557E+07 0.50288E+00
+  1360 VELX   7919  A    1 15:001:00000 m/y  2 -.147540635388970E-01 0.73049E-04
+  1361 VELY   7919  A    1 15:001:00000 m/y  2 -.345079774519398E-04 0.97287E-04
+  1362 VELZ   7919  A    1 15:001:00000 m/y  2 0.218058569979950E-02 0.91763E-04
+  1363 STAX   7920  A    1 15:001:00000 m    2 0.113074153716372E+07 0.16771E-01
+  1364 STAY   7920  A    1 15:001:00000 m    2 -.483136979661003E+07 0.15095E-01
+  1365 STAZ   7920  A    1 15:001:00000 m    2 0.399407618081876E+07 0.14115E-01
+  1366 VELX   7920  A    1 15:001:00000 m/y  2 -.150358282751981E-01 0.53970E-04
+  1367 VELY   7920  A    1 15:001:00000 m/y  2 0.169174387450284E-03 0.48857E-04
+  1368 VELZ   7920  A    1 15:001:00000 m/y  2 0.227664000974919E-02 0.60109E-04
+  1369 STAX   7921  A    1 15:001:00000 m    2 -.193675977262360E+07 0.87376E+00
+  1370 STAY   7921  A    1 15:001:00000 m    2 -.507770151200136E+07 0.17637E+01
+  1371 STAZ   7921  A    1 15:001:00000 m    2 0.333192070205158E+07 0.12388E+01
+  1372 VELX   7921  A    1 15:001:00000 m/y  2 0.628764036408000E-02 0.45976E+00
+  1373 VELY   7921  A    1 15:001:00000 m/y  2 0.150409864677600E+00 0.92182E+00
+  1374 VELZ   7921  A    1 15:001:00000 m/y  2 -.514148411088000E-01 0.65131E+00
+  1375 STAX   7929  A    1 15:001:00000 m    2 0.518646777849998E+07 0.12554E+01
+  1376 STAY   7929  A    1 15:001:00000 m    2 -.365385641030000E+07 0.88307E+00
+  1377 STAZ   7929  A    1 15:001:00000 m    2 -.654321548399942E+06 0.59616E+00
+  1378 VELX   7929  A    1 15:001:00000 m/y  2 -.227000128320000E-02 0.72500E+00
+  1379 VELY   7929  A    1 15:001:00000 m/y  2 -.764000028720000E-02 0.50910E+00
+  1380 VELZ   7929  A    1 15:001:00000 m/y  2 0.120200058216000E-01 0.34579E+00
+  1381 STAX   7939  A    1 15:001:00000 m    2 0.464196454749158E+07 0.17602E-02
+  1382 STAY   7939  A    1 15:001:00000 m    2 0.139307044155008E+07 0.17919E-02
+  1383 STAZ   7939  A    1 15:001:00000 m    2 0.413326265433445E+07 0.16059E-02
+  1384 VELX   7939  A    1 15:001:00000 m/y  2 -.186283096602461E-01 0.60869E-04
+  1385 VELY   7939  A    1 15:001:00000 m/y  2 0.190569185089799E-01 0.59761E-04
+  1386 VELZ   7939  A    1 15:001:00000 m/y  2 0.146220879162093E-01 0.62825E-04
+  1387 STAX   7940  A    1 15:001:00000 m    2 0.459521715544018E+07 0.37139E+01
+  1388 STAY   7940  A    1 15:001:00000 m    2 0.203946525018876E+07 0.24352E+01
+  1389 STAZ   7940  A    1 15:001:00000 m    2 0.391261459868598E+07 0.48735E+01
+  1390 VELX   7940  A    1 15:001:00000 m/y  2 0.571401786888000E-02 0.15643E+00
+  1391 VELY   7940  A    1 15:001:00000 m/y  2 0.661887524520000E-02 0.15407E+00
+  1392 VELZ   7940  A    1 15:001:00000 m/y  2 -.707140176192000E-02 0.15291E+00
+  1393 STAX   7941  A    1 15:001:00000 m    2 0.464197852389715E+07 0.61393E-03
+  1394 STAY   7941  A    1 15:001:00000 m    2 0.139306781970112E+07 0.65885E-03
+  1395 STAZ   7941  A    1 15:001:00000 m    2 0.413324969590866E+07 0.63902E-03
+  1396 VELX   7941  A    1 15:001:00000 m/y  2 -.186283100020115E-01 0.60861E-04
+  1397 VELY   7941  A    1 15:001:00000 m/y  2 0.190569144613420E-01 0.59753E-04
+  1398 VELZ   7941  A    1 15:001:00000 m/y  2 0.146220896897415E-01 0.62817E-04
+  1399 STAX   7943  A    1 15:001:00000 m    2 -.444754969459050E+07 0.73539E-01
+  1400 STAY   7943  A    1 15:001:00000 m    2 0.267713404538836E+07 0.46864E-01
+  1401 STAZ   7943  A    1 15:001:00000 m    2 -.369499523860002E+07 0.63874E-01
+  1402 VELX   7943  A    1 15:001:00000 m/y  2 -.382690494648000E-01 0.16694E+00
+  1403 VELY   7943  A    1 15:001:00000 m/y  2 0.251883643053600E-02 0.14972E+00
+  1404 VELZ   7943  A    1 15:001:00000 m/y  2 0.448199969760000E-01 0.14083E+00
+  1405 STAX   8833  A    1 15:001:00000 m    2 0.389923752101400E+07 0.15016E+00
+  1406 STAY   8833  A    1 15:001:00000 m    2 0.396769649671944E+06 0.15315E+00
+  1407 STAZ   8833  A    1 15:001:00000 m    2 0.501505543549643E+07 0.96732E-01
+  1408 VELX   8833  A    1 15:001:00000 m/y  2 -.112737203013235E-01 0.68709E-02
+  1409 VELY   8833  A    1 15:001:00000 m/y  2 0.178795492981045E-01 0.67409E-02
+  1410 VELZ   8833  A    1 15:001:00000 m/y  2 0.680758580506361E-02 0.41486E-02
+  1411 STAX   8834  A    1 15:001:00000 m    2 0.407557657277784E+07 0.70034E-03
+  1412 STAY   8834  A    1 15:001:00000 m    2 0.931785765925552E+06 0.74603E-03
+  1413 STAZ   8834  A    1 15:001:00000 m    2 0.480158375157415E+07 0.71074E-03
+  1414 VELX   8834  A    1 15:001:00000 m/y  2 -.158058457141676E-01 0.55449E-04
+  1415 VELY   8834  A    1 15:001:00000 m/y  2 0.171114025331497E-01 0.54494E-04
+  1416 VELZ   8834  A    1 15:001:00000 m/y  2 0.100899851353141E-01 0.60201E-04
+-SOLUTION/ESTIMATE
+%ENDSNX
