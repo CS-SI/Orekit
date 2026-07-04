@@ -384,9 +384,16 @@ public class SinexLoaderTest {
         final AbsoluteDate start = new AbsoluteDate(new DateComponents(startYear, startDay),
                                                     new TimeComponents(secInStartDay),
                                                     TimeScalesFactory.getUTC());
-        final AbsoluteDate end = new AbsoluteDate(new DateComponents(endYear, endDay),
-                                                  new TimeComponents(secInEndDay),
-                                                  TimeScalesFactory.getUTC());
+        final AbsoluteDate end;
+        if ((endYear == Integer.MAX_VALUE) || (endDay == Integer.MAX_VALUE) || (secInEndDay == Integer.MAX_VALUE)) {
+            end = AbsoluteDate.FUTURE_INFINITY;
+            Assertions.assertEquals(station.getValidUntil(), AbsoluteDate.FUTURE_INFINITY);
+        } else {
+            end = new AbsoluteDate(new DateComponents(endYear, endDay),
+                                                    new TimeComponents(secInEndDay),
+                                                    TimeScalesFactory.getUTC());
+            Assertions.assertEquals(0., end.durationFrom(station.getValidUntil()),  1.0e-10);
+        }
         final AbsoluteDate epoch = new AbsoluteDate(new DateComponents(epochYear, epochDay),
                                                     new TimeComponents(secInEpoch),
                                                     TimeScalesFactory.getUTC());
@@ -394,7 +401,6 @@ public class SinexLoaderTest {
         final AbsoluteDate midDate = start.shiftedBy(0.5 * end.durationFrom(start));
 
         Assertions.assertEquals(0., start.durationFrom(station.getValidFrom()), 1.0e-10);
-        Assertions.assertEquals(0., end.durationFrom(station.getValidUntil()),  1.0e-10);
         Assertions.assertEquals(0., epoch.durationFrom(station.getEpoch()),     1.0e-10);
         Assertions.assertEquals(siteCode, station.getSiteCode());
         Assertions.assertEquals(refDomes, station.getDomes());
