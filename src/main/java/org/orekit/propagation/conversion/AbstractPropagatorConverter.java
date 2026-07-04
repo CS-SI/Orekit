@@ -66,9 +66,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Weight for residuals. */
     private double[] weight;
 
-    /** Auxiliary outputData: RMS of solution. */
-    private double rms;
-
     /** Position use indicator. */
     private boolean onlyPosition;
 
@@ -195,7 +192,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @return RMSD
      */
     public double getRMS() {
-        return rms;
+        return optimum.getRMS();
     }
 
     /** Get the number of objective function evaluations.
@@ -313,14 +310,20 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         final double[] initial = builder.getSelectedNormalizedParameters();
 
         // warm-up iterations, using only a few points
-        setSample(states.subList(0, onlyPosition ? 2 : 1));
+        final int dataPerPoint = onlyPosition ? 3 : 6;
+        final int neededPoints = FastMath.max(2, (initial.length + dataPerPoint - 1) / dataPerPoint);
+        final int subSampling  = (states.size() - 1) / (neededPoints - 1);
+        final List<SpacecraftState> subSampledStates = new ArrayList<>(neededPoints);
+        for (int i = 0; i < neededPoints; i++) {
+            subSampledStates.add(states.get(subSampling * i));
+        }
+        setSample(subSampledStates);
         final double[] intermediate = fit(initial);
 
         // final search using all points
         setSample(states);
         final double[] result = fit(intermediate);
 
-        rms = getRMS(result);
         adapted = buildAdaptedPropagator(result);
 
         return adapted;
@@ -349,23 +352,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
     }
 
-    /** Get the Root Mean Square Deviation for a given parameters set.
-     * @param parameterSet position/velocity parameters set
-     * @return RMSD
-     */
-    private double getRMS(final double[] parameterSet) {
-        final double[] residuals = getObjectiveFunction().value(parameterSet);
-        for (int i = 0; i < residuals.length; ++i) {
-            residuals[i] = target[i] - residuals[i];
-        }
-        double sum2 = 0;
-        for (final double residual : residuals) {
-            sum2 += residual * residual;
-        }
-        return FastMath.sqrt(sum2 / residuals.length);
-    }
-
-    /** Build the adpated propagator for a given position/velocity(/free) parameters set.
+    /** Build the adapted propagator for a given position/velocity(/free) parameters set.
      * @param parameterSet position/velocity(/free) parameters set
      * @return adapted propagator
      */

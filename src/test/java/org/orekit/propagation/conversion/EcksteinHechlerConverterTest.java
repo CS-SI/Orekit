@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,12 +48,12 @@ public class EcksteinHechlerConverterTest {
 
     @Test
     public void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.446e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.778e-8);
     }
 
     @Test
     public void testConversionPositionOnly() {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.350e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.349e-8);
     }
 
     protected void checkFit(final Orbit orbit,
@@ -72,7 +72,7 @@ public class EcksteinHechlerConverterTest {
                                                    orbit.getFrame(),
                                                    orbit.getMu());
         Propagator p = new EcksteinHechlerPropagator(modified, provider);
-        List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
+        List<SpacecraftState> sample = new ArrayList<>();
         for (double dt = 0; dt < duration; dt += stepSize) {
             sample.add(p.propagate(modified.getDate().shiftedBy(dt)));
         }
