@@ -56,7 +56,7 @@ public class SolidTides implements ForceModelModifier {
      * frequency-dependent tidal data.
      *
      * @author Rafael Ayala
-     * @since 14.0
+     * @since 13.1.7
      */
     private static final TimeVectorFunction ZERO_FREQUENCY_FUNCTION = new TimeVectorFunction() {
         @Override
@@ -77,7 +77,7 @@ public class SolidTides implements ForceModelModifier {
     /**
      * Private constructor with the force model only.
      * @param attractionModel underlying attraction model
-     * @since 14.0
+     * @since 13.1.7
      */
     private SolidTides(final ForceModel attractionModel) {
         this.attractionModel = attractionModel;
@@ -154,7 +154,8 @@ public class SolidTides implements ForceModelModifier {
      * @param nbPoints          number of points to use for interpolation, if less than 2
      *                          then no interpolation is performed (thus greatly increasing computation cost)
      * @param bodies            tide generating bodies (typically Sun and Moon)
-     * @since 14.0
+     * @author Rafael Ayala
+     * @since 13.1.7
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem,
@@ -184,7 +185,8 @@ public class SolidTides implements ForceModelModifier {
      * @see #DEFAULT_STEP
      * @see #DEFAULT_POINTS
      * @see #SolidTides(Frame, double, double, TideSystem, LoveNumbers, double, int, CelestialBody...)
-     * @since 14.0
+     * @author Rafael Ayala
+     * @since 13.1.7
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem,

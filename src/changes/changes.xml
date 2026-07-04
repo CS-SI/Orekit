@@ -101,9 +101,6 @@
           <action dev="luc" type="fix" due-to="q_wertz">
               Fixed documentation of Saastamoinen tropospheric model.
           </action>
-          <action dev="rafa" type="add" issue="1925">
-              Add constructors with custom Love numbers in SolidTides.
-          </action>
           <action dev="bryan" type="add" issue="1928">
               Added IAU 2015 nominal equatorial and polar radius constants for
               all solar system planets (Mercury, Venus, Mars, Saturn, Uranus, Neptune).
@@ -364,9 +361,6 @@
           <action dev="vcucchie" type="add" issue="1502">
               Added GitLab issue templates for bug reports and feature requests.
           </action>
-          <action dev="rodrigomarcelino" type="add" issue="1103">
-              Exposed Alpha-5 satellite number parsing in TLE class.
-          </action>
           <action dev="serrof" type="update" issue="1462">
               Add option to use other atmospheric model for derivatives computation.
           </action>
@@ -383,16 +377,22 @@
               Fixed default value of optional parameters in ODParameters by using Java Optional.
           </action>
     </release>
-    <release version="13.1.7" date="TBD" description="TBD">
-      <action dev="luc" type="fix" issue="1977">
-          Fixed AbstractPropagatorConverter.getRMS().
-      </action>
-      <action dev="luc" type="fix" issue="1976">
-          Fixed initial warm-up fitting in AbstractPropagatorConverter.
-      </action>
-       <action dev="luc" type="fix" issue="1972">
-          Allow Ephemeris with null attitude providers to be used in AggregateBounedPropagator.
-      </action>
+    <release version="13.1.7" date="2026-07-03" description="Orekit 13.1.7 is a patch release. It solves various bugs related to propagators, solid tides and Alpha-5 parsing.">
+        <action dev="luc" type="fix" issue="1977">
+            Fixed AbstractPropagatorConverter.getRMS().
+        </action>
+        <action dev="luc" type="fix" issue="1976">
+            Fixed initial warm-up fitting in AbstractPropagatorConverter.
+        </action>
+        <action dev="luc" type="fix" issue="1972">
+            Allow Ephemeris with null attitude providers to be used in AggregateBoundedPropagator.
+        </action>
+        <action dev="rafa" type="add" issue="1925">
+            Add constructors with custom Love numbers in SolidTides.
+        </action>
+        <action dev="rodrigomarcelino" type="add" issue="1159">
+            Exposed Alpha-5 satellite number parsing in TLE class.
+        </action>
     </release>
     <release version="13.1.6" date="2026-06-03" description="Orekit 13.1.6 is a patch release.
                                                              It solves various bugs related to CCSDS parsing and writing, DSST
@@ -1193,6 +1193,8 @@
         </action>
         <action dev="serrof" type="add" issue="1440">
             Add some getters in PropagatorBuilder.
+        </action>
+        <action dev="maxime" type="update" issue="1430">
             Changed methods visibility in (Field)Abstract(Analytical)Propagator.
         </action>
         <action dev="serrof" type="update" issue="1241">

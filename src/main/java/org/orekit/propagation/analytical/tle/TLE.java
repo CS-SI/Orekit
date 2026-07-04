@@ -806,7 +806,7 @@ public class TLE implements TimeStamped, ParameterDriversProvider {
      * </p>
      * @param satNumberString the string to parse (e.g., "25544" or "A0001")
      * @return the satellite number as an integer
-     * @since 14.0
+     * @since 13.1.7
      */
     public static int parseSatelliteNumber(final String satNumberString) {
         return ParseUtils.parseSatelliteNumber(satNumberString, 0, satNumberString.length());
