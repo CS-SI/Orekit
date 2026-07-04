@@ -99,6 +99,14 @@ public class SinexLoaderTest {
                                   -.975043019205914e-02 / Constants.JULIAN_YEAR,
                                   -.506419781207987e-03 / Constants.JULIAN_YEAR),
                      null);
+
+        checkStation(loader.getStation("7840"), 1983, 90, 81310, 2019, 364, 86400, 2005, 1, 0,
+                     "7840", "13212S001", null,
+                     new Vector3D(0.403346360854931E+07, 0.236626166520893E+05, 0.492430525043831E+07),
+                     new Vector3D(-.128574010704363E-01 / Constants.JULIAN_YEAR,
+                                  0.170937510357506E-01 / Constants.JULIAN_YEAR,
+                                  0.100418394390735E-01 / Constants.JULIAN_YEAR),
+                     null);
     }
 
     @Test
