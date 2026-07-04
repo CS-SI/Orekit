@@ -110,6 +110,32 @@ public class SinexLoaderTest {
     }
 
     @Test
+    public void testSLRSinexFileIssue1982() {
+
+        SinexLoader loader = new SinexLoader("SLRF2020_POS+VEL_2025.05.13.snx");
+
+        // Test date computation using format description
+        try {
+            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class, boolean.class, TimeScale.class);
+            method.setAccessible(true);
+            final AbsoluteDate date    = (AbsoluteDate) method.invoke(loader, "95:120:86399", false, utc);
+            final AbsoluteDate refDate = new AbsoluteDate("1995-04-30T23:59:59.000", TimeScalesFactory.getUTC());
+            Assertions.assertEquals(0., refDate.durationFrom(date), 0.);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Assertions.fail(e.getLocalizedMessage());
+        }
+
+        // Test some values
+        checkStation(loader.getStation("7840"), 1983, 101, 9984, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 2015, 1, 0,
+                     "7840", "13212S001", null,
+                     new Vector3D(0.403346347630212E+07, 0.236627872673329E+05, 0.492430535075408E+07),
+                     new Vector3D(-.131572303249976E-01 / Constants.JULIAN_YEAR,
+                                  0.170848681043556E-01 / Constants.JULIAN_YEAR,
+                                  0.981395859644500E-02 / Constants.JULIAN_YEAR),
+                     null);
+    }
+
+    @Test
     public void testStationEccentricityXYZFile() {
 
         // Load file (it corresponds to a small version of the real complete file)
