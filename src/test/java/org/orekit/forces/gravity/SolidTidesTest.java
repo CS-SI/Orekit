@@ -69,7 +69,7 @@ import org.orekit.utils.LoveNumbers;
 import org.orekit.utils.ParameterDriver;
 
 
-public class SolidTidesTest extends AbstractLegacyForceModelTest {
+class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
 
@@ -653,7 +653,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
     }
 
