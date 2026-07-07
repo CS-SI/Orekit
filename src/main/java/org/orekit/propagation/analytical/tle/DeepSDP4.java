@@ -23,6 +23,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 
@@ -157,7 +158,23 @@ public class DeepSDP4 extends SDP4 {
                     final AttitudeProvider attitudeProvider,
                     final double mass,
                     final Frame teme) {
-        super(initialTLE, attitudeProvider, mass, teme);
+        super(initialTLE, attitudeProvider, mass, teme,
+              TLEPropagator.getDefaultTleGenerationAlgorithm(initialTLE.getUtc(), teme));
+    }
+
+    /** Constructor with a specified generation algorithm.
+     * @param initialTLE the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
+     * @param generationAlgorithm TLE generation algorithm for TLE resets
+     */
+    DeepSDP4(final TLE initialTLE,
+             final AttitudeProvider attitudeProvider,
+             final double mass,
+             final Frame teme,
+             final TleGenerationAlgorithm generationAlgorithm) {
+        super(initialTLE, attitudeProvider, mass, teme, generationAlgorithm);
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.

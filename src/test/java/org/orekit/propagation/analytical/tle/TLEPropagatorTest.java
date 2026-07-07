@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -275,6 +276,18 @@ public class TLEPropagatorTest {
         Assertions.assertEquals(expectedPosition.getX(), actualPosition.getX(), tolerance);
         Assertions.assertEquals(expectedPosition.getY(), actualPosition.getY(), tolerance);
         Assertions.assertEquals(expectedPosition.getZ(), actualPosition.getZ(), tolerance);
+    }
+
+    @Test
+    void testFourParamConstructorUsesDefaultGenerationAlgorithm() {
+        // Exercise TLEPropagator 4-param constructor delegation chain
+        // SGP4 public 4-param ctor -> TLEPropagator(TLE, ..., Frame) -> this(..., getDefaultTleGenerationAlgorithm(...))
+        final SGP4 propagator = new SGP4(tle,
+            FrameAlignedProvider.of(FramesFactory.getTEME()),
+            Propagator.DEFAULT_MASS);
+        final AbsoluteDate target = tle.getDate().shiftedBy(120.0);
+        final SpacecraftState result = propagator.propagate(target);
+        Assertions.assertNotNull(result);
     }
 
     @BeforeEach

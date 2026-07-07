@@ -17,7 +17,6 @@
 
 package org.orekit.propagation.analytical.tle;
 
-import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -40,6 +39,11 @@ import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class TLEStateTransitionMatrixTest {
 
@@ -90,19 +94,18 @@ public class TLEStateTransitionMatrixTest {
     @Test
     public void testMatricesUseConfiguredAlgorithm() {
 
-        final CountingTleGenerationAlgorithm countingAlgorithm =
-                new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm());
+        final TleGenerationAlgorithm spyAlgorithm = spy(new FixedPointTleGenerationAlgorithm());
         final TLEPropagator propagator =
                 TLEPropagator.selectExtrapolator(tleSPOT, FrameAlignedProvider.of(FramesFactory.getTEME()),
                                                  1000.0, DataContext.getDefault().getFrames().getTEME(),
-                                                 countingAlgorithm);
+                                                 spyAlgorithm);
         final SpacecraftState initialState = propagator.getInitialState();
         final AbsoluteDate target = initialState.getDate().shiftedBy(120.0);
         propagator.setupMatricesComputation("stm", null, null);
 
         propagator.propagate(target);
 
-        Assertions.assertTrue(countingAlgorithm.getFieldCalls() > 0);
+        verify(spyAlgorithm, atLeastOnce()).generate(any(FieldSpacecraftState.class), any(FieldTLE.class));
     }
 
     private void doTestStateJacobian(double tolerance, TLE tle) {
@@ -205,44 +208,6 @@ public class TLEStateTransitionMatrixTest {
                                             Attitude attitude) {
         CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
         return new SpacecraftState(orbit, attitude);
-    }
-
-    /** Counting wrapper around a TLE generation algorithm. */
-    private static class CountingTleGenerationAlgorithm implements TleGenerationAlgorithm {
-
-        /** Delegate. */
-        private final TleGenerationAlgorithm delegate;
-
-        /** Number of field state generations. */
-        private int fieldCalls;
-
-        /** Constructor.
-         * @param delegate delegate algorithm
-         */
-        CountingTleGenerationAlgorithm(final TleGenerationAlgorithm delegate) {
-            this.delegate = delegate;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public TLE generate(final SpacecraftState state, final TLE templateTLE) {
-            return delegate.generate(state, templateTLE);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
-                                                                         final FieldTLE<T> templateTLE) {
-            fieldCalls++;
-            return delegate.generate(state, templateTLE);
-        }
-
-        /** Get the number of calls with field states.
-         * @return number of calls with field states
-         */
-        int getFieldCalls() {
-            return fieldCalls;
-        }
     }
 
 }

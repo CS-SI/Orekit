@@ -21,6 +21,7 @@ import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
@@ -67,8 +68,9 @@ abstract class SDP4  extends TLEPropagator {
     protected SDP4(final TLE initialTLE,
                    final AttitudeProvider attitudeProvider,
                    final double mass,
-                   final Frame teme) {
-        super(initialTLE, attitudeProvider, mass, teme);
+                   final Frame teme,
+                   final TleGenerationAlgorithm generationAlgorithm) {
+        super(initialTLE, attitudeProvider, mass, teme, generationAlgorithm);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).

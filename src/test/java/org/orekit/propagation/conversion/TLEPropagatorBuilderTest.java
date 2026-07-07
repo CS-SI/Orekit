@@ -17,17 +17,14 @@
 
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.CalculusFieldElement;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
@@ -35,6 +32,10 @@ import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 public class TLEPropagatorBuilderTest {
@@ -106,67 +107,16 @@ public class TLEPropagatorBuilderTest {
         final DataContext dataContext = Utils.setDataRoot("regular-data");
         final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        final CountingTleGenerationAlgorithm countingAlgorithm =
-                new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm());
+        final TleGenerationAlgorithm spyAlgorithm = spy(new FixedPointTleGenerationAlgorithm());
         final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.0, dataContext,
-                                                                       countingAlgorithm);
+                                                                       spyAlgorithm);
 
         // When
         final TLEPropagator propagator = builder.buildPropagator();
-        final int callsAfterBuild = countingAlgorithm.getStateCalls();
+        verify(spyAlgorithm, times(1)).generate(any(SpacecraftState.class), any(TLE.class));
         propagator.resetInitialState(propagator.getInitialState());
 
         // Then
-        Assertions.assertTrue(callsAfterBuild > 0);
-        Assertions.assertTrue(countingAlgorithm.getStateCalls() > callsAfterBuild);
-    }
-
-    /** Counting wrapper around a TLE generation algorithm. */
-    private static class CountingTleGenerationAlgorithm implements TleGenerationAlgorithm {
-
-        /** Delegate. */
-        private final TleGenerationAlgorithm delegate;
-
-        /** Number of state generations. */
-        private int stateCalls;
-
-        /** Number of field state generations. */
-        private int fieldCalls;
-
-        /** Constructor.
-         * @param delegate delegate algorithm
-         */
-        CountingTleGenerationAlgorithm(final TleGenerationAlgorithm delegate) {
-            this.delegate = delegate;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public TLE generate(final SpacecraftState state, final TLE templateTLE) {
-            stateCalls++;
-            return delegate.generate(state, templateTLE);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
-                                                                         final FieldTLE<T> templateTLE) {
-            fieldCalls++;
-            return delegate.generate(state, templateTLE);
-        }
-
-        /** Get the number of calls with regular states.
-         * @return number of calls with regular states
-         */
-        int getStateCalls() {
-            return stateCalls;
-        }
-
-        /** Get the number of calls with field states.
-         * @return number of calls with field states
-         */
-        int getFieldCalls() {
-            return fieldCalls;
-        }
+        verify(spyAlgorithm, times(2)).generate(any(SpacecraftState.class), any(TLE.class));
     }
 }
