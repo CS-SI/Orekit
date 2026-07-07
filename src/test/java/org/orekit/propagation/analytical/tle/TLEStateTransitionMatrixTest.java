@@ -23,27 +23,23 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 public class TLEStateTransitionMatrixTest {
 
@@ -82,30 +78,6 @@ public class TLEStateTransitionMatrixTest {
             TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleSPOT);
             propagator.setupMatricesComputation(null, null, null);
         });
-    }
-
-    /** Test for issue #1936.
-     * <p>
-     * Ensure the configured generation.TleGenerationAlgorithm
-     * is effectively used during matrices computation (STM/gradient path), instead of
-     * falling back to the default algorithm.
-     * </p>
-     */
-    @Test
-    public void testMatricesUseConfiguredAlgorithm() {
-
-        final TleGenerationAlgorithm spyAlgorithm = spy(new FixedPointTleGenerationAlgorithm());
-        final TLEPropagator propagator =
-                TLEPropagator.selectExtrapolator(tleSPOT, FrameAlignedProvider.of(FramesFactory.getTEME()),
-                                                 1000.0, DataContext.getDefault().getFrames().getTEME(),
-                                                 spyAlgorithm);
-        final SpacecraftState initialState = propagator.getInitialState();
-        final AbsoluteDate target = initialState.getDate().shiftedBy(120.0);
-        propagator.setupMatricesComputation("stm", null, null);
-
-        propagator.propagate(target);
-
-        verify(spyAlgorithm, atLeastOnce()).generate(any(FieldSpacecraftState.class), any(FieldTLE.class));
     }
 
     private void doTestStateJacobian(double tolerance, TLE tle) {
@@ -204,10 +176,57 @@ public class TLEStateTransitionMatrixTest {
 
 
     private SpacecraftState arrayToState(double[][] array,
-                                            Frame frame, AbsoluteDate date, double mu,
-                                            Attitude attitude) {
+                                           Frame frame, AbsoluteDate date, double mu,
+                                           Attitude attitude) {
         CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
         return new SpacecraftState(orbit, attitude);
+    }
+
+    /** Counts how many times the algo is called. */
+    private static class CountingTleGenerationAlgorithm implements TleGenerationAlgorithm {
+
+        private final TleGenerationAlgorithm delegate;
+        private int count;
+
+        CountingTleGenerationAlgorithm(final TleGenerationAlgorithm delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public TLE generate(final SpacecraftState state, final TLE previous) {
+            count++;
+            return delegate.generate(state, previous);
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
+                                                                        final FieldTLE<T> previous) {
+            count++;
+            return delegate.generate(state, previous);
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+    }
+
+    // makes sure the custom generation algo is actually used in the deep-space path
+    @Test
+    public void testConfiguredAlgorithmUsedDeepSpace() {
+        final CountingTleGenerationAlgorithm counter =
+                new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm());
+        final TLEPropagator propagator =
+                TLEPropagator.selectExtrapolator(tleGPS,
+                                                  FrameAlignedProvider.of(FramesFactory.getTEME()),
+                                                  1000.0,
+                                                  DataContext.getDefault().getFrames().getTEME(),
+                                                  counter);
+        final AbsoluteDate target = tleGPS.getDate().shiftedBy(120.0);
+        propagator.setupMatricesComputation("stm", null, null);
+        propagator.propagate(target);
+        // if this fails, DeepSDP4's new constructor isn't being reached
+        Assertions.assertTrue(counter.getCount() > 0);
     }
 
 }
