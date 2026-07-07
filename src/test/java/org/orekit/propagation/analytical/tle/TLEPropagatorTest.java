@@ -290,6 +290,18 @@ public class TLEPropagatorTest {
         Assertions.assertNotNull(result);
     }
 
+    @Test
+    void testDeepSDP4FourParamConstructor() {
+        final DeepSDP4 propagator = new DeepSDP4(tle,
+            FrameAlignedProvider.of(FramesFactory.getTEME()),
+            Propagator.DEFAULT_MASS,
+            FramesFactory.getTEME());
+        Assertions.assertNotNull(propagator);
+        final AbsoluteDate target = tle.getDate().shiftedBy(120.0);
+        final SpacecraftState result = propagator.propagate(target);
+        Assertions.assertNotNull(result);
+    }
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
