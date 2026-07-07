@@ -22,7 +22,6 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
  * <p>
@@ -84,21 +83,6 @@ public class SGP4 extends TLEPropagator {
                 final double mass,
                 final Frame teme) {
         super(initialTLE, attitudeProvider, mass, teme);
-    }
-
-    /** Constructor with a specified generation algorithm.
-     * @param initialTLE the TLE to propagate.
-     * @param attitudeProvider provider for attitude computation
-     * @param mass spacecraft mass (kg)
-     * @param teme the TEME frame to use for propagation.
-     * @param generationAlgorithm TLE generation algorithm for TLE resets
-     */
-    SGP4(final TLE initialTLE,
-         final AttitudeProvider attitudeProvider,
-         final double mass,
-         final Frame teme,
-         final TleGenerationAlgorithm generationAlgorithm) {
-        super(initialTLE, attitudeProvider, mass, teme, generationAlgorithm);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).

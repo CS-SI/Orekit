@@ -183,7 +183,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     private TimeSpanMap<Pair<TLE, Double>> tlesAndMasses;
 
     /** TLE generation algorithm used when resetting TLE from state. */
-    private final TleGenerationAlgorithm generationAlgorithm;
+    private TleGenerationAlgorithm generationAlgorithm;
 
     /** Protected constructor for derived classes.
      *
@@ -212,29 +212,13 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
                             final AttitudeProvider attitudeProvider,
                             final double mass,
                             final Frame teme) {
-        this(initialTLE, attitudeProvider, mass, teme,
-             getDefaultTleGenerationAlgorithm(initialTLE.getUtc(), teme));
-    }
-
-    /** Protected constructor for derived classes.
-     * @param initialTLE the unique TLE to propagate
-     * @param attitudeProvider provider for attitude computation
-     * @param mass spacecraft mass (kg)
-     * @param teme the TEME frame to use for propagation.
-     * @param generationAlgorithm TLE generation algorithm to use for TLE resets
-     */
-    protected TLEPropagator(final TLE initialTLE,
-                            final AttitudeProvider attitudeProvider,
-                            final double mass,
-                            final Frame teme,
-                            final TleGenerationAlgorithm generationAlgorithm) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
         this.utc       = initialTLE.getUtc();
         initializeTle(initialTLE);
         this.teme      = teme;
         this.tlesAndMasses = new TimeSpanMap<>(new Pair<>(tle, mass));
-        this.generationAlgorithm = generationAlgorithm;
+        this.generationAlgorithm = getDefaultTleGenerationAlgorithm(utc, teme);
 
         // set the initial state
         final Orbit orbit = propagateOrbit(initialTLE.getDate());
@@ -303,18 +287,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @since 10.1
      */
     public static TLEPropagator selectExtrapolator(final TLE tle,
-                                                   final AttitudeProvider attitudeProvider,
-                                                   final double mass,
-                                                   final Frame teme) {
-        return selectExtrapolator(tle, attitudeProvider, mass, teme,
-                getDefaultTleGenerationAlgorithm(tle.getUtc(), teme));
-    }
-
-    public static TLEPropagator selectExtrapolator(final TLE tle,
-                                                   final AttitudeProvider attitudeProvider,
-                                                   final double mass,
-                                                   final Frame teme,
-                                                   final TleGenerationAlgorithm generationAlgorithm) {
+                                                    final AttitudeProvider attitudeProvider,
+                                                    final double mass,
+                                                    final Frame teme) {
 
         final double a1 = FastMath.pow(TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
         final double cosi0 = FastMath.cos(tle.getI());
@@ -325,21 +300,27 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         final double delta0 = temp / (a0 * a0);
         final double xn0dp = tle.getMeanMotion() * 60.0 / (delta0 + 1.0);
 
-        final TLEPropagator propagator;
         if (MathUtils.TWO_PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
-            propagator = new DeepSDP4(tle, attitudeProvider, mass, teme, generationAlgorithm);
+            return new DeepSDP4(tle, attitudeProvider, mass, teme);
         } else {
-            propagator = new SGP4(tle, attitudeProvider, mass, teme, generationAlgorithm);
+            return new SGP4(tle, attitudeProvider, mass, teme);
         }
-
-        return propagator;
     }
 
     /** Get the TLE generation algorithm used when resetting TLE from state.
      * @return TLE generation algorithm
+     * @since 14.0
      */
     TleGenerationAlgorithm getTleGenerationAlgorithm() {
         return generationAlgorithm;
+    }
+
+    /** Set the TLE generation algorithm used when resetting TLE from state.
+     * @param tleGenerationAlgorithm TLE generation algorithm
+     * @since 14.0
+     */
+    public void setTleGenerationAlgorithm(final TleGenerationAlgorithm tleGenerationAlgorithm) {
+        this.generationAlgorithm = tleGenerationAlgorithm;
     }
 
     /** Get the Earth gravity coefficient used for TLE propagation.
