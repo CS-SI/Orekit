@@ -64,7 +64,6 @@ abstract class SDP4  extends TLEPropagator {
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
-     * @param generationAlgorithm TLE generation algorithm for TLE resets
      */
     protected SDP4(final TLE initialTLE,
                    final AttitudeProvider attitudeProvider,
