@@ -92,7 +92,8 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call orElse(null) everywhere
-    default void writeOptionalStringEntry(String key, Optional<String> value, Unit unit, boolean mandatory) throws IOException {
+    default void writeOptionalStringEntry(final String key, final Optional<String> value,
+                                          final Unit unit, final boolean mandatory) throws IOException {
         writeEntry(key, value.orElse(null), unit, mandatory);
     }
 
@@ -123,7 +124,8 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call value.map(Enum::name) everywhere
-    default void writeOptionalEnumEntry(String key, Optional<? extends Enum<?>> value, boolean mandatory) throws IOException {
+    default void writeOptionalEnumEntry(final String key, final Optional<? extends Enum<?>> value,
+                                        final boolean mandatory) throws IOException {
         writeEntry(key, value.map(Enum::name).orElse(null), null, mandatory);
     }
 
@@ -150,7 +152,9 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call orElse(null) everywhere
-    default void writeOptionalDateEntry(String key, TimeConverter converter, Optional<AbsoluteDate> date, boolean forceCalendar, boolean mandatory) throws IOException {
+    default void writeOptionalDateEntry(final String key, final TimeConverter converter,
+                                        final Optional<AbsoluteDate> date, final boolean forceCalendar,
+                                        final boolean mandatory) throws IOException {
         writeEntry(key, converter, date.orElse(null), forceCalendar, mandatory);
     }
 
@@ -198,7 +202,8 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call value.isPresent() everywhere
-    default void writeOptionalIntEntry(String key, Optional<Integer> value, boolean mandatory) throws IOException {
+    default void writeOptionalIntEntry(final String key, final Optional<Integer> value,
+                                       final boolean mandatory) throws IOException {
         writeEntry(key, value.map(integer -> Integer.toString(integer)).orElse(null), null, mandatory);
     }
 
@@ -232,7 +237,8 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call orElse(Double.NaN) everywhere
-    default void writeOptionalDoubleEntry(String key, Optional<Double> value, Unit unit, boolean mandatory) throws IOException {
+    default void writeOptionalDoubleEntry(final String key, final Optional<Double> value,
+                                          final Unit unit, final boolean mandatory) throws IOException {
         writeEntry(key, value.orElse(Double.NaN), unit, mandatory);
     }
 
@@ -291,7 +297,7 @@ public interface Generator extends AutoCloseable {
      * @return date as a string
      * @since 13.1.6
      */
-    default String dateToString(DateTimeComponents dt) {
+    default String dateToString(final DateTimeComponents dt) {
         final DateComponents date = dt.getDate();
         final TimeComponents time = dt.getTime();
         return dateToString(date.getYear(), date.getMonth(), date.getDay(),

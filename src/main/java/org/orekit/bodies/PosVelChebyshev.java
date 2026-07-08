@@ -95,9 +95,9 @@ class PosVelChebyshev implements TimeStamped {
     }
 
     /** Compute value of Chebyshev's polynomial independent variable.
-     * @param date date
      * @param <T> type of the field elements
-     * @return <T> independent variable value
+     * @param date date
+     * @return independent variable value
      */
     private <T extends CalculusFieldElement<T>> T computeValueIndependentVariable(final FieldAbsoluteDate<T> date) {
         return date.offsetFrom(new FieldAbsoluteDate<>(date.getField(), start), timeScale).multiply(2).subtract(duration).divide(duration);

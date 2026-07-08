@@ -129,7 +129,11 @@ public class CdmMetadata extends Metadata {
     /** N-body perturbation bodies. */
     private List<BodyFacade> nBodyPerturbations;
 
-    /** Is solar radiation pressure taken into account or not ? STANDARD CCSDS saying YES/NO choice and optional */
+    /** Solar radiation pressure taken indicator.
+     * <p>
+     *     STANDARD CCSDS saying YES/NO choice and optional
+     * </p>
+     */
     @Nullable
     private YesNoUnknown isSolarRadPressure;
 

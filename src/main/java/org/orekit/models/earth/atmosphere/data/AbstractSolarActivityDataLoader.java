@@ -21,6 +21,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.SortedSet;
 
@@ -96,6 +97,7 @@ public abstract class AbstractSolarActivityDataLoader<L extends AbstractSolarAct
     public abstract static class LineParameters implements TimeStamped, Comparable<LineParameters>, Serializable {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 6607862001953526475L;
 
         /** Entry date. */
@@ -127,7 +129,9 @@ public abstract class AbstractSolarActivityDataLoader<L extends AbstractSolarAct
         @Override
         public abstract int hashCode();
 
-        /** @return entry date */
+        /** Get the date of the entry.
+         * @return entry date
+         */
         @Override
         public AbsoluteDate getDate() {
             return date;

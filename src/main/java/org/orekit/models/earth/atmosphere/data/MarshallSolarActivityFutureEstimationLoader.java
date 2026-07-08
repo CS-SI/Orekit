@@ -32,6 +32,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Iterator;
@@ -127,9 +128,7 @@ public class MarshallSolarActivityFutureEstimationLoader
         builder.append(")");
 
         // third to eighth group: data fields
-        for (int i = 0; i < 6; ++i) {
-            builder.append("\\p{Blank}+([-+]?[0-9]+\\.[0-9]+)");
-        }
+        builder.repeat("\\p{Blank}+([-+]?[0-9]+\\.[0-9]+)", 6);
 
         // end of line
         builder.append("\\p{Blank}*$");
@@ -240,7 +239,9 @@ public class MarshallSolarActivityFutureEstimationLoader
 
     }
 
-    /** @return the data set */
+    /** Get the data set.
+     * @return the data set
+     */
     @Override
     public SortedSet<LineParameters> getDataSet() {
         return data.stream().map(value -> (LineParameters) value).collect(Collectors.toCollection(TreeSet::new));
@@ -250,6 +251,7 @@ public class MarshallSolarActivityFutureEstimationLoader
     public static class LineParameters extends AbstractSolarActivityDataLoader.LineParameters {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 6607862001953526475L;
 
         /** File date. */

@@ -828,7 +828,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     protected abstract T[][] computeJacobianTrueWrtCartesian();
 
-    /** Add the contribution of the Keplerian motion to parameters derivatives
+    /** Add the contribution of the Keplerian motion to parameters derivatives.
      * <p>
      * This method is used by integration-based propagators to evaluate the part of Keplerian
      * motion to evolution of the orbital state.

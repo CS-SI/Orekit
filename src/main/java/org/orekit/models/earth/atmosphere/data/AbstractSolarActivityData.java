@@ -269,7 +269,9 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
             this.nextParam     = neighbours.get(1);
         }
 
-        /** @return current date */
+        /** Get the current date.
+         * @return current date
+         */
         public AbsoluteDate getDate() {
             return currentDate;
         }

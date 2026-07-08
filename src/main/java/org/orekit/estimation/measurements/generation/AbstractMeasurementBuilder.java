@@ -129,7 +129,7 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         return measurementQuality.getStandardDeviations();
     }
 
-    /** Get the base weight associated with the measurement
+    /** Get the base weight associated with the measurement.
      * <p>
      * The base weight is used on residuals already normalized thanks to
      * {@link #getTheoreticalStandardDeviation()} to increase or

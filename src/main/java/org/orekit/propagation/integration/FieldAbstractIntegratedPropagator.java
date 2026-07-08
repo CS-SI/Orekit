@@ -122,7 +122,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
 
-    /** Type of orbit to output (mean or osculating) <br/>
+    /** Type of orbit to output (mean or osculating).
      * <p>
      * This is used only in the case of semi-analytical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
@@ -552,8 +552,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
             return finalState;
 
-        } catch (OrekitException pe) {
-            throw pe;
         } catch (MathIllegalArgumentException | MathIllegalStateException me) {
             throw OrekitException.unwrap(me);
         }
@@ -947,8 +945,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
-    /** Adapt an {@link org.orekit.propagation.events.FieldEventDetector<T>}
-     * to Hipparchus {@link org.hipparchus.ode.events.FieldODEEventDetector<T>} interface.
+    /** Adapt an {@link org.orekit.propagation.events.FieldEventDetector}
+     * to Hipparchus {@link org.hipparchus.ode.events.FieldODEEventDetector} interface.
      * @author Fabien Maussion
      */
     private class FieldAdaptedEventDetector implements FieldODEEventDetector<T> {
@@ -1041,7 +1039,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         public FieldODEEventHandler<T> getHandler() {
 
-            return new FieldODEEventHandler<T>() {
+            return new FieldODEEventHandler<>() {
 
                 /** {@inheritDoc} */
                 public Action eventOccurred(final FieldODEStateAndDerivative<T> s,
@@ -1081,8 +1079,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
-    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepHandler<T>}
-     * to Hipparchus {@link FieldODEStepHandler<T>} interface.
+    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepHandler}
+     * to Hipparchus {@link FieldODEStepHandler} interface.
      * @author Luc Maisonobe
      */
     private class FieldAdaptedStepHandler implements FieldODEStepHandler<T> {
@@ -1116,8 +1114,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
-    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepInterpolator<T>}
-     * to Hipparchus {@link FieldODEStateInterpolator<T>} interface.
+    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepInterpolator}
+     * to Hipparchus {@link FieldODEStateInterpolator} interface.
      * @author Luc Maisonobe
      */
     private class FieldAdaptedStepInterpolator implements FieldOrekitStepInterpolator<T> {

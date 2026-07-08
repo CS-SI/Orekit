@@ -431,8 +431,8 @@ public class HarrisPriester extends AbstractSunInfluencedAtmosphere {
      *  <p>
      *  The height computation is an approximation valid for the considered atmosphere.
      *  </p>
+     *  @param <T> type of the field elements
      *  @param position current position in Earth frame
-     *  @param <T> instance of CalculusFieldElement<T>
      *  @return height (m)
      */
     private <T extends CalculusFieldElement<T>> T getHeight(final FieldVector3D<T> position) {

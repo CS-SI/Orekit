@@ -21,7 +21,7 @@ import org.orekit.ssa.collision.shorttermencounter.probability.twod.Alfriend1999
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.Laas2015;
 
 /**
- * Container for values relative to the probability of collision :
+ * Container for values relative to the probability of collision.
  * <ul>
  *     <li>Value of the probability of collision.</li>
  *     <li>Name of the method with which it was computed.</li>

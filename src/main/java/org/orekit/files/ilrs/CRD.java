@@ -651,7 +651,7 @@ public class CRD {
         @Override
         @DefaultDataContext
         public String toCrdString() {
-            return String.format(Locale.US, "10 %s", toString());
+            return String.format(Locale.US, "10 %s", this);
         }
 
         @Override
@@ -832,7 +832,7 @@ public class CRD {
         @Override
         @DefaultDataContext
         public String toCrdString() {
-            return String.format(Locale.US, "11 %s", toString());
+            return String.format(Locale.US, "11 %s", this);
         }
 
         @Override
@@ -972,7 +972,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format(Locale.US, "12 %s", toString());
+            return String.format(Locale.US, "12 %s", this);
         }
 
         @Override
@@ -1096,7 +1096,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format(Locale.US, "20 %s", toString());
+            return String.format(Locale.US, "20 %s", this);
         }
 
         @Override
@@ -1257,7 +1257,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format(Locale.US, "30 %s", toString());
+            return String.format(Locale.US, "30 %s", this);
         }
 
         @Override
@@ -1751,7 +1751,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format(Locale.US, "40 %s", toString());
+            return String.format(Locale.US, "40 %s", this);
         }
 
         @Override
@@ -1829,7 +1829,7 @@ public class CRD {
         @DefaultDataContext
         @Override
         public String toCrdString() {
-            return String.format(Locale.US, "41 %s", toString());
+            return String.format(Locale.US, "41 %s", this);
         }
 
     }
@@ -1932,8 +1932,7 @@ public class CRD {
             return peakMinusMean;
         }
 
-        /**
-         * Get the data quality assessment indicator
+        /** Get the data quality assessment indicator.
          * <ul>
          * <li>0=undefined or no comment</li>
          * <li>1=clear, easily filtered data, with little or no noise</li>
@@ -1955,7 +1954,7 @@ public class CRD {
          * @return a string representation of the instance, in the CRD format.
          */
         public String toCrdString() {
-            return String.format(Locale.US, "50 %s", toString());
+            return String.format(Locale.US, "50 %s", this);
         }
 
         @Override
