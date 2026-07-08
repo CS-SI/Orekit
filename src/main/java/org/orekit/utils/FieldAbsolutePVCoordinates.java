@@ -93,7 +93,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
         this(pva.getFrame(), new TimeStampedFieldPVCoordinates<>(field, pva.getPVCoordinates()));
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a FieldAbsolutePVCoordinates from another one and a scale factor.</p>
      * <p>The TimeStampedFieldPVCoordinates built will be a * AbsPva</p>
      * @param date date of the built coordinates
@@ -105,7 +105,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
         this(absPva.getFrame(), new TimeStampedFieldPVCoordinates<>(date, a, absPva.getPVCoordinates()));
     }
 
-    /** Subtractive constructor
+    /** Subtractive constructor.
      * <p>Build a relative FieldAbsolutePVCoordinates from a start and an end position.</p>
      * <p>The FieldAbsolutePVCoordinates built will be end - start.</p>
      * <p>In case start and end use two different pseudo-inertial frames,
@@ -120,7 +120,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
         ensureIdenticalFrames(start, end);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a FieldAbsolutePVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The FieldAbsolutePVCoordinates built will be a1 * u1 + a2 * u2</p>
      * <p>In case the FieldAbsolutePVCoordinates use different pseudo-inertial frames,
@@ -138,7 +138,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
         ensureIdenticalFrames(absPv1, absPv2);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a FieldAbsolutePVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The FieldAbsolutePVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * <p>In case the FieldAbsolutePVCoordinates use different pseudo-inertial frames,
@@ -162,7 +162,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
         ensureIdenticalFrames(absPv1, absPv3);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a FieldAbsolutePVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The FieldAbsolutePVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * <p>In case the FieldAbsolutePVCoordinates use different pseudo-inertial frames,

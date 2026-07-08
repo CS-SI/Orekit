@@ -73,7 +73,7 @@ public class RecordAndContinue implements EventHandler {
         }
 
         /**
-         * Is the g() function increasing?
+         * Check if the g() function is increasing.
          *
          * @return if the sign of the derivative of the g function is positive
          * (true) or negative (false).

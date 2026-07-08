@@ -96,7 +96,7 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
         return getMeasurementQuality().getStandardDeviations();
     }
 
-    /** Get the base weight associated with the measurement
+    /** Get the base weight associated with the measurement.
      * <p>
      * The base weight is used on residuals already normalized thanks to
      * {@link #getTheoreticalStandardDeviation()} to increase or

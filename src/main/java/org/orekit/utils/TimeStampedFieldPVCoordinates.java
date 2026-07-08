@@ -101,7 +101,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(pv.getDate(), new FieldPVCoordinates<>(field, pv));
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param date date of the built coordinates
@@ -113,7 +113,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(new FieldAbsoluteDate<>(pv.getPosition().getX().getField(), date), a, pv);
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param date date of the built coordinates
@@ -125,7 +125,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(date, new FieldPVCoordinates<>(a, pv));
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param date date of the built coordinates
@@ -137,7 +137,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(new FieldAbsoluteDate<>(a.getField(), date), a, pv);
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param date date of the built coordinates
@@ -149,7 +149,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(date, new FieldPVCoordinates<>(a, pv));
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param date date of the built coordinates
@@ -161,7 +161,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(new FieldAbsoluteDate<>(a.getField(), date), a, pv);
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param date date of the built coordinates
@@ -173,7 +173,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(date, new FieldPVCoordinates<>(a, pv));
     }
 
-    /** Subtractive constructor
+    /** Subtractive constructor.
      * <p>Build a relative PVCoordinates from a start and an end position.</p>
      * <p>The PVCoordinates built will be end - start.</p>
      * @param date date of the built coordinates
@@ -185,7 +185,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(new FieldAbsoluteDate<>(start.getPosition().getX().getField(), date), start, end);
     }
 
-    /** Subtractive constructor
+    /** Subtractive constructor.
      * <p>Build a relative PVCoordinates from a start and an end position.</p>
      * <p>The PVCoordinates built will be end - start.</p>
      * @param date date of the built coordinates
@@ -197,7 +197,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(date, new FieldPVCoordinates<>(start, end));
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param date date of the built coordinates
@@ -212,7 +212,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(new FieldAbsoluteDate<>(pv1.getPosition().getX().getField(), date), a1, pv1, a2, pv2);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param date date of the built coordinates
@@ -230,7 +230,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this.date = date;
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param date date of the built coordinates
@@ -245,7 +245,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(new FieldAbsoluteDate<>(a1.getField(), date), a1, pv1, a2, pv2);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param date date of the built coordinates
@@ -263,7 +263,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this.date = date;
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param date date of the built coordinates
@@ -278,7 +278,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(new FieldAbsoluteDate<>(a1.getField(), date), a1, pv1, a2, pv2);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param date date of the built coordinates
@@ -293,7 +293,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(date, new FieldPVCoordinates<>(a1, pv1, a2, pv2));
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param date date of the built coordinates
@@ -312,7 +312,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
              a1, pv1, a2, pv2, a3, pv3);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param date date of the built coordinates
@@ -330,7 +330,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(date, new FieldPVCoordinates<>(a1, pv1, a2, pv2, a3, pv3));
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param date date of the built coordinates
@@ -348,7 +348,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(new FieldAbsoluteDate<>(a1.getField(), date), a1, pv1, a2, pv2, a3, pv3);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param date date of the built coordinates
@@ -366,7 +366,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(date, new FieldPVCoordinates<>(a1, pv1, a2, pv2, a3, pv3));
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param date date of the built coordinates
@@ -384,7 +384,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(new FieldAbsoluteDate<>(a1.getField(), date), a1, pv1, a2, pv2, a3, pv3);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param date date of the built coordinates
@@ -402,7 +402,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this(date, new FieldPVCoordinates<>(a1, pv1, a2, pv2, a3, pv3));
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param date date of the built coordinates
@@ -424,7 +424,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
              a1, pv1, a2, pv2, a3, pv3, a4, pv4);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param date date of the built coordinates
@@ -451,7 +451,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this.date = date;
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param date date of the built coordinates
@@ -473,7 +473,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
              a1, pv1, a2, pv2, a3, pv3, a4, pv4);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param date date of the built coordinates
@@ -500,7 +500,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
         this.date = date;
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param date date of the built coordinates
@@ -522,7 +522,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
              a1, pv1, a2, pv2, a3, pv3, a4, pv4);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param date date of the built coordinates

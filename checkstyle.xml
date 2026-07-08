@@ -37,6 +37,7 @@
         <module name="JavadocMethod">
             <property name="validateThrows" value="false"/>
         </module>
+        <module name="SummaryJavadoc"/>
         <module name="JavadocVariable"/>
         <module name="MissingSwitchDefault"/>
         <module name="ModifierOrder"/>

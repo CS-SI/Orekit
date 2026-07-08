@@ -145,7 +145,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractIntegratedPropagator<T> {
 
-    /** Force models used during the extrapolation of the FieldOrbit<T>, without Jacobians. */
+    /** Force models used during the extrapolation of the orbit, without Jacobians. */
     private final List<ForceModel> forceModels;
 
     /** boolean to ignore or not the creation of a NewtonianAttraction. */
