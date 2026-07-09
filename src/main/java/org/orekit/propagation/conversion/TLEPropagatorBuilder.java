@@ -121,7 +121,7 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TL
                                 final double positionScale, final DataContext dataContext,
                                 final TleGenerationAlgorithm generationAlgorithm, final AttitudeProvider attitudeProvider) {
         super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames().getTEME(), attitudeProvider).getInitialState().getOrbit(),
-              positionAngleType, positionScale, false, attitudeProvider, Propagator.DEFAULT_MASS);
+                positionAngleType, positionScale, false, attitudeProvider, Propagator.DEFAULT_MASS);
 
         // Supported parameters: Bstar
         addSupportedParameters(templateTLE.getParametersDrivers());
@@ -136,8 +136,8 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TL
      */
     private TLEPropagatorBuilder(final TLEPropagatorBuilder builder) {
         this(builder.getTemplateTLE(), builder.getPositionAngleType(),
-             builder.getPositionScale(), builder.dataContext,
-             builder.generationAlgorithm, builder.getAttitudeProvider());
+                builder.getPositionScale(), builder.dataContext,
+                builder.generationAlgorithm, builder.getAttitudeProvider());
     }
 
     /** {@inheritDoc}. */
@@ -155,7 +155,7 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TL
         // Ensure drivers' selection consistency
         final ParameterDriversList propDrivers = clonedBuilder.getPropagationParametersDrivers();
         builder.getPropagationParametersDrivers().getDrivers().
-                        forEach(driver -> driver.setSelected(propDrivers.findByName(driver.getName()).isSelected()));
+                forEach(driver -> driver.setSelected(propDrivers.findByName(driver.getName()).isSelected()));
         return new TLEPropagatorBuilder(clonedBuilder);
     }
 
@@ -179,7 +179,9 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TL
         }
 
         // propagator
-        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), getMass(), teme);
+        final TLEPropagator propagator =
+                TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), getMass(), teme);
+        propagator.setTleGenerationAlgorithm(generationAlgorithm);
         getImpulseManeuvers().forEach(propagator::addEventDetector);
         return propagator;
     }

@@ -182,6 +182,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** All TLEs and masses. */
     private TimeSpanMap<Pair<TLE, Double>> tlesAndMasses;
 
+    /** TLE generation algorithm used when resetting TLE from state. */
+    private TleGenerationAlgorithm generationAlgorithm;
+
     /** Protected constructor for derived classes.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
@@ -215,6 +218,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         initializeTle(initialTLE);
         this.teme      = teme;
         this.tlesAndMasses = new TimeSpanMap<>(new Pair<>(tle, mass));
+        this.generationAlgorithm = getDefaultTleGenerationAlgorithm(utc, teme);
 
         // set the initial state
         final Orbit orbit = propagateOrbit(initialTLE.getDate());
@@ -271,7 +275,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
                                                    final double mass) {
         return selectExtrapolator(tle, attitudeProvider, mass,
-                                  DataContext.getDefault().getFrames().getTEME());
+                DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -283,27 +287,40 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @since 10.1
      */
     public static TLEPropagator selectExtrapolator(final TLE tle,
-                                                   final AttitudeProvider attitudeProvider,
-                                                   final double mass,
-                                                   final Frame teme) {
+                                                    final AttitudeProvider attitudeProvider,
+                                                    final double mass,
+                                                    final Frame teme) {
 
-        final double a1 = FastMath.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
+        final double a1 = FastMath.pow(TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
         final double cosi0 = FastMath.cos(tle.getI());
         final double temp = TLEConstants.CK2 * 1.5 * (3 * cosi0 * cosi0 - 1.0) *
-                            FastMath.pow(1.0 - tle.getE() * tle.getE(), -1.5);
+                FastMath.pow(1.0 - tle.getE() * tle.getE(), -1.5);
         final double delta1 = temp / (a1 * a1);
         final double a0 = a1 * (1.0 - delta1 * (TLEConstants.ONE_THIRD + delta1 * (delta1 * 134.0 / 81.0 + 1.0)));
         final double delta0 = temp / (a0 * a0);
-
-        // recover original mean motion :
         final double xn0dp = tle.getMeanMotion() * 60.0 / (delta0 + 1.0);
 
-        // Period >= 225 minutes is deep space
         if (MathUtils.TWO_PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
             return new DeepSDP4(tle, attitudeProvider, mass, teme);
         } else {
             return new SGP4(tle, attitudeProvider, mass, teme);
         }
+    }
+
+    /** Get the TLE generation algorithm used when resetting TLE from state.
+     * @return TLE generation algorithm
+     * @since 14.0
+     */
+    TleGenerationAlgorithm getTleGenerationAlgorithm() {
+        return generationAlgorithm;
+    }
+
+    /** Set the TLE generation algorithm used when resetting TLE from state.
+     * @param tleGenerationAlgorithm TLE generation algorithm
+     * @since 14.0
+     */
+    public void setTleGenerationAlgorithm(final TleGenerationAlgorithm tleGenerationAlgorithm) {
+        this.generationAlgorithm = tleGenerationAlgorithm;
     }
 
     /** Get the Earth gravity coefficient used for TLE propagation.
@@ -381,7 +398,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
         // C2 and C1 coefficients computation :
         c2 = coef1 * xn0dp * (a0dp * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
-             0.75 * TLEConstants.CK2 * tsi / psisq * x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
+                0.75 * TLEConstants.CK2 * tsi / psisq * x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
         c1 = tle.getBStar() * c2;
         sini0 = scI0.sin();
 
@@ -389,10 +406,10 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
         // C4 coefficient computation :
         c4 = 2.0 * xn0dp * coef1 * a0dp * beta02 * (eta * (2.0 + 0.5 * etasq) +
-             tle.getE() * (0.5 + 2.0 * etasq) -
-             2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
-             (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
-              0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPerigeeArgument())));
+                tle.getE() * (0.5 + 2.0 * etasq) -
+                2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
+                        (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
+                                0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPerigeeArgument())));
 
         final double theta4 = theta2 * theta2;
         final double temp1 = 3 * TLEConstants.CK2 * pinvsq * xn0dp;
@@ -407,8 +424,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         final double x1m5th = 1.0 - 5.0 * theta2;
 
         omgdot = -0.5 * temp1 * x1m5th +
-                 0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
-                 temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
+                0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
+                temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
 
         final double xhdot1 = -temp1 * cosi0;
 
@@ -539,8 +556,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
         final double cv = 1000.0 * TLEConstants.EARTH_RADIUS / 60.0;
         final Vector3D vel = new Vector3D(cv * (rdotk * ux + rfdotk * vx),
-                                          cv * (rdotk * uy + rfdotk * vy),
-                                          cv * (rdotk * uz + rfdotk * vz));
+                cv * (rdotk * uy + rfdotk * vy),
+                cv * (rdotk * uz + rfdotk * vz));
 
         return new PVCoordinates(pos, vel);
 
@@ -585,8 +602,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param state spacecraft state on which to base new TLE
      */
     private void resetTle(final SpacecraftState state) {
-        final TleGenerationAlgorithm algorithm = getDefaultTleGenerationAlgorithm(utc, teme);
-        final TLE newTle = algorithm.generate(state, tle);
+
+        final TLE newTle = generationAlgorithm.generate(state, tle);
         initializeTle(newTle);
     }
 
@@ -668,8 +685,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     public static TleGenerationAlgorithm getDefaultTleGenerationAlgorithm(final TimeScale utc, final Frame teme) {
         return new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
-                                                    FixedPointTleGenerationAlgorithm.MAX_ITERATIONS_DEFAULT,
-                                                    FixedPointTleGenerationAlgorithm.SCALE_DEFAULT, utc, teme);
+                FixedPointTleGenerationAlgorithm.MAX_ITERATIONS_DEFAULT,
+                FixedPointTleGenerationAlgorithm.SCALE_DEFAULT, utc, teme);
     }
 
 }
