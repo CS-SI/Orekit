@@ -68,8 +68,7 @@ public class SGP4 extends TLEPropagator {
     @DefaultDataContext
     public SGP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                 final double mass) {
-        this(initialTLE, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME());
+        super(initialTLE, attitudeProvider, mass);
     }
 
     /** Constructor for a unique initial TLE.

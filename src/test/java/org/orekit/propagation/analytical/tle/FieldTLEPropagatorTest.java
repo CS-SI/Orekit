@@ -49,6 +49,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 
 
 public class FieldTLEPropagatorTest {
@@ -348,6 +350,44 @@ public class FieldTLEPropagatorTest {
         final double tinyTimeShift = (isForward) ? 1e-3 : -1e-3;
         final double actualMass = tlePropagator.getMass(modifiedState.getDate().shiftedBy(tinyTimeShift)).getReal();
         Assertions.assertEquals(expectedMass, actualMass);
+    }
+
+    private static class CountingAlgo implements TleGenerationAlgorithm {
+
+        private final TleGenerationAlgorithm delegate;
+        int count;
+
+        CountingAlgo(final TleGenerationAlgorithm delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public TLE generate(final SpacecraftState state, final TLE previous) {
+            count++;
+            return delegate.generate(state, previous);
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
+                                                                        final FieldTLE<T> previous) {
+            count++;
+            return delegate.generate(state, previous);
+        }
+
+    }
+
+    @Test
+    void testSetTleGenerationAlgorithm() {
+        // set custom algo, reset, verify it was used
+        final FieldTLE<Gradient> tle = getGradientTLE();
+        final Gradient[] parameters = tle.getParameters(tle.getDate().getField());
+        final FieldTLEPropagator<Gradient> p = FieldTLEPropagator.selectExtrapolator(tle, parameters);
+        final CountingAlgo counter = new CountingAlgo(new FixedPointTleGenerationAlgorithm());
+
+        p.setTleGenerationAlgorithm(counter);
+        p.resetInitialState(p.getInitialState());
+
+        Assertions.assertTrue(counter.count > 0);
     }
 
     @BeforeEach

@@ -23,9 +23,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -175,6 +180,49 @@ public class TLEStateTransitionMatrixTest {
                                            Attitude attitude) {
         CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
         return new SpacecraftState(orbit, attitude);
+    }
+
+    /** Counts how many times the algo is called. */
+    private static class CountingTleGenerationAlgorithm implements TleGenerationAlgorithm {
+
+        private final TleGenerationAlgorithm delegate;
+        int count;
+
+        CountingTleGenerationAlgorithm(final TleGenerationAlgorithm delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public TLE generate(final SpacecraftState state, final TLE previous) {
+            count++;
+            return delegate.generate(state, previous);
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
+                                                                        final FieldTLE<T> previous) {
+            count++;
+            return delegate.generate(state, previous);
+        }
+
+    }
+
+    // makes sure the custom generation algo is actually used in the deep-space path
+    @Test
+    public void testConfiguredAlgorithmUsedDeepSpace() {
+        final CountingTleGenerationAlgorithm counter =
+                new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm());
+        final TLEPropagator propagator =
+                TLEPropagator.selectExtrapolator(tleGPS,
+                                                  FrameAlignedProvider.of(FramesFactory.getTEME()),
+                                                  1000.0,
+                                                  DataContext.getDefault().getFrames().getTEME());
+        propagator.setTleGenerationAlgorithm(counter);
+        final AbsoluteDate target = tleGPS.getDate().shiftedBy(120.0);
+        propagator.setupMatricesComputation("stm", null, null);
+        propagator.propagate(target);
+        // if this fails, DeepSDP4's setter isn't being reached
+        Assertions.assertTrue(counter.count > 0);
     }
 
 }
