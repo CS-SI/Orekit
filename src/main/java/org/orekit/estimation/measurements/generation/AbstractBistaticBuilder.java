@@ -23,6 +23,7 @@ import org.orekit.estimation.measurements.Observer;
 import org.orekit.signal.SignalTravelTimeModel;
 
 /** Abstract builder for scalar measurements based on one signal emitter and one receiver.
+ * @param <T> type of the measurement
  * @author Romain Serra
  * @since 14.0
  */

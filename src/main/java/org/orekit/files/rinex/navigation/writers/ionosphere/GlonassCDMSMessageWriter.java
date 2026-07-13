@@ -32,6 +32,11 @@ import java.io.IOException;
 public class GlonassCDMSMessageWriter
     extends NavigationMessageWriter<IonosphereGlonassCdmsMessage> {
 
+    /** Simple constructor. */
+    public GlonassCDMSMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final IonosphereGlonassCdmsMessage message,

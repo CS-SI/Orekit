@@ -17,7 +17,10 @@
 
 package org.orekit.files.ccsds.ndm.adm.acm;
 
+import java.util.Optional;
+
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
@@ -49,18 +52,23 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
     private final AttitudeEndpoints endpoints;
 
     /** Attitude identification number. */
+    @Nullable
     private String attID;
 
     /** Identification number of previous attitude. */
+    @Nullable
     private String attPrevID;
 
     /** Basis of this attitude state time history data. */
+    @Nullable
     private String attBasis;
 
     /** Identification number of the attitude determination or simulation upon which this attitude is based. */
+    @Nullable
     private String attBasisID;
 
     /** Rotation order for Euler angles. */
+    @Nullable
     private RotationOrder eulerRotSeq;
 
     /** Number of data states included (attitude components plus rates components). */
@@ -70,6 +78,7 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
     private AttitudeElementsType attitudeType;
 
     /** Attitude rate element set type. */
+    @Nullable
     private RateElementsType rateType;
 
     /**
@@ -110,8 +119,8 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
     /** Get attitude identification number.
      * @return attitude identification number
      */
-    public String getAttID() {
-        return attID;
+    public Optional<String> getAttID() {
+        return Optional.ofNullable(attID);
     }
 
     /** Set attitude identification number.
@@ -125,8 +134,8 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
     /** Get identification number of previous attitude.
      * @return identification number of previous attitude
      */
-    public String getAttPrevID() {
-        return attPrevID;
+    public Optional<String> getAttPrevID() {
+        return Optional.ofNullable(attPrevID);
     }
 
     /** Set identification number of previous attitude.
@@ -140,8 +149,8 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
     /** Get basis of this attitude state time history data.
      * @return basis of this attitude state time history data
      */
-    public String getAttBasis() {
-        return attBasis;
+    public Optional<String> getAttBasis() {
+        return Optional.ofNullable(attBasis);
     }
 
     /** Set basis of this attitude state time history data.
@@ -155,8 +164,8 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
     /** Get identification number of the orbit determination or simulation upon which this attitude is based.
      * @return identification number of the orbit determination or simulation upon which this attitude is based
      */
-    public String getAttBasisID() {
-        return attBasisID;
+    public Optional<String> getAttBasisID() {
+        return Optional.ofNullable(attBasisID);
     }
 
     /** Set identification number of the orbit determination or simulation upon which this attitude is based.
@@ -170,8 +179,8 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
     /** Get the rotation order for Euler angles.
      * @return rotation order for Euler angles
      */
-    public RotationOrder getEulerRotSeq() {
-        return eulerRotSeq;
+    public Optional<RotationOrder> getEulerRotSeq() {
+        return Optional.ofNullable(eulerRotSeq);
     }
 
     /** Set the rotation order for Euler angles.
@@ -213,8 +222,8 @@ public class AttitudeStateHistoryMetadata extends CommentsContainer {
     /** Get attitude rate element set type.
      * @return attitude rate element set type
      */
-    public RateElementsType getRateType() {
-        return rateType;
+    public Optional<RateElementsType> getRateType() {
+        return Optional.ofNullable(rateType);
     }
 
     /** Set attitude rate element set type.

@@ -41,6 +41,11 @@ public class RtcmMsmSatelliteData {
     /** Extended satellite data, GNSS specific. */
     private long extendedSatelliteData;
 
+    /** Simple constructor. */
+    public RtcmMsmSatelliteData() {
+        // nothing to do
+    }
+
     /**
      * Get the satellite the MSM data refers to.
      * @return satellite identifier in its system

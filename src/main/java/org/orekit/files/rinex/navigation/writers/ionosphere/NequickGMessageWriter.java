@@ -32,6 +32,11 @@ import java.io.IOException;
  */
 public class NequickGMessageWriter extends NavigationMessageWriter<IonosphereNequickGMessage> {
 
+    /** Simple constructor. */
+    public NequickGMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final IonosphereNequickGMessage message,

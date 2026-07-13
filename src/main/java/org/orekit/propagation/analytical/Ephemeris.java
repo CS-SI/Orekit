@@ -348,7 +348,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     }
 
-    /** @return sample of orbits and their associated covariances */
+    /** Get the sample of orbits and their associated covariances.
+     * @return sample of orbits and their associated covariances
+     */
     private List<TimeStampedPair<Orbit, StateCovariance>> buildOrbitAndCovarianceSample() {
         final List<TimeStampedPair<Orbit, StateCovariance>> sample      = new ArrayList<>();
         final List<SpacecraftState>                         states      = statesCache.getAll();

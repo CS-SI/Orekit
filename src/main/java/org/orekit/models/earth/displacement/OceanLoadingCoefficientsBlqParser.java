@@ -111,6 +111,11 @@ public class OceanLoadingCoefficientsBlqParser {
         1, 2, 0, 3, 3, 1, 2, 0, 2, 1, 0
     };
 
+    /** Simple constructor. */
+    public OceanLoadingCoefficientsBlqParser() {
+        // nothing to do
+    }
+
     /** Parse a BLQ file.
      * <p>
      * Files in BLQ format can be generated using the form at the

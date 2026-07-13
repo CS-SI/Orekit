@@ -37,6 +37,11 @@ public class GlonassFdmaNavigationMessageWriter
     /** Format for one 5.1 digits float field. */
     public static final FastDoubleFormatter FIVE_ONE_DIGITS_FLOAT = new FastDecimalFormatter(5, 1);
 
+    /** Simple constructor. */
+    public GlonassFdmaNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeEphLine0(final GLONASSFdmaNavigationMessage message, final String identifier,

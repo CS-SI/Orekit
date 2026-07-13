@@ -190,6 +190,9 @@ NOT_POSITIVE_SPACECRAFT_MASS=masa vehiculului spațial nu este pozitivă: {0} kg
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=eccentricitate prea mare pentru modelul de propagare: e = {0}
 
+# too large eccentricity for teardrop motion: e > 1e-4
+TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION=excentricitate prea mare pentru mișcarea în formă de lacrimă: e > 1e-4
+
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE=nu există informații referitoare la activitatea solară la data {0}, informații disponibile doar pentru intervalul [{1}, {2}]
 
@@ -577,11 +580,17 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=senzorul cu indice {0} este deja utilizat
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=lipsește senzorul cu indice {0}
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=numărul de elemente este inconsistent: așteptat {0}, existent {1}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS=Crearea unui propagator combinator necesită cel puțin un propagator, dar nici unul nu a fost definit.
+
+# aggregate propagator requires either all null or all non-null attitude providers
+BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS=
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
 NOT_ENOUGH_ATTITUDE_PROVIDERS=Crearea unui furnizor de atitudine agregat necesită cel puțin un furnizor de atitudine, dar niciunul nu a fost definit.
@@ -974,6 +983,9 @@ WRONG_SATELLITES_NUMBER=
 
 # invalid format: width = {0}, precision = {1}
 INVALID_FORMAT=
+
+# width exceeded: value {0} cannot fit in a field {1} characters wide
+WIDTH_EXCEEDED=
 
 # output {0} has already been closed
 OUTPUT_ALREADY_CLOSED=

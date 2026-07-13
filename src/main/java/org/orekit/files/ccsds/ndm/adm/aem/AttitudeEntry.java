@@ -73,9 +73,9 @@ class AttitudeEntry {
      * @param angle value of the angle (rad)
      */
     public void setLabeledAngle(final char axis, final double angle) {
-        if (metadata.getEulerRotSeq() != null) {
+        if (metadata.getEulerRotSeq().isPresent()) {
             for (int i = 0; i < components.length; ++i) {
-                if (metadata.getEulerRotSeq().name().charAt(i) == axis && Double.isNaN(components[i])) {
+                if (metadata.getEulerRotSeq().get().name().charAt(i) == axis && Double.isNaN(components[i])) {
                     setComponent(i, angle);
                     return;
                 }
@@ -88,12 +88,12 @@ class AttitudeEntry {
      * @param rate value of the rate (rad/s)
      */
     public void setLabeledRate(final char axis, final double rate) {
-        if (metadata.getEulerRotSeq() != null) {
+        if (metadata.getEulerRotSeq().isPresent()) {
             final int first = (metadata.getAttitudeType() == AttitudeType.QUATERNION_ANGVEL ||
                                metadata.getAttitudeType() == AttitudeType.QUATERNION_EULER_RATES) ?
                               4 : 3;
             for (int i = 0; i < 3; ++i) {
-                if (metadata.getEulerRotSeq().name().charAt(i) == axis && Double.isNaN(components[first + i])) {
+                if (metadata.getEulerRotSeq().get().name().charAt(i) == axis && Double.isNaN(components[first + i])) {
                     setComponent(first + i, rate);
                     return;
                 }
@@ -107,7 +107,7 @@ class AttitudeEntry {
     public TimeStampedAngularCoordinates getCoordinates() {
         return metadata.getAttitudeType().build(metadata.isFirst(),
                                                 metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                metadata.getEulerRotSeq(), metadata.isSpacecraftBodyRate(),
+                                                metadata.getEulerRotSeq().orElse(null), metadata.isSpacecraftBodyRate(),
                                                 epoch, components);
     }
 

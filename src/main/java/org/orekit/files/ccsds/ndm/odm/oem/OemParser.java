@@ -30,8 +30,8 @@ import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.OdmParser;
@@ -219,8 +219,8 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.validate(header.getFormatVersion());
-        if (metadata.getCenter().getBody() != null) {
-            setMuCreated(metadata.getCenter().getBody().getGM());
+        if (metadata.getCenter().getBody().isPresent()) {
+            setMuCreated(metadata.getCenter().getBody().get().getGM());
         }
         anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;

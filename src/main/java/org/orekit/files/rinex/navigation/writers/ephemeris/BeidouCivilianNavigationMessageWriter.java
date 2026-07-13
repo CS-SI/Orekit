@@ -34,6 +34,11 @@ import java.io.IOException;
 public class BeidouCivilianNavigationMessageWriter
     extends AbstractNavigationMessageWriter<BeidouCivilianNavigationMessage> {
 
+    /** Simple constructor. */
+    public BeidouCivilianNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeField1Line1(final BeidouCivilianNavigationMessage message,

@@ -88,45 +88,45 @@ public class AcmWriter extends AbstractMessageWriter<AdmHeader, Segment<AcmMetad
         }
 
         // attitude history
-        if (segment.getData().getAttitudeBlocks() != null && !segment.getData().getAttitudeBlocks().isEmpty()) {
+        if (!segment.getData().getAttitudeBlocks().isEmpty()) {
             for (final AttitudeStateHistory history : segment.getData().getAttitudeBlocks()) {
                 // write optional attitude history block
                 new AttitudeStateHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 
-        if (segment.getData().getPhysicBlock() != null) {
+        if (segment.getData().getPhysicBlock().isPresent()) {
             // write optional physical properties block
-            new AttitudePhysicalPropertiesWriter(segment.getData().getPhysicBlock()).
+            new AttitudePhysicalPropertiesWriter(segment.getData().getPhysicBlock().get()).
             write(generator);
         }
 
         // covariance history
-        if (segment.getData().getCovarianceBlocks() != null && !segment.getData().getCovarianceBlocks().isEmpty()) {
+        if (!segment.getData().getCovarianceBlocks().isEmpty()) {
             for (final AttitudeCovarianceHistory history : segment.getData().getCovarianceBlocks()) {
                 // write optional covariance history block
                 new AttitudeCovarianceHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 
-        if (segment.getData().getManeuverBlocks() != null && !segment.getData().getManeuverBlocks().isEmpty()) {
+        if (!segment.getData().getManeuverBlocks().isEmpty()) {
             for (final AttitudeManeuver maneuver : segment.getData().getManeuverBlocks()) {
                 // write optional maneuver block
                 new AttitudeManeuverWriter(maneuver).write(generator);
             }
         }
 
-        if (segment.getData().getAttitudeDeterminationBlock() != null) {
+        if (segment.getData().getAttitudeDeterminationBlock().isPresent()) {
             // write optional attitude determination block
-            new AttitudeDeterminationWriter(segment.getData().getAttitudeDeterminationBlock()).
+            new AttitudeDeterminationWriter(segment.getData().getAttitudeDeterminationBlock().get()).
             write(generator);
         }
 
-        if (segment.getData().getUserDefinedBlock() != null) {
+        if (segment.getData().getUserDefinedBlock().isPresent()) {
             // write optional user defined parameters block
             new UserDefinedWriter(AcmDataSubStructureKey.user.name(),
                                   AcmDataSubStructureKey.USER.name(),
-                                  segment.getData().getUserDefinedBlock()).
+                                  segment.getData().getUserDefinedBlock().get()).
             write(generator);
         }
 

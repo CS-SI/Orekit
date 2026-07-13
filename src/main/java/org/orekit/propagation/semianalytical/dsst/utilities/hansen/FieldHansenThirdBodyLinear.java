@@ -61,16 +61,32 @@ public class FieldHansenThirdBodyLinear <T extends CalculusFieldElement<T>> {
     /** The s index. */
     private final int s;
 
-    /** (-1)<sup>s</sup> * (2*s + 1)!! / (s+1)!  */
+    /** Recursive coefficient.
+     * <p>
+     *     (-1)<sup>s</sup> * (2*s + 1)!! / (s+1)!
+     * </p>
+     */
     private double twosp1dfosp1f;
 
-    /** (-1)<sup>s</sup> * (2*s + 1)!! / (s+2)!  */
+    /** Recursive coefficient.
+     * <p>
+     *     (-1)<sup>s</sup> * (2*s + 1)!! / (s+2)!
+     * </p>
+     */
     private final double twosp1dfosp2f;
 
-    /** (-1)<sup>s</sup> * 2 * (2*s + 1)!! / (s+2)!  */
+    /** Recursive coefficient.
+     * <p>
+     *     (-1)<sup>s</sup> * 2 * (2*s + 1)!! / (s+2)!
+     * </p>
+     */
     private final double two2sp1dfosp2f;
 
-    /** (2*s + 3). */
+    /** Recursive coefficient.
+     * <p>
+     *     (2*s + 3).
+     * </p>
+     */
     private final double twosp3;
 
     /**
@@ -110,7 +126,10 @@ public class FieldHansenThirdBodyLinear <T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Compute the initial values (see Collins, 4-255, 4-256 and 4.259)
+     * Compute the initial values.
+     * <p>
+     *     (see Collins, 4-255, 4-256 and 4.259)
+     * </p>
      * <p>
      * K₀<sup>s, s</sup> = (-1)<sup>s</sup> * ( (2*s+1)!! / (s+1)! )
      * </p>

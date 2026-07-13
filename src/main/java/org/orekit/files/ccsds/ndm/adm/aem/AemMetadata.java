@@ -16,7 +16,10 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.util.Optional;
+
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
@@ -43,29 +46,36 @@ public class AemMetadata extends AdmMetadata {
     private AbsoluteDate stopTime;
 
     /** Start of useable time span covered by attitude data. */
+    @Nullable
     private AbsoluteDate useableStartTime;
 
     /** End of useable time span covered by attitude data. */
+    @Nullable
     private AbsoluteDate useableStopTime;
 
     /** The format of the data lines in the message. */
     private AttitudeType attitudeType;
 
     /** The placement of the scalar portion of the quaternion (QC) in the attitude data. */
+    @Nullable
     private Boolean isFirst;
 
     /** The rotation sequence of the Euler angles. */
+    @Nullable
     private RotationOrder eulerRotSeq;
 
     /** The frame in which rates are specified (only for ADM V1). */
+    @Nullable
     private Boolean rateFrameIsA;
 
     /** The frame in which angular velocities are specified.
      * @since 12.0
      */
+    @Nullable
     private FrameFacade angvelFrame;
 
     /** The interpolation method to be used. */
+    @Nullable
     private String interpolationMethod;
 
     /** The interpolation degree. */
@@ -156,7 +166,7 @@ public class AemMetadata extends AdmMetadata {
      * @return true if rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}
      */
     public boolean rateFrameIsA() {
-        return rateFrameIsA == null ? false : rateFrameIsA;
+        return rateFrameIsA != null && rateFrameIsA;
     }
 
     /** Set the frame in which rates are specified.
@@ -179,8 +189,8 @@ public class AemMetadata extends AdmMetadata {
      * @return frame in which angular velocities are specified
      * @since 12.0
      */
-    public FrameFacade getFrameAngvelFrame() {
-        return angvelFrame;
+    public Optional<FrameFacade> getFrameAngvelFrame() {
+        return Optional.ofNullable(angvelFrame);
     }
 
     /** Check if rates are specified in spacecraft body frame.
@@ -192,7 +202,7 @@ public class AemMetadata extends AdmMetadata {
      * @return true if rates are specified in spacecraft body frame
      */
     public boolean isSpacecraftBodyRate() {
-        return rateFrameIsA() ^ endpoints.getFrameA().asSpacecraftBodyFrame() == null;
+        return rateFrameIsA() ^ endpoints.getFrameA().asSpacecraftBodyFrame().isPresent();
     }
 
     /**
@@ -236,8 +246,8 @@ public class AemMetadata extends AdmMetadata {
      * Get the rotation order of Euler angles.
      * @return rotation order
      */
-    public RotationOrder getEulerRotSeq() {
-        return eulerRotSeq;
+    public Optional<RotationOrder> getEulerRotSeq() {
+        return Optional.ofNullable(eulerRotSeq);
     }
 
     /**
@@ -287,8 +297,8 @@ public class AemMetadata extends AdmMetadata {
      * Get start of useable time span covered by attitude data.
      * @return the useable start time
      */
-    public AbsoluteDate getUseableStartTime() {
-        return useableStartTime;
+    public Optional<AbsoluteDate> getUseableStartTime() {
+        return Optional.ofNullable(useableStartTime);
     }
 
     /**
@@ -304,8 +314,8 @@ public class AemMetadata extends AdmMetadata {
      * Get end of useable time span covered by ephemerides data.
      * @return the useable stop time
      */
-    public AbsoluteDate getUseableStopTime() {
-        return useableStopTime;
+    public Optional<AbsoluteDate> getUseableStopTime() {
+        return Optional.ofNullable(useableStopTime);
     }
 
     /**
@@ -324,12 +334,7 @@ public class AemMetadata extends AdmMetadata {
      */
     public AbsoluteDate getStart() {
         // usable start time overrides start time if it is set
-        final AbsoluteDate start = this.getUseableStartTime();
-        if (start != null) {
-            return start;
-        } else {
-            return this.getStartTime();
-        }
+        return this.getUseableStartTime().orElse(this.getStartTime());
     }
 
     /**
@@ -339,12 +344,7 @@ public class AemMetadata extends AdmMetadata {
      */
     public AbsoluteDate getStop() {
         // useable stop time overrides stop time if it is set
-        final AbsoluteDate stop = this.getUseableStopTime();
-        if (stop != null) {
-            return stop;
-        } else {
-            return this.getStopTime();
-        }
+        return this.getUseableStopTime().orElse(this.getStopTime());
     }
 
     /**
@@ -352,8 +352,8 @@ public class AemMetadata extends AdmMetadata {
      *
      * @return the interpolation method
      */
-    public String getInterpolationMethod() {
-        return interpolationMethod;
+    public Optional<String> getInterpolationMethod() {
+        return Optional.ofNullable(interpolationMethod);
     }
 
     /**
@@ -413,9 +413,7 @@ public class AemMetadata extends AdmMetadata {
         // copy object
         copy.setObjectName(getObjectName());
         copy.setObjectID(getObjectID());
-        if (getCenter() != null) {
-            copy.setCenter(getCenter());
-        }
+        getCenter().ifPresent(copy::setCenter);
 
         // copy frames (we may copy null references here)
         copy.getEndpoints().setFrameA(getEndpoints().getFrameA());
@@ -431,14 +429,10 @@ public class AemMetadata extends AdmMetadata {
         if (isFirst() != null) {
             copy.setIsFirst(isFirst());
         }
-        if (getEulerRotSeq() != null) {
-            copy.setEulerRotSeq(getEulerRotSeq());
-        }
+        getEulerRotSeq().ifPresent(copy::setEulerRotSeq);
 
         // copy interpolation (degree has already been set up at construction)
-        if (getInterpolationMethod() != null) {
-            copy.setInterpolationMethod(getInterpolationMethod());
-        }
+        getInterpolationMethod().ifPresent(copy::setInterpolationMethod);
 
         return copy;
 

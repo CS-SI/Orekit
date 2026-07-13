@@ -31,6 +31,11 @@ import java.io.IOException;
  */
 public class KlobucharMessageWriter extends NavigationMessageWriter<IonosphereKlobucharMessage> {
 
+    /** Simple constructor. */
+    public KlobucharMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final IonosphereKlobucharMessage message,

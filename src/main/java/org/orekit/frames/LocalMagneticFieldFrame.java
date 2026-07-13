@@ -227,7 +227,7 @@ public class LocalMagneticFieldFrame implements LOF {
             }
         };
 
-        /**
+        /** Get the +Y axis of the local frame.
          * @param pv position-velocity coordinates expressed in the instance inertial frame
          *
          * @return Vector used to define the local orbital frame by computing the cross product of the magnetic field with

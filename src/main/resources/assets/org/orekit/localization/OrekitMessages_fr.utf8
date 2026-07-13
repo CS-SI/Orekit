@@ -190,6 +190,9 @@ NOT_POSITIVE_SPACECRAFT_MASS=la masse du véhicule spatial n''est pas positive 
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=excentricité trop grande pour le modèle de propagation : e = {0}
 
+# too large eccentricity for teardrop motion: e > 1e-4
+TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION=excentricité trop grande pour un mouvement en forme de goutte d'eau : e > 1e-4
+
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE=pas de paramètres d''activité du soleil disponibles le {0}, données disponibles uniquement pour l''intervalle [{1}, {2}]
 
@@ -577,11 +580,17 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=index de capteur {0} déjà utilisé
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=index de capteur {0} manquant
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=la valeur optionnelle ne peut pas être utilisée car non présente dans le fichier
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=nombre d''éléments incohérent, {0} attendus pour {1} fournis
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS=La création d''un propagateur combiné nécessite au moins un propagateur, mais aucun n''a été fourni.
+
+# aggregate propagator requires either all null or all non-null attitude providers
+BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS=un propagateur combiné nécessite soit tous les fournisseurs d''attitude nuls soit aucun fournisseur d''attitude nul
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
 NOT_ENOUGH_ATTITUDE_PROVIDERS=la création d''un fournisseur d''attitude combiné nécessite au moins un fournisseur d''attitude, mais aucun n''a été fourni.
@@ -974,6 +983,9 @@ WRONG_SATELLITES_NUMBER=nombre de satellites erroné dans le fichier {0}, {1} at
 
 # invalid format: width = {0}, precision = {1}
 INVALID_FORMAT=format invalide : taille = {0}, précision = {1}
+
+# width exceeded: value {0} cannot fit in a field {1} characters wide
+WIDTH_EXCEEDED=dépassement de capacité : la valeur {0} ne peut pas tenir dans un champ limité à {1} caractères
 
 # output {0} has already been closed
 OUTPUT_ALREADY_CLOSED=la sortie {0} a déjà été fermée

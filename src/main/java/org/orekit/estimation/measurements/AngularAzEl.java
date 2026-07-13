@@ -100,21 +100,22 @@ public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
     @Override
     protected EstimatedMeasurementBase<AngularAzEl> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                             final int evaluation,
-                                                                                            final SpacecraftState[] states) {
+                                                                                            final SpacecraftState[] states,
+                                                                                            final boolean fillParticipants) {
         // Compute emission date
         final AbsoluteDate receptionDate = station.getCorrectedReceptionDate(getDate());
         final PVCoordinatesProvider receiverPVProvider = station.getPVCoordinatesProvider();
         final SpacecraftState state = states[0];
         final Frame frame = state.getFrame();
         final PVCoordinatesProvider emitter = AbstractParticipant.extractPVCoordinatesProvider(state, state.getPVCoordinates());
-        final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
+        final Vector3D receiverPosition = receiverPVProvider.getPosition(receptionDate, frame);
         final SignalReceptionCondition receptionCondition = new SignalReceptionCondition(receptionDate,
-                receiverPV.getPosition(), frame);
+                receiverPosition, frame);
         final AbsoluteDate emissionDate = computeEmissionDate(receptionCondition, emitter);
 
         // Compute azimuth and elevation
         final BodyShape bodyShape = station.getBaseFrame().getParentShape();
-        final GeodeticPoint geodeticPoint = bodyShape.transform(receiverPV.getPosition(), frame, receptionDate);
+        final GeodeticPoint geodeticPoint = bodyShape.transform(receiverPosition, frame, receptionDate);
         final TopocentricAzElModel measurementModel = new TopocentricAzElModel(frame, bodyShape,
                 getSignalTravelTimeModel().getWarmedUpModel());
         final double[] azEl = measurementModel.value(geodeticPoint, receptionDate, emitter, emissionDate);
@@ -123,8 +124,9 @@ public class AngularAzEl extends AngularMeasurement<AngularAzEl> {
         final double shift = emissionDate.durationFrom(state);
         final SpacecraftState shiftedState = state.shiftedBy(shift);
         final EstimatedMeasurementBase<AngularAzEl> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
-                new SpacecraftState[] { shiftedState },
-                new TimeStampedPVCoordinates[] { shiftedState.getPVCoordinates(), receiverPV });
+                new SpacecraftState[] { shiftedState }, fillParticipants ? new TimeStampedPVCoordinates[] {
+                        shiftedState.getPVCoordinates(), receiverPVProvider.getPVCoordinates(receptionDate, frame) } :
+                new TimeStampedPVCoordinates[0]);
         estimated.setEstimatedValue(wrapFirstAngle(azEl[0]), azEl[1]);
         return estimated;
     }

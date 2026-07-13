@@ -115,15 +115,16 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
     @Override
     protected EstimatedMeasurementBase<Range> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                       final int evaluation,
-                                                                                      final SpacecraftState[] states) {
+                                                                                      final SpacecraftState[] states,
+                                                                                      final boolean fillParticipants) {
         // compute reception date
         final double clockOffset = getObserver().getQuadraticClockModel().getOffset(getDate()).getBias();
         final AbsoluteDate receptionDate = getDate().shiftedBy(-clockOffset);
 
         if (isTwoWay()) {
-            return twoWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0]);
+            return twoWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0], fillParticipants);
         } else {
-            return oneWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0]);
+            return oneWayTheoreticalEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states[0], fillParticipants);
         }
     }
 
@@ -133,19 +134,25 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
      * @param evaluation evaluations counter
      * @param receptionDate signal final reception date
      * @param state state
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
      * @return theoretical value
      * @since 14.0
      */
     private EstimatedMeasurementBase<Range> twoWayTheoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                           final int evaluation,
                                                                                           final AbsoluteDate receptionDate,
-                                                                                          final SpacecraftState state) {
-        final EstimatedMeasurementBase<Range> estimated = initializeTwoWayTheoreticalEvaluation(this, iteration, evaluation,
-                receptionDate, state);
+                                                                                          final SpacecraftState state,
+                                                                                          final boolean fillParticipants) {
+        EstimatedMeasurementBase<Range> estimated = initializeTwoWayTheoreticalEvaluation(this, iteration, evaluation,
+                receptionDate, state, true);
 
         // Compute range
         final AbsoluteDate emissionDate = estimated.getParticipants()[0].getDate();
         final double range = receptionDate.durationFrom(emissionDate) * Constants.SPEED_OF_LIGHT / 2.;
+        if (!fillParticipants) {
+            estimated = new EstimatedMeasurementBase<>(estimated.getObservedMeasurement(), iteration, evaluation,
+                    estimated.getStates(), new TimeStampedPVCoordinates[0]);
+        }
         estimated.setEstimatedValue(range);
         return estimated;
     }
@@ -155,15 +162,17 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
      * @param evaluation evaluations counter
      * @param receptionDate signal reception date
      * @param state state
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
      * @return theoretical value
      * @since 14.0
      */
     private EstimatedMeasurementBase<Range> oneWayTheoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                           final int evaluation,
                                                                                           final AbsoluteDate receptionDate,
-                                                                                          final SpacecraftState state) {
-        final EstimatedMeasurementBase<Range> estimated = initializeOneWayTheoreticalEvaluation(this, iteration, evaluation,
-                receptionDate, state);
+                                                                                          final SpacecraftState state,
+                                                                                          final boolean fillParticipants) {
+        EstimatedMeasurementBase<Range> estimated = initializeOneWayTheoreticalEvaluation(this, iteration, evaluation,
+                receptionDate, state, true);
         final AbsoluteDate emissionDate = estimated.getParticipants()[0].getDate();
 
         // clock bias, taken in account only in case of one way
@@ -173,6 +182,10 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
         final double clockBias = dtg - dts;
 
         final double range = (clockBias + receptionDate.durationFrom(emissionDate)) * Constants.SPEED_OF_LIGHT;
+        if (!fillParticipants) {
+            estimated = new EstimatedMeasurementBase<>(estimated.getObservedMeasurement(), iteration, evaluation,
+                    estimated.getStates(), new TimeStampedPVCoordinates[0]);
+        }
         estimated.setEstimatedValue(range);
         return estimated;
     }

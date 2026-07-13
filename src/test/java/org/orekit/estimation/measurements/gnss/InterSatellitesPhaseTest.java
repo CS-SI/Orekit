@@ -201,10 +201,10 @@ public class InterSatellitesPhaseTest {
 
                     // Values of the phase & errors
                     final double phaseObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
+                    final EstimatedMeasurementBase<?> estimated = ((InterSatellitesPhase) measurement).theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] {
                                                                                                              state,
                                                                                                              ephemeris.propagate(state.getDate())
-                                                                                                         });
+                                                                                                         }, true);
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);

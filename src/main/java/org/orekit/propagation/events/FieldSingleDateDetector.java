@@ -29,6 +29,7 @@ import org.orekit.time.TimeStamped;
 
 /** Finder for single date detection.
  * The event function is positive after, negative before.
+ * @param <T> type of the field element
  * @author Romain Serra
  * @since 14.0
  * @see SingleDateDetector

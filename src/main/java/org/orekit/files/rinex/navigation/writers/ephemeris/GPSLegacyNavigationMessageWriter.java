@@ -28,6 +28,11 @@ import java.io.IOException;
  */
 public class GPSLegacyNavigationMessageWriter extends LegacyNavigationMessageWriter<GPSLegacyNavigationMessage> {
 
+    /** Simple constructor. */
+    public GPSLegacyNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeURA(final GPSLegacyNavigationMessage message, final RinexNavigationWriter writer)

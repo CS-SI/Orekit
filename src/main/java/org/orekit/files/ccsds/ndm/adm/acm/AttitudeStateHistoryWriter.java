@@ -59,10 +59,10 @@ class AttitudeStateHistoryWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // identifiers
-        generator.writeEntry(AttitudeStateHistoryMetadataKey.ATT_ID.name(),       metadata.getAttID(),      null, false);
-        generator.writeEntry(AttitudeStateHistoryMetadataKey.ATT_PREV_ID.name(),  metadata.getAttPrevID(),  null, false);
-        generator.writeEntry(AttitudeStateHistoryMetadataKey.ATT_BASIS.name(),    metadata.getAttBasis(),   null, false);
-        generator.writeEntry(AttitudeStateHistoryMetadataKey.ATT_BASIS_ID.name(), metadata.getAttBasisID(), null, false);
+        generator.writeOptionalStringEntry(AttitudeStateHistoryMetadataKey.ATT_ID.name(),       metadata.getAttID(),      null, false);
+        generator.writeOptionalStringEntry(AttitudeStateHistoryMetadataKey.ATT_PREV_ID.name(),  metadata.getAttPrevID(),  null, false);
+        generator.writeOptionalStringEntry(AttitudeStateHistoryMetadataKey.ATT_BASIS.name(),    metadata.getAttBasis(),   null, false);
+        generator.writeOptionalStringEntry(AttitudeStateHistoryMetadataKey.ATT_BASIS_ID.name(), metadata.getAttBasisID(), null, false);
 
         // references
         generator.writeEntry(AttitudeStateHistoryMetadataKey.REF_FRAME_A.name(),  metadata.getEndpoints().getFrameA().getName(),  null, true);
@@ -70,18 +70,16 @@ class AttitudeStateHistoryWriter extends AbstractWriter {
 
         // types
         if (metadata.getAttitudeType() == AttitudeElementsType.EULER_ANGLES) {
-            generator.writeEntry(AttitudeStateHistoryMetadataKey.EULER_ROT_SEQ.name(), metadata.getEulerRotSeq(), true);
+            generator.writeOptionalEnumEntry(AttitudeStateHistoryMetadataKey.EULER_ROT_SEQ.name(), metadata.getEulerRotSeq(), true);
         }
-        generator.writeEntry(AttitudeStateHistoryMetadataKey.NUMBER_STATES.name(), metadata.getNbStates(),     true);
-        generator.writeEntry(AttitudeStateHistoryMetadataKey.ATT_TYPE.name(),      metadata.getAttitudeType(), true);
-        if (metadata.getRateType() != null) {
-            generator.writeEntry(AttitudeStateHistoryMetadataKey.RATE_TYPE.name(), metadata.getRateType(),     true);
-        }
+        generator.writeEntry(AttitudeStateHistoryMetadataKey.NUMBER_STATES.name(),         metadata.getNbStates(),     true);
+        generator.writeEntry(AttitudeStateHistoryMetadataKey.ATT_TYPE.name(),              metadata.getAttitudeType(), true);
+        generator.writeOptionalEnumEntry(AttitudeStateHistoryMetadataKey.RATE_TYPE.name(), metadata.getRateType(),     false);
 
         // data
         final List<Unit> attUnits  = metadata.getAttitudeType().getUnits();
-        final List<Unit> rateUnits = metadata.getRateType() == null ?
-                                     Collections.emptyList() : metadata.getRateType().getUnits();
+        final List<Unit> rateUnits = metadata.getRateType().isEmpty() ?
+                                     Collections.emptyList() : metadata.getRateType().get().getUnits();
         for (final AttitudeState state : history.getAttitudeStates()) {
             final double[]      elements = state.getElements();
             final StringBuilder line     = new StringBuilder();

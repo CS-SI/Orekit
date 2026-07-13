@@ -17,9 +17,12 @@
 
 package org.orekit.files.ccsds.ndm.adm.acm;
 
+import java.util.Optional;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
@@ -44,34 +47,37 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 public class AttitudePhysicalProperties extends CommentsContainer {
 
     /** Drag coefficient. */
-    private double dragCoefficient;
+    @Nullable
+    private Double dragCoefficient;
 
     /** Total mass at T₀. */
-    private double wetMass;
+    @Nullable
+    private Double wetMass;
 
     /** Mass without propellant. */
-    private double dryMass;
+    @Nullable
+    private Double dryMass;
 
     /** Reference frame for center of pressure. */
+    @Nullable
     private FrameFacade centerOfPressureReferenceFrame;
 
     /** Location of center of pressure. */
+    @Nullable
     private Vector3D centerOfPressure;
 
     /** Reference frame for inertia. */
+    @Nullable
     private FrameFacade inertiaReferenceFrame;
 
     /** Inertia matrix. */
-    private final RealMatrix inertiaMatrix;
+    @Nullable
+    private RealMatrix inertiaMatrix;
 
     /**
      * Simple constructor.
      */
     public AttitudePhysicalProperties() {
-        dragCoefficient = Double.NaN;
-        wetMass         = Double.NaN;
-        dryMass         = Double.NaN;
-        inertiaMatrix   = MatrixUtils.createRealMatrix(3, 3);
     }
 
     /** {@inheritDoc} */
@@ -86,8 +92,8 @@ public class AttitudePhysicalProperties extends CommentsContainer {
     /** Get the drag coefficient.
      * @return the drag coefficient
      */
-    public double getDragCoefficient() {
-        return dragCoefficient;
+    public Optional<Double> getDragCoefficient() {
+        return Optional.ofNullable(dragCoefficient);
     }
 
     /** Set the the drag coefficient.
@@ -101,8 +107,8 @@ public class AttitudePhysicalProperties extends CommentsContainer {
     /** Get the total mass at T₀.
      * @return total mass at T₀
      */
-    public double getWetMass() {
-        return wetMass;
+    public Optional<Double> getWetMass() {
+        return Optional.ofNullable(wetMass);
     }
 
     /** Set the total mass at T₀.
@@ -116,8 +122,8 @@ public class AttitudePhysicalProperties extends CommentsContainer {
     /** Get the mass without propellant.
      * @return mass without propellant
      */
-    public double getDryMass() {
-        return dryMass;
+    public Optional<Double> getDryMass() {
+        return Optional.ofNullable(dryMass);
     }
 
     /** Set the mass without propellant.
@@ -131,8 +137,8 @@ public class AttitudePhysicalProperties extends CommentsContainer {
     /** Get reference frame for center of pressure.
      * @return reference frame for center of pressure
      */
-    public FrameFacade getCenterOfPressureReferenceFrame() {
-        return centerOfPressureReferenceFrame;
+    public Optional<FrameFacade> getCenterOfPressureReferenceFrame() {
+        return Optional.ofNullable(centerOfPressureReferenceFrame);
     }
 
     /** Set reference frame for center of pressure.
@@ -145,8 +151,8 @@ public class AttitudePhysicalProperties extends CommentsContainer {
     /** Get the location of center of pressure.
      * @return location of center of pressure
      */
-    public Vector3D getCenterOfPressure() {
-        return centerOfPressure;
+    public Optional<Vector3D> getCenterOfPressure() {
+        return Optional.ofNullable(centerOfPressure);
     }
 
     /** Set the location of center of pressure.
@@ -159,8 +165,8 @@ public class AttitudePhysicalProperties extends CommentsContainer {
     /** Get reference frame for inertia.
      * @return reference frame for inertia
      */
-    public FrameFacade getInertiaReferenceFrame() {
-        return inertiaReferenceFrame;
+    public Optional<FrameFacade> getInertiaReferenceFrame() {
+        return Optional.ofNullable(inertiaReferenceFrame);
     }
 
     /** Set reference frame for inertia.
@@ -173,8 +179,8 @@ public class AttitudePhysicalProperties extends CommentsContainer {
     /** Get the inertia matrix.
      * @return the inertia matrix
      */
-    public RealMatrix getInertiaMatrix() {
-        return inertiaMatrix;
+    public Optional<RealMatrix> getInertiaMatrix() {
+        return Optional.ofNullable(inertiaMatrix);
     }
 
     /** Set an entry in the inertia matrix.
@@ -187,6 +193,9 @@ public class AttitudePhysicalProperties extends CommentsContainer {
      */
     public void setInertiaMatrixEntry(final int j, final int k, final double entry) {
         refuseFurtherComments();
+        if (inertiaMatrix == null) {
+            inertiaMatrix = MatrixUtils.createRealMatrix(3, 3);
+        }
         inertiaMatrix.setEntry(j, k, entry);
         inertiaMatrix.setEntry(k, j, entry);
     }

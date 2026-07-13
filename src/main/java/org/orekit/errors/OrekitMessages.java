@@ -219,6 +219,9 @@ public enum OrekitMessages implements Localizable {
     /** TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL. */
     TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL("too large eccentricity for propagation model: e = {0}"),
 
+    /** TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION. */
+    TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION("too large eccentricity for teardrop motion: e > 1e-4"),
+
     /** NO_SOLAR_ACTIVITY_AT_DATE. */
     NO_SOLAR_ACTIVITY_AT_DATE("no solar activity available at {0}, data available only in range [{1}, {2}]"),
 
@@ -441,6 +444,9 @@ public enum OrekitMessages implements Localizable {
     /** CCSDS_MISSING_SENSOR_INDEX. */
     CCSDS_MISSING_SENSOR_INDEX("missing sensor index {0}"),
 
+    /** CCSDS_MISSING_SENSOR_INDEX. */
+    CCSDS_MISSING_OPTIONAL_VALUE("cannot use optional CCSDS value because not present in file"),
+
     /** IIRV_MISSING_LINEBREAK_IN_FILE. */
     IIRV_MISSING_LINEBREAK_IN_FILE("line break(s) missing after vector number {0} in {1}"),
 
@@ -615,6 +621,9 @@ public enum OrekitMessages implements Localizable {
 
     /** NOT_ENOUGH_PROPAGATORS. */
     NOT_ENOUGH_PROPAGATORS("Creating an aggregate propagator requires at least one constituent propagator, but none were provided."),
+
+    /** BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS. */
+    BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS("aggregate propagator requires either all null or all non-null attitude providers"),
 
     /** NOT_ENOUGH_ATTITUDE_PROVIDERS. */
     NOT_ENOUGH_ATTITUDE_PROVIDERS("Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided."),
@@ -1014,6 +1023,11 @@ public enum OrekitMessages implements Localizable {
 
     /** INVALID_FORMAT. */
     INVALID_FORMAT("invalid format: width = {0}, precision = {1}"),
+
+    /** WIDTH_EXCEEDED.
+     * @since 14.0
+     */
+    WIDTH_EXCEEDED("width exceeded: value {0} cannot fit in a field {1} characters wide"),
 
     /** OUTPUT_ALREADY_CLOSED. */
     OUTPUT_ALREADY_CLOSED("output {0} has already been closed"),

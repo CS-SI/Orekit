@@ -85,9 +85,12 @@ public enum ObservationType {
         @Override
         public double rawToSI(final RangeUnitsConverter ruConverter, final TdmMetadata metadata,
                               final AbsoluteDate date, final double rawValue) {
-            if (metadata.getRangeUnits() == RangeUnits.km) {
+            metadata.
+                getRangeUnits().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE));
+            if (metadata.getRangeUnits().get() == RangeUnits.km) {
                 return Unit.KILOMETRE.toSI(rawValue);
-            } else if (metadata.getRangeUnits() == RangeUnits.s) {
+            } else if (metadata.getRangeUnits().get() == RangeUnits.s) {
                 return rawValue * Constants.SPEED_OF_LIGHT;
             } else {
                 if (ruConverter == null) {
@@ -101,9 +104,12 @@ public enum ObservationType {
         @Override
         public double siToRaw(final RangeUnitsConverter ruConverter, final TdmMetadata metadata,
                               final AbsoluteDate date, final double siValue) {
-            if (metadata.getRangeUnits() == RangeUnits.km) {
+            metadata.
+                getRangeUnits().
+                orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_OPTIONAL_VALUE));
+            if (metadata.getRangeUnits().get() == RangeUnits.km) {
                 return Unit.KILOMETRE.fromSI(siValue);
-            } else if (metadata.getRangeUnits() == RangeUnits.s) {
+            } else if (metadata.getRangeUnits().get() == RangeUnits.s) {
                 return siValue / Constants.SPEED_OF_LIGHT;
             } else {
                 if (ruConverter == null) {

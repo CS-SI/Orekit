@@ -222,7 +222,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
         // search for next events that may occur during the step
         final int orderingSign = interpolator.isForward() ? +1 : -1;
-        final Queue<FieldEventState<?, T>> occurringEvents = new PriorityQueue<>(new Comparator<FieldEventState<?, T>>() {
+        final Queue<FieldEventState<?, T>> occurringEvents = new PriorityQueue<>(new Comparator<>() {
             /** {@inheritDoc} */
             @Override
             public int compare(final FieldEventState<?, T> es0, final FieldEventState<?, T> es1) {
@@ -405,7 +405,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         }
     }
 
-    /** Internal FieldPVCoordinatesProvider<T> for attitude computation. */
+    /** Internal FieldPVCoordinatesProvider for attitude computation. */
     private class FieldLocalPVProvider implements FieldPVCoordinatesProvider<T> {
 
         /** {@inheritDoc} */

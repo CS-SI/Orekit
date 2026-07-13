@@ -158,7 +158,7 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
             generator.writeComments(header.getComments());
 
             // classification is optional
-            generator.writeEntry(HeaderKey.CLASSIFICATION.name(), header.getClassification(), null, false);
+            generator.writeOptionalStringEntry(HeaderKey.CLASSIFICATION.name(), header.getClassification(), null, false);
 
         }
 
@@ -174,7 +174,7 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
                              null, true);
 
         if (header != null) {
-            generator.writeEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), null, false);
+            generator.writeOptionalStringEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), null, false);
         }
 
         if (generator.getFormat() == FileFormat.XML) {

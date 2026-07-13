@@ -120,15 +120,16 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
     @Override
     protected EstimatedMeasurementBase<InterSatellitesRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                      final int evaluation,
-                                                                                                     final SpacecraftState[] states) {
+                                                                                                     final SpacecraftState[] states,
+                                                                                                     final boolean fillParticipants) {
         // compute actual reception date
         final double dtl = getSatellites().getFirst().getOffsetValue(getDate());
         final AbsoluteDate receptionDate = getDate().shiftedBy(-dtl);
 
         if (isTwoWay()) {
-            return theoreticalTwoWayEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states);
+            return theoreticalTwoWayEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states, fillParticipants);
         } else {
-            return theoreticalOneWayEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states);
+            return theoreticalOneWayEvaluationWithoutDerivatives(iteration, evaluation, receptionDate, states, fillParticipants);
         }
     }
 
@@ -138,13 +139,15 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
      * @param evaluation evaluation
      * @param receptionDate actual reception date
      * @param states states
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
      * @return estimated measurement
      * @since 14.0
      */
     private EstimatedMeasurementBase<InterSatellitesRange> theoreticalTwoWayEvaluationWithoutDerivatives(final int iteration,
                                                                                                          final int evaluation,
                                                                                                          final AbsoluteDate receptionDate,
-                                                                                                         final SpacecraftState[] states) {
+                                                                                                         final SpacecraftState[] states,
+                                                                                                         final boolean fillParticipants) {
         // coordinates of both satellites
         final SpacecraftState local = states[0];
         final SpacecraftState remote = states[1];
@@ -164,9 +167,10 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         // form participants
         final SpacecraftState remoteAtTransit = remote.shiftedBy(transitDate.durationFrom(remote));
         final SpacecraftState localAtEmission = local.shiftedBy(emissionDate.durationFrom(local));
+        final TimeStampedPVCoordinates[] participants = fillParticipants ? new TimeStampedPVCoordinates[] {
+                localAtEmission.getPVCoordinates(), remoteAtTransit.getPVCoordinates(frame), localAtReception.getPVCoordinates()} : new TimeStampedPVCoordinates[0];
         final EstimatedMeasurementBase<InterSatellitesRange> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
-                new SpacecraftState[] { local.shiftedBy(transitDate.durationFrom(local)), remoteAtTransit }, new TimeStampedPVCoordinates[] {
-                localAtEmission.getPVCoordinates(), remoteAtTransit.getPVCoordinates(frame), localAtReception.getPVCoordinates()});
+                new SpacecraftState[] { local.shiftedBy(transitDate.durationFrom(local)), remoteAtTransit }, participants);
 
         // range value
         final double range = (delays[0] + delays[1]) / 2. * Constants.SPEED_OF_LIGHT;
@@ -180,13 +184,15 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
      * @param evaluation evaluation
      * @param receptionDate actual reception date
      * @param states states
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
      * @return estimated measurement
      * @since 14.0
      */
     private EstimatedMeasurementBase<InterSatellitesRange> theoreticalOneWayEvaluationWithoutDerivatives(final int iteration,
                                                                                                          final int evaluation,
                                                                                                          final AbsoluteDate receptionDate,
-                                                                                                         final SpacecraftState[] states) {
+                                                                                                         final SpacecraftState[] states,
+                                                                                                         final boolean fillParticipants) {
         // coordinates of both satellites
         final SpacecraftState local = states[0];
         final SpacecraftState remote = states[1];
@@ -202,9 +208,10 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
 
         // form participants
         final SpacecraftState remoteAtEmission = remote.shiftedBy(emissionDate.durationFrom(remote));
+        final TimeStampedPVCoordinates[] participants = fillParticipants ? new TimeStampedPVCoordinates[] {
+                remoteAtEmission.getPVCoordinates(frame), localAtReception.getPVCoordinates()} : new TimeStampedPVCoordinates[0];
         final EstimatedMeasurementBase<InterSatellitesRange> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
-                new SpacecraftState[] { local.shiftedBy(emissionDate.durationFrom(local)), remoteAtEmission }, new TimeStampedPVCoordinates[] {
-                remoteAtEmission.getPVCoordinates(frame), localAtReception.getPVCoordinates()});
+                new SpacecraftState[] { local.shiftedBy(emissionDate.durationFrom(local)), remoteAtEmission }, participants);
 
         // range value
         final double dtl = getSatellites().getFirst().getOffsetValue(getDate());

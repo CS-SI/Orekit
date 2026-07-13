@@ -119,7 +119,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
 
-    /** Type of orbit to output (mean or osculating) <br/>
+    /** Type of orbit to output (mean or osculating).
      * <p>
      * This is used only in the case of semi-analytical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.

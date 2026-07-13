@@ -46,6 +46,7 @@ import org.orekit.utils.ParameterDriver;
  * extrapolated in way to obtain continuous output, with accuracy and computation methods configured by the user.
  *
  * @see Ephemeris
+ * @param <T> type of the field element
  * @author Luc Maisonobe
  * @author Vincent Cucchietti
  * @author Romain Serra

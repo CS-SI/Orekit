@@ -30,6 +30,7 @@ import org.orekit.time.FieldAbsoluteDate;
 /**
  * Abstract class for position provider based on a given type of provider.
  *
+ * @param <T> type of the pv coordinates provider
  * @author Romain Serra
  * @see ExtendedPositionProvider
  *

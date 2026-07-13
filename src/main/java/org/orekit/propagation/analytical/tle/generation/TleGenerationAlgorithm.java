@@ -112,6 +112,14 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
         return templateTLE;
     }
 
+    /** Get the osculating to mean orbit converter.
+     * @return osculating to mean orbit converter
+     * @since 14.0
+     */
+    public OsculatingToMeanConverter getConverter() {
+        return converter;
+    }
+
     /** {@inheritDoc} */
     @Override
     public ParameterDriversList getNonKeplerianParametersDrivers() {

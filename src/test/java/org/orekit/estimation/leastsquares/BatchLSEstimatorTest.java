@@ -24,11 +24,16 @@ import java.util.stream.IntStream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.hipparchus.random.GaussianRandomGenerator;
+import org.hipparchus.random.Well512a;
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
@@ -39,6 +44,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
@@ -47,11 +53,14 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.SpaceTDOAMeasurementCreator;
 import org.orekit.estimation.measurements.SpaceTwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -166,6 +175,53 @@ class BatchLSEstimatorTest {
         RealMatrix jacobian = estimator.getOptimum().getJacobian();
         Assertions.assertEquals(8,      jacobian.getColumnDimension());
 
+    }
+
+    /**
+     * Noisy position measurements with a perfect start and an RMS convergence check
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void testNoisyKeplerPosition() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, true,
+                        1.0e-6, 60.0, 1.e-3);
+
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                EstimationTestUtils.createMeasurements(propagator, new PositionMeasurementCreator(),0.0, 1.0, 300.0);
+        final RealMatrix covariance = MatrixUtils.createRealIdentityMatrix(6);
+        final MeasurementNoise<Position> measurementNoise = new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                1e-16, new GaussianRandomGenerator(new Well512a(293890302))));
+        measurements.forEach(measurement -> measurement.addModifier((EstimationModifier) measurementNoise));
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new GaussNewtonOptimizer(),
+                propagatorBuilder);
+        measurements.forEach(estimator::addMeasurement);
+        final double rmsThreshold = 1e-2;
+        estimator.setConvergenceChecker(new RMSConvergenceChecker(rmsThreshold));
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+        // run estimation while logging RMS
+        final List<Double> rms = new ArrayList<>();
+        estimator.setObserver((iterationsCount, evaluationsCount, orbits, estimatedOrbitalParameters, estimatedPropagatorParameters, estimatedMeasurementsParameters, evaluationsProvider, lspEvaluation) -> {
+            rms.add(lspEvaluation.getRMS());
+        });
+        estimator.estimate();
+
+        // check
+        Assertions.assertEquals(9, rms.size());
+        for (int i = 0; i < rms.size() - 2; i++) {
+            Assertions.assertFalse(FastMath.abs(1. - rms.get(i + 1) / rms.get(i)) <= rmsThreshold);
+        }
+        Assertions.assertTrue(FastMath.abs(1. - rms.getLast() / rms.get(rms.size() - 2)) <= rmsThreshold);
     }
 
     /**

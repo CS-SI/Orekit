@@ -25,11 +25,17 @@ import org.orekit.utils.units.Unit;
 import java.io.IOException;
 
 /** Writer for legacy messages.
+ * @param <O> type of the navigation messages this writer handles
  * @author Luc Maisonobe
  * @since 14.0
  */
 public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMessage<O>>
     extends AbstractNavigationMessageWriter<O> {
+
+    /** Simple constructor. */
+    protected LegacyNavigationMessageWriter() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

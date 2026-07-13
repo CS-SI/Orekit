@@ -20,8 +20,10 @@ package org.orekit.files.ccsds.ndm.adm.acm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.AdMethodType;
@@ -54,40 +56,51 @@ public class AttitudeDetermination extends CommentsContainer {
     private final AttitudeEndpoints endpoints;
 
     /** Identification number. */
+    @Nullable
     private String id;
 
     /** Identification of previous orbit determination. */
+    @Nullable
     private String prevId;
 
     /** Attitude determination method. */
+    @Nullable
     private AdMethodType method;
 
     /** Source of attitude estimate. */
+    @Nullable
     private String source;
 
     /** Rotation order for Euler angles. */
+    @Nullable
     private RotationOrder eulerRotSeq;
 
     /** Number of states for {@link AdMethodType#EKF}, {@link AdMethodType#BATCH} or {@link AdMethodType#FILTER_SMOOTHER}. */
-    private int nbStates;
+    @Nullable
+    private Integer nbStates;
 
     /** Attitude states. */
     private AttitudeElementsType attitudeStates;
 
     /** Type of attitude error state. */
+    @Nullable
     private AttitudeCovarianceType covarianceType;
 
     /** Attitude rate states. */
+    @Nullable
     private RateElementsType rateStates;
 
     /** Rate random walk if {@link #rateStates} is {@link RateElementsType#GYRO_BIAS}. */
-    private double sigmaU;
+    @Nullable
+    private Double sigmaU;
 
     /** Angle random walk if {@link #rateStates} is {@link RateElementsType#GYRO_BIAS}. */
-    private double sigmaV;
+    @Nullable
+    private Double sigmaV;
 
     /** Process noise standard deviation if {@link #rateStates} is {@link RateElementsType#ANGVEL}. */
-    private double rateProcessNoiseStdDev;
+    @Nullable
+    private Double rateProcessNoiseStdDev;
 
     /** Sensors used. */
     private final List<AttitudeDeterminationSensor> sensorsUsed;
@@ -101,7 +114,6 @@ public class AttitudeDetermination extends CommentsContainer {
     public AttitudeDetermination(final CcsdsFrameMapper frameMapper) {
         endpoints   = new AttitudeEndpoints(frameMapper);
         sensorsUsed = new ArrayList<>();
-        nbStates    = -1;
     }
 
     /** {@inheritDoc} */
@@ -149,8 +161,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get identification number.
      * @return identification number
      */
-    public String getId() {
-        return id;
+    public Optional<String> getId() {
+        return Optional.ofNullable(id);
     }
 
     /** Set identification number.
@@ -163,8 +175,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get identification of previous orbit determination.
      * @return identification of previous orbit determination
      */
-    public String getPrevId() {
-        return prevId;
+    public Optional<String> getPrevId() {
+        return Optional.ofNullable(prevId);
     }
 
     /** Set identification of previous orbit determination.
@@ -177,8 +189,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get attitude determination method.
      * @return attitude determination method
      */
-    public AdMethodType getMethod() {
-        return method;
+    public Optional<AdMethodType> getMethod() {
+        return Optional.ofNullable(method);
     }
 
     /** Set attitude determination method.
@@ -191,8 +203,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get source of attitude estimate.
      * @return source of attitude estimate
      */
-    public String getSource() {
-        return source;
+    public Optional<String> getSource() {
+        return Optional.ofNullable(source);
     }
 
     /** Set source of attitude estimate.
@@ -205,8 +217,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get the rotation order for Euler angles.
      * @return rotation order for Euler angles
      */
-    public RotationOrder getEulerRotSeq() {
-        return eulerRotSeq;
+    public Optional<RotationOrder> getEulerRotSeq() {
+        return Optional.ofNullable(eulerRotSeq);
     }
 
     /** Set the rotation order for Euler angles.
@@ -219,8 +231,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get number of states for {@link AdMethodType#EKF}, {@link AdMethodType#BATCH} or {@link AdMethodType#FILTER_SMOOTHER}.
      * @return number of states
      */
-    public int getNbStates() {
-        return nbStates;
+    public Optional<Integer> getNbStates() {
+        return Optional.ofNullable(nbStates);
     }
 
     /** Set number of states for {@link AdMethodType#EKF}, {@link AdMethodType#BATCH} or {@link AdMethodType#FILTER_SMOOTHER}.
@@ -247,8 +259,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get type of attitude error state.
      * @return type of attitude error state
      */
-    public AttitudeCovarianceType getCovarianceType() {
-        return covarianceType;
+    public Optional<AttitudeCovarianceType> getCovarianceType() {
+        return Optional.ofNullable(covarianceType);
     }
 
     /** Set type of attitude error state.
@@ -261,8 +273,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get attitude rate states.
      * @return attitude rate states
      */
-    public RateElementsType getRateStates() {
-        return rateStates;
+    public Optional<RateElementsType> getRateStates() {
+        return Optional.ofNullable(rateStates);
     }
 
     /** Set attitude rate states.
@@ -275,8 +287,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get rate random walk if {@link #rateStates} is {@link RateElementsType#GYRO_BIAS}.
      * @return rate random walk if {@link #rateStates} is {@link RateElementsType#GYRO_BIAS}
      */
-    public double getSigmaU() {
-        return sigmaU;
+    public Optional<Double> getSigmaU() {
+        return Optional.ofNullable(sigmaU);
     }
 
     /** Set rate random walk if {@link #rateStates} is {@link RateElementsType#GYRO_BIAS}.
@@ -289,8 +301,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get angle random walk if {@link #rateStates} is {@link RateElementsType#GYRO_BIAS}.
      * @return angle random walk if {@link #rateStates} is {@link RateElementsType#GYRO_BIAS}
      */
-    public double getSigmaV() {
-        return sigmaV;
+    public Optional<Double> getSigmaV() {
+        return Optional.ofNullable(sigmaV);
     }
 
     /** Set angle random walk if {@link #rateStates} is {@link RateElementsType#GYRO_BIAS}.
@@ -303,8 +315,8 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Get process noise standard deviation if {@link #rateStates} is {@link RateElementsType#ANGVEL}.
      * @return process noise standard deviation if {@link #rateStates} is {@link RateElementsType#ANGVEL}
      */
-    public double getRateProcessNoiseStdDev() {
-        return rateProcessNoiseStdDev;
+    public Optional<Double> getRateProcessNoiseStdDev() {
+        return Optional.ofNullable(rateProcessNoiseStdDev);
     }
 
     /** Set process noise standard deviation if {@link #rateStates} is {@link RateElementsType#ANGVEL}.

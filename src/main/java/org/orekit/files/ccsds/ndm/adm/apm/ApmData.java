@@ -19,8 +19,10 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.hipparchus.complex.Quaternion;
+import org.orekit.annotation.Nullable;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -46,20 +48,25 @@ public class ApmData implements Data {
     private final AbsoluteDate epoch;
 
     /** Quaternion block. */
+    @Nullable
     private final ApmQuaternion quaternionBlock;
 
     /** Euler angles block. */
+    @Nullable
     private final Euler eulerBlock;
 
     /** Angular velocity block.
      * @since 12.0
      */
+    @Nullable
     private final AngularVelocity angularVelocityBlock;
 
     /** Spin-stabilized block. */
+    @Nullable
     private final SpinStabilized spinStabilizedBlock;
 
     /** Inertia block. */
+    @Nullable
     private final Inertia inertia;
 
     /** Maneuvers. */
@@ -149,37 +156,37 @@ public class ApmData implements Data {
     /** Get the quaternion logical block.
      * @return quaternion block
      */
-    public ApmQuaternion getQuaternionBlock() {
-        return quaternionBlock;
+    public Optional<ApmQuaternion> getQuaternionBlock() {
+        return Optional.ofNullable(quaternionBlock);
     }
 
     /** Get the Euler angles logical block.
-     * @return Euler angles block (may be null)
+     * @return Euler angles block (may be empty)
      */
-    public Euler getEulerBlock() {
-        return eulerBlock;
+    public Optional<Euler> getEulerBlock() {
+        return Optional.ofNullable(eulerBlock);
     }
 
     /** Get the angular velocity logical block.
-     * @return angular velocity block (may be null)
+     * @return angular velocity block (may be empty)
      * @since 12.0
      */
-    public AngularVelocity getAngularVelocityBlock() {
-        return angularVelocityBlock;
+    public Optional<AngularVelocity> getAngularVelocityBlock() {
+        return Optional.ofNullable(angularVelocityBlock);
     }
 
     /** Get the spin-stabilized logical block.
-     * @return spin-stabilized block (may be null)
+     * @return spin-stabilized block (may be empty)
      */
-    public SpinStabilized getSpinStabilizedBlock() {
-        return spinStabilizedBlock;
+    public Optional<SpinStabilized> getSpinStabilizedBlock() {
+        return Optional.ofNullable(spinStabilizedBlock);
     }
 
     /** Get the inertia logical block.
-     * @return inertia block (may be null)
+     * @return inertia block (may be empty)
      */
-    public Inertia getInertiaBlock() {
-        return inertia;
+    public Optional<Inertia> getInertiaBlock() {
+        return Optional.ofNullable(inertia);
     }
 
     /**
@@ -242,7 +249,7 @@ public class ApmData implements Data {
             final TimeStampedAngularCoordinates tac;
             if (quaternionBlock.hasRates()) {
                 // quaternion logical block includes everything we need
-                final Quaternion qDot = quaternionBlock.getQuaternionDot();
+                final Quaternion qDot = quaternionBlock.getQuaternionDot().orElseThrow(); // No problem, Optional presence is verified by hasRates()
                 tac = AttitudeType.QUATERNION_DERIVATIVE.build(true, quaternionBlock.getEndpoints().isExternal2SpacecraftBody(),
                                                                null, true, epoch,
                                                                q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
@@ -258,7 +265,7 @@ public class ApmData implements Data {
                                                            angularVelocityBlock.getAngVelZ());
             } else if (eulerBlock != null && eulerBlock.hasRates()) {
                 // get derivatives from the Euler logical block
-                final double[] rates = eulerBlock.getRotationRates();
+                final double[] rates = eulerBlock.getRotationRates().orElseThrow(); // Optional presence is verified by hasRates()
                 if (eulerBlock.hasAngles()) {
                     // the Euler block has everything we need
                     final double[] angles = eulerBlock.getRotationAngles();
@@ -294,7 +301,7 @@ public class ApmData implements Data {
             final TimeStampedAngularCoordinates tac;
             if (eulerBlock.hasRates()) {
                 // the Euler block has everything we need
-                final double[] rates = eulerBlock.getRotationRates();
+                final double[] rates = eulerBlock.getRotationRates().orElseThrow(); // Optional presence is verified by hasRates()
                 tac = AttitudeType.EULER_ANGLE_DERIVATIVE.build(true,
                                                                 eulerBlock.getEndpoints().isExternal2SpacecraftBody(),
                                                                 eulerBlock.getEulerRotSeq(), eulerBlock.isSpacecraftBodyRate(), epoch,
@@ -331,9 +338,9 @@ public class ApmData implements Data {
                                                        spinStabilizedBlock.getSpinDelta(),
                                                        spinStabilizedBlock.getSpinAngle(),
                                                        spinStabilizedBlock.getSpinAngleVel(),
-                                                       spinStabilizedBlock.getNutation(),
-                                                       spinStabilizedBlock.getNutationPeriod(),
-                                                       spinStabilizedBlock.getNutationPhase());
+                                                       spinStabilizedBlock.getNutation().orElseThrow(), // Optional presence is verified by hasNutation()
+                                                       spinStabilizedBlock.getNutationPeriod().orElseThrow(), // Optional presence is verified by hasNutation()
+                                                       spinStabilizedBlock.getNutationPhase().orElseThrow()); // Optional presence is verified by hasNutation()
             } else if (spinStabilizedBlock.hasMomentum()) {
                 // we rely only on momentum
                 tac = AttitudeType.SPIN_NUTATION_MOMENTUM.build(true, true, null, true, epoch,
@@ -341,9 +348,9 @@ public class ApmData implements Data {
                                                                 spinStabilizedBlock.getSpinDelta(),
                                                                 spinStabilizedBlock.getSpinAngle(),
                                                                 spinStabilizedBlock.getSpinAngleVel(),
-                                                                spinStabilizedBlock.getMomentumAlpha(),
-                                                                spinStabilizedBlock.getMomentumDelta(),
-                                                                spinStabilizedBlock.getNutationVel());
+                                                                spinStabilizedBlock.getMomentumAlpha().orElseThrow(), // Optional presence is verified by hasMomentum()
+                                                                spinStabilizedBlock.getMomentumDelta().orElseThrow(), // Optional presence is verified by hasMomentum()
+                                                                spinStabilizedBlock.getNutationVel().orElseThrow()); // Optional presence is verified by hasMomentum()
             } else {
                 // we rely only on the spin logical block, despite it doesn't include rates
                 tac = AttitudeType.SPIN.build(true, true, null, true, epoch,

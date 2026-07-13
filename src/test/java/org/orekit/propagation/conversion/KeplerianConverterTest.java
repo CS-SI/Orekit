@@ -46,12 +46,12 @@ class KeplerianConverterTest {
 
     @Test
     void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 7.812e-9);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.268e-8);
     }
 
     @Test
     void testConversionPositionOnly() {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.337e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.177e-8);
     }
 
     @Test

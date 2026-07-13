@@ -26,7 +26,7 @@
     <orekit.checkstyle.version>10.20.2</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.4.1</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.15.0</orekit.maven-compiler-plugin.version>
-    <orekit.maven-javadoc-plugin.version>3.11.3</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-javadoc-plugin.version>3.12.0</orekit.maven-javadoc-plugin.version>
     <orekit.maven-jar-plugin.version>3.4.2</orekit.maven-jar-plugin.version>
     <orekit.maven-jxr-plugin.version>3.6.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>0.2.14</orekit.plantuml-maven-plugin.version>
@@ -253,6 +253,9 @@
       <name>Francesco Coccoluto</name>
     </contributor>
     <contributor>
+      <name>Romain Cuvillon</name>
+    </contributor>
+    <contributor>
       <name>Sébastien Dinot</name>
     </contributor>
     <contributor>
@@ -418,6 +421,9 @@
       <name>Ioanna Stypsanelli</name>
     </contributor>
     <contributor>
+      <name>Jerome Tabeaud</name>
+    </contributor>
+    <contributor>
       <name>Michael Turner</name>
     </contributor>
     <contributor>
@@ -431,6 +437,12 @@
     </contributor>
     <contributor>
       <name>Koenraad Rietveld</name>
+    </contributor>
+    <contributor>
+      <name>Jérôme Tabeaud</name>
+    </contributor>
+    <contributor>
+      <name>Romain Cuvillon</name>
     </contributor>
   </contributors>
 

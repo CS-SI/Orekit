@@ -17,7 +17,9 @@
 package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
@@ -33,9 +35,11 @@ public class CdmData implements Data {
     private final CommentsContainer commentsBlock;
 
     /** Quaternion block. */
+    @Nullable
     private ODParameters ODParametersBlock;
 
     /** Euler angles block. */
+    @Nullable
     private AdditionalParameters additionalParametersBlock;
 
     /** Spin-stabilized block. */
@@ -45,23 +49,24 @@ public class CdmData implements Data {
     private RTNCovariance covarianceMatrixBlock;
 
     /** XYZ covariance block. */
+    @Nullable
     private final XYZCovariance xyzCovarianceMatrixBlock;
 
     /** Sigma/Eigenvectors covariance block. */
+    @Nullable
     private final SigmaEigenvectorsCovariance sig3EigVec3CovarianceBlock;
 
     /** Type of alternate covariance, if present. */
+    @Nullable
     private final AltCovarianceType altCovarianceType;
 
     /** Additional Covariance Metadata block. */
+    @Nullable
     private final AdditionalCovarianceMetadata additionalCovMetadata;
 
     /** The block containing the user defined parameters. */
+    @Nullable
     private UserDefined userDefinedBlock;
-
-
-
-
 
      /** Default constructor.
      * @param commentsBlock general comments block
@@ -83,16 +88,16 @@ public class CdmData implements Data {
                    final SigmaEigenvectorsCovariance sig3EigVec3CovarianceBlock,
                    final AltCovarianceType altCovarianceType,
                    final AdditionalCovarianceMetadata additionalCovMetadata) {
-        this.commentsBlock             = commentsBlock;
-        this.ODParametersBlock         = ODParametersBlock;
-        this.additionalParametersBlock = additionalParametersBlock;
-        this.stateVectorBlock               = stateVectorBlock;
-        this.covarianceMatrixBlock          = covarianceMatrixBlock;
-        this.xyzCovarianceMatrixBlock       = xyzCovarianceBlock;
-        this.sig3EigVec3CovarianceBlock     = sig3EigVec3CovarianceBlock;
-        this.altCovarianceType              = altCovarianceType;
-        this.additionalCovMetadata          = additionalCovMetadata;
-        this.userDefinedBlock               = null;
+        this.commentsBlock              = commentsBlock;
+        this.ODParametersBlock          = ODParametersBlock;
+        this.additionalParametersBlock  = additionalParametersBlock;
+        this.stateVectorBlock           = stateVectorBlock;
+        this.covarianceMatrixBlock      = covarianceMatrixBlock;
+        this.xyzCovarianceMatrixBlock   = xyzCovarianceBlock;
+        this.sig3EigVec3CovarianceBlock = sig3EigVec3CovarianceBlock;
+        this.altCovarianceType          = altCovarianceType;
+        this.additionalCovMetadata      = additionalCovMetadata;
+        this.userDefinedBlock           = null;
     }
 
      /**  Constructor with RTN covariance.
@@ -202,8 +207,8 @@ public class CdmData implements Data {
     /** Get the OD parameters logical block.
      * @return OD parameters block (may be null)
      */
-    public ODParameters getODParametersBlock() {
-        return ODParametersBlock;
+    public Optional<ODParameters> getODParametersBlock() {
+        return Optional.ofNullable(ODParametersBlock);
     }
 
     /** Set the OD parameters logical block.
@@ -216,8 +221,8 @@ public class CdmData implements Data {
     /** Get the additional parameters logical block.
      * @return additional parameters block (may be null)
      */
-    public AdditionalParameters getAdditionalParametersBlock() {
-        return additionalParametersBlock;
+    public Optional<AdditionalParameters> getAdditionalParametersBlock() {
+        return Optional.ofNullable(additionalParametersBlock);
     }
 
     /** Set the additional parameters logical block.
@@ -248,8 +253,8 @@ public class CdmData implements Data {
      * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return XYZ covariance matrix block
      */
-    public XYZCovariance getXYZCovarianceBlock() {
-        return xyzCovarianceMatrixBlock;
+    public Optional<XYZCovariance> getXYZCovarianceBlock() {
+        return Optional.ofNullable(xyzCovarianceMatrixBlock);
     }
 
     /** Get the Sigma / Eigenvector covariance logical block.
@@ -257,16 +262,16 @@ public class CdmData implements Data {
      * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return the Sigma / Eigenvector covariance block
      */
-    public SigmaEigenvectorsCovariance getSig3EigVec3CovarianceBlock() {
-        return sig3EigVec3CovarianceBlock;
+    public Optional<SigmaEigenvectorsCovariance> getSig3EigVec3CovarianceBlock() {
+        return Optional.ofNullable(sig3EigVec3CovarianceBlock);
     }
 
     /** Get the additional covariance metadata logical block.
      * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return the additional covariance metadata logical block
      */
-    public AdditionalCovarianceMetadata getAdditionalCovMetadataBlock() {
-        return additionalCovMetadata;
+    public Optional<AdditionalCovarianceMetadata> getAdditionalCovMetadataBlock() {
+        return Optional.ofNullable(additionalCovMetadata);
     }
 
     /** Set the additional covariance metadata logical block.
@@ -280,8 +285,8 @@ public class CdmData implements Data {
      * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return the additional covariance metadata logical block
      */
-    public UserDefined getUserDefinedBlock() {
-        return userDefinedBlock;
+    public Optional<UserDefined> getUserDefinedBlock() {
+        return Optional.ofNullable(userDefinedBlock);
     }
 
      /** Set the user defined logical block.

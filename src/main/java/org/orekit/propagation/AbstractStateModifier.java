@@ -32,6 +32,11 @@ package org.orekit.propagation;
  */
 public abstract class AbstractStateModifier implements AdditionalDataProvider<double[]> {
 
+    /** Simple constructor. */
+    protected AbstractStateModifier() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public String getName() {

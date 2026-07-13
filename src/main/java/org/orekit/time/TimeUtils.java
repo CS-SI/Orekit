@@ -17,6 +17,8 @@
 package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.FastMath;
+import org.orekit.utils.Constants;
 
 /**
  * Time-related utilities.
@@ -72,4 +74,19 @@ public class TimeUtils {
         return ts1.getDate().isBeforeOrEqualTo(ts2) ? ts2 : ts1;
     }
 
+    /**
+     * Converts a total number of seconds into days, hours, minutes, and seconds.
+     * @param totalSeconds Total number of seconds.
+     * @return String with corresponding days, hours, minutes, and seconds.
+     */
+    public static String secondsToDHMS(final double totalSeconds) {
+        final double absTotalSeconds = FastMath.abs(totalSeconds);
+        final int days = (int) (absTotalSeconds / Constants.JULIAN_DAY);
+        final double remainingSeconds = absTotalSeconds % Constants.JULIAN_DAY;
+        final TimeComponents timeComponents = new TimeComponents(remainingSeconds);
+        final int hours = timeComponents.getHour();
+        final int minutes = timeComponents.getMinute();
+        final double seconds = timeComponents.getSecond();
+        return (totalSeconds < 0 ? "-" : "") + ((days != 0) ? days + " d " : "") + ((hours != 0) ? hours + " h " : "") + ((minutes != 0) ? minutes + " min " : "") + seconds + " s";
+    }
 }

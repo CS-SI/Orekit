@@ -16,9 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import java.util.Optional;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.annotation.Nullable;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeBuilder;
 import org.orekit.attitudes.FieldAttitude;
@@ -69,6 +72,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
     private FrameFacade frameB;
 
     /** Flag for frames direction. */
+    @Nullable
     private Boolean a2b;
 
     /**
@@ -97,7 +101,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
     public void checkExternalFrame(final Enum<?> aKey, final Enum<?> bKey) {
         checkNotNull(frameA, aKey);
         checkNotNull(frameB, bKey);
-        if (frameA.asSpacecraftBodyFrame() != null && frameB.asSpacecraftBodyFrame() != null) {
+        if (frameA.asSpacecraftBodyFrame().isPresent() && frameB.asSpacecraftBodyFrame().isPresent()) {
             // we cannot have two spacecraft body frames
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, frameB.getName());
         }
@@ -121,13 +125,13 @@ public class AttitudeEndpoints implements AttitudeBuilder {
                                                          final Enum<?> dirKey) {
 
         if (frameA == null) {
-            if (frameB == null || frameB.asSpacecraftBodyFrame() == null) {
+            if (frameB == null || frameB.asSpacecraftBodyFrame().isEmpty()) {
                 throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, aKey.name());
             }
-        } else if (frameA.asSpacecraftBodyFrame() == null) {
+        } else if (frameA.asSpacecraftBodyFrame().isEmpty()) {
             if (frameB == null) {
                 throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, bKey.name());
-            } else if (frameB.asSpacecraftBodyFrame() == null) {
+            } else if (frameB.asSpacecraftBodyFrame().isEmpty()) {
                 // at least one of the frame must be a spacecraft body frame
                 throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, frameB.getName());
             }
@@ -192,7 +196,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * @see #getExternal()
      */
     public FrameFacade getExternalFrame() {
-        return frameA.asSpacecraftBodyFrame() == null ? frameA : frameB;
+        return frameA.asSpacecraftBodyFrame().isEmpty() ? frameA : frameB;
     }
 
     /**
@@ -221,7 +225,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * @return spacecraft body frame
      */
     public FrameFacade getSpacecraftBodyFrame() {
-        return frameA.asSpacecraftBodyFrame() == null ? frameB : frameA;
+        return frameA.asSpacecraftBodyFrame().isEmpty() ? frameB : frameA;
     }
 
     /** Check if attitude is from external frame to spacecraft body frame.
@@ -234,7 +238,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * @return true if attitude is from external frame to spacecraft body frame
      */
     public boolean isExternal2SpacecraftBody() {
-        return isA2b() ^ frameB.asSpacecraftBodyFrame() == null;
+        return isA2b() ^ frameB.asSpacecraftBodyFrame().isEmpty();
     }
 
     /** Check if a endpoint is compatible with another one.
@@ -260,31 +264,31 @@ public class AttitudeEndpoints implements AttitudeBuilder {
         final TimeStampedAngularCoordinates att =
                         isExternal2SpacecraftBody() ? rawAttitude : rawAttitude.revert();
 
-        final FrameFacade        external = getExternalFrame();
-        final OrbitRelativeFrame orf      = external.asOrbitRelativeFrame();
-        if (orf != null) {
+        final FrameFacade                  external = getExternalFrame();
+        final Optional<OrbitRelativeFrame> orf      = external.asOrbitRelativeFrame();
+        if (orf.isPresent()) {
             // this is an orbit-relative attitude
-            if (orf.getLofType() == null) {
+            if (orf.get().getLofType() == null) {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_LOCAL_ORBITAL_FRAME, external.getName());
             }
 
             // construction of the local orbital frame, using PV from reference frame
             final PVCoordinates pv = pvProv.getPVCoordinates(rawAttitude.getDate(), frame);
             final AngularCoordinates frame2Lof =
-                            orf.isQuasiInertial() ?
-                            new AngularCoordinates(orf.getLofType().rotationFromInertial(pv)) :
-                            orf.getLofType().transformFromInertial(att.getDate(), pv).getAngular();
+                            orf.get().isQuasiInertial() ?
+                            new AngularCoordinates(orf.get().getLofType().rotationFromInertial(pv)) :
+                            orf.get().getLofType().transformFromInertial(att.getDate(), pv).getAngular();
 
             // compose with APM
             return new Attitude(frame, att.addOffset(frame2Lof));
 
         } else {
             // this is an absolute attitude
-            if (external.asFrame() == null) {
-                // unknown frame
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, external.getName());
-            }
-            final Attitude attitude = new Attitude(external.asFrame(), att);
+            final Frame externalFrame = external.
+                                        asFrame().
+                                        orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
+                                                                              external.getName()));
+            final Attitude attitude = new Attitude(externalFrame, att);
             return frame == null ? attitude : attitude.withReferenceFrame(frame);
         }
 
@@ -301,10 +305,10 @@ public class AttitudeEndpoints implements AttitudeBuilder {
                         isExternal2SpacecraftBody() ? rawAttitude : rawAttitude.revert();
 
         final FrameFacade        external = getExternalFrame();
-        final OrbitRelativeFrame orf      = external.asOrbitRelativeFrame();
-        if (orf != null) {
+        final Optional<OrbitRelativeFrame> orf      = external.asOrbitRelativeFrame();
+        if (orf.isPresent()) {
             // this is an orbit-relative attitude
-            if (orf.getLofType() == null) {
+            if (orf.get().getLofType() == null) {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_LOCAL_ORBITAL_FRAME, external.getName());
             }
 
@@ -312,21 +316,22 @@ public class AttitudeEndpoints implements AttitudeBuilder {
             final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(rawAttitude.getDate(), frame);
             final Field<T> field = rawAttitude.getDate().getField();
             final FieldAngularCoordinates<T> referenceToLof =
-                            orf.isQuasiInertial() ?
-                            new FieldAngularCoordinates<>(orf.getLofType().rotationFromInertial(field, pv),
+                            orf.get().isQuasiInertial() ?
+                            new FieldAngularCoordinates<>(orf.get().getLofType().rotationFromInertial(field, pv),
                                                           FieldVector3D.getZero(field)) :
-                            orf.getLofType().transformFromInertial(att.getDate(), pv).getAngular();
+                            orf.get().getLofType().transformFromInertial(att.getDate(), pv).getAngular();
 
             // compose with APM
             return new FieldAttitude<>(frame, att.addOffset(referenceToLof));
 
         } else {
             // this is an absolute attitude
-            if (external.asFrame() == null) {
-                // this should never happen as all CelestialBodyFrame have an Orekit mapping
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, external.getName());
-            }
-            final FieldAttitude<T> attitude = new FieldAttitude<>(external.asFrame(), att);
+            // exception should never be thrown as all CelestialBodyFrame have an Orekit mapping
+            final Frame externalFrame = external.
+                                        asFrame().
+                                        orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
+                                                                              external.getName()));
+            final FieldAttitude<T> attitude = new FieldAttitude<>(externalFrame, att);
             return frame == null ? attitude : attitude.withReferenceFrame(frame);
         }
 

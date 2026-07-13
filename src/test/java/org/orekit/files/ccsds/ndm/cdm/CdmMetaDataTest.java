@@ -163,14 +163,14 @@ public class CdmMetaDataTest {
         // Test the 3 allowed frames
         frameFacade = FrameFacade.map(FramesFactory.getGCRF());
         meta.setAltCovRefFrame(frameFacade);
-        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame());
+        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame().orElseThrow());
         
         frameFacade = FrameFacade.map(FramesFactory.getEME2000());
         meta.setAltCovRefFrame(frameFacade);
-        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame());
+        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame().orElseThrow());
         
         frameFacade = FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         meta.setAltCovRefFrame(frameFacade);
-        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame());
+        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame().orElseThrow());
     }
 }

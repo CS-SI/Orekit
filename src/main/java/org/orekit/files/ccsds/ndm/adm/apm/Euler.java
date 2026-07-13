@@ -17,8 +17,10 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
@@ -74,13 +76,15 @@ public class Euler extends CommentsContainer {
     private RotationOrder eulerRotSeq;
 
     /** The frame in which rates are specified. */
+    @Nullable
     private Boolean rateFrameIsA;
 
     /** Euler angles [rad]. */
     private final double[] rotationAngles;
 
     /** Rotation rate [rad/s]. */
-    private final double[] rotationRates;
+    @Nullable
+    private double[] rotationRates;
 
     /** Indicator for rotation angles. */
     private boolean inRotationAngles;
@@ -94,16 +98,13 @@ public class Euler extends CommentsContainer {
     public Euler(final CcsdsFrameMapper frameMapper) {
         this.endpoints        = new AttitudeEndpoints(frameMapper);
         this.rotationAngles   = new double[3];
-        this.rotationRates    = new double[3];
         this.inRotationAngles = false;
         Arrays.fill(rotationAngles, Double.NaN);
-        Arrays.fill(rotationRates,  Double.NaN);
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-
         super.validate(version);
         if (version < 2.0) {
             endpoints.checkMandatoryEntriesExceptExternalFrame(version,
@@ -131,11 +132,13 @@ public class Euler extends CommentsContainer {
         }
 
         if (!hasRates()) {
-            // if at least one rate is missing, all must be NaN (i.e. not initialized)
-            for (final double rr : rotationRates) {
-                if (!Double.isNaN(rr)) {
-                    throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                              version < 2.0 ? KEY_RATES_V1 : KEY_RATES_V2);
+            if (rotationRates != null) {
+                // if at least one rate is missing, all must be NaN (i.e. not initialized)
+                for (final double rr : rotationRates) {
+                    if (!Double.isNaN(rr)) {
+                        throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                version < 2.0 ? KEY_RATES_V1 : KEY_RATES_V2);
+                    }
                 }
             }
         }
@@ -203,7 +206,7 @@ public class Euler extends CommentsContainer {
      * @return true if rates are specified in spacecraft body frame
      */
     public boolean isSpacecraftBodyRate() {
-        return rateFrameIsA() ^ endpoints.getFrameA().asSpacecraftBodyFrame() == null;
+        return rateFrameIsA() ^ endpoints.getFrameA().asSpacecraftBodyFrame().isEmpty();
     }
 
     /**
@@ -245,8 +248,8 @@ public class Euler extends CommentsContainer {
      * Get the rates of the Euler angles.
      * @return rotation rates (rad/s)
      */
-    public double[] getRotationRates() {
-        return rotationRates.clone();
+    public Optional<double[]> getRotationRates() {
+        return rotationRates == null ? Optional.empty() : Optional.of(rotationRates.clone());
     }
 
     /**
@@ -256,6 +259,10 @@ public class Euler extends CommentsContainer {
      */
     public void setLabeledRotationRate(final char axis, final double rate) {
         if (eulerRotSeq != null) {
+            if (rotationRates == null) {
+                rotationRates = new double[3];
+                Arrays.fill(rotationRates, Double.NaN);
+            }
             for (int i = 0; i < rotationRates.length; ++i) {
                 if (eulerRotSeq.name().charAt(i) == axis && Double.isNaN(rotationRates[i])) {
                     setIndexedRotationRate(i, rate);
@@ -273,6 +280,10 @@ public class Euler extends CommentsContainer {
      */
     public void setIndexedRotationRate(final int axis, final double rate) {
         refuseFurtherComments();
+        if (rotationRates == null) {
+            rotationRates = new double[3];
+            Arrays.fill(rotationRates, Double.NaN);
+        }
         rotationRates[axis] = rate;
     }
 
@@ -306,7 +317,7 @@ public class Euler extends CommentsContainer {
      * @return true if logical block includes rates
      */
     public boolean hasRates() {
-        return !Double.isNaN(rotationRates[0] + rotationRates[1] + rotationRates[2]);
+        return getRotationRates().isPresent() && !Double.isNaN(rotationRates[0] + rotationRates[1] + rotationRates[2]);
     }
 
 }

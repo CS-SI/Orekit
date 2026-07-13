@@ -208,7 +208,7 @@ public class TurnAroundRangeTest {
 
             // Values of the TAR & errors
             final double TARobserved  = measurement.getObservedValue()[0];
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = ((TurnAroundRange) measurement).theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] { state });
             final double TARestimated = estimated.getEstimatedValue()[0];
 
             final TimeStampedPVCoordinates[] participants = estimated.getParticipants();

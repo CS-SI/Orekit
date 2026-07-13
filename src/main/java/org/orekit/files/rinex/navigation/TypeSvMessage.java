@@ -32,7 +32,7 @@ public abstract class TypeSvMessage implements NavigationMessage {
     /** Formatter for identifier.
      * @since 14.0
      */
-    private static final FastLongFormatter TWO_DIGITS = new FastLongFormatter(2, true);
+    private static final FastLongFormatter TWO_DIGITS = new FastLongFormatter(2, true, true);
 
     /** Satellite system. */
     private final SatelliteSystem system;

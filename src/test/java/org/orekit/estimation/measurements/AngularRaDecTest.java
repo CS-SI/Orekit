@@ -24,6 +24,8 @@ import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -98,8 +100,6 @@ class AngularRaDecTest {
 
             // Check dates
             Assertions.assertNotEquals(state, estimated.getStates()[0]);
-            Assertions.assertTrue(state.getDate().isAfter(estimated.getParticipants()[0].getDate()));
-            Assertions.assertEquals(state.getDate(), estimated.getParticipants()[1].getDate());
 
             // Store the difference between estimated and observed values in the stats
             raDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -362,8 +362,9 @@ class AngularRaDecTest {
 
     }
 
-    @Test
-    void testParticipants() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testParticipants(final boolean fillParticipants) {
         // GIVEN
         Utils.setDataRoot("regular-data");
         final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
@@ -385,18 +386,24 @@ class AngularRaDecTest {
         // WHEN
         final AngularRaDec angularRaDec = new AngularRaDec(station, gcrf, epoch, new double[2],
                 new double[]{1., 1.}, new double[]{1., 1.}, satellite);
-        final EstimatedMeasurementBase<AngularRaDec> estimatedWithoutDerivatives = angularRaDec.estimateWithoutDerivatives(state);
+        final EstimatedMeasurementBase<AngularRaDec> estimatedWithoutDerivatives = angularRaDec
+                .theoreticalEvaluationWithoutDerivatives(0, 0, state, fillParticipants);
         // THEN
         final EstimatedMeasurement<AngularRaDec> estimated = angularRaDec.estimate(0, 0, state);
         assertArrayEquals(estimated.getEstimatedValue(), estimatedWithoutDerivatives.getEstimatedValue(), 1e-12);
-        final TimeStampedPVCoordinates firstParticipant = estimatedWithoutDerivatives.getParticipants()[0];
-        final TimeStampedPVCoordinates secondParticipant = estimatedWithoutDerivatives.getParticipants()[1];
-        final TimeStampedPVCoordinates expectedFirstParticipant = estimated.getParticipants()[0];
-        final TimeStampedPVCoordinates expectedSecondParticipant = estimated.getParticipants()[1];
-        assertEquals(0., expectedFirstParticipant.getDate().durationFrom(firstParticipant.getDate()), 1e-12);
-        assertEquals(expectedFirstParticipant.getPosition(), firstParticipant.getPosition());
-        assertEquals(expectedSecondParticipant.getDate(), secondParticipant.getDate());
-        assertEquals(expectedSecondParticipant.getPosition(), secondParticipant.getPosition());
+        if (fillParticipants) {
+            final TimeStampedPVCoordinates firstParticipant = estimatedWithoutDerivatives.getParticipants()[0];
+            final TimeStampedPVCoordinates secondParticipant = estimatedWithoutDerivatives.getParticipants()[1];
+            final TimeStampedPVCoordinates expectedFirstParticipant = estimated.getParticipants()[0];
+            final TimeStampedPVCoordinates expectedSecondParticipant = estimated.getParticipants()[1];
+            assertEquals(0., expectedFirstParticipant.getDate().durationFrom(firstParticipant.getDate()), 1e-12);
+            assertEquals(expectedFirstParticipant.getPosition(), firstParticipant.getPosition());
+            assertEquals(expectedSecondParticipant.getDate(), secondParticipant.getDate());
+            assertEquals(expectedSecondParticipant.getPosition(), secondParticipant.getPosition());
+        } else {
+            assertEquals(0, estimatedWithoutDerivatives.getParticipants().length);
+        }
+
     }
 
     @Test

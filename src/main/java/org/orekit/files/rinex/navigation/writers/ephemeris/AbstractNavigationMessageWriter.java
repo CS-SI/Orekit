@@ -43,16 +43,21 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
     extends NavigationMessageWriter<T> {
 
     /** Format for one 2 digits integer field. */
-    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
+    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false, true);
 
     /** Format for one 3 digits integer field. */
-    private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
+    private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false, true);
 
     /** Format for one 5.1 float field. */
     private static final FastDoubleFormatter FIVE_ONE_FLOAT = new FastDecimalFormatter(5, 1);
 
     /** Format for one 19 float field. */
     private static final FastDoubleFormatter NINETEEN_FLOAT = new FastScientificFormatter(19);
+
+    /** Simple constructor. */
+    protected AbstractNavigationMessageWriter() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

@@ -93,7 +93,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** Trajectory state, when it is not an orbit. */
     private final FieldAbsolutePVCoordinates<T> absPva;
 
-    /** FieldAttitude<T>. */
+    /** Field attitude. */
     private final FieldAttitude<T> attitude;
 
     /** Current mass (kg). */
@@ -202,8 +202,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         } else {
             this.additional = new FieldDataDictionary<>(field, additionalD.size());
             for (final DataDictionary.Entry entry : additionalD.getData()) {
-                if (entry.getValue() instanceof double[]) {
-                    final double[] realValues = (double[]) entry.getValue();
+                if (entry.getValue() instanceof final double[] realValues) {
                     final T[] fieldArray = MathArrays.buildArray(field, realValues.length);
                     for (int i = 0; i < fieldArray.length; i++) {
                         fieldArray[i] = field.getZero().add(realValues[i]);

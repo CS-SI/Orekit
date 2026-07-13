@@ -22,6 +22,7 @@ import org.orekit.time.AbsoluteDate;
 
 /** Abstract class modeling a position(-velocity) measurement,
  * referred to as pseudo because it is not based on any signals.
+ * @param <T> type of the measurement
  * @author Romain Serra
  * @since 14.0
  */

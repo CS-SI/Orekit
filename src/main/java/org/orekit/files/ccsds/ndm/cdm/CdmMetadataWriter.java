@@ -61,17 +61,17 @@ public class CdmMetadataWriter extends AbstractWriter {
                              metadata.getObjectName(), null, true);
         generator.writeEntry(CdmMetadataKey.INTERNATIONAL_DESIGNATOR.name(),
                              metadata.getInternationalDes(), null, true);
-        generator.writeEntry(CdmMetadataKey.OBJECT_TYPE.name(),
+        generator.writeOptionalEnumEntry(CdmMetadataKey.OBJECT_TYPE.name(),
                              metadata.getObjectType(), false);
 
         // originator
-        generator.writeEntry(CdmMetadataKey.OPERATOR_CONTACT_POSITION.name(),
+        generator.writeOptionalStringEntry(CdmMetadataKey.OPERATOR_CONTACT_POSITION.name(),
                              metadata.getOperatorContactPosition(), null, false);
-        generator.writeEntry(CdmMetadataKey.OPERATOR_ORGANIZATION.name(),
+        generator.writeOptionalStringEntry(CdmMetadataKey.OPERATOR_ORGANIZATION.name(),
                              metadata.getOperatorOrganization(), null, false);
-        generator.writeEntry(CdmMetadataKey.OPERATOR_PHONE.name(),
+        generator.writeOptionalStringEntry(CdmMetadataKey.OPERATOR_PHONE.name(),
                              metadata.getOperatorPhone(), null, false);
-        generator.writeEntry(CdmMetadataKey.OPERATOR_EMAIL.name(),
+        generator.writeOptionalStringEntry(CdmMetadataKey.OPERATOR_EMAIL.name(),
                              metadata.getOperatorEmail(), null, false);
 
         // other information
@@ -81,28 +81,28 @@ public class CdmMetadataWriter extends AbstractWriter {
                              metadata.getCovarianceMethod(), true);
         generator.writeEntry(CdmMetadataKey.MANEUVERABLE.name(),
                              metadata.getManeuverable().getValue(), null, true);
-        if (metadata.getOrbitCenter() != null) {
+        if (metadata.getOrbitCenter().isPresent()) {
             generator.writeEntry(CdmMetadataKey.ORBIT_CENTER.name(),
-                                 metadata.getOrbitCenter().getName(), null, false);
+                                 metadata.getOrbitCenter().get().getName(), null, false);
         }
         generator.writeEntry(CdmMetadataKey.REF_FRAME.name(),
                              metadata.getRefFrame().getName(), null, true);
         // gravity
-        if (metadata.getGravityModel() != null) {
+        if (metadata.getGravityModel().isPresent()) {
             final String model =
                             new StringBuilder().
-                            append(metadata.getGravityModel()).
+                            append(metadata.getGravityModel().get()).
                             append(": ").
-                            append(metadata.getGravityDegree()).
+                            append(metadata.getGravityDegree().orElseThrow()).// If the model is present, degree is also present
                             append("D ").
-                            append(metadata.getGravityOrder()).
+                            append(metadata.getGravityOrder().orElseThrow()).// If the model is present, order is also present
                             append('O').
                             toString();
             generator.writeEntry(CdmMetadataKey.GRAVITY_MODEL.name(), model, null, false);
         }
 
         // atmosphere
-        generator.writeEntry(CdmMetadataKey.ATMOSPHERIC_MODEL.name(), metadata.getAtmosphericModel(), null, false);
+        generator.writeOptionalStringEntry(CdmMetadataKey.ATMOSPHERIC_MODEL.name(), metadata.getAtmosphericModel(), null, false);
 
         // N body perturbation
         if (metadata.getNBodyPerturbations() != null && !metadata.getNBodyPerturbations().isEmpty()) {
@@ -112,20 +112,9 @@ public class CdmMetadataWriter extends AbstractWriter {
             }
             generator.writeEntry(CdmMetadataKey.N_BODY_PERTURBATIONS.name(), names, false);
         }
-
-        if (metadata.getSolarRadiationPressure() != null) {
-            generator.writeEntry(CdmMetadataKey.SOLAR_RAD_PRESSURE.name(), metadata.getSolarRadiationPressure().name(),
-                            null, false);
-        }
-        if (metadata.getEarthTides() != null) {
-            generator.writeEntry(CdmMetadataKey.EARTH_TIDES.name(), metadata.getEarthTides().name(),
-                            null, false);
-        }
-        if (metadata.getIntrackThrust() != null) {
-            generator.writeEntry(CdmMetadataKey.INTRACK_THRUST.name(), metadata.getIntrackThrust().name(),
-                            null, false);
-        }
-
+        generator.writeOptionalEnumEntry(CdmMetadataKey.SOLAR_RAD_PRESSURE.name(), metadata.getSolarRadiationPressure(), false);
+        generator.writeOptionalEnumEntry(CdmMetadataKey.EARTH_TIDES.name(), metadata.getEarthTides(), false);
+        generator.writeOptionalEnumEntry(CdmMetadataKey.INTRACK_THRUST.name(), metadata.getIntrackThrust(), false);
     }
 
 }

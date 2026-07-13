@@ -39,6 +39,11 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 public abstract class FieldAbstractIntegratorBuilder<T extends CalculusFieldElement<T>, W extends AbstractFieldIntegrator<T>>
         implements FieldODEIntegratorBuilder<T> {
 
+    /** Simple constructor. */
+    protected FieldAbstractIntegratorBuilder() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public W buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {

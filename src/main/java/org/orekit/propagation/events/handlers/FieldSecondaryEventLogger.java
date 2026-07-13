@@ -33,6 +33,7 @@ import java.util.List;
 
 /**
  * Event handler logging primary and secondary positional information.
+ * @param <T> type of the field element
  * @author Romain Serra
  *
  * @see SecondaryEventLogger

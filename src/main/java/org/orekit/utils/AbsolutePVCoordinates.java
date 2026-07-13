@@ -79,7 +79,7 @@ public class AbsolutePVCoordinates implements ShiftablePVCoordinatesHolder<Absol
         this.frame = frame;
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a AbsolutePVCoordinates from another one and a scale factor.</p>
      * <p>The TimeStampedPVCoordinates built will be a * AbsPva</p>
      * @param date date of the built coordinates
@@ -91,7 +91,7 @@ public class AbsolutePVCoordinates implements ShiftablePVCoordinatesHolder<Absol
         this(absPva.getFrame(), new TimeStampedPVCoordinates(date, a, absPva.getPVCoordinates()));
     }
 
-    /** Subtractive constructor
+    /** Subtractive constructor.
      * <p>Build a relative AbsolutePVCoordinates from a start and an end position.</p>
      * <p>The AbsolutePVCoordinates built will be end - start.</p>
      * <p>In case start and end use two different pseudo-inertial frames,
@@ -106,7 +106,7 @@ public class AbsolutePVCoordinates implements ShiftablePVCoordinatesHolder<Absol
         ensureIdenticalFrames(start, end);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a AbsolutePVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The AbsolutePVCoordinates built will be a1 * u1 + a2 * u2</p>
      * <p>In case the AbsolutePVCoordinates use different pseudo-inertial frames,
@@ -124,7 +124,7 @@ public class AbsolutePVCoordinates implements ShiftablePVCoordinatesHolder<Absol
         ensureIdenticalFrames(absPv1, absPv2);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a AbsolutePVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The AbsolutePVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * <p>In case the AbsolutePVCoordinates use different pseudo-inertial frames,
@@ -147,7 +147,7 @@ public class AbsolutePVCoordinates implements ShiftablePVCoordinatesHolder<Absol
         ensureIdenticalFrames(absPv1, absPv3);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a AbsolutePVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The AbsolutePVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * <p>In case the AbsolutePVCoordinates use different pseudo-inertial frames,

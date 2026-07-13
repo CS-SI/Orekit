@@ -20,11 +20,35 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="serrof" type="add" issue="1981">
+              Add native RMS convergence checker.
+          </action>
+          <action dev="luc" type="fix" issue="1980">
+              Use EOPFittedModel instead of EOPFitter to build PredictedEOPHistory.
+          </action>
+          <action dev="luc" type="fix" issue="1979">
+              Added getInverse() method to UnitsConverter.
+          </action>
+          <action dev="luc" type="fix" issue="1978">
+              Removed IOException from DataFilter.filter(DataSource).
+          </action>
+          <action dev="luc" type="fix" issue="1975">
+              Added width check to FastLongFormatter.
+          </action>
+          <action dev="luc" type="fix" issue="1974">
+              Added getBaseInitialState to Propagator.
+          </action>
+          <action dev="serrof" type="update" issue="1973">
+              Introduce flag for performance in measurement modifier and use it when possible .
+          </action>
           <action dev="luc" type="fix" issue="1971">
               Allow to use object name as a key in OEM and AEM messages.
           </action>
           <action dev="serrof" type="fix" issue="1970">
               Made MeasurementFilter compatible with inter-satellite observations.
+          </action>
+          <action dev="bryan" type="fix" issue="1969">
+              Fixed writing of DOPPLER_COUNT_ROLLOVER key in TDM format.
           </action>
           <action dev="serrof" type="update" issue="1966">
               Introduced EarthBasedStation and updated GroundStation.
@@ -79,9 +103,6 @@
           </action>
           <action dev="luc" type="fix" due-to="q_wertz">
               Fixed documentation of Saastamoinen tropospheric model.
-          </action>
-          <action dev="rafa" type="add" issue="1925">
-              Add constructors with custom Love numbers in SolidTides.
           </action>
           <action dev="bryan" type="add" issue="1928">
               Added IAU 2015 nominal equatorial and polar radius constants for
@@ -253,6 +274,9 @@
           <action dev="serrof" type="add" issue="1825">
               Add getVelocity in ExtendedPositionProvider.
           </action>
+          <action dev="rocuv, jtabeaud" type="add" issue="1823">
+              Add analytical relative motion classes and RendezVous and Proximity operations maneuvers.
+          </action>
           <action dev="afossa" type="fix" issue="1822">
               Change algorithm in KeplerianMotionCartesianUtility.predictPVElliptic(), fixing high order terms with Field.
           </action>
@@ -340,9 +364,6 @@
           <action dev="vcucchie" type="add" issue="1502">
               Added GitLab issue templates for bug reports and feature requests.
           </action>
-          <action dev="rodrigomarcelino" type="add" issue="1103">
-              Exposed Alpha-5 satellite number parsing in TLE class.
-          </action>
           <action dev="serrof" type="update" issue="1462">
               Add option to use other atmospheric model for derivatives computation.
           </action>
@@ -352,7 +373,30 @@
           <action dev="bryan" type="fix" issue="1162">
               Throw OrekitException with clear message when getBody() is called with an unknown celestial body name.
           </action>
-      </release>
+          <action dev="bryan" type="update" issue="1103">
+              Used Optional for not-mandatory fields in CCSDS messages.
+          </action>
+          <action dev="bryan" type="fix" issue="1054">
+              Fixed default value of optional parameters in ODParameters by using Java Optional.
+          </action>
+    </release>
+    <release version="13.1.7" date="2026-07-03" description="Orekit 13.1.7 is a patch release. It solves various bugs related to propagators, solid tides and Alpha-5 parsing.">
+        <action dev="luc" type="fix" issue="1977">
+            Fixed AbstractPropagatorConverter.getRMS().
+        </action>
+        <action dev="luc" type="fix" issue="1976">
+            Fixed initial warm-up fitting in AbstractPropagatorConverter.
+        </action>
+        <action dev="luc" type="fix" issue="1972">
+            Allow Ephemeris with null attitude providers to be used in AggregateBoundedPropagator.
+        </action>
+        <action dev="rafa" type="add" issue="1925">
+            Add constructors with custom Love numbers in SolidTides.
+        </action>
+        <action dev="rodrigomarcelino" type="add" issue="1159">
+            Exposed Alpha-5 satellite number parsing in TLE class.
+        </action>
+    </release>
     <release version="13.1.6" date="2026-06-03" description="Orekit 13.1.6 is a patch release.
                                                              It solves various bugs related to CCSDS parsing and writing, DSST
                                                              propagation, and GNSS combination of measurements. This version
@@ -1152,6 +1196,8 @@
         </action>
         <action dev="serrof" type="add" issue="1440">
             Add some getters in PropagatorBuilder.
+        </action>
+        <action dev="maxime" type="update" issue="1430">
             Changed methods visibility in (Field)Abstract(Analytical)Propagator.
         </action>
         <action dev="serrof" type="update" issue="1241">
@@ -1214,7 +1260,7 @@
             Added clearing method for ephemeris generators in integrator-based propagators.
         </action>
     </release>
-    <release version="12.2.1" date="18/12/2024" description="Version 12.2.1 is a patch release of Orekit.              It fixes bugs related to performance in TLEPropagator, mass update between measurements in Kalman models,              longitude normalization in DSST, missing use of clock offsets in bi-static measurements, and wrong use              of Kalman models in case of propagation parameters estimated together with 1 to 5 orbital parameters.">
+    <release version="12.2.1" date="2024-12-18" description="Version 12.2.1 is a patch release of Orekit.              It fixes bugs related to performance in TLEPropagator, mass update between measurements in Kalman models,              longitude normalization in DSST, missing use of clock offsets in bi-static measurements, and wrong use              of Kalman models in case of propagation parameters estimated together with 1 to 5 orbital parameters.">
         <action dev="gegout" type="fix" issue="1624">
             Fix deprecated abstract method in 12.2
         </action>
@@ -1243,7 +1289,7 @@
             Fixed ClockOffsetDriver not modifying the value of BistaticRange.
         </action>
     </release>
-    <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.              It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to              optimal control (indirect). It implements several methods that were missing in field              equivalent classes. Also, new quality of life methods are introduced to improve code conciseness and              readability. It is worth mentioning that a long standing bug regarding the Brouwer-Lyddane analytical              propagator has been fixed. See the list below for a full description of the changes.">
+    <release version="12.2" date="2024-10-18" description="Version 12.2 is a minor release of Orekit.              It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to              optimal control (indirect). It implements several methods that were missing in field              equivalent classes. Also, new quality of life methods are introduced to improve code conciseness and              readability. It is worth mentioning that a long standing bug regarding the Brouwer-Lyddane analytical              propagator has been fixed. See the list below for a full description of the changes.">
       <action dev="serrof" type="add" issue="1555">
         Add init methods in LightFluxModel.
       </action>
@@ -1390,7 +1436,7 @@
         Fix negative eccentricity issue with Brouwer-Lyddane propagator.
       </action>
     </release>
-    <release version="12.1.3" date="04/09/2024" description="Version 12.1.3 is a patch release of Orekit.              It fixes bugs related to thread-safety, measurements status in UKF, inter-satellite measurements              and GNSS ambiguity solver, DSST osculating propagation, NeQuick ionospheric model,              numerical noises in covariance transformation and parsing of RINEX and CCSDS files.              Version 12.1.3 also include Checkstyle fixes.">
+    <release version="12.1.3" date="2024-09-04" description="Version 12.1.3 is a patch release of Orekit.              It fixes bugs related to thread-safety, measurements status in UKF, inter-satellite measurements              and GNSS ambiguity solver, DSST osculating propagation, NeQuick ionospheric model,              numerical noises in covariance transformation and parsing of RINEX and CCSDS files.              Version 12.1.3 also include Checkstyle fixes.">
       <action dev="luc" type="fix" issue="643">
         Removed non thread-safe use of DecimalFormat.
       </action>
@@ -1428,7 +1474,7 @@
         Fixed update of initial state's prop type after a propagation in DSST.
       </action>
     </release>
-    <release version="12.1.2" date="13/07/2024" description="Version 12.1.2 is a patch release of Orekit.              It fixes multiple issues related to the parsing of CCSDS CDM, the generation of              IntelsatElevenElements, the initialization of the IntervalEventTrigger, and the              parsing of IGS related files.              Version 12.1.2 also include multiple JavaDoc fixes.">
+    <release version="12.1.2" date="2024-07-13" description="Version 12.1.2 is a patch release of Orekit.              It fixes multiple issues related to the parsing of CCSDS CDM, the generation of              IntelsatElevenElements, the initialization of the IntervalEventTrigger, and the              parsing of IGS related files.              Version 12.1.2 also include multiple JavaDoc fixes.">
       <action dev="bryan" type="fix" issue="1459">
         Fixed JavaDoc typo in WalkerConstellationSlot.
       </action>
@@ -1466,12 +1512,12 @@
         Add finish method in (Field)EventDetector and call it in propagators.
       </action>
     </release>
-    <release version="12.1.1" date="25/06/2024" description="Version 12.1.1 is a patch release of Orekit.              It fixes one incompatible change introduced in 12.1 on ModifiedSaastamoinenModel.">
+    <release version="12.1.1" date="2024-06-25" description="Version 12.1.1 is a patch release of Orekit.              It fixes one incompatible change introduced in 12.1 on ModifiedSaastamoinenModel.">
       <action dev="luc" type="fix" issue="1446">
         Fixed API incompatible change introduced in 12.1.
       </action>
     </release>
-    <release version="12.1" date="24/06/2024" description="Version 12.1 is a minor release of Orekit.              It includes both fixes and new features. Version 12.1 also includes major              performance improvements in Orekit features related to orbit propagation,              orbit determination, frame transformations, etc. New features introduced              in 12.1 are new implementations of AdaptableInterval for elevation detector              and apside detector, support for post-seismic deformation available in              Sinex files, splicing of Rinex clock files, major improvements in GNSS clock              modelling, new detectors for the relative distance between two objects              and the beta angle, support for Walker constellations handling, a new              propagation model for Intelsat 11 elements, a new solar radiation pressure              model with cylindrical shadow model, a new architecture for tropospheric              models etc. Finally, since version 12.1 support for Ant has been removed.              See the list below for a full description of the changes.">
+    <release version="12.1" date="2024-06-24" description="Version 12.1 is a minor release of Orekit.              It includes both fixes and new features. Version 12.1 also includes major              performance improvements in Orekit features related to orbit propagation,              orbit determination, frame transformations, etc. New features introduced              in 12.1 are new implementations of AdaptableInterval for elevation detector              and apside detector, support for post-seismic deformation available in              Sinex files, splicing of Rinex clock files, major improvements in GNSS clock              modelling, new detectors for the relative distance between two objects              and the beta angle, support for Walker constellations handling, a new              propagation model for Intelsat 11 elements, a new solar radiation pressure              model with cylindrical shadow model, a new architecture for tropospheric              models etc. Finally, since version 12.1 support for Ant has been removed.              See the list below for a full description of the changes.">
       <action dev="serrof" type="update" issue="1441">
         Use automatic differentiation when possible in nadir pointing.
       </action>
@@ -1898,7 +1944,7 @@
         Added EventDetector implementations for detecting beta angle crossing events.
       </action>
     </release>
-    <release version="12.0.2" date="15/03/2024" description="Version 12.0.2 is a patch release of Orekit.            It fixes issues related to SP3 files, interpolation, measurements, multi-threading            and DSST jacobian setup. Copyright year has been updated.">
+    <release version="12.0.2" date="2024-03-15" description="Version 12.0.2 is a patch release of Orekit.            It fixes issues related to SP3 files, interpolation, measurements, multi-threading            and DSST jacobian setup. Copyright year has been updated.">
       <action dev="luc" type="fix" issue="1347">
         Change visibility of InertiaAxis and Inertia constructors to public.
       </action>
@@ -1935,7 +1981,7 @@
         Fix DSST Jacobian setup.
       </action>
     </release>
-    <release version="12.0.1" date="31/12/2023" description="Version 12.0.1 is a patch release of Orekit.            It fixes several issues related to the Ephemeris class, interpolation and caching behaviours.            Checkstyle configuration for IntelliJ is added and some javadocs have been updated. Finally, missing            contributions have been added to the changes.">
+    <release version="12.0.1" date="2023-12-31" description="Version 12.0.1 is a patch release of Orekit.            It fixes several issues related to the Ephemeris class, interpolation and caching behaviours.            Checkstyle configuration for IntelliJ is added and some javadocs have been updated. Finally, missing            contributions have been added to the changes.">
       <action dev="luc" type="add" issue="1286">
         Fixed parsing of SP3 files with partly missing standard deviations.
       </action>

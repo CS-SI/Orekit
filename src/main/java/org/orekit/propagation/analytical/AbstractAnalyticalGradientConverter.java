@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.ParameterDriversProvider;
 
@@ -37,7 +38,11 @@ public abstract class AbstractAnalyticalGradientConverter
     protected AbstractAnalyticalGradientConverter(final AbstractAnalyticalPropagator propagator,
                                                   final int freeStateParameters) {
         super(freeStateParameters);
-        initStates(buildBasicGradientSpacecraftState(propagator.getInitialState(), freeStateParameters,
+
+        // get the initial state *without additional data*, in order to prevent infinite recursion
+        final SpacecraftState baseInitialState = propagator.getBaseInitialState();
+
+        initStates(buildBasicGradientSpacecraftState(baseInitialState, freeStateParameters,
                                                      freeStateParameters > 3 ? propagator.getAttitudeProvider() : null));
 
     }

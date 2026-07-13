@@ -190,6 +190,9 @@ NOT_POSITIVE_SPACECRAFT_MASS=la masa del vehículo espacial no es positiva: {0} 
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=la excentricidad es demasiado alta para el modelo de propagación (e : {0})
 
+# too large eccentricity for teardrop motion: e > 1e-4
+TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION=excentricidad demasiado grande para el movimiento en forma de lágrima: e > 1e-4
+
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE=no hay parámetros de actividad solar disponibles el {0}, datos disponibles únicamente para el intervalo [{1}, {2}]
 
@@ -577,11 +580,17 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=índice de captor {0} ya utilizado
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=falta el indice de captor {0}
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=número de elementos incoherentes: esperados {0}, dados {1}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS=para crear un propagador combinado se necesita al menos un propagador, pero no se ha especificado ninguno
+
+# aggregate propagator requires either all null or all non-null attitude providers
+BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS=
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
 NOT_ENOUGH_ATTITUDE_PROVIDERS=la creación de un proveedor de actitud agregado necesita al menos un proveedor de actitud, pero ninguno ha sido previsto
@@ -974,6 +983,9 @@ WRONG_SATELLITES_NUMBER=número de satélites incorrecto en el archivo {0}, se e
 
 # invalid format: width = {0}, precision = {1}
 INVALID_FORMAT=formato inválido: ancho = {0}, precisión = {1}
+
+# width exceeded: value {0} cannot fit in a field {1} characters wide
+WIDTH_EXCEEDED=
 
 # output {0} has already been closed
 OUTPUT_ALREADY_CLOSED=la salida {0} ya se ha cerrado

@@ -96,7 +96,7 @@ public class EarthStandardAtmosphereRefraction implements AtmosphericRefractionM
         return pressure;
     }
 
-    /** Set the local pressure at the evaluation location
+    /** Set the local pressure at the evaluation location.
      * <p>Otherwise the default value for the local pressure is set to {@link #DEFAULT_PRESSURE}.</p>
      * @param pressure the pressure to set (Pa)
      */
@@ -112,7 +112,7 @@ public class EarthStandardAtmosphereRefraction implements AtmosphericRefractionM
         return temperature;
     }
 
-    /** Set the local temperature at the evaluation location
+    /** Set the local temperature at the evaluation location.
      * <p>Otherwise the default value for the local temperature is set to {@link #DEFAULT_TEMPERATURE}.</p>
      * @param temperature the temperature to set (K)
      */

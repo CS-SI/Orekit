@@ -33,6 +33,11 @@ import java.io.IOException;
 public class NavICL1NVNavigationMessageWriter
     extends CivilianLevel1NavigationMessageWriter<NavICL1NvNavigationMessage> {
 
+    /** Simple constructor. */
+    public NavICL1NVNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final NavICL1NvNavigationMessage message,

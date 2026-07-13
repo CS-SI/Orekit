@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.orekit.propagation.conversion;
 
 import org.junit.jupiter.api.Assertions;
@@ -23,9 +22,14 @@ import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -95,4 +99,42 @@ public class TLEPropagatorBuilderTest {
         Assertions.assertEquals(0., dV, 0.);
         Assertions.assertEquals(0., dA, 0.);
     }
+
+    @Test
+    void testBuilderPassesAlgorithm() {
+        final DataContext dataContext = Utils.setDataRoot("regular-data");
+        final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        final CountingTleGenerationAlgorithm counter =
+                new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm(tle));
+        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(dataContext, counter);
+        builder.buildPropagator();
+        Assertions.assertTrue(counter.stateCalls > 0);
+    }
+
+    private static class CountingTleGenerationAlgorithm extends TleGenerationAlgorithm {
+
+        private final TleGenerationAlgorithm delegate;
+        int stateCalls;
+
+        CountingTleGenerationAlgorithm(final TleGenerationAlgorithm delegate) {
+            super(delegate.getTemplateTLE(), delegate.getFrame(), delegate.getConverter());
+            this.delegate = delegate;
+        }
+
+        @Override
+        public TLE generate(final SpacecraftState state, final TLE templateTLE) {
+            stateCalls++;
+            return delegate.generate(state, templateTLE);
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
+                                                                        final FieldTLE<T> templateTLE) {
+            stateCalls++;
+            return delegate.generate(state, templateTLE);
+        }
+
+    }
+
 }

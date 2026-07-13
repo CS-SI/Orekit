@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical.tle;
 
+import java.util.List;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
@@ -24,8 +26,6 @@ import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.List;
 
 /** Converter for TLE propagator.
  * @author Luc Maisonobe
@@ -50,7 +50,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
     /** Attitude provider. */
     private final AttitudeProvider provider;
 
-    /** Orbit propagator. */
+    /** Propagator. */
     private final TLEPropagator propagator;
 
     /** Simple constructor.
@@ -98,13 +98,14 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
                                                               utc);
 
         // TLE
-        final TleGenerationAlgorithm algorithm =
-            TLEPropagator.getDefaultTleGenerationAlgorithm(templateTLE.toTLE(), utc, teme);
+        final TleGenerationAlgorithm algorithm = propagator.getTleGenerationAlgorithm();
         final FieldTLE<Gradient> gTLE = algorithm.generate(state, templateTLE);
 
         // Return the "Field" propagator
-        return FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme);
-
+        final FieldTLEPropagator<Gradient> fieldPropagator =
+            FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme);
+        fieldPropagator.setTleGenerationAlgorithm(algorithm);
+        return fieldPropagator;
     }
 
     /** {@inheritDoc} */

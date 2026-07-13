@@ -33,6 +33,11 @@ import java.io.IOException;
 public class BeidouLegacyNavigationMessageWriter
     extends AbstractNavigationMessageWriter<BeidouLegacyNavigationMessage> {
 
+    /** Simple constructor. */
+    public BeidouLegacyNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeField1Line1(final BeidouLegacyNavigationMessage message,

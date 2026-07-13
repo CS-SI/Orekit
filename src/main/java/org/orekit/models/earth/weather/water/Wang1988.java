@@ -38,6 +38,11 @@ public class Wang1988 implements WaterVaporPressureProvider {
     /** Conversion polynomial. */
     private static final PolynomialFunction E_POLYNOMIAL = new PolynomialFunction(E_COEFFICIENTS);
 
+    /** Simple constructor. */
+    public Wang1988() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public double waterVaporPressure(final double p, final double t, final double rh) {

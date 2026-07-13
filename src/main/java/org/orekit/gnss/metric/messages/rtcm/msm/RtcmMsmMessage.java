@@ -24,6 +24,7 @@ import org.orekit.gnss.metric.messages.rtcm.msm.headers.RtcmMsmHeader;
 
 /**
  * Generic container for RTCM MSM messages with a header and associated cell data.
+ * @param <H> type of the MSM header
  * @author Nathan Schiffmacher
  * @since 14.0
  */

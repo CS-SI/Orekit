@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,7 +88,7 @@ public class OmmParserTest {
                                              TimeScalesFactory.getUTC()),
                                              file.getHeader().getCreationDate());
         Assertions.assertEquals("NOAA/USA", file.getHeader().getOriginator());
-        Assertions.assertNull(file.getHeader().getMessageId());
+        Assertions.assertFalse(file.getHeader().getMessageId().isPresent());
 
         // Check Metadata Block;
 
@@ -97,41 +96,40 @@ public class OmmParserTest {
         Assertions.assertEquals("1995-025A", file.getMetadata().getObjectID());
         Assertions.assertEquals("EARTH", file.getMetadata().getCenter().getName());
         Assertions.assertNotNull(file.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
+        Assertions.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody().orElseThrow());
         Assertions.assertEquals(FramesFactory.getTEME(), file.getMetadata().getFrame());
         Assertions.assertEquals("UTC",      file.getMetadata().getTimeSystem().name());
         Assertions.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());
         Assertions.assertEquals("TEME", file.getMetadata().getFrame().toString());
-        Assertions.assertTrue(file.getData().getTLEBlock().getComments().isEmpty());
+        Assertions.assertTrue(file.getData().getTLEBlock().isPresent());
+        Assertions.assertTrue(file.getData().getTLEBlock().orElseThrow().getComments().isEmpty());
 
         // Check Mean Keplerian elements data block;
         KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assertions.assertEquals(new AbsoluteDate(2007, 3, 5, 10, 34, new TimeOffset(41L, 426400000000000000L),
                                              TimeScalesFactory.getUTC()),
                             file.getDate());
-        Assertions.assertEquals(1.00273272 * FastMath.PI / 43200.0, kep.getMeanMotion(), 1e-10);
+        Assertions.assertTrue(kep.getMeanMotion().isPresent());
+        Assertions.assertEquals(1.00273272 * FastMath.PI / 43200.0, kep.getMeanMotion().orElseThrow(), 1e-10);
         Assertions.assertEquals(0.0005013, kep.getE(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(3.0539), kep.getI(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(81.7939), kep.getRaan(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(249.2363), kep.getPa(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(150.1602), kep.getAnomaly(), 1e-10);
-        Assertions.assertEquals(398600.8 * 1e9, kep.getMu(), 1e-10);
+        Assertions.assertTrue(kep.getMu().isPresent());
+        Assertions.assertEquals(398600.8 * 1e9, kep.getMu().orElseThrow(), 1e-10);
 
 
         // Check TLE Related Parameters data block;
-        OmmTle tle = file.getData().getTLEBlock();
+        OmmTle tle = file.getData().getTLEBlock().orElseThrow();
         Assertions.assertEquals(0, tle.getEphemerisType());
         Assertions.assertEquals('U', tle.getClassificationType());
-        int[] noradIDExpected = new int[23581];
-        int[] noradIDActual = new int[tle.getNoradID()];
-        Assertions.assertEquals(noradIDExpected[0], noradIDActual[0]);
+        Assertions.assertEquals(23581, tle.getNoradID());
         Assertions.assertEquals(925, tle.getElementSetNumber());
-        int[] revAtEpochExpected = new int[4316];
-        int[] revAtEpochActual = new int[tle.getRevAtEpoch()];
-        Assertions.assertEquals(revAtEpochExpected[0], revAtEpochActual[0]);
-        Assertions.assertEquals(0.0001, tle.getBStar(), 1e-10);
-        Assertions.assertEquals(-0.00000113 * FastMath.PI / 1.86624e9, tle.getMeanMotionDot(), 1e-12);
-        Assertions.assertEquals(0.0 * FastMath.PI / 5.3747712e13, tle.getMeanMotionDotDot(), 1e-10);
+        Assertions.assertEquals(4316, tle.getRevAtEpoch());
+        Assertions.assertEquals(0.0001, tle.getBStar().orElseThrow(), 1e-10);
+        Assertions.assertEquals(-0.00000113 * FastMath.PI / 1.86624e9, tle.getMeanMotionDot().orElseThrow(), 1e-12);
+        Assertions.assertEquals(0.0 * FastMath.PI / 5.3747712e13, tle.getMeanMotionDotDot().orElseThrow(), 1e-10);
         Assertions.assertEquals(1995, file.getMetadata().getLaunchYear());
         Assertions.assertEquals(25, file.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A", file.getMetadata().getLaunchPiece());
@@ -147,7 +145,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testParseOMM2KVN() throws URISyntaxException {
+    public void testParseOMM2KVN() {
         String name = "/ccsds/odm/omm/OMMExample2.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
@@ -156,7 +154,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testParseOMM2XML() throws URISyntaxException {
+    public void testParseOMM2XML() {
         String name = "/ccsds/odm/omm/OMMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
@@ -165,7 +163,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testIssue906() throws URISyntaxException {
+    public void testIssue906() {
         String name = "/ccsds/odm/omm/OMM-with-units.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
@@ -174,7 +172,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testWriteOMM3() throws URISyntaxException, IOException {
+    public void testWriteOMM3() throws IOException {
         final String name = "/ccsds/odm/omm/OMMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
@@ -198,17 +196,17 @@ public class OmmParserTest {
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals(OmmMetadata.SGP_SGP4_THEORY, file.getMetadata().getMeanElementTheory());
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
-        Assertions.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
+        Assertions.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion().orElseThrow() / MathUtils.TWO_PI, 1e-10);
         Assertions.assertTrue(Double.isNaN(file.getData().getMass()));
-        CartesianCovariance covariance = file.getData().getCovarianceBlock();
-        Assertions.assertEquals(FramesFactory.getTEME(), covariance.getReferenceFrame().asFrame());
+        CartesianCovariance covariance = file.getData().getCovarianceBlock().orElseThrow();
+        Assertions.assertEquals(FramesFactory.getTEME(), covariance.getReferenceFrame().asFrame().orElseThrow());
         Assertions.assertEquals(6, covariance.getCovarianceMatrix().getRowDimension());
         Assertions.assertEquals(6, covariance.getCovarianceMatrix().getColumnDimension());
         Assertions.assertEquals(1995, file.getMetadata().getLaunchYear());
         Assertions.assertEquals(25, file.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A", file.getMetadata().getLaunchPiece());
-        Assertions.assertEquals(0.0001, file.getData().getTLEBlock().getBStar(), 1.0e-15);
-        Assertions.assertTrue(Double.isNaN(file.getData().getTLEBlock().getBTerm()));
+        Assertions.assertEquals(0.0001, file.getData().getTLEBlock().orElseThrow().getBStar().orElseThrow(), 1.0e-15);
+        Assertions.assertTrue(file.getData().getTLEBlock().orElseThrow().getBTerm().isEmpty());
         file.generateKeplerianOrbit();
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
@@ -274,20 +272,21 @@ public class OmmParserTest {
         final Omm file = parser.parseMessage(source);
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assertions.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals(missionReferenceDate.shiftedBy(210840), file.getMetadata().getFrameEpoch());
-        Assertions.assertEquals(6800e3, kep.getA(), 1e-10);
+        Assertions.assertEquals(missionReferenceDate.shiftedBy(210840), file.getMetadata().getFrameEpoch().orElseThrow());
+        Assertions.assertTrue(kep.getA().isPresent());
+        Assertions.assertEquals(6800e3, kep.getA().orElseThrow(), 1e-10);
 
-        final SpacecraftParameters sp = file.getData().getSpacecraftParametersBlock();
+        final SpacecraftParameters sp = file.getData().getSpacecraftParametersBlock().orElseThrow();
         Assertions.assertEquals(300, sp.getMass(), 1e-10);
-        Assertions.assertEquals(5, sp.getSolarRadArea(), 1e-10);
-        Assertions.assertEquals(0.001, sp.getSolarRadCoeff(), 1e-10);
+        Assertions.assertEquals(5, sp.getSolarRadArea().orElseThrow(), 1e-10);
+        Assertions.assertEquals(0.001, sp.getSolarRadCoeff().orElseThrow(), 1e-10);
 
-        CartesianCovariance covariance = file.getData().getCovarianceBlock();
-        Assertions.assertNull(covariance.getReferenceFrame().asFrame());
-        Assertions.assertNull(covariance.getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(LOFType.TNW_INERTIAL, covariance.getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        CartesianCovariance covariance = file.getData().getCovarianceBlock().orElseThrow();
+        Assertions.assertFalse(covariance.getReferenceFrame().asFrame().isPresent());
+        Assertions.assertFalse(covariance.getReferenceFrame().asCelestialBodyFrame().isPresent());
+        Assertions.assertEquals(LOFType.TNW_INERTIAL, covariance.getReferenceFrame().asOrbitRelativeFrame().orElseThrow().getLofType());
 
-        UserDefined ud = file.getData().getUserDefinedBlock();
+        UserDefined ud = file.getData().getUserDefinedBlock().orElseThrow();
         HashMap<String, String> userDefinedParameters = new HashMap<>();
         userDefinedParameters.put("EARTH_MODEL", "WGS-84");
         Assertions.assertEquals(userDefinedParameters, ud.getParameters());
@@ -298,9 +297,9 @@ public class OmmParserTest {
         Assertions.assertEquals(Collections.singletonList("the following data is what we're looking for"),
                             file.getData().getKeplerianElementsBlock().getComments());
         Assertions.assertEquals(Collections.singletonList("spacecraft data"),
-                            file.getData().getSpacecraftParametersBlock().getComments());
+                            file.getData().getSpacecraftParametersBlock().orElseThrow().getComments());
         Assertions.assertEquals(Collections.singletonList("Covariance matrix"),
-                            file.getData().getCovarianceBlock().getComments());
+                            file.getData().getCovarianceBlock().orElseThrow().getComments());
         Assertions.assertEquals(1995, file.getMetadata().getLaunchYear());
         Assertions.assertEquals(25, file.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A", file.getMetadata().getLaunchPiece());
@@ -324,10 +323,9 @@ public class OmmParserTest {
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals(OmmMetadata.SGP4_XP_THEORY, file.getMetadata().getMeanElementTheory());
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
-        Assertions.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
-        Assertions.assertTrue(Double.isNaN(file.getData().getMass()));
-        Assertions.assertTrue(Double.isNaN(file.getData().getTLEBlock().getBStar()));
-        Assertions.assertEquals(0.0015, file.getData().getTLEBlock().getBTerm(), 1.0e-15);
+        Assertions.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion().orElseThrow() / MathUtils.TWO_PI, 1e-10);
+        Assertions.assertTrue(file.getData().getTLEBlock().orElseThrow().getBStar().isEmpty());
+        Assertions.assertEquals(0.0015, file.getData().getTLEBlock().orElseThrow().getBTerm().orElseThrow(), 1.0e-15);
     }
 
     @Test
@@ -450,7 +448,7 @@ public class OmmParserTest {
                         }).
                         buildOmmParser().
                         parseMessage(source);
-        Assertions.assertNull(omm.getData().getUserDefinedBlock());
+        Assertions.assertFalse(omm.getData().getUserDefinedBlock().isPresent());
     }
 
     @Test
@@ -488,7 +486,7 @@ public class OmmParserTest {
                         parseMessage(source);
         Assertions.assertEquals(3.0, omm.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals("NOAA/USA", omm.getHeader().getOriginator());
-        Assertions.assertEquals(myMessageId, omm.getHeader().getMessageId());
+        Assertions.assertEquals(myMessageId, omm.getHeader().getMessageId().orElseThrow());
     }
 
     @Test
@@ -630,7 +628,7 @@ public class OmmParserTest {
                 Matchers.sameInstance(myTod));
         MatcherAssert.assertThat(omm.generateSpacecraftState().getFrame(),
                 Matchers.sameInstance(myTod));
-        MatcherAssert.assertThat(omm.getData().getCovarianceBlock().getFrame(),
+        MatcherAssert.assertThat(omm.getData().getCovarianceBlock().orElseThrow().getFrame(),
                 Matchers.sameInstance(myTnw));
     }
 

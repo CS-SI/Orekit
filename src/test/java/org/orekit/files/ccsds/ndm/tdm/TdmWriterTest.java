@@ -66,6 +66,11 @@ public class TdmWriterTest extends AbstractWriterTest<TdmHeader, Segment<TdmMeta
     }
 
     @Test
+    public void testWriteKvnExampleAllKeywordsSequentialWithDopplerRollover() {
+        doTest("/ccsds/tdm/kvn/TDMExampleAllKeywordsSequentialWithRollover.txt");
+    }
+
+    @Test
     public void testWriteKvnExampleAllKeywordsSingleDiff() {
         doTest("/ccsds/tdm/kvn/TDMExampleAllKeywordsSingleDiff.txt");
     }

@@ -190,6 +190,9 @@ NOT_POSITIVE_SPACECRAFT_MASS=rumfartøjets masse er ikke positiv: {0} kg
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=for høj excentricitet til propagationsmodel: e = {0}
 
+# too large eccentricity for teardrop motion: e > 1e-4
+TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION=for stor ekscentricitet for dråbeformet bevægelse: e > 1e-4
+
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE=ingen disponibel solaktivitet {0}, kun disponibel data i området [{1}, {2}]
 
@@ -577,11 +580,17 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS=Oprettelsen af en aggregeret propagator kræver mindst en propagator-bestanddel, men ingen blev angivet.
+
+# aggregate propagator requires either all null or all non-null attitude providers
+BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS=
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
 NOT_ENOUGH_ATTITUDE_PROVIDERS=
@@ -974,6 +983,9 @@ WRONG_SATELLITES_NUMBER=
 
 # invalid format: width = {0}, precision = {1}
 INVALID_FORMAT=
+
+# width exceeded: value {0} cannot fit in a field {1} characters wide
+WIDTH_EXCEEDED=
 
 # output {0} has already been closed
 OUTPUT_ALREADY_CLOSED=

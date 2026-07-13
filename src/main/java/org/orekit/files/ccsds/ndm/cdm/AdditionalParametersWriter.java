@@ -53,14 +53,14 @@ public class AdditionalParametersWriter extends AbstractWriter {
         generator.writeComments(additionalParameters.getComments());
 
         // additional parameters
-        generator.writeEntry(AdditionalParametersKey.AREA_PC.name(),             additionalParameters.getAreaPC(),             Units.M2,        false);
-        generator.writeEntry(AdditionalParametersKey.AREA_DRG.name(),            additionalParameters.getAreaDRG(),            Units.M2,        false);
-        generator.writeEntry(AdditionalParametersKey.AREA_SRP.name(),            additionalParameters.getAreaSRP(),            Units.M2,        false);
-        generator.writeEntry(AdditionalParametersKey.MASS.name(),                additionalParameters.getMass(),               Unit.KILOGRAM,   false);
-        generator.writeEntry(AdditionalParametersKey.CD_AREA_OVER_MASS.name(),   additionalParameters.getCDAreaOverMass(),     Units.M2_PER_KG, false);
-        generator.writeEntry(AdditionalParametersKey.CR_AREA_OVER_MASS.name(),   additionalParameters.getCRAreaOverMass(),     Units.M2_PER_KG, false);
-        generator.writeEntry(AdditionalParametersKey.THRUST_ACCELERATION.name(), additionalParameters.getThrustAcceleration(), Units.M_PER_S2,  false);
-        generator.writeEntry(AdditionalParametersKey.SEDR.name(),                additionalParameters.getSedr(),               Units.W_PER_KG,  false);
+        generator.writeOptionalDoubleEntry(AdditionalParametersKey.AREA_PC.name(),             additionalParameters.getAreaPC(),             Units.M2,        false);
+        generator.writeOptionalDoubleEntry(AdditionalParametersKey.AREA_DRG.name(),            additionalParameters.getAreaDRG(),            Units.M2,        false);
+        generator.writeOptionalDoubleEntry(AdditionalParametersKey.AREA_SRP.name(),            additionalParameters.getAreaSRP(),            Units.M2,        false);
+        generator.writeOptionalDoubleEntry(AdditionalParametersKey.MASS.name(),                additionalParameters.getMass(),               Unit.KILOGRAM,   false);
+        generator.writeOptionalDoubleEntry(AdditionalParametersKey.CD_AREA_OVER_MASS.name(),   additionalParameters.getCDAreaOverMass(),     Units.M2_PER_KG, false);
+        generator.writeOptionalDoubleEntry(AdditionalParametersKey.CR_AREA_OVER_MASS.name(),   additionalParameters.getCRAreaOverMass(),     Units.M2_PER_KG, false);
+        generator.writeOptionalDoubleEntry(AdditionalParametersKey.THRUST_ACCELERATION.name(), additionalParameters.getThrustAcceleration(), Units.M_PER_S2,  false);
+        generator.writeOptionalDoubleEntry(AdditionalParametersKey.SEDR.name(),                additionalParameters.getSedr(),               Units.W_PER_KG,  false);
 
     }
 

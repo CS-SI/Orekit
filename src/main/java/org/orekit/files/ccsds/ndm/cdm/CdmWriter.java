@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.io.IOException;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
@@ -44,9 +43,6 @@ public class CdmWriter extends CdmMessageWriter {
 
     /** Padding width for aligning the '=' sign. */
     public static final int KVN_PADDING_WIDTH = 17;
-
-    /** */
-    private final Vector3D NANVECTOR = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
 
     /** Complete constructor.
      * <p>
@@ -90,29 +86,27 @@ public class CdmWriter extends CdmMessageWriter {
             generator.enterSection(XmlStructureKey.data.name());
         }
 
-        if (segment.getData().getODParametersBlock() != null) {
+        if (segment.getData().getODParametersBlock().isPresent()) {
             // write optional OD parameters block
             generator.writeComments(segment.getData().getComments());
             new ODParametersWriter(XmlSubStructureKey.odParameters.name(), null,
-                                   segment.getData().getODParametersBlock(), getTimeConverter()).
+                                   segment.getData().getODParametersBlock().get(), getTimeConverter()).
             write(generator);
         }
 
-        if (segment.getData().getAdditionalParametersBlock() != null) {
+        if (segment.getData().getAdditionalParametersBlock().isPresent()) {
             // write optional additional parameters block
             new AdditionalParametersWriter(XmlSubStructureKey.additionalParameters.name(), null,
-                            segment.getData().getAdditionalParametersBlock()).
+                                           segment.getData().getAdditionalParametersBlock().get()).
             write(generator);
         }
 
         // write mandatory state vector block
-        new StateVectorWriter(XmlSubStructureKey.stateVector.name(), null,
-                                 segment.getData().getStateVectorBlock()).
+        new StateVectorWriter(XmlSubStructureKey.stateVector.name(), null, segment.getData().getStateVectorBlock()).
         write(generator);
 
         // write mandatory RTN covariance block
-        new RTNCovarianceWriter(XmlSubStructureKey.covarianceMatrix.name(), null,
-                                 segment.getData().getRTNCovarianceBlock()).
+        new RTNCovarianceWriter(XmlSubStructureKey.covarianceMatrix.name(), null, segment.getData().getRTNCovarianceBlock()).
         write(generator);
 
         // stop data block
@@ -133,56 +127,53 @@ public class CdmWriter extends CdmMessageWriter {
         }
         generator.writeComments(relativeMetadata.getComment());
 
-        generator.writeEntry(CdmRelativeMetadataKey.TCA.name(), getTimeConverter(), relativeMetadata.getTca(), true, true);
-        generator.writeEntry(CdmRelativeMetadataKey.MISS_DISTANCE.name(), relativeMetadata.getMissDistance(), Unit.METRE, true);
-        generator.writeEntry(CdmRelativeMetadataKey.RELATIVE_SPEED.name(), relativeMetadata.getRelativeSpeed(), Units.M_PER_S, false);
+        generator.writeEntry(CdmRelativeMetadataKey.TCA.name(), getTimeConverter(),      relativeMetadata.getTca(),           true,          true);
+        generator.writeEntry(CdmRelativeMetadataKey.MISS_DISTANCE.name(),                relativeMetadata.getMissDistance(),  Unit.METRE,    true);
+        generator.writeOptionalDoubleEntry(CdmRelativeMetadataKey.RELATIVE_SPEED.name(), relativeMetadata.getRelativeSpeed(), Units.M_PER_S, false);
 
         // start relative state vector block
-        if (generator.getFormat() == FileFormat.XML && (relativeMetadata.getRelativePosition() != NANVECTOR ||
-            relativeMetadata.getRelativeVelocity() != NANVECTOR)) {
+        if (generator.getFormat() == FileFormat.XML && (relativeMetadata.getRelativePosition().isPresent() ||
+            relativeMetadata.getRelativeVelocity().isPresent())) {
             generator.enterSection(XmlSubStructureKey.relativeStateVector.name());
         }
 
-        if (relativeMetadata.getRelativePosition() != NANVECTOR) {
+        if (relativeMetadata.getRelativePosition().isPresent()) {
             generator.writeEntry(CdmRelativeMetadataKey.RELATIVE_POSITION_R.name(),
-                                 relativeMetadata.getRelativePosition().getX(), Unit.METRE, false);
+                                 relativeMetadata.getRelativePosition().get().getX(), Unit.METRE, false);
             generator.writeEntry(CdmRelativeMetadataKey.RELATIVE_POSITION_T.name(),
-                                 relativeMetadata.getRelativePosition().getY(), Unit.METRE, false);
+                                 relativeMetadata.getRelativePosition().get().getY(), Unit.METRE, false);
             generator.writeEntry(CdmRelativeMetadataKey.RELATIVE_POSITION_N.name(),
-                                 relativeMetadata.getRelativePosition().getZ(), Unit.METRE, false);
+                                 relativeMetadata.getRelativePosition().get().getZ(), Unit.METRE, false);
         }
-        if (relativeMetadata.getRelativeVelocity() != NANVECTOR) {
+        if (relativeMetadata.getRelativeVelocity().isPresent()) {
             generator.writeEntry(CdmRelativeMetadataKey.RELATIVE_VELOCITY_R.name(),
-                                 relativeMetadata.getRelativeVelocity().getX(), Units.M_PER_S, false);
+                                 relativeMetadata.getRelativeVelocity().get().getX(), Units.M_PER_S, false);
             generator.writeEntry(CdmRelativeMetadataKey.RELATIVE_VELOCITY_T.name(),
-                                 relativeMetadata.getRelativeVelocity().getY(), Units.M_PER_S, false);
+                                 relativeMetadata.getRelativeVelocity().get().getY(), Units.M_PER_S, false);
             generator.writeEntry(CdmRelativeMetadataKey.RELATIVE_VELOCITY_N.name(),
-                                 relativeMetadata.getRelativeVelocity().getZ(), Units.M_PER_S, false);
+                                 relativeMetadata.getRelativeVelocity().get().getZ(), Units.M_PER_S, false);
         }
 
         // stop relative state vector block
         if (generator.getFormat() == FileFormat.XML &&
-            (relativeMetadata.getRelativePosition() != NANVECTOR || relativeMetadata.getRelativeVelocity() != NANVECTOR)) {
+            (relativeMetadata.getRelativePosition().isPresent() || relativeMetadata.getRelativeVelocity().isPresent())) {
             generator.exitSection();
         }
 
-        generator.writeEntry(CdmRelativeMetadataKey.START_SCREEN_PERIOD.name(), getTimeConverter(),
+        generator.writeOptionalDateEntry(CdmRelativeMetadataKey.START_SCREEN_PERIOD.name(), getTimeConverter(),
                              relativeMetadata.getStartScreenPeriod(), true, false);
-        generator.writeEntry(CdmRelativeMetadataKey.STOP_SCREEN_PERIOD.name(),  getTimeConverter(),
+        generator.writeOptionalDateEntry(CdmRelativeMetadataKey.STOP_SCREEN_PERIOD.name(),  getTimeConverter(),
                              relativeMetadata.getStopScreenPeriod(), true, false);
-        generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME.name(), relativeMetadata.getScreenVolumeFrame(),         false);
-        generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE.name(), relativeMetadata.getScreenVolumeShape(),         false);
-        generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_X.name(),     relativeMetadata.getScreenVolumeX(), Unit.METRE, false);
-        generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_Y.name(),     relativeMetadata.getScreenVolumeY(), Unit.METRE, false);
-        generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_Z.name(),     relativeMetadata.getScreenVolumeZ(), Unit.METRE, false);
-        generator.writeEntry(CdmRelativeMetadataKey.SCREEN_ENTRY_TIME.name(),   getTimeConverter(),
-                             relativeMetadata.getScreenEntryTime(), true, false);
-        generator.writeEntry(CdmRelativeMetadataKey.SCREEN_EXIT_TIME.name(),    getTimeConverter(),
-                             relativeMetadata.getScreenExitTime(), true, false);
-        generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY.name(), relativeMetadata.getCollisionProbability(), Unit.ONE, false);
-        if (relativeMetadata.getCollisionProbaMethod() != null)  {
-            generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY_METHOD.name(),
-                                 relativeMetadata.getCollisionProbaMethod().getName(), null, false);
+        generator.writeOptionalEnumEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME.name(),   relativeMetadata.getScreenVolumeFrame(),         false);
+        generator.writeOptionalEnumEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE.name(),   relativeMetadata.getScreenVolumeShape(),         false);
+        generator.writeOptionalDoubleEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_X.name(),     relativeMetadata.getScreenVolumeX(), Unit.METRE, false);
+        generator.writeOptionalDoubleEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_Y.name(),     relativeMetadata.getScreenVolumeY(), Unit.METRE, false);
+        generator.writeOptionalDoubleEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_Z.name(),     relativeMetadata.getScreenVolumeZ(), Unit.METRE, false);
+        generator.writeOptionalDateEntry(CdmRelativeMetadataKey.SCREEN_ENTRY_TIME.name(),     getTimeConverter(), relativeMetadata.getScreenEntryTime(), true, false);
+        generator.writeOptionalDateEntry(CdmRelativeMetadataKey.SCREEN_EXIT_TIME.name(),      getTimeConverter(), relativeMetadata.getScreenExitTime(), true, false);
+        generator.writeOptionalDoubleEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY.name(), relativeMetadata.getCollisionProbability(), Unit.ONE, false);
+        if (relativeMetadata.getCollisionProbaMethod().isPresent())  {
+            generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY_METHOD.name(),  relativeMetadata.getCollisionProbaMethod().get().getName(), null, false);
         }
 
         // stop relative metadata block

@@ -47,7 +47,7 @@ public class EcksteinHechlerConverterTest {
 
     @Test
     public void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.447e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.778e-8);
     }
 
     @Test

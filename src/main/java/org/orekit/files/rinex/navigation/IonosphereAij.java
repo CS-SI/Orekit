@@ -42,6 +42,11 @@ public class IonosphereAij {
     /** aᵢ₂ (sfu/rad²). */
     private double ai2;
 
+    /** Simple constructor. */
+    public IonosphereAij() {
+        // nothing to do
+    }
+
     /** Get aᵢ₀.
      * <p>
      * Beware Orekit uses SI units here.

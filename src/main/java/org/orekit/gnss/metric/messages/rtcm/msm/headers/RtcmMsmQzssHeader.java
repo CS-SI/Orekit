@@ -51,6 +51,11 @@ public class RtcmMsmQzssHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(32,  RtcmMsmSignalId.QZSS_1X);
     }
 
+    /** Simple constructor. */
+    public RtcmMsmQzssHeader() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

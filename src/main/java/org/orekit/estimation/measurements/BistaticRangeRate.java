@@ -101,29 +101,33 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
     @Override
     protected EstimatedMeasurementBase<BistaticRangeRate> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                   final int evaluation,
-                                                                                                  final SpacecraftState[] states) {
+                                                                                                  final SpacecraftState[] states,
+                                                                                                  final boolean fillParticipants) {
         // Compute participants (position-velocities at signal transmissions)
         final SpacecraftState state = states[0];
         final Frame frame = state.getFrame();
         final PVCoordinatesProvider emitterPVProvider = getEmitter().getPVCoordinatesProvider();
-        final TimeStampedPVCoordinates[] participants = getParticipants(state, emitterPVProvider,
-                getReceiver().getPVCoordinatesProvider());
+        final PVCoordinatesProvider receiverPVProvider = getReceiver().getPVCoordinatesProvider();
+        final double[] shifts = getShifts(state, emitterPVProvider, receiverPVProvider);
 
         // Extract dates
-        final AbsoluteDate emissionDate = participants[0].getDate();
-        final AbsoluteDate transitDate = participants[1].getDate();
-        final AbsoluteDate receptionDate = participants[2].getDate();
+        final AbsoluteDate receptionDate = getDate().shiftedBy(shifts[0]);
+        final AbsoluteDate transitDate = receptionDate.shiftedBy(shifts[1]);
+        final AbsoluteDate emissionDate = transitDate.shiftedBy(shifts[2]);
 
         // Prepare the evaluation
         final double shift = transitDate.durationFrom(state);
         final SpacecraftState transitState = state.shiftedBy(shift);
+        final TimeStampedPVCoordinates[] participants = fillParticipants ? new TimeStampedPVCoordinates[] { emitterPVProvider.getPVCoordinates(emissionDate, frame),
+                transitState.getPVCoordinates(), receiverPVProvider.getPVCoordinates(receptionDate, frame) } : new TimeStampedPVCoordinates[0];
         final EstimatedMeasurementBase<BistaticRangeRate> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
                 new SpacecraftState[] { transitState }, participants);
 
         // Compute range rate
         final PVCoordinatesProvider observablePVCoordinates = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
-        final double rangeRate = twoLeggedRangeRateModel.value(frame, participants[2], receptionDate,
+        final TimeStampedPVCoordinates receiverPV = fillParticipants ? participants[2] : receiverPVProvider.getPVCoordinates(receptionDate, frame);
+        final double rangeRate = twoLeggedRangeRateModel.value(frame, receiverPV, receptionDate,
                 observablePVCoordinates, transitDate, emitterPVProvider, emissionDate);
 
         estimated.setEstimatedValue(rangeRate);

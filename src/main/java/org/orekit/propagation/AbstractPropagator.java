@@ -100,8 +100,15 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() {
+    @Override
+    public SpacecraftState getBaseInitialState() {
         return initialState;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SpacecraftState getInitialState() {
+        return updateAdditionalData(getBaseInitialState());
     }
 
     /** {@inheritDoc} */

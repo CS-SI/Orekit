@@ -26,10 +26,10 @@ import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.OdmParser;
@@ -229,8 +229,8 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.validate(header.getFormatVersion());
-        if (metadata.getCenter().getBody() != null) {
-            setMuCreated(metadata.getCenter().getBody().getGM());
+        if (metadata.getCenter().getBody().isPresent()) {
+            setMuCreated(metadata.getCenter().getBody().get().getGM());
         }
         return true;
     }
@@ -257,10 +257,10 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
             }
             if (keplerianElementsBlock != null) {
                 keplerianElementsBlock.setEpoch(stateVectorBlock.getEpoch());
-                if (Double.isNaN(keplerianElementsBlock.getMu())) {
+                if (keplerianElementsBlock.getMu().isEmpty()) {
                     keplerianElementsBlock.setMu(getSelectedMu());
                 } else {
-                    setMuParsed(keplerianElementsBlock.getMu());
+                    setMuParsed(keplerianElementsBlock.getMu().get());
                 }
             }
             final double  mass = spacecraftParametersBlock == null ?

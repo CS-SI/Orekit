@@ -76,7 +76,6 @@ public class TLEPropagatorBuilder
         super(generationAlgorithm, false, attitudeProvider, Propagator.DEFAULT_MASS);
         this.dataContext         = dataContext;
         this.generationAlgorithm = generationAlgorithm;
-
     }
 
     /** {@inheritDoc}. */
@@ -117,6 +116,7 @@ public class TLEPropagatorBuilder
 
         final boolean bStarSelected = this.getPropagationParametersDrivers().getDrivers().getFirst().isSelected();
         propagator.getParametersDrivers().getFirst().setSelected(bStarSelected);
+        propagator.setTleGenerationAlgorithm(generationAlgorithm);
         getImpulseManeuvers().forEach(propagator::addEventDetector);
         return propagator;
     }

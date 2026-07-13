@@ -26,6 +26,7 @@ import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -94,20 +95,25 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
     @Override
     protected EstimatedMeasurementBase<BistaticRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                               final int evaluation,
-                                                                                              final SpacecraftState[] states) {
+                                                                                              final SpacecraftState[] states,
+                                                                                              final boolean fillParticipants) {
         // Compute participants (position-velocities at signal transmissions)
         final SpacecraftState state = states[0];
-        final TimeStampedPVCoordinates[] participants = getParticipants(state, getEmitter().getPVCoordinatesProvider(),
-                getReceiver().getPVCoordinatesProvider());
+        final PVCoordinatesProvider emitterPVProvider = getEmitter().getPVCoordinatesProvider();
+        final PVCoordinatesProvider receiverPVProvider = getReceiver().getPVCoordinatesProvider();
+        final double[] shifts = getShifts(state, emitterPVProvider, receiverPVProvider);
 
         // Extract dates
-        final AbsoluteDate emissionDate = participants[0].getDate();
-        final AbsoluteDate transitDate = participants[1].getDate();
-        final AbsoluteDate receptionDate = participants[2].getDate();
+        final AbsoluteDate receptionDate = getDate().shiftedBy(shifts[0]);
+        final AbsoluteDate transitDate = receptionDate.shiftedBy(shifts[1]);
+        final AbsoluteDate emissionDate = transitDate.shiftedBy(shifts[2]);
 
         // Prepare the evaluation
         final double shift = transitDate.durationFrom(state);
         final SpacecraftState transitState = state.shiftedBy(shift);
+        final Frame frame = state.getFrame();
+        final TimeStampedPVCoordinates[] participants = fillParticipants ? new TimeStampedPVCoordinates[] { emitterPVProvider.getPVCoordinates(emissionDate, frame),
+                transitState.getPVCoordinates(), receiverPVProvider.getPVCoordinates(receptionDate, frame) } : new TimeStampedPVCoordinates[0];
         final EstimatedMeasurementBase<BistaticRange> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
                 new SpacecraftState[] { transitState }, participants);
 

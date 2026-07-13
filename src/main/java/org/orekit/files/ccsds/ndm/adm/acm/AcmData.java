@@ -18,9 +18,12 @@
 package org.orekit.files.ccsds.ndm.adm.acm;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.utils.Initializer;
 
 /** Data container for Attitude Comprehensive Messages.
  * @author Luc Maisonobe
@@ -32,6 +35,7 @@ public class AcmData implements Data {
     private final List<AttitudeStateHistory> attitudeBlocks;
 
     /** Physical properties logical block. */
+    @Nullable
     private final AttitudePhysicalProperties physicBlock;
 
     /** Covariance logical blocks. */
@@ -41,9 +45,11 @@ public class AcmData implements Data {
     private final List<AttitudeManeuver> maneuverBlocks;
 
     /** Attitude determination logical block. */
+    @Nullable
     private final AttitudeDetermination attitudeDeterminationBlock;
 
     /** User defined parameters logical block. */
+    @Nullable
     private final UserDefined userDefinedBlock;
 
     /** Simple constructor.
@@ -60,10 +66,10 @@ public class AcmData implements Data {
                    final List<AttitudeManeuver>          maneuverBlocks,
                    final AttitudeDetermination           attitudeDeterminationBlock,
                    final UserDefined                     userDefinedBlock) {
-        this.attitudeBlocks             = attitudeBlocks;
+        this.attitudeBlocks             = Initializer.emptyListIfNull(attitudeBlocks);
         this.physicBlock                = physicBlock;
-        this.covarianceBlocks           = covarianceBlocks;
-        this.maneuverBlocks             = maneuverBlocks;
+        this.covarianceBlocks           = Initializer.emptyListIfNull(covarianceBlocks);
+        this.maneuverBlocks             = Initializer.emptyListIfNull(maneuverBlocks);
         this.attitudeDeterminationBlock = attitudeDeterminationBlock;
         this.userDefinedBlock           = userDefinedBlock;
     }
@@ -71,7 +77,7 @@ public class AcmData implements Data {
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        if (attitudeBlocks != null) {
+        if (!attitudeBlocks.isEmpty()) {
             for (final AttitudeStateHistory ash : attitudeBlocks) {
                 ash.getMetadata().validate(version);
             }
@@ -79,12 +85,12 @@ public class AcmData implements Data {
         if (physicBlock != null) {
             physicBlock.validate(version);
         }
-        if (covarianceBlocks != null) {
+        if (!covarianceBlocks.isEmpty()) {
             for (final AttitudeCovarianceHistory ch : covarianceBlocks) {
                 ch.getMetadata().validate(version);
             }
         }
-        if (maneuverBlocks != null) {
+        if (!maneuverBlocks.isEmpty()) {
             for (final AttitudeManeuver m : maneuverBlocks) {
                 m.validate(version);
             }
@@ -107,8 +113,8 @@ public class AcmData implements Data {
     /** Get physical properties logical block.
      * @return physical properties logical block (may be null)
      */
-    public AttitudePhysicalProperties getPhysicBlock() {
-        return physicBlock;
+    public Optional<AttitudePhysicalProperties> getPhysicBlock() {
+        return Optional.ofNullable(physicBlock);
     }
 
     /** Get covariance logical blocks.
@@ -128,15 +134,15 @@ public class AcmData implements Data {
     /** Get attitude determination logical block.
      * @return attitude determination logical block (may be null)
      */
-    public AttitudeDetermination getAttitudeDeterminationBlock() {
-        return attitudeDeterminationBlock;
+    public Optional<AttitudeDetermination> getAttitudeDeterminationBlock() {
+        return Optional.ofNullable(attitudeDeterminationBlock);
     }
 
     /** Get user defined parameters logical block.
      * @return user defined parameters logical block (may be null)
      */
-    public UserDefined getUserDefinedBlock() {
-        return userDefinedBlock;
+    public Optional<UserDefined> getUserDefinedBlock() {
+        return Optional.ofNullable(userDefinedBlock);
     }
 
 }

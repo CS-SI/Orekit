@@ -16,8 +16,6 @@
  */
 package org.orekit.files.sp3;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,16 +31,16 @@ import org.orekit.utils.IERSConventions;
 public class NsgfV00FilterTest {
 
     @Test
-    public void testFiltered() throws IOException {
+    public void testFiltered() {
         doTestFilter("/sp3/nsgf.orb.stella.v00.sp3.gz", "L56", 100);
     }
 
     @Test
-    public void testNotFiltered() throws IOException {
+    public void testNotFiltered() {
         doTestFilter("/sp3/example-c-1.sp3", "G04", 1, 1);
     }
 
-    private void doTestFilter(final String name, final String id, final int... nbCoords) throws IOException {
+    private void doTestFilter(final String name, final String id, final int... nbCoords) {
         final DataSource original   = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Frame      frame      = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
         final SP3Parser  parser     = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 2, s -> frame);

@@ -110,7 +110,7 @@ public enum OrbitManeuverHistoryMetadataKey {
                                                                     container::setDcRefDir)),
 
     /** Spacecraft body frame in which {@link #DC_BODY_TRIGGER} is specified. */
-    DC_BODY_FRAME((token, context, container) -> token.processAsFrame(f -> container.setDcBodyFrame(f.asSpacecraftBodyFrame()),
+    DC_BODY_FRAME((token, context, container) -> token.processAsFrame(f -> container.setDcBodyFrame(f.asSpacecraftBodyFrame().orElse(null)),
                                                                       context, false, false, true)),
 
     /** Direction in {@link #DC_BODY_FRAME body frame} for triggering duty cycle. */

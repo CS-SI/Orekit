@@ -190,6 +190,9 @@ NOT_POSITIVE_SPACECRAFT_MASS=la massa del vehícle espacial no és positiva: {0}
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=l''excentricitat és massa alta pel model de propagació (e : {0})
 
+# too large eccentricity for teardrop motion: e > 1e-4
+TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION=excentricitat massa gran per al moviment en forma de llàgrima: e > 1e-4
+
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE=no hi ha paràmetres d''activitat solar disponibles el {0}, dades disponibles únicament per l''interval [{1}, {2}]
 
@@ -577,11 +580,17 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=índex de captor {0} ja utilitzat
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=falta l''índex de captor {0}
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=número d''elements incoherents: esperats {0}, donats {1}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS=Per crear un propagador combinat es necesita al menys un propagador, però no s''en ha especificat cap.
+
+# aggregate propagator requires either all null or all non-null attitude providers
+BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS=
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
 NOT_ENOUGH_ATTITUDE_PROVIDERS=La creació d''un proveïdor d''actitud agregat necessita al menys un proveïdor d''actitud, però no se n''ha previst cap.
@@ -974,6 +983,9 @@ WRONG_SATELLITES_NUMBER=
 
 # invalid format: width = {0}, precision = {1}
 INVALID_FORMAT=
+
+# width exceeded: value {0} cannot fit in a field {1} characters wide
+WIDTH_EXCEEDED=
 
 # output {0} has already been closed
 OUTPUT_ALREADY_CLOSED=

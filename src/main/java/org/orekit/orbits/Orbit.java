@@ -717,7 +717,7 @@ public abstract class Orbit
      */
     protected abstract double[][] computeJacobianTrueWrtCartesian();
 
-    /** Add the contribution of the Keplerian motion to parameters derivatives
+    /** Add the contribution of the Keplerian motion to parameters derivatives.
      * <p>
      * This method is used by integration-based propagators to evaluate the part of Keplerian
      * motion to evolution of the orbital state.

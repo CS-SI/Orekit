@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
@@ -60,28 +63,34 @@ public class SpinStabilized extends CommentsContainer {
     private double spinAngleVel;
 
     /** Nutation angle of spin axis (rad). */
-    private double nutation;
+    @Nullable
+    private Double nutation;
 
     /** Body nutation period of the spin axis (s). */
-    private double nutationPer;
+    @Nullable
+    private Double nutationPer;
 
     /** Inertial nutation phase (rad). */
-    private double nutationPhase;
+    @Nullable
+    private Double nutationPhase;
 
     /** Right ascension of angular momentum vector (rad).
      * @since 12.0
      */
-    private double momentumAlpha;
+    @Nullable
+    private Double momentumAlpha;
 
     /** Declination of the angular momentum vector (rad).
      * @since 12.0
      */
-    private double momentumDelta;
+    @Nullable
+    private Double momentumDelta;
 
     /** Angular velocity of spin vector around the angular momentum vector (rad/s).
      * @since 12.0
      */
-    private double nutationVel;
+    @Nullable
+    private Double nutationVel;
 
     /**
      * Simple constructor.
@@ -95,12 +104,6 @@ public class SpinStabilized extends CommentsContainer {
         spinDelta      = Double.NaN;
         spinAngle      = Double.NaN;
         spinAngleVel   = Double.NaN;
-        nutation       = Double.NaN;
-        nutationPer    = Double.NaN;
-        nutationPhase  = Double.NaN;
-        momentumAlpha  = Double.NaN;
-        momentumDelta  = Double.NaN;
-        nutationVel    = Double.NaN;
     }
 
     /** {@inheritDoc} */
@@ -116,15 +119,15 @@ public class SpinStabilized extends CommentsContainer {
         checkNotNaN(spinDelta,    SpinStabilizedKey.SPIN_DELTA.name());
         checkNotNaN(spinAngle,    SpinStabilizedKey.SPIN_ANGLE.name());
         checkNotNaN(spinAngleVel, SpinStabilizedKey.SPIN_ANGLE_VEL.name());
-        if (Double.isNaN(nutation + nutationPer + nutationPhase)) {
-            // if at least one is NaN, all must be NaN (i.e. not initialized)
-            if (!(Double.isNaN(nutation) && Double.isNaN(nutationPer) && Double.isNaN(nutationPhase))) {
+        if (getNutation().isEmpty() || getNutationPeriod().isEmpty() || getNutationPhase().isEmpty()) {
+            // if at least one is empty, all must be empty
+            if (!(getNutation().isEmpty() && getNutationPeriod().isEmpty() && getNutationPhase().isEmpty())) {
                 throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "NUTATION*");
             }
         }
-        if (Double.isNaN(momentumAlpha + momentumDelta + nutationVel)) {
-            // if at least one is NaN, all must be NaN (i.e. not initialized)
-            if (!(Double.isNaN(momentumAlpha) && Double.isNaN(momentumDelta) && Double.isNaN(nutationVel))) {
+        if (getMomentumAlpha().isEmpty() || getMomentumDelta().isEmpty() || getNutationVel().isEmpty()) {
+            // if at least one is empty, all must be empty
+            if (!(getMomentumAlpha().isEmpty() && getMomentumDelta().isEmpty() && getNutationVel().isEmpty())) {
                 throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "MOMENTUM*/NUTATION_VEL");
             }
         }
@@ -209,8 +212,8 @@ public class SpinStabilized extends CommentsContainer {
      * Get the nutation angle of spin axis (rad).
      * @return the nutation angle of spin axis
      */
-    public double getNutation() {
-        return nutation;
+    public Optional<Double> getNutation() {
+        return Optional.ofNullable(nutation);
     }
 
     /**
@@ -226,8 +229,8 @@ public class SpinStabilized extends CommentsContainer {
      * Get the body nutation period of the spin axis (s).
      * @return the body nutation period of the spin axis
      */
-    public double getNutationPeriod() {
-        return nutationPer;
+    public Optional<Double> getNutationPeriod() {
+        return Optional.ofNullable(nutationPer);
     }
 
     /**
@@ -243,8 +246,8 @@ public class SpinStabilized extends CommentsContainer {
      * Get the inertial nutation phase (rad).
      * @return the inertial nutation phase
      */
-    public double getNutationPhase() {
-        return nutationPhase;
+    public Optional<Double> getNutationPhase() {
+        return Optional.ofNullable(nutationPhase);
     }
 
     /**
@@ -261,8 +264,8 @@ public class SpinStabilized extends CommentsContainer {
      * @return the right ascension of angular momentum vector
      * @since 12.0
      */
-    public double getMomentumAlpha() {
-        return momentumAlpha;
+    public Optional<Double> getMomentumAlpha() {
+        return Optional.ofNullable(momentumAlpha);
     }
 
     /**
@@ -280,8 +283,8 @@ public class SpinStabilized extends CommentsContainer {
      * @return the declination of the angular momentum vector (rad).
      * @since 12.0
      */
-    public double getMomentumDelta() {
-        return momentumDelta;
+    public Optional<Double> getMomentumDelta() {
+        return Optional.ofNullable(momentumDelta);
     }
 
     /**
@@ -299,8 +302,8 @@ public class SpinStabilized extends CommentsContainer {
      * @return angular velocity of spin vector around angular momentum vector (rad/s)
      * @since 12.0
      */
-    public double getNutationVel() {
-        return nutationVel;
+    public Optional<Double> getNutationVel() {
+        return Optional.ofNullable(nutationVel);
     }
 
     /**
@@ -318,7 +321,7 @@ public class SpinStabilized extends CommentsContainer {
      * @since 12.0
      */
     public boolean hasNutation() {
-        return !Double.isNaN(nutation + nutationPer + nutationPhase);
+        return getNutation().isPresent() && getNutationPeriod().isPresent() && getNutationPhase().isPresent();
     }
 
     /** Check if the logical block includes momentum.
@@ -326,7 +329,7 @@ public class SpinStabilized extends CommentsContainer {
      * @since 12.0
      */
     public boolean hasMomentum() {
-        return !Double.isNaN(momentumAlpha + momentumDelta + nutationVel);
+        return getMomentumAlpha().isPresent() && getMomentumDelta().isPresent() && getNutationVel().isPresent();
     }
 
 }

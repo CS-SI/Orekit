@@ -32,6 +32,11 @@ import java.io.IOException;
 public class QZSSCivilianNavigationMessageWriter
     extends CivilianLevel2NavigationMessageWriter<QZSSCivilianNavigationMessage> {
 
+    /** Simple constructor. */
+    public QZSSCivilianNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final QZSSCivilianNavigationMessage message,

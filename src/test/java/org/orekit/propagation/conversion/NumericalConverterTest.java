@@ -58,7 +58,6 @@ import java.util.List;
 
 public class NumericalConverterTest {
 
-    private double mu;
     private double minStep;
     private double maxStep;
     private double dP;
@@ -111,12 +110,12 @@ public class NumericalConverterTest {
 
     @Test
     public void testConversionWithoutParameters() throws IOException, ParseException {
-        checkFit(orbit, 6000, 300, 1.0e-3, 0.855);
+        checkFit(orbit, 6000, 300, 1.0e-3, 0.874);
     }
 
     @Test
     public void testConversionWithFreeParameter() throws IOException, ParseException {
-        checkFit(orbit, 6000, 300, 1.0e-3, 0.826,
+        checkFit(orbit, 6000, 300, 1.0e-3, 0.845,
                  DragSensitive.DRAG_COEFFICIENT, NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
@@ -259,7 +258,7 @@ public class NumericalConverterTest {
             builder.buildPropagator();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, oe.getSpecifier());
         }
     }
 
@@ -404,7 +403,7 @@ public class NumericalConverterTest {
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                         GravityFieldFactory.getNormalizedProvider(2, 0));
-        mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
+        final double mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
         minStep = 1.0;
         maxStep = 600.0;
         dP = 10.0;

@@ -53,17 +53,17 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     // CHECKSTYLE: resume ConstantName
 
     /** Format for one 2 digits integer field. */
-    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
+    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true, true);
 
     /** Formatters for up to 18 digits integer field. */
     private static final FastLongFormatter[] PADDED_FORMATTERS = new FastLongFormatter[] {
-        null,                            new FastLongFormatter( 1, true), new FastLongFormatter( 2, true),
-        new FastLongFormatter( 3, true), new FastLongFormatter( 4, true), new FastLongFormatter( 5, true),
-        new FastLongFormatter( 6, true), new FastLongFormatter( 7, true), new FastLongFormatter( 8, true),
-        new FastLongFormatter( 9, true), new FastLongFormatter(10, true), new FastLongFormatter(11, true),
-        new FastLongFormatter(12, true), new FastLongFormatter(13, true), new FastLongFormatter(14, true),
-        new FastLongFormatter(15, true), new FastLongFormatter(16, true), new FastLongFormatter(17, true),
-        new FastLongFormatter(18, true)
+        null,                                  new FastLongFormatter( 1, true, true), new FastLongFormatter( 2, true, true),
+        new FastLongFormatter( 3, true, true), new FastLongFormatter( 4, true, true), new FastLongFormatter( 5, true, true),
+        new FastLongFormatter( 6, true, true), new FastLongFormatter( 7, true, true), new FastLongFormatter( 8, true, true),
+        new FastLongFormatter( 9, true, true), new FastLongFormatter(10, true, true), new FastLongFormatter(11, true, true),
+        new FastLongFormatter(12, true, true), new FastLongFormatter(13, true, true), new FastLongFormatter(14, true, true),
+        new FastLongFormatter(15, true, true), new FastLongFormatter(16, true, true), new FastLongFormatter(17, true, true),
+        new FastLongFormatter(18, true, true)
     };
 
     /** Scaling factors used for rounding. */

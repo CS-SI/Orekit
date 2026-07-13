@@ -36,6 +36,11 @@ import org.hipparchus.CalculusFieldElement;
 public abstract class FieldAbstractStateModifier<T extends CalculusFieldElement<T>>
     implements FieldAdditionalDataProvider<T[], T> {
 
+    /** Simple constructor. */
+    protected FieldAbstractStateModifier() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public String getName() {

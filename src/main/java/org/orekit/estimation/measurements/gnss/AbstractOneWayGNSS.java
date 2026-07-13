@@ -49,6 +49,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Abstract class for one-way GNSS measurement.
+ * @param <T> type of the measurement
  * @author Romain Serra
  * @since 14.0
  */

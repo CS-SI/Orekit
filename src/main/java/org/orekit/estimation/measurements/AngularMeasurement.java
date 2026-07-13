@@ -38,6 +38,7 @@ import org.orekit.utils.TimeSpanMap;
 
 /** Abstract class for ground-based angular measurements, when the sensor receives the signal.
  *
+ * @param <T> type of the measurement
  * @author Romain Serra
  * @since 14.0
  */

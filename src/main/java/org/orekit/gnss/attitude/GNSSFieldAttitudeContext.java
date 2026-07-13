@@ -46,7 +46,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * <p>
  * This class is intended to hold throw-away data pertaining to <em>one</em> call
  * to {@link GNSSAttitudeProvider#getAttitude(org.orekit.utils.FieldPVCoordinatesProvider,
- * org.orekit.time.FieldAbsoluteDate, org.orekit.frames.Frame)) getAttitude}. It allows
+ * org.orekit.time.FieldAbsoluteDate, org.orekit.frames.Frame) getAttitude}. It allows
  * the various {@link GNSSAttitudeProvider} implementations to be immutable as they
  * do not store any state, and hence to be thread-safe and reentrant.
  * </p>

@@ -189,7 +189,10 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
      */
     private final ParameterDriver bStarDriver;
 
-    /** Protected constructor for derived classes.
+    /** TLE generation algorithm used when resetting TLE from state. */
+    private TleGenerationAlgorithm generationAlgorithm;
+
+     /** Protected constructor for derived classes.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
@@ -240,6 +243,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
                 resetBStar();
             }
         });
+        this.generationAlgorithm = getDefaultTleGenerationAlgorithm(initialTLE, utc, teme);
 
         // set the initial state
         final Orbit orbit = propagateOrbit(initialTLE.getDate());
@@ -332,6 +336,22 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
         }
     }
 
+    /** Get the TLE generation algorithm used when resetting TLE from state.
+     * @return TLE generation algorithm
+     * @since 14.0
+     */
+    TleGenerationAlgorithm getTleGenerationAlgorithm() {
+        return generationAlgorithm;
+    }
+
+    /** Set the TLE generation algorithm used when resetting TLE from state.
+     * @param tleGenerationAlgorithm TLE generation algorithm
+     * @since 14.0
+     */
+    public void setTleGenerationAlgorithm(final TleGenerationAlgorithm tleGenerationAlgorithm) {
+        this.generationAlgorithm = tleGenerationAlgorithm;
+    }
+
     /** Get the Earth gravity coefficient used for TLE propagation.
      * @return the Earth gravity coefficient.
      */
@@ -417,10 +437,10 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
 
         // C4 coefficient computation :
         c4 = 2.0 * xn0dp * coef1 * a0dp * beta02 * (eta * (2.0 + 0.5 * etasq) +
-             tle.getE() * (0.5 + 2.0 * etasq) -
-             2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
-             (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
-              0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPerigeeArgument())));
+                tle.getE() * (0.5 + 2.0 * etasq) -
+                2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
+                        (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
+                                0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPerigeeArgument())));
 
         final double theta4 = theta2 * theta2;
         final double temp1 = 3 * TLEConstants.CK2 * pinvsq * xn0dp;
@@ -435,8 +455,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
         final double x1m5th = 1.0 - 5.0 * theta2;
 
         omgdot = -0.5 * temp1 * x1m5th +
-                 0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
-                 temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
+                0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
+                temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
 
         final double xhdot1 = -temp1 * cosi0;
 
@@ -621,9 +641,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
      * @param state spacecraft state on which to base new TLE
      */
     private void resetTle(final SpacecraftState state) {
-        final TleGenerationAlgorithm algorithm = getDefaultTleGenerationAlgorithm(tle, utc, teme);
-        algorithm.reset(state.getOrbit());
-        final TLE newTle = algorithm.createFromDrivers();
+
+        final TLE newTle = generationAlgorithm.createFromDrivers();
         initializeTle(newTle);
     }
 

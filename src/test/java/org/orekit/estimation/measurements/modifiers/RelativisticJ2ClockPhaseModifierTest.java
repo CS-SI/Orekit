@@ -40,6 +40,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check against prediction in
@@ -107,7 +110,18 @@ public class RelativisticJ2ClockPhaseModifierTest {
 
     }
 
-    @BeforeEach
+    @Test
+    void testDepends() {
+        // GIVEN
+        final RelativisticJ2ClockPhaseModifier modifier = mock();
+        when(modifier.dependsOnParticipantsStates()).thenCallRealMethod();
+        // WHEN
+        final boolean flag = modifier.dependsOnParticipantsStates();
+        // THEN
+        assertTrue(flag);
+    }
+    @
+            BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

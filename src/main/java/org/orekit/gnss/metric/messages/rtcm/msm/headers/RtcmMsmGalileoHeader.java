@@ -57,6 +57,11 @@ public class RtcmMsmGalileoHeader extends RtcmMsmHeader {
         SIGNAL_ID_MAP.put(24, RtcmMsmSignalId.GAL_5X);
     }
 
+    /** Simple constructor. */
+    public RtcmMsmGalileoHeader() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<SatInSystem> convertSatellitesMask() {

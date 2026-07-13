@@ -37,6 +37,7 @@ import org.orekit.utils.OrekitConfiguration;
 /** Solid tides force model.
  * @since 6.1
  * @author Luc Maisonobe
+ * @author Rafael Ayala
  */
 public class SolidTides implements ForceModelModifier {
 
@@ -54,8 +55,7 @@ public class SolidTides implements ForceModelModifier {
      * Zero frequency-dependent corrections function for bodies without
      * frequency-dependent tidal data.
      *
-     * @author Rafael Ayala
-     * @since 14.0
+     * @since 13.1.7
      */
     private static final TimeVectorFunction ZERO_FREQUENCY_FUNCTION = new TimeVectorFunction() {
         @Override
@@ -76,7 +76,7 @@ public class SolidTides implements ForceModelModifier {
     /**
      * Private constructor with the force model only.
      * @param attractionModel underlying attraction model
-     * @since 14.0
+     * @since 13.1.7
      */
     private SolidTides(final ForceModel attractionModel) {
         this.attractionModel = attractionModel;
@@ -153,8 +153,7 @@ public class SolidTides implements ForceModelModifier {
      * @param nbPoints          number of points to use for interpolation, if less than 2
      *                          then no interpolation is performed (thus greatly increasing computation cost)
      * @param bodies            tide generating bodies (typically Sun and Moon)
-     * @author Rafael Ayala
-     * @since 14.0
+     * @since 13.1.7
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem,
@@ -184,8 +183,7 @@ public class SolidTides implements ForceModelModifier {
      * @see #DEFAULT_STEP
      * @see #DEFAULT_POINTS
      * @see #SolidTides(Frame, double, double, TideSystem, LoveNumbers, double, int, CelestialBody...)
-     * @author Rafael Ayala
-     * @since 14.0
+     * @since 13.1.7
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem,

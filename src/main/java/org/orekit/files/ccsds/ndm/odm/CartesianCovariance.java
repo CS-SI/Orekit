@@ -17,10 +17,12 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
@@ -65,6 +67,7 @@ public class CartesianCovariance extends CommentsContainer implements Data {
     private AbsoluteDate epoch;
 
     /** Reference frame in which data are given. */
+    @Nullable
     private FrameFacade referenceFrame;
 
     /** Position/Velocity covariance matrix. */
@@ -121,13 +124,13 @@ public class CartesianCovariance extends CommentsContainer implements Data {
     }
 
     /**
-     * Get the reference frame.
+     * Get the reference frame, falling back to the default if not explicitly set.
      *
      * @return The reference frame specified by the {@code COV_REF_FRAME} keyword
      * or inherited from metadata
      */
     public FrameFacade getReferenceFrame() {
-        return referenceFrame == null ? defaultFrameSupplier.get() : referenceFrame;
+        return Optional.ofNullable(referenceFrame).orElse(defaultFrameSupplier.get());
     }
 
     /** Set the reference frame in which data are given.

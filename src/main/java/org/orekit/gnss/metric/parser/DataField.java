@@ -59,7 +59,7 @@ public interface DataField {
      * @param n number of bits to decode
      * @return long value of the field
      */
-    default long longValue(final EncodedMessage message, int n) {
+    default long longValue(final EncodedMessage message, final int n) {
         // this method should be overwritten
         throw new OrekitInternalError(null);
     }

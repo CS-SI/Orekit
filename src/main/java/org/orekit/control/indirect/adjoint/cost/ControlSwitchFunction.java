@@ -25,6 +25,11 @@ import org.orekit.propagation.events.functions.EventFunction;
  */
 public abstract class ControlSwitchFunction implements EventFunction {
 
+    /** Simple constructor. */
+    protected ControlSwitchFunction() {
+        // nothing to do
+    }
+
     @Override
     public boolean dependsOnMainVariablesOnly() {
         return false;

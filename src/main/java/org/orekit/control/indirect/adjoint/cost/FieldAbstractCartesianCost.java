@@ -108,6 +108,9 @@ public abstract class FieldAbstractCartesianCost<T extends CalculusFieldElement<
         /** Wrapped event function. */
         private final EventFunction baseFunction;
 
+        /** Constructor.
+         * @param fieldFunction function computing the switching condition from the state
+         */
         protected FieldSwitchFunction(final Function<FieldSpacecraftState<T>, T> fieldFunction) {
             this.baseFunction = EventFunction.of(getMassFlowRateFactor().getField(), fieldFunction);
         }

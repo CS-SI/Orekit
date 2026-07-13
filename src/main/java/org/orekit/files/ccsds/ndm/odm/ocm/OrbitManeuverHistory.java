@@ -20,6 +20,8 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.ccsds.utils.Initializer;
+
 /** Maneuver history.
  * @author Luc Maisonobe
  * @since 11.0
@@ -39,7 +41,7 @@ public class OrbitManeuverHistory {
     public OrbitManeuverHistory(final OrbitManeuverHistoryMetadata metadata,
                            final List<OrbitManeuver> maneuvers) {
         this.metadata  = metadata;
-        this.maneuvers = maneuvers;
+        this.maneuvers = Initializer.emptyListIfNull(maneuvers);
     }
 
     /** Get metadata.

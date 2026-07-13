@@ -17,7 +17,9 @@
 package org.orekit.utils.formatting;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -53,6 +55,9 @@ public class FastLongFormatter {
     /** Zero padding indicator. */
     private final boolean zeroPadding;
 
+    /** Indicator to forbid width overstep. */
+    private final boolean forbidWidthOverstep;
+
     /** Size of the conversion array. */
     private final int size;
 
@@ -61,13 +66,16 @@ public class FastLongFormatter {
      * This constructor is equivalent to either {@link java.util.Formatter Formatter}
      * integer format {@code %{width}d} or {@code %0{width}d}
      * </p>
-     * @param width       number of characters to output
-     * @param zeroPadding if true, the result is left padded with '0' until it matches width
+     * @param width               number of characters to output
+     * @param zeroPadding         if true, the result is left padded with '0' until it matches width
+     * @param forbidWidthOverstep if true, the width is a hard limit which cannot be overstepped
+     * @since 14.0
      */
-    public FastLongFormatter(final int width, final boolean zeroPadding) {
-        this.width       = width;
-        this.zeroPadding = zeroPadding;
-        this.size        = FastMath.max(width, 20);
+    public FastLongFormatter(final int width, final boolean zeroPadding, final boolean forbidWidthOverstep) {
+        this.width               = width;
+        this.zeroPadding         = zeroPadding;
+        this.forbidWidthOverstep = forbidWidthOverstep;
+        this.size                = FastMath.max(width, 20);
     }
 
     /** Get the width.
@@ -135,6 +143,14 @@ public class FastLongFormatter {
                 Arrays.fill(digits, index, width, ' ');
                 index = width;
             }
+        }
+
+        if (forbidWidthOverstep && index > width) {
+            final StringBuilder buffer = new StringBuilder(index);
+            for (int i = index - 1; i >= 0; --i) {
+                buffer.append(digits[i]);
+            }
+            throw new OrekitException(OrekitMessages.WIDTH_EXCEEDED, buffer.toString(), width);
         }
 
         // fill up string

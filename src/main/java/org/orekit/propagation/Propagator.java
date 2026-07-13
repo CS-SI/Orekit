@@ -156,13 +156,25 @@ public interface Propagator extends PVCoordinatesProvider {
      */
     EphemerisGenerator getEphemerisGenerator();
 
+    /** Get the base initial state without additional data.
+     * @return base initial state without additional data
+     * @see #getInitialState()
+     * @since 14.0
+     */
+    SpacecraftState getBaseInitialState();
+
     /** Get the propagator initial state.
-     * @return initial state
+     * <p>
+     * If additional data has been {@link #addAdditionalDataProvider(AdditionalDataProvider) added}
+     * to the propagator, the initial state returned here includes it.
+     * </p>
+     * @return initial state, ultimately with additional data
+     * @see #getBaseInitialState()
      */
     SpacecraftState getInitialState();
 
     /** Reset the propagator initial state.
-     * @param state new initial state to consider
+     * @param state new initial state to consider (without additional data)
      */
     void resetInitialState(SpacecraftState state);
 
