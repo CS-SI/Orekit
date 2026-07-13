@@ -19,9 +19,7 @@ package org.orekit.files.rinex.navigation.writers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
-import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;

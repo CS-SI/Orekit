@@ -36,15 +36,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
+/** Test for RelativisticJ2ClockInterSatellitesRangeModifier.
  * Check against prediction in
- *
  * "Springer Handbook oƒ Global Navigation Satellite Systems, Teunissen, Montenbruck"
- *
  * An approximate value is given in terms of delay for Galileo satellites.
  * As these satellites are close to GPS satellites, we consider the delays to be
  * of the same order, namely around 62ps.
- *
  * The values produced by the modifiers are translated in terms of delay and checked against
  * the approximate value.
  */

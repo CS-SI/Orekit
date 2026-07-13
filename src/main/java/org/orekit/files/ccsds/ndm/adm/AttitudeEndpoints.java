@@ -188,7 +188,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * @return true if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}
      */
     public boolean isA2b() {
-        return a2b == null ? true : a2b;
+        return a2b == null || a2b;
     }
 
     /** Get the external frame.

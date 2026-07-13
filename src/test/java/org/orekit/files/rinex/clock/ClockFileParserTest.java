@@ -1018,7 +1018,7 @@ public class ClockFileParserTest {
                                 PredefinedTimeSystem.UNKNOWN.getTimeScale(DataContext.getDefault().getTimeScales()));
     }
 
-    /** Test parsing file of issue #845 (https://gitlab.orekit.org/orekit/orekit/-/issues/845). */
+    /** Test parsing file of <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/845>issue #845</a>. */
     @Test
     public void testIssue845() throws URISyntaxException {
 

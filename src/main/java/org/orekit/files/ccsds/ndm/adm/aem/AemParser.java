@@ -302,7 +302,7 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
     private boolean processKvnDataToken(final ParseToken token) {
         inData();
         if ("COMMENT".equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
+            return token.getType() != TokenType.ENTRY || currentBlock.addComment(token.getContentAsNormalizedString());
         } else if (token.getType() == TokenType.RAW_LINE) {
             try {
                 if (metadata.getAttitudeType() == null) {

@@ -579,7 +579,8 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
     private boolean processUserDefinedToken(final ParseToken token) {
         anticipateNext(this::processDataSubStructureToken);
         if ("COMMENT".equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
+            return token.getType() != TokenType.ENTRY ||
+                   userDefinedBlock.addComment(token.getContentAsNormalizedString());
         } else if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             if (token.getType() == TokenType.ENTRY) {
                 userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),

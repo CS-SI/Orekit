@@ -30,8 +30,8 @@ import org.orekit.utils.units.Unit;
 public enum OrbitManeuverHistoryMetadataKey {
 
     /** Comment entry. */
-    COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
+    COMMENT((token, context, container) -> token.getType() != TokenType.ENTRY ||
+                                           container.addComment(token.getContentAsNormalizedString())),
 
     /** Maneuver identification number. */
     MAN_ID((token, context, container) -> token.processAsFreeTextString(container::setManID)),

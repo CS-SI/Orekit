@@ -653,27 +653,22 @@ public class TimeOffset
         }
 
         final long sign = seconds < 0L ? -1L : 1L;
-        switch (unit) {
-            case DAYS:
-                return sign * ((sign * seconds + DAY.seconds / 2) / DAY.seconds);
-            case HOURS:
-                return sign * ((sign * seconds + HOUR.seconds / 2) / HOUR.seconds);
-            case MINUTES:
-                return sign * ((sign * seconds + MINUTE.seconds / 2) / MINUTE.seconds);
-            case SECONDS:
-                return seconds + ((attoSeconds >= ATTOS_IN_SECOND / 2) ? 1 : 0);
-            case MILLISECONDS:
-                return seconds * MILLIS_IN_SECOND +
-                       (attoSeconds + MILLISECOND.attoSeconds / 2) / MILLISECOND.attoSeconds;
-            case MICROSECONDS:
-                return seconds * MICROS_IN_SECOND +
-                       (attoSeconds + MICROSECOND.attoSeconds / 2) / MICROSECOND.attoSeconds;
-            case NANOSECONDS:
-                return seconds * NANOS_IN_SECOND +
-                       (attoSeconds + NANOSECOND.attoSeconds / 2) / NANOSECOND.attoSeconds;
-            default:
-                throw new OrekitException(OrekitMessages.UNKNOWN_UNIT, unit.name());
-        }
+        return switch (unit) {
+            case DAYS ->
+                sign * ((sign * seconds + DAY.seconds / 2) / DAY.seconds);
+            case HOURS ->
+                sign * ((sign * seconds + HOUR.seconds / 2) / HOUR.seconds);
+            case MINUTES ->
+                sign * ((sign * seconds + MINUTE.seconds / 2) / MINUTE.seconds);
+            case SECONDS ->
+                seconds + ((attoSeconds >= ATTOS_IN_SECOND / 2) ? 1 : 0);
+            case MILLISECONDS ->
+                seconds * MILLIS_IN_SECOND + (attoSeconds + MILLISECOND.attoSeconds / 2) / MILLISECOND.attoSeconds;
+            case MICROSECONDS ->
+                seconds * MICROS_IN_SECOND + (attoSeconds + MICROSECOND.attoSeconds / 2) / MICROSECOND.attoSeconds;
+            case NANOSECONDS ->
+                seconds * NANOS_IN_SECOND + (attoSeconds + NANOSECOND.attoSeconds / 2) / NANOSECOND.attoSeconds;
+        };
     }
 
     /** Round to specified accuracy.

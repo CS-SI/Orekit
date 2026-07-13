@@ -28,8 +28,8 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 public enum AngularVelocityKey {
 
     /** Comment entry. */
-    COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
+    COMMENT((token, context, container) -> token.getType() != TokenType.ENTRY ||
+                                           container.addComment(token.getContentAsNormalizedString())),
 
     /** First reference frame entry. */
     REF_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),

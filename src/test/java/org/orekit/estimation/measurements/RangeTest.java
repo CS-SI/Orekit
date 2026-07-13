@@ -288,7 +288,7 @@ class RangeTest {
                                     downDelayR * Constants.SPEED_OF_LIGHT, 2.0e-7);
 
             // adjust receiver, field version
-            final FieldAdjustableReceiverSignalTimer<Binary64> fieldAdjustableReceiverComputer = new FieldAdjustableReceiverSignalTimer<>(new FieldAbsolutePVCoordinates<Binary64>(state.getFrame(),
+            final FieldAdjustableReceiverSignalTimer<Binary64> fieldAdjustableReceiverComputer = new FieldAdjustableReceiverSignalTimer<>(new FieldAbsolutePVCoordinates<>(state.getFrame(),
                     staPVF));
             final FieldSignalEmissionCondition<Binary64> fieldSignalEmissionCondition = new FieldSignalEmissionCondition<>(datemeasF,
                     stateF.getPosition(), state.getFrame());

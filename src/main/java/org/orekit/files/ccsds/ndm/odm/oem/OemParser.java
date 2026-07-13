@@ -342,7 +342,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
      */
     private boolean processXmlSubStructureToken(final ParseToken token) {
         if (COMMENT.equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
+            return token.getType() != TokenType.ENTRY || currentBlock.addComment(token.getContentAsNormalizedString());
         } else {
             try {
                 return token.getName() != null &&
@@ -366,7 +366,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
         }
         inData();
         if (COMMENT.equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
+            return token.getType() != TokenType.ENTRY || currentBlock.addComment(token.getContentAsNormalizedString());
         } else if (token.getType() == TokenType.RAW_LINE) {
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());

@@ -211,9 +211,10 @@ class BatchLSEstimatorTest {
 
         // run estimation while logging RMS
         final List<Double> rms = new ArrayList<>();
-        estimator.setObserver((iterationsCount, evaluationsCount, orbits, estimatedOrbitalParameters, estimatedPropagatorParameters, estimatedMeasurementsParameters, evaluationsProvider, lspEvaluation) -> {
-            rms.add(lspEvaluation.getRMS());
-        });
+        estimator.setObserver((iterationsCount, evaluationsCount, orbits,
+                               estimatedOrbitalParameters, estimatedPropagatorParameters,
+                               estimatedMeasurementsParameters, evaluationsProvider,
+                               lspEvaluation) -> rms.add(lspEvaluation.getRMS()));
         estimator.estimate();
 
         // check

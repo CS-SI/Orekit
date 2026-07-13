@@ -784,10 +784,9 @@ public class TLE implements OrbitalParameters {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof TLE)) {
+        if (!(o instanceof final TLE tle)) {
             return false;
         }
-        final TLE tle = (TLE) o;
         return satelliteNumber == tle.satelliteNumber &&
                 classification == tle.classification &&
                 launchYear == tle.launchYear &&

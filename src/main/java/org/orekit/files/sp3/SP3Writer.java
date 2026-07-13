@@ -292,7 +292,7 @@ public class SP3Writer {
         final DateTimeComponents dtc = header.getEpoch().getComponents(timeScale).roundIfNeeded(60, 8);
         final StringBuilder dataUsedBuilder = new StringBuilder();
         for (final DataUsed du : header.getDataUsed()) {
-            if (dataUsedBuilder.length() > 0) {
+            if (!dataUsedBuilder.isEmpty()) {
                 dataUsedBuilder.append('+');
             }
             dataUsedBuilder.append(du.getKey());

@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -350,7 +349,7 @@ public class TdmParserTest {
     }
 
     @Test
-    public void testNonExistentFile() throws URISyntaxException {
+    public void testNonExistentFile() {
         // Try parsing a file that does not exist
         final String realName = "/ccsds/odm/oem/OEMExample2.txt";
         final String wrongName = realName + "xxxxx";
@@ -389,7 +388,7 @@ public class TdmParserTest {
     }
 
     @Test
-    public void testWrongDataKeywordKeyValue() throws URISyntaxException {
+    public void testWrongDataKeywordKeyValue() {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
@@ -405,7 +404,7 @@ public class TdmParserTest {
     }
 
     @Test
-    public void testWrongDataKeywordXml() throws URISyntaxException {
+    public void testWrongDataKeywordXml() {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-data-wrong-keyword.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
@@ -421,7 +420,7 @@ public class TdmParserTest {
     }
 
     @Test
-    public void testWrongMetaDataKeywordKeyValue() throws URISyntaxException {
+    public void testWrongMetaDataKeywordKeyValue() {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
@@ -437,7 +436,7 @@ public class TdmParserTest {
     }
 
     @Test
-    public void testWrongMetaDataKeywordXml() throws URISyntaxException {
+    public void testWrongMetaDataKeywordXml() {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
@@ -1151,7 +1150,7 @@ public class TdmParserTest {
         // Check consistency
         for (int i = 0; i < metadata.getDataTypes().size(); i++) {
             Assertions.assertEquals(metadata.getDataTypes().get(i), observations.get(i).getType());
-            Assertions.assertEquals(0.0, epoch.shiftedBy((double) (i+1)).durationFrom(observations.get(i).getEpoch()), 0.0);
+            Assertions.assertEquals(0.0, epoch.shiftedBy(i + 1).durationFrom(observations.get(i).getEpoch()), 0.0);
             Assertions.assertEquals(i+1, observations.get(i).getMeasurement(), 1.0e-12);
         }
 
@@ -1173,7 +1172,7 @@ public class TdmParserTest {
                 if ("TOD_EARTH".equals(orientation.getName()) && null == epoch) {
                     return myTod;
                 }
-                throw new IllegalArgumentException("" + orientation + " " + epoch);
+                throw new IllegalArgumentException(orientation + " " + epoch);
             }
 
             @Override

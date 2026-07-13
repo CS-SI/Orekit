@@ -324,9 +324,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         }
 
         // set parameters derivatives
-        parametersDerivatives.
-            entrySet().
-            forEach(e -> multiplexed.setParameterDerivatives(e.getKey(), e.getValue()));
+        parametersDerivatives.forEach(multiplexed::setParameterDerivatives);
 
         return multiplexed;
 
