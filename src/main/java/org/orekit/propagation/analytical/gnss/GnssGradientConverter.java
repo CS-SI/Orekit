@@ -72,7 +72,7 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
         final int nbParams = n;
 
         // prepare orbit with proper derivatives
-        final SpacecraftState s0    = propagator.getInitialState();
+        final SpacecraftState s0    = propagator.getBaseInitialState();
         final KeplerianOrbit  orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s0.getOrbit());
         final FieldKeplerianOrbit<Gradient> gOrbit =
             new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(nbParams, 0, orbit.getA()),
