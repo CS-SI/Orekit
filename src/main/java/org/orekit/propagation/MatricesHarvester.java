@@ -48,6 +48,16 @@ public interface MatricesHarvester {
     void setReferenceState(SpacecraftState reference);
 
     /** Extract state transition matrix from state.
+     * <p>
+     * Some propagators use different orbit types for initial orbit and propagated orbit.
+     * Typical examples are TLE or specialized GNSS propagators that use Keplerian-like
+     * input parameters but produce Cartesian states. This method is aware of such parameters
+     * change, so it does not always compute ∂Y/∂Y₀ with the same representation for the current
+     * propagated state Y and the initial state Y₀. For some propagators, it will compute ∂Y/∂I₀
+     * were the current state Y and the initial state I₀ have different types. A side effect
+     * is that the initial State Transition Matrix (i.e. the one obtained when propagation
+     * time is zero) may be different from identity.
+     * </p>
      * @param state spacecraft state
      * @return state transition matrix, with semantics consistent with propagation,
      * or null if no state transition matrix is available

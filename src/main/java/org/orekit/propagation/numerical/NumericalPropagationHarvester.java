@@ -34,6 +34,16 @@ import org.orekit.utils.DoubleArrayDictionary;
  */
 class NumericalPropagationHarvester extends AbstractMatricesHarvester {
 
+    /** Identity conversion matrix for initial STM. */
+    private static final double[][] IDENTITY6 = {
+        { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+        { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+        { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+        { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+        { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+        { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 }
+    };
+
     /** Propagator bound to this harvester. */
     private final NumericalPropagator propagator;
 
@@ -58,27 +68,28 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
      */
     NumericalPropagationHarvester(final NumericalPropagator propagator, final String stmName,
                                   final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
-        super(stmName, initialStm, initialJacobianColumns);
+        setInitialStm(stmName, initialStm);
+        setInitialJacobianColumns(initialJacobianColumns);
         this.propagator   = propagator;
         this.columnsNames = null;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected double[][] getConversionJacobian(final SpacecraftState state) {
-
-        final double[][] identity = super.getConversionJacobian(state);
+    /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
+     * @param state spacecraft state
+     * @return conversion Jacobian ∂Y/∂C
+     */
+    private double[][] getConversionJacobian(final SpacecraftState state) {
 
         if (state.isOrbitDefined() && state.getOrbit().getType() != OrbitType.CARTESIAN) {
             // make sure the state is in the desired orbit type
             final Orbit orbit = propagator.getOrbitType().convertType(state.getOrbit());
 
             // compute the Jacobian, taking the position angle type into account
-            final double[][] dYdC = new double[identity.length][identity[0].length];
+            final double[][] dYdC = new double[IDENTITY6.length][IDENTITY6[0].length];
             orbit.getJacobianWrtCartesian(propagator.getPositionAngleType(), dYdC);
             return dYdC;
         } else {
-            return identity;
+            return IDENTITY6;
         }
 
     }
@@ -132,6 +143,38 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
         }
 
         return dYdY0;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getParametersJacobian(final SpacecraftState state) {
+
+        final List<String> columnsNames = getJacobiansColumnsNames();
+
+        if (columnsNames == null || columnsNames.isEmpty()) {
+            return null;
+        }
+
+        // get the conversion Jacobian
+        final RealMatrix dYdC = MatrixUtils.createRealIdentityMatrix(getStateDimension());
+        dYdC.setSubMatrix(getConversionJacobian(state), 0, 0);
+
+        // compute dYdP = dYdC * dCdP
+        final RealMatrix dYdP = MatrixUtils.createRealMatrix(getStateDimension(), columnsNames.size());
+        for (int j = 0; j < columnsNames.size(); j++) {
+            final double[] p = state.getAdditionalState(columnsNames.get(j));
+            for (int i = 0; i < getStateDimension(); ++i) {
+                final double[] dYdCi = dYdC.getRow(i);
+                double sum = 0;
+                for (int k = 0; k < getStateDimension(); ++k) {
+                    sum += dYdCi[k] * p[k];
+                }
+                dYdP.setEntry(i, j, sum);
+            }
+        }
+
+        return dYdP;
 
     }
 

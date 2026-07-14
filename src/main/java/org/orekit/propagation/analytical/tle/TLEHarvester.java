@@ -41,16 +41,19 @@ class TLEHarvester extends AbstractAnalyticalMatricesHarvester {
      * </p>
      * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name
-     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
-     * if null (which is the most frequent case), assumed to be 6x6 identity
+     * @param initialStm initial State Transition Matrix ∂C/∂K₀,
+     *                   if null (which is the most frequent case), assumed to be just the
+     *                   conversion from Keplerian type to Cartesian type at t₀
      * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
      * if null or if some selected parameters are missing from the dictionary, the corresponding
      * initial column is assumed to be 0
      */
     TLEHarvester(final TLEPropagator propagator, final String stmName,
                  final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
-        super(propagator, stmName, initialStm, initialJacobianColumns);
+        super(propagator);
         this.propagator = propagator;
+        setInitialStm(stmName, initialStm);
+        setInitialJacobianColumns(initialJacobianColumns);
     }
 
     /** {@inheritDoc} */

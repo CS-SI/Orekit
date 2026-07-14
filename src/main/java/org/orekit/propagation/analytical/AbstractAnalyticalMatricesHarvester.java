@@ -53,7 +53,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
     private AbsoluteDate epoch;
 
     /** Analytical derivatives that apply to State Transition Matrix. */
-    private final double[][] analyticalDerivativesStm;
+    private double[][] analyticalDerivativesStm;
 
     /** Analytical derivatives that apply to Jacobians columns. */
     private final DoubleArrayDictionary analyticalDerivativesJacobianColumns;
@@ -68,21 +68,19 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
      * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
-     * @param stmName State Transition Matrix state name
-     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
-     * if null (which is the most frequent case), assumed to be 6x6 identity
-     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
-     * if null or if some selected parameters are missing from the dictionary, the corresponding
-     * initial column is assumed to be 0
      */
-    protected AbstractAnalyticalMatricesHarvester(final AbstractAnalyticalPropagator propagator, final String stmName,
-                                                  final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
-        super(stmName, initialStm, initialJacobianColumns);
+    protected AbstractAnalyticalMatricesHarvester(final AbstractAnalyticalPropagator propagator) {
         this.propagator                           = propagator;
         this.epoch                                = propagator.getInitialState().getDate();
         this.columnsNames                         = null;
-        this.analyticalDerivativesStm             = getInitialStateTransitionMatrix().getData();
         this.analyticalDerivativesJacobianColumns = new DoubleArrayDictionary();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void setInitialStm(final String stmName, final RealMatrix initialStm) {
+        super.setInitialStm(stmName, initialStm);
+        this.analyticalDerivativesStm = getInitialStateTransitionMatrix().getData();
     }
 
     /** {@inheritDoc} */

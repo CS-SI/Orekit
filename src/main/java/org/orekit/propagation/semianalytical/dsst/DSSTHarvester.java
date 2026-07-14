@@ -98,7 +98,8 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      */
     DSSTHarvester(final DSSTPropagator propagator, final String stmName,
                   final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
-        super(stmName, initialStm, initialJacobianColumns);
+        setInitialStm(stmName, initialStm);
+        setInitialJacobianColumns(initialJacobianColumns);
         this.propagator                            = propagator;
         this.shortPeriodDerivativesStm             = new double[getStateDimension()][getStateDimension()];
         this.shortPeriodDerivativesJacobianColumns = new DoubleArrayDictionary();
@@ -110,7 +111,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
     @Override
     public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
 
-        final RealMatrix stm = super.getStateTransitionMatrix(state);
+        final RealMatrix stm = getB2(state);
 
         final int stateDimension = getStateDimension();
         if (propagator.getPropagationType() == PropagationType.OSCULATING) {
@@ -130,7 +131,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
     @Override
     public RealMatrix getParametersJacobian(final SpacecraftState state) {
 
-        final RealMatrix jacobian = super.getParametersJacobian(state);
+        final RealMatrix jacobian = getB3(state);
         if (jacobian != null && propagator.getPropagationType() == PropagationType.OSCULATING) {
 
             // add the short period terms
@@ -182,7 +183,10 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      * @return the B2 jacobian matrix
      */
     public RealMatrix getB2(final SpacecraftState state) {
-        return super.getStateTransitionMatrix(state);
+        if (!state.hasAdditionalData(getStmName())) {
+            return null;
+        }
+        return toSquareMatrix(state.getAdditionalState(getStmName()));
     }
 
     /** Get the Jacobian matrix B3 (B3 = ∂Y/∂P).
@@ -194,7 +198,20 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      * @return the B3 jacobian matrix
      */
     public RealMatrix getB3(final SpacecraftState state) {
-        return super.getParametersJacobian(state);
+
+        final List<String> columnsNames = getJacobiansColumnsNames();
+
+        if (columnsNames == null || columnsNames.isEmpty()) {
+            return null;
+        }
+
+        final RealMatrix dYdP = MatrixUtils.createRealMatrix(getStateDimension(), columnsNames.size());
+        for (int j = 0; j < columnsNames.size(); j++) {
+            dYdP.setColumn(j, state.getAdditionalState(columnsNames.get(j)));
+        }
+
+        return dYdP;
+
     }
 
     /** Get the Jacobian matrix B4 (B4 = ∂εη/∂c).
