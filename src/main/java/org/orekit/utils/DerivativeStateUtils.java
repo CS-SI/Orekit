@@ -89,10 +89,12 @@ public class DerivativeStateUtils {
                 stateVariables[i] = (i < freeParameters) ? new Gradient(constants[i], partialDerivatives.getRow(i)) :
                         Gradient.constant(freeParameters, constants[i]);
             }
-            final FieldVector3D<Gradient> position = new FieldVector3D<>(stateVariables[0], stateVariables[1],
-                    stateVariables[2]);
-            final FieldVector3D<Gradient> velocity = new FieldVector3D<>(stateVariables[3], stateVariables[4],
-                    stateVariables[5]);
+            final FieldVector3D<Gradient> position = new FieldVector3D<>(stateVariables[0],
+                                                                         stateVariables[1],
+                                                                         stateVariables[2]);
+            final FieldVector3D<Gradient> velocity = new FieldVector3D<>(stateVariables[3],
+                                                                         stateVariables[4],
+                                                                         stateVariables[5]);
             final FieldAbsolutePVCoordinates<Gradient> fieldPV = buildFieldAbsolutePV(position, velocity, coordinates);
             return buildFieldStateFromFieldPV(fieldPV, fieldMass, state.getAttitude(), attitudeProvider);
         }
@@ -203,7 +205,8 @@ public class DerivativeStateUtils {
         }
         final PositionAngleType positionAngleType = extractPositionAngleType(orbit);
         final Frame frame = orbit.getFrame();
-        return orbit.getType().mapArrayToOrbit(stateVariables, fieldStateDerivatives, positionAngleType, date, mu, frame);
+        return orbit.getType().mapArrayToOrbit(stateVariables, fieldStateDerivatives, positionAngleType,
+                                               date, mu, frame);
     }
 
     /**
@@ -236,10 +239,12 @@ public class DerivativeStateUtils {
             stateVariables[i] = (i < freeParameters) ? Gradient.variable(freeParameters, i, constants[i]) :
                     Gradient.constant(freeParameters, constants[i]);
         }
-        final FieldVector3D<Gradient> position = new FieldVector3D<>(stateVariables[0], stateVariables[1],
-                stateVariables[2]);
-        final FieldVector3D<Gradient> velocity = new FieldVector3D<>(stateVariables[3], stateVariables[4],
-                stateVariables[5]);
+        final FieldVector3D<Gradient> position = new FieldVector3D<>(stateVariables[0],
+                                                                     stateVariables[1],
+                                                                     stateVariables[2]);
+        final FieldVector3D<Gradient> velocity = new FieldVector3D<>(stateVariables[3],
+                                                                     stateVariables[4],
+                                                                     stateVariables[5]);
         return buildFieldAbsolutePV(position, velocity, coordinates);
     }
 
@@ -268,6 +273,7 @@ public class DerivativeStateUtils {
         final GradientField field = fieldPosition.getX().getField();
         final FieldVector3D<Gradient> acceleration = new FieldVector3D<>(field, coordinates.getAcceleration());
         final FieldAbsoluteDate<Gradient> date = new FieldAbsoluteDate<>(field, coordinates.getDate());
-        return new FieldAbsolutePVCoordinates<>(coordinates.getFrame(), date, fieldPosition, fieldVelocity, acceleration);
+        return new FieldAbsolutePVCoordinates<>(coordinates.getFrame(), date,
+                                                fieldPosition, fieldVelocity, acceleration);
     }
 }
