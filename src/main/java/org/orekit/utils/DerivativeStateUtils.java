@@ -180,8 +180,9 @@ public class DerivativeStateUtils {
         orbit.getType().mapOrbitToArray(orbit, positionAngleType, stateValues, stateDerivatives);
         final Gradient[] stateVariables = new Gradient[stateValues.length];
         for (int i = 0; i < stateVariables.length; i++) {
-            stateVariables[i] = (i < freeParameters) ? Gradient.variable(freeParameters, i, stateValues[i]) :
-                    Gradient.constant(freeParameters, stateValues[i]);
+            stateVariables[i] = (i < freeParameters) ?
+                                Gradient.variable(freeParameters, i, stateValues[i]) :
+                                Gradient.constant(freeParameters, stateValues[i]);
         }
         return buildFieldOrbit(field, orbit, stateVariables, stateDerivatives);
     }
