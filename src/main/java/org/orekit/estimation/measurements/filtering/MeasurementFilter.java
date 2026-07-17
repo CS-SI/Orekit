@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.filtering;
 
+import java.util.Collection;
+
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
@@ -46,7 +48,7 @@ public interface MeasurementFilter<T extends ObservedMeasurement<T>> {
      * @param measurement observed measurement
      * @param states spacecraft states participating in the measurement.
      * @since 14.0
-     * */
+     */
     void filter(ObservedMeasurement<T> measurement, SpacecraftState[] states);
 
     /** Apply a filter to an observed measurement (single spacecraft case, will fail for inter-satellite models).
@@ -57,8 +59,17 @@ public interface MeasurementFilter<T extends ObservedMeasurement<T>> {
      * </p>
      * @param measurement observed measurement
      * @param state spacecraft state participating in the measurement.
-     * */
+     */
     default void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
         filter(measurement, new SpacecraftState[] { state });
+    }
+
+    /** Apply a filter to a series of observed measurement.
+     * @param measurements observed measurements
+     * @param states spacecraft states participating in the measurement.
+     * @since 14.0
+     */
+    default void filterAll(final Collection<ObservedMeasurement<T>> measurements, final SpacecraftState[] states) {
+        measurements.forEach(meas -> filter(meas, states));
     }
 }
