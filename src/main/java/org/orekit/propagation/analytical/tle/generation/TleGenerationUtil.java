@@ -59,7 +59,7 @@ public final class TleGenerationUtil {
         final double e           = keplerianOrbit.getE();
         final double i           = keplerianOrbit.getI();
         final double raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
-        final double pa          = keplerianOrbit.getPerigeeArgument();
+        final double pa          = keplerianOrbit.getPeriapsisArgument();
         final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
 
         // TLE epoch is state epoch
@@ -108,7 +108,7 @@ public final class TleGenerationUtil {
         final T e           = keplerianOrbit.getE();
         final T i           = keplerianOrbit.getI();
         final T raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
-        final T pa          = keplerianOrbit.getPerigeeArgument();
+        final T pa          = keplerianOrbit.getPeriapsisArgument();
         final T meanAnomaly = keplerianOrbit.getMeanAnomaly();
 
         // TLE epoch is state epoch

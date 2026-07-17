@@ -1235,7 +1235,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final FieldUnivariateDerivative1<T> epp = FastMath.max(FastMath.min(tmp, MAX_ECC), 0.);
 
             // mean argument of perigee
-            final T gp0 = MathUtils.normalizeAngle(mean.getPerigeeArgument().add(dsg.multiply(not.getValue())), zero);
+            final T gp0 = MathUtils.normalizeAngle(mean.getPeriapsisArgument().add(dsg.multiply(not.getValue())), zero);
             final T gp1 = dsg.multiply(n0);
             final FieldUnivariateDerivative1<T> gpp = new FieldUnivariateDerivative1<>(gp0, gp1);
 

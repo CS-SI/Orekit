@@ -128,7 +128,7 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(param.getA(), kep.getA(), Utils.epsilonTest * kep.getA());
         Assertions.assertEquals(param.getE(), kep.getE(), Utils.epsilonE * FastMath.abs(kep.getE()));
         Assertions.assertEquals(MathUtils.normalizeAngle(param.getI(), kep.getI()), kep.getI(), Utils.epsilonAngle * FastMath.abs(kep.getI()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(param.getPerigeeArgument(), kep.getPerigeeArgument()), kep.getPerigeeArgument(), Utils.epsilonAngle * FastMath.abs(kep.getPerigeeArgument()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(param.getPeriapsisArgument(), kep.getPeriapsisArgument()), kep.getPeriapsisArgument(), Utils.epsilonAngle * FastMath.abs(kep.getPeriapsisArgument()));
         Assertions.assertEquals(MathUtils.normalizeAngle(param.getRightAscensionOfAscendingNode(), kep.getRightAscensionOfAscendingNode()), kep.getRightAscensionOfAscendingNode(), Utils.epsilonAngle * FastMath.abs(kep.getRightAscensionOfAscendingNode()));
         Assertions.assertEquals(MathUtils.normalizeAngle(param.getMeanAnomaly(), kep.getMeanAnomaly()), kep.getMeanAnomaly(), Utils.epsilonAngle * FastMath.abs(kep.getMeanAnomaly()));
 
@@ -164,7 +164,7 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(paramHyp.getA(), kepHyp.getA(), Utils.epsilonTest * FastMath.abs(kepHyp.getA()));
         Assertions.assertEquals(paramHyp.getE(), kepHyp.getE(), Utils.epsilonE * FastMath.abs(kepHyp.getE()));
         Assertions.assertEquals(MathUtils.normalizeAngle(paramHyp.getI(), kepHyp.getI()), kepHyp.getI(), Utils.epsilonAngle * FastMath.abs(kepHyp.getI()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(paramHyp.getPerigeeArgument(), kepHyp.getPerigeeArgument()), kepHyp.getPerigeeArgument(), Utils.epsilonAngle * FastMath.abs(kepHyp.getPerigeeArgument()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(paramHyp.getPeriapsisArgument(), kepHyp.getPeriapsisArgument()), kepHyp.getPeriapsisArgument(), Utils.epsilonAngle * FastMath.abs(kepHyp.getPeriapsisArgument()));
         Assertions.assertEquals(MathUtils.normalizeAngle(paramHyp.getRightAscensionOfAscendingNode(), kepHyp.getRightAscensionOfAscendingNode()), kepHyp.getRightAscensionOfAscendingNode(), Utils.epsilonAngle * FastMath.abs(kepHyp.getRightAscensionOfAscendingNode()));
         Assertions.assertEquals(MathUtils.normalizeAngle(paramHyp.getMeanAnomaly(), kepHyp.getMeanAnomaly()), kepHyp.getMeanAnomaly(), Utils.epsilonAngle * FastMath.abs(kepHyp.getMeanAnomaly()));
 
@@ -224,27 +224,27 @@ class KeplerianOrbitTest {
         double E = 2 * FastMath.atan(eRatio * FastMath.tan(v / 2));
         double M = E - e * FastMath.sin(E);
 
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), v , PositionAngleType.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * FastMath.abs(v));
         Assertions.assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * FastMath.abs(E));
         Assertions.assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * FastMath.abs(M));
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), 0 , PositionAngleType.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), E , PositionAngleType.ECCENTRIC,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * FastMath.abs(v));
         Assertions.assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * FastMath.abs(E));
         Assertions.assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * FastMath.abs(M));
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), 0 , PositionAngleType.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), M, PositionAngleType.MEAN,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * FastMath.abs(v));
@@ -252,33 +252,33 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * FastMath.abs(M));
 
         // circular orbit
-        p = new KeplerianOrbit(p.getA(), 0, p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), 0, p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), p.getLv() , PositionAngleType.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
         E = v;
         M = E;
 
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), v , PositionAngleType.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * FastMath.abs(v));
         Assertions.assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * FastMath.abs(E));
         Assertions.assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * FastMath.abs(M));
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), 0 , PositionAngleType.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), E , PositionAngleType.ECCENTRIC, p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * FastMath.abs(v));
         Assertions.assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * FastMath.abs(E));
         Assertions.assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * FastMath.abs(M));
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), 0 , PositionAngleType.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                     p.getRightAscensionOfAscendingNode(), M, PositionAngleType.MEAN,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * FastMath.abs(v));
@@ -361,7 +361,7 @@ class KeplerianOrbitTest {
         double perigeeRadius = p.getA() * (1 - p.getE());
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
-            p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+            p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                    p.getRightAscensionOfAscendingNode(), lv , PositionAngleType.TRUE,
                                    p.getFrame(), p.getDate(), p.getMu());
             position = p.getPosition();
@@ -384,25 +384,25 @@ class KeplerianOrbitTest {
         }
 
         // apsides
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                p.getRightAscensionOfAscendingNode(), 0 , PositionAngleType.TRUE, p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertEquals(p.getPosition().getNorm(), perigeeRadius, perigeeRadius * Utils.epsilonTest);
 
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                p.getRightAscensionOfAscendingNode(), FastMath.PI , PositionAngleType.TRUE, p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertEquals(p.getPosition().getNorm(), apogeeRadius, apogeeRadius * Utils.epsilonTest);
 
         // nodes
         // descending node
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
-                               p.getRightAscensionOfAscendingNode(), FastMath.PI - p.getPerigeeArgument() , PositionAngleType.TRUE,
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
+                               p.getRightAscensionOfAscendingNode(), FastMath.PI - p.getPeriapsisArgument() , PositionAngleType.TRUE,
                                p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertTrue(FastMath.abs(p.getPosition().getZ()) < p.getPosition().getNorm() * Utils.epsilonTest);
         Assertions.assertTrue(p.getVelocity().getZ() < 0);
 
         // ascending node
-        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
-                               p.getRightAscensionOfAscendingNode(), 2.0 * FastMath.PI - p.getPerigeeArgument() , PositionAngleType.TRUE,
+        p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
+                               p.getRightAscensionOfAscendingNode(), 2.0 * FastMath.PI - p.getPeriapsisArgument() , PositionAngleType.TRUE,
                                p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertTrue(FastMath.abs(p.getPosition().getZ()) < p.getPosition().getNorm() * Utils.epsilonTest);
         Assertions.assertTrue(p.getVelocity().getZ() > 0);
@@ -423,7 +423,7 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(perigeeRadius, apogeeRadius, 1.e+4 * Utils.epsilonTest * apogeeRadius);
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
-            pCirEqua = new KeplerianOrbit(pCirEqua.getA(), pCirEqua.getE(), pCirEqua.getI(), pCirEqua.getPerigeeArgument(),
+            pCirEqua = new KeplerianOrbit(pCirEqua.getA(), pCirEqua.getE(), pCirEqua.getI(), pCirEqua.getPeriapsisArgument(),
                                           pCirEqua.getRightAscensionOfAscendingNode(), lv, PositionAngleType.TRUE,
                                           pCirEqua.getFrame(), pCirEqua.getDate(), pCirEqua.getMu());
             position = pCirEqua.getPosition();
@@ -529,7 +529,7 @@ class KeplerianOrbitTest {
                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                   mu);
         Vector3D perigeeP  = new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(),
-                                                orbit.getPerigeeArgument(), orbit.getRightAscensionOfAscendingNode(),
+                                                orbit.getPeriapsisArgument(), orbit.getRightAscensionOfAscendingNode(),
                                                 0.0, PositionAngleType.TRUE, orbit.getFrame(),
                                                 orbit.getDate(), orbit.getMu()).getPosition();
         Vector3D u = perigeeP.normalize();
@@ -985,10 +985,10 @@ class KeplerianOrbitTest {
                           32 * (oP3h.getI()                             - oM3h.getI()) -
                          168 * (oP2h.getI()                             - oM2h.getI()) +
                          672 * (oP1h.getI()                             - oM1h.getI())) / (840 * h);
-        jacobian[3][i] = (-3 * (oP4h.getPerigeeArgument()               - oM4h.getPerigeeArgument()) +
-                          32 * (oP3h.getPerigeeArgument()               - oM3h.getPerigeeArgument()) -
-                         168 * (oP2h.getPerigeeArgument()               - oM2h.getPerigeeArgument()) +
-                         672 * (oP1h.getPerigeeArgument()               - oM1h.getPerigeeArgument())) / (840 * h);
+        jacobian[3][i] = (-3 * (oP4h.getPeriapsisArgument()               - oM4h.getPeriapsisArgument()) +
+                          32 * (oP3h.getPeriapsisArgument()               - oM3h.getPeriapsisArgument()) -
+                         168 * (oP2h.getPeriapsisArgument()               - oM2h.getPeriapsisArgument()) +
+                         672 * (oP1h.getPeriapsisArgument()               - oM1h.getPeriapsisArgument())) / (840 * h);
         jacobian[4][i] = (-3 * (oP4h.getRightAscensionOfAscendingNode() - oM4h.getRightAscensionOfAscendingNode()) +
                           32 * (oP3h.getRightAscensionOfAscendingNode() - oM3h.getRightAscensionOfAscendingNode()) -
                          168 * (oP2h.getRightAscensionOfAscendingNode() - oM2h.getRightAscensionOfAscendingNode()) +
@@ -1010,7 +1010,7 @@ class KeplerianOrbitTest {
         KeplerianOrbit converted = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(equ);
         Assertions.assertEquals(FastMath.PI,
                             MathUtils.normalizeAngle(converted.getRightAscensionOfAscendingNode() +
-                                                     converted.getPerigeeArgument(), FastMath.PI),
+                                                     converted.getPeriapsisArgument(), FastMath.PI),
                             1.0e-10);
     }
 
@@ -1071,7 +1071,7 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(0., orbit.getHyDot());
         Assertions.assertEquals(0., orbit.getEDot());
         Assertions.assertEquals(0., orbit.getIDot());
-        Assertions.assertEquals(0., orbit.getPerigeeArgumentDot());
+        Assertions.assertEquals(0., orbit.getPeriapsisArgumentDot());
         Assertions.assertEquals(0., orbit.getRightAscensionOfAscendingNodeDot());
 
     }
@@ -1129,8 +1129,8 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
                             orbit.getIDot(),
                             5.8e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getPerigeeArgument()),
-                            orbit.getPerigeeArgumentDot(),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getPeriapsisArgument()),
+                            orbit.getPeriapsisArgumentDot(),
                             1.5e-12);
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getRightAscensionOfAscendingNode()),
                             orbit.getRightAscensionOfAscendingNodeDot(),
@@ -1197,8 +1197,8 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
                             orbit.getIDot(),
                             3.6e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getPerigeeArgument()),
-                            orbit.getPerigeeArgumentDot(),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getPeriapsisArgument()),
+                            orbit.getPeriapsisArgumentDot(),
                             9.4e-16);
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getRightAscensionOfAscendingNode()),
                             orbit.getRightAscensionOfAscendingNodeDot(),
@@ -1251,25 +1251,25 @@ class KeplerianOrbitTest {
             final KeplerianOrbit rebuilt = new KeplerianOrbit(orbit.getA(),
                                                               orbit.getE(),
                                                               orbit.getI(),
-                                                              orbit.getPerigeeArgument(),
+                                                              orbit.getPeriapsisArgument(),
                                                               orbit.getRightAscensionOfAscendingNode(),
                                                               orbit.getAnomaly(type),
                                                               orbit.getADot(),
                                                               orbit.getEDot(),
                                                               orbit.getIDot(),
-                                                              orbit.getPerigeeArgumentDot(),
+                                                              orbit.getPeriapsisArgumentDot(),
                                                               orbit.getRightAscensionOfAscendingNodeDot(),
                                                               orbit.getAnomalyDot(type),
                                                               type, orbit.getFrame(), orbit.getDate(), orbit.getMu());
             MatcherAssert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                                1));
             MatcherAssert.assertThat(rebuilt.getE(),                                relativelyCloseTo(orbit.getE(),                                1));
             MatcherAssert.assertThat(rebuilt.getI(),                                relativelyCloseTo(orbit.getI(),                                1));
-            MatcherAssert.assertThat(rebuilt.getPerigeeArgument(),                  relativelyCloseTo(orbit.getPerigeeArgument(),                  1));
+            MatcherAssert.assertThat(rebuilt.getPeriapsisArgument(),                  relativelyCloseTo(orbit.getPeriapsisArgument(),                  1));
             MatcherAssert.assertThat(rebuilt.getRightAscensionOfAscendingNode(),    relativelyCloseTo(orbit.getRightAscensionOfAscendingNode(),    1));
             MatcherAssert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),                             1));
             MatcherAssert.assertThat(rebuilt.getEDot(),                             relativelyCloseTo(orbit.getEDot(),                             1));
             MatcherAssert.assertThat(rebuilt.getIDot(),                             relativelyCloseTo(orbit.getIDot(),                             1));
-            MatcherAssert.assertThat(rebuilt.getPerigeeArgumentDot(),               relativelyCloseTo(orbit.getPerigeeArgumentDot(),               1));
+            MatcherAssert.assertThat(rebuilt.getPeriapsisArgumentDot(),               relativelyCloseTo(orbit.getPeriapsisArgumentDot(),               1));
             MatcherAssert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot(), 1));
             for (PositionAngleType type2 : PositionAngleType.values()) {
                 MatcherAssert.assertThat(rebuilt.getAnomaly(type2),    relativelyCloseTo(orbit.getAnomaly(type2),    1));
@@ -1294,25 +1294,25 @@ class KeplerianOrbitTest {
             final KeplerianOrbit rebuilt = new KeplerianOrbit(orbit.getA(),
                                                               orbit.getE(),
                                                               orbit.getI(),
-                                                              orbit.getPerigeeArgument(),
+                                                              orbit.getPeriapsisArgument(),
                                                               orbit.getRightAscensionOfAscendingNode(),
                                                               orbit.getAnomaly(type),
                                                               orbit.getADot(),
                                                               orbit.getEDot(),
                                                               orbit.getIDot(),
-                                                              orbit.getPerigeeArgumentDot(),
+                                                              orbit.getPeriapsisArgumentDot(),
                                                               orbit.getRightAscensionOfAscendingNodeDot(),
                                                               orbit.getAnomalyDot(type),
                                                               type, orbit.getFrame(), orbit.getDate(), orbit.getMu());
             MatcherAssert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                                1));
             MatcherAssert.assertThat(rebuilt.getE(),                                relativelyCloseTo(orbit.getE(),                                1));
             MatcherAssert.assertThat(rebuilt.getI(),                                relativelyCloseTo(orbit.getI(),                                1));
-            MatcherAssert.assertThat(rebuilt.getPerigeeArgument(),                  relativelyCloseTo(orbit.getPerigeeArgument(),                  1));
+            MatcherAssert.assertThat(rebuilt.getPeriapsisArgument(),                  relativelyCloseTo(orbit.getPeriapsisArgument(),                  1));
             MatcherAssert.assertThat(rebuilt.getRightAscensionOfAscendingNode(),    relativelyCloseTo(orbit.getRightAscensionOfAscendingNode(),    1));
             MatcherAssert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),                             1));
             MatcherAssert.assertThat(rebuilt.getEDot(),                             relativelyCloseTo(orbit.getEDot(),                             1));
             MatcherAssert.assertThat(rebuilt.getIDot(),                             relativelyCloseTo(orbit.getIDot(),                             1));
-            MatcherAssert.assertThat(rebuilt.getPerigeeArgumentDot(),               relativelyCloseTo(orbit.getPerigeeArgumentDot(),               1));
+            MatcherAssert.assertThat(rebuilt.getPeriapsisArgumentDot(),               relativelyCloseTo(orbit.getPeriapsisArgumentDot(),               1));
             MatcherAssert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot(), 1));
             for (PositionAngleType type2 : PositionAngleType.values()) {
                 MatcherAssert.assertThat(rebuilt.getAnomaly(type2),    relativelyCloseTo(orbit.getAnomaly(type2),    3));
@@ -1367,7 +1367,7 @@ class KeplerianOrbitTest {
             Assertions.assertEquals(orbit.getADot(),                             rebuilt.getADot(),                             3.0e-13);
             Assertions.assertEquals(orbit.getEDot(),                             rebuilt.getEDot(),                             1.0e-15);
             Assertions.assertEquals(orbit.getIDot(),                             rebuilt.getIDot(),                             1.0e-15);
-            Assertions.assertEquals(orbit.getPerigeeArgumentDot(),               rebuilt.getPerigeeArgumentDot(),               1.0e-15);
+            Assertions.assertEquals(orbit.getPeriapsisArgumentDot(),               rebuilt.getPeriapsisArgumentDot(),               1.0e-15);
             Assertions.assertEquals(orbit.getRightAscensionOfAscendingNodeDot(), rebuilt.getRightAscensionOfAscendingNodeDot(), 1.0e-15);
             Assertions.assertEquals(orbit.getTrueAnomalyDot(),                   rebuilt.getTrueAnomalyDot(),                   1.0e-15);
         }
@@ -1397,7 +1397,7 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(orbit.getADot(),                             rebuilt.getADot(),                             3.0e-13);
         Assertions.assertEquals(orbit.getEDot(),                             rebuilt.getEDot(),                             1.0e-15);
         Assertions.assertEquals(orbit.getIDot(),                             rebuilt.getIDot(),                             1.0e-15);
-        Assertions.assertEquals(orbit.getPerigeeArgumentDot(),               rebuilt.getPerigeeArgumentDot(),               1.0e-15);
+        Assertions.assertEquals(orbit.getPeriapsisArgumentDot(),               rebuilt.getPeriapsisArgumentDot(),               1.0e-15);
         Assertions.assertEquals(orbit.getRightAscensionOfAscendingNodeDot(), rebuilt.getRightAscensionOfAscendingNodeDot(), 1.0e-15);
         Assertions.assertEquals(orbit.getTrueAnomalyDot(),                   rebuilt.getTrueAnomalyDot(),                   1.0e-15);
 
@@ -1465,7 +1465,7 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(orbit.getI(), orbitWithoutRates.getI());
         Assertions.assertEquals(orbit.getRightAscensionOfAscendingNode(),
                 orbitWithoutRates.getRightAscensionOfAscendingNode());
-        Assertions.assertEquals(orbit.getPerigeeArgument(), orbitWithoutRates.getPerigeeArgument());
+        Assertions.assertEquals(orbit.getPeriapsisArgument(), orbitWithoutRates.getPeriapsisArgument());
         Assertions.assertEquals(orbit.getTrueAnomaly(), orbitWithoutRates.getTrueAnomaly());
     }
 
@@ -1532,13 +1532,13 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(0.0, normalized1.getA() - withoutDerivatives.getA(), 1.0e-6);
         Assertions.assertEquals(0.0, normalized1.getE() - withoutDerivatives.getE(), 1.0e-10);
         Assertions.assertEquals(0.0, normalized1.getI() - withoutDerivatives.getI(), 1.0e-10);
-        Assertions.assertEquals(-MathUtils.TWO_PI, normalized1.getPerigeeArgument()               - withoutDerivatives.getPerigeeArgument(),               1.0e-10);
+        Assertions.assertEquals(-MathUtils.TWO_PI, normalized1.getPeriapsisArgument()               - withoutDerivatives.getPeriapsisArgument(),               1.0e-10);
         Assertions.assertEquals(+MathUtils.TWO_PI, normalized1.getRightAscensionOfAscendingNode() - withoutDerivatives.getRightAscensionOfAscendingNode(), 1.0e-10);
         Assertions.assertEquals(2 * MathUtils.TWO_PI, normalized1.getTrueAnomaly()                - withoutDerivatives.getTrueAnomaly(),                   1.0e-10);
         Assertions.assertEquals(withoutDerivatives.getADot(), normalized1.getADot());
         Assertions.assertEquals(withoutDerivatives.getEDot(), normalized1.getEDot());
         Assertions.assertEquals(withoutDerivatives.getIDot(), normalized1.getIDot());
-        Assertions.assertEquals(withoutDerivatives.getPerigeeArgumentDot(), normalized1.getPerigeeArgumentDot());
+        Assertions.assertEquals(withoutDerivatives.getPeriapsisArgumentDot(), normalized1.getPeriapsisArgumentDot());
         Assertions.assertEquals(withoutDerivatives.getRightAscensionOfAscendingNodeDot(), normalized1.getRightAscensionOfAscendingNodeDot());
         Assertions.assertEquals(withoutDerivatives.getTrueAnomalyDot(), normalized1.getTrueAnomalyDot());
 
@@ -1555,13 +1555,13 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(0.0, normalized2.getA() - withoutDerivatives.getA(), 1.0e-6);
         Assertions.assertEquals(0.0, normalized2.getE() - withoutDerivatives.getE(), 1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getI() - withoutDerivatives.getI(), 1.0e-10);
-        Assertions.assertEquals(-MathUtils.TWO_PI, normalized2.getPerigeeArgument()               - withoutDerivatives.getPerigeeArgument(),               1.0e-10);
+        Assertions.assertEquals(-MathUtils.TWO_PI, normalized2.getPeriapsisArgument()               - withoutDerivatives.getPeriapsisArgument(),               1.0e-10);
         Assertions.assertEquals(+MathUtils.TWO_PI, normalized2.getRightAscensionOfAscendingNode() - withoutDerivatives.getRightAscensionOfAscendingNode(), 1.0e-10);
         Assertions.assertEquals(2 * MathUtils.TWO_PI, normalized2.getTrueAnomaly()                - withoutDerivatives.getTrueAnomaly(),                   1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getADot() - withDerivatives.getADot(), 1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getEDot() - withDerivatives.getEDot(), 1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getIDot() - withDerivatives.getIDot(), 1.0e-10);
-        Assertions.assertEquals(0.0, normalized2.getPerigeeArgumentDot()               - withDerivatives.getPerigeeArgumentDot(),               1.0e-10);
+        Assertions.assertEquals(0.0, normalized2.getPeriapsisArgumentDot()               - withDerivatives.getPeriapsisArgumentDot(),               1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getRightAscensionOfAscendingNodeDot() - withDerivatives.getRightAscensionOfAscendingNodeDot(), 1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getTrueAnomalyDot()                   - withDerivatives.getTrueAnomalyDot(),                   1.0e-10);
 
@@ -1583,7 +1583,7 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(orbit.shiftedBy(1).getA(), pvOrbit.shiftedBy(1).getA(), 1e-6);
         Assertions.assertEquals(orbit.shiftedBy(1).getE(), pvOrbit.shiftedBy(1).getE(), 1e-14);
         Assertions.assertEquals(orbit.shiftedBy(1).getI(), pvOrbit.shiftedBy(1).getI(), 1e-10);
-        Assertions.assertEquals(orbit.shiftedBy(1).getPerigeeArgument(), pvOrbit.shiftedBy(1).getPerigeeArgument(), 1e-10);
+        Assertions.assertEquals(orbit.shiftedBy(1).getPeriapsisArgument(), pvOrbit.shiftedBy(1).getPeriapsisArgument(), 1e-10);
         Assertions.assertEquals(orbit.shiftedBy(1).getRightAscensionOfAscendingNode(), pvOrbit.shiftedBy(1).getRightAscensionOfAscendingNode(), 1e-10);
         Assertions.assertEquals(orbit.shiftedBy(1).getTrueAnomaly(), pvOrbit.shiftedBy(1).getTrueAnomaly(), 1e-10);
 

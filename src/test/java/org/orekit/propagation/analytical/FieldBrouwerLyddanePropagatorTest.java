@@ -337,8 +337,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.175);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 3.2e-6);
         Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 6.9e-8);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0053);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getPeriapsisArgument(), FastMath.PI), 0.0053);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 1.2e-6);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
@@ -514,8 +514,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.174);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 3.2e-6);
         Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 6.9e-8);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0053);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getPeriapsisArgument(), FastMath.PI), 0.0053);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 1.2e-6);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
@@ -578,8 +578,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
         Assertions.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
         Assertions.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getPeriapsisArgument(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
@@ -630,8 +630,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
         Assertions.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
         Assertions.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getPeriapsisArgument(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
@@ -640,8 +640,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(BLOrbit1.getA(), BLOrbit3.getA(), 0.0);
         Assertions.assertEquals(BLOrbit1.getE(), BLOrbit3.getE(), 0.0);
         Assertions.assertEquals(BLOrbit1.getI(), BLOrbit3.getI(), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit3.getPerigeeArgument(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit3.getPeriapsisArgument(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit3.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
@@ -843,7 +843,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getE(), finalOrbit.getE(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getI(), finalOrbit.getI(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
-        Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getPeriapsisArgument(), finalOrbit.getPeriapsisArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getVelocity().distance(finalOrbit.getVelocity()), Double.MIN_VALUE);
@@ -895,7 +895,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getE(), finalOrbit.getE(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getI(), finalOrbit.getI(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
-        Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getPeriapsisArgument(), finalOrbit.getPeriapsisArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getVelocity().distance(finalOrbit.getVelocity()), Double.MIN_VALUE);
@@ -989,7 +989,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertTrue(Double.isFinite(orbOsc.getA()));
         Assertions.assertTrue(Double.isFinite(orbOsc.getE()));
         Assertions.assertTrue(Double.isFinite(orbOsc.getI()));
-        Assertions.assertTrue(Double.isFinite(orbOsc.getPerigeeArgument()));
+        Assertions.assertTrue(Double.isFinite(orbOsc.getPeriapsisArgument()));
         Assertions.assertTrue(Double.isFinite(orbOsc.getRightAscensionOfAscendingNode()));
         Assertions.assertTrue(Double.isFinite(orbOsc.getTrueAnomaly()));
 
@@ -1006,7 +1006,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertTrue(Double.isFinite(orbOsc2.getA()));
         Assertions.assertTrue(Double.isFinite(orbOsc2.getE()));
         Assertions.assertTrue(Double.isFinite(orbOsc2.getI()));
-        Assertions.assertTrue(Double.isFinite(orbOsc2.getPerigeeArgument()));
+        Assertions.assertTrue(Double.isFinite(orbOsc2.getPeriapsisArgument()));
         Assertions.assertTrue(Double.isFinite(orbOsc2.getRightAscensionOfAscendingNode()));
         Assertions.assertTrue(Double.isFinite(orbOsc2.getTrueAnomaly()));
     }

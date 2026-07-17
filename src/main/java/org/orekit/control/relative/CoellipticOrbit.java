@@ -74,7 +74,7 @@ public class CoellipticOrbit {
         final double chaserE = targetOrbit.getE() + deltaE;
 
         final double deltaI = xPlaneOffset / targetOrbit.getA();
-        final double theta = xPlaneIVectorPhase + targetOrbit.getPerigeeArgument();
+        final double theta = xPlaneIVectorPhase + targetOrbit.getPeriapsisArgument();
         double chaserRaan = 0.;
         double chaserI = 0.;
 
@@ -119,7 +119,7 @@ public class CoellipticOrbit {
             chaserRaan = targetOrbit.getRightAscensionOfAscendingNode() - alpha;
         }
 
-        final double chaserPerigeeArgument = targetOrbit.getPerigeeArgument();
+        final double chaserPerigeeArgument = targetOrbit.getPeriapsisArgument();
 
         final double fxPlaneCenter = targetOrbit.getTrueAnomaly() -
                                       (chaserRaan - targetOrbit.getRightAscensionOfAscendingNode()) *
@@ -159,7 +159,7 @@ public class CoellipticOrbit {
         final T chaserE = targetOrbit.getE().add(deltaE);
 
         final T deltaI = xPlaneOffset.divide(targetOrbit.getA());
-        final T theta = xPlaneIVectorPhase.add(targetOrbit.getPerigeeArgument());
+        final T theta = xPlaneIVectorPhase.add(targetOrbit.getPeriapsisArgument());
         T chaserRaan = field.getZero();
         T chaserI = field.getZero();
         final T pi = field.getOne().multiply(FastMath.PI);
@@ -205,7 +205,7 @@ public class CoellipticOrbit {
             chaserRaan = targetOrbit.getRightAscensionOfAscendingNode().subtract(alpha);
         }
 
-        final T chaserPerigeeArgument = targetOrbit.getPerigeeArgument();
+        final T chaserPerigeeArgument = targetOrbit.getPeriapsisArgument();
 
         final T fxPlaneCenter = targetOrbit.getTrueAnomaly().subtract(chaserRaan.subtract(
                         targetOrbit.getRightAscensionOfAscendingNode()).multiply(targetOrbit.getI().cos()));

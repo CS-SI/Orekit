@@ -16,6 +16,9 @@
  */
 package org.orekit.orbits;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
@@ -28,9 +31,6 @@ import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Class using a Hermite interpolator to interpolate orbits.
@@ -380,14 +380,14 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
             final KK                      continuousRAAN;
             final KK                      continuousM;
             if (previousDate == null) {
-                continuousPA   = kep.getPerigeeArgument();
+                continuousPA   = kep.getPeriapsisArgument();
                 continuousRAAN = kep.getRightAscensionOfAscendingNode();
                 continuousM    = kep.getMeanAnomaly();
             }
             else {
                 final KK dt      = kep.getDate().durationFrom(previousDate);
                 final KK keplerM = previousM.add(kep.getKeplerianMeanMotion().multiply(dt));
-                continuousPA   = MathUtils.normalizeAngle(kep.getPerigeeArgument(), previousPA);
+                continuousPA   = MathUtils.normalizeAngle(kep.getPeriapsisArgument(), previousPA);
                 continuousRAAN = MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
                 continuousM    = MathUtils.normalizeAngle(kep.getMeanAnomaly(), keplerM);
             }
@@ -407,7 +407,7 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
                 toAddDot[0] = kep.getADot();
                 toAddDot[1] = kep.getEDot();
                 toAddDot[2] = kep.getIDot();
-                toAddDot[3] = kep.getPerigeeArgumentDot();
+                toAddDot[3] = kep.getPeriapsisArgumentDot();
                 toAddDot[4] = kep.getRightAscensionOfAscendingNodeDot();
                 toAddDot[5] = kep.getMeanAnomalyDot();
                 interpolator.addSamplePoint(kep.getDate().durationFrom(interpolationDate),

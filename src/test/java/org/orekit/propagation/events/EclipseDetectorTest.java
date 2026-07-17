@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.List;
+
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.LocalizedODEFormats;
@@ -51,8 +53,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.List;
-
 class EclipseDetectorTest {
 
     private double               mu;
@@ -68,7 +68,7 @@ class EclipseDetectorTest {
     void testPolar() {
         final KeplerianOrbit original = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(initialState.getOrbit());
         final KeplerianOrbit polar    = new KeplerianOrbit(original.getA(), original.getE(),
-                                                           0.5 * FastMath.PI, original.getPerigeeArgument(),
+                                                           0.5 * FastMath.PI, original.getPeriapsisArgument(),
                                                            original.getRightAscensionOfAscendingNode(),
                                                            original.getTrueAnomaly(), PositionAngleType.TRUE,
                                                            original.getFrame(), original.getDate(),

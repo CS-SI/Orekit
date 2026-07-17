@@ -110,7 +110,7 @@ public class FieldKeplerianPropagatorTest {
                         new FieldKeplerianOrbit<>(new Tuple(k0.getA(),                             k1.getA()),
                                                   new Tuple(k0.getE(),                             k1.getE()),
                                                   new Tuple(k0.getI(),                             k1.getI()),
-                                                  new Tuple(k0.getPerigeeArgument(),               k1.getPerigeeArgument()),
+                                                  new Tuple(k0.getPeriapsisArgument(),               k1.getPeriapsisArgument()),
                                                   new Tuple(k0.getRightAscensionOfAscendingNode(), k1.getRightAscensionOfAscendingNode()),
                                                   new Tuple(k0.getMeanAnomaly(),                   k1.getMeanAnomaly()),
                                                   PositionAngleType.MEAN,

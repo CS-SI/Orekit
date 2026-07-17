@@ -16,6 +16,9 @@
  */
 package org.orekit.orbits;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitInternalError;
@@ -25,9 +28,6 @@ import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Class using a Hermite interpolator to interpolate orbits. It is assumed that provided samples have the same
@@ -366,14 +366,14 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
             final double         continuousRAAN;
             final double         continuousM;
             if (previousDate == null) {
-                continuousPA   = kep.getPerigeeArgument();
+                continuousPA   = kep.getPeriapsisArgument();
                 continuousRAAN = kep.getRightAscensionOfAscendingNode();
                 continuousM    = kep.getMeanAnomaly();
             }
             else {
                 final double dt      = kep.getDate().durationFrom(previousDate);
                 final double keplerM = previousM + kep.getKeplerianMeanMotion() * dt;
-                continuousPA   = MathUtils.normalizeAngle(kep.getPerigeeArgument(), previousPA);
+                continuousPA   = MathUtils.normalizeAngle(kep.getPeriapsisArgument(), previousPA);
                 continuousRAAN = MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
                 continuousM    = MathUtils.normalizeAngle(kep.getMeanAnomaly(), keplerM);
             }
@@ -392,7 +392,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
                                             new double[] { kep.getADot(),
                                                            kep.getEDot(),
                                                            kep.getIDot(),
-                                                           kep.getPerigeeArgumentDot(),
+                                                           kep.getPeriapsisArgumentDot(),
                                                            kep.getRightAscensionOfAscendingNodeDot(),
                                                            kep.getMeanAnomalyDot() });
             }

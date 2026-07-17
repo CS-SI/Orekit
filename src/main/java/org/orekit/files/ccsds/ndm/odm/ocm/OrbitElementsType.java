@@ -272,7 +272,7 @@ public enum OrbitElementsType {
             return new double[] {
                 orbit.getA(), orbit.getE(), orbit.getI(),
                 orbit.getRightAscensionOfAscendingNode(),
-                orbit.getPerigeeArgument(), orbit.getTrueAnomaly()
+                orbit.getPeriapsisArgument(), orbit.getTrueAnomaly()
             };
         }
 
@@ -302,7 +302,7 @@ public enum OrbitElementsType {
             return new double[] {
                 orbit.getA(), orbit.getE(), orbit.getI(),
                 orbit.getRightAscensionOfAscendingNode(),
-                orbit.getPerigeeArgument(), orbit.getMeanAnomaly()
+                orbit.getPeriapsisArgument(), orbit.getMeanAnomaly()
             };
         }
 

@@ -16,6 +16,9 @@
  */
 package org.orekit.forces;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hipparchus.Field;
@@ -59,9 +62,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 public abstract class AbstractForceModelTest {
@@ -561,7 +561,7 @@ public abstract class AbstractForceModelTest {
         double a_R = initialOrbit.getA().getReal();
         double e_R = initialOrbit.getE().getReal();
         double i_R = initialOrbit.getI().getReal();
-        double R_R = initialOrbit.getPerigeeArgument().getReal();
+        double R_R = initialOrbit.getPeriapsisArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
         double n_R = initialOrbit.getAnomaly(positionAngleType).getReal();
 
@@ -738,7 +738,7 @@ public abstract class AbstractForceModelTest {
         double a_R = initialOrbit.getA().getReal();
         double e_R = initialOrbit.getE().getReal();
         double i_R = initialOrbit.getI().getReal();
-        double R_R = initialOrbit.getPerigeeArgument().getReal();
+        double R_R = initialOrbit.getPeriapsisArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
         double n_R = initialOrbit.getAnomaly(positionAngleType).getReal();
 

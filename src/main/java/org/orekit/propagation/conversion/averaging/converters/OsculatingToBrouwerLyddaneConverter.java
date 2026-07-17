@@ -96,7 +96,7 @@ public class OsculatingToBrouwerLyddaneConverter
      */
     private AveragedKeplerianWithMeanAngle buildElements(final KeplerianOrbit averagedOrbit) {
         return new AveragedKeplerianWithMeanAngle(averagedOrbit.getA(), averagedOrbit.getE(),
-                averagedOrbit.getI(), averagedOrbit.getPerigeeArgument(),
+                averagedOrbit.getI(), averagedOrbit.getPeriapsisArgument(),
                 averagedOrbit.getRightAscensionOfAscendingNode(), averagedOrbit.getMeanAnomaly());
     }
 

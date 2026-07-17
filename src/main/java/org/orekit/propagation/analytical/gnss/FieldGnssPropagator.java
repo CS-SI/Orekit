@@ -483,7 +483,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         gElements.setSma(FieldGradient.variable(FREE_PARAMETERS, 0, orbit.getA()));
         gElements.setE(FieldGradient.variable(FREE_PARAMETERS, 1, orbit.getE()));
         gElements.setI0(FieldGradient.variable(FREE_PARAMETERS, 2, orbit.getI()));
-        gElements.setPa(FieldGradient.variable(FREE_PARAMETERS, 3, orbit.getPerigeeArgument()));
+        gElements.setPa(FieldGradient.variable(FREE_PARAMETERS, 3, orbit.getPeriapsisArgument()));
         gElements.setOmega0(FieldGradient.variable(FREE_PARAMETERS, 4, orbit.getRightAscensionOfAscendingNode()));
         gElements.setM0(FieldGradient.variable(FREE_PARAMETERS, 5, orbit.getMeanAnomaly()));
 

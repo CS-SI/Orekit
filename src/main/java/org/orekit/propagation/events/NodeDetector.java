@@ -152,18 +152,18 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
         // mean anomaly of ascending node
         final double ascendingM  =  new KeplerianOrbit(keplerian.getA(), keplerian.getE(),
                                                        keplerian.getI(),
-                                                       keplerian.getPerigeeArgument(),
+                                                       keplerian.getPeriapsisArgument(),
                                                        keplerian.getRightAscensionOfAscendingNode(),
-                                                       -keplerian.getPerigeeArgument(), PositionAngleType.TRUE,
+                                                       -keplerian.getPeriapsisArgument(), PositionAngleType.TRUE,
                                                        keplerian.getFrame(), keplerian.getDate(),
                                                        keplerian.getMu()).getMeanAnomaly();
 
         // mean anomaly of descending node
         final double descendingM =  new KeplerianOrbit(keplerian.getA(), keplerian.getE(),
                                                        keplerian.getI(),
-                                                       keplerian.getPerigeeArgument(),
+                                                       keplerian.getPeriapsisArgument(),
                                                        keplerian.getRightAscensionOfAscendingNode(),
-                                                       FastMath.PI - keplerian.getPerigeeArgument(), PositionAngleType.TRUE,
+                                                       FastMath.PI - keplerian.getPeriapsisArgument(), PositionAngleType.TRUE,
                                                        keplerian.getFrame(), keplerian.getDate(),
                                                        keplerian.getMu()).getMeanAnomaly();
 
