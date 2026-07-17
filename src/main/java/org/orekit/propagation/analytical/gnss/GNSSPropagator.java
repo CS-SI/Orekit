@@ -496,7 +496,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         gElements.setSma(Gradient.variable(FREE_PARAMETERS, 0, orbit.getA()));
         gElements.setE(Gradient.variable(FREE_PARAMETERS, 1, orbit.getE()));
         gElements.setI0(Gradient.variable(FREE_PARAMETERS, 2, orbit.getI()));
-        gElements.setPa(Gradient.variable(FREE_PARAMETERS, 3, orbit.getPerigeeArgument()));
+        gElements.setPa(Gradient.variable(FREE_PARAMETERS, 3, orbit.getPeriapsisArgument()));
         gElements.setOmega0(Gradient.variable(FREE_PARAMETERS, 4, orbit.getRightAscensionOfAscendingNode()));
         gElements.setM0(Gradient.variable(FREE_PARAMETERS, 5, orbit.getMeanAnomaly()));
 

@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -26,7 +28,10 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
@@ -40,9 +45,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.function.Function;
-
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 
@@ -258,9 +260,9 @@ class CircularOrbitTest {
         Assertions.assertEquals(0.110283316961361e-03, kep.getE(), Utils.epsilonE * FastMath.abs(kep.getE()));
         Assertions.assertEquals(0.166901168553917e-03, kep.getI(),
                 Utils.epsilonAngle * FastMath.abs(kep.getI()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument()),
-                kep.getPerigeeArgument(),
-                Utils.epsilonTest * FastMath.abs(kep.getPerigeeArgument()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPeriapsisArgument()),
+                kep.getPeriapsisArgument(),
+                Utils.epsilonTest * FastMath.abs(kep.getPeriapsisArgument()));
         Assertions.assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep.getRightAscensionOfAscendingNode()),
                 kep.getRightAscensionOfAscendingNode(),
                 Utils.epsilonTest * FastMath.abs(kep.getRightAscensionOfAscendingNode()));
@@ -308,7 +310,7 @@ class CircularOrbitTest {
         double e       = p.getE();
         double eRatio  = FastMath.sqrt((1 - e) / (1 + e));
         double raan    = kep.getRightAscensionOfAscendingNode();
-        double paPraan = kep.getPerigeeArgument() + raan;
+        double paPraan = kep.getPeriapsisArgument() + raan;
 
         double lv = 1.1;
         // formulations for elliptic case

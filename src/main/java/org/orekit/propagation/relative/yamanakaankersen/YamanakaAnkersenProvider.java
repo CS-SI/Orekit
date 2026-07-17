@@ -128,7 +128,7 @@ public class YamanakaAnkersenProvider extends AbstractRelativeProvider {
     @Override
     public void setTargetTrueAnomaly(final double trueAnomaly) {
         final KeplerianOrbit orbit = new KeplerianOrbit(getTargetOrbit());
-        setTargetOrbit(new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(), orbit.getPerigeeArgument(),
+        setTargetOrbit(new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(), orbit.getPeriapsisArgument(),
                                           orbit.getRightAscensionOfAscendingNode(), trueAnomaly, PositionAngleType.TRUE,
                                           orbit.getFrame(), orbit.getDate(), orbit.getMu()));
     }

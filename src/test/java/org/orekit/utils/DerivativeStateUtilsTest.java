@@ -42,8 +42,8 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DerivativeStateUtilsTest {
 
@@ -109,7 +109,7 @@ class DerivativeStateUtilsTest {
                 assertEquals(1., fieldKeplerianOrbit.getA().getGradient()[0]);
                 assertEquals(1., fieldKeplerianOrbit.getE().getGradient()[1]);
                 assertEquals(1., fieldKeplerianOrbit.getI().getGradient()[2]);
-                assertEquals(1., fieldKeplerianOrbit.getPerigeeArgument().getGradient()[3]);
+                assertEquals(1., fieldKeplerianOrbit.getPeriapsisArgument().getGradient()[3]);
                 assertEquals(1., fieldKeplerianOrbit.getRightAscensionOfAscendingNode().getGradient()[4]);
                 assertEquals(1., fieldKeplerianOrbit.getAnomaly(fieldKeplerianOrbit.getCachedPositionAngleType()).getGradient()[5]);
                 break;

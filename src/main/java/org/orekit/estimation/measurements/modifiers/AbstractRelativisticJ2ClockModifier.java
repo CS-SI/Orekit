@@ -118,7 +118,7 @@ public class AbstractRelativisticJ2ClockModifier implements ParameterDriversProv
         final double orbitInclination = remoteOrbit.getI();
 
         // u = perigee argument + true anomaly
-        final double orbitU = remoteOrbit.getTrueAnomaly() + remoteOrbit.getPerigeeArgument();
+        final double orbitU = remoteOrbit.getTrueAnomaly() + remoteOrbit.getPeriapsisArgument();
         final double n = remoteOrbit.getKeplerianMeanMotion();
 
         // Returning the value of the time delay

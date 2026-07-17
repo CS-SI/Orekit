@@ -58,7 +58,7 @@ class CoellipticOrbitTest {
         Assertions.assertEquals(0.10714285714285715, chaserOrbit1.getE(), 0);
         Assertions.assertEquals(0.20125483918262432, chaserOrbit1.getI(), 0);
         Assertions.assertEquals(0.3034262039009563, chaserOrbit1.getRightAscensionOfAscendingNode(), 0);
-        Assertions.assertEquals(targetOrbit1.getPerigeeArgument(), chaserOrbit1.getPerigeeArgument(), 0);
+        Assertions.assertEquals(targetOrbit1.getPeriapsisArgument(), chaserOrbit1.getPeriapsisArgument(), 0);
         Assertions.assertEquals(-0.0019293365036251503, chaserOrbit1.getTrueAnomaly(), 0);
         Assertions.assertEquals(targetOrbit1.getMu(), chaserOrbit1.getMu(), 0);
         Assertions.assertEquals(targetOrbit1.getDate().toDouble(), chaserOrbit1.getDate().toDouble(), 0);
@@ -72,7 +72,7 @@ class CoellipticOrbitTest {
         Assertions.assertEquals(0.10714285714285715, chaserOrbit2.getE(), 0);
         Assertions.assertEquals(0.19982089120131044, chaserOrbit2.getI(), 1e-13);
         Assertions.assertEquals(0.30713712790199454, chaserOrbit2.getRightAscensionOfAscendingNode(), 1e-14);
-        Assertions.assertEquals(targetOrbit2.getPerigeeArgument(), chaserOrbit2.getPerigeeArgument(), 0);
+        Assertions.assertEquals(targetOrbit2.getPeriapsisArgument(), chaserOrbit2.getPeriapsisArgument(), 0);
         Assertions.assertEquals(-0.005566289089951616, chaserOrbit2.getTrueAnomaly(), 1e-16);
 
         // Test of the ChaserOrbit computation when 180 < theta < 270.
@@ -84,7 +84,7 @@ class CoellipticOrbitTest {
         Assertions.assertEquals(0.10714285714285715, chaserOrbit3.getE(), 0);
         Assertions.assertEquals(0.19906912003085314, chaserOrbit3.getI(), 1e-15);
         Assertions.assertEquals(0.2945329274085395, chaserOrbit3.getRightAscensionOfAscendingNode(), 0);
-        Assertions.assertEquals(targetOrbit3.getPerigeeArgument(), chaserOrbit3.getPerigeeArgument(), 0);
+        Assertions.assertEquals(targetOrbit3.getPeriapsisArgument(), chaserOrbit3.getPeriapsisArgument(), 0);
         Assertions.assertEquals(0.006786666554093778, chaserOrbit3.getTrueAnomaly(), 0);
 
         // Test of the ChaserOrbit computation when 270 < theta < 360.
@@ -96,7 +96,7 @@ class CoellipticOrbitTest {
         Assertions.assertEquals(0.10714285714285715, chaserOrbit4.getE(), 0);
         Assertions.assertEquals(0.20126610762652408, chaserOrbit4.getI(), 0);
         Assertions.assertEquals(0.29667991467832944, chaserOrbit4.getRightAscensionOfAscendingNode(), 0);
-        Assertions.assertEquals(targetOrbit4.getPerigeeArgument(), chaserOrbit4.getPerigeeArgument(), 0);
+        Assertions.assertEquals(targetOrbit4.getPeriapsisArgument(), chaserOrbit4.getPeriapsisArgument(), 0);
         Assertions.assertEquals(0.004682476087922024, chaserOrbit4.getTrueAnomaly(), 0);
     }
 
@@ -157,8 +157,8 @@ class CoellipticOrbitTest {
         Assertions.assertEquals(0.10714285714285715, chaserOrbit1.getE().getReal(), 0);
         Assertions.assertEquals(0.20125483918262432, chaserOrbit1.getI().getReal(), 0);
         Assertions.assertEquals(0.3034262039009563, chaserOrbit1.getRightAscensionOfAscendingNode().getReal(), 0);
-        Assertions.assertEquals(targetOrbit1.getPerigeeArgument().getReal(),
-                                chaserOrbit1.getPerigeeArgument().getReal(), 0);
+        Assertions.assertEquals(targetOrbit1.getPeriapsisArgument().getReal(),
+                                chaserOrbit1.getPeriapsisArgument().getReal(), 0);
         Assertions.assertEquals(-0.0019293365036251503, chaserOrbit1.getTrueAnomaly().getReal(), 0);
         Assertions.assertEquals(targetOrbit1.getMu().getReal(), chaserOrbit1.getMu().getReal(), 0);
         Assertions.assertEquals(targetOrbit1.getDate().toAbsoluteDate().toDouble(),
@@ -178,8 +178,8 @@ class CoellipticOrbitTest {
         Assertions.assertEquals(0.10714285714285715, chaserOrbit2.getE().getReal(), 0);
         Assertions.assertEquals(0.19982089120131044, chaserOrbit2.getI().getReal(), 1e-13);
         Assertions.assertEquals(0.30713712790199454, chaserOrbit2.getRightAscensionOfAscendingNode().getReal(), 1e-14);
-        Assertions.assertEquals(targetOrbit2.getPerigeeArgument().getReal(),
-                                chaserOrbit2.getPerigeeArgument().getReal(), 0);
+        Assertions.assertEquals(targetOrbit2.getPeriapsisArgument().getReal(),
+                                chaserOrbit2.getPeriapsisArgument().getReal(), 0);
         Assertions.assertEquals(-0.005566289089951616, chaserOrbit2.getTrueAnomaly().getReal(), 1e-16);
 
         // Test of the ChaserOrbit computation when 180 < theta < 270.
@@ -196,8 +196,8 @@ class CoellipticOrbitTest {
         Assertions.assertEquals(0.10714285714285715, chaserOrbit3.getE().getReal(), 0);
         Assertions.assertEquals(0.19906912003085314, chaserOrbit3.getI().getReal(), 1e-15);
         Assertions.assertEquals(0.2945329274085395, chaserOrbit3.getRightAscensionOfAscendingNode().getReal(), 0);
-        Assertions.assertEquals(targetOrbit3.getPerigeeArgument().getReal(),
-                                chaserOrbit3.getPerigeeArgument().getReal(), 0);
+        Assertions.assertEquals(targetOrbit3.getPeriapsisArgument().getReal(),
+                                chaserOrbit3.getPeriapsisArgument().getReal(), 0);
         Assertions.assertEquals(0.006786666554093778, chaserOrbit3.getTrueAnomaly().getReal(), 0);
 
         // Test of the ChaserOrbit computation when 270 < theta < 360.
@@ -214,8 +214,8 @@ class CoellipticOrbitTest {
         Assertions.assertEquals(0.10714285714285715, chaserOrbit3.getE().getReal(), 0);
         Assertions.assertEquals(0.20126610762652408, chaserOrbit4.getI().getReal(), 0);
         Assertions.assertEquals(0.29667991467832944, chaserOrbit4.getRightAscensionOfAscendingNode().getReal(), 0);
-        Assertions.assertEquals(targetOrbit4.getPerigeeArgument().getReal(),
-                                chaserOrbit4.getPerigeeArgument().getReal(), 0);
+        Assertions.assertEquals(targetOrbit4.getPeriapsisArgument().getReal(),
+                                chaserOrbit4.getPeriapsisArgument().getReal(), 0);
         Assertions.assertEquals(0.004682476087922024, chaserOrbit4.getTrueAnomaly().getReal(), 0);
     }
 

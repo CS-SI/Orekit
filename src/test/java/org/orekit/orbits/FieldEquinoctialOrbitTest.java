@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -53,9 +55,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.function.Function;
-
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 
@@ -573,9 +572,9 @@ class FieldEquinoctialOrbitTest {
                      * FastMath.abs(kep.getE().getReal()));
         Assertions.assertEquals(0.166901168553917e-03, kep.getI().getReal(), Utils.epsilonAngle
                      * FastMath.abs(kep.getI().getReal()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument().getReal()),
-                     kep.getPerigeeArgument().getReal(), Utils.epsilonTest
-                     * FastMath.abs(kep.getPerigeeArgument().getReal()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPeriapsisArgument().getReal()),
+                     kep.getPeriapsisArgument().getReal(), Utils.epsilonTest
+                     * FastMath.abs(kep.getPeriapsisArgument().getReal()));
         Assertions.assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep
                                      .getRightAscensionOfAscendingNode().getReal()), kep
                                      .getRightAscensionOfAscendingNode().getReal(), Utils.epsilonTest
@@ -691,7 +690,7 @@ class FieldEquinoctialOrbitTest {
 
         T e = p.getE();
         T eRatio = one.subtract(e).divide(e.add(1)).sqrt();
-        T paPraan = kep.getPerigeeArgument().add(
+        T paPraan = kep.getPeriapsisArgument().add(
                        kep.getRightAscensionOfAscendingNode());
 
         T lv = zero.add(1.1);
