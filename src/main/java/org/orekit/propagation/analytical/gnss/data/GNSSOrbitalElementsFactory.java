@@ -221,15 +221,15 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
      * If time of clock was not already set, it will be set to the same value as
      * time of ephemeris as a side effect
      * </p>
-     * @param toe time of ephemeris
+     * @param timeOfEphemeris time of ephemeris
      */
-    public void setTimeOfEphemeris(final GNSSDate toe) {
-        super.setDate(toe.getDate());
-        this.toe = toe;
-        setFrame(bodyFixed.getFrozenFrame(inertial, toe.getDate(), FROZEN + bodyFixed.getName()));
+    public void setTimeOfEphemeris(final GNSSDate timeOfEphemeris) {
+        super.setDate(timeOfEphemeris.getDate());
+        this.toe = timeOfEphemeris;
+        setFrame(bodyFixed.getFrozenFrame(inertial, timeOfEphemeris.getDate(), FROZEN + bodyFixed.getName()));
         if (toc == null) {
             // set time of clock too
-            toc = toe;
+            toc = timeOfEphemeris;
         }
     }
 

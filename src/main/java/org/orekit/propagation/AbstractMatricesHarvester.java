@@ -48,16 +48,16 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
      * which may be different from input and output
      * </p>
      * @param name State Transition Matrix state name
-     * @param initialStm initial State Transition Matrix ∂Y/∂I₀
-     *                   if null (which is the most frequent case), input and output
-     *                   orbit types are assumed to be identical and the matrix is
-     *                   assumed to be the 6x6 identity
+     * @param stm  initial State Transition Matrix ∂Y/∂I₀
+     *             if null (which is the most frequent case), input and output
+     *             orbit types are assumed to be identical and the matrix is
+     *             assumed to be the 6x6 identity
      */
-    protected void setInitialStm(final String name, final RealMatrix initialStm) {
+    protected void setInitialStm(final String name, final RealMatrix stm) {
         this.stmName    = name;
-        this.initialStm = initialStm == null ?
+        this.initialStm = stm == null ?
                           MatrixUtils.createRealIdentityMatrix(DEFAULT_STATE_DIMENSION) :
-                          initialStm;
+                          stm;
     }
 
     /** Set the initial columns of the Jacobians matrix with respect to parameters.

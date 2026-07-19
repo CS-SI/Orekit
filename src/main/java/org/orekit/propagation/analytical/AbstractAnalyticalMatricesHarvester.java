@@ -78,8 +78,8 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
     /** {@inheritDoc} */
     @Override
-    protected void setInitialStm(final String stmName, final RealMatrix initialStm) {
-        super.setInitialStm(stmName, initialStm);
+    protected void setInitialStm(final String stmName, final RealMatrix stm) {
+        super.setInitialStm(stmName, stm);
         this.analyticalDerivativesStm = getInitialStateTransitionMatrix().getData();
     }
 
