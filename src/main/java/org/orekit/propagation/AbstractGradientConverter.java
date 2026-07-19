@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.integration;
+package org.orekit.propagation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +31,6 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DerivativeStateUtils;
@@ -77,7 +75,7 @@ public abstract class AbstractGradientConverter {
      * @param zeroParametersState state with zero parameters
      * @since 11.2
      */
-    protected void initStates(final FieldSpacecraftState<Gradient> zeroParametersState) {
+    public void initStates(final FieldSpacecraftState<Gradient> zeroParametersState) {
         gStates.clear();
         gStates.add(zeroParametersState);
     }
@@ -138,9 +136,9 @@ public abstract class AbstractGradientConverter {
      * @return Gradient version of the state
      * @since 12.0
      */
-    protected static FieldSpacecraftState<Gradient> buildBasicGradientSpacecraftState(final SpacecraftState state,
-                                                                                      final int freeStateParameters,
-                                                                                      final AttitudeProvider provider) {
+    public static FieldSpacecraftState<Gradient> buildBasicGradientSpacecraftState(final SpacecraftState state,
+                                                                                   final int freeStateParameters,
+                                                                                   final AttitudeProvider provider) {
 
         // Derivative field
         final GradientField field =  GradientField.getField(freeStateParameters);

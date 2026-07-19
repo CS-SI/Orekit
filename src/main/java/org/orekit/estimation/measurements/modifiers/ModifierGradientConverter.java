@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AbstractGradientConverter;
+import org.orekit.propagation.AbstractGradientConverter;
 
 /**
  * Converter for states and parameters arrays.

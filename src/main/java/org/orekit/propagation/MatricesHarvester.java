@@ -29,6 +29,7 @@ import org.orekit.orbits.PositionAngleType;
  * their own way to handle them. The interface leverages these differences which are implementation details and provides
  * a higher level access to these matrices, regardless of how they were computed and stored.
  * </p>
+ * <img src="doc-files/harvesters-class-diagram.png" alt="class diagram">
  * @author Luc Maisonobe
  * @since 11.1
  */

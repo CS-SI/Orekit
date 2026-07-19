@@ -26,7 +26,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectorsProvider;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.integration.AbstractGradientConverter;
+import org.orekit.propagation.AbstractGradientConverter;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
