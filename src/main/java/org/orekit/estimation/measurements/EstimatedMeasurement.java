@@ -139,22 +139,10 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> extends Esti
     public double[] getParameterDerivatives(final ParameterDriver driver)
         throws OrekitIllegalArgumentException {
         if (driver.getNbOfValues() == 1) {
-            final TimeSpanMap<double[]> p = parametersDerivatives.get(driver);
-            if (p == null) {
-                final StringBuilder builder = new StringBuilder();
-                for (final Map.Entry<ParameterDriver, TimeSpanMap<double[]>> entry : parametersDerivatives.entrySet()) {
-                    if (builder.length() > 0) {
-                        builder.append(",  ");
-                    }
-                    builder.append(entry.getKey());
-                }
-                throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                                         driver,
-                                                         builder.length() > 0 ? builder.toString() : " <none>");
-            }
-            return p.get(AbsoluteDate.ARBITRARY_EPOCH);
+            return getParameterDerivatives(driver, AbsoluteDate.ARBITRARY_EPOCH);
         } else {
-            throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, driver.getName(), "getParameterDerivatives(driver, date)");
+            throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES,
+                                                  driver.getName(), "getParameterDerivatives(driver, date)");
         }
     }
 
@@ -172,14 +160,14 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> extends Esti
         if (p == null) {
             final StringBuilder builder = new StringBuilder();
             for (final Map.Entry<ParameterDriver, TimeSpanMap<double[]>> entry : parametersDerivatives.entrySet()) {
-                if (builder.length() > 0) {
+                if (!builder.isEmpty()) {
                     builder.append(", ");
                 }
                 builder.append(entry.getKey());
             }
             throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
                                                      driver,
-                                                     builder.length() > 0 ? builder.toString() : "<none>");
+                                                     builder.isEmpty() ? "<none>" : builder.toString());
         }
         return p.get(date);
     }
