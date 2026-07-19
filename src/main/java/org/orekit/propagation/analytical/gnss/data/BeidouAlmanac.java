@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
@@ -63,7 +62,7 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
      * @param af1        first order clock correction (s/s)
      * @param af2        second order clock correction (s/s²)
      * @param tgd        group delay differential TGD for L1-L2 correction
-     * @paaram toc       time of clock
+     * @param toc        time of clock
      * @param health     health status
      */
     public BeidouAlmanac(final TimeScales timeScales, final int prn,

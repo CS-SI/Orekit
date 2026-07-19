@@ -199,15 +199,15 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      */
     public RealMatrix getB3(final SpacecraftState state) {
 
-        final List<String> columnsNames = getJacobiansColumnsNames();
+        final List<String> names = getJacobiansColumnsNames();
 
-        if (columnsNames == null || columnsNames.isEmpty()) {
+        if (names == null || names.isEmpty()) {
             return null;
         }
 
-        final RealMatrix dYdP = MatrixUtils.createRealMatrix(getStateDimension(), columnsNames.size());
-        for (int j = 0; j < columnsNames.size(); j++) {
-            dYdP.setColumn(j, state.getAdditionalState(columnsNames.get(j)));
+        final RealMatrix dYdP = MatrixUtils.createRealMatrix(getStateDimension(), names.size());
+        for (int j = 0; j < names.size(); j++) {
+            dYdP.setColumn(j, state.getAdditionalState(names.get(j)));
         }
 
         return dYdP;

@@ -350,13 +350,13 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
      * If time of ephemeris was not already set, it will be set to the same value as
      * time of clock as a side effect
      * </p>
-     * @param toc time of clock
+     * @param timeOfClock time of clock
      */
-    public void setTimeOfClock(final GNSSDate toc) {
-        this.toc = toc;
+    public void setTimeOfClock(final GNSSDate timeOfClock) {
+        this.toc = timeOfClock;
         if (toe == null) {
             // set time of ephemeris too
-            setTimeOfEphemeris(toc);
+            setTimeOfEphemeris(timeOfClock);
         }
     }
 

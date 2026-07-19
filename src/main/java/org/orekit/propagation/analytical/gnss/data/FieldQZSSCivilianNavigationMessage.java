@@ -19,7 +19,6 @@ package org.orekit.propagation.analytical.gnss.data;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.time.FieldGNSSDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 import java.util.function.Function;

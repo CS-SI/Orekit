@@ -47,14 +47,14 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
      * {@link PositionAngleType position angle} that will be used by propagator,
      * which may be different from input and output
      * </p>
-     * @param stmName State Transition Matrix state name
+     * @param name State Transition Matrix state name
      * @param initialStm initial State Transition Matrix ∂Y/∂I₀
      *                   if null (which is the most frequent case), input and output
      *                   orbit types are assumed to be identical and the matrix is
      *                   assumed to be the 6x6 identity
      */
-    protected void setInitialStm(final String stmName, final RealMatrix initialStm) {
-        this.stmName    = stmName;
+    protected void setInitialStm(final String name, final RealMatrix initialStm) {
+        this.stmName    = name;
         this.initialStm = initialStm == null ?
                           MatrixUtils.createRealIdentityMatrix(DEFAULT_STATE_DIMENSION) :
                           initialStm;
