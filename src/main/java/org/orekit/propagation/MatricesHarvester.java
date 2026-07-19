@@ -49,14 +49,17 @@ public interface MatricesHarvester {
 
     /** Extract state transition matrix from state.
      * <p>
-     * Some propagators use different orbit types for initial orbit and propagated orbit.
-     * Typical examples are TLE or specialized GNSS propagators that use Keplerian-like
-     * input parameters but produce Cartesian states. This method is aware of such parameters
-     * change, so it does not always compute ∂Y/∂Y₀ with the same representation for the current
-     * propagated state Y and the initial state Y₀. For some propagators, it will compute ∂Y/∂I₀
-     * were the current state Y and the initial state I₀ have different types. A side effect
-     * is that the initial State Transition Matrix (i.e. the one obtained when propagation
-     * time is zero) may be different from identity.
+     * Some propagators use an orbit type B as the propagator builder parameter, and
+     * a different type Y for the propagated orbit. Typical examples are TLE or specialized
+     * GNSS propagators that use Keplerian-like builder parameters but produce Cartesian states.
+     * This method is <em>not</em> aware of such parameters change, so it always computes dY/dY₀
+     * with the same representation for the current propagated state Y and the initial state Y₀.
+     * </p>
+     * <p>
+     * In order to compute dY/dB₀ where the current propagated state Y and the initial
+     * building state B₀ have different types, one should compute dY/dB₀ = dY/dY₀ dY₀/dB₀,
+     * where the first factor dY/dY₀ is given by this method and the second factor dY₀/dB₀ is
+     * given by the method {@link #getInitialStateJacobianVsBuilderParameters()}.
      * </p>
      * @param state spacecraft state
      * @return state transition matrix, with semantics consistent with propagation,
@@ -64,6 +67,22 @@ public interface MatricesHarvester {
      * {@link org.orekit.orbits.OrbitType orbit type}.
      */
     RealMatrix getStateTransitionMatrix(SpacecraftState state);
+
+    /** Get transformation Jacobian between initial builder parameters and initial propagated state.
+     * <p>
+     * Some propagators use an orbit type B as the propagator builder parameter, and
+     * a different type Y for the propagated orbit. Typical examples are TLE or specialized
+     * GNSS propagators that use Keplerian-like builder parameters but produce Cartesian states.
+     * This method allows to convert between these types.
+     * </p>
+     * @return jacobian matrix dY₀/dB₀ where Y₀ is initial propagated state and I₀
+     * is initial state as configured by the propagator builder, or null if Y₀ and B₀ have
+     * the same type (in order to avoid a matrix multiplication)
+     * @since 14.0
+     */
+    default RealMatrix getInitialStateJacobianVsBuilderParameters() {
+        return null;
+    }
 
     /** Get the Jacobian with respect to propagation parameters.
      * @param state spacecraft state

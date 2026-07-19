@@ -466,12 +466,14 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
                     // mass was included in STM propagation, removed it now
                     dYdY0 = dYdY0.getSubMatrix(0, 5, 0, 5);
                 }
-                final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
-                for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
+                final RealMatrix dMdY0  = dMdY.multiply(dYdY0);
+                final RealMatrix dY0dB0 = harvesters[p].getInitialStateJacobianVsBuilderParameters();
+                final RealMatrix dMdB0  = dY0dB0 == null ? dMdY0 : dMdY0.multiply(dY0dB0);
+                for (int i = 0; i < dMdB0.getRowDimension(); ++i) {
                     for (int j = orbitsStartColumns[p]; j < orbitsEndColumns[p]; ++j) {
                         final ParameterDriver driver =
                                         selectedOrbitalDrivers.getDrivers().get(j - orbitsStartColumns[p]);
-                        final double partial = dMdY0.getEntry(i, orbitsJacobianColumns[j]);
+                        final double partial = dMdB0.getEntry(i, orbitsJacobianColumns[j]);
                         jacobian.setEntry(index + i, j,
                                           weight[i] * partial / sigma[i] * driver.getScale());
                     }

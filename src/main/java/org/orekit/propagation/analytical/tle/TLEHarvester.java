@@ -16,8 +16,12 @@
  */
 package org.orekit.propagation.analytical.tle;
 
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -54,6 +58,30 @@ class TLEHarvester extends AbstractAnalyticalMatricesHarvester {
         this.propagator = propagator;
         setInitialStm(stmName, initialStm);
         setInitialJacobianColumns(initialJacobianColumns);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getInitialStateJacobianVsBuilderParameters() {
+
+        // set up initial state transition matrix from orbit types conversion
+        // builder types are almost Keplerian parameter (first one is mean motion instead of semi-major axis)
+        // propagated types are Cartesian
+        final SpacecraftState state = propagator.getInitialState();
+        final KeplerianOrbit  orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(state.getOrbit());
+        final double[][] jacobian = new double[6][6];
+        orbit.getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
+
+        // the first parameter driver for TLE is mean motion, not semi-major axis
+        // the first column should therefor be dPx/dn, dPy/dn, dPz/dn, dVx/dn, dVy/dn, dVz/dn
+        // instead of dPx/da, dPy/da, dPz/da, dVx/da, dVy/da, dVz/da
+        final double dAdN = -2 * orbit.getA() / (3 * orbit.getKeplerianMeanMotion());
+        for (int i = 0; i < jacobian.length; i++) {
+            jacobian[i][0] *= dAdN;
+        }
+
+        return MatrixUtils.createRealMatrix(jacobian);
+
     }
 
     /** {@inheritDoc} */
