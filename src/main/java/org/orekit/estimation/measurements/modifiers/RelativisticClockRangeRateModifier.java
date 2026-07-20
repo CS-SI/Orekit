@@ -16,15 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical range-rate measurement with relativistic frequency deviation.
  * It works only with orbit-based states.
@@ -47,14 +43,7 @@ public class RelativisticClockRangeRateModifier extends AbstractRelativisticCloc
      * @param gm gravitational constant for main body in signal path vicinity.
      */
     public RelativisticClockRangeRateModifier(final double gm) {
-        super();
         this.gm = gm;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
     }
 
     /** {@inheritDoc} */

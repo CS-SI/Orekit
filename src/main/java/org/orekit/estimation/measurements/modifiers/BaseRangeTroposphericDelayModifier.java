@@ -34,10 +34,10 @@ import org.orekit.utils.TrackingCoordinates;
 /** Base class modifying theoretical range measurements with tropospheric delay.
  * The effect of tropospheric correction on the range is directly computed
  * through the computation of the tropospheric delay.
- *
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
- *
+ * </p>
  * @author Joris Olympio
  * @since 11.2
  */

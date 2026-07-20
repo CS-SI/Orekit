@@ -20,10 +20,6 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
-
-import java.util.Collections;
-import java.util.List;
 
 /** Class modifying theoretical range-rate measurement with relativistic frequency deviation.
  * <p>
@@ -47,14 +43,7 @@ public abstract class AbstractRelativisticClockOnBoardRangeRateModifier<T extend
      * @param gm gravitational constant for main body in signal path vicinity.
      */
     protected AbstractRelativisticClockOnBoardRangeRateModifier(final double gm) {
-        super();
         this.gm = gm;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getEffectName() {
-        return "clock relativity";
     }
 
     /** Get gravitational constant for main body in signal path vicinity.
@@ -62,12 +51,6 @@ public abstract class AbstractRelativisticClockOnBoardRangeRateModifier<T extend
      */
     protected double getGm() {
         return gm;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
     }
 
     /** Apply relativistic frequency deviation.

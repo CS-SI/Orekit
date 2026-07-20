@@ -63,9 +63,9 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         tropoModel = model;
     }
 
-/** {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-        public String getEffectName() {
+    public String getEffectName() {
         return "troposphere";
     }
 
