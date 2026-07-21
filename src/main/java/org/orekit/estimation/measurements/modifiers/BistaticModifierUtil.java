@@ -20,8 +20,8 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
@@ -121,35 +121,31 @@ class BistaticModifierUtil {
 
         }
 
-        for (final ParameterDriver driver : emitter.getParametersDrivers()) {
-            if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        modifyParameterDerivatives(estimated, emitter, modelEffect, state);
 
-                    // update estimated derivatives with derivative of the modification wrt emitter parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(emitter, state),
-                                                                         3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
-            }
-        }
-
-        for (final ParameterDriver driver : receiver.getParametersDrivers()) {
-            if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    // update estimated derivatives with derivative of the modification wrt receiver parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(receiver, state),
-                                                                         3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
-            }
-        }
+        modifyParameterDerivatives(estimated, receiver, modelEffect, state);
 
         // modify the value
         modify(estimated, emitter, receiver, modelEffect, modifier);
 
+    }
+
+    private static <T extends ObservedMeasurement<T>> void modifyParameterDerivatives(final EstimatedMeasurement<T> estimated,
+                                                                                      final Observer observer,
+                                                                                      final ParametricModelEffect modelEffect,
+                                                                                      final SpacecraftState state) {
+        for (final ParameterDriver driver : observer.getParametersDrivers()) {
+            if (driver.isSelected()) {
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    // update estimated derivatives with derivative of the modification wrt parameters
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(observer, state),
+                                                                         3, 10.0 * driver.getScale()).value(driver, state.getDate());
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                }
+            }
+        }
     }
 
 }

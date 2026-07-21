@@ -67,12 +67,6 @@ public class ObserverSatellite extends AbstractParticipant implements Observer {
 
     /** {@inheritDoc} */
     @Override
-    public final boolean isSpaceBased() {
-        return true;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public final PVCoordinatesProvider getPVCoordinatesProvider() {
         return pvCoordsProvider;
     }

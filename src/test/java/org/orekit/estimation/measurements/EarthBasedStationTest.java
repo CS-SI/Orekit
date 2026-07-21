@@ -287,7 +287,7 @@ class EarthBasedStationTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertFalse(changed.isSpaceBased());
+        Assertions.assertInstanceOf(GroundObserver.class, changed);
         Assertions.assertEquals(7,        normalizedCovariances.getRowDimension());
         Assertions.assertEquals(7,        normalizedCovariances.getColumnDimension());
         Assertions.assertEquals(7,        physicalCovariances.getRowDimension());
