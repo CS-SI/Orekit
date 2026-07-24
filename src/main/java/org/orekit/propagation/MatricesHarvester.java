@@ -76,9 +76,9 @@ public interface MatricesHarvester {
      * GNSS propagators that use Keplerian-like builder parameters but produce Cartesian states.
      * This method allows to convert between these types.
      * </p>
-     * @return jacobian matrix dY₀/dB₀ where Y₀ is initial propagated state and I₀
+     * @return jacobian matrix dY₀/dB₀ where Y₀ is initial propagated state and B₀
      * is initial state as configured by the propagator builder, or null if Y₀ and B₀ have
-     * the same type (in order to avoid a matrix multiplication)
+     * the same type
      * @since 14.0
      */
     default RealMatrix getInitialStateJacobianVsBuilderParameters() {

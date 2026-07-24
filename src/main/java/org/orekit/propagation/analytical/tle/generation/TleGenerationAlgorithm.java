@@ -177,16 +177,17 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
     @Override
     public TLE createFromDrivers() {
 
+        final List<DelegatingDriver> drivers = getOrbitalParametersDrivers().getDrivers();
+
         // adjust revolution number
         // as neither SDP4 nor SGP4 use mean motion derivatives, we intentionally ignore them here
         final double latArg0 =
-            MathUtils.normalizeAngle(templateTLE.getPerigeeArgument() + templateTLE.getMeanAnomaly(),
+            MathUtils.normalizeAngle(drivers.get(3).getValue() + drivers.get(5).getValue(),
                                      FastMath.PI);
         final double deltaT   = getDate().durationFrom(templateTLE.getDate());
-        final double latArg1  = latArg0 + deltaT * templateTLE.getMeanMotion();
+        final double latArg1  = latArg0 + deltaT * drivers.get(0).getValue();
         final int    deltaRev = (int) FastMath.floor(latArg1 / MathUtils.TWO_PI);
 
-        final List<DelegatingDriver> drivers = getOrbitalParametersDrivers().getDrivers();
         return new TLE(templateTLE.getSatelliteNumber(), templateTLE.getClassification(),
                        templateTLE.getLaunchYear(), templateTLE.getLaunchNumber(), templateTLE.getLaunchPiece(),
                        templateTLE.getEphemerisType(),

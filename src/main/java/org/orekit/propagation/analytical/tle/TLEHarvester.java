@@ -16,15 +16,16 @@
  */
 package org.orekit.propagation.analytical.tle;
 
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Harvester between two-dimensional Jacobian matrices and
  * one-dimensional {@link TLEPropagator}.
@@ -64,23 +65,41 @@ class TLEHarvester extends AbstractAnalyticalMatricesHarvester {
     @Override
     public RealMatrix getInitialStateJacobianVsBuilderParameters() {
 
-        // set up initial state transition matrix from orbit types conversion
-        // builder types are almost Keplerian parameter (first one is mean motion instead of semi-major axis)
-        // propagated types are Cartesian
-        final SpacecraftState state = propagator.getInitialState();
-        final KeplerianOrbit  orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(state.getOrbit());
-        final double[][] jacobian = new double[6][6];
-        orbit.getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
+        // create gradient TLE with respect to build parameters
+        final GradientField field = GradientField.getField(DEFAULT_STATE_DIMENSION);
+        final TLE tle = propagator.getTLE();
+        final FieldTLE<Gradient> gTLE =
+            new FieldTLE<>(tle.getSatelliteNumber(), tle.getClassification(),
+                           tle.getLaunchYear(), tle.getLaunchNumber(), tle.getLaunchPiece(),
+                           tle.getEphemerisType(), tle.getElementNumber(),
+                           new FieldAbsoluteDate<>(field, tle.getDate()),
+                           Gradient.variable(DEFAULT_STATE_DIMENSION, 0, tle.getMeanMotion()),
+                           Gradient.constant(DEFAULT_STATE_DIMENSION,    tle.getMeanMotionFirstDerivative()),
+                           Gradient.constant(DEFAULT_STATE_DIMENSION,    tle.getMeanMotionSecondDerivative()),
+                           Gradient.variable(DEFAULT_STATE_DIMENSION, 1, tle.getE()),
+                           Gradient.variable(DEFAULT_STATE_DIMENSION, 2, tle.getI()),
+                           Gradient.variable(DEFAULT_STATE_DIMENSION, 3, tle.getPerigeeArgument()),
+                           Gradient.variable(DEFAULT_STATE_DIMENSION, 4, tle.getRaan()),
+                           Gradient.variable(DEFAULT_STATE_DIMENSION, 5, tle.getMeanAnomaly()),
+                           tle.getRevolutionNumberAtEpoch(),
+                           Gradient.constant(DEFAULT_STATE_DIMENSION,    tle.getBStar()),
+                           tle.getUtc());
 
-        // the first parameter driver for TLE is mean motion, not semi-major axis
-        // the first column should therefor be dPx/dn, dPy/dn, dPz/dn, dVx/dn, dVy/dn, dVz/dn
-        // instead of dPx/da, dPy/da, dPz/da, dVx/da, dVy/da, dVz/da
-        final double dAdN = -2 * orbit.getA() / (3 * orbit.getKeplerianMeanMotion());
-        for (int i = 0; i < jacobian.length; i++) {
-            jacobian[i][0] *= dAdN;
-        }
+        // evaluate initial Cartesian state
+        final TimeStampedFieldPVCoordinates<Gradient> pv =
+            FieldTLEPropagator.selectExtrapolator(gTLE).getBaseInitialState().getPVCoordinates();
 
-        return MatrixUtils.createRealMatrix(jacobian);
+        // create Jacobian matrix
+        final RealMatrix jacobian =
+            MatrixUtils.createRealMatrix(DEFAULT_STATE_DIMENSION, DEFAULT_STATE_DIMENSION);
+        jacobian.setRow(0, pv.getPosition().getX().getGradient());
+        jacobian.setRow(1, pv.getPosition().getY().getGradient());
+        jacobian.setRow(2, pv.getPosition().getZ().getGradient());
+        jacobian.setRow(3, pv.getVelocity().getX().getGradient());
+        jacobian.setRow(4, pv.getVelocity().getY().getGradient());
+        jacobian.setRow(5, pv.getVelocity().getZ().getGradient());
+
+        return jacobian;
 
     }
 
