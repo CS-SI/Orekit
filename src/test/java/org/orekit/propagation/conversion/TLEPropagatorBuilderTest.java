@@ -123,6 +123,12 @@ public class TLEPropagatorBuilderTest {
         }
 
         @Override
+        public TLE createFromDrivers() {
+            stateCalls++;
+            return delegate.createFromDrivers();
+        }
+
+        @Override
         public TLE generate(final SpacecraftState state, final TLE templateTLE) {
             stateCalls++;
             return delegate.generate(state, templateTLE);

@@ -105,9 +105,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                            final ODEIntegratorBuilder builder,
                                                            final double positionScale) {
-        TLEPropagatorBuilder tb = new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(templateTLE));
-        tb.getPropagationParametersDrivers().getDrivers().getFirst().setSelected(true);
-        return tb;
+        return new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(templateTLE));
     }
 
     /** {@inheritDoc} */

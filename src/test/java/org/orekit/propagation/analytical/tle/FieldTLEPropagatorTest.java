@@ -355,6 +355,12 @@ public class FieldTLEPropagatorTest {
         }
 
         @Override
+        public TLE createFromDrivers() {
+            count++;
+            return delegate.createFromDrivers();
+        }
+
+        @Override
         public TLE generate(final SpacecraftState state, final TLE previous) {
             count++;
             return delegate.generate(state, previous);
