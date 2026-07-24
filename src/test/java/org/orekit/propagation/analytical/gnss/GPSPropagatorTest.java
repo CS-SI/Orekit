@@ -400,6 +400,7 @@ class GPSPropagatorTest {
                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(7);
         factory.setTimeOfEphemeris(new GNSSDate(0, 288000, SatelliteSystem.GPS));
+        factory.setTransmissionTime(new GNSSDate(0, 288000, SatelliteSystem.GPS));
         final double sqrtA = 5153.599830627441;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS)
             .setValue(sqrtA * sqrtA);
@@ -515,6 +516,7 @@ class GPSPropagatorTest {
                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(7);
         factory.setTimeOfEphemeris(new GNSSDate(0, 288000, SatelliteSystem.GPS));
+        factory.setTransmissionTime(new GNSSDate(0, 288000, SatelliteSystem.GPS));
         final double sqrtA = 5153.599830627441;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS)
             .setValue(sqrtA * sqrtA);

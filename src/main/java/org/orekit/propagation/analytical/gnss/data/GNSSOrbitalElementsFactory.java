@@ -137,11 +137,11 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
             @Override
             public void valueChanged(final double previousValue, final ParameterDriver driver,
                                      final AbsoluteDate date) {
-                // the check for null toe allows to set u a dummy week number
+                // the check for null toe allows to set up a dummy week number
                 // in case secondsInWeek is set *before* week is set
-                // (this can happen when parsing YUMA almanach for example)
+                // (this can happen when parsing YUMA almanac for example)
                 final int weekNumber = toe == null ? 0 : toe.getWeekNumber();
-                setTimeOfEphemeris(new GNSSDate(weekNumber, driver.getValue(), system, timeScales));
+                setTimeOfEphemerisNoRecurse(weekNumber, driver.getValue());
             }
 
             /** {@inheritDoc} */
@@ -224,12 +224,25 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
      * @param timeOfEphemeris time of ephemeris
      */
     public void setTimeOfEphemeris(final GNSSDate timeOfEphemeris) {
-        super.setDate(timeOfEphemeris.getDate());
         this.toe = timeOfEphemeris;
-        setFrame(bodyFixed.getFrozenFrame(inertial, timeOfEphemeris.getDate(), FROZEN + bodyFixed.getName()));
+        getTimeDriver().setValue(timeOfEphemeris.getSecondsInWeek());
+    }
+
+    /** Set the time of ephemeris.
+     * <p>
+     * If time of clock was not already set, it will be set to the same value as
+     * time of ephemeris as a side effect
+     * </p>
+     * @param weekNumber week number
+     * @param secondsInWeek seconds in week
+     */
+    private void setTimeOfEphemerisNoRecurse(final int weekNumber, final double secondsInWeek) {
+        toe = new GNSSDate(weekNumber, secondsInWeek, system, timeScales);
+        super.setDate(toe.getDate());
+        setFrame(bodyFixed.getFrozenFrame(inertial, toe.getDate(), FROZEN + bodyFixed.getName()));
         if (toc == null) {
             // set time of clock too
-            toc = timeOfEphemeris;
+            toc = toe;
         }
     }
 
@@ -242,6 +255,7 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
 
     /** Get driver for reference time of the GNSS orbit as a duration from week start.
      * @return driver for reference time of the GNSS orbit (s)
+     * @see #getTimeOfEphemeris()
      */
     public ParameterDriver getTimeDriver() {
         return driversFactory.getTimeDriver();
