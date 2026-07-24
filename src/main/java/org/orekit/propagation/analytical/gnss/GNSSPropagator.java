@@ -244,7 +244,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
                                                         final DoubleArrayDictionary initialJacobianColumns) {
 
         // Create the harvester
-        final GnssHarvester harvester = new GnssHarvester(this, stmName, initialStm, initialJacobianColumns);
+        final GnssHarvester<O> harvester = new GnssHarvester<>(this, stmName, initialStm, initialJacobianColumns);
 
         // Update the list of additional state provider
         addAdditionalDataProvider(harvester);

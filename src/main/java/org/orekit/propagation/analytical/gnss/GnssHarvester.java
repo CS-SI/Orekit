@@ -16,24 +16,29 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /**
  * Harvester between two-dimensional Jacobian matrices and
  * one-dimensional {@link GNSSPropagator}.
  *
+ * @param <O> type of the orbital elements
  * @author Luc Maisonobe
  * @since 13.0
  */
-class GnssHarvester extends AbstractAnalyticalMatricesHarvester {
+class GnssHarvester<O extends GNSSOrbitalElements<O>> extends AbstractAnalyticalMatricesHarvester {
 
     /** Propagator bound to this harvester. */
-    private final GNSSPropagator<?> propagator;
+    private final GNSSPropagator<O> propagator;
 
     /** Simple constructor.
      * <p>
@@ -50,7 +55,7 @@ class GnssHarvester extends AbstractAnalyticalMatricesHarvester {
      * if null or if some selected parameters are missing from the dictionary, the corresponding
      * initial column is assumed to be 0
      */
-    GnssHarvester(final GNSSPropagator<?> propagator, final String stmName,
+    GnssHarvester(final GNSSPropagator<O> propagator, final String stmName,
                   final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
         super(propagator);
         this.propagator = propagator;
@@ -63,6 +68,30 @@ class GnssHarvester extends AbstractAnalyticalMatricesHarvester {
     public OrbitType getOrbitType() {
         // since 14.0, GNSS propagators work in Keplerian elements
         return OrbitType.KEPLERIAN;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getInitialStateJacobianVsBuilderParameters() {
+
+        // get gradient PV with respect to build (Keplerian) parameters
+        final TimeStampedFieldPVCoordinates<Gradient> pv = getGradientConverter().
+                                                           getPropagator().
+                                                           getBaseInitialState().
+                                                           getPVCoordinates();
+
+        // create Jacobian matrix
+        final RealMatrix jacobian =
+            MatrixUtils.createRealMatrix(DEFAULT_STATE_DIMENSION, DEFAULT_STATE_DIMENSION);
+        jacobian.setRow(0, pv.getPosition().getX().getGradient());
+        jacobian.setRow(1, pv.getPosition().getY().getGradient());
+        jacobian.setRow(2, pv.getPosition().getZ().getGradient());
+        jacobian.setRow(3, pv.getVelocity().getX().getGradient());
+        jacobian.setRow(4, pv.getVelocity().getY().getGradient());
+        jacobian.setRow(5, pv.getVelocity().getZ().getGradient());
+
+        return jacobian;
+
     }
 
     /** {@inheritDoc} */
