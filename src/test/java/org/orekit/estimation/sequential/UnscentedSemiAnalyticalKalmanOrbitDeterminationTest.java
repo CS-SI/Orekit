@@ -191,10 +191,9 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
      * Initialize the Position/Velocity observations.
      * @param fileName measurement file name
      * @return the ephemeris contained in the input file
-     * @throws IOException if observations file cannot be read properly
      * @throws URISyntaxException if URI syntax is wrong
      */
-    private CPFEphemeris initializeObservations(final String fileName) throws URISyntaxException, IOException {
+    private CPFEphemeris initializeObservations(final String fileName) throws URISyntaxException {
 
         // Input in tutorial resources directory
         final String inputPath = UnscentedSemiAnalyticalKalmanOrbitDeterminationTest.class.getClassLoader().
