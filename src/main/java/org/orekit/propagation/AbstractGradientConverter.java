@@ -27,20 +27,17 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.PositionAngleBased;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DerivativeStateUtils;
-import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** Converter for states and parameters arrays.
@@ -85,24 +82,21 @@ public abstract class AbstractGradientConverter {
      * @param freeParameters total number of free parameters in the gradient
      * @return extended scalar
      */
-    protected Gradient extend(final Gradient original, final int freeParameters) {
+    private Gradient extend(final Gradient original, final int freeParameters) {
         final double[] originalDerivatives = original.getGradient();
         final double[] extendedDerivatives = new double[freeParameters];
         System.arraycopy(originalDerivatives, 0, extendedDerivatives, 0, originalDerivatives.length);
         return new Gradient(original.getValue(), extendedDerivatives);
     }
 
-    /**
-     * Add zero derivatives.
-     *
-     * @param original       original date
+    /** Add zero derivatives.
+     * @param original original date
      * @param freeParameters total number of free parameters in the gradient
      * @return extended date
      */
-    protected FieldAbsoluteDate<Gradient> extend(final FieldAbsoluteDate<Gradient> original, final int freeParameters) {
+    private FieldAbsoluteDate<Gradient> extend(final FieldAbsoluteDate<Gradient> original, final int freeParameters) {
         final AbsoluteDate date = original.toAbsoluteDate();
-        final Gradient gradient = original.durationFrom(date);
-        return new FieldAbsoluteDate<>(date, extend(gradient, freeParameters));
+        return new FieldAbsoluteDate<>(date, extend(original.durationFrom(date), freeParameters));
     }
 
     /** Add zero derivatives.
@@ -110,7 +104,7 @@ public abstract class AbstractGradientConverter {
      * @param freeParameters total number of free parameters in the gradient
      * @return extended vector
      */
-    protected FieldVector3D<Gradient> extend(final FieldVector3D<Gradient> original, final int freeParameters) {
+    private FieldVector3D<Gradient> extend(final FieldVector3D<Gradient> original, final int freeParameters) {
         return new FieldVector3D<>(extend(original.getX(), freeParameters),
                                    extend(original.getY(), freeParameters),
                                    extend(original.getZ(), freeParameters));
@@ -121,12 +115,90 @@ public abstract class AbstractGradientConverter {
      * @param freeParameters total number of free parameters in the gradient
      * @return extended rotation
      */
-    protected FieldRotation<Gradient> extend(final FieldRotation<Gradient> original, final int freeParameters) {
+    private FieldRotation<Gradient> extend(final FieldRotation<Gradient> original, final int freeParameters) {
         return new FieldRotation<>(extend(original.getQ0(), freeParameters),
                                    extend(original.getQ1(), freeParameters),
                                    extend(original.getQ2(), freeParameters),
                                    extend(original.getQ3(), freeParameters),
                                    false);
+    }
+
+    /** Add zero derivatives.
+     * @param original original angular coordinates
+     * @param freeParameters total number of free parameters in the gradient
+     * @return extended angular coordinates
+     */
+    private TimeStampedFieldAngularCoordinates<Gradient> extend(final TimeStampedFieldAngularCoordinates<Gradient> original,
+                                                                final int freeParameters) {
+            return new TimeStampedFieldAngularCoordinates<>(extend(original.getDate(), freeParameters),
+                                                            extend(original.getRotation(), freeParameters),
+                                                            extend(original.getRotationRate(), freeParameters),
+                                                            extend(original.getRotationAcceleration(), freeParameters));
+
+    }
+
+    /** Add zero derivatives.
+     * @param original original attitude
+     * @param freeParameters total number of free parameters in the gradient
+     * @return extended rotation
+     */
+    private FieldAttitude<Gradient> extend(final FieldAttitude<Gradient> original, final int freeParameters) {
+            return new FieldAttitude<>(original.getReferenceFrame(),
+                                       extend(original.getOrientation(), freeParameters));
+    }
+
+    /** Add zero derivatives.
+     * @param orbit original orbit
+     * @param freeParameters number of free parameters
+     * @return gradient orbit
+     * @since 14.0
+     */
+    private FieldOrbit<Gradient> extend(final FieldOrbit<Gradient> orbit, final int freeParameters) {
+
+        final PositionAngleType positionAngleType = orbit instanceof PositionAngleBased<?> pab ?
+                                                    pab.getCachedPositionAngleType() :
+                                                    PositionAngleType.MEAN;
+
+        // original state
+        final Gradient[] originalState = new Gradient[6];
+        orbit.getType().mapOrbitToArray(orbit, positionAngleType, originalState, null);
+
+        // extended state
+        final Gradient[] extendedState = new Gradient[originalState.length];
+        for (int i = 0; i < originalState.length; i++) {
+            extendedState[i] = extend(originalState[i], freeParameters);
+        }
+
+        return orbit.getType().mapArrayToOrbit(extendedState, null, positionAngleType,
+                                               extend(orbit.getDate(), freeParameters),
+                                               extend(orbit.getMu(), freeParameters),
+                                               orbit.getFrame());
+
+    }
+
+    /** Add zero derivatives.
+     * @param pv original Cartesian coordinates
+     * @param freeParameters number of free parameters
+     * @return gradient Cartesian coordinates
+     * @since 14.0
+     */
+    private FieldPVCoordinates<Gradient> extend(final FieldPVCoordinates<Gradient> pv, final int freeParameters) {
+        return new FieldPVCoordinates<>(extend(pv.getPosition(),     freeParameters),
+                                        extend(pv.getVelocity(),     freeParameters),
+                                        extend(pv.getAcceleration(), freeParameters));
+    }
+
+    /** Add zero derivatives.
+     * @param apv original Cartesian coordinates
+     * @param freeParameters number of free parameters
+     * @return gradient Cartesian coordinates
+     * @since 14.0
+     */
+    private FieldAbsolutePVCoordinates<Gradient> extend(final FieldAbsolutePVCoordinates<Gradient> apv,
+                                                        final int freeParameters) {
+        return new FieldAbsolutePVCoordinates<>(apv.getFrame(),
+                                                extend(apv.getDate(), freeParameters),
+                                                extend(apv.getPVCoordinates(), freeParameters));
     }
 
     /** Process a state into a Gradient version without force model parameter.
@@ -141,7 +213,7 @@ public abstract class AbstractGradientConverter {
                                                                                    final AttitudeProvider provider) {
 
         // Derivative field
-        final GradientField field =  GradientField.getField(freeStateParameters);
+        final GradientField field = GradientField.getField(freeStateParameters);
 
         if (state.isOrbitDefined()) {
             final CartesianOrbit cartesianOrbit = (CartesianOrbit) OrbitType.CARTESIAN.convertType(state.getOrbit());
@@ -178,59 +250,20 @@ public abstract class AbstractGradientConverter {
             // we need to create the state
             final int freeParameters = freeStateParameters + nbParams;
             final FieldSpacecraftState<Gradient> s0 = gStates.getFirst();
-            final AbsoluteDate date = s0.getDate().toAbsoluteDate();
 
             // attitude
-            final FieldAngularCoordinates<Gradient> ac0 = s0.getAttitude().getOrientation();
-            final FieldAttitude<Gradient> gAttitude =
-                    new FieldAttitude<>(s0.getAttitude().getReferenceFrame(),
-                            new TimeStampedFieldAngularCoordinates<>(date,
-                                    extend(ac0.getRotation(), freeParameters),
-                                    extend(ac0.getRotationRate(), freeParameters),
-                                    extend(ac0.getRotationAcceleration(), freeParameters)));
+            final FieldAttitude<Gradient> gAttitude = extend(s0.getAttitude(), freeParameters);
+
+            // orbit or absolute position-velocity coordinates
+            final FieldSpacecraftState<Gradient> spacecraftState =
+                s0.isOrbitDefined() ?
+                new FieldSpacecraftState<>(extend(s0.getOrbit(), freeParameters), gAttitude) :
+                new FieldSpacecraftState<>(extend(s0.getAbsPVA(), freeParameters), gAttitude);
 
             // mass
             final Gradient gMass = extend(s0.getMass(), freeParameters);
 
-            // orbit or absolute position-velocity coordinates
-            final FieldPVCoordinates<Gradient> pv0 = s0.getPVCoordinates();
-            final TimeStampedFieldPVCoordinates<Gradient> timeStampedFieldPVCoordinates = new TimeStampedFieldPVCoordinates<>(
-                    date,
-                    extend(pv0.getPosition(),     freeParameters),
-                    extend(pv0.getVelocity(),     freeParameters),
-                    extend(pv0.getAcceleration(), freeParameters));
-            final FieldSpacecraftState<Gradient> spacecraftState;
-            if (s0.isOrbitDefined()) {
-                final FieldOrbit<Gradient> orbit = s0.getOrbit();
-                if (orbit.getType().equals(OrbitType.EQUINOCTIAL)) {
-                    // for DSST, which always uses EquinoctialOrbit, not CartesianOrbit
-                    spacecraftState =
-                        new FieldSpacecraftState<>(new FieldEquinoctialOrbit<>(extend(orbit.getA(), freeParameters),
-                                                                               extend(orbit.getEquinoctialEx(), freeParameters),
-                                                                               extend(orbit.getEquinoctialEy(), freeParameters),
-                                                                               extend(orbit.getHx(), freeParameters),
-                                                                               extend(orbit.getHy(), freeParameters),
-                                                                               extend(orbit.getLM(), freeParameters),
-                                                                               PositionAngleType.MEAN,
-                                                                               s0.getFrame(),
-                                                                               extend(s0.getDate(), freeParameters),
-                                                                               extend(orbit.getMu(), freeParameters)),
-                            gAttitude).withMass(gMass);
-                } else {
-                    spacecraftState =
-                        new FieldSpacecraftState<>(new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates,
-                                                                             s0.getFrame(),
-                                                                             extend(orbit.getMu(), freeParameters)),
-                                                   gAttitude).withMass(gMass);
-                }
-            } else {
-                spacecraftState =
-                    new FieldSpacecraftState<>(new FieldAbsolutePVCoordinates<>(s0.getFrame(),
-                                                                                timeStampedFieldPVCoordinates),
-                                               gAttitude).withMass(gMass);
-            }
-
-            gStates.set(nbParams, spacecraftState);
+            gStates.set(nbParams, spacecraftState.withMass(gMass));
 
         }
 
@@ -279,19 +312,20 @@ public abstract class AbstractGradientConverter {
      * @return parametric model parameters (for all span of each driver)
      */
     public Gradient[] getParametersAtStateDate(final FieldSpacecraftState<Gradient> state,
-            final ParameterDriversProvider parametricModel) {
+                                               final ParameterDriversProvider parametricModel) {
         final int freeParameters = state.getMass().getFreeParameters();
         final List<ParameterDriver> drivers = parametricModel.getParametersDrivers();
 
+        final AbsoluteDate date = state.getDate().toAbsoluteDate();
         final Gradient[] parameters = new Gradient[drivers.size()];
         int index = freeStateParameters;
         int i = 0;
         for (ParameterDriver driver : drivers) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                if (span.getData().equals(driver.getNameSpan(state.getDate().toAbsoluteDate()))) {
+                if (span.getData().equals(driver.getNameSpan(date))) {
                     parameters[i++] = driver.isSelected() ?
-                                          Gradient.variable(freeParameters, index, driver.getValue(state.getDate().toAbsoluteDate())) :
-                                          Gradient.constant(freeParameters, driver.getValue(state.getDate().toAbsoluteDate()));
+                                      Gradient.variable(freeParameters, index, driver.getValue(date)) :
+                                      Gradient.constant(freeParameters, driver.getValue(date));
                 }
                 index = driver.isSelected() ? index + 1 : index;
             }
