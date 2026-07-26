@@ -130,10 +130,10 @@ public abstract class AbstractGradientConverter {
      */
     private TimeStampedFieldAngularCoordinates<Gradient> extend(final TimeStampedFieldAngularCoordinates<Gradient> original,
                                                                 final int freeParameters) {
-            return new TimeStampedFieldAngularCoordinates<>(extend(original.getDate(), freeParameters),
-                                                            extend(original.getRotation(), freeParameters),
-                                                            extend(original.getRotationRate(), freeParameters),
-                                                            extend(original.getRotationAcceleration(), freeParameters));
+        return new TimeStampedFieldAngularCoordinates<>(extend(original.getDate(), freeParameters),
+                                                        extend(original.getRotation(), freeParameters),
+                                                        extend(original.getRotationRate(), freeParameters),
+                                                        extend(original.getRotationAcceleration(), freeParameters));
 
     }
 
@@ -143,8 +143,8 @@ public abstract class AbstractGradientConverter {
      * @return extended rotation
      */
     private FieldAttitude<Gradient> extend(final FieldAttitude<Gradient> original, final int freeParameters) {
-            return new FieldAttitude<>(original.getReferenceFrame(),
-                                       extend(original.getOrientation(), freeParameters));
+        return new FieldAttitude<>(original.getReferenceFrame(),
+                                   extend(original.getOrientation(), freeParameters));
     }
 
     /** Add zero derivatives.
