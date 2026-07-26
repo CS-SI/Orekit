@@ -146,7 +146,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
             forceModel.initializeShortPeriodTerms(auxiliaryElements, type, parameters);
         }
 
-        // if required, insert the special short periodics step handler
+        // if required, insert the special short period step handler
         if (type == PropagationType.OSCULATING) {
             // Compute short periodic coefficients for this point
             for (DSSTForceModel forceModel : forceModels) {

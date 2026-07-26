@@ -19,13 +19,14 @@ package org.orekit.propagation.analytical.gnss;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+
+import java.util.Arrays;
 
 /**
  * Harvester between two-dimensional Jacobian matrices and
@@ -65,13 +66,6 @@ class GnssHarvester<O extends GNSSOrbitalElements<O>> extends AbstractAnalytical
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getOrbitType() {
-        // since 14.0, GNSS propagators work in Keplerian elements
-        return OrbitType.KEPLERIAN;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public RealMatrix getInitialStateJacobianVsBuilderParameters() {
 
         // get gradient PV with respect to build (Keplerian) parameters
@@ -83,12 +77,12 @@ class GnssHarvester<O extends GNSSOrbitalElements<O>> extends AbstractAnalytical
         // create Jacobian matrix
         final RealMatrix jacobian =
             MatrixUtils.createRealMatrix(DEFAULT_STATE_DIMENSION, DEFAULT_STATE_DIMENSION);
-        jacobian.setRow(0, pv.getPosition().getX().getGradient());
-        jacobian.setRow(1, pv.getPosition().getY().getGradient());
-        jacobian.setRow(2, pv.getPosition().getZ().getGradient());
-        jacobian.setRow(3, pv.getVelocity().getX().getGradient());
-        jacobian.setRow(4, pv.getVelocity().getY().getGradient());
-        jacobian.setRow(5, pv.getVelocity().getZ().getGradient());
+        jacobian.setRow(0, Arrays.copyOf(pv.getPosition().getX().getGradient(), DEFAULT_STATE_DIMENSION));
+        jacobian.setRow(1, Arrays.copyOf(pv.getPosition().getY().getGradient(), DEFAULT_STATE_DIMENSION));
+        jacobian.setRow(2, Arrays.copyOf(pv.getPosition().getZ().getGradient(), DEFAULT_STATE_DIMENSION));
+        jacobian.setRow(3, Arrays.copyOf(pv.getVelocity().getX().getGradient(), DEFAULT_STATE_DIMENSION));
+        jacobian.setRow(4, Arrays.copyOf(pv.getVelocity().getY().getGradient(), DEFAULT_STATE_DIMENSION));
+        jacobian.setRow(5, Arrays.copyOf(pv.getVelocity().getZ().getGradient(), DEFAULT_STATE_DIMENSION));
 
         return jacobian;
 

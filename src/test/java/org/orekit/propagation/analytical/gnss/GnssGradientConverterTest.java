@@ -99,8 +99,8 @@ class GnssGradientConverterTest {
         final FieldGnssPropagator<Gradient, GalileoNavigationMessage> gPropagator = converter.getPropagator();
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
-        Assertions.assertEquals(6, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
-        checkUnitaryInitialSTM(gPropagator.getInitialState());
+        Assertions.assertEquals(6, gPropagator.getBaseInitialState().getOrbit().getA().getFreeParameters());
+        checkInitialStmRoughlyUnitaryDiagonal(gPropagator.getBaseInitialState());
     }
 
     @Test
@@ -110,8 +110,8 @@ class GnssGradientConverterTest {
         final FieldGnssPropagator<Gradient, GalileoNavigationMessage> gPropagator = converter.getPropagator();
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
-        Assertions.assertEquals(21, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
-        checkUnitaryInitialSTM(gPropagator.getInitialState());
+        Assertions.assertEquals(21, gPropagator.getBaseInitialState().getOrbit().getA().getFreeParameters());
+        checkInitialStmRoughlyUnitaryDiagonal(gPropagator.getBaseInitialState());
     }
 
     @Test
@@ -163,15 +163,17 @@ class GnssGradientConverterTest {
 
         // check STM against finite differences
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
-        OrbitType type = harvester.getOrbitType();
-        Assertions.assertEquals(OrbitType.KEPLERIAN, type);
+        OrbitType outType = harvester.getOrbitType();
+        Assertions.assertEquals(OrbitType.CARTESIAN, outType);
+        final OrbitType inType = OrbitType.KEPLERIAN;
         final double [] steps = ToleranceProvider.
-                                getDefaultToleranceProvider(100.0).
-                                getTolerances(state.getOrbit(), type)[0];
+                                getDefaultToleranceProvider(1000.0).
+                                getTolerances(state.getOrbit(), inType)[0];
         double maxRelativeError = 0;
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
-                final double finiteDifferences = differentiate(propagator, type, state.getDate(), steps[j], i, j);
+                final double finiteDifferences =
+                    differentiate(propagator, inType, outType, state.getDate(), steps[j], i, j);
                 final double relativeError = (finiteDifferences - stm.getEntry(i, j)) / finiteDifferences;
                 System.out.format(Locale.ROOT, "%s%12.3f (%.4e %.4e)",
                                   j == 3 ? "     " : " ", relativeError, finiteDifferences, stm.getEntry(i, j));
@@ -212,35 +214,22 @@ class GnssGradientConverterTest {
 
     }
 
-    private void checkUnitaryInitialSTM(final FieldSpacecraftState<Gradient> initialState) {
+    /** The diagonal is only very roughly unitary because there are large non-Keplerian elements.
+     * @param initialState initial state
+     */
+    private void checkInitialStmRoughlyUnitaryDiagonal(final FieldSpacecraftState<Gradient> initialState) {
         final FieldKeplerianOrbit<Gradient> orbit =
             (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(initialState.getOrbit());
-        checkUnitary(orbit.getA().getGradient(),                             0, 6.0e-6, 2.0e-8);
-        checkUnitary(orbit.getE().getGradient(),                             1, 4.0e-13, 2.0e-8);
-        checkUnitary(orbit.getI().getGradient(),                             2, 4.0e-13, 2.0e-8);
-        checkUnitary(orbit.getPerigeeArgument().getGradient(),               3, 2.0e-12, 2.0e-12);
-        checkUnitary(orbit.getRightAscensionOfAscendingNode().getGradient(), 4, 2.0e-12, 2.0e-12);
-        checkUnitary(orbit.getMeanAnomaly().getGradient(),                   5, 2.0e-12, 2.0e-12);
-    }
-
-    private void checkUnitary(final double[] gradient, final int index,
-                              final double tolDiag, final double tolNonDiag) {
-        // beware! we intentionally check only the first 6 parameters
-        // the next ones correspond to non-Keplerian parameters,
-        // derivatives are NOT unitary for these extra parameters
-        for (int i = 0; i < 6; i++) {
-            if (i == index) {
-                // diagonal element
-                Assertions.assertEquals(1.0, gradient[i], tolDiag);
-            } else {
-                // non-diagonal element
-                Assertions.assertEquals(0.0, gradient[i], tolNonDiag);
-            }
-        }
+        Assertions.assertEquals(1.0, orbit.getA().getPartialDerivative(0),                             0.01);
+        Assertions.assertEquals(1.0, orbit.getE().getPartialDerivative(1),                             0.01);
+        Assertions.assertEquals(1.0, orbit.getI().getPartialDerivative(2),                             0.01);
+        Assertions.assertEquals(1.0, orbit.getPerigeeArgument().getPartialDerivative(3),               0.10);
+        Assertions.assertEquals(1.0, orbit.getRightAscensionOfAscendingNode().getPartialDerivative(4), 0.01);
+        Assertions.assertEquals(1.0, orbit.getMeanAnomaly().getPartialDerivative(5),                   0.05);
     }
 
     private <O extends GNSSOrbitalElements<O>> double differentiate(final GNSSPropagator<O> basePropagator,
-                                                                    final OrbitType type,
+                                                                    final OrbitType inType, final OrbitType outType,
                                                                     final AbsoluteDate target, final double step,
                                                                     final int outIndex, final int inIndex) {
 
@@ -251,16 +240,17 @@ class GnssGradientConverterTest {
             // get initial state
             final SpacecraftState original = basePropagator.getInitialState();
 
-            // shift element at specified index
+            // shift orbital element at specified index
             final double[] in = new double[6];
-            type.mapOrbitToArray(original.getOrbit(), PositionAngleType.MEAN, in, null);
+            inType.mapOrbitToArray(original.getOrbit(), PositionAngleType.MEAN, in, null);
             in[inIndex] += h;
 
             // build shifted initial state
             final SpacecraftState shiftedState =
-                new SpacecraftState(type.mapArrayToOrbit(in, null, PositionAngleType.MEAN,
-                                                         original.getDate(),
-                                                         original.getOrbit().getMu(), original.getFrame()),
+                new SpacecraftState(inType.mapArrayToOrbit(in, null, PositionAngleType.MEAN,
+                                                           original.getDate(),
+                                                           original.getOrbit().getMu(),
+                                                           original.getFrame()),
                                     original.getAttitude()).withMass(original.getMass());
 
             // build shifted propagator
@@ -276,7 +266,7 @@ class GnssGradientConverterTest {
 
             // return desired coordinate
             final double[] out = new double[6];
-            type.mapOrbitToArray(outState.getOrbit(), PositionAngleType.MEAN, out, null);
+            outType.mapOrbitToArray(outState.getOrbit(), PositionAngleType.MEAN, out, null);
             return out[outIndex];
 
         };

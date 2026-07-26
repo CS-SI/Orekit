@@ -446,8 +446,9 @@ class GPSPropagatorTest {
         final SpacecraftState state = propagator.propagate(targetDate);
 
         // extract state transition matrix
-        final RealMatrix stm = harvester.getStateTransitionMatrix(state);
-        Assertions.assertEquals(OrbitType.KEPLERIAN, harvester.getOrbitType());
+        final RealMatrix stm    = harvester.getStateTransitionMatrix(state);
+        final RealMatrix dY0dB0 = harvester.getInitialStateJacobianVsBuilderParameters();
+        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
 
@@ -460,7 +461,7 @@ class GPSPropagatorTest {
         final ParameterDriver aDriver =
             factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS);
         final double dada = finiteDifference(factory, targetDate, aDriver, 10.0, s -> s.getOrbit().getA());
-        Assertions.assertEquals(dada, stm.getEntry(0, 0), 6.0e-5);
+        Assertions.assertEquals(dada, stm.multiply(dY0dB0).getEntry(0, 0), 6.0e-5);
 
         // extract Jacobian matrix
         final RealMatrix jacobian = harvester.getParametersJacobian(state);
