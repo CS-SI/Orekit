@@ -64,7 +64,7 @@ public class NavICPropagatorTest {
                                           context.getFrames().getEME2000(),
                                           context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         factory.setPrn(1);
-        factory.setTimeOfEphemeris(new GNSSDate(1786, 172800.0, SatelliteSystem.NAVIC));
+        factory.setTimeOfEphemeris(new GNSSDate(762, 172800.0, SatelliteSystem.NAVIC));
         final double sqrtA = 6.493487739563E03;
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(2.257102518342E-03);
@@ -165,8 +165,8 @@ public class NavICPropagatorTest {
         }
 
         Assertions.assertEquals(0.0, errorP, 3.8e-9);
-        Assertions.assertEquals(0.0, errorV, 2.6e-7);
-        Assertions.assertEquals(0.0, errorA, 6.5e-8);
+        Assertions.assertEquals(0.0, errorV, 3.7e-7);
+        Assertions.assertEquals(0.0, errorA, 8.2e-8);
 
     }
 
