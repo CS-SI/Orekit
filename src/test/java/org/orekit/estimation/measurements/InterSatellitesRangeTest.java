@@ -28,6 +28,9 @@ import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -49,6 +52,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.PVCoordinates;
@@ -56,9 +60,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InterSatellitesRangeTest {
 
@@ -469,8 +470,8 @@ class InterSatellitesRangeTest {
         final InterSatellitesRangeMeasurementCreator creator = new InterSatellitesRangeMeasurementCreator(ephemeris,
                                                                                                           localClockOffset,
                                                                                                           remoteClockOffset);
-        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockBiasDriver().setSelected(true);
+        creator.getLocalSatellite().getClockModel().getBiasDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockModel().getBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -504,14 +505,14 @@ class InterSatellitesRangeTest {
                         ephemeris.propagate(date)
                     };
                     ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().getFirst().getClockBiasDriver(),
-                        measurement.getSatellites().get(1).getClockBiasDriver()
+                        measurement.getSatellites().getFirst().getClockModel().getBiasDriver(),
+                        measurement.getSatellites().get(1).getClockModel().getBiasDriver()
                     };
 
                     // Only local satellite clock offset is considered for two ways measurements
                     if (((InterSatellitesRange) measurement).isTwoWay()) {
                         drivers = new ParameterDriver[] {
-                            measurement.getSatellites().getFirst().getClockBiasDriver()
+                            measurement.getSatellites().getFirst().getClockModel().getBiasDriver()
                         };
                     }
 
@@ -605,13 +606,10 @@ class InterSatellitesRangeTest {
         final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit),
                 new SpacecraftState(TestUtils.getDefaultOrbit(epoch))};
-        final ObservableSatellite sat0 = new ObservableSatellite(0);
-        sat0.getClockBiasDriver().setValue(0.1);
-        sat0.getClockBiasDriver().setReferenceDate(epoch);
-        final ObservableSatellite sat1 = new ObservableSatellite(1);
-        sat1.getClockBiasDriver().setValue(0.2);
-        sat1.getClockDriftDriver().setValue(0.01);
-        sat1.getClockBiasDriver().setReferenceDate(epoch);
+        final PolynomialClockModel clock0 = new PolynomialClockModel(epoch, 0.1);
+        final ObservableSatellite sat0 = new ObservableSatellite(0, null, clock0);
+        final PolynomialClockModel clock1 = new PolynomialClockModel(epoch, 0.2, 0.01);
+        final ObservableSatellite sat1 = new ObservableSatellite(1, null, clock1);
         // WHEN
         final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, twoWay, epoch, 0., 1., 1.);
         final EstimatedMeasurementBase<InterSatellitesRange> estimatedWithoutDerivatives = range.theoreticalEvaluationWithoutDerivatives(0, 0, state, true);

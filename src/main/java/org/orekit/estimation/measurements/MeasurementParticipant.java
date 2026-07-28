@@ -23,9 +23,8 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
-import org.orekit.time.clocks.QuadraticFieldClockModel;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.clocks.ClockModel;
+import org.orekit.time.clocks.AbstractFieldClockModel;
 import org.orekit.utils.ParameterDriversProvider;
 
 /** Interface underlying both observed and observing measurement objects. Contains the clock model.
@@ -52,33 +51,17 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
      */
     String getName();
 
-    /** Get the clock bias (a.k.a. systematic offset) driver.
-     * @return clock bias driver
+    /** Get a clock model valid at some date.
+     * @return clock model
      */
-    default ParameterDriver getClockBiasDriver() {
-        return getQuadraticClockModel().getClockBiasDriver();
-    }
-
-    /** Get the clock drift driver.
-     * @return clock drift driver
-     */
-    default ParameterDriver getClockDriftDriver() {
-        return getQuadraticClockModel().getClockDriftDriver();
-    }
-
-    /** Get the clock acceleration driver.
-     * @return clock acceleration driver
-     */
-    default ParameterDriver getClockAccelerationDriver() {
-        return getQuadraticClockModel().getClockAccelerationDriver();
-    }
+    ClockModel getClockModel();
 
     /** Get the current clock offset as a function of time.
      * @param date time of computations
      * @return current clock offset value
      */
     default double getOffsetValue(final AbsoluteDate date) {
-        return getQuadraticClockModel().getOffset(date).getBias();
+        return getClockModel().getOffset(date).getBias();
     }
 
     /** Get the current clock drift as a function of time.
@@ -86,55 +69,65 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
      * @return current clock drift value
      */
     default double getOffsetRate(final AbsoluteDate date) {
-        return getQuadraticClockModel().getOffset(date).getRate();
+        return getClockModel().getOffset(date).getRate();
+    }
+
+    /** Get the current clock acceleration as a function of time.
+     * @param date time of computations
+     * @return current clock acceleration value
+     */
+    default double getOffsetAcceleration(final AbsoluteDate date) {
+        return getClockModel().getOffset(date).getAcceleration();
     }
 
     /** Get the current gradient clock offset as a function of time.
      * @param freeParameters total number of free parameters in the gradient
-     * @param date time of computations
      * @param indices indices of the differentiation parameters in derivatives computations
+     * @param date time of computations
      * @return current gradient clock offset value
      */
-    default Gradient getFieldOffsetValue(final int freeParameters,
-                                       final AbsoluteDate date,
-                                       final Map<String, Integer> indices) {
-
-        final FieldAbsoluteDate<Gradient> fieldDate =
-            new FieldAbsoluteDate<Gradient>(GradientField.getField(freeParameters), date);
-        return getQuadraticFieldClock(freeParameters, date, indices).getOffset(fieldDate).getBias();
+    default Gradient getFieldOffsetValue(final int freeParameters, final Map<String, Integer> indices,
+                                        final AbsoluteDate date) {
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<Gradient>(GradientField.getField(freeParameters), date);
+        return getFieldClockModel(freeParameters, indices, date).getOffset(fieldDate).getBias();
     }
 
     /** Get the current gradient clock drift as a function of time.
      * @param freeParameters total number of free parameters in the gradient
-     * @param date time of computations
      * @param indices indices of the differentiation parameters in derivatives computations
+     * @param date time of computations
      * @return current gradient clock drift value
      */
     default Gradient getFieldOffsetRate(final int freeParameters,
-                                        final AbsoluteDate date,
-                                        final Map<String, Integer> indices) {
-
-        final FieldAbsoluteDate<Gradient> fieldDate =
-            new FieldAbsoluteDate<Gradient>(GradientField.getField(freeParameters), date);
-        return getQuadraticFieldClock(freeParameters, date, indices).getOffset(fieldDate).getRate();
+                                        final Map<String, Integer> indices,
+                                        final AbsoluteDate date) {
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<Gradient>(GradientField.getField(freeParameters), date);
+        return getFieldClockModel(freeParameters, indices, date).getOffset(fieldDate).getRate();
     }
 
-    /** Get a quadratic clock model valid at some date.
-     * @return quadratic clock model
+    /** Get the current gradient clock acceleration as a function of time.
+     * @param freeParameters total number of free parameters in the gradient
+     * @param indices indices of the differentiation parameters in derivatives computations
+     * @param date time of computations
+     * @return current gradient clock acceleration value
      */
-    QuadraticClockModel getQuadraticClockModel();
+    default Gradient getFieldOffsetAcceleration(final int freeParameters,
+                                               final Map<String, Integer> indices,
+                                               final AbsoluteDate date) {
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<Gradient>(GradientField.getField(freeParameters), date);
+        return getFieldClockModel(freeParameters, indices, date).getOffset(fieldDate).getAcceleration();
+    }
 
     /** Get Gradient clock model.
      * @param freeParameters total number of free parameters in the gradient
-     * @param date time of computations
      * @param indices indices of the differentiation parameters in derivatives computations,
      * must be span name and not driver name
-     * @return clock provider
+     * @param date time of computations
+     * @return clock gradient
      */
-    default QuadraticFieldClockModel<Gradient> getQuadraticFieldClock(final int freeParameters,
-                                                                      final AbsoluteDate date,
-                                                                      final Map<String, Integer> indices) {
-        return getQuadraticClockModel().toGradientModel(freeParameters, indices, date);
+    default AbstractFieldClockModel<Gradient> getFieldClockModel(final int freeParameters, final Map<String, Integer> indices,
+                                                        final AbsoluteDate date) {
+        return getClockModel().getFieldModel(freeParameters, indices, date);
     }
 
 }

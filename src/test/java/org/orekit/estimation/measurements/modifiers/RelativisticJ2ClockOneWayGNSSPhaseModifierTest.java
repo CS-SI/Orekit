@@ -34,7 +34,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -69,7 +69,7 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(new ObserverSatellite("", states[1].getOrbit(), 
-                                                                            new QuadraticClockModel(date, 0.0, 0.0, 0.0)), date,
+                                                                            new PolynomialClockModel(date)), date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
                                                           wavelength, 1.0, 1.0, new ObservableSatellite(0),
@@ -100,7 +100,7 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(new ObserverSatellite("remote", states[1].getOrbit(), 
-                                                                            new QuadraticClockModel(date, 0.0, 0.0, 0.0)), date,
+                                                                            new PolynomialClockModel(date)), date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
                                                           wavelength, 1.0, 1.0, new ObservableSatellite(0),

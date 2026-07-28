@@ -192,7 +192,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
         final double delta = getDate().durationFrom(state.getDate());
 
         // Solve for PV coords at signal arrival time at first station
-        final double primeClockOffset = getPrimaryObserver().getQuadraticClockModel().getOffset(getDate()).getBias();
+        final double primeClockOffset = getPrimaryObserver().getClockModel().getOffset(getDate()).getBias();
         final AbsoluteDate measurementDate = getDate().shiftedBy(-primeClockOffset);
         final PVCoordinatesProvider primaryPVProvider = getPrimaryObserver().getPVCoordinatesProvider();
         final TimeStampedPVCoordinates primaryArrival = primaryPVProvider.getPVCoordinates(measurementDate, state.getFrame());

@@ -33,6 +33,8 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
@@ -49,7 +51,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -57,8 +59,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GroundStationTest {
 
@@ -162,7 +162,7 @@ class GroundStationTest {
         for (final ParameterDriver driver: selectAllDrivers(station)) {
             driver.setReferenceDate(date);
         }
-        station.getClockBiasDriver().setValue(-0.1);
+        station.getClockModel().getBiasDriver().setValue(-0.1);
         station.getEastOffsetDriver().setValue(1);
         station.getNorthOffsetDriver().setValue(-1);
         station.getZenithOffsetDriver().setValue(2);
@@ -217,7 +217,7 @@ class GroundStationTest {
         final TopocentricFrame base  = context.stations.getFirst().getBaseFrame();
         final BodyShape parent       = base.getParentShape();
         final String changedSuffix   = "-changed";
-        final QuadraticClockModel quadraticClock = new QuadraticClockModel(context.initialOrbit.getDate(), 3.0e-9, 2.0e-9, 1.0e-9);
+        final PolynomialClockModel quadraticClock = new PolynomialClockModel(context.initialOrbit.getDate(), 3.0e-9, 2.0e-9, 1.0e-9);
         final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
                                                                               base.getName() + changedSuffix),
                                                          quadraticClock);
@@ -876,7 +876,7 @@ class GroundStationTest {
 
     private ParameterDriver[] selectAllDrivers(final GroundStation station) {
         return new ParameterDriver[] {
-            station.getClockBiasDriver(),
+            station.getClockModel().getBiasDriver(),
             station.getEastOffsetDriver(),
             station.getNorthOffsetDriver(),
             station.getZenithOffsetDriver()

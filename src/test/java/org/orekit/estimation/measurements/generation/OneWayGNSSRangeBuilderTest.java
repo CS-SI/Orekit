@@ -49,6 +49,7 @@ import org.orekit.propagation.events.InterSatDirectViewDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.PVCoordinates;
 
 class OneWayGNSSRangeBuilderTest {
@@ -103,13 +104,8 @@ class OneWayGNSSRangeBuilderTest {
         final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPosition(),
                                                               o1.getVelocity().negate()),
                                             o1.getFrame(), o1.getDate(), o1.getMu());
-        ObserverSatellite remote = new ObserverSatellite("GNSS-remote", new KeplerianPropagator(o2));
-        remote.getClockBiasDriver().setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
-        remote.getClockBiasDriver().setValue(1.0e-16);
-        remote.getClockDriftDriver().setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
-        remote.getClockDriftDriver().setValue(0);
-        remote.getClockAccelerationDriver().setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
-        remote.getClockAccelerationDriver().setValue(0);
+        PolynomialClockModel remoteClockModel = new PolynomialClockModel(AbsoluteDate.ARBITRARY_EPOCH, 1e-16);
+        ObserverSatellite remote = new ObserverSatellite("GNSS-remote", new KeplerianPropagator(o2), remoteClockModel);
 
         final double step = 60.0;
 

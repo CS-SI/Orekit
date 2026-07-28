@@ -27,12 +27,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class PerfectClockModelTest {
+public class ConstantClockModelTest {
 
     @Test
     public void testZero() {
         final AbsoluteDate t0      = new AbsoluteDate(2020, 4, 1, TimeScalesFactory.getUTC());
-        final PerfectClockModel clockModel = new PerfectClockModel();
+        final ConstantClockModel clockModel = new ConstantClockModel(0.0);
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final ClockOffset co = clockModel.getOffset(t0.shiftedBy(dt));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0), 1.0e-15);
@@ -40,23 +40,34 @@ public class PerfectClockModelTest {
             Assertions.assertEquals(0,  co.getRate(),                  1.0e-15);
             Assertions.assertEquals(0,  co.getAcceleration(),          1.0e-15);
         }
+    }
 
+    public void testNonZero() {
+        final AbsoluteDate t0      = new AbsoluteDate(2020, 4, 1, TimeScalesFactory.getUTC());
+        final ConstantClockModel clockModel = new ConstantClockModel(1.0);
+        for (double dt = 0.02; dt < 0.98; dt += 0.02) {
+            final ClockOffset co = clockModel.getOffset(t0.shiftedBy(dt));
+            Assertions.assertEquals(dt, co.getDate().durationFrom(t0), 1.0e-15);
+            Assertions.assertEquals(1.0,  co.getBias(),                  1.0e-15);
+            Assertions.assertEquals(0,    co.getRate(),                  1.0e-15);
+            Assertions.assertEquals(0,    co.getAcceleration(),          1.0e-15);
+        }
     }
 
     @Test
-    public void testZeroField() {
-        doTestZero(Binary64Field.getInstance());
+    public void testNonZeroField() {
+        doTestNonZero(Binary64Field.getInstance());
     }
 
-    public <T extends CalculusFieldElement<T>> void doTestZero(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestNonZero(final Field<T> field) {
         final AbsoluteDate         t0  = new AbsoluteDate(2020, 4, 1, TimeScalesFactory.getUTC());
         final FieldAbsoluteDate<T> t0F = new FieldAbsoluteDate<>(field, t0);
-        final PerfectClockModel clockModel = new PerfectClockModel();
+        final ConstantClockModel clockModel = new ConstantClockModel(4.0);
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
             final FieldClockOffset<T> co = clockModel.getFieldOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(), 1.0e-15);
-            Assertions.assertEquals(0,  co.getBias().getReal(),                1.0e-15);
+            Assertions.assertEquals(4.0,  co.getBias().getReal(),                1.0e-15);
             Assertions.assertEquals(0,  co.getRate().getReal(),                  1.0e-15);
             Assertions.assertEquals(0,  co.getAcceleration().getReal(),          1.0e-15);
         }

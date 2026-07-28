@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-public class QuadraticFieldClockModelTest {
+public class PolynomialFieldClockModelTest {
 
     @Test
     public void testValueField() {
@@ -39,8 +39,8 @@ public class QuadraticFieldClockModelTest {
 
     private <T extends CalculusFieldElement<T>> void doTestValueField(final Field<T> field) {
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, AbsoluteDate.GALILEO_EPOCH);
-        final QuadraticFieldClockModel<T> clock =
-                        new QuadraticFieldClockModel<>(t0,
+        final PolynomialFieldClockModel<T> clock =
+                        new PolynomialFieldClockModel<>(t0,
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -8)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -9)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0, -10)));
@@ -51,8 +51,8 @@ public class QuadraticFieldClockModelTest {
 
     private <T extends CalculusFieldElement<T>> void doTestRateField(final Field<T> field) {
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, AbsoluteDate.GALILEO_EPOCH);
-        final QuadraticFieldClockModel<T> clock =
-                        new QuadraticFieldClockModel<>(t0,
+        final PolynomialFieldClockModel<T> clock =
+                        new PolynomialFieldClockModel<>(t0,
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -8)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -9)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0, -10)));

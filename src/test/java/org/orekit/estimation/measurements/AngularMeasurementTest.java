@@ -32,7 +32,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -74,7 +74,7 @@ class AngularMeasurementTest {
         final TopocentricFrame topocentricFrame = new TopocentricFrame(bodyShape,
                 new GeodeticPoint(0., 0., 0.), "");
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final QuadraticClockModel clockModel = new QuadraticClockModel(date, 1., 2., 3.);
+        final PolynomialClockModel clockModel = new PolynomialClockModel(date, 1., 2., 3.);
         final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
         final AngularMeasurement<?> measurement = new TestMeasurement(date, new SignalTravelTimeModel());
         // WHEN
@@ -91,7 +91,7 @@ class AngularMeasurementTest {
         final TopocentricFrame topocentricFrame = new TopocentricFrame(bodyShape,
                 new GeodeticPoint(0., 0., 0.), "");
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final QuadraticClockModel clockModel = new QuadraticClockModel(date.shiftedBy(10.), 1., 2., 3.);
+        final PolynomialClockModel clockModel = new PolynomialClockModel(date.shiftedBy(10.), 1., 2., 3.);
         final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
         final AngularMeasurement<?> measurement = new TestMeasurement(date, new SignalTravelTimeModel());
         // WHEN

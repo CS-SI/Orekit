@@ -28,8 +28,9 @@ import org.orekit.estimation.measurements.ObserverSatellite;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.clocks.ClockModel;
 import org.orekit.time.clocks.ClockOffset;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -38,7 +39,7 @@ public class OneWayGNSSRangeRateCreator
     extends MeasurementCreator {
 
     private final BoundedPropagator    ephemeris;
-    private final QuadraticClockModel  remoteClk;
+    private final ClockModel           remoteClk;
     private final Vector3D             antennaPhaseCenter1;
     private final Vector3D             antennaPhaseCenter2;
     private final ObservableSatellite  local;
@@ -69,15 +70,15 @@ public class OneWayGNSSRangeRateCreator
         this.ephemeris           = ephemeris;
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
-        this.local               = new ObservableSatellite(0);
-        this.local.getClockBiasDriver().setValue(localClockOffset);
-        this.local.getClockDriftDriver().setValue(localClockRate);
-        this.local.getClockAccelerationDriver().setValue(localClockAcceleration);
-        this.remoteClk          = new QuadraticClockModel(ephemeris.getMinDate(),
+        this.local              = new ObservableSatellite(0);
+        this.local.getClockModel().getBiasDriver().setValue(localClockOffset);
+        this.local.getClockModel().getRateDriver().setValue(localClockRate);
+        this.local.getClockModel().getAccelerationDriver().setValue(localClockAcceleration);
+        this.remoteClk          = new PolynomialClockModel(ephemeris.getMinDate(),
                                                           remoteClockOffset,
                                                           remoteClockRate,
                                                           remoteClockAcceleration);
-        this.remoteSat          = new ObserverSatellite("", ephemeris, remoteClk);
+        this.remoteSat          = new ObserverSatellite("", ephemeris, this.remoteClk);
     }
 
     public ObservableSatellite getLocalSatellite() {
@@ -86,9 +87,9 @@ public class OneWayGNSSRangeRateCreator
 
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
-        for (final ParameterDriver driver : Arrays.asList(local.getClockBiasDriver(),
-                                                          local.getClockDriftDriver(),
-                                                          local.getClockAccelerationDriver())) {
+        for (final ParameterDriver driver : Arrays.asList(local.getClockModel().getBiasDriver(),
+                                                          local.getClockModel().getRateDriver(),
+                                                          local.getClockModel().getAccelerationDriver())) {
             if (driver.getReferenceDate() == null) {
                 driver.setReferenceDate(s0.getDate());
             }
@@ -101,7 +102,7 @@ public class OneWayGNSSRangeRateCreator
             final AbsoluteDate     date      = currentState.getDate();
             final PVCoordinates    pv        = currentState.toTransform().getInverse().
                                                transformPVCoordinates(new PVCoordinates(antennaPhaseCenter1));
-            final ClockOffset      localClk  = local.getQuadraticClockModel().getOffset(date);
+            final ClockOffset      localClk  = local.getClockModel().getOffset(date);
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
@@ -121,7 +122,7 @@ public class OneWayGNSSRangeRateCreator
                                                  transformPVCoordinates(new PVCoordinates(antennaPhaseCenter2));
             final PVCoordinates delta = new PVCoordinates(otherAtTransit, pv);
             final double rangeRate = Vector3D.dotProduct(delta.getPosition().normalize(), delta.getVelocity()) +
-                Constants.SPEED_OF_LIGHT * (local.getQuadraticClockModel().getOffset(date).getRate() -
+                Constants.SPEED_OF_LIGHT * (local.getClockModel().getOffset(date).getRate() -
                                             remoteClk.getOffset(transitDate).getRate());
 
             // Generate measurement

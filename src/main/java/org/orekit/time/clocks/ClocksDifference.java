@@ -16,7 +16,13 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.Map;
+
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 
 /** Clock model computing the difference of two underlying models.
  * @author Luc Maisonobe
@@ -36,6 +42,7 @@ public class ClocksDifference
         super(clock1, clock2);
     }
 
+    @Override
     protected ClockOffset combine(final ClockOffset offset1, final ClockOffset offset2) {
         return offset1.subtract(offset2);
     }
@@ -46,9 +53,17 @@ public class ClocksDifference
      * @param offset2 second offset
      * @return combined offset
      */
+    @Override
     protected <T extends CalculusFieldElement<T>> FieldClockOffset<T> combine(final FieldClockOffset<T> offset1,
                                                                               final FieldClockOffset<T> offset2) {
         return offset1.subtract(offset2);
     }
+
+    @Override
+    public <T extends CalculusFieldElement<T>> AbstractFieldClockModel<Gradient> getFieldModel(final int freeParameters,
+            final Map<String, Integer> indices, final AbsoluteDate date) {
+        throw new OrekitException(OrekitMessages.INTERNAL_ERROR); // "Unable to sum the field models of two classes"));
+    }
+
 
 }

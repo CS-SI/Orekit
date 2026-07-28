@@ -57,7 +57,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -152,7 +152,7 @@ class EarthBasedStationTest {
         for (final ParameterDriver driver: selectAllDrivers(station)) {
             driver.setReferenceDate(date);
         }
-        station.getClockBiasDriver().setValue(0.1);
+        station.getClockModel().getBiasDriver().setValue(0.1);
         station.getPolarOffsetYDriver().setValue(2);
         station.getPrimeMeridianOffsetDriver().setValue(1);
         station.getNorthOffsetDriver().setValue(-1);
@@ -179,7 +179,7 @@ class EarthBasedStationTest {
         for (final ParameterDriver driver: selectAllDrivers(station)) {
             driver.setReferenceDate(date);
         }
-        station.getClockBiasDriver().setValue(0.1);
+        station.getClockModel().getBiasDriver().setValue(0.1);
         station.getPolarOffsetYDriver().setValue(2);
         station.getPrimeMeridianOffsetDriver().setValue(1);
         station.getNorthOffsetDriver().setValue(-1);
@@ -206,7 +206,7 @@ class EarthBasedStationTest {
         for (final ParameterDriver driver: selectAllDrivers(station)) {
             driver.setReferenceDate(date);
         }
-        station.getClockBiasDriver().setValue(-0.1);
+        station.getClockModel().getBiasDriver().setValue(-0.1);
         station.getPolarOffsetXDriver().setValue(3);
         station.getPrimeMeridianOffsetDriver().setValue(1);
         station.getNorthOffsetDriver().setValue(-1);
@@ -246,7 +246,7 @@ class EarthBasedStationTest {
         final BodyShape parent       = base.getParentShape();
         final double deltaClock      = 0.00084532;
         final String changedSuffix   = "-changed";
-        final QuadraticClockModel blankClock = new QuadraticClockModel(context.initialOrbit.getDate(), 0.0, 0.0, 0.0);
+        final PolynomialClockModel blankClock = new PolynomialClockModel(context.initialOrbit.getDate(), 0.0, 0.0, 0.0);
         final EarthBasedStation changed  = new EarthBasedStation(new TopocentricFrame(parent, base.getPoint(),
                                                                               base.getName() + changedSuffix), context.ut1.getEOPHistory(),
                                                          blankClock, context.stations.getFirst().getDisplacements());
@@ -273,7 +273,7 @@ class EarthBasedStationTest {
         estimator.setMaxEvaluations(200);
 
         // we want to estimate station clock offset
-        changed.getClockBiasDriver().setSelected(true);
+        changed.getClockModel().getBiasDriver().setSelected(true);
         changed.getEastOffsetDriver().setSelected(false);
         changed.getNorthOffsetDriver().setSelected(false);
         changed.getZenithOffsetDriver().setSelected(false);
@@ -283,7 +283,7 @@ class EarthBasedStationTest {
                                      0.0, 2.4e-6,
                                      0.0, 1.8e-7,
                                      0.0, 8e-11);
-        Assertions.assertEquals(deltaClock, changed.getClockBiasDriver().getValue(), 9.6e-11);
+        Assertions.assertEquals(deltaClock, changed.getClockModel().getBiasDriver().getValue(), 9.6e-11);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -352,7 +352,7 @@ class EarthBasedStationTest {
         estimator.setMaxEvaluations(200);
 
         // we want to estimate station offsets
-        moved.getClockBiasDriver().setSelected(false);
+        moved.getClockModel().getBiasDriver().setSelected(false);
         moved.getEastOffsetDriver().setSelected(true);
         moved.getNorthOffsetDriver().setSelected(true);
         moved.getZenithOffsetDriver().setSelected(true);
@@ -1740,7 +1740,7 @@ class EarthBasedStationTest {
             station.getPolarDriftXDriver(),
             station.getPolarOffsetYDriver(),
             station.getPolarDriftYDriver(),
-            station.getClockBiasDriver(),
+            station.getClockModel().getBiasDriver(),
             station.getEastOffsetDriver(),
             station.getNorthOffsetDriver(),
             station.getZenithOffsetDriver()

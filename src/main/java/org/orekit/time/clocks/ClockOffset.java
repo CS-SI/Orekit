@@ -16,13 +16,17 @@
  */
 package org.orekit.time.clocks;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
-/** Container for time stamped clock offset.
+/**
+ * Container for time stamped clock offset.
  * <p>
  * Instances of this class are immutable
  * </p>
+ *
  * @author Luc Maisonobe
  * @since 12.1
  */
@@ -40,47 +44,80 @@ public class ClockOffset implements TimeStamped {
     /** Clock acceleration. */
     private final double acceleration;
 
-    /** Simple constructor.
-     * @param date   date
+    /**
+     * Simple constructor.
+     *
+     * @param date date
      * @param bias clock bias
-     * @param rate   clock rate (can be set to {@code Double.NaN} if unknown)
-     * @param acceleration clock acceleration (can be set to {@code Double.NaN} if unknown)
+     * @param rate clock rate (can be set to {@code Double.NaN} if unknown)
+     * @param acceleration clock acceleration (can be set to {@code Double.NaN}
+     *        if unknown)
      */
     public ClockOffset(final AbsoluteDate date, final double bias,
                        final double rate, final double acceleration) {
-        this.date         = date;
-        this.bias         = bias;
-        this.rate         = rate;
+        this.date = date;
+        this.bias =         bias;
+        this.rate =         rate;
         this.acceleration = acceleration;
     }
 
-    /** Add another offset to the instance.
+    /**
+     * Simple constructor.
+     *
+     * @param date date
+     * @param terms the clock terms, up to 3 values for bias, drift, and acceleration
+     */
+    public ClockOffset(final AbsoluteDate date, final double[] terms) {
+        this.date = date;
+        if (terms.length >= 1) {
+            this.bias = terms[0];
+        } else {
+            this.bias = 0;
+        }
+        if (terms.length >= 2) {
+            this.rate = terms[1];
+        } else {
+            this.rate = 0;
+        }
+        if (terms.length == 3) {
+            this.acceleration = terms[2];
+        } else {
+            this.acceleration = 0;
+        }
+        if (terms.length > 3) {
+            throw new OrekitException(OrekitMessages.CANNOT_PARSE_DATA);
+        }
+    }
+
+    /**
+     * Add another offset to the instance.
      * <p>
      * The instance is not modified, a new instance is created
      * </p>
+     *
      * @param other offset to add (date part will be ignored)
      * @return instance + other, at instance date
      * @since 14.0
      */
     public ClockOffset add(final ClockOffset other) {
         return new ClockOffset(date,
-                               bias         + other.bias,
-                               rate         + other.rate,
+                               bias + other.bias,
+                               rate + other.rate,
                                acceleration + other.acceleration);
     }
 
-    /** Subtract another offset from the instance.
+    /**
+     * Subtract another offset from the instance.
      * <p>
      * The instance is not modified, a new instance is created
      * </p>
+     *
      * @param other offset to subtract (date part will be ignored)
      * @return instance - other, at instance date
      * @since 14.0
      */
     public ClockOffset subtract(final ClockOffset other) {
-        return new ClockOffset(date,
-                               bias         - other.bias,
-                               rate         - other.rate,
+        return new ClockOffset(date, bias - other.bias, rate - other.rate,
                                acceleration - other.acceleration);
     }
 
@@ -110,6 +147,16 @@ public class ClockOffset implements TimeStamped {
      */
     public double getAcceleration() {
         return acceleration;
+    }
+
+    /** Get the value of the clock offset at a given time.
+     * @param givenDate the date at which to evaluate the clock offset
+     * @return The value of the clock in seconds from the given date
+     */
+    public double getValue(final AbsoluteDate givenDate) {
+        final double dt = durationFrom(givenDate);
+        return dt * ((dt * getAcceleration()) + getRate()) + getBias();
+
     }
 
 }

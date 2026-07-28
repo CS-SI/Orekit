@@ -32,7 +32,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -64,7 +64,7 @@ public class RelativisticJ2ClockOneWayGNSSRangeModifierTest {
 
         // Measurement
         final OneWayGNSSRange range = new OneWayGNSSRange(new ObserverSatellite("", states[1].getOrbit(), 
-                                                                            new QuadraticClockModel(date, 0.0, 0.0, 0.0)), 
+                                                                            new PolynomialClockModel(date)), 
                                                           date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()),

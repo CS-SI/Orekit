@@ -16,25 +16,39 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
-/** Clock model for a clock with constant offset.
+/**
+ * Clock model for a clock with constant offset.
+ *
  * @author Luc Maisonobe
  * @since 14.0
  */
 public class ConstantClockModel implements ClockModel {
-
     /** Constant offset. */
-    private final double offset;
+    private final ParameterDriver offset;
 
-    /** Simple constructor.
-     * @param offset constant offset
+    /**
+     * Simple constructor.
+     *
+     * @param offset
+     *               constant offset
      */
     public ConstantClockModel(final double offset) {
-        this.offset = offset;
+        this.offset = new ParameterDriver("a0", 0.0, FastMath.scalb(1.0, -10),
+                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.offset.setValue(offset);
     }
+
 
     /** {@inheritDoc} */
     @Override
@@ -50,15 +64,28 @@ public class ConstantClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public ClockOffset getOffset(final AbsoluteDate date) {
-        return new ClockOffset(date, offset, 0, 0);
+    public List<ParameterDriver> getParametersDrivers() {
+        return Arrays.asList(offset);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
-        final T zero = date.getField().getZero();
-        return new FieldClockOffset<>(date, zero.newInstance(offset), zero, zero);
+    public ClockOffset getOffset(final AbsoluteDate date) {
+        return new ClockOffset(date, offset.getValue(date), 0, 0);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(final FieldAbsoluteDate<T> date) {
+        final AbsoluteDate aDate = date.toAbsoluteDate();
+        final T zero = date.getField().getZero();
+        return new FieldClockOffset<>(date, zero.newInstance(offset.getValue(aDate)), zero, zero);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> AbstractFieldClockModel<Gradient> getFieldModel(final int freeParameters,
+        final Map<String, Integer> indices, final AbsoluteDate date) {
+        return new ConstantFieldClockModel<>(null);
+    }
 }

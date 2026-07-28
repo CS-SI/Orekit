@@ -62,7 +62,7 @@ public class ShapiroPhaseModifierTest {
         final int    ambiguity         = 1234;
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setValue(groundClockOffset);
+            station.getClockModel().getBiasDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         List<ObservedMeasurement<?>> measurements =

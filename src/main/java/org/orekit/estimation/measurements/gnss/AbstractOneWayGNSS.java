@@ -38,9 +38,9 @@ import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.clocks.AbstractFieldClockModel;
 import org.orekit.time.clocks.ClockOffset;
 import org.orekit.time.clocks.FieldClockOffset;
-import org.orekit.time.clocks.QuadraticFieldClockModel;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
@@ -116,7 +116,7 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
         final TimeStampedPVCoordinates pvaLocal         = states[0].getPVCoordinates(frame);
 
         // Clock values of the observed spacecraft and signal receiver
-        final ClockOffset localClock     = localSat.getQuadraticClockModel().getOffset(measurementDate);
+        final ClockOffset localClock     = localSat.getClockModel().getOffset(measurementDate);
         final double      localClockBias = localClock.getBias();
 
         // take clock bias of receiver (in this case, ObservableSatellite) into account
@@ -135,7 +135,7 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
 
         // Remote object pos/vel at time of signal emission
         final AbsoluteDate emissionDate = arrivalDate.shiftedBy(-tauD);
-        final ClockOffset  remoteClock  = getObserver().getQuadraticClockModel().getOffset(emissionDate);
+        final ClockOffset  remoteClock  = getObserver().getClockModel().getOffset(emissionDate);
 
         return new CommonParametersWithoutDerivatives(states[0], tauD,
                 localClock, remoteClock,
@@ -166,8 +166,7 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
 
         // Measured satellite object data
         final TimeStampedFieldPVCoordinates<Gradient> pvaLocal         = AbstractMeasurement.getCoordinates(states[0], 0, nbParams);
-        final QuadraticFieldClockModel<Gradient> localClock       = localSat.getQuadraticClockModel().
-                toGradientModel(nbParams, paramIndices, measurementDate);
+        final AbstractFieldClockModel<Gradient> localClock        = localSat.getFieldClockModel(nbParams, paramIndices, measurementDate);
         final FieldClockOffset<Gradient> localClockOffset = localClock.getOffset(gDate);
 
         // take clock offset into account for arrival date
@@ -187,8 +186,8 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
 
         // Remote observer at signal emission time
         final FieldAbsoluteDate<Gradient> emissionDate = arrivalDate.shiftedBy(tauD.negate());
-        final QuadraticFieldClockModel<Gradient> remoteClock = getObserver().getQuadraticFieldClock(nbParams,
-                emissionDate.toAbsoluteDate(), paramIndices);
+        final AbstractFieldClockModel<Gradient> remoteClock = getObserver().getFieldClockModel(nbParams,
+                paramIndices, emissionDate.toAbsoluteDate());
         final FieldClockOffset<Gradient>  remoteClockOffset = remoteClock.getOffset(emissionDate);
 
         return new CommonParametersWithDerivatives(states[0], paramIndices, tauD,

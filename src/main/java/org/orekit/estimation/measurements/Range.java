@@ -118,7 +118,7 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
                                                                                       final SpacecraftState[] states,
                                                                                       final boolean fillParticipants) {
         // compute reception date
-        final double clockOffset = getObserver().getQuadraticClockModel().getOffset(getDate()).getBias();
+        final double clockOffset = getObserver().getClockModel().getOffset(getDate()).getBias();
         final AbsoluteDate receptionDate = getDate().shiftedBy(-clockOffset);
 
         if (isTwoWay()) {
@@ -254,8 +254,8 @@ public class Range extends AbstractRangeRelatedMeasurement<Range> {
 
         // clock offset, taken in account only in case of one way
         final ObservableSatellite satellite    = getSatellites().getFirst();
-        final Gradient dts = satellite.getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), indices);
-        final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, receptionDate.toAbsoluteDate(), indices);
+        final Gradient dts = satellite.getFieldOffsetValue(nbParams, indices, emissionDate.toAbsoluteDate());
+        final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, indices, receptionDate.toAbsoluteDate());
         final Gradient clockBias = dtg.subtract(dts);
 
         final Gradient range = clockBias.add(delay).multiply(Constants.SPEED_OF_LIGHT);
