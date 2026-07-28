@@ -121,30 +121,6 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
         return clockModel;
     }
 
-    /** Get a clock model offset valid at some date.
-     * @param date time of computations
-     * @return clock model offset
-     */
-    public final double getClockOffset(final AbsoluteDate date) {
-        return getClockModel().getOffset(date).getBias();
-    }
-
-    /** Get a clock model rate at some date.
-     * @param date time of computations
-     * @return clock model rate
-     */
-    public final double getClockRate(final AbsoluteDate date) {
-        return getClockModel().getOffset(date).getRate();
-    }
-
-    /** Get a clock model acceleration at some date.
-     * @param date time of computations
-     * @return clock model acceleration
-     */
-    public final double getClockAcceleration(final AbsoluteDate date) {
-        return getClockModel().getOffset(date).getAcceleration();
-    }
-
     /** Get model parameters.
      * @return model parameters, will throw an
      * exception if one PDriver has several values driven. If

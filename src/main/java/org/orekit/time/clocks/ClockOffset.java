@@ -154,7 +154,7 @@ public class ClockOffset implements TimeStamped {
      * @return The value of the clock in seconds from the given date
      */
     public double getValue(final AbsoluteDate givenDate) {
-        final double dt = durationFrom(givenDate);
+        final double dt = givenDate.durationFrom(date);
         return dt * ((dt * getAcceleration()) + getRate()) + getBias();
 
     }

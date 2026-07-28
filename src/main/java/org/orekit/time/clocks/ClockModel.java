@@ -41,7 +41,7 @@ public interface ClockModel extends ParameterDriversProvider {
         if (count < 3) {
             return regularNames[count];
         }
-        return "-clock-term-" + Integer.toString(count);
+        return "-clock-term-" + count;
     }
 
 
@@ -65,7 +65,7 @@ public interface ClockModel extends ParameterDriversProvider {
      * @param date date at which offset value is requested
      * @return clock offset value
      */
-    default double getOffsetValue(AbsoluteDate date) {
+    default double getOffsetValue(final AbsoluteDate date) {
         return getOffset(date).getValue(date);
     }
 
@@ -139,14 +139,12 @@ public interface ClockModel extends ParameterDriversProvider {
 
     /**
      * Convert to field model.
-     * @param <T> type of the field elements
      * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the differentiation parameters in derivatives computations,
      * must be span name and not driver name
      * @param date date at which model must be valid
      * @return converted clock model
      */
-    <T extends CalculusFieldElement<T>> AbstractFieldClockModel<Gradient> getFieldModel(int freeParameters,
-            Map<String, Integer> indices, AbsoluteDate date);
+    FieldClockModel<Gradient> getFieldModel(int freeParameters, Map<String, Integer> indices, AbsoluteDate date);
 
 }

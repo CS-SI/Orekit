@@ -52,13 +52,6 @@ public class PolynomialClockModel implements ClockModel {
     private final List<ParameterDriver> terms;
 
     /**
-     * Default constructor.
-     */
-    public PolynomialClockModel() {
-        this(AbsoluteDate.ARBITRARY_EPOCH);
-    }
-
-    /**
      * Simple constructor.
      *
      * @param referenceDate reference date
@@ -117,7 +110,7 @@ public class PolynomialClockModel implements ClockModel {
      * @param terms the parameter driver terms
      */
     public PolynomialClockModel(final List<ParameterDriver> terms) {
-        this.terms = terms;
+        this(terms.toArray(new ParameterDriver[0]));
     }
 
     /** {@inheritDoc} */
@@ -205,7 +198,7 @@ public class PolynomialClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> AbstractFieldClockModel<Gradient> getFieldModel(final int freeParameters,
+    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
             final Map<String, Integer> indices, final AbsoluteDate date) {
         if (terms.isEmpty()) {
             return null;
@@ -234,7 +227,7 @@ public class PolynomialClockModel implements ClockModel {
         if (terms.isEmpty()) {
             return date;
         }
-        final ParameterDriver firstTerm = terms.get(0);
+        final ParameterDriver firstTerm = terms.getFirst();
         if (firstTerm.getReferenceDate() == null) {
             boolean allOtherDatesZero = true;
             for (final ParameterDriver term: terms) {

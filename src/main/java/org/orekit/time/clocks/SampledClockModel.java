@@ -119,7 +119,7 @@ public class SampledClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> AbstractFieldClockModel<Gradient> getFieldModel(final int freeParameters,
+    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
             final Map<String, Integer> indices, final AbsoluteDate date) {
         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
     }

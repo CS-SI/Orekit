@@ -29,11 +29,12 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** Field Polynomial clock model.
  *
- * @author Luc Maisonobe
- * @since 12.1
- *
+ * @author Brian Carter
+ * @since 14.0
+ * @see PolynomialClockModel
  */
 public class PolynomialFieldClockModel<T extends CalculusFieldElement<T>> extends AbstractFieldClockModel<T> {
+
     /** All term. */
     private final List<T> terms;
 

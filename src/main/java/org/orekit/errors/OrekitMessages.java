@@ -1152,8 +1152,6 @@ public enum OrekitMessages implements Localizable {
     /** DAF_TOO_LONG_FILEDESCRIPTION_STRING. */
     DAF_TOO_LONG_FILEDESCRIPTION_STRING("File description string is {0} characters long but should be at most 60 characters");
 
-    /** CLOCK_MODEL_ATTEMPTING_TO_ADD_DUPLICATE_TIME_MODE */
-
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";
 

@@ -26,7 +26,6 @@ import org.orekit.gnss.RadioWave;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 
 public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
@@ -75,6 +74,7 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
         return remote;
     }
 
+    @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
         if (local.getClockModel().getBiasDriver().getReferenceDate() == null) {
             local.getClockModel().getBiasDriver().setReferenceDate(s0.getDate());
@@ -88,8 +88,8 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
         try {
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
-            final double           remoteClk = remote.getClockOffset(date);
-            final double           localClk  = local.getClockOffset(date);
+            final double           remoteClk = remote.getOffsetValue(date);
+            final double           localClk  = local.getOffsetValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

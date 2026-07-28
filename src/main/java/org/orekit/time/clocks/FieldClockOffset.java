@@ -79,20 +79,20 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
     public FieldClockOffset(final FieldAbsoluteDate<T> date, final List<T> terms) {
         this.date = date;
 
-        if (terms.size() >= 1) {
-            this.bias = terms.get(0);
+        if (!terms.isEmpty()) {
+            this.bias = terms.getFirst();
         } else {
-            this.bias = null;
+            this.bias = date.getField().getZero();
         }
         if (terms.size() >= 2) {
             this.rate = terms.get(1);
         } else {
-            this.rate = null;
+            this.rate = date.getField().getZero();
         }
         if (terms.size() == 3) {
             this.acceleration = terms.get(2);
         } else {
-            this.acceleration = null;
+            this.acceleration = date.getField().getZero();
         }
         if (terms.size() > 3) {
             throw new OrekitException(OrekitMessages.CANNOT_PARSE_DATA);
@@ -159,7 +159,14 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
         return acceleration;
     }
 
-    /** {@inheritDoc} */
+    /** Negate instance.
+     * <p>
+     * The instance is not modified, a new instance is created
+     * </p>
+     *
+     * @return instance - other, at instance date
+     * @since 14.0
+     */
     public FieldClockOffset<T> negate() {
         return new FieldClockOffset<>(getDate(), bias.negate(), rate.negate(), acceleration.negate());
     }

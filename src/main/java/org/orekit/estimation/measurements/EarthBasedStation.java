@@ -80,7 +80,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>additional body rotation, controlled by {@link #getPrimeMeridianOffsetDriver()} and {@link #getPrimeMeridianDriftDriver()}</li>
  *   <li>additional polar motion, controlled by {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()},
  *   {@link #getPolarOffsetYDriver()} and {@link #getPolarDriftYDriver()}</li>
- *   <li>station clock offset, controlled by {@link #getBiasDriver()}</li>
+ *   <li>station clock offset, controlled by {@link #getClockOffset(AbsoluteDate)} )}</li>
  *   <li>station position offset, controlled by {@link #getEastOffsetDriver()},
  *   {@link #getNorthOffsetDriver()} and {@link #getZenithOffsetDriver()}</li>
  * </ol>
@@ -109,9 +109,7 @@ public class EarthBasedStation extends GroundStation {
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
      * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
-     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetYDriver()},
-     * {@link #getPolarDriftYDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * ({@link #getClockModel()} ()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
      * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as these values are not changed, the
      * offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as some of these models are changed,
      * the offset frame moves away from the {@link #getBaseFrame() base frame}.
@@ -133,9 +131,7 @@ public class EarthBasedStation extends GroundStation {
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
      * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
-     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetYDriver()},
-     * {@link #getPolarDriftYDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * ({@link #getClockModel()} ()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
      * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as these values are not changed, the
      * offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as some of these models are changed,
      * the offset frame moves away from the {@link #getBaseFrame() base frame}.
@@ -157,11 +153,9 @@ public class EarthBasedStation extends GroundStation {
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
      * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
-     * {@link #getZenithOffsetDriver()}, {@link #getBiasDriver()}) are set to 0. This implies that as long as
+     * {@link #getZenithOffsetDriver()}, {@link #getClockModel()} ()}) are set to 0. This implies that as long as
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetYDriver()},
-     * {@link #getPolarDriftYDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
-     * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as
+     * {@link #getPolarDriftYDriver()}) are set to 0. This implies that as long as
      * these values are not changed, the offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as
      * some of these models are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
      * </p>
@@ -184,7 +178,7 @@ public class EarthBasedStation extends GroundStation {
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetYDriver()},
      * {@link #getPolarDriftYDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * ({@link #getClockModel()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
      * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as
      * these values are not changed, the offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as
      * some of these models are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.

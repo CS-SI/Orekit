@@ -16,6 +16,7 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -25,9 +26,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ClocksSumTest {
 
@@ -80,6 +83,14 @@ public class ClocksSumTest {
         Assertions.assertEquals(0.0, result.get(1).getValue());
         Assertions.assertEquals(-1.0, result.get(2).getValue());
         Assertions.assertEquals(-0.25, result.get(3).getValue());
+    }
+
+    @Test
+    void testGetFieldModel() {
+        // GIVEN
+        final ClocksSum clockModel = new ClocksSum(new PerfectClockModel(), new PerfectClockModel());
+        // WHEN & THEN
+        assertThrows(OrekitException.class, () -> clockModel.getFieldModel(1, new HashMap<>(), AbsoluteDate.ARBITRARY_EPOCH));
     }
 
     @BeforeEach

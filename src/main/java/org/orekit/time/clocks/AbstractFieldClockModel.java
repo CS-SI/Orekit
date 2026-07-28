@@ -1,4 +1,4 @@
-/* Copyright 2022-2026 Thales Alenia Space
+/* Copyright 2025-2026 Hawkeye 360 (HE360)
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,4 @@ public abstract class AbstractFieldClockModel<T extends CalculusFieldElement<T>>
         return this.referenceDate;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public abstract FieldClockOffset<T> getOffset(FieldAbsoluteDate<T> date);
 }

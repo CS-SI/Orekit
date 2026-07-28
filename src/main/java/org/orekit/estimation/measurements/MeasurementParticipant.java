@@ -24,7 +24,7 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.ClockModel;
-import org.orekit.time.clocks.AbstractFieldClockModel;
+import org.orekit.time.clocks.FieldClockModel;
 import org.orekit.utils.ParameterDriversProvider;
 
 /** Interface underlying both observed and observing measurement objects. Contains the clock model.
@@ -72,14 +72,6 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
         return getClockModel().getOffset(date).getRate();
     }
 
-    /** Get the current clock acceleration as a function of time.
-     * @param date time of computations
-     * @return current clock acceleration value
-     */
-    default double getOffsetAcceleration(final AbsoluteDate date) {
-        return getClockModel().getOffset(date).getAcceleration();
-    }
-
     /** Get the current gradient clock offset as a function of time.
      * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the differentiation parameters in derivatives computations
@@ -88,7 +80,7 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
      */
     default Gradient getFieldOffsetValue(final int freeParameters, final Map<String, Integer> indices,
                                         final AbsoluteDate date) {
-        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<Gradient>(GradientField.getField(freeParameters), date);
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(freeParameters), date);
         return getFieldClockModel(freeParameters, indices, date).getOffset(fieldDate).getBias();
     }
 
@@ -101,21 +93,8 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
     default Gradient getFieldOffsetRate(final int freeParameters,
                                         final Map<String, Integer> indices,
                                         final AbsoluteDate date) {
-        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<Gradient>(GradientField.getField(freeParameters), date);
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(freeParameters), date);
         return getFieldClockModel(freeParameters, indices, date).getOffset(fieldDate).getRate();
-    }
-
-    /** Get the current gradient clock acceleration as a function of time.
-     * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the differentiation parameters in derivatives computations
-     * @param date time of computations
-     * @return current gradient clock acceleration value
-     */
-    default Gradient getFieldOffsetAcceleration(final int freeParameters,
-                                               final Map<String, Integer> indices,
-                                               final AbsoluteDate date) {
-        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<Gradient>(GradientField.getField(freeParameters), date);
-        return getFieldClockModel(freeParameters, indices, date).getOffset(fieldDate).getAcceleration();
     }
 
     /** Get Gradient clock model.
@@ -125,8 +104,8 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
      * @param date time of computations
      * @return clock gradient
      */
-    default AbstractFieldClockModel<Gradient> getFieldClockModel(final int freeParameters, final Map<String, Integer> indices,
-                                                        final AbsoluteDate date) {
+    default FieldClockModel<Gradient> getFieldClockModel(final int freeParameters, final Map<String, Integer> indices,
+                                                         final AbsoluteDate date) {
         return getClockModel().getFieldModel(freeParameters, indices, date);
     }
 

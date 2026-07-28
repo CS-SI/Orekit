@@ -38,8 +38,8 @@ import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.AbstractFieldClockModel;
 import org.orekit.time.clocks.ClockOffset;
+import org.orekit.time.clocks.FieldClockModel;
 import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -166,7 +166,7 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
 
         // Measured satellite object data
         final TimeStampedFieldPVCoordinates<Gradient> pvaLocal         = AbstractMeasurement.getCoordinates(states[0], 0, nbParams);
-        final AbstractFieldClockModel<Gradient> localClock        = localSat.getFieldClockModel(nbParams, paramIndices, measurementDate);
+        final FieldClockModel<Gradient> localClock        = localSat.getFieldClockModel(nbParams, paramIndices, measurementDate);
         final FieldClockOffset<Gradient> localClockOffset = localClock.getOffset(gDate);
 
         // take clock offset into account for arrival date
@@ -186,7 +186,7 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
 
         // Remote observer at signal emission time
         final FieldAbsoluteDate<Gradient> emissionDate = arrivalDate.shiftedBy(tauD.negate());
-        final AbstractFieldClockModel<Gradient> remoteClock = getObserver().getFieldClockModel(nbParams,
+        final FieldClockModel<Gradient> remoteClock = getObserver().getFieldClockModel(nbParams,
                 paramIndices, emissionDate.toAbsoluteDate());
         final FieldClockOffset<Gradient>  remoteClockOffset = remoteClock.getOffset(emissionDate);
 

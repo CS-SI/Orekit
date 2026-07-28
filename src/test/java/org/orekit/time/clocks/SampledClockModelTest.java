@@ -16,6 +16,10 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -25,12 +29,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 public class SampledClockModelTest {
 
@@ -142,6 +146,24 @@ public class SampledClockModelTest {
             Assertions.assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
             Assertions.assertEquals(cDotDot.value(dtF).getReal(), co.getAcceleration().getReal(), 1.0e-15);
         }
+    }
+
+    @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final ClockOffset offset = mock();
+        final SampledClockModel clockModel = new SampledClockModel(List.of(offset), 1);
+        // WHEN & THEN
+        assertThrows(OrekitException.class, clockModel::getParametersDrivers);
+    }
+
+    @Test
+    void testGetFieldModel() {
+        // GIVEN
+        final ClockOffset offset = mock();
+        final SampledClockModel clockModel = new SampledClockModel(List.of(offset), 1);
+        // WHEN & THEN
+        assertThrows(OrekitException.class, () -> clockModel.getFieldModel(1, new HashMap<>(), AbsoluteDate.ARBITRARY_EPOCH));
     }
 
     @BeforeEach

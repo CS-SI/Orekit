@@ -16,6 +16,8 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.HashMap;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
@@ -23,8 +25,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ClocksDifferenceTest {
 
@@ -81,6 +85,14 @@ public class ClocksDifferenceTest {
             Assertions.assertEquals(1.0 + 0.5 * dt,               co.getRate().getReal(),         1.0e-15);
             Assertions.assertEquals(0.5,                          co.getAcceleration().getReal(), 1.0e-15);
         }
+    }
+
+    @Test
+    void testGetFieldModel() {
+        // GIVEN
+        final ClocksDifference clockModel = new ClocksDifference(new PerfectClockModel(), new PerfectClockModel());
+        // WHEN & THEN
+        assertThrows(OrekitException.class, () -> clockModel.getFieldModel(1, new HashMap<>(), AbsoluteDate.ARBITRARY_EPOCH));
     }
 
     @BeforeEach

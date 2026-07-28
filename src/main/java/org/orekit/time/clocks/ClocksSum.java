@@ -65,7 +65,7 @@ public class ClocksSum extends AbstractCombinedClocksPair {
     }
 
     @Override
-    public <T extends CalculusFieldElement<T>> AbstractFieldClockModel<Gradient> getFieldModel(final int freeParameters,
+    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
             final Map<String, Integer> indices, final AbsoluteDate date) {
         throw new OrekitException(OrekitMessages.INTERNAL_ERROR); // "Unable to sum the field models of two classes"));
     }

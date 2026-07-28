@@ -29,7 +29,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.ClockOffset;
-import org.orekit.time.clocks.AbstractFieldClockModel;
+import org.orekit.time.clocks.FieldClockModel;
 import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -163,7 +163,7 @@ public interface Observer extends MeasurementParticipant {
     default FieldAbsoluteDate<Gradient> getCorrectedReceptionDateField(final AbsoluteDate date,
                                                                        final int nbParams,
                                                                        final Map<String, Integer> paramIndices) {
-        final AbstractFieldClockModel<Gradient> fieldClockModel = getFieldClockModel(nbParams, paramIndices, date);
+        final FieldClockModel<Gradient> fieldClockModel = getFieldClockModel(nbParams, paramIndices, date);
         final GradientField field = GradientField.getField(nbParams);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
         final FieldClockOffset<Gradient> localClock = fieldClockModel.getOffset(fieldDate);

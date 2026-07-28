@@ -61,7 +61,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * if the ground station clock is slow and positive if it is fast).
  * </p>
  * <ol>
- *   <li>station clock offset, controlled by {@link #getClockOffset()}</li>
+ *   <li>station clock offset, controlled by {@link #getClockModel()} )} ()}</li>
  *   <li>station position offset, controlled by {@link #getEastOffsetDriver()},
  *   {@link #getNorthOffsetDriver()} and {@link #getZenithOffsetDriver()}</li>
  * </ol>
@@ -100,7 +100,7 @@ public class GroundStation extends AbstractParticipant implements GroundObserver
      * </p>
      *
      * @param baseFrame base frame associated with the station, without *any* parametric model (no station offset)
-     * @see #GroundStation(TopocentricFrame, QuadraticClockModel)
+     * @see #GroundStation(TopocentricFrame, ClockModel)
      * @since 13.0
      */
     public GroundStation(final TopocentricFrame baseFrame) {

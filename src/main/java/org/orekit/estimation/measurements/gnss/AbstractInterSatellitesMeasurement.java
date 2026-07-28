@@ -36,10 +36,10 @@ import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.ClockOffset;
-import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.time.clocks.ClockModel;
-import org.orekit.time.clocks.AbstractFieldClockModel;
+import org.orekit.time.clocks.ClockOffset;
+import org.orekit.time.clocks.FieldClockModel;
+import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
@@ -113,8 +113,8 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
      * must be span name and not driver name
      * @return emitting satellite clock provider
      */
-    protected AbstractFieldClockModel<Gradient> getRemoteClock(final int freeParameters,
-                                                                final Map<String, Integer> indices) {
+    protected FieldClockModel<Gradient> getRemoteClock(final int freeParameters,
+                                                       final Map<String, Integer> indices) {
         return getRemoteClock().getFieldModel(freeParameters, indices, getDate());
     }
 
@@ -206,7 +206,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
 
         // local and remote satellites
         final TimeStampedFieldPVCoordinates<Gradient> pvaLocal         = getCoordinates(states[0], 0, nbParams);
-        final AbstractFieldClockModel<Gradient>               localClock       = getSatellites().getFirst().getFieldClockModel(nbParams, paramIndices, getDate());
+        final FieldClockModel<Gradient>               localClock       = getSatellites().getFirst().getFieldClockModel(nbParams, paramIndices, getDate());
         final FieldClockOffset<Gradient>              localClockOffset = localClock.getOffset(gDate);
         final FieldPVCoordinatesProvider<Gradient>    remotePV         = getRemotePV(states[1], nbParams);
 
@@ -224,7 +224,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
 
         // Remote satellite at signal emission
         final FieldAbsoluteDate<Gradient>        emissionDate      = arrivalDate.shiftedBy(tauD.negate());
-        final AbstractFieldClockModel<Gradient>          remoteClock       = getRemoteClock(nbParams, paramIndices);
+        final FieldClockModel<Gradient>          remoteClock       = getRemoteClock(nbParams, paramIndices);
         final FieldClockOffset<Gradient>         remoteClockOffset = remoteClock.getOffset(emissionDate);
 
         return new CommonParametersWithDerivatives(states[0], paramIndices, tauD,

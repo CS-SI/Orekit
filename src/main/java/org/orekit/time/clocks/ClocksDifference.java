@@ -28,8 +28,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class ClocksDifference
-    extends AbstractCombinedClocksPair {
+public class ClocksDifference extends AbstractCombinedClocksPair {
 
     /** Simple constructor.
      * <p>
@@ -60,7 +59,7 @@ public class ClocksDifference
     }
 
     @Override
-    public <T extends CalculusFieldElement<T>> AbstractFieldClockModel<Gradient> getFieldModel(final int freeParameters,
+    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
             final Map<String, Integer> indices, final AbsoluteDate date) {
         throw new OrekitException(OrekitMessages.INTERNAL_ERROR); // "Unable to sum the field models of two classes"));
     }

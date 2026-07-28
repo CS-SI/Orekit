@@ -1,4 +1,4 @@
-/* Copyright 2022-2026 Thales Alenia Space
+/* Copyright 2025-2026 Hawkeye 360 (HE360)
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,22 +24,29 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Brian Carter
  * @since 14.0
+ * @see ConstantClockModel
  */
 public class ConstantFieldClockModel<T extends CalculusFieldElement<T>> extends AbstractFieldClockModel<T> {
+
+    /** Constant offset. */
+    private final T offset;
+
     /**
      * Simple constructor.
      *
      * @param referenceDate reference date
+     * @param offset offset value
      */
-    public ConstantFieldClockModel(final FieldAbsoluteDate<T> referenceDate) {
+    public ConstantFieldClockModel(final FieldAbsoluteDate<T> referenceDate, final T offset) {
         super(referenceDate);
+        this.offset = offset;
     }
 
     /** {@inheritDoc} */
     @Override
     public FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
         final T zero = date.getField().getZero();
-        return new FieldClockOffset<>(date, zero, zero, zero);
+        return new FieldClockOffset<>(date, offset, zero, zero);
     }
 
 }

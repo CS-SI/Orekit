@@ -84,8 +84,8 @@ public class ConstantClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> AbstractFieldClockModel<Gradient> getFieldModel(final int freeParameters,
+    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
         final Map<String, Integer> indices, final AbsoluteDate date) {
-        return new ConstantFieldClockModel<>(null);
+        return new ConstantFieldClockModel<>(null, Gradient.constant(freeParameters, offset.getValue(date)));
     }
 }

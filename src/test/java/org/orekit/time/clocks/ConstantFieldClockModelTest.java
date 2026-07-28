@@ -1,4 +1,4 @@
-/* Copyright 2025-2026 Hawkeye 360 (HE360)
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,26 +16,24 @@
  */
 package org.orekit.time.clocks;
 
-import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Test;
 import org.orekit.time.FieldAbsoluteDate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** Container for clock field model.
- *
- * @param <T> type of the field elements
- * @author Brian Carter
- * @since 14.0
- */
-public interface FieldClockModel<T extends CalculusFieldElement<T>> {
-    /** The reference date for the elements of this field clock model.
-     *
-     * @return the field absolute date
-    */
-    FieldAbsoluteDate<T> getReferenceDate();
+class ConstantFieldClockModelTest {
 
-    /** The field clock offset at a given time.
-     *
-     * @param date date at which offset is requested
-     * @return the field clock offset
-    */
-    FieldClockOffset<T> getOffset(FieldAbsoluteDate<T> date);
+    @Test
+    void testGetOffset() {
+        // GIVEN
+        final FieldAbsoluteDate<Binary64> t0 = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
+        final ConstantFieldClockModel<Binary64> constantFieldClockModel = new ConstantFieldClockModel<>(t0, Binary64.ONE);
+        // WHEN
+        final FieldClockOffset<Binary64> offset = constantFieldClockModel.getOffset(t0);
+        // THEN
+        assertEquals(1., offset.getBias().getReal());
+        assertEquals(0., offset.getRate().getReal());
+        assertEquals(0., offset.getAcceleration().getReal());
+    }
 }
