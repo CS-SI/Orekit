@@ -48,7 +48,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <p>The XML EOP files are recognized thanks to their base names, which
  * must match one of the the patterns {@code finals.2000A.*.xml} or
  * {@code finals.*.xml} or {@code eopc04_*.xml} (or the same ending with
- * {@.gz} for gzip-compressed files) where * stands for any string of characters.</p>
+ * {@code .gz} for gzip-compressed files) where * stands for any string of characters.</p>
  * <p>Files containing data (back to 1962) are available at IERS web site: <a
  * href="https://datacenter.iers.org/products/eop/">IERS https data download</a>.</p>
  * <p>
@@ -239,25 +239,28 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
                 if (content == DataFileContent.UNKNOWN) {
                     // try to identify file content
-                    if (qName.equals(TIME_SERIES_ELT)) {
-                        // the file contains final data
-                        content = DataFileContent.DAILY;
-                    } else if (qName.equals(FINALS_ELT)) {
-                        // the file contains final data
-                        content = DataFileContent.FINAL;
-                    } else if (qName.equals(DATA_ELT)) {
-                        final String product = atts.getValue(PRODUCT_ATTR);
-                        if (product != null) {
-                            if (product.startsWith(BULLETIN_A_PROD)) {
-                                // the file contains bulletinA
-                                content     = DataFileContent.BULLETIN_A;
-                                inBulletinA = true;
-                            } else if (product.startsWith(BULLETIN_B_PROD)) {
-                                // the file contains bulletinB
-                                content = DataFileContent.BULLETIN_B;
-                            } else if (product.startsWith(EOP_C04_PROD_PREFIX) && product.endsWith(EOP_C04_PROD_SUFFIX)) {
-                                // the file contains EOP C04
-                                content = DataFileContent.EOP_C04;
+                    switch (qName) {
+                        case TIME_SERIES_ELT ->
+                            // the file contains final data
+                            content = DataFileContent.DAILY;
+                        case FINALS_ELT ->
+                            // the file contains final data
+                            content = DataFileContent.FINAL;
+                        case DATA_ELT -> {
+                            final String product = atts.getValue(PRODUCT_ATTR);
+                            if (product != null) {
+                                if (product.startsWith(BULLETIN_A_PROD)) {
+                                    // the file contains bulletinA
+                                    content = DataFileContent.BULLETIN_A;
+                                    inBulletinA = true;
+                                } else if (product.startsWith(BULLETIN_B_PROD)) {
+                                    // the file contains bulletinB
+                                    content = DataFileContent.BULLETIN_B;
+                                } else if (product.startsWith(EOP_C04_PROD_PREFIX) && product.endsWith(
+                                    EOP_C04_PROD_SUFFIX)) {
+                                    // the file contains EOP C04
+                                    content = DataFileContent.EOP_C04;
+                                }
                             }
                         }
                     }
@@ -336,13 +339,13 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
              * @param qName name of the element
              */
             private void endDailyElement(final String qName) {
-                if (qName.equals(DATE_YEAR_ELT) && buffer.length() > 0) {
+                if (qName.equals(DATE_YEAR_ELT) && !buffer.isEmpty()) {
                     year = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(DATE_MONTH_ELT) && buffer.length() > 0) {
+                } else if (qName.equals(DATE_MONTH_ELT) && !buffer.isEmpty()) {
                     month = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(DATE_DAY_ELT) && buffer.length() > 0) {
+                } else if (qName.equals(DATE_DAY_ELT) && !buffer.isEmpty()) {
                     day = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(MJD_ELT) && buffer.length() > 0) {
+                } else if (qName.equals(MJD_ELT) && !buffer.isEmpty()) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                                getUtc());
@@ -390,7 +393,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
                                                  equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion(), mjdDate));
+                                                 configuration.getVersion(), mjdDate, EopDataType.UNKNOWN));
                     }
                 }
             }
@@ -454,7 +457,8 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, xRate, yRate,
                                                  equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion(), mjdDate));
+                                                 configuration.getVersion(), mjdDate,
+                                                 EopDataType.UNKNOWN));
                     }
                 }
             }

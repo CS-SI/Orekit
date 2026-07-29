@@ -134,6 +134,25 @@ public interface EopHistoryLoader {
         }
 
         /**
+         * Create a new parser for EOP data in the Bulletin A format.
+         *
+         * @param conventions         used to convert between equinox-based and
+         *                            non-rotating-origin-based paradigms.
+         * @param itrfVersionProvider used to determine the ITRF version of parsed EOP.
+         * @param timeScales          used to parse the EOP data.
+         * @return a new parser.
+         * @since 14.0
+         */
+        static Parser newBulletinAParser(
+                final IERSConventions conventions,
+                final ItrfVersionProvider itrfVersionProvider,
+                final TimeScales timeScales) {
+            return new BulletinAFilesLoader.Parser(conventions.getNutationCorrectionConverter(timeScales),
+                                                   itrfVersionProvider,
+                                                   timeScales.getUTC());
+        }
+
+        /**
          * Create a new parser for EOP data in the Bulletin B format.
          *
          * @param conventions         used to convert between equinox-based and
@@ -151,7 +170,6 @@ public interface EopHistoryLoader {
                     itrfVersionProvider,
                     timeScales.getUTC());
         }
-
 
     }
 

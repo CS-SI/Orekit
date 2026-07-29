@@ -428,7 +428,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, Double.NaN, Double.NaN,
                                     equinox[0], equinox[1], nro[0], nro[1],
-                                    getItrfVersion(), date);
+                                    getItrfVersion(), date, EopDataType.FINAL);
 
             }
         }
@@ -542,7 +542,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
                                     equinox[0], equinox[1], nro[0], nro[1],
-                                    getItrfVersion(), date);
+                                    getItrfVersion(), date, EopDataType.FINAL);
 
             }
         }

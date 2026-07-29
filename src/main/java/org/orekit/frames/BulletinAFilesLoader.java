@@ -23,24 +23,27 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.data.DataLoader;
+import org.hipparchus.util.RomanNumeral;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.Month;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for bulletin A files.
@@ -80,7 +83,7 @@ import org.orekit.utils.units.UnitsConverter;
  * to mjd-13, and bulletin A Vol. XXVI No. 040 from 2013-10-03 contained no
  * rapid service pole offsets at all, it contained only final values. Despite
  * this irregularity, rapid service data is continuous over consecutive files,
- * so the mean number of entries is 7 as the files are published on a weekly
+ * so the average number of entries is 7 as the files are published on a weekly
  * basis.
  * </p>
  * <p>
@@ -89,30 +92,44 @@ import org.orekit.utils.units.UnitsConverter;
  * <p>
  * This loader reads both the rapid service, the prediction and the final
  * values parts. As successive files have overlaps between all these sections,
- * values extracted from latest files (with respect to the covered dates)
+ * values extracted from latest files (according to the publication dates from header)
  * override values extracted from earlier files, regardless of the files
  * reading order. If numerous bulletins A covering more than one year are read,
- * one particular date will typically appear in the prediction section of
- * 52 or 53 files, then in the rapid data section of one file, then it will
- * be missing in a few files, and will finally appear a last time in the
- * final values sections of a last file. In this case, the value retained
- * will be the one extracted from the final values section in the more
- * recent file.
+ * one particular date will typically appear:
+ * </p>
+ * <ul>
+ *     <li>in the prediction section of 52 or 53 files,</li>
+ *     <li>then in the rapid data section of one file</li>
+ *     <li>then it will be missing in a few files,</li>
+ *     <li>and finally it will appear in the final values sections of a last file.</li>
+ * </ul>
+ * <p>
+ * In this case, the value retained will be the one extracted from the
+ * final values section in the last published file.
  * </p>
  * <p>
- * If only one bulletin A file is read and it correspond to the first bulletin
+ * If only one bulletin A file is read and if it corresponds to the first bulletin
  * of a month, it will have a roughly one month wide hole between the
  * final data and the rapid data. This hole will trigger an error as EOP
  * continuity is checked by default for at most 5 days holes. In this case,
- * users should call something like {@link Frames#setEOPContinuityThreshold(double)
+ * users should call something like {@link FramesFactory#setEOPContinuityThreshold(double)
  * FramesFactory.setEOPContinuityThreshold(Constants.JULIAN_YEAR)} to prevent
  * the error to be triggered.
  * </p>
- * <p>The bulletin A files are recognized thanks to their base names,
- * which must match the pattern <code>bulletina-xxxx-###.txt</code>,
- * (or the same ending with <code>.gz</code> for gzip-compressed files)
- * where x stands for a roman numeral character and # stands for a digit
- * character.</p>
+ * <p>
+ * The bulletin A files are recognized thanks to their base names, which match the pattern
+ * {@code bulletina-xxx-###.txt}, (or the same ending with {@code .gz} for gzip-compressed
+ * files). In this pattern, xxx is a roman numeral corresponding to the year minus 1987,
+ * and ### is a decimal number corresponding to the number of the week.
+ * </p>
+ * <p>
+ * The week number is generally the ISO week number (i.e. week 1 is the week that contains the
+ * first Thursday of the year). This was not the case in 2009, as the bulletin A for week 1
+ * was published on Thursday, January 8th (probably because Thursday, January 1st was holidays).
+ * So for whole 2009 year, the week number was ISO week minus one. This discrepancy was not
+ * reproduced for years 2015 and 2026, for both years the bulletin A for week 1 was published
+ * on Thursday, January 1st.
+ * </p>
  * <p>
  * Bulletin A in csv format must be read using {@link EopCsvFilesLoader} rather
  * than using this loader. Bulletin A in xml format must be read using {@link EopXmlLoader}
@@ -152,12 +169,31 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
     /** Regular expression matching a real field to ignore. */
     private static final String IGNORED_REAL_FIELD    = "\\p{Blank}+" + REAL_REGEXP;
 
+    /** Regular expression matching a string field to store. */
+    private static final String STORED_STRING_FIELD   = "\\p{Blank}+(\\p{Alpha}+)";
+
     /** Enum for files sections, in expected order.
      * <p>The bulletin A weekly data files contain several sections,
      * each introduced with some fixed header text and followed by tabular data.
      * </p>
      */
     private enum Section {
+
+        /** Publication metadata. */
+        //      **********************************************************************
+        //      *                                                                    *
+        //      *                   I E R S   B U L L E T I N - A                    *
+        //      *                                                                    *
+        //      *           Rapid Service/Prediction of Earth Orientation            *
+        //      **********************************************************************
+        //      5 January 2006                                        Vol. XIX No. 001
+        //      ______________________________________________________________________
+        PUBLICATION_METADATA("^ *\\* *I E R S   B U L L E T I N - A *\\* *$",
+                             LINE_START_REGEXP +
+                             STORED_INTEGER_FIELD + STORED_STRING_FIELD + STORED_INTEGER_FIELD +
+                             "\\p{Blank}*Vol\\." + STORED_STRING_FIELD +
+                             "\\p{Blank}*No\\." + STORED_INTEGER_FIELD +
+                             LINE_END_REGEXP),
 
         /** Earth Orientation Parameters rapid service. */
         // section 2 always contain rapid service data including error fields
@@ -368,28 +404,56 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
-        final Parser parser = new Parser();
-        this.feed(parser);
-        parser.fill(history);
+        final ItrfVersionProvider itrfVersionProvider =
+            new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES, getDataProvidersManager());
+        final Parser parser = new Parser(converter, itrfVersionProvider, getUtc());
+        final EopParserLoader loader = new EopParserLoader(parser);
+        this.feed(loader);
+
+        history.addAll(deduplicate(loader.getEop()));
+
+    }
+
+    /** Deduplicate entries.
+     * <p>
+     * The xp, yp and UT1-UTC data are published as rapid data on a weekly basis but
+     * pole offsets Δδψ/Δδε and x/y are published on a monthly basis. This implies
+     * data for one day is scattered among several files published weeks apart and
+     * need to be merged. This method performs this merge, combining entries that
+     * correspond to a single date. The result is a sorted list with only one entry
+     * for each date.
+     * </p>
+     * @param data raw data, that may contain several partial entries for some dates
+     * @return deduplicated data, with only one entry for each date
+     * @since 14.0
+     */
+    private List<EOPEntry> deduplicate(final Collection<? extends EOPEntry> data) {
+
+        // copy data into an independent list
+        final List<EOPEntry> deduplicated = new ArrayList<>(data);
+
+        // sort chronologically
+        deduplicated.sort(Comparator.comparingInt(EOPEntry::getMjd));
+
+        // process each entry, combining the ones that correspond to the same date
+        int i = 0;
+        while (i < deduplicated.size() - 1) {
+            if (deduplicated.get(i).getMjd() == deduplicated.get(i + 1).getMjd()) {
+                // the two entries are at the same date, we combine them together
+                deduplicated.set(i, new EOPEntry(deduplicated.get(i), deduplicated.get(i + 1)));
+                deduplicated.remove(i + 1);
+            } else {
+                // this entry has been completed, we can go to the next one
+                ++i;
+            }
+        }
+
+        return deduplicated;
+
     }
 
     /** Internal class performing the parsing. */
-    private class Parser implements DataLoader {
-
-        /** Map for xp, yp, dut1 fields read in different sections. */
-        private final Map<Integer, double[]> eopFieldsMap;
-
-        /** Map for pole offsets fields read in different sections. */
-        private final Map<Integer, double[]> poleOffsetsFieldsMap;
-
-        /** Map for EOP data type. */
-        private final Map<Integer, EopDataType> eopDataTypeMap;
-
-        /** Configuration for ITRF versions. */
-        private final ItrfVersionProvider itrfVersionProvider;
-
-        /** ITRF version configuration. */
-        private ITRFVersionLoader.ITRFVersionConfiguration configuration;
+    static class Parser extends AbstractEopParser {
 
         /** File name. */
         private String fileName;
@@ -400,46 +464,46 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         /** Current line. */
         private String line;
 
+        /** Publication date.
+         * @since 14.0
+         */
+        private DateComponents publicationDate;
+
         /** Earliest parsed data. */
         private int mjdMin;
 
         /** Latest parsed data. */
         private int mjdMax;
 
-        /** First MJD parsed in current file. */
-        private int firstMJD;
-
         /** Simple constructor.
+         * @param converter           converter to use
+         * @param itrfVersionProvider to use for determining the ITRF version of the EOP.
+         * @param utc                 time scale for parsing dates.
+         * @since 14.0
          */
-        Parser() {
-            this.eopFieldsMap         = new HashMap<>();
-            this.poleOffsetsFieldsMap = new HashMap<>();
-            this.eopDataTypeMap       = new HashMap<>();
-            this.itrfVersionProvider  = new ITRFVersionLoader(
-                    ITRFVersionLoader.SUPPORTED_NAMES,
-                    getDataProvidersManager());
-            this.lineNumber           = 0;
-            this.mjdMin               = Integer.MAX_VALUE;
-            this.mjdMax               = Integer.MIN_VALUE;
-            this.firstMJD             = -1;
+        public Parser(final NutationCorrectionConverter converter,
+                      final ItrfVersionProvider itrfVersionProvider,
+                      final TimeScale utc) {
+            super(converter, itrfVersionProvider, utc);
+            this.lineNumber      = 0;
+            this.publicationDate = DateComponents.MODIFIED_JULIAN_EPOCH;
+            this.mjdMin          = Integer.MAX_VALUE;
+            this.mjdMax          = Integer.MIN_VALUE;
         }
 
         /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        public void loadData(final InputStream input, final String name)
+        @Override
+        public Collection<EOPEntry> parse(final InputStream input, final String name)
             throws IOException {
 
-            this.configuration = null;
+            // create a new list for entries parsed from this file
+            final List<EOPEntry> eop = new ArrayList<>();
+
             this.fileName      = name;
 
             // set up a reader for line-oriented bulletin A files
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
                 lineNumber =  0;
-                firstMJD   = -1;
 
                 // loop over sections
                 final List<Section> remaining = new ArrayList<>(Arrays.asList(Section.values()));
@@ -448,6 +512,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                      section = nextSection(remaining, reader)) {
 
                     final EopDataType eopDataType = switch (section) {
+                        case PUBLICATION_METADATA -> null;
                         case EOP_FINAL_VALUES, POLE_OFFSETS_IAU_1980_FINAL_VALUES, POLE_OFFSETS_IAU_2000_FINAL_VALUES -> EopDataType.FINAL;
                         case EOP_RAPID_SERVICE, POLE_OFFSETS_IAU_1980_RAPID_SERVICE,
                              POLE_OFFSETS_IAU_2000_RAPID_SERVICE -> EopDataType.RAPID;
@@ -455,18 +520,21 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                     };
 
                     switch (section) {
+                        case PUBLICATION_METADATA:
+                            loadMetadata(section, reader);
+                            break;
                         case EOP_RAPID_SERVICE :
                         case EOP_FINAL_VALUES  :
                         case EOP_PREDICTION    :
-                            loadXYDT(section, reader, name, eopDataType);
+                            eop.addAll(loadXYDT(section, reader, eopDataType));
                             break;
                         case POLE_OFFSETS_IAU_1980_RAPID_SERVICE :
                         case POLE_OFFSETS_IAU_1980_FINAL_VALUES  :
-                            loadPoleOffsets(section, false, reader, name, eopDataType);
+                            eop.addAll(loadPoleOffsets(section, false, reader, eopDataType));
                             break;
                         case POLE_OFFSETS_IAU_2000_RAPID_SERVICE :
                         case POLE_OFFSETS_IAU_2000_FINAL_VALUES  :
-                            loadPoleOffsets(section, true, reader, name, eopDataType);
+                            eop.addAll(loadPoleOffsets(section, true, reader, eopDataType));
                             break;
                         default :
                             // this should never happen
@@ -489,73 +557,9 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                 }
 
             }
-        }
 
-        /** Fill EOP history obtained after reading several files.
-         * @param history history to fill up
-         */
-        public void fill(final SortedSet<EOPEntry> history) {
-
-            double[] currentEOP = null;
-            double[] nextEOP    = eopFieldsMap.get(mjdMin);
-            for (int mjd = mjdMin; mjd <= mjdMax; ++mjd) {
-
-                final AbsoluteDate mjdDate    = AbsoluteDate.createMJDDate(mjd, 0, getUtc());
-                final double[] currentPole    = poleOffsetsFieldsMap.get(mjd);
-                final EopDataType eopDataType = eopDataTypeMap.get(mjd);
-
-                currentEOP = nextEOP;
-                nextEOP    = eopFieldsMap.get(mjd + 1);
-
-                if (currentEOP == null) {
-                    if (currentPole != null) {
-                        // we have only pole offsets for this date
-                        if (configuration == null || !configuration.isValid(mjd)) {
-                            // get a configuration for current name and date range
-                            configuration = itrfVersionProvider.getConfiguration(fileName, mjd);
-                        }
-                        history.add(new EOPEntry(mjd,
-                                                 0.0, Double.NaN, 0.0, 0.0, Double.NaN, Double.NaN,
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[4]),
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
-                                                 configuration.getVersion(),
-                                                 mjdDate, eopDataType));
-                    }
-                } else {
-
-                    if (configuration == null || !configuration.isValid(mjd)) {
-                        // get a configuration for current name and date range
-                        configuration = itrfVersionProvider.getConfiguration(fileName, mjd);
-                    }
-                    if (currentPole == null) {
-                        // we have only EOP for this date
-                        history.add(new EOPEntry(mjd,
-                                                 currentEOP[3], Double.NaN,
-                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1]),
-                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2]),
-                                                 Double.NaN, Double.NaN,
-                                                 0.0, 0.0, 0.0, 0.0,
-                                                 configuration.getVersion(),
-                                                 mjdDate, eopDataType));
-                    } else {
-                        // we have complete data
-                        history.add(new EOPEntry(mjd,
-                                                 currentEOP[3], Double.NaN,
-                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1] ),
-                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2] ),
-                                                 Double.NaN, Double.NaN,
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[4]),
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
-                                                 configuration.getVersion(),
-                                                 mjdDate, eopDataType));
-                    }
-                }
-
-            }
+            // return the parsed eop
+            return eop;
 
         }
 
@@ -583,15 +587,84 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
         }
 
+        /** Read publication metadata.
+         * @param section section to parse
+         * @param reader reader from where file content is obtained
+         * @exception IOException if data can't be read
+         */
+        private void loadMetadata(final Section section, final BufferedReader reader)
+            throws IOException {
+            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+                lineNumber++;
+                final String[] fields = section.getFields(line);
+                if (fields != null) {
+
+                    // parse the date
+                    publicationDate = new DateComponents(Integer.parseInt(fields[2]),
+                                                         Month.parseMonth(fields[1]),
+                                                         Integer.parseInt(fields[0]));
+
+                    // check volume and week number
+                    checkVolume(RomanNumeral.parse(fields[3].toUpperCase(Locale.ROOT)));
+                    checkWeek(Integer.parseInt(fields[4]));
+
+                    return;
+
+                }
+            }
+        }
+
+        /** Check the volume number against publication date.
+         * @param parsed parsed volume
+         */
+        private void checkVolume(final int parsed) {
+            final int computed = publicationDate.getYear() - 1987;
+            if (computed != parsed) {
+                throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
+                                          lineNumber, fileName);
+            }
+        }
+
+        /** Check the week number against publication date.
+         * @param parsed parsed week
+         */
+        private void checkWeek(final int parsed) {
+
+            final int computed = publicationDate.getCalendarWeek();
+
+            if (computed != parsed) {
+
+                // in 2009, January 1st was a Thursday, and the bulletin A numbered as week 1
+                // was published on January 8th. Week numbers in bulletin A were therefore ISO
+                // week number minus 1 throughout the 2009 year. This did not happen in 2015
+                // or 2026 despite both years also started on a Thursday
+                // we allow this special case here
+                final boolean januaryFirstIsThrusday =
+                    new DateComponents(publicationDate.getYear(), 1, 1).getDayOfWeek() == 4;
+                if (januaryFirstIsThrusday && parsed == computed - 1) {
+                    // we accept this sloppy week number
+                    return;
+                }
+
+                throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
+                                          lineNumber, fileName);
+
+            }
+
+        }
+
         /** Read X, Y, UT1-UTC.
          * @param section section to parse
          * @param reader reader from where file content is obtained
-         * @param name name of the file (or zip entry)
          * @param eopDataType EOP data type
+         * @return parsed incomplete EOP
          * @exception IOException if data can't be read
          */
-        private void loadXYDT(final Section section, final BufferedReader reader, final String name, final EopDataType eopDataType)
+        private List<EOPEntry> loadXYDT(final Section section, final BufferedReader reader,
+                                        final EopDataType eopDataType)
             throws IOException {
+
+            final List<EOPEntry> eop = new ArrayList<>();
 
             boolean inValuesPart = false;
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -612,43 +685,29 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                          dc.getMonth() != month ||
                          dc.getDay() != day) {
                         throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
-                                                  name, year, month, day, mjd);
+                                                  fileName, year, month, day, mjd);
                     }
                     mjdMin = FastMath.min(mjdMin, mjd);
                     mjdMax = FastMath.max(mjdMax, mjd);
-                    if (firstMJD < 0) {
-                        // store the first mjd parsed
-                        firstMJD = mjd;
-                    }
 
-                    // get the entry at the same date if it was already parsed
-                    final double[] eop;
-                    if (eopFieldsMap.containsKey(mjd)) {
-                        eop = eopFieldsMap.get(mjd);
-                    } else {
-                        eop = new double[4];
-                        eopFieldsMap.put(mjd, eop);
-                    }
-
-                    if (eop[0] <= firstMJD) {
-                        // either it is the first time we parse this date (eop[0] = 0),
-                        // or the new parsed data is from a more recent file
-                        // in both case, we should update the array
-                        eop[0] = firstMJD;
-                        eop[1] = Double.parseDouble(fields[4]);
-                        eop[2] = Double.parseDouble(fields[5]);
-                        eop[3] = Double.parseDouble(fields[6]);
-                        eopDataTypeMap.put(mjd, eopDataType);
-                    }
+                    eop.add(new EOPEntry(mjd,
+                                         Double.parseDouble(fields[6]), Double.NaN,
+                                         UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[4])),
+                                         UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[5])),
+                                         Double.NaN, Double.NaN,
+                                         0.0, 0.0, 0.0, 0.0,
+                                         getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
+                                         AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
+                                         publicationDate.getMJD(), 0, 0));
 
                 } else if (inValuesPart) {
-                    // we leave values part
-                    return;
+                    // we leave the values part
+                    return eop;
                 }
             }
 
             throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE,
-                                      name, lineNumber);
+                                      fileName, lineNumber);
 
         }
 
@@ -656,13 +715,15 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
          * @param section section to parse
          * @param isNonRotatingOrigin if true, the file contain Non-Rotating Origin nutation corrections
          * @param reader reader from where file content is obtained
-         * @param name name of the file (or zip entry)
          * @param eopDataType EOP data type
+         * @return parsed incomplete EOP
          * @exception IOException if data can't be read
          */
-        private void loadPoleOffsets(final Section section, final boolean isNonRotatingOrigin,
-                                     final BufferedReader reader, final String name, final EopDataType eopDataType)
+        private List<EOPEntry> loadPoleOffsets(final Section section, final boolean isNonRotatingOrigin,
+                                               final BufferedReader reader, final EopDataType eopDataType)
             throws IOException {
+
+            final List<EOPEntry> eop = new ArrayList<>();
 
             boolean inValuesPart = false;
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -678,38 +739,38 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                     mjdMin = FastMath.min(mjdMin, mjd);
                     mjdMax = FastMath.max(mjdMax, mjd);
 
-                    // get the entry at the same date if it was already parsed
-                    final double[] pole;
-                    if (poleOffsetsFieldsMap.containsKey(mjd)) {
-                        pole = poleOffsetsFieldsMap.get(mjd);
+                    if (isNonRotatingOrigin) {
+                        eop.add(new EOPEntry(mjd,
+                                             Double.NaN, Double.NaN,
+                                             Double.NaN, Double.NaN,
+                                             Double.NaN, Double.NaN,
+                                             Double.NaN, Double.NaN,
+                                             UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[1])),
+                                             UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[2])),
+                                             getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
+                                             AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
+                                             0, 0, publicationDate.getMJD()));
                     } else {
-                        pole = new double[5];
-                        poleOffsetsFieldsMap.put(mjd, pole);
-                    }
-
-                    if (pole[0] <= firstMJD) {
-                        // either it is the first time we parse this date (pole[0] = 0),
-                        // or the new parsed data is from a more recent file
-                        // in both case, we should update the array
-                        pole[0] = firstMJD;
-                        if (isNonRotatingOrigin) {
-                            pole[1] = Double.parseDouble(fields[1]);
-                            pole[2] = Double.parseDouble(fields[2]);
-                        } else {
-                            pole[3] = Double.parseDouble(fields[1]);
-                            pole[4] = Double.parseDouble(fields[2]);
-                        }
-                        eopDataTypeMap.put(mjd, eopDataType);
+                        eop.add(new EOPEntry(mjd,
+                                             Double.NaN, Double.NaN,
+                                             Double.NaN, Double.NaN,
+                                             Double.NaN, Double.NaN,
+                                             UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[1])),
+                                             UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[2])),
+                                             Double.NaN, Double.NaN,
+                                             getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
+                                             AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
+                                             0, publicationDate.getMJD(), 0));
                     }
 
                 } else if (inValuesPart) {
-                    // we leave values part
-                    return;
+                    // we leave the values part
+                    return eop;
                 }
             }
 
             throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE,
-                                      name, lineNumber);
+                                      fileName, lineNumber);
 
         }
 

@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,8 +66,7 @@ class EopParserLoader implements DataLoader {
     }
 
     @Override
-    public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException {
+    public void loadData(final InputStream input, final String name) throws IOException {
         history.addAll(parser.parse(input, name));
     }
 

@@ -149,14 +149,16 @@ public class EOPHistory {
             if (missSomeDerivatives(data)) {
                 // we need to estimate the missing derivatives
                 final ImmutableTimeStampedCache<EOPEntry> rawCache =
-                                new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, data.size()), data);
+                                new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1,
+                                                                             data.size()), data);
                 final List<EOPEntry>fixedData = new ArrayList<>();
                 for (final EOPEntry entry : rawCache.getAll()) {
                     fixedData.add(fixDerivatives(entry, rawCache));
                 }
                 cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, fixedData.size()), fixedData);
             } else {
-                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, data.size()), data);
+                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1,
+                                                                     data.size()), data);
             }
             hasData = true;
         } else {

@@ -26,6 +26,7 @@ import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
+import org.orekit.frames.EopDataType;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -207,7 +208,8 @@ public class Utils {
                                   Double.NaN, Double.NaN,
                                   equinox[0], equinox[1],
                                   nro[0], nro[1], version,
-                                  AbsoluteDate.createMJDDate((int) row[0], 0.0, utc)));
+                                  AbsoluteDate.createMJDDate((int) row[0], 0.0, utc),
+                                  EopDataType.PREDICTED));
         }
         return list;
     }

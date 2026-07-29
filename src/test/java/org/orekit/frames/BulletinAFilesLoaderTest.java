@@ -112,7 +112,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
         new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME, manager, () -> utc).fillHistory(null, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
-                data, true);
+                                            data, true);
         AbsoluteDate date = new AbsoluteDate(2013, 8, 26, 12, 0, 0, TimeScalesFactory.getUTC());
         // the following values are from bulletina-xxvi-040.txt, final values section, lines 79-82
         Assertions.assertEquals(        (-3 * 0.04058 + 27 * 0.04000 + 27 * 0.03953 - 3 * 0.03917) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
@@ -161,14 +161,24 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testInconsistentDate() {
+    public void testInconsistentYear() {
         setRoot("bulletinA");
-        checkInconsistent("bulletina-inconsistent-year.txt");
-        checkInconsistent("bulletina-inconsistent-month.txt");
-        checkInconsistent("bulletina-inconsistent-day.txt");
+        checkInconsistentDate("bulletina-inconsistent-year.txt");
     }
 
-    private void checkInconsistent(String name) {
+    @Test
+    public void testInconsistentMonth() {
+        setRoot("bulletinA");
+        checkInconsistentDate("bulletina-inconsistent-month.txt");
+    }
+
+    @Test
+    public void testInconsistentDay() {
+        setRoot("bulletinA");
+        checkInconsistentDate("bulletina-inconsistent-day.txt");
+    }
+
+    private void checkInconsistentDate(String name) {
         SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
         try {
             new BulletinAFilesLoader(name, manager, () -> utc).fillHistory(null, history);
@@ -176,6 +186,30 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE, oe.getSpecifier());
             Assertions.assertTrue(((String) oe.getParts()[0]).endsWith(name));
+        }
+    }
+
+    @Test
+    public void testInconsistentVolume() {
+        setRoot("bulletinA");
+        checkInconsistentHeader("bulletina-inconsistent-volume.txt");
+    }
+
+    @Test
+    public void testInconsistentWeek() {
+        setRoot("bulletinA");
+        checkInconsistentHeader("bulletina-inconsistent-week.txt");
+    }
+
+    private void checkInconsistentHeader(String name) {
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        try {
+            new BulletinAFilesLoader(name, manager, () -> utc).fillHistory(null, history);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(12, (Integer) oe.getParts()[0]);
+            Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(name));
         }
     }
 

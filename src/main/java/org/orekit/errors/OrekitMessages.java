@@ -99,6 +99,9 @@ public enum OrekitMessages implements Localizable {
     /** NO_EARTH_ORIENTATION_PARAMETERS_LOADED. */
     NO_EARTH_ORIENTATION_PARAMETERS_LOADED("no Earth Orientation Parameters loaded"),
 
+    /** INCOMPATIBLE_EARTH_ORIENTATION_PARAMETERS. */
+    INCOMPATIBLE_EARTH_ORIENTATION_PARAMETERS("cannot combine Earth Orientation Parameters at different dates ({0} and {1})"),
+
     /** MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES. */
     MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES("missing Earth Orientation Parameters between {0} and {1}"),
 

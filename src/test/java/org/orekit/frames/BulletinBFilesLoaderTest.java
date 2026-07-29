@@ -23,6 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -66,6 +67,14 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                            history, false).getEndDate());
+        Assertions.assertEquals(new DateComponents(2006, 1, 31).getMJD(),
+                                history.getFirst().getDtPub());
+        Assertions.assertEquals(new DateComponents(2006, 1, 31).getMJD(),
+                                history.getFirst().getNutPub());
+        Assertions.assertEquals(new DateComponents(2006, 4,  4).getMJD(),
+                                history.getLast().getDtPub());
+        Assertions.assertEquals(new DateComponents(2006, 4,  4).getMJD(),
+                                history.getLast().getNutPub());
     }
 
     @Test

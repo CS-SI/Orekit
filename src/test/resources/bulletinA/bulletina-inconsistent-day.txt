@@ -3,7 +3,15 @@
       *   This file is a faked BULLETIN A created for test purposes        *   
       **********************************************************************   
                                                                                
-      COMBINED EARTH ORIENTATION PARAMETERS:                                   
+      **********************************************************************
+      *                                                                    *
+      *                   I E R S   B U L L E T I N - A                    *
+      *                                                                    *
+      *           Rapid Service/Prediction of Earth Orientation            *
+      **********************************************************************
+      10 October 2013                                      Vol. XXVI No. 041
+
+      COMBINED EARTH ORIENTATION PARAMETERS:
 
    13 10  4  56569 0.12860 .00009 0.29106 .00009  0.008805 0.000022          
    13 10  5  56570 0.12785 .00009 0.29018 .00009  0.007495 0.000026          
