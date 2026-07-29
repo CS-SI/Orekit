@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
@@ -34,6 +35,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
@@ -44,6 +46,8 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TrackingCoordinates;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,15 +63,15 @@ class ParallacticRefractionModifierTest {
     @Test
     void testConstructor() {
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
-        Assertions.assertEquals("parallactic refraction", modifier.getEffectName());
-        Assertions.assertEquals(1.000292, modifier.getRefractionIndex());
-        Assertions.assertEquals(8e3, modifier.getTroposphereAltitude());
+        assertEquals("parallactic refraction", modifier.getEffectName());
+        assertEquals(1.000292, modifier.getRefractionIndex());
+        assertEquals(8e3, modifier.getTroposphereAltitude());
     }
 
     @Test
     void testGetters() {
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
-        Assertions.assertEquals("parallactic refraction", modifier.getEffectName());
+        assertEquals("parallactic refraction", modifier.getEffectName());
         Assertions.assertTrue(modifier.getParametersDrivers().isEmpty());
     }
 
@@ -82,8 +86,9 @@ class ParallacticRefractionModifierTest {
         verify(angularRaDec).getObserver();
     }
 
-    @Test
-    void testZenith() {
+    @ParameterizedTest
+    @EnumSource(value = Predefined.class, names = {"GCRF", "EME2000", "ICRF"})
+    void testZenith(final Predefined predefined) {
         // GIVEN
         final ReferenceEllipsoid ellipsoid = ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true));
         final GeodeticPoint point = new GeodeticPoint(1., -2., 3.);
@@ -96,10 +101,9 @@ class ParallacticRefractionModifierTest {
         final PVCoordinates pvCoordinates = transform.transformPVCoordinates(new PVCoordinates(topoPosition, Vector3D.ZERO));
         final SpacecraftState state = new SpacecraftState(new AbsolutePVCoordinates(gcrf, date, pvCoordinates));
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
-        final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getGCRF(),
+        final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getFrame(predefined),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
-        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = new EstimatedMeasurementBase<>(observedMeasurement,
-                0, 0, new SpacecraftState[] {state}, new TimeStampedPVCoordinates[0]);
+        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         estimatedMeasurement.setEstimatedValue(geometricRaDec.getAlpha(), geometricRaDec.getDelta());
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
         // WHEN
@@ -107,17 +111,18 @@ class ParallacticRefractionModifierTest {
         // THEN
         final double modifiedRightAscension = estimatedMeasurement.getEstimatedValue()[0];
         final double modifiedDeclination = estimatedMeasurement.getEstimatedValue()[1];
-        Assertions.assertEquals(geometricRaDec.getAlpha(), modifiedRightAscension, 1e-10);
-        Assertions.assertEquals(geometricRaDec.getDelta(), modifiedDeclination, 1e-10);
+        assertEquals(estimatedMeasurement.getEstimatedValue()[0], modifiedRightAscension, 1e-10);
+        assertEquals(estimatedMeasurement.getEstimatedValue()[1], modifiedDeclination, 1e-10);
     }
 
-    @Test
-    void testAlmostInfiniteDistance() {
+    @ParameterizedTest
+    @ValueSource(doubles = {1., 5., 10., 20., 30., 40., 50., 70., 80.})
+    void testAlmostInfiniteDistance(final double elevation) {
         // GIVEN
         final ReferenceEllipsoid ellipsoid = ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true));
         final GeodeticPoint point = new GeodeticPoint(1., -2., 3.);
         final double largeDistance = 1e8;
-        final TrackingCoordinates coordinates = new TrackingCoordinates(2., 1., largeDistance);
+        final TrackingCoordinates coordinates = new TrackingCoordinates(2., FastMath.toRadians(elevation), largeDistance);
         final TopocentricFrame topocentricFrame = new TopocentricFrame(ellipsoid, point, "");
         final Vector3D topoPosition = TopocentricFrame.getTopocentricPosition(coordinates);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
@@ -128,17 +133,15 @@ class ParallacticRefractionModifierTest {
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getICRF(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
-        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = new EstimatedMeasurementBase<>(observedMeasurement,
-                0, 0, new SpacecraftState[] {state}, new TimeStampedPVCoordinates[0]);
-        estimatedMeasurement.setEstimatedValue(geometricRaDec.getAlpha(), geometricRaDec.getDelta());
+        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
         // WHEN
         modifier.modifyWithoutDerivatives(estimatedMeasurement);
         // THEN
         final double modifiedRightAscension = estimatedMeasurement.getEstimatedValue()[0];
         final double modifiedDeclination = estimatedMeasurement.getEstimatedValue()[1];
-        Assertions.assertEquals(geometricRaDec.getAlpha(), modifiedRightAscension, 1e-7);
-        Assertions.assertEquals(geometricRaDec.getDelta(), modifiedDeclination, 1e-7);
+        assertEquals(estimatedMeasurement.getEstimatedValue()[0], modifiedRightAscension, 1e-7);
+        assertEquals(estimatedMeasurement.getEstimatedValue()[1], modifiedDeclination, 1e-7);
     }
 
     @Test
@@ -150,16 +153,14 @@ class ParallacticRefractionModifierTest {
         final TopocentricFrame topocentricFrame = new TopocentricFrame(ellipsoid, point, "");
         final Vector3D topoPosition = TopocentricFrame.getTopocentricPosition(coordinates);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final Frame gcrf = FramesFactory.getGCRF();
-        final Transform transform = topocentricFrame.getTransformTo(gcrf, date);
+        final Frame inertial = FramesFactory.getEME2000();
+        final Transform transform = topocentricFrame.getTransformTo(inertial, date);
         final PVCoordinates pvCoordinates = transform.transformPVCoordinates(new PVCoordinates(topoPosition, Vector3D.ZERO));
-        final SpacecraftState state = new SpacecraftState(new AbsolutePVCoordinates(gcrf, date, pvCoordinates));
+        final SpacecraftState state = new SpacecraftState(new AbsolutePVCoordinates(inertial, date, pvCoordinates));
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getICRF(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
-        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = new EstimatedMeasurementBase<>(observedMeasurement,
-                0, 0, new SpacecraftState[] {state}, new TimeStampedPVCoordinates[0]);
-        estimatedMeasurement.setEstimatedValue(geometricRaDec.getAlpha(), geometricRaDec.getDelta());
+        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final double smallTroposphereAltitude = 1e-10;
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier(smallTroposphereAltitude, 1.);
         // WHEN
@@ -167,8 +168,8 @@ class ParallacticRefractionModifierTest {
         // THEN
         final double modifiedRightAscension = estimatedMeasurement.getEstimatedValue()[0];
         final double modifiedDeclination = estimatedMeasurement.getEstimatedValue()[1];
-        Assertions.assertEquals(geometricRaDec.getAlpha(), modifiedRightAscension, 1e-7);
-        Assertions.assertEquals(geometricRaDec.getDelta(), modifiedDeclination, 1e-7);
+        assertEquals(estimatedMeasurement.getEstimatedValue()[0], modifiedRightAscension, 1e-7);
+        assertEquals(estimatedMeasurement.getEstimatedValue()[1], modifiedDeclination, 1e-7);
     }
 
     @ParameterizedTest
@@ -183,22 +184,20 @@ class ParallacticRefractionModifierTest {
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final Frame gcrf = FramesFactory.getGCRF();
         final Transform transform = topocentricFrame.getTransformTo(gcrf, date);
-        final PVCoordinates pvCoordinates = transform.transformPVCoordinates(new PVCoordinates(topoPosition, Vector3D.ZERO));
+        final PVCoordinates pvCoordinates = transform.transformPVCoordinates(new PVCoordinates(topoPosition, Vector3D.PLUS_K.scalarMultiply(7e3)));
         final SpacecraftState state = new SpacecraftState(new AbsolutePVCoordinates(gcrf, date, pvCoordinates));
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
-        final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getEME2000(),
+        final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getICRF(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
-        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = new EstimatedMeasurementBase<>(observedMeasurement,
-                0, 0, new SpacecraftState[] {state}, new TimeStampedPVCoordinates[0]);
-        estimatedMeasurement.setEstimatedValue(geometricRaDec.getAlpha(), geometricRaDec.getDelta());
+        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
         // WHEN
         modifier.modifyWithoutDerivatives(estimatedMeasurement);
         // THEN
         final double modifiedRightAscension = estimatedMeasurement.getEstimatedValue()[0];
         final double modifiedDeclination = estimatedMeasurement.getEstimatedValue()[1];
-        Assertions.assertEquals(geometricRaDec.getAlpha(), modifiedRightAscension, FastMath.toRadians(20./3600.));
-        Assertions.assertEquals(geometricRaDec.getDelta(), modifiedDeclination, FastMath.toRadians(20./3600.));
+        assertEquals(estimatedMeasurement.getEstimatedValue()[0], modifiedRightAscension, FastMath.toRadians(20./3600.));
+        assertEquals(estimatedMeasurement.getEstimatedValue()[1], modifiedDeclination, FastMath.toRadians(20./3600.));
     }
 
     @Test
@@ -217,25 +216,24 @@ class ParallacticRefractionModifierTest {
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getEME2000(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
-        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = new EstimatedMeasurementBase<>(observedMeasurement,
-                0, 0, new SpacecraftState[] {state}, new TimeStampedPVCoordinates[0]);
-        estimatedMeasurement.setEstimatedValue(geometricRaDec.getAlpha(), geometricRaDec.getDelta());
+        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
         // WHEN
         modifier.modifyWithoutDerivatives(estimatedMeasurement);
         // THEN
         final double modifiedRightAscension = estimatedMeasurement.getEstimatedValue()[0];
         final double modifiedDeclination = estimatedMeasurement.getEstimatedValue()[1];
-        Assertions.assertEquals(geometricRaDec.getAlpha(), modifiedRightAscension);
-        Assertions.assertEquals(geometricRaDec.getDelta(), modifiedDeclination);
+        assertEquals(estimatedMeasurement.getEstimatedValue()[0], modifiedRightAscension);
+        assertEquals(estimatedMeasurement.getEstimatedValue()[1], modifiedDeclination);
     }
 
-    @Test
-    void testValueKaplan() {
+    @ParameterizedTest
+    @ValueSource(doubles = {25., 30., 40., 50., 70., 80.})
+    void testValueKaplan(final double elevation) {
         // GIVEN
         final ReferenceEllipsoid ellipsoid = ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true));
         final GeodeticPoint point = new GeodeticPoint(1., -2., 3.);
-        final TrackingCoordinates coordinates = new TrackingCoordinates(2., FastMath.toRadians(25.), 100e3);
+        final TrackingCoordinates coordinates = new TrackingCoordinates(2., FastMath.toRadians(elevation), 100e3);
         final TopocentricFrame topocentricFrame = new TopocentricFrame(ellipsoid, point, "");
         final Vector3D topoPosition = TopocentricFrame.getTopocentricPosition(coordinates);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
@@ -244,27 +242,65 @@ class ParallacticRefractionModifierTest {
         final PVCoordinates pvCoordinates = transform.transformPVCoordinates(new PVCoordinates(topoPosition, Vector3D.ZERO));
         final SpacecraftState state = new SpacecraftState(new AbsolutePVCoordinates(gcrf, date, pvCoordinates));
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
-        final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getICRF(),
+        final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getEME2000(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
-        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = new EstimatedMeasurementBase<>(observedMeasurement,
-                0, 0, new SpacecraftState[] {state}, new TimeStampedPVCoordinates[0]);
-        estimatedMeasurement.setEstimatedValue(geometricRaDec.getAlpha(), geometricRaDec.getDelta());
+        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
         // WHEN
         modifier.modifyWithoutDerivatives(estimatedMeasurement);
         // THEN
         final double modifiedRightAscension = estimatedMeasurement.getEstimatedValue()[0];
         final double modifiedDeclination = estimatedMeasurement.getEstimatedValue()[1];
-        final Vector3D originalLos = retrieveLos(geometricRaDec.getAlpha(), geometricRaDec.getDelta(), gcrf, topocentricFrame, date);
+        final Vector3D originalLos = retrieveLos(estimatedMeasurement.getOriginalEstimatedValue()[0],
+                estimatedMeasurement.getOriginalEstimatedValue()[1], gcrf, topocentricFrame, date);
         final Vector3D modifiedLos = retrieveLos(modifiedRightAscension, modifiedDeclination, gcrf, topocentricFrame, date);
-        Assertions.assertEquals(originalLos.getAlpha(), modifiedLos.getAlpha(), 1e-10);
+        assertEquals(originalLos.getAlpha(), modifiedLos.getAlpha(), 1e-10);
         // Kaplan's formula: Eq. (3)
         final double s = 8e3;
         final double altitude = topocentricFrame.getParentShape().transform(state.getPosition(), state.getFrame(), state.getDate()).getAltitude();
         final double zPrime = FastMath.asin(FastMath.sin(MathUtils.SEMI_PI - originalLos.getDelta()) / 1.000292);
         final double correctedElevation = MathUtils.SEMI_PI - FastMath.atan((s / altitude) * FastMath.tan(zPrime) + (1. - s / altitude) * FastMath.tan(MathUtils.SEMI_PI - originalLos.getDelta()));
         final double expectedAbsoluteDifference = FastMath.abs(correctedElevation - originalLos.getDelta());
-        Assertions.assertEquals(expectedAbsoluteDifference, modifiedLos.getDelta() - originalLos.getDelta(), 1e-6);
+        assertEquals(expectedAbsoluteDifference, modifiedLos.getDelta() - originalLos.getDelta(), 1e-6);
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {2000., 20000, 50000})
+    void testSwapAberration(final double range) {
+        // GIVEN
+        final ReferenceEllipsoid ellipsoid = ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(true));
+        final GeodeticPoint point = new GeodeticPoint(1., -2., 3.);
+        final TrackingCoordinates coordinates = new TrackingCoordinates(2., FastMath.toRadians(1.), range * 1e3);
+        final TopocentricFrame topocentricFrame = new TopocentricFrame(ellipsoid, point, "");
+        final Vector3D topoPosition = TopocentricFrame.getTopocentricPosition(coordinates);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final Transform transform = topocentricFrame.getTransformTo(gcrf, date);
+        final PVCoordinates pvCoordinates = transform.transformPVCoordinates(new PVCoordinates(topoPosition, Vector3D.PLUS_J.scalarMultiply(3.e3)));
+        final SpacecraftState state = new SpacecraftState(new AbsolutePVCoordinates(gcrf, date, pvCoordinates));
+        final Vector3D geometricRaDec = transform.transformVector(topoPosition);
+        final GroundStation station = new GroundStation(topocentricFrame);
+        station.getClockBiasDriver().setValue(0.01);
+        final AngularRaDec observedMeasurement = new AngularRaDec(station, FramesFactory.getICRF(),
+                date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
+        final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = new EstimatedMeasurementBase<>(observedMeasurement,
+                0, 0, new SpacecraftState[] {state}, new TimeStampedPVCoordinates[0]);
+        estimatedMeasurement.setEstimatedValue(geometricRaDec.getAlpha(), geometricRaDec.getDelta());
+        final ParallacticRefractionModifier refractionModifier = new ParallacticRefractionModifier();
+        final AberrationModifier aberrationModifier = new AberrationModifier();
+        final AngularRaDec raDecRefractionFirst = new AngularRaDec(station, gcrf, date, new double[] {geometricRaDec.getAlpha(),
+                geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
+        raDecRefractionFirst.addModifier(refractionModifier);
+        raDecRefractionFirst.addModifier(aberrationModifier);
+        // WHEN
+        final EstimatedMeasurementBase<AngularRaDec> estimated = raDecRefractionFirst.estimateWithoutDerivatives(new SpacecraftState[] {state});
+        // THEN
+        final AngularRaDec radecRefractionLast = new AngularRaDec(station, gcrf, date, raDecRefractionFirst.getObservedValue(),
+                raDecRefractionFirst.getMeasurementQuality(), raDecRefractionFirst.getSignalTravelTimeModel(), new ObservableSatellite(0));
+        radecRefractionLast.addModifier(aberrationModifier);
+        radecRefractionLast.addModifier(refractionModifier);
+        final EstimatedMeasurementBase<AngularRaDec> expected = radecRefractionLast.estimateWithoutDerivatives(new SpacecraftState[] {state});
+        assertArrayEquals(expected.getEstimatedValue(), estimated.getEstimatedValue(), 1e-7);
     }
 
     private static Vector3D retrieveLos(final double ra, final double dec, final Frame frame,
