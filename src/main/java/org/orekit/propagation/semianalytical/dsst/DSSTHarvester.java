@@ -25,7 +25,6 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
@@ -148,16 +147,6 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
 
         return jacobian;
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public RealMatrix getInitialStateJacobianVsBuilderParameters() {
-        final EquinoctialOrbit initialOrbit =
-            (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(propagator.getBaseInitialState().getOrbit());
-        final double[][] jacobian = new double[6][6];
-        initialOrbit.getJacobianWrtParameters(PositionAngleType.MEAN, jacobian);
-        return MatrixUtils.createRealMatrix(jacobian);
     }
 
     /** Get the Jacobian matrix B1 (B1 = ∂εη/∂Y).
