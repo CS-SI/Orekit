@@ -106,6 +106,11 @@ public class ParallacticRefractionModifier implements EstimationModifier<Angular
         return Collections.emptyList();
     }
 
+    @Override
+    public boolean dependsOnParticipantsStates() {
+        return true;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularRaDec> estimated) {
@@ -113,37 +118,39 @@ public class ParallacticRefractionModifier implements EstimationModifier<Angular
         // Observation object
         final Observer observer = estimated.getObservedMeasurement().getObserver();
         if (observer instanceof GroundObserver groundObserver) {
-            // Observation date
-            final AbsoluteDate date = estimated.getDate();
-
             // Satellite height
+            final AbsoluteDate date = estimated.getDate();
             final SpacecraftState state = estimated.getStates()[0];
             final double altitude = groundObserver.getParentShape().transform(state.getPosition(), state.getFrame(), date).getAltitude();
 
             // Compute Azimuth/Elevation
-            final double[] estimatedRaDec = estimated.getEstimatedValue();
             final Frame frame = estimated.getObservedMeasurement().getReferenceFrame();
             final GeodeticPoint gp = groundObserver.getOffsetGeodeticPoint(date);
             final TopocentricFrame topocentricFrame = new TopocentricFrame(groundObserver.getParentShape(), gp, "station");
-            final StaticTransform transform = frame.getTransformTo(topocentricFrame, date);
-            final Vector3D los = transform.transformVector(new Vector3D(estimatedRaDec[0], estimatedRaDec[1]));
+            final double offset = observer.getOffsetValue(estimated.getDate());
+            final AbsoluteDate actualReceptionDate = estimated.getDate().shiftedBy(-offset);
+            final Vector3D raDecLos = state.getPosition(frame).subtract(topocentricFrame.getPosition(actualReceptionDate, frame));
+            final StaticTransform transform = frame.getTransformTo(topocentricFrame, actualReceptionDate);
+            final Vector3D los = transform.transformVector(raDecLos);
             final double elevation = los.getDelta();
 
             if (elevation > 0.) {
-                // Apply correction on elevation
+                // Compute correction on elevation
                 final double ratio = altitude / troposphereAltitude;
                 final double parallacticCorrection = (1. - refractionIndex ) * FastMath.tan(MathUtils.SEMI_PI - elevation) * (FastMath.exp(-ratio) - 1.) / ratio;
-                final double modifiedElevation = elevation + parallacticCorrection;
 
-                // Convert back to RA/Dec
+                // Convert back to RA/Dec corrections
+                final double modifiedElevation = elevation + parallacticCorrection;
                 final Vector3D convertedBack = transform.getInverse().transformVector(new Vector3D(los.getAlpha(), modifiedElevation));
-                final double   baseRightAscension = convertedBack.getAlpha();
+                final double declinationCorrection = convertedBack.getDelta() - raDecLos.getDelta();
+                final double[] estimatedValue = estimated.getEstimatedValue();
+                final double   baseRightAscension = estimatedValue[0] + (convertedBack.getAlpha() - raDecLos.getAlpha());
                 final double observedRightAscension = estimated.getObservedMeasurement().getObservedValue()[0];
                 final double   twoPiWrap          = MathUtils.normalizeAngle(baseRightAscension, observedRightAscension) - baseRightAscension;
                 final double   rightAscension     = baseRightAscension + twoPiWrap;
 
                 // Update estimated values
-                estimated.modifyEstimatedValue(this, rightAscension, convertedBack.getDelta());
+                estimated.modifyEstimatedValue(this, rightAscension, estimatedValue[1] + declinationCorrection);
             }
         } else {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
