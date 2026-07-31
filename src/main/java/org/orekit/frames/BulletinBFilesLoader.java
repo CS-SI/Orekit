@@ -18,9 +18,6 @@ package org.orekit.frames;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,6 +29,7 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -304,11 +302,11 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final InputStream input, final String name)
+        public Collection<EOPEntry> parse(final DataSource source)
             throws IOException {
 
             // set up a reader for line-oriented bulletin B files
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            try (BufferedReader reader = new BufferedReader(source.getOpener().openReaderOnce())) {
                 // reset parse info to start new file
                 fieldsMap.clear();
                 lineNumber    = 0;
@@ -325,41 +323,41 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                 // we use only the month truncated to its standard 3-letter abbreviation here
                 // in order to allow parsing the publication date from these erroneous files and
                 // identify the proper month despite the spelling error.
-                final Matcher section0Matcher = seekToLine(SECTION_0_DATE, reader, name);
+                final Matcher section0Matcher = seekToLine(SECTION_0_DATE, reader, source.getName());
                 publicationDate = new DateComponents(Integer.parseInt(section0Matcher.group(3)),
                                                      Month.parseMonth(section0Matcher.group(2).substring(0, 3)),
                                                      Integer.parseInt(section0Matcher.group(1)));
 
                 // skip header up to section 1 and check if we are parsing an old or new format file
-                final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
+                final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, source.getName());
                 final boolean isOldFormat = "EARTH".equals(section1Matcher.group(1));
 
                 if (isOldFormat) {
 
                     // extract MJD bounds for final data from section 1
-                    loadMJDBoundsOldFormat(reader, name);
+                    loadMJDBoundsOldFormat(reader, source.getName());
 
-                    final Matcher section2Matcher = seekToLine(SECTION_2_HEADER_OLD, reader, name);
+                    final Matcher section2Matcher = seekToLine(SECTION_2_HEADER_OLD, reader, source.getName());
                     final boolean isNonRotatingOrigin = section2Matcher.group(1).startsWith("dX");
-                    loadEOPOldFormat(isNonRotatingOrigin, reader, name);
+                    loadEOPOldFormat(isNonRotatingOrigin, reader, source.getName());
 
                 } else {
 
                     // extract x, y, UT1-UTC, dx, dy from section 1
-                    loadXYDTDxDyNewFormat(reader, name);
+                    loadXYDTDxDyNewFormat(reader, source.getName());
 
                     // skip to section 3
-                    seekToLine(SECTION_3_HEADER, reader, name);
+                    seekToLine(SECTION_3_HEADER, reader, source.getName());
 
                     // extract LOD data from section 3
-                    loadLODNewFormat(reader, name);
+                    loadLODNewFormat(reader, source.getName());
 
                     // set up the EOP entries
                     for (Map.Entry<Integer, double[]> entry : fieldsMap.entrySet()) {
                         final int mjd = entry.getKey();
                         final double[] array = entry.getValue();
                         if (Double.isNaN(array[0] + array[1] + array[2] + array[3] + array[4] + array[5])) {
-                            throw notifyUnexpectedErrorEncountered(name);
+                            throw notifyUnexpectedErrorEncountered(source.getName());
                         }
                         final AbsoluteDate mjdDate =
                                 new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
@@ -367,7 +365,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                         final double[] equinox = getConverter().toEquinox(mjdDate, array[4], array[5]);
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
+                            configuration = getItrfVersionProvider().getConfiguration(source.getName(), mjd);
                         }
                         history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
                                                  Double.NaN, Double.NaN,

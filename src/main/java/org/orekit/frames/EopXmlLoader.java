@@ -17,9 +17,6 @@
 package org.orekit.frames;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,6 +28,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -114,7 +112,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final InputStream input, final String name)
+        public Collection<EOPEntry> parse(final DataSource source)
             throws IOException, OrekitException {
             try {
                 this.history = new ArrayList<>();
@@ -122,8 +120,8 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                 final SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 
                 // read all file, ignoring header
-                parser.parse(new InputSource(new InputStreamReader(input, StandardCharsets.UTF_8)),
-                             new EOPContentHandler(name));
+                parser.parse(new InputSource(source.getOpener().openStreamOnce()),
+                             new EOPContentHandler(source.getName()));
 
                 return history;
 

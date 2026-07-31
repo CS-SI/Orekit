@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="update" issue="xxxx">
+              Use DataSource in EopHistoryLoader.Parser interface.
+          </action>
           <action dev="serrof" type="add" issue="1981">
               Add native RMS convergence checker.
           </action>

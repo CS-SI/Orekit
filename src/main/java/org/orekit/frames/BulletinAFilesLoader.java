@@ -18,9 +18,6 @@ package org.orekit.frames;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,6 +30,7 @@ import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.RomanNumeral;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -453,16 +451,16 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final InputStream input, final String name)
+        public Collection<EOPEntry> parse(final DataSource source)
             throws IOException {
 
             // create a new list for entries parsed from this file
             final List<EOPEntry> eop = new ArrayList<>();
 
-            this.fileName      = name;
+            this.fileName      = source.getName();
 
             // set up a reader for line-oriented bulletin A files
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            try (BufferedReader reader = new BufferedReader(source.getOpener().openReaderOnce())) {
                 lineNumber =  0;
 
                 // loop over sections
@@ -513,7 +511,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                      remaining.contains(Section.POLE_OFFSETS_IAU_2000_RAPID_SERVICE)) ||
                     (remaining.contains(Section.POLE_OFFSETS_IAU_1980_FINAL_VALUES) ^
                      remaining.contains(Section.POLE_OFFSETS_IAU_2000_FINAL_VALUES))) {
-                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
+                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, source.getName());
                 }
 
             }
