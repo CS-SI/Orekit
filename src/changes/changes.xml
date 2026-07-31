@@ -20,6 +20,12 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="ltafur" type="fix" issue="1993">
+              Fixed NRLMSISE00 local solar time being computed in the caller's frame
+              instead of the Earth-fixed body frame, which biased the density when the
+              position was expressed in an inertial frame (as DragForce does), mirroring
+              the existing DTM2000 behaviour.
+          </action>
           <action dev="serrof" type="add" issue="1988">
               Add parallactic refraction modifier.
           </action>
