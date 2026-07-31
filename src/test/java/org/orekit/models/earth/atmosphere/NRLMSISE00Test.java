@@ -16,6 +16,10 @@
  */
 package org.orekit.models.earth.atmosphere;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -50,13 +54,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 
 class NRLMSISE00Test {
@@ -252,6 +249,49 @@ class NRLMSISE00Test {
         gtd7d.invoke(out, 400.0);
         Assertions.assertEquals(rho, ((Double) getDensity.invoke(out, 5)).doubleValue(), rho * 1.e-3);
 
+    }
+
+    /** Test issue 1993: local solar time must be computed about Earth's rotation axis,
+     * i.e. in the Earth-fixed body frame. The density at a fixed physical point must
+     * therefore be invariant to the frame in which the (physically identical) position
+     * is expressed. Before the fix, passing the position in an inertial frame — as
+     * {@code DragForce} does when propagating in GCRF/EME2000 — computed the hour angle
+     * about the celestial pole instead of the true pole, biasing the density. */
+    @Test
+    void testIssue1993FrameInvariance() {
+        // Build the model
+        final InputParams ip = new InputParams();
+        final CelestialBody sun = CelestialBodyFactory.getSun();
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final Frame gcrf = FramesFactory.getGCRF();
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+        final NRLMSISE00 atm = new NRLMSISE00(ip, sun, earth);
+
+        // Build the date (within the InputParams validity range)
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 172),
+                                                   new TimeComponents(29000.),
+                                                   TimeScalesFactory.getUTC());
+
+        // A high-latitude VLEO point, where the tilted-pole hour-angle error is largest
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(60.),
+                                                      FastMath.toRadians(-70.),
+                                                      400. * 1000.);
+        final Vector3D pItrf = earth.transform(point);
+        final Vector3D pGcrf = itrf.getStaticTransformTo(gcrf, date).transformPosition(pItrf);
+
+        // Same physical point expressed in two frames => identical density
+        final double rhoItrf = atm.getDensity(date, pItrf, itrf);
+        final double rhoGcrf = atm.getDensity(date, pGcrf, gcrf);
+        Assertions.assertEquals(rhoItrf, rhoGcrf, rhoItrf * 1.0e-10);
+
+        // Same invariance must hold on the field path
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final Binary64 rhoItrf64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
+                                                  new FieldVector3D<>(field, pItrf), itrf);
+        final Binary64 rhoGcrf64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
+                                                  new FieldVector3D<>(field, pGcrf), gcrf);
+        Assertions.assertEquals(rhoItrf64.getReal(), rhoGcrf64.getReal(), rhoItrf64.getReal() * 1.0e-10);
     }
 
     @Test
