@@ -20,13 +20,20 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.ITRFVersionLoader.ITRFVersionConfiguration;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -212,6 +219,24 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-post-2070\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2075, 4, 16, TimeScalesFactory.getUTC()),
                                 new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history, true).getEndDate());
+    }
+
+    @Test
+    public void testParser() throws IOException {
+        setRoot("regular-data");
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        EopHistoryLoader.Parser parser =
+            EopHistoryLoader.Parser.newFinalsColumnsParser(IERSConventions.IERS_2010,
+                                                           new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES,
+                                                                                 context.getDataProvidersManager()),
+                                                           context.getTimeScales(),
+                                                           true);
+        final String name = "/rapid-data-columns/finals2000A.daily";
+        final DataSource source = new DataSource(name,
+                                                 () -> RapidDataAndPredictionColumnsLoader.
+                                                       class.
+                                                       getResourceAsStream(name));
+        Assertions.assertEquals(181, parser.parse(source).size());
     }
 
     @Test

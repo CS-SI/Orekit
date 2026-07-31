@@ -19,11 +19,15 @@ package org.orekit.frames;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -132,6 +136,21 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(asToRad((9 * ( 0.286304  +  0.287241)  - ( 0.285811  +  0.288345))  / 16), history.getPoleCorrection(date2015).getYp(), 2.2e-10);
         Assertions.assertEquals(ITRFVersion.ITRF_2020, history.getITRFVersion(date2015));
 
+    }
+
+    @Test
+    public void testParser() throws
+                             IOException {
+        setRoot("regular-data");
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        EopHistoryLoader.Parser parser =
+            EopHistoryLoader.Parser.newEopC04Parser(IERSConventions.IERS_2010, context.getTimeScales());
+        final String name = "/eopc04/eopc04.14";
+        final DataSource source = new DataSource(name,
+                                                 () -> RapidDataAndPredictionColumnsLoader.
+                                                       class.
+                                                       getResourceAsStream(name));
+        Assertions.assertEquals(365, parser.parse(source).size());
     }
 
     private double asToRad(double as) {

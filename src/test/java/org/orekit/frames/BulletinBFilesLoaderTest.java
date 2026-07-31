@@ -19,6 +19,9 @@ package org.orekit.frames;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -27,6 +30,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -238,6 +242,24 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
        } catch (OrekitException oe) {
            Assertions.assertEquals(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE, oe.getSpecifier());
        }
+    }
+
+    @Test
+    public void testParser() throws
+                             IOException {
+        setRoot("regular-data");
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        EopHistoryLoader.Parser parser =
+            EopHistoryLoader.Parser.newBulletinBParser(IERSConventions.IERS_2010,
+                                                       new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES,
+                                                                             context.getDataProvidersManager()),
+                                                       context.getTimeScales());
+        final String name = "/new-bulletinB/bulletinb.270";
+        final DataSource source = new DataSource(name,
+                                                 () -> RapidDataAndPredictionColumnsLoader.
+                                                       class.
+                                                       getResourceAsStream(name));
+        Assertions.assertEquals(30, parser.parse(source).size());
     }
 
 }

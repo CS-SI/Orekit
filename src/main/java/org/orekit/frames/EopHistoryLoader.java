@@ -117,13 +117,11 @@ public interface EopHistoryLoader {
          *
          * @param conventions         used to convert between equinox-based and
          *                            non-rotating-origin-based paradigms.
-         * @param itrfVersionProvider used to determine the ITRF version of parsed EOP.
          * @param timeScales          used to parse the EOP data.
          * @return a new parser.
          */
         static Parser newEopC04Parser(
                 final IERSConventions conventions,
-                final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
             return new EopC04FilesLoader.Parser(conventions.getNutationCorrectionConverter(timeScales),
                                                 timeScales.getUTC());

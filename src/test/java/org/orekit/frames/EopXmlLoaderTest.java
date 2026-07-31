@@ -21,6 +21,9 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -29,6 +32,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -230,6 +234,23 @@ public class EopXmlLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                            history, true).getStartDate());
+    }
+
+    @Test
+    public void testParser() throws IOException {
+        setRoot("regular-data");
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        EopHistoryLoader.Parser parser =
+            EopHistoryLoader.Parser.newFinalsXmlParser(IERSConventions.IERS_2010,
+                                                       new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES,
+                                                                             context.getDataProvidersManager()),
+                                                       context.getTimeScales());
+        final String name = "/regular-data/Earth-orientation-parameters/yearly/finals2000A.2002.xml";
+        final DataSource source = new DataSource(name,
+                                                 () -> RapidDataAndPredictionColumnsLoader.
+                                                       class.
+                                                       getResourceAsStream(name));
+        Assertions.assertEquals(365, parser.parse(source).size());
     }
 
 }
