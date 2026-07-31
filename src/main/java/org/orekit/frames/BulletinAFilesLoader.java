@@ -601,8 +601,8 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                 // we allow these special cases here
                 final boolean januaryFirstIsThrusday =
                     new DateComponents(publicationDate.getYear(), 1, 1).getDayOfWeek() == 4;
-                if ((januaryFirstIsThrusday && parsed == computed - 1) ||
-                    (computed == 1 && parsed == 53)) {
+                if (januaryFirstIsThrusday && parsed == computed - 1 ||
+                    computed == 1 && parsed == 53) {
                     // we accept this sloppy week number
                     return;
                 }
