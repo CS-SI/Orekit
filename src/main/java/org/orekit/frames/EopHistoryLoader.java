@@ -19,7 +19,6 @@ package org.orekit.frames;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.SortedSet;
 
 import org.orekit.time.TimeScales;
 import org.orekit.utils.IERSConventions;
@@ -35,7 +34,7 @@ public interface EopHistoryLoader {
      * @param history history to fill up
      */
     void fillHistory(IERSConventions.NutationCorrectionConverter converter,
-                     SortedSet<EOPEntry> history);
+                     Collection<EOPEntry> history);
 
     /**
      * Interface for parsing EOP data files.

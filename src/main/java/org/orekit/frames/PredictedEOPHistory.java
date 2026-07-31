@@ -68,7 +68,7 @@ public class PredictedEOPHistory extends EOPHistory {
      * @param fittedModel fitted EOP model
      * @return extended history
      */
-    private static Collection<? extends EOPEntry> extendHistory(final EOPHistory rawHistory,
+    private static Collection<EOPEntry> extendHistory(final EOPHistory rawHistory,
                                                                 final double extensionDuration,
                                                                 final EOPFittedModel fittedModel) {
 

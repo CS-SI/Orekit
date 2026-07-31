@@ -24,10 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -403,52 +401,14 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history) {
+                            final Collection<EOPEntry> history) {
         final ItrfVersionProvider itrfVersionProvider =
             new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES, getDataProvidersManager());
         final Parser parser = new Parser(converter, itrfVersionProvider, getUtc());
         final EopParserLoader loader = new EopParserLoader(parser);
         this.feed(loader);
 
-        history.addAll(deduplicate(loader.getEop()));
-
-    }
-
-    /** Deduplicate entries.
-     * <p>
-     * The xp, yp and UT1-UTC data are published as rapid data on a weekly basis but
-     * pole offsets Δδψ/Δδε and x/y are published on a monthly basis. This implies
-     * data for one day is scattered among several files published weeks apart and
-     * need to be merged. This method performs this merge, combining entries that
-     * correspond to a single date. The result is a sorted list with only one entry
-     * for each date.
-     * </p>
-     * @param data raw data, that may contain several partial entries for some dates
-     * @return deduplicated data, with only one entry for each date
-     * @since 14.0
-     */
-    private List<EOPEntry> deduplicate(final Collection<? extends EOPEntry> data) {
-
-        // copy data into an independent list
-        final List<EOPEntry> deduplicated = new ArrayList<>(data);
-
-        // sort chronologically
-        deduplicated.sort(Comparator.comparingInt(EOPEntry::getMjd));
-
-        // process each entry, combining the ones that correspond to the same date
-        int i = 0;
-        while (i < deduplicated.size() - 1) {
-            if (deduplicated.get(i).getMjd() == deduplicated.get(i + 1).getMjd()) {
-                // the two entries are at the same date, we combine them together
-                deduplicated.set(i, new EOPEntry(deduplicated.get(i), deduplicated.get(i + 1)));
-                deduplicated.remove(i + 1);
-            } else {
-                // this entry has been completed, we can go to the next one
-                ++i;
-            }
-        }
-
-        return deduplicated;
+        history.addAll(loader.getEop());
 
     }
 

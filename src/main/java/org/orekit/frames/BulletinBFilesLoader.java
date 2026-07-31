@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -247,7 +246,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history) {
+                            final Collection<EOPEntry> history) {
         final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
                 ITRFVersionLoader.SUPPORTED_NAMES,
                 getDataProvidersManager());

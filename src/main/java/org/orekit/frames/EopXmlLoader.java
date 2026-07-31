@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.function.Supplier;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -84,7 +83,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history) {
+                            final Collection<EOPEntry> history) {
         final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
                 ITRFVersionLoader.SUPPORTED_NAMES,
                 getDataProvidersManager());
@@ -402,14 +401,14 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
              * @param qName name of the element
              */
             private void endFinalElement(final String qName) {
-                if (qName.equals(DATE_ELT) && buffer.length() > 0) {
+                if (qName.equals(DATE_ELT) && !buffer.isEmpty()) {
                     final String[] fields = buffer.toString().split("-");
                     if (fields.length == 3) {
                         year  = Integer.parseInt(fields[0]);
                         month = Integer.parseInt(fields[1]);
                         day   = Integer.parseInt(fields[2]);
                     }
-                } else if (qName.equals(MJD_ELT) && buffer.length() > 0) {
+                } else if (qName.equals(MJD_ELT) && !buffer.isEmpty()) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                                getUtc());
@@ -469,7 +468,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
              * @return a new value
              */
             private double overwrite(final double oldValue, final Unit units) {
-                if (buffer.length() == 0) {
+                if (buffer.isEmpty()) {
                     // there is nothing to overwrite with
                     return oldValue;
                 } else if (inBulletinA && !Double.isNaN(oldValue)) {

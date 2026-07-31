@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,7 +69,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
     private static final String  INTEGER2_FIELD               = "((?:\\p{Blank}|\\p{Digit})\\p{Digit})";
 
     /** Field for modified Julian day parsing. */
-    private static final String  MJD_FIELD                    = "\\p{Blank}+(\\p{Digit}+)(?:\\.00*)";
+    private static final String  MJD_FIELD                    = "\\p{Blank}+(\\p{Digit}+)\\.00*";
 
     /** Field for separator parsing. */
     private static final String  SEPARATOR                    = "\\p{Blank}*([IP])";
@@ -174,7 +173,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history) {
+                            final Collection<EOPEntry> history) {
         final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
                 ITRFVersionLoader.SUPPORTED_NAMES,
                 getDataProvidersManager());
@@ -259,9 +258,9 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     // parse the pole part
                     final double x;
                     final double y;
-                    if (polePartB.trim().length() == 0) {
+                    if (polePartB.trim().isEmpty()) {
                         // pole part from bulletin B is blank
-                        if (polePartA.trim().length() == 0) {
+                        if (polePartA.trim().isEmpty()) {
                             // pole part from bulletin A is blank
                             x = 0;
                             y = 0;
@@ -290,9 +289,9 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
 
                     // parse the UT1-UTC part
                     final double dtu1;
-                    if (ut1utcPartB.trim().length() == 0) {
+                    if (ut1utcPartB.trim().isEmpty()) {
                         // UT1-UTC part from bulletin B is blank
-                        if (ut1utcPartA.trim().length() == 0) {
+                        if (ut1utcPartA.trim().isEmpty()) {
                             // UT1-UTC part from bulletin A is blank
                             dtu1 = 0;
                         } else {
@@ -318,7 +317,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
 
                     // parse the lod part
                     final double lod;
-                    if (lodPartA.trim().length() == 0) {
+                    if (lodPartA.trim().isEmpty()) {
                         // lod part from bulletin A is blank
                         lod = Double.NaN;
                     } else {
@@ -337,9 +336,9 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     final AbsoluteDate mjdDate =
                             new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                     getUtc());
-                    if (nutationPartB.trim().length() == 0) {
+                    if (nutationPartB.trim().isEmpty()) {
                         // nutation part from bulletin B is blank
-                        if (nutationPartA.trim().length() == 0) {
+                        if (nutationPartA.trim().isEmpty()) {
                             // nutation part from bulletin A is blank
                             nro     = new double[2];
                             equinox = new double[2];

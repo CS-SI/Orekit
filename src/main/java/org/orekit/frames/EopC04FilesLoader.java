@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,7 +85,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history) {
+                            final Collection<EOPEntry> history) {
         final Parser parser = new Parser(converter, getUtc());
         final EopParserLoader loader = new EopParserLoader(parser);
         this.feed(loader);
