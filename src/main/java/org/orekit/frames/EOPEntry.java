@@ -257,7 +257,7 @@ public class EOPEntry implements TimeStamped, Serializable {
         } else {
             // the field is initialized in both entries, we select the one published later
             return publication.applyAsInt(entry1) >= publication.applyAsInt(entry2) ?
-                   field1: field2;
+                   field1 : field2;
         }
     }
 
