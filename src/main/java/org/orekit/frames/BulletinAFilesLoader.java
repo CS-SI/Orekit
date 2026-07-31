@@ -184,7 +184,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         //      **********************************************************************
         //      5 January 2006                                        Vol. XIX No. 001
         //      ______________________________________________________________________
-        PUBLICATION_METADATA("^ *\\* *I E R S   B U L L E T I N - A *\\* *$",
+        PUBLICATION_METADATA("\\* *I E R S   B U L L E T I N - A *\\*",
                              LINE_START_REGEXP +
                              STORED_INTEGER_FIELD + STORED_STRING_FIELD + STORED_INTEGER_FIELD +
                              "\\p{Blank}*Vol\\." + STORED_STRING_FIELD +
@@ -205,7 +205,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         //   13  9  3  56538 0.16532 .00009 0.32147 .00010  0.037351 0.000024
         //   13  9  4  56539 0.16488 .00009 0.32044 .00010  0.036756 0.000023
         //   13  9  5  56540 0.16435 .00009 0.31948 .00009  0.036036 0.000024
-        EOP_RAPID_SERVICE("^ *COMBINED EARTH ORIENTATION PARAMETERS: *$",
+        EOP_RAPID_SERVICE("COMBINED EARTH ORIENTATION PARAMETERS:",
                           LINE_START_REGEXP +
                           STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
                           STORED_MJD_FIELD +
@@ -228,7 +228,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         //             13  7  7           56480    0.1504   0.3849   0.05832
         //             13  7  8           56481    0.1516   0.3835   0.05858
         //             13  7  9           56482    0.1530   0.3822   0.05877
-        EOP_FINAL_VALUES("^ *IERS Final Values *$",
+        EOP_FINAL_VALUES("IERS Final Values",
                          LINE_START_REGEXP +
                          STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
                          STORED_MJD_FIELD +
@@ -265,7 +265,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         //          2013  9 10  56545       0.1618      0.3142      0.03144
         //          2013  9 11  56546       0.1612      0.3131      0.03071
         //          2013  9 12  56547       0.1607      0.3119      0.03008
-        EOP_PREDICTION("^ *PREDICTIONS: *$",
+        EOP_PREDICTION("PREDICTIONS:",
                        LINE_START_REGEXP +
                        STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
                        STORED_MJD_FIELD +
@@ -283,7 +283,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         //                        56519   -87.47     0.13   -12.96     0.08
         //                        56520   -87.72     0.13   -13.20     0.08
         //                        56521   -87.79     0.19   -13.56     0.11
-        POLE_OFFSETS_IAU_1980_RAPID_SERVICE("^ *NEOS Celestial Pole Offset Series *$",
+        POLE_OFFSETS_IAU_1980_RAPID_SERVICE("NEOS Celestial Pole Offset Series",
                                             LINE_START_REGEXP +
                                             STORED_MJD_FIELD +
                                             STORED_REAL_FIELD + IGNORED_REAL_FIELD +
@@ -302,7 +302,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         //                         56478       -82.2     -13.5
         //                         56479       -82.5     -13.6
         //                         56480       -82.5     -13.7
-        POLE_OFFSETS_IAU_1980_FINAL_VALUES("^ *IERS Celestial Pole Offset Final Series *$",
+        POLE_OFFSETS_IAU_1980_FINAL_VALUES("IERS Celestial Pole Offset Final Series",
                                            LINE_START_REGEXP +
                                            STORED_MJD_FIELD +
                                            STORED_REAL_FIELD +
@@ -318,7 +318,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         //                       56519   -0.246   0.052   -0.223   0.080
         //                       56520   -0.239   0.052   -0.248   0.080
         //                       56521   -0.224   0.076   -0.277   0.110
-        POLE_OFFSETS_IAU_2000_RAPID_SERVICE("^ *IAU2000A Celestial Pole Offset Series *$",
+        POLE_OFFSETS_IAU_2000_RAPID_SERVICE("IAU2000A Celestial Pole Offset Series",
                                             LINE_START_REGEXP +
                                             STORED_MJD_FIELD +
                                             STORED_REAL_FIELD + IGNORED_REAL_FIELD +
@@ -337,7 +337,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         //                          56478    -0.12      -0.33
         //                          56479    -0.12      -0.33
         //                          56480    -0.13      -0.36
-        POLE_OFFSETS_IAU_2000_FINAL_VALUES("^ *IAU2000A Celestial Pole Offset Final Series *$",
+        POLE_OFFSETS_IAU_2000_FINAL_VALUES("IAU2000A Celestial Pole Offset Final Series",
                                            LINE_START_REGEXP +
                                            STORED_MJD_FIELD +
                                            STORED_REAL_FIELD +
@@ -355,7 +355,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
          * @param dataRegExp regular expression for data
          */
         Section(final String headerRegExp, final String dataRegExp) {
-            this.header = Pattern.compile(headerRegExp);
+            this.header = Pattern.compile(LINE_START_REGEXP + headerRegExp + LINE_END_REGEXP);
             this.data   = Pattern.compile(dataRegExp);
         }
 
@@ -596,10 +596,13 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                 // was published on January 8th. Week numbers in bulletin A were therefore ISO
                 // week number minus 1 throughout the 2009 year. This did not happen in 2015
                 // or 2026 despite both years also started on a Thursday
-                // we allow this special case here
+                // The previous file published on 2008-12-31 was also numbered as week 53 in
+                // 2008, despite its ISO number was really 1 in 2009.
+                // we allow these special cases here
                 final boolean januaryFirstIsThrusday =
                     new DateComponents(publicationDate.getYear(), 1, 1).getDayOfWeek() == 4;
-                if (januaryFirstIsThrusday && parsed == computed - 1) {
+                if ((januaryFirstIsThrusday && parsed == computed - 1) ||
+                    (computed == 1 && parsed == 53)) {
                     // we accept this sloppy week number
                     return;
                 }
@@ -623,45 +626,50 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
             throws IOException {
 
             final List<EOPEntry> eop = new ArrayList<>();
-
-            boolean inValuesPart = false;
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
+
                 lineNumber++;
                 final String[] fields = section.getFields(line);
-                if (fields != null) {
-
-                    // we are within the values part
-                    inValuesPart = true;
-
-                    // this is a data line, build an entry from the extracted fields
-                    final int year  = Integer.parseInt(fields[0]);
-                    final int month = Integer.parseInt(fields[1]);
-                    final int day   = Integer.parseInt(fields[2]);
-                    final int mjd   = Integer.parseInt(fields[3]);
-                    final DateComponents dc = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
-                    if ((dc.getYear() % 100) != (year % 100) ||
-                         dc.getMonth() != month ||
-                         dc.getDay() != day) {
-                        throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
-                                                  fileName, year, month, day, mjd);
+                if (fields == null) {
+                    if (eop.isEmpty()) {
+                        // we are still waiting for the first data line
+                        continue;
+                    } else {
+                        // we have reach a separation line with next section
+                        break;
                     }
-                    mjdMin = FastMath.min(mjdMin, mjd);
-                    mjdMax = FastMath.max(mjdMax, mjd);
-
-                    eop.add(new EOPEntry(mjd,
-                                         Double.parseDouble(fields[6]), Double.NaN,
-                                         UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[4])),
-                                         UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[5])),
-                                         Double.NaN, Double.NaN,
-                                         0.0, 0.0, 0.0, 0.0,
-                                         getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
-                                         AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
-                                         publicationDate.getMJD(), 0, 0));
-
-                } else if (inValuesPart) {
-                    // we leave the values part
-                    return eop;
                 }
+
+                // this is a data line, build an entry from the extracted fields
+                final int year  = Integer.parseInt(fields[0]);
+                final int month = Integer.parseInt(fields[1]);
+                final int day   = Integer.parseInt(fields[2]);
+                final int mjd   = Integer.parseInt(fields[3]);
+                final DateComponents dc = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
+                if ((dc.getYear() % 100) != (year % 100) ||
+                    dc.getMonth() != month ||
+                    dc.getDay() != day) {
+                    throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
+                                              fileName, year, month, day, mjd);
+                }
+                mjdMin = FastMath.min(mjdMin, mjd);
+                mjdMax = FastMath.max(mjdMax, mjd);
+
+                eop.add(new EOPEntry(mjd,
+                                     Double.parseDouble(fields[6]), Double.NaN,
+                                     UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[4])),
+                                     UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[5])),
+                                     Double.NaN, Double.NaN,
+                                     0.0, 0.0, 0.0, 0.0,
+                                     getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
+                                     AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
+                                     publicationDate.getMJD(), 0, 0));
+
+            }
+
+            if (!eop.isEmpty()) {
+                // we have read something
+                return eop;
             }
 
             throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE,
@@ -682,49 +690,52 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
             throws IOException {
 
             final List<EOPEntry> eop = new ArrayList<>();
-
-            boolean inValuesPart = false;
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
+
                 lineNumber++;
                 final String[] fields = section.getFields(line);
-                if (fields != null) {
-
-                    // we are within the values part
-                    inValuesPart = true;
-
-                    // this is a data line, build an entry from the extracted fields
-                    final int mjd = Integer.parseInt(fields[0]);
-                    mjdMin = FastMath.min(mjdMin, mjd);
-                    mjdMax = FastMath.max(mjdMax, mjd);
-
-                    if (isNonRotatingOrigin) {
-                        eop.add(new EOPEntry(mjd,
-                                             Double.NaN, Double.NaN,
-                                             Double.NaN, Double.NaN,
-                                             Double.NaN, Double.NaN,
-                                             Double.NaN, Double.NaN,
-                                             UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[1])),
-                                             UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[2])),
-                                             getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
-                                             AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
-                                             0, 0, publicationDate.getMJD()));
+                if (fields == null) {
+                    if (eop.isEmpty()) {
+                        // we are still waiting for the first data line
+                        continue;
                     } else {
-                        eop.add(new EOPEntry(mjd,
-                                             Double.NaN, Double.NaN,
-                                             Double.NaN, Double.NaN,
-                                             Double.NaN, Double.NaN,
-                                             UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[1])),
-                                             UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[2])),
-                                             Double.NaN, Double.NaN,
-                                             getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
-                                             AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
-                                             0, publicationDate.getMJD(), 0));
+                        // we have reach a separation line with next section
+                        break;
                     }
-
-                } else if (inValuesPart) {
-                    // we leave the values part
-                    return eop;
                 }
+
+                final int mjd = Integer.parseInt(fields[0]);
+                mjdMin = FastMath.min(mjdMin, mjd);
+                mjdMax = FastMath.max(mjdMax, mjd);
+
+                if (isNonRotatingOrigin) {
+                    eop.add(new EOPEntry(mjd,
+                                         Double.NaN, Double.NaN,
+                                         Double.NaN, Double.NaN,
+                                         Double.NaN, Double.NaN,
+                                         Double.NaN, Double.NaN,
+                                         UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[1])),
+                                         UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[2])),
+                                         getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
+                                         AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
+                                         0, 0, publicationDate.getMJD()));
+                } else {
+                    eop.add(new EOPEntry(mjd,
+                                         Double.NaN, Double.NaN,
+                                         Double.NaN, Double.NaN,
+                                         Double.NaN, Double.NaN,
+                                         UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[1])),
+                                         UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[2])),
+                                         Double.NaN, Double.NaN,
+                                         getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
+                                         AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
+                                         0, publicationDate.getMJD(), 0));
+                }
+            }
+
+            if (!eop.isEmpty()) {
+                // we have read something
+                return eop;
             }
 
             throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE,

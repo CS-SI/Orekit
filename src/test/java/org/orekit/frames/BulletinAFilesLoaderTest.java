@@ -31,10 +31,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
 
@@ -174,12 +172,12 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
                                                        new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES,
                                                                              context.getDataProvidersManager()),
                                                        context.getTimeScales());
-        final String name = "/bulletinA/bulletina-xxvi-039.txt";
+        final String name = "/bulletinA/bulletina-xxi-053.txt";
         final DataSource source = new DataSource(name,
                                                  () -> RapidDataAndPredictionColumnsLoader.
                                                        class.
                                                        getResourceAsStream(name));
-        Assertions.assertEquals(378, parser.parse(source).size());
+        Assertions.assertEquals(372, parser.parse(source).size());
     }
 
     @Test
