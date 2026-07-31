@@ -18,21 +18,18 @@ package org.orekit.frames;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -90,6 +87,9 @@ import org.orekit.utils.units.UnitsConverter;
  */
 class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
+    /** Section 0 date pattern. */
+    private static final Pattern SECTION_0_DATE;
+
     /** Section 1 header pattern. */
     private static final Pattern SECTION_1_HEADER;
 
@@ -122,6 +122,8 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         // the section headers lines in the old bulletin B monthly data files have
         // the following form (the indentation discrepancy for section 6 is really
         // present in the available files):
+        //                                                        BULLETIN B 220
+        //                                                    1 june 2006
         // 1 - EARTH ORIENTATION PARAMETERS (IERS evaluation).
         // either
         // 2 - SMOOTHED VALUES OF x, y, UT1, D, DPSI, DEPSILON (IERS EVALUATION)
@@ -134,13 +136,17 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         //
         // the section headers lines in the new bulletin B monthly data files have
         // the following form:
+        //                                                      BULLETIN B 216
+        //                                                        (IAU 2000)
+        //                                                      31 january 2006
         // 1 - DAILY FINAL VALUES OF  x, y, UT1-UTC, dX, dY
         // 2 - DAILY FINAL VALUES OF CELESTIAL POLE OFFSETS dPsi1980 & dEps1980
         // 3 - EARTH ANGULAR VELOCITY : DAILY FINAL VALUES OF LOD, OMEGA AT 0hUTC
         // 4 - INFORMATION ON TIME SCALES
         // 5 - SUMMARY OF CONTRIBUTED EARTH ORIENTATION PARAMETERS SERIES
+        SECTION_0_DATE       = Pattern.compile("^\\p{Blank}*(\\p{Digit}{1,2}) (\\p{Alpha}{3,9}) (\\p{Digit}{4}) *");
         SECTION_1_HEADER     = Pattern.compile("^ +1 - (\\p{Upper}+) \\p{Upper}+ \\p{Upper}+.*");
-        SECTION_2_HEADER_OLD = Pattern.compile("^ +2 - SMOOTHED \\p{Upper}+ \\p{Upper}+.*((?:DPSI, DEPSILON)|(?:dX, dY)).*");
+        SECTION_2_HEADER_OLD = Pattern.compile("^ +2 - SMOOTHED \\p{Upper}+ \\p{Upper}+.*(DPSI, DEPSILON|dX, dY).*");
         SECTION_3_HEADER     = Pattern.compile("^ +3 - \\p{Upper}+ \\p{Upper}+ \\p{Upper}+.*");
 
         // the markers bracketing the final values in section 1 in the old bulletin B
@@ -196,7 +202,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         builder.delete(builder.length() - 1, builder.length());
         builder.append(")");
         final String integerPattern      = "[-+]?\\p{Digit}+";
-        final String realPattern         = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+        final String realPattern         = "[-+]?(?:\\p{Digit}+(?:\\.\\p{Digit}*)?|\\.\\p{Digit}+)(?:[eE][-+]?\\p{Digit}+)?";
         final String monthNameField      = builder.toString();
         final String ignoredIntegerField = "\\p{Blank}*" + integerPattern;
         final String storedIntegerField  = "\\p{Blank}*(" + integerPattern + ")";
@@ -238,7 +244,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history) {
+                            final Collection<EOPEntry> history) {
         final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
                 ITRFVersionLoader.SUPPORTED_NAMES,
                 getDataProvidersManager());
@@ -259,6 +265,11 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
         /** Map for fields read in different sections. */
         private final Map<Integer, double[]> fieldsMap;
+
+        /** Publication date.
+         * @since 14.0
+         */
+        private DateComponents publicationDate;
 
         /** Current line number. */
         private int lineNumber;
@@ -291,49 +302,62 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final InputStream input, final String name)
+        public Collection<EOPEntry> parse(final DataSource source)
             throws IOException {
 
             // set up a reader for line-oriented bulletin B files
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            try (BufferedReader reader = new BufferedReader(source.getOpener().openReaderOnce())) {
                 // reset parse info to start new file
                 fieldsMap.clear();
-                lineNumber = 0;
-                mjdMin     = Integer.MAX_VALUE;
-                mjdMax     = Integer.MIN_VALUE;
-                history = new ArrayList<>();
+                lineNumber    = 0;
+                mjdMin        = Integer.MAX_VALUE;
+                mjdMax        = Integer.MIN_VALUE;
+                history       = new ArrayList<>();
                 configuration = null;
 
+                // parse publication date
+                // for a long time, there was a typo in Bulletin B header files.
+                // files published in September, October, November and December
+                // had their month misspelled as "septembre", "octobre", "novembre", and "decembre".
+                // the last file published with the error was bulletin B 370 from 2018-12-01.
+                // we use only the month truncated to its standard 3-letter abbreviation here
+                // in order to allow parsing the publication date from these erroneous files and
+                // identify the proper month despite the spelling error.
+                final Matcher section0Matcher = seekToLine(SECTION_0_DATE, reader, source.getName());
+                publicationDate = new DateComponents(Integer.parseInt(section0Matcher.group(3)),
+                                                     Month.parseMonth(section0Matcher.group(2).substring(0, 3)),
+                                                     Integer.parseInt(section0Matcher.group(1)));
+
                 // skip header up to section 1 and check if we are parsing an old or new format file
-                final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
+                final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, source.getName());
                 final boolean isOldFormat = "EARTH".equals(section1Matcher.group(1));
 
                 if (isOldFormat) {
 
                     // extract MJD bounds for final data from section 1
-                    loadMJDBoundsOldFormat(reader, name);
+                    loadMJDBoundsOldFormat(reader, source.getName());
 
-                    final Matcher section2Matcher = seekToLine(SECTION_2_HEADER_OLD, reader, name);
+                    final Matcher section2Matcher = seekToLine(SECTION_2_HEADER_OLD, reader, source.getName());
                     final boolean isNonRotatingOrigin = section2Matcher.group(1).startsWith("dX");
-                    loadEOPOldFormat(isNonRotatingOrigin, reader, name);
+                    loadEOPOldFormat(isNonRotatingOrigin, reader, source.getName());
 
                 } else {
 
                     // extract x, y, UT1-UTC, dx, dy from section 1
-                    loadXYDTDxDyNewFormat(reader, name);
+                    loadXYDTDxDyNewFormat(reader, source.getName());
 
                     // skip to section 3
-                    seekToLine(SECTION_3_HEADER, reader, name);
+                    seekToLine(SECTION_3_HEADER, reader, source.getName());
 
                     // extract LOD data from section 3
-                    loadLODNewFormat(reader, name);
+                    loadLODNewFormat(reader, source.getName());
 
                     // set up the EOP entries
                     for (Map.Entry<Integer, double[]> entry : fieldsMap.entrySet()) {
                         final int mjd = entry.getKey();
                         final double[] array = entry.getValue();
                         if (Double.isNaN(array[0] + array[1] + array[2] + array[3] + array[4] + array[5])) {
-                            throw notifyUnexpectedErrorEncountered(name);
+                            throw notifyUnexpectedErrorEncountered(source.getName());
                         }
                         final AbsoluteDate mjdDate =
                                 new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
@@ -341,12 +365,15 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                         final double[] equinox = getConverter().toEquinox(mjdDate, array[4], array[5]);
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
+                            configuration = getItrfVersionProvider().getConfiguration(source.getName(), mjd);
                         }
                         history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
                                                  Double.NaN, Double.NaN,
                                                  equinox[0], equinox[1], array[4], array[5],
-                                                 configuration.getVersion(), mjdDate));
+                                                 configuration.getVersion(), mjdDate, EopDataType.FINAL,
+                                                 publicationDate.getMJD(),
+                                                 publicationDate.getMJD(),
+                                                 publicationDate.getMJD()));
                     }
 
                 }
@@ -464,7 +491,10 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
                                                  equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion(), mjdDate));
+                                                 configuration.getVersion(), mjdDate, EopDataType.FINAL,
+                                                 publicationDate.getMJD(),
+                                                 publicationDate.getMJD(),
+                                                 publicationDate.getMJD()));
                         line = mjd < mjdMax ? reader.readLine() : null;
                     } else {
                         line = reader.readLine();

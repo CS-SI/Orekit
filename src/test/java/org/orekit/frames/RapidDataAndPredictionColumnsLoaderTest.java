@@ -16,19 +16,26 @@
  */
 package org.orekit.frames;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.ITRFVersionLoader.ITRFVersionConfiguration;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoaderTest {
 
@@ -36,7 +43,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     public void testStartDateDaily1980() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter = IERSConventions.IERS_1996.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
                                 new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history, true).getStartDate());
@@ -46,7 +53,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     public void testEndDateDaily1980() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter = IERSConventions.IERS_1996.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
                                 new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history, true).getEndDate());
@@ -56,7 +63,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     public void testStartDateDaily2000() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter = IERSConventions.IERS_2003.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         new RapidDataAndPredictionColumnsLoader(true, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
                                 new EOPHistory(IERSConventions.IERS_2003, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history, true).getStartDate());
@@ -66,7 +73,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     public void testMissingColumnsPadding1980() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter = IERSConventions.IERS_1996.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> data = new ArrayList<>();
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, data, true);
 
@@ -126,7 +133,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     public void testMissingColumnsPadding2000() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter = IERSConventions.IERS_2003.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> data = new ArrayList<>();
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc).fillHistory(converter, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2003, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, data, true);
 
@@ -181,7 +188,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     public void testEndDateDaily2000() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter = IERSConventions.IERS_2003.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
                                 new EOPHistory(IERSConventions.IERS_2003, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history, true).getEndDate());
@@ -191,7 +198,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     public void testNoColumns() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter = IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-no-columns\\.daily$", manager, () -> utc).fillHistory(converter, history);
         EOPHistory eopH = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history, true);
         Assertions.assertEquals(new AbsoluteDate(2011, 4, 16, TimeScalesFactory.getUTC()), eopH.getEndDate());
@@ -208,10 +215,28 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     public void testPost2070() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter = IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-post-2070\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2075, 4, 16, TimeScalesFactory.getUTC()),
                                 new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history, true).getEndDate());
+    }
+
+    @Test
+    public void testParser() throws IOException {
+        setRoot("regular-data");
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        EopHistoryLoader.Parser parser =
+            EopHistoryLoader.Parser.newFinalsColumnsParser(IERSConventions.IERS_2010,
+                                                           new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES,
+                                                                                 context.getDataProvidersManager()),
+                                                           context.getTimeScales(),
+                                                           true);
+        final String name = "/rapid-data-columns/finals2000A.daily";
+        final DataSource source = new DataSource(name,
+                                                 () -> RapidDataAndPredictionColumnsLoader.
+                                                       class.
+                                                       getResourceAsStream(name));
+        Assertions.assertEquals(181, parser.parse(source).size());
     }
 
     @Test
@@ -282,7 +307,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     private void doTestWrongFile(String fileName, int lineNumber) {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter = IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         try {
             new RapidDataAndPredictionColumnsLoader(true, fileName, manager, () -> utc).fillHistory(converter, history);
             Assertions.fail("an exception should have been thrown");

@@ -61,6 +61,9 @@ UNABLE_TO_FIND_RESOURCE=ressource {0} non trouvée dans le classpath
 # no Earth Orientation Parameters loaded
 NO_EARTH_ORIENTATION_PARAMETERS_LOADED=aucun Paramètre d''Orientation de la Terre n''a été chargé
 
+# cannot combine Earth Orientation Parameters at different dates ({0} and {1})
+INCOMPATIBLE_EARTH_ORIENTATION_PARAMETERS=impossible de combiner des paramètres d''orientation de la Terre à des dates différentes ({0} et {1})
+
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES=Paramètres d''Orientation de la Terre manquants entre {0} et {1}
 

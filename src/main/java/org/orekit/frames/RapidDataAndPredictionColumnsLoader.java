@@ -18,18 +18,15 @@ package org.orekit.frames;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -70,7 +67,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
     private static final String  INTEGER2_FIELD               = "((?:\\p{Blank}|\\p{Digit})\\p{Digit})";
 
     /** Field for modified Julian day parsing. */
-    private static final String  MJD_FIELD                    = "\\p{Blank}+(\\p{Digit}+)(?:\\.00*)";
+    private static final String  MJD_FIELD                    = "\\p{Blank}+(\\p{Digit}+)\\.00*";
 
     /** Field for separator parsing. */
     private static final String  SEPARATOR                    = "\\p{Blank}*([IP])";
@@ -174,7 +171,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history) {
+                            final Collection<EOPEntry> history) {
         final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
                 ITRFVersionLoader.SUPPORTED_NAMES,
                 getDataProvidersManager());
@@ -207,7 +204,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final InputStream input, final String name)
+        public Collection<EOPEntry> parse(final DataSource source)
             throws IOException {
 
             final List<EOPEntry> history = new ArrayList<>();
@@ -217,7 +214,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
             int lineNumber = 0;
 
             // set up a reader for line-oriented bulletin B files
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            try (BufferedReader reader = new BufferedReader(source.getOpener().openReaderOnce())) {
 
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
@@ -246,11 +243,11 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                              reconstructedDate.getMonth()       != mm ||
                              reconstructedDate.getDay()         != dd) {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                      lineNumber, name, line);
+                                                      lineNumber, source.getName(), line);
                         }
                     } else {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, name, line);
+                                                  lineNumber, source.getName(), line);
                     }
 
                     // EOP data type is unknown until data is parsed
@@ -259,9 +256,9 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     // parse the pole part
                     final double x;
                     final double y;
-                    if (polePartB.trim().length() == 0) {
+                    if (polePartB.trim().isEmpty()) {
                         // pole part from bulletin B is blank
-                        if (polePartA.trim().length() == 0) {
+                        if (polePartA.trim().isEmpty()) {
                             // pole part from bulletin A is blank
                             x = 0;
                             y = 0;
@@ -273,7 +270,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                                 eopDataType = getEopDataType(poleAMatcher);
                             } else {
                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                          lineNumber, name, line);
+                                                          lineNumber, source.getName(), line);
                             }
                         }
                     } else {
@@ -284,15 +281,15 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                             eopDataType = EopDataType.FINAL;
                         } else {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                      lineNumber, name, line);
+                                                      lineNumber, source.getName(), line);
                         }
                     }
 
                     // parse the UT1-UTC part
                     final double dtu1;
-                    if (ut1utcPartB.trim().length() == 0) {
+                    if (ut1utcPartB.trim().isEmpty()) {
                         // UT1-UTC part from bulletin B is blank
-                        if (ut1utcPartA.trim().length() == 0) {
+                        if (ut1utcPartA.trim().isEmpty()) {
                             // UT1-UTC part from bulletin A is blank
                             dtu1 = 0;
                         } else {
@@ -302,7 +299,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                                 eopDataType = updateEopDataTypeIfUnknown(eopDataType, () -> getEopDataType(ut1utcAMatcher));
                             } else {
                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                          lineNumber, name, line);
+                                                          lineNumber, source.getName(), line);
                             }
                         }
                     } else {
@@ -312,13 +309,13 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                             eopDataType = updateEopDataTypeIfUnknown(eopDataType, () -> EopDataType.FINAL);
                         } else {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                      lineNumber, name, line);
+                                                      lineNumber, source.getName(), line);
                         }
                     }
 
                     // parse the lod part
                     final double lod;
-                    if (lodPartA.trim().length() == 0) {
+                    if (lodPartA.trim().isEmpty()) {
                         // lod part from bulletin A is blank
                         lod = Double.NaN;
                     } else {
@@ -327,7 +324,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                             lod = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(lodAMatcher.group(1)));
                         } else {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                      lineNumber, name, line);
+                                                      lineNumber, source.getName(), line);
                         }
                     }
 
@@ -337,9 +334,9 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     final AbsoluteDate mjdDate =
                             new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                     getUtc());
-                    if (nutationPartB.trim().length() == 0) {
+                    if (nutationPartB.trim().isEmpty()) {
                         // nutation part from bulletin B is blank
-                        if (nutationPartA.trim().length() == 0) {
+                        if (nutationPartA.trim().isEmpty()) {
                             // nutation part from bulletin A is blank
                             nro     = new double[2];
                             equinox = new double[2];
@@ -362,7 +359,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                                 eopDataType = updateEopDataTypeIfUnknown(eopDataType, () -> getEopDataType(nutationAMatcher));
                             } else {
                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                          lineNumber, name, line);
+                                                          lineNumber, source.getName(), line);
                             }
                         }
                     } else {
@@ -384,13 +381,13 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                             eopDataType = updateEopDataTypeIfUnknown(eopDataType, () -> EopDataType.FINAL);
                         } else {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                      lineNumber, name, line);
+                                                      lineNumber, source.getName(), line);
                         }
                     }
 
                     if (configuration == null || !configuration.isValid(mjd)) {
                         // get a configuration for current name and date range
-                        configuration = getItrfVersionProvider().getConfiguration(name, mjd);
+                        configuration = getItrfVersionProvider().getConfiguration(source.getName(), mjd);
                     }
                     history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
                                              equinox[0], equinox[1], nro[0], nro[1],

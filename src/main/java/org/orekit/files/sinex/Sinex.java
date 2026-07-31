@@ -25,10 +25,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScales;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Container for Solution INdependent EXchange (SINEX) files.
@@ -88,8 +88,8 @@ public class Sinex extends AbstractSinex {
         return (converter, history) -> {
 
             // first set up all entries explicitly present in the parsed files
-            final SortedSet<SinexEopEntry> sorted = new TreeSet<>(new ChronologicalComparator());
-            sorted.addAll(eop.values());
+            final List<SinexEopEntry> sorted = new ArrayList<>(eop.values());
+            sorted.sort(new ChronologicalComparator());
 
             // copy first and last entries according to files validity
             sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime()));

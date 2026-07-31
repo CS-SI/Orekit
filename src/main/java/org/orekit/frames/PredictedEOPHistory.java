@@ -68,7 +68,7 @@ public class PredictedEOPHistory extends EOPHistory {
      * @param fittedModel fitted EOP model
      * @return extended history
      */
-    private static Collection<? extends EOPEntry> extendHistory(final EOPHistory rawHistory,
+    private static Collection<EOPEntry> extendHistory(final EOPHistory rawHistory,
                                                                 final double extensionDuration,
                                                                 final EOPFittedModel fittedModel) {
 
@@ -96,7 +96,8 @@ public class PredictedEOPHistory extends EOPHistory {
             final double[] equinox = converter.toEquinox(date, dx, dy);
             entries.add(new EOPEntry(last.getMjd() + i + 1, dut1, lod, xp, yp, xpRate, ypRate,
                                      equinox[0], equinox[1], dx, dy,
-                                     last.getITRFType(), date, EopDataType.PREDICTED));
+                                     last.getITRFType(), date, EopDataType.PREDICTED,
+                                     last.getDtPub(), last.getNutPub(), last.getCipPub()));
         }
 
         return entries;

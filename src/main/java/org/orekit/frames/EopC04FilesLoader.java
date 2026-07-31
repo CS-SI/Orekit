@@ -18,18 +18,15 @@ package org.orekit.frames;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -86,7 +83,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history) {
+                            final Collection<EOPEntry> history) {
         final Parser parser = new Parser(converter, getUtc());
         final EopParserLoader loader = new EopParserLoader(parser);
         this.feed(loader);
@@ -106,19 +103,19 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
         }
 
         /** {@inheritDoc} */
-        public Collection<EOPEntry> parse(final InputStream input, final String name)
+        public Collection<EOPEntry> parse(final DataSource source)
             throws IOException, OrekitException {
 
             final List<EOPEntry> history = new ArrayList<>();
 
             // set up a reader for line-oriented EOP C04 files
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            try (BufferedReader reader = new BufferedReader(source.getOpener().openReaderOnce())) {
                 // reset parse info to start new file (do not clear history!)
                 int lineNumber   = 0;
                 boolean inHeader = true;
                 final LineParser[] tentativeParsers = new LineParser[] {
-                    new LineWithoutRatesParser(name),
-                    new LineWithRatesParser(name)
+                    new LineWithoutRatesParser(source.getName()),
+                    new LineWithRatesParser(source.getName())
                 };
                 LineParser selectedParser = null;
 
@@ -155,13 +152,13 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
                     if (!(inHeader || parsed)) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                lineNumber, name, line);
+                                lineNumber, source.getName(), line);
                     }
                 }
 
                 // check if we have read something
                 if (inHeader) {
-                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
+                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, source.getName());
                 }
             }
 
@@ -428,7 +425,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, Double.NaN, Double.NaN,
                                     equinox[0], equinox[1], nro[0], nro[1],
-                                    getItrfVersion(), date);
+                                    getItrfVersion(), date, EopDataType.FINAL);
 
             }
         }
@@ -542,7 +539,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
                                     equinox[0], equinox[1], nro[0], nro[1],
-                                    getItrfVersion(), date);
+                                    getItrfVersion(), date, EopDataType.FINAL);
 
             }
         }

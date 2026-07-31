@@ -37,6 +37,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScales;
 import org.orekit.time.TimeStamped;
@@ -85,12 +86,23 @@ public class EOPHistory {
     private final TimeScales timeScales;
 
     /** Simple constructor.
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
+     * <p>
+     * This method uses the {@link DataContext#getDefault() default data context}.
+     * </p>
+     * <p>
+     * Since 14.0, the {@code data} provided to this constructor may be scattered,
+     * unsorted and incomplete as it may come from different files. This is typically
+     * true with Bulletin A, where rapid data pole motion is published weekly and
+     * nutation data is published monthly, several weeks later. The data is therefore
+     * sorted, deduplicated and merged internally. For this reason, it is <em>not</em>
+     * recommended to use {@link java.util.SortedSet} for providing the data, as this
+     * would preserve only one entry for each date and eliminate arbitrarily the other
+     * entries for the same date.
+     * </p>
      * @param conventions IERS conventions to which EOP refers
      * @param interpolationDegree interpolation degree (must be of the form 4k-1)
      * @param data the EOP data to use
+     *             (it is <em>not</em> recommended to use {@link java.util.SortedSet} here, see above)
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @see #EOPHistory(IERSConventions, int, Collection, boolean, TimeScales)
      */
@@ -103,9 +115,20 @@ public class EOPHistory {
     }
 
     /** Simple constructor.
+     * <p>
+     * Since 14.0, the {@code data} provided to this constructor may be scattered,
+     * unsorted and incomplete as it may come from different files. This is typically
+     * true with Bulletin A, where rapid data pole motion is published weekly and
+     * nutation data is published monthly, several weeks later. The data is therefore
+     * sorted, deduplicated and merged internally. For this reason, it is <em>not</em>
+     * recommended to use {@link java.util.SortedSet} for providing the data, as this
+     * would preserve only one entry for each date and eliminate arbitrarily the other
+     * entries for the same date.
+     * </p>
      * @param conventions IERS conventions to which EOP refers
      * @param interpolationDegree interpolation degree (must be of the form 4k-1)
      * @param data the EOP data to use
+     *             (it is <em>not</em> recommended to use {@link java.util.SortedSet} here, see above)
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param timeScales to use when computing EOP corrections.
      * @since 10.1
@@ -140,23 +163,29 @@ public class EOPHistory {
             throw new OrekitException(OrekitMessages.WRONG_EOP_INTERPOLATION_DEGREE, interpolationDegree);
         }
 
+        // deduplicate data
+        final List<EOPEntry> deduplicated = deduplicate(data);
+
         this.conventions         = conventions;
         this.interpolationDegree = interpolationDegree;
         this.tidalCorrection     = tidalCorrection;
         this.timeScales          = timeScales;
-        if (!data.isEmpty()) {
+        if (!deduplicated.isEmpty()) {
             // enough data to interpolate
-            if (missSomeDerivatives(data)) {
+            if (missSomeDerivatives(deduplicated)) {
                 // we need to estimate the missing derivatives
                 final ImmutableTimeStampedCache<EOPEntry> rawCache =
-                                new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, data.size()), data);
-                final List<EOPEntry>fixedData = new ArrayList<>();
+                                new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1,
+                                                                             deduplicated.size()), deduplicated);
+                final List<EOPEntry> fixedData = new ArrayList<>();
                 for (final EOPEntry entry : rawCache.getAll()) {
                     fixedData.add(fixDerivatives(entry, rawCache));
                 }
-                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, fixedData.size()), fixedData);
+                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1,
+                                                                     fixedData.size()), fixedData);
             } else {
-                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, data.size()), data);
+                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1,
+                                                                     deduplicated.size()), deduplicated);
             }
             hasData = true;
         } else {
@@ -164,6 +193,55 @@ public class EOPHistory {
             cache   = ImmutableTimeStampedCache.emptyCache();
             hasData = false;
         }
+    }
+
+    /** Deduplicate entries.
+     * <p>
+     * Some sources provide EOP data with scattered and incomplete entries. A typical
+     * example is Bulletin A, as the xp, yp and UT1-UTC data are published as rapid data
+     * on a weekly basis whereas pole offsets Δδψ/Δδε and x/y are published on a monthly
+     * basis. This implies data for one day is scattered among several files published
+     * weeks apart and need to be merged. This method performs this merge, combining
+     * entries that correspond to a single date. The result is a sorted list with only
+     * one entry for each date.
+     * </p>
+     * @param rawData raw data, that may contain several partial entries for some dates
+     * @return deduplicated data, with only one entry for each date, with merged fields
+     * @since 14.0
+     */
+    private List<EOPEntry> deduplicate(final Collection<? extends EOPEntry> rawData) {
+
+        // copy data into an independent list
+        final List<EOPEntry> deduplicated = new ArrayList<>(rawData);
+
+        // sort chronologically
+        deduplicated.sort(new ChronologicalComparator());
+
+        // process each entry, combining the ones that correspond to the same date
+        int i = 0;
+        while (i < deduplicated.size() - 1) {
+
+            // beware we must call get(i) and get(i + 1) at each iteration because
+            // we mess up with the both the list and the index within the loop
+            final EOPEntry current = deduplicated.get(i);
+            final EOPEntry next    = deduplicated.get(i + 1);
+
+            // we compare entries dates with a 0.5 second tolerance because EOP data loaded from
+            // Sinex files include extra points one second after Sinex file start date and one second
+            // before Sinex file end date to prevent interpolation; these entries must be preserved
+            if (next.getDate().durationFrom(current) < 0.5) {
+                // the two entries are close enough, we combine them together
+                deduplicated.set(i, new EOPEntry(current, next));
+                deduplicated.remove(i + 1);
+            } else {
+                // this entry has been completed, we can go to the next one
+                ++i;
+            }
+
+        }
+
+        return deduplicated;
+
     }
 
     /**

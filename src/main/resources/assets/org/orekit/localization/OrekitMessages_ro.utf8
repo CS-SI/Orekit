@@ -61,6 +61,9 @@ UNABLE_TO_FIND_RESOURCE=imposibil de găsit resursa {0} în classpath
 # no Earth Orientation Parameters loaded
 NO_EARTH_ORIENTATION_PARAMETERS_LOADED=niciun Parametru de Orientare al Pământului nu a fost încărcat
 
+# cannot combine Earth Orientation Parameters at different dates ({0} and {1})
+INCOMPATIBLE_EARTH_ORIENTATION_PARAMETERS=
+
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES=Parametrii de Orientare ai Pământului lipsesc între {0} și {1}
 
