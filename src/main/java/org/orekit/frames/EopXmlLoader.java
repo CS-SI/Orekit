@@ -260,6 +260,8 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                                 }
                             }
                         }
+                        default ->
+                            content = DataFileContent.UNKNOWN;
                     }
                 }
 

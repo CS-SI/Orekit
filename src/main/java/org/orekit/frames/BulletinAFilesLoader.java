@@ -439,9 +439,9 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
          * @param utc                 time scale for parsing dates.
          * @since 14.0
          */
-        public Parser(final NutationCorrectionConverter converter,
-                      final ItrfVersionProvider itrfVersionProvider,
-                      final TimeScale utc) {
+        Parser(final NutationCorrectionConverter converter,
+               final ItrfVersionProvider itrfVersionProvider,
+               final TimeScale utc) {
             super(converter, itrfVersionProvider, utc);
             this.lineNumber      = 0;
             this.publicationDate = DateComponents.MODIFIED_JULIAN_EPOCH;

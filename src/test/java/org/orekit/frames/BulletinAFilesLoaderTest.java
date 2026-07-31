@@ -31,6 +31,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 

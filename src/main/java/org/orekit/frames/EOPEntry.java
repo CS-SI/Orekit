@@ -240,6 +240,7 @@ public class EOPEntry implements TimeStamped, Serializable {
      * @param entry2      second entry
      * @param field       selector for field
      * @param publication selector for publication date
+     * @return selected field
      * @since 14.0
      */
     private double select(final EOPEntry entry1, final EOPEntry entry2,
