@@ -22,21 +22,20 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.GroundObserver;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -90,26 +89,23 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         //
 
         // Currently not calculating tropospheric delays for this type of observer
-        if (observer.isSpaceBased()) {
+        if (observer instanceof GroundObserver groundObserver) {
+
+            // tracking
+            final TrackingCoordinates trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+            // only consider measures above the horizon
+            if (trackingCoordinates.getElevation() > 0) {
+                // Delay in meters
+                final AbsoluteDate date = state.getDate();
+                return tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(date),
+                        tropoModel.getParameters(date), date).getDelay();
+            }
+
+            return 0;
+        } else {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        final Vector3D position = state.getPosition();
-        final GroundStation station = (GroundStation) observer;
-
-        // tracking
-        final TrackingCoordinates trackingCoordinates = station.getBaseFrame().getTrackingCoordinates(position,
-                state.getFrame(), state.getDate());
-
-        // only consider measures above the horizon
-        if (trackingCoordinates.getElevation() > 0) {
-            // Delay in meters
-            return tropoModel.pathDelay(trackingCoordinates,
-                    station.getOffsetGeodeticPoint(state.getDate()),
-                    tropoModel.getParameters(state.getDate()), state.getDate()).getDelay();
-        }
-
-        return 0;
     }
 
     /** Compute the measurement error due to Troposphere.
@@ -124,29 +120,26 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
             final T[] parameters) {
 
         // Currently not calculating tropospheric delays for this type of observer
-        if (observer.isSpaceBased()) {
+        if (observer instanceof GroundObserver groundObserver) {
+
+            // Field
+            final FieldAbsoluteDate<T> date = state.getDate();
+            final Field<T> field = date.getField();
+            final T zero = field.getZero();
+
+            final FieldTrackingCoordinates<T> trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+            // only consider measures above the horizon
+            if (trackingCoordinates.getElevation().getReal() > 0) {
+                // Delay in meters
+                return tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(date),
+                        parameters, date).getDelay();
+            }
+
+            return zero;
+        } else {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        // Field
-        final Field<T> field = state.getDate().getField();
-        final T zero = field.getZero();
-        final GroundStation station = (GroundStation) observer;
-
-        //
-        final FieldVector3D<T> position = state.getPosition();
-        final FieldTrackingCoordinates<T> trackingCoordinates = station.getBaseFrame()
-                .getTrackingCoordinates(position, state.getFrame(), state.getDate());
-
-        // only consider measures above the horizon
-        if (trackingCoordinates.getElevation().getReal() > 0) {
-            // Delay in meters
-            return tropoModel.pathDelay(trackingCoordinates,
-                    station.getOffsetGeodeticPoint(state.getDate()),
-                    parameters, state.getDate()).getDelay();
-        }
-
-        return zero;
     }
 
     /**
@@ -171,16 +164,8 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
             final ParameterDriver driver,
             final SpacecraftState state) {
 
-        final ParameterFunction rangeError = new ParameterFunction() {
-            /** {@inheritDoc} */
-            @Override
-            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                return rangeErrorTroposphericModel(observer, state);
-            }
-        };
-
-        final ParameterFunction rangeErrorDerivative = Differentiation.differentiate(rangeError, 3,
-                10.0 * driver.getScale());
+        final ParameterFunction rangeErrorDerivative = Differentiation.differentiate((parameterDriver, date) -> rangeErrorTroposphericModel(observer, state),
+                3, 10.0 * driver.getScale());
 
         return rangeErrorDerivative.value(driver, state.getDate());
 

@@ -9,17 +9,4 @@
       *                                                                    *
       *           Rapid Service/Prediction of Earth Orientation            *
       **********************************************************************
-      10 October 2013                                      Vol. XXVI No. 041
-
-      COMBINED EARTH ORIENTATION PARAMETERS:
-
-   13 10  4  56569 0.12860 .00009 0.29106 .00009  0.008805 0.000022          
-   13 10  5  56570 0.12785 .00009 0.29018 .00009  0.007495 0.000026          
-   13 10  6  56571 0.12663 .00009 0.28960 .00009  0.006216 0.000029          
-
-      PREDICTIONS:                                                             
-         TAI-UTC(MJD 56541) = 35.0                                             
-                                                        
-                                                                               
-                    MJD      x(arcsec)   y(arcsec)   UT1-UTC(sec)              
-       2013 10 11  56546       0.1191      0.2862      0.00036         
+      10 October 2013                                      Vol. XXVI No. 051

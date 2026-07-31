@@ -19,15 +19,17 @@ package org.orekit.frames;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
 
@@ -36,7 +38,7 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("missing-months");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
         Assertions.assertTrue(getMaxGap(history) > 5);
     }
@@ -46,7 +48,7 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2003, 1, 1, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
@@ -58,7 +60,7 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2005, 12, 31, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
@@ -70,7 +72,7 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> data = new ArrayList<>();
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                             data, true);
@@ -88,7 +90,7 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("eopc04");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> data = new ArrayList<>();
         new EopC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                             data, true);
@@ -134,6 +136,21 @@ public class EopC04FilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(asToRad((9 * ( 0.286304  +  0.287241)  - ( 0.285811  +  0.288345))  / 16), history.getPoleCorrection(date2015).getYp(), 2.2e-10);
         Assertions.assertEquals(ITRFVersion.ITRF_2020, history.getITRFVersion(date2015));
 
+    }
+
+    @Test
+    public void testParser() throws
+                             IOException {
+        setRoot("regular-data");
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        EopHistoryLoader.Parser parser =
+            EopHistoryLoader.Parser.newEopC04Parser(IERSConventions.IERS_2010, context.getTimeScales());
+        final String name = "/eopc04/eopc04.14";
+        final DataSource source = new DataSource(name,
+                                                 () -> RapidDataAndPredictionColumnsLoader.
+                                                       class.
+                                                       getResourceAsStream(name));
+        Assertions.assertEquals(365, parser.parse(source).size());
     }
 
     private double asToRad(double as) {

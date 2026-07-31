@@ -23,17 +23,12 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -42,25 +37,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-public class ObserverSatelliteTest {
-
-    @Test
-    void testSatelliteCreation() {
-
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-
-        final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
-                                              1.0e-6, 60.0, 0.001);
-
-        // Create perfect range measurements
-        final Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-        ObserverSatellite satellite = new ObserverSatellite("test-satellite", propagator1);
-
-        Assertions.assertEquals( satellite.isSpaceBased(), true);
-
-    }
+class ObserverSatelliteTest {
 
     @Test
     void testExtendedPositionProvider() {
@@ -90,8 +67,8 @@ public class ObserverSatelliteTest {
 
         // Checks to make sure that fieldCoordsProvider is an instance of ExtendedPositionProvider
         final FieldPVCoordinatesProvider<Gradient> fieldCoordsProvider = satellite.getFieldPVCoordinatesProvider(nbParams, indices);
-        Assertions.assertEquals( fieldCoordsProvider.getClass().getName()
-            .substring(0, 41).compareTo(ExtendedPositionProvider.class.getName()), 0);
+        Assertions.assertEquals(0, fieldCoordsProvider.getClass().getName()
+            .substring(0, 41).compareTo(ExtendedPositionProvider.class.getName()));
     }
 
 }

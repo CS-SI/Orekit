@@ -20,6 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataSource;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.frames.EopHistoryLoader;
@@ -65,7 +66,8 @@ public class PreloadedTimeScalesTest {
                     try {
                         return EopHistoryLoader.Parser
                                 .newFinalsXmlParser(conventions, itrfVersionProvider, timeScales)
-                                .parse(PreloadedTimeScales.class.getResourceAsStream(eopPath), eopPath);
+                                .parse(new DataSource(eopPath,
+                                                      () -> PreloadedTimeScales.class.getResourceAsStream(eopPath)));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

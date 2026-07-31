@@ -68,7 +68,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class GroundStation extends AbstractParticipant implements Observer {
+public class GroundStation extends AbstractParticipant implements GroundObserver {
 
     /** Position offsets scaling factor.
      * <p>
@@ -144,10 +144,9 @@ public class GroundStation extends AbstractParticipant implements Observer {
 
     }
 
-    /** {@inheritDoc} */
     @Override
-    public final boolean isSpaceBased() {
-        return false;
+    public BodyShape getParentShape() {
+        return getBaseFrame().getParentShape();
     }
 
     /** Get a driver allowing to change station position along East axis.

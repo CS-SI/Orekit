@@ -20,20 +20,19 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.GroundObserver;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.TDOA;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -77,29 +76,25 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     private double timeErrorTroposphericModel(final Observer observer, final SpacecraftState state) {
 
         // Currently not calculating tropospheric delays for this type of observer
-        if (observer.isSpaceBased()) {
+        if (observer instanceof GroundObserver groundObserver) {
+
+            // tracking
+            final TrackingCoordinates trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+            // only consider measurements above the horizon
+            if (trackingCoordinates.getElevation() > 0) {
+                // Delay in meters
+                final double delay = tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(state.getDate()),
+                                tropoModel.getParameters(state.getDate()), state.getDate()).
+                        getDelay();
+                // return delay in seconds
+                return delay / Constants.SPEED_OF_LIGHT;
+            }
+
+            return 0;
+        } else {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        final Vector3D position = state.getPosition();
-        final GroundStation station = (GroundStation) observer;
-
-        // tracking
-        final TrackingCoordinates trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
-
-        // only consider measurements above the horizon
-        if (trackingCoordinates.getElevation() > 0) {
-            // Delay in meters
-            final double delay = tropoModel.pathDelay(trackingCoordinates,
-                                                      station.getOffsetGeodeticPoint(state.getDate()),
-                                                      tropoModel.getParameters(state.getDate()), state.getDate()).
-                                 getDelay();
-            // return delay in seconds
-            return delay / Constants.SPEED_OF_LIGHT;
-        }
-
-        return 0;
     }
 
     /** Compute the measurement error due to Troposphere on a single downlink.
@@ -114,32 +109,30 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
                                                                              final T[] parameters) {
 
         // Currently not calculating tropospheric delays for this type of observer
-        if (observer.isSpaceBased()) {
+        if (observer instanceof GroundObserver groundObserver) {
+
+            // Field
+            final FieldAbsoluteDate<T> date = state.getDate();
+            final Field<T> field = date.getField();
+            final T zero = field.getZero();
+
+            // tracking
+            final FieldTrackingCoordinates<T> trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+            // only consider measurements above the horizon
+            if (trackingCoordinates.getElevation().getReal() > 0) {
+                // delay in meters
+                final T delay = tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(date),
+                                parameters, date).
+                        getDelay();
+                // return delay in seconds
+                return delay.divide(Constants.SPEED_OF_LIGHT);
+            }
+
+            return zero;
+        } else {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        // Field
-        final Field<T> field = state.getDate().getField();
-        final T zero         = field.getZero();
-        final GroundStation station = (GroundStation) observer;
-
-        // tracking
-        final FieldVector3D<T> pos = state.getPosition();
-        final FieldTrackingCoordinates<T> trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(pos, state.getFrame(), state.getDate());
-
-        // only consider measurements above the horizon
-        if (trackingCoordinates.getElevation().getReal() > 0) {
-            // delay in meters
-            final T delay = tropoModel.pathDelay(trackingCoordinates,
-                                                 station.getOffsetGeodeticPoint(state.getDate()),
-                                                 parameters, state.getDate()).
-                            getDelay();
-            // return delay in seconds
-            return delay.divide(Constants.SPEED_OF_LIGHT);
-        }
-
-        return zero;
     }
 
     /** {@inheritDoc} */

@@ -44,11 +44,6 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public interface Observer extends MeasurementParticipant {
 
-    /** Get the type of object being used in measurement observations.
-     * @return boolean
-     */
-    boolean isSpaceBased();
-
     /** Return the PVCoordinatesProvider.
      * @return pos/vel coordinates provider
      */

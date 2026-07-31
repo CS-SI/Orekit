@@ -16,14 +16,10 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical inter-satellites phase measurement with relativistic clock correction.
  * <p>
@@ -41,12 +37,6 @@ public class RelativisticClockInterSatellitesPhaseModifier extends AbstractRelat
     /** Simple constructor. */
     public RelativisticClockInterSatellitesPhaseModifier() {
         super();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
     }
 
     /** {@inheritDoc} */

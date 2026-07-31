@@ -20,6 +20,15 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="update" issue="1992">
+              Allow controlled loading of EOP data.
+          </action>
+          <action dev="luc" type="update" issue="1992">
+              Use DataSource in EopHistoryLoader.Parser interface.
+          </action>
+          <action dev="serrof" type="add" issue="1988">
+              Add parallactic refraction modifier.
+          </action>
           <action dev="serrof" type="add" issue="1981">
               Add native RMS convergence checker.
           </action>

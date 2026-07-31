@@ -20,15 +20,17 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.GroundObserver;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
@@ -37,9 +39,10 @@ import org.orekit.utils.TrackingCoordinates;
  * The effect of tropospheric correction on the range-rate is directly computed
  * through the computation of the tropospheric delay difference with respect to
  * time.
- *
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
+ * </p>
  *
  * @author Joris Olympio
  * @since 11.2
@@ -80,51 +83,41 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
      */
     public double rangeRateErrorTroposphericModel(final Observer observer,
                                                   final SpacecraftState state) {
-        // The effect of tropospheric correction on the range rate is
-        // computed using finite differences.
+        // The effect of tropospheric correction on the range rate is computed using finite differences.
 
         // Currently not calculating tropospheric delays for this type of observer
-        if (observer.isSpaceBased()) {
-            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
-        }
-
-        final double dt = 10; // s
-        final GroundStation station = (GroundStation) observer;
-
-        // spacecraft position and elevation as seen from the ground station
-        final Vector3D position = state.getPosition();
-
-        // tracking
-        final TrackingCoordinates trackingCoordinates1 =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
-
-        // only consider measures above the horizon
-        if (trackingCoordinates1.getElevation() > 0) {
-            // tropospheric delay in meters
-            final double d1 = tropoModel.pathDelay(trackingCoordinates1,
-                                                   station.getOffsetGeodeticPoint(state.getDate()),
-                                                   tropoModel.getParameters(state.getDate()), state.getDate()).getDelay();
-
-            // propagate spacecraft state forward by dt
-            final SpacecraftState state2 = state.shiftedBy(dt);
-
-            // spacecraft position and elevation as seen from the ground station
-            final Vector3D position2 = state2.getPosition();
+        if (observer instanceof GroundObserver groundObserver) {
+            final double dt = 10; // s
 
             // tracking
-            final TrackingCoordinates trackingCoordinates2 =
-                            station.getBaseFrame().getTrackingCoordinates(position2, state2.getFrame(), state2.getDate());
+            final TrackingCoordinates trackingCoordinates1 = groundObserver.getTrackingCoordinates(state);
 
-            // tropospheric delay dt after
-            final double d2 = tropoModel.pathDelay(trackingCoordinates2,
-                                                   station.getOffsetGeodeticPoint(state.getDate()),
-                                                   tropoModel.getParameters(state2.getDate()), state2.getDate()).
-                              getDelay();
+            // only consider measures above the horizon
+            if (trackingCoordinates1.getElevation() > 0) {
+                // tropospheric delay in meters
+                final AbsoluteDate date = state.getDate();
+                final GeodeticPoint point = groundObserver.getOffsetGeodeticPoint(date);
+                final double d1 = tropoModel.pathDelay(trackingCoordinates1, point,
+                        tropoModel.getParameters(date), date).getDelay();
 
-            return (d2 - d1) / dt;
+                // propagate spacecraft state forward by dt
+                final SpacecraftState state2 = state.shiftedBy(dt);
+
+                // tracking
+                final TrackingCoordinates trackingCoordinates2 = groundObserver.getTrackingCoordinates(state2);
+
+                // tropospheric delay dt after
+                final double d2 = tropoModel.pathDelay(trackingCoordinates2, point,
+                                tropoModel.getParameters(state2.getDate()), state2.getDate()).
+                        getDelay();
+
+                return (d2 - d1) / dt;
+            }
+
+            return 0;
+        } else {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        return 0;
     }
 
 
@@ -140,53 +133,43 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
                                                                                  final T[] parameters) {
 
         // Check to make sure Observer is NOT space-based
-        if (observer.isSpaceBased()) {
-            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
-        }
+        if (observer instanceof GroundObserver groundObserver) {
 
-        // Field
-        final Field<T> field  = state.getDate().getField();
-        final T zero          = field.getZero();
-        final GroundStation station = (GroundStation) observer;
+            // Field
+            final Field<T> field = state.getDate().getField();
+            final T zero = field.getZero();
 
-        // The effect of tropospheric correction on the range rate is
-        // computed using finite differences.
+            // The effect of tropospheric correction on the range rate is
+            // computed using finite differences.
 
-        final double dt = 10; // s
-
-        // spacecraft position and elevation as seen from the ground station
-        final FieldVector3D<T> position     = state.getPosition();
-        final FieldTrackingCoordinates<T> trackingCoordinates1 =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
-
-        // only consider measures above the horizon
-        if (trackingCoordinates1.getElevation().getReal() > 0) {
-            // tropospheric delay in meters
-            final T d1 = tropoModel.pathDelay(trackingCoordinates1,
-                                              station.getOffsetGeodeticPoint(state.getDate()),
-                                              parameters, state.getDate()).getDelay();
-
-            // propagate spacecraft state forward by dt
-            final FieldSpacecraftState<T> state2 = state.shiftedBy(dt);
+            final double dt = 10; // s
 
             // spacecraft position and elevation as seen from the ground station
-            final FieldVector3D<T> position2     = state2.getPosition();
+            final FieldTrackingCoordinates<T> trackingCoordinates1 = groundObserver.getTrackingCoordinates(state);
 
-            // elevation
-            final FieldTrackingCoordinates<T> trackingCoordinates2 =
-                            station.getBaseFrame().getTrackingCoordinates(position2, state2.getFrame(), state2.getDate());
+            // only consider measures above the horizon
+            if (trackingCoordinates1.getElevation().getReal() > 0) {
+                // tropospheric delay in meters
+                final FieldAbsoluteDate<T> date = state.getDate();
+                final FieldGeodeticPoint<T> gp1 = groundObserver.getOffsetGeodeticPoint(date);
+                final T d1 = tropoModel.pathDelay(trackingCoordinates1, gp1, parameters, date).getDelay();
 
+                // propagate spacecraft state forward by dt
+                final FieldSpacecraftState<T> state2 = state.shiftedBy(dt);
 
-            // tropospheric delay dt after
-            final T d2 = tropoModel.pathDelay(trackingCoordinates2,
-                                              station.getOffsetGeodeticPoint(state.getDate()),
-                                              parameters, state2.getDate()).
-                         getDelay();
+                // elevation
+                final FieldTrackingCoordinates<T> trackingCoordinates2 = groundObserver.getTrackingCoordinates(state2);
 
-            return d2.subtract(d1).divide(dt);
+                // tropospheric delay dt after
+                final T d2 = tropoModel.pathDelay(trackingCoordinates2, gp1, parameters, state2.getDate()).getDelay();
+
+                return d2.subtract(d1).divide(dt);
+            }
+
+            return zero;
+        } else {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        return zero;
     }
 
     /** Get the drivers for this modifier parameters.

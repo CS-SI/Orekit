@@ -61,6 +61,9 @@ UNABLE_TO_FIND_RESOURCE=αδύνατο να βρεθεί πόρος {0} στο c
 # no Earth Orientation Parameters loaded
 NO_EARTH_ORIENTATION_PARAMETERS_LOADED=καμία φορτωμένη Παράμετρος Προσανατολισμού της Γης
 
+# cannot combine Earth Orientation Parameters at different dates ({0} and {1})
+INCOMPATIBLE_EARTH_ORIENTATION_PARAMETERS=
+
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES=ελλιπείς Παράμετροι Προσανατολισμού της Γης μεταξύ {0} και{1}
 

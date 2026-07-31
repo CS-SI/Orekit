@@ -17,10 +17,10 @@
 package org.orekit.frames;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
@@ -328,7 +328,7 @@ public class LazyLoadedEop {
 
             // TimeStamped based set needed to remove duplicates
             OrekitException pendingException = null;
-            final SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
+            final Collection<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
 
             // try to load canonical data if available
             if (eopHistoryLoaders.containsKey(conventions)) {

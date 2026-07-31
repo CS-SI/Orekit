@@ -16,9 +16,14 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modifying theoretical measurements with relativistic clock correction.
@@ -32,7 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @see "Teunissen, Peter, and Oliver Montenbruck, eds. Springer handbook of global navigation
  * satellite systems. Chapter 19.2. Springer, 2017."
  */
-public class AbstractRelativisticClockModifier {
+public class AbstractRelativisticClockModifier implements ParameterDriversProvider {
 
     /** Relativistic effect scale factor. */
     private final double s;
@@ -48,6 +53,12 @@ public class AbstractRelativisticClockModifier {
      */
     public String getEffectName() {
         return "clock relativity";
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Computes the relativistic clock correction.

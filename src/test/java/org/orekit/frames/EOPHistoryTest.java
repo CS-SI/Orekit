@@ -25,12 +25,11 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.io.IOException;
 
 public class EOPHistoryTest {
 
@@ -39,7 +38,7 @@ public class EOPHistoryTest {
         AbsoluteDate date = new AbsoluteDate(2004, 1, 4, TimeScalesFactory.getUTC());
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         double dt = eopHistory.getUT1MinusUTC(date);
-        Assertions.assertTrue(EopDataType.UNKNOWN.equals(eopHistory.getEopDataType(date)));
+        Assertions.assertEquals(EopDataType.FINAL, eopHistory.getEopDataType(date));
         Assertions.assertEquals(-0.3906070, dt, 1.0e-10);
     }
 
@@ -51,12 +50,12 @@ public class EOPHistoryTest {
             AbsoluteDate date = endDate.shiftedBy(t);
             double dt = history.getUT1MinusUTC(date);
             if (t <= 0) {
-                Assertions.assertTrue(EopDataType.UNKNOWN.equals(history.getEopDataType(date)));
+                Assertions.assertEquals(EopDataType.FINAL, history.getEopDataType(date));
                 Assertions.assertTrue(dt < 0.29236);
                 Assertions.assertTrue(dt > 0.29233);
             } else {
                 // no more data after end date
-                Assertions.assertTrue(EopDataType.UNKNOWN.equals(history.getEopDataType(date)));
+                Assertions.assertEquals(EopDataType.UNKNOWN, history.getEopDataType(date));
                 Assertions.assertEquals(0.0, dt, 1.0e-10);
             }
         }
@@ -125,7 +124,7 @@ public class EOPHistoryTest {
     }
 
     @Test
-    public void testTidalInterpolationEffects() throws IOException, OrekitException {
+    public void testTidalInterpolationEffects() throws OrekitException {
 
         final EOPHistory h1 = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         final EOPHistory h2 = h1.getEOPHistoryWithoutCachedTidalCorrection();
@@ -145,6 +144,126 @@ public class EOPHistoryTest {
             Assertions.assertEquals(0.0, interpolationErrorYp,  1.5e-9);  // arcseconds
         }
 
+    }
+
+    @Test
+    public void testCombineIncompatibleEntries() {
+        final DateComponents dateA         = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56557);
+        final DateComponents publicationAT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56561);
+        final DateComponents publicationAN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56571);
+        final DateComponents publicationAC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56581);
+        final DateComponents dateB         = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56562);
+        final DateComponents publicationBT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56568);
+        final DateComponents publicationBN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56578);
+        final DateComponents publicationBC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56588);
+        try {
+            final EOPEntry entryA =
+                new EOPEntry(dateA.getMJD(), 1.0e-3, 1.0e-3,
+                             1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,
+                             1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,
+                             ITRFVersion.ITRF_2020,
+                             new AbsoluteDate(dateA, TimeScalesFactory.getUTC()), EopDataType.RAPID,
+                             publicationAT.getMJD(), publicationAN.getMJD(), publicationAC.getMJD());
+            final EOPEntry entryB =
+                new EOPEntry(dateB.getMJD(), 2.0e-3, 2.0e-3,
+                             2.0e-3, 2.0e-3, 2.0e-3, 2.0e-3,
+                             2.0e-3, 2.0e-3, 2.0e-3, 2.0e-3,
+                             ITRFVersion.ITRF_2014,
+                             new AbsoluteDate(dateB, TimeScalesFactory.getUTC()), EopDataType.FINAL,
+                             publicationBT.getMJD(), publicationBN.getMJD(), publicationBC.getMJD());
+            new EOPEntry(entryA, entryB);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_EARTH_ORIENTATION_PARAMETERS, oe.getSpecifier());
+            Assertions.assertEquals(dateA, oe.getParts()[0]);
+            Assertions.assertEquals(dateB, oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testCombineChronological() {
+        final DateComponents date          = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56557);
+        final DateComponents publicationAT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56561);
+        final DateComponents publicationAN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56571);
+        final DateComponents publicationAC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56581);
+        final DateComponents publicationBT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56568);
+        final DateComponents publicationBN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56578);
+        final DateComponents publicationBC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56588);
+        final EOPEntry entryA =
+            new EOPEntry(date.getMJD(), 1.0e-3, 1.0e-3,
+                         Double.NaN, 1.0e-3, Double.NaN, 1.0e-3,
+                         1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,
+                         ITRFVersion.ITRF_2020,
+                         new AbsoluteDate(date, TimeScalesFactory.getUTC()), EopDataType.RAPID,
+                         publicationAT.getMJD(), publicationAN.getMJD(), publicationAC.getMJD());
+        final EOPEntry entryB =
+            new EOPEntry(date.getMJD(), 2.0e-3, 2.0e-3,
+                         2.0e-3, Double.NaN, Double.NaN, 2.0e-3,
+                         2.0e-3, 2.0e-3, 2.0e-3, 2.0e-3,
+                         ITRFVersion.ITRF_2014,
+                         new AbsoluteDate(date, TimeScalesFactory.getUTC()), EopDataType.FINAL,
+                         publicationBT.getMJD(), publicationBN.getMJD(), publicationBC.getMJD());
+        final EOPEntry combined = new EOPEntry(entryA, entryB);
+        Assertions.assertEquals(date.getMJD(), combined.getMjd());
+        Assertions.assertEquals(new AbsoluteDate(date, TimeScalesFactory.getUTC()), combined.getDate());
+        Assertions.assertEquals(entryB.getUT1MinusUTC(), combined.getUT1MinusUTC(), 1.0e-15);
+        Assertions.assertEquals(entryB.getLOD(),         combined.getLOD(),         1.0e-15);
+        Assertions.assertEquals(entryB.getX(),           combined.getX(),           1.0e-15);
+        Assertions.assertEquals(entryA.getY(),           combined.getY(),           1.0e-15);
+        Assertions.assertTrue(Double.isNaN(entryB.getXRate()));
+        Assertions.assertEquals(entryB.getYRate(),       combined.getYRate(),       1.0e-15);
+        Assertions.assertEquals(entryB.getDdPsi(),       combined.getDdPsi(),       1.0e-15);
+        Assertions.assertEquals(entryB.getDdEps(),       combined.getDdEps(),       1.0e-15);
+        Assertions.assertEquals(entryB.getDx(),          combined.getDx(),          1.0e-15);
+        Assertions.assertEquals(entryB.getDy(),          combined.getDy(),          1.0e-15);
+        Assertions.assertEquals(entryB.getITRFType(),    combined.getITRFType());
+        Assertions.assertEquals(entryB.getEopDataType(), combined.getEopDataType());
+        Assertions.assertEquals(publicationBT.getMJD(),  combined.getDtPub());
+        Assertions.assertEquals(publicationBN.getMJD(),  combined.getNutPub());
+        Assertions.assertEquals(publicationBC.getMJD(),  combined.getCipPub());
+    }
+
+    @Test
+    public void testCombineReverseChronological() {
+        final DateComponents date          = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56557);
+        final DateComponents publicationAT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56561);
+        final DateComponents publicationAN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56571);
+        final DateComponents publicationAC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56581);
+        final DateComponents publicationBT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56568);
+        final DateComponents publicationBN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56578);
+        final DateComponents publicationBC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56588);
+        final EOPEntry entryA =
+            new EOPEntry(date.getMJD(), 1.0e-3, 1.0e-3,
+                         Double.NaN, 1.0e-3, Double.NaN, 1.0e-3,
+                         1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,
+                         ITRFVersion.ITRF_2020,
+                         new AbsoluteDate(date, TimeScalesFactory.getUTC()), EopDataType.RAPID,
+                         publicationAT.getMJD(), publicationAN.getMJD(), publicationAC.getMJD());
+        final EOPEntry entryB =
+            new EOPEntry(date.getMJD(), 2.0e-3, 2.0e-3,
+                         2.0e-3, Double.NaN, Double.NaN, 2.0e-3,
+                         2.0e-3, 2.0e-3, 2.0e-3, 2.0e-3,
+                         ITRFVersion.ITRF_2014,
+                         new AbsoluteDate(date, TimeScalesFactory.getUTC()), EopDataType.FINAL,
+                         publicationBT.getMJD(), publicationBN.getMJD(), publicationBC.getMJD());
+        final EOPEntry combined = new EOPEntry(entryB, entryA);
+        Assertions.assertEquals(date.getMJD(), combined.getMjd());
+        Assertions.assertEquals(new AbsoluteDate(date, TimeScalesFactory.getUTC()), combined.getDate());
+        Assertions.assertEquals(entryB.getUT1MinusUTC(), combined.getUT1MinusUTC(), 1.0e-15);
+        Assertions.assertEquals(entryB.getLOD(),         combined.getLOD(),         1.0e-15);
+        Assertions.assertEquals(entryB.getX(),           combined.getX(),           1.0e-15);
+        Assertions.assertEquals(entryA.getY(),           combined.getY(),           1.0e-15);
+        Assertions.assertTrue(Double.isNaN(entryB.getXRate()));
+        Assertions.assertEquals(entryB.getYRate(),       combined.getYRate(),       1.0e-15);
+        Assertions.assertEquals(entryB.getDdPsi(),       combined.getDdPsi(),       1.0e-15);
+        Assertions.assertEquals(entryB.getDdEps(),       combined.getDdEps(),       1.0e-15);
+        Assertions.assertEquals(entryB.getDx(),          combined.getDx(),          1.0e-15);
+        Assertions.assertEquals(entryB.getDy(),          combined.getDy(),          1.0e-15);
+        Assertions.assertEquals(entryB.getITRFType(),    combined.getITRFType());
+        Assertions.assertEquals(entryB.getEopDataType(), combined.getEopDataType());
+        Assertions.assertEquals(publicationBT.getMJD(),  combined.getDtPub());
+        Assertions.assertEquals(publicationBN.getMJD(),  combined.getNutPub());
+        Assertions.assertEquals(publicationBC.getMJD(),  combined.getCipPub());
     }
 
     @BeforeEach

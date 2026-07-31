@@ -61,6 +61,9 @@ UNABLE_TO_FIND_RESOURCE=Filen {0} finnes ikke i classpath''en
 # no Earth Orientation Parameters loaded
 NO_EARTH_ORIENTATION_PARAMETERS_LOADED=ingen jordorienteringsparametere er lastet
 
+# cannot combine Earth Orientation Parameters at different dates ({0} and {1})
+INCOMPATIBLE_EARTH_ORIENTATION_PARAMETERS=
+
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES=manglende jordorienteringsparametere mellom {0} og {1}
 

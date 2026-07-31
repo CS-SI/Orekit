@@ -28,7 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.GroundObserver;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.models.earth.troposphere.TroposphericModel;
@@ -63,9 +63,9 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         tropoModel = model;
     }
 
-/** {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-        public String getEffectName() {
+    public String getEffectName() {
         return "troposphere";
     }
 
@@ -78,28 +78,25 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
     private double phaseErrorTroposphericModel(final Observer observer, final SpacecraftState state, final double wavelength) {
 
         // Check to make sure Observer is NOT space-based
-        if (observer.isSpaceBased()) {
+        if (observer instanceof GroundObserver groundObserver) {
+
+            // tracking
+            final TrackingCoordinates trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+            // only consider measures above the horizon
+            if (trackingCoordinates.getElevation() > 0) {
+                // delay in meters
+                final double delay = tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(state.getDate()),
+                                tropoModel.getParameters(state.getDate()), state.getDate()).
+                        getDelay();
+
+                return delay / wavelength;
+            }
+
+            return 0;
+        } else {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        final GroundStation station = (GroundStation) observer;
-
-        // tracking
-        final TrackingCoordinates trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate());
-
-        // only consider measures above the horizon
-        if (trackingCoordinates.getElevation() > 0) {
-            // delay in meters
-            final double delay = tropoModel.pathDelay(trackingCoordinates,
-                                                      station.getOffsetGeodeticPoint(state.getDate()),
-                                                      tropoModel.getParameters(state.getDate()), state.getDate()).
-                                 getDelay();
-
-            return delay / wavelength;
-        }
-
-        return 0;
     }
 
     /** Compute the measurement error due to Troposphere.
@@ -115,32 +112,30 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
                                                                               final T[] parameters, final double wavelength) {
 
         // Check to make sure Observer is NOT space-based
-        if (observer.isSpaceBased()) {
+        if (observer instanceof GroundObserver groundObserver) {
+
+            // Field
+            final Field<T> field = state.getDate().getField();
+            final T zero = field.getZero();
+
+            // tracking
+            final FieldTrackingCoordinates<T> trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+
+            // only consider measures above the horizon
+            if (trackingCoordinates.getElevation().getReal() > 0) {
+                // delay in meters
+                final T delay = tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(state.getDate()),
+                                parameters, state.getDate()).
+                        getDelay();
+
+                return delay.divide(wavelength);
+            }
+
+            return zero;
+        } else {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        // Field
-        final Field<T>      field   = state.getDate().getField();
-        final T             zero    = field.getZero();
-        final GroundStation station = (GroundStation) observer;
-
-        // tracking
-        final FieldTrackingCoordinates<T> trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate());
-
-
-        // only consider measures above the horizon
-        if (trackingCoordinates.getElevation().getReal() > 0) {
-            // delay in meters
-            final T delay = tropoModel.pathDelay(trackingCoordinates,
-                                                 station.getOffsetGeodeticPoint(state.getDate()),
-                                                 parameters, state.getDate()).
-                            getDelay();
-
-            return delay.divide(wavelength);
-        }
-
-        return zero;
     }
 
     /** Compute the Jacobian of the delay term wrt state using

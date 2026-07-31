@@ -506,7 +506,7 @@ public enum RPOModel implements RPO {
                                                                                                                  currentWaypoint.getDate(),
                                                                                                                  currentWaypoint.getPosition(),
                                                                                                                  velocityAfterManeuver),
-                                                                                                 "FieldProvider_" + i);
+                                                                                                 "Provider_" + i);
                 targetPropagator.addAdditionalDataProvider(yaProviderManeuver);
                 // Propagate the waypoint.
                 final SpacecraftState propagated = targetPropagator.propagate(nextWaypoint.getDate());
@@ -582,7 +582,7 @@ public enum RPOModel implements RPO {
                                                                                     new FieldPVCoordinates<>(
                                                                                                     currentWaypoint.getPosition(),
                                                                                                     velocityAfterManeuver)),
-                                                                    "Provider_" + i);
+                                                                    "FieldProvider_" + i);
                 targetPropagator.addAdditionalDataProvider(yaProviderManeuver);
 
                 // Propagate the waypoint.

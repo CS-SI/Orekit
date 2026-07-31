@@ -18,12 +18,12 @@ package org.orekit.frames;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.orekit.data.DataLoader;
+import org.orekit.data.DataSource;
 
 /**
  * Implementation of {@link DataLoader} based on {@link EopHistoryLoader.Parser} that
@@ -67,9 +67,8 @@ class EopParserLoader implements DataLoader {
     }
 
     @Override
-    public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException {
-        history.addAll(parser.parse(input, name));
+    public void loadData(final InputStream input, final String name) throws IOException {
+        history.addAll(parser.parse(new DataSource(name, () -> input)));
     }
 
 }
