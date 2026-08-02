@@ -21,6 +21,7 @@ import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -34,6 +35,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -100,7 +102,7 @@ class GnssGradientConverterTest {
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(6, gPropagator.getBaseInitialState().getOrbit().getA().getFreeParameters());
-        checkInitialStmRoughlyUnitaryDiagonal(gPropagator.getBaseInitialState());
+        checkInitialStmIsIdentity(gPropagator.getBaseInitialState());
     }
 
     @Test
@@ -111,7 +113,22 @@ class GnssGradientConverterTest {
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(21, gPropagator.getBaseInitialState().getOrbit().getA().getFreeParameters());
-        checkInitialStmRoughlyUnitaryDiagonal(gPropagator.getBaseInitialState());
+        checkInitialStmIsIdentity(gPropagator.getBaseInitialState());
+    }
+
+    @Test
+    void testInitialJacobianVsBuilderParametersIsNotUnitary() {
+        // dY0/dB0 is the change of representation between the GNSS orbital elements the
+        // builder holds and the Cartesian state the propagator produces. Unlike the state
+        // transition matrix at dt = 0, it is legitimately far from the identity: this is
+        // where the non-Keplerian elements and the body-fixed node longitude show up.
+        final MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
+        final RealMatrix dY0dB0 = harvester.getStateJacobianVsBuilderParameters(propagator.getBaseInitialState());
+        Assertions.assertEquals(6, dY0dB0.getRowDimension());
+        Assertions.assertEquals(6, dY0dB0.getColumnDimension());
+        final RealMatrix identity = MatrixUtils.createRealIdentityMatrix(6);
+        Assertions.assertTrue(dY0dB0.subtract(identity).getNorm1() > 1.0e6,
+                              "dY0/dB0 is expected to be far from the identity matrix");
     }
 
     @Test
@@ -165,7 +182,12 @@ class GnssGradientConverterTest {
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
         OrbitType outType = harvester.getOrbitType();
         Assertions.assertEquals(OrbitType.CARTESIAN, outType);
-        final OrbitType inType = OrbitType.KEPLERIAN;
+        // The state transition matrix is now dC(t)/dC(t0): Cartesian rows *and* columns, so
+        // the finite differences reference is taken on the Cartesian initial coordinates too.
+        // The residual error is dominated by the finite differences themselves, not by the
+        // matrix: it decreases monotonically when the step grows (1.4e-5 at a 1 m scale down
+        // to 1.3e-9 at a 10 km scale), which is the signature of round-off, not of truncation.
+        final OrbitType inType = OrbitType.CARTESIAN;
         final double [] steps = ToleranceProvider.
                                 getDefaultToleranceProvider(1000.0).
                                 getTolerances(state.getOrbit(), inType)[0];
@@ -182,7 +204,7 @@ class GnssGradientConverterTest {
             System.out.format(Locale.ROOT, "%n");
         }
         System.out.format(Locale.ROOT, "maxRelativeError = %10.3e%n", maxRelativeError);
-        Assertions.assertEquals(0.0, maxRelativeError, 6.5e-13);
+        Assertions.assertEquals(0.0, maxRelativeError, 2.0e-8);
 
         // check Jacobian against finite differences
         final RealMatrix jacobian = harvester.getParametersJacobian(state);
@@ -217,15 +239,37 @@ class GnssGradientConverterTest {
     /** The diagonal is only very roughly unitary because there are large non-Keplerian elements.
      * @param initialState initial state
      */
-    private void checkInitialStmRoughlyUnitaryDiagonal(final FieldSpacecraftState<Gradient> initialState) {
-        final FieldKeplerianOrbit<Gradient> orbit =
-            (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(initialState.getOrbit());
-        Assertions.assertEquals(1.0, orbit.getA().getPartialDerivative(0),                             0.01);
-        Assertions.assertEquals(1.0, orbit.getE().getPartialDerivative(1),                             0.01);
-        Assertions.assertEquals(1.0, orbit.getI().getPartialDerivative(2),                             0.01);
-        Assertions.assertEquals(1.0, orbit.getPerigeeArgument().getPartialDerivative(3),               0.10);
-        Assertions.assertEquals(1.0, orbit.getRightAscensionOfAscendingNode().getPartialDerivative(4), 0.01);
-        Assertions.assertEquals(1.0, orbit.getMeanAnomaly().getPartialDerivative(5),                   0.05);
+    /** Check the state transition matrix is the identity at the initial date.
+     * <p>
+     * The free variables of the converter are the six Cartesian coordinates of the initial
+     * state, so at dt = 0 the Cartesian gradients are the identity matrix. The residual is
+     * set by the convergence threshold of the Newton iteration that fits the GNSS elements
+     * to the state, not by any algebraic approximation, and lands around 2e-12. That is ten
+     * orders of magnitude tighter than the relaxed diagonal-only helper this replaces, which
+     * had to accept 0.01 to 0.10 back when the free variables were the Keplerian elements
+     * and this property did not hold at all.
+     * </p>
+     * @param initialState initial state of the gradient propagator
+     */
+    private void checkInitialStmIsIdentity(final FieldSpacecraftState<Gradient> initialState) {
+        final TimeStampedFieldPVCoordinates<Gradient> pv = initialState.getPVCoordinates();
+        final Gradient[] cartesian = new Gradient[] {
+            pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
+            pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ()
+        };
+        // the entries are dimensionally heterogeneous: the position versus velocity block is
+        // in s and the velocity versus position one in 1/s, so they are made comparable by
+        // scaling the velocity variables with the Keplerian period before a single bound is
+        // applied to all of them
+        final double period = initialState.getOrbit().getKeplerianPeriod().getReal();
+        for (int i = 0; i < 6; ++i) {
+            for (int j = 0; j < 6; ++j) {
+                final double scale = (i < 3 ? 1.0 : period) / (j < 3 ? 1.0 : period);
+                Assertions.assertEquals(i == j ? 1.0 : 0.0,
+                                        cartesian[i].getPartialDerivative(j) * scale,
+                                        5.0e-12);
+            }
+        }
     }
 
     private <O extends GNSSOrbitalElements<O>> double differentiate(final GNSSPropagator<O> basePropagator,

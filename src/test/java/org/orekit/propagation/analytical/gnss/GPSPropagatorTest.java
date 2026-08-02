@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
@@ -37,6 +38,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
@@ -461,20 +463,30 @@ class GPSPropagatorTest {
         final ParameterDriver aDriver =
             factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS);
         final double dada = finiteDifference(factory, targetDate, aDriver, 10.0, s -> s.getOrbit().getA());
-        Assertions.assertEquals(dada, stm.multiply(dY0dB0).getEntry(0, 0), 6.0e-5);
+        // stm * dY0dB0 is dC(t)/dB0, the very expression AbstractBatchLSModel uses: its rows are
+        // Cartesian. The reference above is da(t)/da(B0), a Keplerian row, so the rows have to be
+        // converted before the two can be compared.
+        final double[][] dKepdC = new double[6][6];
+        OrbitType.KEPLERIAN.convertType(state.getOrbit()).
+            getJacobianWrtCartesian(PositionAngleType.MEAN, dKepdC);
+        final RealMatrix dKepdB0 = MatrixUtils.createRealMatrix(dKepdC).multiply(stm.multiply(dY0dB0));
+        Assertions.assertEquals(dada, dKepdB0.getEntry(0, 0), 6.0e-5);
 
         // extract Jacobian matrix
         final RealMatrix jacobian = harvester.getParametersJacobian(state);
         Assertions.assertEquals(6, jacobian.getRowDimension());
         Assertions.assertEquals(2, jacobian.getColumnDimension());
-         final ParameterDriver crcDriver =
+        // its rows are Cartesian too, and the references below are Keplerian, so the same row
+        // conversion as above applies
+        final RealMatrix dKepdP = MatrixUtils.createRealMatrix(dKepdC).multiply(jacobian);
+        final ParameterDriver crcDriver =
             factory.getNonKeplerianParametersDrivers().findByName(NonKeplerianDriversFactory.RADIUS_COSINE);
         final double dadcrc = finiteDifference(factory, targetDate, crcDriver, 1.0, s -> s.getOrbit().getA());
-        Assertions.assertEquals(dadcrc, jacobian.getEntry(0, 0), 6.0e-4);
-         final ParameterDriver crsDriver =
+        Assertions.assertEquals(dadcrc, dKepdP.getEntry(0, 0), 6.0e-4);
+        final ParameterDriver crsDriver =
             factory.getNonKeplerianParametersDrivers().findByName(NonKeplerianDriversFactory.RADIUS_SINE);
         final double dadcrs = finiteDifference(factory, targetDate, crsDriver, 10.0, s -> s.getOrbit().getA());
-        Assertions.assertEquals(dadcrs, jacobian.getEntry(0, 1), 3.0e-4);
+        Assertions.assertEquals(dadcrs, dKepdP.getEntry(0, 1), 3.0e-4);
 
     }
 

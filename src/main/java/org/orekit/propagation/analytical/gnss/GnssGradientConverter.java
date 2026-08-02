@@ -17,22 +17,14 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
-import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldKeplerianParameters;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 import java.util.List;
 
@@ -58,46 +50,29 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
         this.propagator = propagator;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * The free variables of the returned gradients are the six <em>Cartesian</em> coordinates
+     * of the initial state, extended with one slot per selected non-Keplerian driver. The
+     * state transition matrix built from this propagator is therefore a genuine dY/dY₀, with
+     * the same representation for its rows and its columns, consistent with
+     * {@link org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester#getOrbitType()}
+     * returning {@link OrbitType#CARTESIAN}. The change of representation towards the
+     * propagator builder parameters is a separate quantity, provided by
+     * {@link org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory#jacobianWrtParameters}.
+     * </p>
+     */
     @Override
     public FieldGnssPropagator<Gradient, O> getPropagator() {
 
-        // count the required number of parameters
-        int n = FREE_STATE_PARAMETERS;
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected()) {
-                n += driver.getNbOfValues();
-            }
-        }
-        final int nbParams = n;
+        // Cartesian state whose coordinates are the free variables of the gradients
+        final FieldSpacecraftState<Gradient> gState = getState(this);
+        final int nbParams = gState.getMass().getFreeParameters();
 
-        // prepare orbit with proper derivatives
-        final SpacecraftState s0    = propagator.getBaseInitialState();
-        final KeplerianOrbit  orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s0.getOrbit());
+        // Keplerian view of that very state; the conversion carries the derivatives along,
+        // so the free variables remain the Cartesian coordinates
         final FieldKeplerianOrbit<Gradient> gOrbit =
-            new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(nbParams, 0, orbit.getA()),
-                                                                     Gradient.variable(nbParams, 1, orbit.getE()),
-                                                                     Gradient.variable(nbParams, 2, orbit.getI()),
-                                                                     Gradient.variable(nbParams, 3, orbit.getPerigeeArgument()),
-                                                                     Gradient.variable(nbParams, 4, orbit.getRightAscensionOfAscendingNode()),
-                                                                     Gradient.variable(nbParams, 5, orbit.getMeanAnomaly()),
-                                                                     PositionAngleType.MEAN),
-                                      orbit.getFrame(),
-                                      new FieldAbsoluteDate<>(GradientField.getField(nbParams), orbit.getDate()),
-                                      Gradient.constant(nbParams, orbit.getMu()));
-
-        // attitude
-        final FieldAttitude<Gradient> gAttitude =
-            new FieldAttitude<>(s0.getAttitude().getReferenceFrame(),
-                                new TimeStampedFieldAngularCoordinates<>(gOrbit.getDate().getField(),
-                                                                         s0.getAttitude().getOrientation()));
-
-        // mass
-        final Gradient gMass = Gradient.constant(nbParams, s0.getMass());
-
-        // completed state
-        final FieldSpacecraftState<Gradient> gState =
-            new FieldSpacecraftState<>(gOrbit, gAttitude).withMass(gMass);
+            (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(gState.getOrbit());
 
         // prepare non-Keplerian elements with proper derivatives
         final Gradient[] parameters = propagator.getDriversFactory().toGradients(nbParams);
@@ -114,7 +89,7 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
 
         // build propagator handling gradient
         final FieldGnssPropagator<Gradient, O> gPropagator =
-            new FieldGnssPropagator<>(fixDerivatives(gElements), gState.getFrame(),
+            new FieldGnssPropagator<>(gElements, gState.getFrame(),
                                       propagator.getECEF(), propagator.getAttitudeProvider(),
                                       gState.getMass());
         final List<ParameterDriver> gDrivers = gPropagator.getParametersDrivers();
@@ -129,42 +104,6 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
         }
 
         return gPropagator;
-
-    }
-
-    /** Fix orbit derivatives.
-     * <p>
-     * The fixed point method used to compute orbital elements correctly finds values,
-     * but it messes up with the partial derivatives, we have to reset them to pure ones and zeros
-     * </p>
-     * @param gElements elements with messed up derivatives
-     * @return elements with fixed derivatives
-     * @since 14.0
-     */
-    private FieldGnssOrbitalElements<Gradient, O> fixDerivatives(final FieldGnssOrbitalElements<Gradient, O> gElements) {
-
-        // extract orbit with messed up derivatives
-        final FieldKeplerianOrbit<Gradient> messedUpOrbit = gElements.getOrbit();
-
-        // recover number of partial derivatives
-        final int nbParams = messedUpOrbit.getA().getFreeParameters();
-
-        // fix the orbit derivatives
-        final FieldKeplerianOrbit<Gradient> fixedOrbit    =
-            new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(nbParams, 0, messedUpOrbit.getA().getValue()),
-                                                                     Gradient.variable(nbParams, 1, messedUpOrbit.getE().getValue()),
-                                                                     Gradient.variable(nbParams, 2, messedUpOrbit.getI().getValue()),
-                                                                     Gradient.variable(nbParams, 3, messedUpOrbit.getPerigeeArgument().getValue()),
-                                                                     Gradient.variable(nbParams, 4, messedUpOrbit.getRightAscensionOfAscendingNode().getValue()),
-                                                                     Gradient.variable(nbParams, 5, messedUpOrbit.getMeanAnomaly().getValue()),
-                                                                     PositionAngleType.MEAN),
-                                      messedUpOrbit.getFrame(),
-                                      new FieldAbsoluteDate<>(GradientField.getField(nbParams),
-                                                              messedUpOrbit.getDate().toAbsoluteDate()),
-                                      Gradient.constant(nbParams, messedUpOrbit.getMu().getValue()));
-
-        // use the fixed orbit in new elements
-        return gElements.toField(fixedOrbit, gElements.toArray(), d -> d);
 
     }
 
