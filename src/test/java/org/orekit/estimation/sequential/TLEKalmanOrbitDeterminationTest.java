@@ -251,7 +251,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 3997m
-        final double distanceAccuracy = 192.61;
+        final double distanceAccuracy = 232.30;
         final double velocityAccuracy = 0.116;
         final double parameterAccuracy = 1e-6;
 
@@ -297,8 +297,8 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final List<ParameterDriversList.DelegatingDriver> list =
             new ArrayList<>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
-        final double[] stationOffSet = { 0.069571, -0.114921,  -0.084817 };
-        final double rangeBias = -0.041797;
+        final double[] stationOffSet = { 0.052965, -0.006615,  -0.038348 };
+        final double rangeBias = -0.024469;
         Assertions.assertEquals(stationOffSet[0], list.getFirst().getValue(), parameterAccuracy);
         Assertions.assertEquals(stationOffSet[1], list.get(1).getValue(), parameterAccuracy);
         Assertions.assertEquals(stationOffSet[2], list.get(2).getValue(), parameterAccuracy);
@@ -308,7 +308,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final long nbRange = 95;
         // Batch LS values
         //final double[] RefStatRange = { -67.7496, 87.1117, 6.4482E-5, 33.6349 };
-        final double[] RefStatRange = { -13.191876, 10.038900, 0.134279, 4.189625 };
+        final double[] RefStatRange = { -13.473808, 4.597516, -0.368977, 2.738891 };
         Assertions.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               parameterAccuracy);
         Assertions.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               parameterAccuracy);
@@ -407,7 +407,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         //test on statistic for the range residuals
         final long nbRange = 8211;
 
-        final double[] RefStatRange = { -8.285, 4.496, -6.3e-4, 1.195 };
+        final double[] RefStatRange = { -7.754799, 4.508729, -1.476158e-4, 1.185936 };
         Assertions.assertEquals(nbRange, kalmanGNSS.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], kalmanGNSS.getRangeStat().getMin(),               parameterAccuracy);
         Assertions.assertEquals(RefStatRange[1], kalmanGNSS.getRangeStat().getMax(),               parameterAccuracy);

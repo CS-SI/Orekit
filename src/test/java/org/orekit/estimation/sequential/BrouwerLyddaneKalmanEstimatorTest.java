@@ -84,8 +84,7 @@ public class BrouwerLyddaneKalmanEstimatorTest {
         final double[] expectedSigmasVel = {9.475735e-4, 9.904680e-4, 5.060067e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedsigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);

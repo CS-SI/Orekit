@@ -28,7 +28,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.util.FastMath;
@@ -475,13 +474,12 @@ public class EstimationTestUtils {
      */
     public static void checkExtendedKalmanFit(boolean print, final KalmanEstimator kalman,
                                               final List<ObservedMeasurement<?>> measurements,
-                                              final Orbit refOrbit, final PositionAngleType positionAngleType,
+                                              final Orbit refOrbit,
                                               final double expectedDeltaPos, final double posEps,
                                               final double expectedDeltaVel, final double velEps,
                                               final double[] expectedSigmasPos, final double sigmaPosEps,
                                               final double[] expectedSigmasVel, final double sigmaVelEps) {
-        checkExtendedKalmanFit(print, kalman, measurements, new Orbit[] { refOrbit }, new PositionAngleType[] {positionAngleType},
-                               new double[] { expectedDeltaPos }, new double[] { posEps },
+        checkExtendedKalmanFit(print, kalman, measurements, new Orbit[] { refOrbit }, new double[] { expectedDeltaPos }, new double[] { posEps },
                                new double[] { expectedDeltaVel }, new double[] { velEps },
                                new double[][] { expectedSigmasPos }, new double[] { sigmaPosEps },
                                new double[][] { expectedSigmasVel }, new double[] { sigmaVelEps });
@@ -505,13 +503,14 @@ public class EstimationTestUtils {
      */
     public static void checkExtendedKalmanFit(final boolean print, final KalmanEstimator kalman,
                                               final List<ObservedMeasurement<?>> measurements,
-                                              final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
+                                              final Orbit[] refOrbit,
                                               final double[] expectedDeltaPos, final double[] posEps,
                                               final double[] expectedDeltaVel, final double []velEps,
                                               final double[][] expectedSigmasPos, final double[] sigmaPosEps,
                                               final double[][] expectedSigmasVel, final double[] sigmaVelEps) {
         Propagator[] estimated = kalman.processMeasurements(measurements);
-        checkKalmanFit(print, estimated, kalman.getPhysicalEstimatedCovarianceMatrix(), measurements, refOrbit, positionAngleType,
+        checkKalmanFit(print, estimated, kalman.getPhysicalEstimatedCovarianceMatrix(), measurements, refOrbit,
+                       kalman.getPropagatorBuilders(),
                        kalman.getCurrentMeasurementNumber(), expectedDeltaPos, posEps, expectedDeltaVel, velEps,
                        expectedSigmasPos, sigmaPosEps, expectedSigmasVel, sigmaVelEps);
     }
@@ -521,14 +520,11 @@ public class EstimationTestUtils {
      *
      * @param print             If true, output is printed
      * @param kalman            Unscented Kalman Filter
-     * @param measurements      List of observed measurements to be processed by the
-     *                          Kalman
+     * @param measurements      List of observed measurements to be processed by the Kalman
      * @param refOrbit          Reference orbits at last measurement date
-     * @param expectedDeltaPos  Expected position difference between estimated orbit
-     *                          and reference orbits
+     * @param expectedDeltaPos  Expected position difference between estimated orbit and reference orbits
      * @param posEps            Tolerance on expected position difference
-     * @param expectedDeltaVel  Expected velocity difference between estimated orbit
-     *                          and reference orbits
+     * @param expectedDeltaVel  Expected velocity difference between estimated orbit and reference orbits
      * @param velEps            Tolerance on expected velocity difference
      * @param expectedSigmasPos Expected values for covariance matrix on position
      * @param sigmaPosEps       Tolerance on expected covariance matrix on position
@@ -537,13 +533,11 @@ public class EstimationTestUtils {
      */
     public static void checkUnscentedKalmanFit(final boolean print, final UnscentedKalmanEstimator kalman,
                                                final List<ObservedMeasurement<?>> measurements, final Orbit refOrbit,
-                                               final PositionAngleType positionAngleType,
                                                final double expectedDeltaPos, final double posEps,
                                                final double expectedDeltaVel, final double velEps,
                                                final double[] expectedSigmasPos, final double sigmaPosEps,
                                                final double[] expectedSigmasVel, final double sigmaVelEps) {
-        checkUnscentedKalmanFit(print, kalman, measurements, new Orbit[] { refOrbit }, new PositionAngleType[] {positionAngleType},
-                                new double[] { expectedDeltaPos }, new double[] { posEps },
+        checkUnscentedKalmanFit(print, kalman, measurements, new Orbit[] { refOrbit }, new double[] { expectedDeltaPos }, new double[] { posEps },
                                 new double[] { expectedDeltaVel }, new double[] { velEps },
                                 new double[][] { expectedSigmasPos }, new double[] { sigmaPosEps },
                                 new double[][] { expectedSigmasVel }, new double[] { sigmaVelEps });
@@ -554,14 +548,11 @@ public class EstimationTestUtils {
      *
      * @param print             If true, output is printed
      * @param kalman            Unscented Kalman Filter
-     * @param measurements      List of observed measurements to be processed by the
-     *                          Kalman
+     * @param measurements      List of observed measurements to be processed by the Kalman
      * @param refOrbit          Reference orbits at last measurement date
-     * @param expectedDeltaPos  Expected position difference between estimated orbit
-     *                          and reference orbits
+     * @param expectedDeltaPos  Expected position difference between estimated orbit and reference orbits
      * @param posEps            Tolerance on expected position difference
-     * @param expectedDeltaVel  Expected velocity difference between estimated orbit
-     *                          and reference orbits
+     * @param expectedDeltaVel  Expected velocity difference between estimated orbit and reference orbits
      * @param velEps            Tolerance on expected velocity difference
      * @param expectedSigmasPos Expected values for covariance matrix on position
      * @param sigmaPosEps       Tolerance on expected covariance matrix on position
@@ -569,12 +560,13 @@ public class EstimationTestUtils {
      * @param sigmaVelEps       Tolerance on expected covariance matrix on velocity
      */
     public static void checkUnscentedKalmanFit(final boolean print, final UnscentedKalmanEstimator kalman,
-                                               final List<ObservedMeasurement<?>> measurements, final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
+                                               final List<ObservedMeasurement<?>> measurements, final Orbit[] refOrbit,
                                                final double[] expectedDeltaPos, final double[] posEps, final double[] expectedDeltaVel, final double[] velEps,
                                                final double[][] expectedSigmasPos, final double[] sigmaPosEps, final double[][] expectedSigmasVel,
                                                final double[] sigmaVelEps) {
         Propagator[] estimated = kalman.processMeasurements(measurements);
-        checkKalmanFit(print, estimated, kalman.getPhysicalEstimatedCovarianceMatrix(), measurements, refOrbit, positionAngleType,
+        checkKalmanFit(print, estimated, kalman.getPhysicalEstimatedCovarianceMatrix(), measurements, refOrbit,
+                       kalman.getPropagatorBuilders(),
                        kalman.getCurrentMeasurementNumber(), expectedDeltaPos, posEps, expectedDeltaVel, velEps,
                        expectedSigmasPos, sigmaPosEps, expectedSigmasVel, sigmaVelEps);
 
@@ -594,14 +586,14 @@ public class EstimationTestUtils {
      */
     public static void checkExtendedSemiAnalyticalKalmanFit(final boolean print, final SemiAnalyticalKalmanEstimator kalman,
                                                             final List<ObservedMeasurement<?>> measurements,
-                                                            final Orbit refOrbit, final PositionAngleType positionAngleType,
+                                                            final Orbit refOrbit,
                                                             final double expectedDeltaPos, final double posEps,
                                                             final double expectedDeltaVel, final double velEps,
                                                             final double[] expectedSigmasPos, final double sigmaPosEps,
                                                             final double[] expectedSigmasVel, final double sigmaVelEps) {
         Propagator estimated = kalman.processMeasurements(measurements);
         checkKalmanFit(print, new Propagator[]{estimated}, kalman.getPhysicalEstimatedCovarianceMatrix(), measurements,
-                       new Orbit[]{refOrbit}, new PositionAngleType[]{positionAngleType}, kalman.getCurrentMeasurementNumber(),
+                       new Orbit[]{refOrbit}, kalman.getPropagatorBuilders(), kalman.getCurrentMeasurementNumber(),
                        new double[] {expectedDeltaPos}, new double[] {posEps},
                        new double[] {expectedDeltaVel}, new double[] {velEps},
                        new double[][] {expectedSigmasPos}, new double[] {sigmaPosEps},
@@ -622,14 +614,14 @@ public class EstimationTestUtils {
      */
     public static void checkUnscentedSemiAnalyticalKalmanFit(final boolean print, final SemiAnalyticalUnscentedKalmanEstimator kalman,
                                                              final List<ObservedMeasurement<?>> measurements,
-                                                             final Orbit refOrbit, final PositionAngleType positionAngleType,
+                                                             final Orbit refOrbit,
                                                              final double expectedDeltaPos, final double posEps,
                                                              final double expectedDeltaVel, final double velEps,
                                                              final double[] expectedSigmasPos, final double sigmaPosEps,
                                                              final double[] expectedSigmasVel, final double sigmaVelEps) {
         Propagator estimated = kalman.processMeasurements(measurements);
         checkKalmanFit(print, new Propagator[]{estimated}, kalman.getPhysicalEstimatedCovarianceMatrix(), measurements,
-                new Orbit[]{refOrbit}, new PositionAngleType[]{positionAngleType}, kalman.getCurrentMeasurementNumber(),
+                new Orbit[]{refOrbit}, kalman.getPropagatorBuilders(), kalman.getCurrentMeasurementNumber(),
                 new double[] {expectedDeltaPos}, new double[] {posEps},
                 new double[] {expectedDeltaVel}, new double[] {velEps},
                 new double[][] {expectedSigmasPos}, new double[] {sigmaPosEps},
@@ -644,7 +636,6 @@ public class EstimationTestUtils {
      * @param estimatedP                 Physical estimated covariance matrix
      * @param measurements               List of observed measurements to be processed by the Kalman
      * @param refOrbit                   Reference orbits at last measurement date
-     * @param positionAngleType          Position angle type
      * @param expectedMeasurementsNumber Expected number of measurements
      * @param expectedDeltaPos           Expected position difference between estimated orbit and reference orbits
      * @param posEps                     Tolerance on expected position difference
@@ -657,7 +648,7 @@ public class EstimationTestUtils {
      */
     public static void checkKalmanFit(final boolean print, final Propagator[] estimated, final RealMatrix estimatedP,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
+                                      final Orbit[] refOrbit, final PropagatorBuilder[] builders,
                                       final int expectedMeasurementsNumber,
                                       final double[] expectedDeltaPos, final double[] posEps,
                                       final double[] expectedDeltaVel, final double[] velEps,
@@ -676,9 +667,10 @@ public class EstimationTestUtils {
 
             // Convert the orbital part to Cartesian formalism
             // Assuming the filter estimates all 6 orbital parameters
-            final double[][] dCdY = new double[6][6];
-            estimatedOrbit.getJacobianWrtParameters(positionAngleType[k], dCdY);
-            final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
+            // The filter state vector holds the builder parameters B, which are not the
+            // propagated state for TLE and specialized GNSS propagators, so the Jacobian
+            // has to be dC/dB and is asked to the builder rather than to the estimated orbit
+            final RealMatrix Jacobian = builders[k].getOrbitalParameterFactory().getJacobianWrtParameters();
             final RealMatrix estimatedCartesianP = Jacobian.multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).multiply(Jacobian.transpose());
 
             // Get the final sigmas (ie.sqrt of the diagonal of the Cartesian orbital covariance matrix)

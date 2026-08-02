@@ -368,8 +368,7 @@ public class UnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1.0e-15;
         EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
-                                                    refOrbit, positionAngleType,
-                                                    expectedDeltaPos, posEps,
+                                                    refOrbit, expectedDeltaPos, posEps,
                                                     expectedDeltaVel, velEps,
                                                     expectedsigmasPos, sigmaPosEps,
                                                     expectedSigmasVel, sigmaVelEps);
@@ -441,8 +440,7 @@ public class UnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {6.93330E-5, 12.37128E-5, 4.11890E-5};
         final double   sigmaVelEps       = 1.0e-10;
         EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
-                                                    refOrbit, positionAngleType,
-                                                    expectedDeltaPos, posEps,
+                                                    refOrbit, expectedDeltaPos, posEps,
                                                     expectedDeltaVel, velEps,
                                                     expectedsigmasPos, sigmaPosEps,
                                                     expectedSigmasVel, sigmaVelEps);
@@ -512,8 +510,7 @@ public class UnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1.0e-15;
         EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
+                                           refOrbit, expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
@@ -580,8 +577,7 @@ public class UnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1.0e-15;
         EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
-                                                    refOrbit, positionAngleType,
-                                                    expectedDeltaPos, posEps,
+                                                    refOrbit, expectedDeltaPos, posEps,
                                                     expectedDeltaVel, velEps,
                                                     expectedsigmasPos, sigmaPosEps,
                                                     expectedSigmasVel, sigmaVelEps);
@@ -666,8 +662,7 @@ public class UnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.85688e-4,  5.765934e-4, 5.056124e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
-                                                    refOrbit, positionAngleType,
-                                                    expectedDeltaPos, posEps,
+                                                    refOrbit, expectedDeltaPos, posEps,
                                                     expectedDeltaVel, velEps,
                                                     expectedSigmasPos, sigmaPosEps,
                                                     expectedSigmasVel, sigmaVelEps);
@@ -751,8 +746,7 @@ public class UnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {7.17260E-5, 3.037315E-5, 19.49047e-5};
         final double   sigmaVelEps       = 1.0e-10;
         EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
-                                                    refOrbit, positionAngleType,
-                                                    expectedDeltaPos, posEps,
+                                                    refOrbit, expectedDeltaPos, posEps,
                                                     expectedDeltaVel, velEps,
                                                     expectedSigmasPos, sigmaPosEps,
                                                     expectedSigmasVel, sigmaVelEps);
@@ -836,8 +830,7 @@ public class UnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {7.25356E-5, 3.11525E-5, 19.81870E-5};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
-                                                    refOrbit, positionAngleType,
-                                                    expectedDeltaPos, posEps,
+                                                    refOrbit, expectedDeltaPos, posEps,
                                                     expectedDeltaVel, velEps,
                                                     expectedSigmasPos, sigmaPosEps,
                                                     expectedSigmasVel, sigmaVelEps);
@@ -934,8 +927,7 @@ public class UnscentedKalmanEstimatorTest {
             propagatorBuilder2.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit()
         };
         EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
-                                           refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
-                                           new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
+                                           refOrbits, new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
                                                { 0.0, 0.0, 0.0 },
@@ -1027,8 +1019,7 @@ public class UnscentedKalmanEstimatorTest {
         try {
             // Filter the measurements and expect an exception to occur
         	EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
-                                               context.initialOrbit, positionAngleType,
-                                               0., 0.,
+                                               context.initialOrbit, 0., 0.,
                                                0., 0.,
                                                new double[3], 0.,
                                                new double[3], 0.);

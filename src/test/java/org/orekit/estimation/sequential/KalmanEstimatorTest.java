@@ -577,8 +577,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {9.478853e-4, 9.910788e-4, 5.0438709e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedsigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -657,8 +656,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.206636e-4, 1.306656e-4, 1.293981e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -754,8 +752,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {6.193757e-4, 4.088798e-4, 3.299140e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -831,8 +828,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.85688e-4,  5.765933e-4, 5.056124e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -907,8 +903,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.468745e-4, 5.810027e-4, 3.887394e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -983,8 +978,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.468746e-4, 5.810028e-4, 3.887394e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -1084,8 +1078,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {5.413689e-4, 4.088394e-4, 4.315366e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -1170,8 +1163,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {1.167859e-3, 1.036492e-3, 2.834413e-3};
         final double   sigmaVelEps       = 1e-9;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -1266,8 +1258,7 @@ class KalmanEstimatorTest {
             propagatorBuilder2.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit()
         };
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                           refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
-                                           new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
+                                           refOrbits, new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
                                                { 6.9e5, 6.0e5, 12.5e5 },
@@ -1332,8 +1323,7 @@ class KalmanEstimatorTest {
         try {
             // Filter the measurements and expect an exception to occur
             EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                               context.initialOrbit, positionAngleType,
-                                               0., 0.,
+                                               context.initialOrbit, 0., 0.,
                                                0., 0.,
                                                new double[3], 0.,
                                                new double[3], 0.);
@@ -1474,8 +1464,7 @@ class KalmanEstimatorTest {
             propagatorBuilder2.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit()
         };
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                           refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
-                                           new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
+                                           refOrbits, new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
                                                { 6.9e5, 6.0e5, 12.5e5 },
