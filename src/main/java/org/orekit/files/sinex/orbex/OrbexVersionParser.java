@@ -14,33 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.sinex;
+package org.orekit.files.sinex.orbex;
 
-import java.util.Collections;
+import org.orekit.files.sinex.LineParser;
+import org.orekit.files.sinex.ParseInfo;
 
-/** Parser for ignored SINEX block.
- * @param <T> type of the sinex files parse info
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/** Parser for Orbex version line.
  * @author Luc Maisonobe
- * @since 13.0
+ * @since 14.0
  */
-public class IgnoredBlockParser<T extends ParseInfo<?>> extends BlockParser<T> {
+public abstract class OrbexVersionParser implements LineParser<OrbexParseInfo> {
+
+    /** Pattern for version line. */
+    private final Pattern pattern;
 
     /** Simple constructor.
      */
-    public IgnoredBlockParser() {
-        // some files don't put the same number of trailing blanks after start and end markers,
-        // so we ensure the block marker we will look for ends with a non-blank character
-        super(".*[^ ]", Collections.emptyList());
+    protected OrbexVersionParser() {
+        pattern = Pattern.compile("%=" + "ORBEX" + " \\d\\.\\d\\d .+");
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean parseIfRecognized(final T parseInfo) {
-        if (outsideBlock()) {
-            return checkEntering(parseInfo);
-        } else {
-            checkLeaving(parseInfo);
+    public boolean parseIfRecognized(final OrbexParseInfo parseInfo) {
+        final Matcher matcher = pattern.matcher(parseInfo.getLine());
+        if (matcher.matches()) {
+            // we have recognized an ORBEX file first line
+            // parse the various dates it contains
+            parseInfo.setCreationDate(matcher.group(1));
             return true;
+        } else {
+            // this is not an expected OREBEX file
+            return false;
         }
     }
 

@@ -1150,7 +1150,16 @@ public enum OrekitMessages implements Localizable {
     DAF_INSUFFICIENT_COMMENT_RECORDS("Comments require {0} records but DAF file record specifies only {1} reserved records"),
 
     /** DAF_TOO_LONG_FILEDESCRIPTION_STRING. */
-    DAF_TOO_LONG_FILEDESCRIPTION_STRING("File description string is {0} characters long but should be at most 60 characters");
+    DAF_TOO_LONG_FILEDESCRIPTION_STRING("File description string is {0} characters long but should be at most 60 characters"),
+
+    /** INCOMPLETE_ORBEX_DATA. */
+    INCOMPLETE_ORBEX_DATA("expected {0} satellites for time tag {1} but got {2} (line {3} of file {4})"),
+
+    /** ORBEX_WRONG_COLUMNS. */
+    ORBEX_WRONG_COLUMNS("wrong number of columns at line {0}, file {1}; {2} columns is not allowed for {3} record"),
+
+    /** DUPLICATED_SATELLITE. */
+    DUPLICATED_SATELLITE("duplicated satellite {0} (line {1}, file {2})");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

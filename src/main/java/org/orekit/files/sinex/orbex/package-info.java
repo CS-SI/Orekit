@@ -14,23 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.sinex;
-
-import java.util.function.Predicate;
-
-/** Predicate for block content lines that are ignored.
- * @param <T> type of the SINEX files parse info
+/**
+ *
+ * This package provides classes related to orbex file format.
+ *
  * @author Luc Maisonobe
- * @since 13.0
+ * @since 14.0
+ *
  */
-public class IgnoredBlockContentPredicate<T extends ParseInfo<?>> implements Predicate<T> {
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean test(final T parseInfo) {
-        // if this is a content line (i.e. not a block end marker)
-        // then we ignore it and say we have handled it
-        return parseInfo.getLine().charAt(0) != '-';
-    }
-
-}
+package org.orekit.files.sinex.orbex;

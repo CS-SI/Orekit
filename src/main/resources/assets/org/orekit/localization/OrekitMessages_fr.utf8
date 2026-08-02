@@ -1109,3 +1109,12 @@ DAF_INSUFFICIENT_COMMENT_RECORDS = <MISSING TRANSLATION>
 
 # File description string is {0} characters long but should be at most 60 characters
 DAF_TOO_LONG_FILEDESCRIPTION_STRING = <MISSING TRANSLATION>
+
+# expected {0} satellites for time tag {1} but got {2} (line {3} of file {4})
+INCOMPLETE_ORBEX_DATA={0} satellites étaient attendus pour la date {1}, mais {2} ont été vus (ligne {3}, fichier {4})
+
+# wrong number of columns at line {0}, file {1}; {2} columns is not allowed for {3} record
+ORBEX_WRONG_COLUMNS=nombre de colonnes erroné à la ligne {0} du fichier {1} ; les enregistrements {4} n''autorisent pas {3} colonnes
+
+# duplicated satellite {0} (line {1}, file {2})
+DUPLICATED_SATELLITE=satellite {0} dupliqué (ligne {1}, fichier {2})

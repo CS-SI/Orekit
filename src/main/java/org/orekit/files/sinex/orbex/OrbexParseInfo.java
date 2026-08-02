@@ -1,0 +1,219 @@
+/* Copyright 2022-2026 Luc Maisonobe
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.files.sinex.orbex;
+
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.sinex.ParseInfo;
+import org.orekit.gnss.SatInSystem;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeScales;
+import org.orekit.time.clocks.ClockOffset;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/** Parse information for Orbit Exchange Format (ORBEX) files.
+ * @author Luc Maisonobe
+ * @since 14.0
+ */
+public class OrbexParseInfo extends ParseInfo<Orbex> {
+
+    /** Completed ephemeris data. */
+    private final Map<SatInSystem, Orbex.Data> ephemerisData;
+
+    /** Current date. */
+    private AbsoluteDate date;
+
+    /** Expected number of satellites for this time tag. */
+    private int expectedSatellites;
+
+    /** Satellite parsed. */
+    private final HashMap<SatInSystem, SatData> parsedSatellites;
+
+    /** Simple constructor.
+     * @param timeScales time scales
+     */
+    OrbexParseInfo(final TimeScales timeScales) {
+        super(timeScales);
+        ephemerisData    = new HashMap<>();
+        parsedSatellites = new HashMap<>();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected Orbex build() {
+
+        // close last parsed group
+        newTimeTag(DateTimeComponents.JULIAN_EPOCH, 0);
+
+        return new Orbex(getTimeScales(), getCreationDate(), getStartDate(), getEndDate(), ephemerisData);
+
+    }
+
+    /** Add a satellite id and description.
+     * @param satId       satellite id
+     * @param description satellite description
+     */
+    void addSatIdAndDescription(final SatInSystem satId, final String description) {
+        if (ephemerisData.containsKey(satId)) {
+            throw new OrekitException(OrekitMessages.DUPLICATED_SATELLITE,
+                                      satId, getLineNumber(), getName());
+        } else {
+            ephemerisData.put(satId, new Orbex.Data(satId, description));
+        }
+    }
+
+    /** Close a time tag.
+     */
+    private void closeTimeTag() {
+
+        // check previous time tag was properly completed
+        if (parsedSatellites.size() != expectedSatellites) {
+            throw new OrekitException(OrekitMessages.INCOMPLETE_ORBEX_DATA,
+                                      expectedSatellites, date.toString(getTimeScale()), parsedSatellites.size(),
+                                      getLineNumber(), getName());
+        }
+
+        // store coordinates for current time tag
+        for (final Map.Entry<SatInSystem, SatData> entry : parsedSatellites.entrySet()) {
+
+            final Orbex.Data orbexData = ephemerisData.get(entry.getKey());
+
+            // check the satellite was properly declared in the SATELLITE/ID_AND_DESCRIPTION block
+            if (orbexData == null) {
+                throw new OrekitException(OrekitMessages.INVALID_SATELLITE_ID, entry.getKey());
+            }
+
+            final SatData satData = entry.getValue();
+
+            // orbit
+            if (satData.position != null) {
+                final TimeStampedPVCoordinates pv =
+                    new TimeStampedPVCoordinates(date,
+                                                 satData.position,
+                                                 satData.velocity == null ? Vector3D.ZERO : satData.velocity);
+                orbexData.orbit().add(pv);
+            }
+
+            // clock
+            if (satData.clockCorrection != null) {
+                final ClockOffset co =
+                    new ClockOffset(date,
+                                    satData.clockCorrection,
+                                    satData.clockRate == null ? 0.0 : satData.clockRate,
+                                    0.0);
+                orbexData.clock().add(co);
+            }
+
+            // attitude
+            if (satData.attitude != null) {
+                final TimeStampedAngularCoordinates ac =
+                    new TimeStampedAngularCoordinates(date,
+                                                      new AngularCoordinates(satData.attitude, Vector3D.ZERO));
+                orbexData.attitude().add(ac);
+            }
+
+        }
+
+        parsedSatellites.clear();
+        expectedSatellites = 0;
+
+    }
+
+    /** Start a new time tag.
+     * @param timeTag time tag
+     * @param nbSats expected number of satellites
+     */
+    void newTimeTag(final DateTimeComponents timeTag, final int nbSats) {
+
+        // close previous time tag
+        closeTimeTag();
+
+        // start new time tag
+        this.expectedSatellites = nbSats;
+        this.date         = new AbsoluteDate(timeTag, getTimeScale());
+
+    }
+
+    /** Add a position.
+     * @param satId satellite id
+     * @param position position
+     */
+    void addPosition(final SatInSystem satId, final Vector3D position) {
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).position = position;
+    }
+
+    /** Add a velocity.
+     * @param satId satellite id
+     * @param velocity velocity
+     */
+    void addVelocity(final SatInSystem satId, final Vector3D velocity) {
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).velocity = velocity;
+    }
+
+    /** Add a clock correction.
+     * @param satId satellite id
+     * @param clockCorrection clock correction
+     */
+    void addClockCorrection(final SatInSystem satId, final double clockCorrection) {
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).clockCorrection = clockCorrection;
+    }
+
+    /** Add a clock rate.
+     * @param satId satellite id
+     * @param clockRate clock rate
+     */
+    void addClockRate(final SatInSystem satId, final double clockRate) {
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).clockRate = clockRate;
+    }
+
+    /** Add an attitude.
+     * @param satId satellite id
+     * @param attitude attitude
+     */
+    void addAttitude(final SatInSystem satId, final Rotation attitude) {
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).attitude = attitude;
+    }
+
+    /** Container for one satellite parsed data. */
+    private static class SatData {
+
+        /** Position. */
+        private Vector3D position;
+
+        /** Velocity. */
+        private Vector3D velocity;
+
+        /** Clock correction. */
+        private Double clockCorrection;
+
+        /** Clock rate. */
+        private Double clockRate;
+
+        /** Attitude. */
+        private Rotation attitude;
+
+    }
+
+}

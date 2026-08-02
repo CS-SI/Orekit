@@ -95,7 +95,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
     /** Get name of data source.
      * @return name of data source
      */
-    protected String getName() {
+    public String getName() {
         return name;
     }
 
@@ -110,7 +110,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
     /** Get current line.
      * @return current line
      */
-    String getLine() {
+    public String getLine() {
         return line;
     }
 
@@ -123,14 +123,14 @@ public abstract class ParseInfo<T extends AbstractSinex> {
     /** Get current line number.
      * @return current line number
      */
-    int getLineNumber() {
+    public int getLineNumber() {
         return lineNumber;
     }
 
     /** Set creation date.
      * @param dateString creation date
      */
-    protected void setCreationDate(final String dateString) {
+    public void setCreationDate(final String dateString) {
         this.creationDateString = dateString;
         this.creationDate       = stringEpochToAbsoluteDate(creationDateString, false);
     }
@@ -185,7 +185,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
     /** Set time scale.
      * @param timeScale time scale
      */
-    protected void setTimeScale(final TimeScale timeScale) {
+    public void setTimeScale(final TimeScale timeScale) {
 
         this.timeScale = timeScale;
 
@@ -206,8 +206,16 @@ public abstract class ParseInfo<T extends AbstractSinex> {
     /** Get time scales.
      * @return time scales
      */
-    TimeScales getTimeScales() {
+    protected TimeScales getTimeScales() {
         return timeScales;
+    }
+
+    /** Get time scale.
+     * @return time scale
+     * @since 14.0
+     */
+    protected TimeScale getTimeScale() {
+        return timeScale;
     }
 
     /** Build the parsed file.
@@ -220,7 +228,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
      * @param length length of the string
      * @return parsed string
      */
-    protected String parseString(final int start, final int length) {
+    public String parseString(final int start, final int length) {
         return line.substring(start, FastMath.min(line.length(), start + length)).trim();
     }
 
@@ -238,7 +246,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
      * @param length length of the real
      * @return parsed integer
      */
-    protected int parseInt(final int start, final int length) {
+    public int parseInt(final int start, final int length) {
         return Integer.parseInt(parseString(start, length));
     }
 

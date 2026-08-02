@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * @author Luc Maisonobe
  * @since 13.0
  */
-abstract class VersionParser<T extends ParseInfo<?>> implements LineParser<T> {
+public abstract class VersionParser<T extends ParseInfo<?>> implements LineParser<T> {
 
     /** Pattern for version line. */
     private final Pattern pattern;
