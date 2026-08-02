@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.utils.ParameterDriver;
 
 /** Factory for orbits.
@@ -58,6 +60,31 @@ public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbi
 
         return stateVector;
 
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * The orbital parameters being a regular {@link OrbitType orbit type}, the Jacobian is
+     * the closed-form one provided by {@link Orbit#getJacobianWrtParameters(PositionAngleType, double[][])}.
+     * </p>
+     */
+    @Override
+    public RealMatrix getJacobianWrtParameters() {
+        final double[][] jacobian = new double[6][6];
+        createFromDrivers().getJacobianWrtParameters(getPositionAngleType(), jacobian);
+        return new Array2DRowRealMatrix(jacobian, false);
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * Pure delegation to {@link Orbit#getJacobianWrtCartesian(PositionAngleType, double[][])}
+     * </p>
+     */
+    @Override
+    public RealMatrix getJacobianWrtCartesian() {
+        final double[][] jacobian = new double[6][6];
+        createFromDrivers().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+        return new Array2DRowRealMatrix(jacobian, false);
     }
 
 }

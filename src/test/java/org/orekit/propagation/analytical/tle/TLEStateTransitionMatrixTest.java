@@ -154,7 +154,7 @@ public class TLEStateTransitionMatrixTest {
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
-        RealMatrix dY0dB0 = harvester.getInitialStateJacobianVsBuilderParameters();
+        RealMatrix dY0dB0 = harvester.getStateJacobianVsBuilderParameters(initialState);
 
         // TLE generation algorithm
         TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm(tle);

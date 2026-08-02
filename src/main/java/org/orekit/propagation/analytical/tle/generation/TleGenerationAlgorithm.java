@@ -17,6 +17,10 @@
 package org.orekit.propagation.analytical.tle.generation;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
@@ -29,12 +33,15 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 import java.util.List;
 
@@ -73,6 +80,9 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
      * </p>
      */
     public static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
+
+    /** Number of orbital parameters, i.e. of both rows and columns of the Jacobians. */
+    private static final int DEFAULT_STATE_DIMENSION = 6;
 
     /** Template TLE. */
     private final TLE templateTLE;
@@ -205,6 +215,76 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
                        templateTLE.getUtc());
     }
 
+    /** {@inheritDoc}
+     * <p>
+     * The TLE orbital elements are related to the Cartesian coordinates by the SGP4/SDP4
+     * model itself, which has no closed-form derivatives, so the Jacobian is obtained by
+     * automatic differentiation: the six elements of the TLE built from the current drivers
+     * are turned into {@link Gradient} variables, and the resulting TLE is evaluated at its
+     * own epoch.
+     * </p>
+     */
+    @Override
+    public RealMatrix getJacobianWrtParameters() {
+        return getJacobianWrtParameters(createFromDrivers());
+    }
+
+    /** Get the Jacobian of the Cartesian coordinates with respect to the orbital elements of a TLE.
+     * <p>
+     * The TLE orbital elements are related to the Cartesian coordinates by the SGP4/SDP4 model
+     * itself, which has no closed-form derivatives, so the Jacobian is obtained by automatic
+     * differentiation: the six orbital elements are turned into {@link Gradient} variables and
+     * the TLE is evaluated at its own epoch. All the remaining data (identification, mean motion
+     * derivatives, B*) are held constant.
+     * </p>
+     * @param tle TLE holding the orbital elements the Jacobian is computed with respect to
+     * @return jacobian matrix dC/dB, at the TLE epoch and in the TEME frame
+     */
+    public RealMatrix getJacobianWrtParameters(final TLE tle) {
+
+        // evaluate the Cartesian coordinates from a TLE whose orbital elements are variables
+        final TimeStampedFieldPVCoordinates<Gradient> pv =
+            FieldTLEPropagator.selectExtrapolator(toGradient(tle), getFrame()).
+            getBaseInitialState().
+            getPVCoordinates();
+
+        // gather the derivatives of each Cartesian coordinate into a row
+        final RealMatrix jacobian = MatrixUtils.createRealMatrix(DEFAULT_STATE_DIMENSION, DEFAULT_STATE_DIMENSION);
+        jacobian.setRow(0, pv.getPosition().getX().getGradient());
+        jacobian.setRow(1, pv.getPosition().getY().getGradient());
+        jacobian.setRow(2, pv.getPosition().getZ().getGradient());
+        jacobian.setRow(3, pv.getVelocity().getX().getGradient());
+        jacobian.setRow(4, pv.getVelocity().getY().getGradient());
+        jacobian.setRow(5, pv.getVelocity().getZ().getGradient());
+
+        return jacobian;
+
+    }
+
+    /** Convert a TLE into one whose orbital elements are gradient variables.
+     * @param tle TLE to convert
+     * @return converted TLE, whose orbital elements carry their own derivatives
+     */
+    // FIXME: should this one be in TLE class instead ?
+    private static FieldTLE<Gradient> toGradient(final TLE tle) {
+        final GradientField field = GradientField.getField(DEFAULT_STATE_DIMENSION);
+        return new FieldTLE<>(tle.getSatelliteNumber(), tle.getClassification(),
+                              tle.getLaunchYear(), tle.getLaunchNumber(), tle.getLaunchPiece(),
+                              tle.getEphemerisType(), tle.getElementNumber(),
+                              new FieldAbsoluteDate<>(field, tle.getDate()),
+                              Gradient.variable(DEFAULT_STATE_DIMENSION, 0, tle.getMeanMotion()),
+                              Gradient.constant(DEFAULT_STATE_DIMENSION, tle.getMeanMotionFirstDerivative()),
+                              Gradient.constant(DEFAULT_STATE_DIMENSION, tle.getMeanMotionSecondDerivative()),
+                              Gradient.variable(DEFAULT_STATE_DIMENSION, 1, tle.getE()),
+                              Gradient.variable(DEFAULT_STATE_DIMENSION, 2, tle.getI()),
+                              Gradient.variable(DEFAULT_STATE_DIMENSION, 3, tle.getPerigeeArgument()),
+                              Gradient.variable(DEFAULT_STATE_DIMENSION, 4, tle.getRaan()),
+                              Gradient.variable(DEFAULT_STATE_DIMENSION, 5, tle.getMeanAnomaly()),
+                              tle.getRevolutionNumberAtEpoch(),
+                              Gradient.constant(DEFAULT_STATE_DIMENSION, tle.getBStar()),
+                              tle.getUtc());
+    }
+
     /** Get the current B-star value.
      * @return current B-star value
      */
@@ -261,7 +341,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
         final ParameterDriver driver = nonKeplerianDrivers.getDrivers().getFirst();
         newDrivers.add(new ParameterDriver(driver.getName(), driver.getValue(), driver.getScale(),
                                            driver.getMinValue(), driver.getMaxValue()));
-        nonKeplerianDrivers = newDrivers;
+        clone.nonKeplerianDrivers = newDrivers;
 
         return clone;
 

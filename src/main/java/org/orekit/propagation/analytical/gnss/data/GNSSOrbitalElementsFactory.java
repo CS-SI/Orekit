@@ -16,16 +16,26 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.AbstractOrbitalParameterFactory;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.FieldKeplerianParameters;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.KeplerianParameters;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.gnss.FieldGnssPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
@@ -33,6 +43,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 import java.util.List;
 
@@ -63,6 +74,9 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
 
     /** Prefix for frozen frame name. */
     public static final String FROZEN = "frozen-";
+
+    /** Number of orbital parameters, i.e. of both rows and columns of the Jacobians. */
+    private static final int DEFAULT_STATE_DIMENSION = 6;
 
     /** Mean angular velocity of the Earth for the GNSS model. */
     private final double angularVelocity;
@@ -414,6 +428,73 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
         OrbitType.KEPLERIAN.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
 
         return stateVector;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getJacobianWrtParameters() {
+        return jacobianWrtParameters(createFromDrivers(), getInertial(), getBodyFixed());
+    }
+
+    /** Get the Jacobian of the Cartesian coordinates with respect to the orbital elements.
+     * <p>
+     * The GNSS orbital elements are related to the Cartesian coordinates by the GNSS
+     * propagation model itself, which has no closed-form derivatives, so the Jacobian is
+     * obtained by automatic differentiation: the six Keplerian-like orbital elements are
+     * turned into {@link Gradient} variables and the elements are evaluated at their own
+     * epoch. The non-Keplerian elements are held constant.
+     *
+     * @param <O> type of the GNSS orbital elements
+     * @param elements GNSS orbital elements the Jacobian is computed with respect to
+     * @param eci Earth Centered Inertial frame the Cartesian coordinates are expressed in
+     * @param ecef Earth Centered Earth Fixed frame the node longitude refers to
+     * @return jacobian matrix dC/dB, at the elements epoch
+     */
+    public static <O extends GNSSOrbitalElements<O>> RealMatrix jacobianWrtParameters(final O elements,
+                                                                                      final Frame eci,
+                                                                                      final Frame ecef) {
+
+        // set up the six orbital elements as the free variables of the gradients
+        final GradientField field = GradientField.getField(DEFAULT_STATE_DIMENSION);
+        final KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(elements.getOrbit());
+        final FieldKeplerianOrbit<Gradient> gOrbit =
+            new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(DEFAULT_STATE_DIMENSION, 0, orbit.getA()),
+                                                                     Gradient.variable(DEFAULT_STATE_DIMENSION, 1, orbit.getE()),
+                                                                     Gradient.variable(DEFAULT_STATE_DIMENSION, 2, orbit.getI()),
+                                                                     Gradient.variable(DEFAULT_STATE_DIMENSION, 3, orbit.getPerigeeArgument()),
+                                                                     Gradient.variable(DEFAULT_STATE_DIMENSION, 4, orbit.getRightAscensionOfAscendingNode()),
+                                                                     Gradient.variable(DEFAULT_STATE_DIMENSION, 5, orbit.getMeanAnomaly()),
+                                                                     PositionAngleType.MEAN),
+                                      orbit.getFrame(),
+                                      new FieldAbsoluteDate<>(field, orbit.getDate()),
+                                      Gradient.constant(DEFAULT_STATE_DIMENSION, orbit.getMu()));
+
+        // keep the non-Keplerian elements constant
+        final NonKeplerianDriversFactory nonKeplerianFactory = new NonKeplerianDriversFactory();
+        nonKeplerianFactory.reset(elements);
+        final FieldGnssOrbitalElements<Gradient, O> gElements =
+            elements.toField(gOrbit, nonKeplerianFactory.toGradients(DEFAULT_STATE_DIMENSION),
+                             d -> Gradient.constant(DEFAULT_STATE_DIMENSION, d));
+
+        // evaluate the Cartesian coordinates at the elements epoch
+        // FIXME: here a GNSS propagator is instantiated, not sure this is the best way to do it
+        final TimeStampedFieldPVCoordinates<Gradient> pv =
+            new FieldGnssPropagator<>(gElements, eci, ecef, FrameAlignedProvider.of(eci),
+                                      Gradient.constant(DEFAULT_STATE_DIMENSION, Propagator.DEFAULT_MASS)).
+            getBaseInitialState().
+            getPVCoordinates();
+
+        // gather the derivatives of each Cartesian coordinate into a row
+        final RealMatrix jacobian = MatrixUtils.createRealMatrix(DEFAULT_STATE_DIMENSION, DEFAULT_STATE_DIMENSION);
+        jacobian.setRow(0, pv.getPosition().getX().getGradient());
+        jacobian.setRow(1, pv.getPosition().getY().getGradient());
+        jacobian.setRow(2, pv.getPosition().getZ().getGradient());
+        jacobian.setRow(3, pv.getVelocity().getX().getGradient());
+        jacobian.setRow(4, pv.getVelocity().getY().getGradient());
+        jacobian.setRow(5, pv.getVelocity().getZ().getGradient());
+
+        return jacobian;
 
     }
 

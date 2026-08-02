@@ -16,16 +16,12 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Harvester between two-dimensional Jacobian matrices and
  * one-dimensional {@link TLEPropagator}.
@@ -61,45 +57,36 @@ class TLEHarvester extends AbstractAnalyticalMatricesHarvester {
         setInitialJacobianColumns(initialJacobianColumns);
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * As the propagated state is Cartesian for TLE propagators, this is the Jacobian of the
+     * Cartesian coordinates with respect to the TLE mean elements representing the state.
+     * </p>
+     */
     @Override
-    public RealMatrix getInitialStateJacobianVsBuilderParameters() {
+    public RealMatrix getStateJacobianVsBuilderParameters(final SpacecraftState state) {
+        return propagator.getTleGenerationAlgorithm().getJacobianWrtParameters(builderParameters(state));
+    }
 
-        // create gradient TLE with respect to build parameters
-        final GradientField field = GradientField.getField(DEFAULT_STATE_DIMENSION);
-        final TLE tle = propagator.getTLE();
-        final FieldTLE<Gradient> gTLE =
-            new FieldTLE<>(tle.getSatelliteNumber(), tle.getClassification(),
-                           tle.getLaunchYear(), tle.getLaunchNumber(), tle.getLaunchPiece(),
-                           tle.getEphemerisType(), tle.getElementNumber(),
-                           new FieldAbsoluteDate<>(field, tle.getDate()),
-                           Gradient.variable(DEFAULT_STATE_DIMENSION, 0, tle.getMeanMotion()),
-                           Gradient.constant(DEFAULT_STATE_DIMENSION,    tle.getMeanMotionFirstDerivative()),
-                           Gradient.constant(DEFAULT_STATE_DIMENSION,    tle.getMeanMotionSecondDerivative()),
-                           Gradient.variable(DEFAULT_STATE_DIMENSION, 1, tle.getE()),
-                           Gradient.variable(DEFAULT_STATE_DIMENSION, 2, tle.getI()),
-                           Gradient.variable(DEFAULT_STATE_DIMENSION, 3, tle.getPerigeeArgument()),
-                           Gradient.variable(DEFAULT_STATE_DIMENSION, 4, tle.getRaan()),
-                           Gradient.variable(DEFAULT_STATE_DIMENSION, 5, tle.getMeanAnomaly()),
-                           tle.getRevolutionNumberAtEpoch(),
-                           Gradient.constant(DEFAULT_STATE_DIMENSION,    tle.getBStar()),
-                           tle.getUtc());
+    /** Get the TLE whose orbital elements are the builder parameters representing a state.
+     * @param state state to represent
+     * @return TLE holding the mean elements that represent the given state
+     */
+    private TLE builderParameters(final SpacecraftState state) {
 
-        // evaluate initial Cartesian state
-        final TimeStampedFieldPVCoordinates<Gradient> pv =
-            FieldTLEPropagator.selectExtrapolator(gTLE).getBaseInitialState().getPVCoordinates();
+        final TLE current = propagator.getTLE();
 
-        // create Jacobian matrix
-        final RealMatrix jacobian =
-            MatrixUtils.createRealMatrix(DEFAULT_STATE_DIMENSION, DEFAULT_STATE_DIMENSION);
-        jacobian.setRow(0, pv.getPosition().getX().getGradient());
-        jacobian.setRow(1, pv.getPosition().getY().getGradient());
-        jacobian.setRow(2, pv.getPosition().getZ().getGradient());
-        jacobian.setRow(3, pv.getVelocity().getX().getGradient());
-        jacobian.setRow(4, pv.getVelocity().getY().getGradient());
-        jacobian.setRow(5, pv.getVelocity().getZ().getGradient());
+        if (state.getDate().isEqualTo(current.getDate())) {
+            // the TLE held by the propagator already is the exact representation of the
+            // state at its own epoch, so we use it as is rather than rebuilding it, which
+            // would only add the convergence noise of the osculating to mean iterations
+            return current;
+        }
 
-        return jacobian;
+        // rebuild the mean elements matching the state, keeping the identification data
+        // (satellite number, launch data, B*, …) of the TLE held by the propagator
+        // FIXME: not sure about the performance of this one
+        return propagator.getTleGenerationAlgorithm().generate(state, current);
 
     }
 

@@ -66,7 +66,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
         BrouwerLyddaneHarvester harvester = (BrouwerLyddaneHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
         Assertions.assertNull(harvester.getParametersJacobian(initialState));
-        Assertions.assertNull(harvester.getInitialStateJacobianVsBuilderParameters());
+        Assertions.assertNull(harvester.getStateJacobianVsBuilderParameters(initialState));
     }
 
     @Test

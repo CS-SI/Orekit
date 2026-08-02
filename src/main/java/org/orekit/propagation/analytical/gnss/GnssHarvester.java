@@ -16,17 +16,14 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.Arrays;
 
 /**
  * Harvester between two-dimensional Jacobian matrices and
@@ -64,28 +61,21 @@ class GnssHarvester<O extends GNSSOrbitalElements<O>> extends AbstractAnalytical
         setInitialJacobianColumns(initialJacobianColumns);
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * As the propagated state is Cartesian for GNSS propagators, this is the Jacobian of the
+     * Cartesian coordinates with respect to the GNSS orbital elements representing the state.
+     * </p>
+     * <p>
+     * The elements this implementation differentiates are the ones held by the propagator,
+     * hence the returned Jacobian is currently only valid for the propagator initial state.
+     * </p>
+     */
     @Override
-    public RealMatrix getInitialStateJacobianVsBuilderParameters() {
-
-        // get gradient PV with respect to build (Keplerian) parameters
-        final TimeStampedFieldPVCoordinates<Gradient> pv = getGradientConverter().
-                                                           getPropagator().
-                                                           getBaseInitialState().
-                                                           getPVCoordinates();
-
-        // create Jacobian matrix
-        final RealMatrix jacobian =
-            MatrixUtils.createRealMatrix(DEFAULT_STATE_DIMENSION, DEFAULT_STATE_DIMENSION);
-        jacobian.setRow(0, Arrays.copyOf(pv.getPosition().getX().getGradient(), DEFAULT_STATE_DIMENSION));
-        jacobian.setRow(1, Arrays.copyOf(pv.getPosition().getY().getGradient(), DEFAULT_STATE_DIMENSION));
-        jacobian.setRow(2, Arrays.copyOf(pv.getPosition().getZ().getGradient(), DEFAULT_STATE_DIMENSION));
-        jacobian.setRow(3, Arrays.copyOf(pv.getVelocity().getX().getGradient(), DEFAULT_STATE_DIMENSION));
-        jacobian.setRow(4, Arrays.copyOf(pv.getVelocity().getY().getGradient(), DEFAULT_STATE_DIMENSION));
-        jacobian.setRow(5, Arrays.copyOf(pv.getVelocity().getZ().getGradient(), DEFAULT_STATE_DIMENSION));
-
-        return jacobian;
-
+    public RealMatrix getStateJacobianVsBuilderParameters(final SpacecraftState state) {
+        return GNSSOrbitalElementsFactory.jacobianWrtParameters(propagator.getOrbitalElements(),
+                                                                propagator.getFrame(),
+                                                                propagator.getECEF());
     }
 
     /** {@inheritDoc} */

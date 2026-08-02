@@ -16,6 +16,7 @@
  */
 package org.orekit.orbits;
 
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
@@ -109,5 +110,25 @@ public interface OrbitalParameterFactory<P extends OrbitalParameters> extends Cl
      * @return created orbital parameters
      */
     P createFromDrivers();
+
+    /** Get the Jacobian of the Cartesian coordinates with respect to the orbital parameters.
+     * <p>
+     * The Jacobian is evaluated at the {@link #getOrbitalParametersDrivers() current drivers
+     * values}, at the {@link #getDate() factory date} and in the {@link #getFrame() factory
+     * frame}.
+     * </p>
+     * @return jacobian matrix dC/dB, where C are the Cartesian coordinates and B the orbital parameters this factory
+     * is built upon
+     */
+    RealMatrix getJacobianWrtParameters();
+
+    /** Get the Jacobian of the orbital parameters with respect to the Cartesian coordinates.
+     * <p>
+     * This is the inverse of {@link #getJacobianWrtParameters()}, and it is evaluated under
+     * the very same conditions.
+     * @return jacobian matrix dB/dC, where B are the orbital parameters this factory is built upon and C the
+     * Cartesian coordinates
+     */
+    RealMatrix getJacobianWrtCartesian();
 
 }

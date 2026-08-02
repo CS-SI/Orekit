@@ -60,7 +60,7 @@ public interface MatricesHarvester {
      * In order to compute dY/dB₀ where the current propagated state Y and the initial
      * building state B₀ have different types, one should compute dY/dB₀ = dY/dY₀ dY₀/dB₀,
      * where the first factor dY/dY₀ is given by this method and the second factor dY₀/dB₀ is
-     * given by the method {@link #getInitialStateJacobianVsBuilderParameters()}.
+     * given by the method {@link #getStateJacobianVsBuilderParameters(SpacecraftState)}.
      * </p>
      * @param state spacecraft state
      * @return state transition matrix, with semantics consistent with propagation,
@@ -69,19 +69,25 @@ public interface MatricesHarvester {
      */
     RealMatrix getStateTransitionMatrix(SpacecraftState state);
 
-    /** Get transformation Jacobian between initial builder parameters and initial propagated state.
+    /** Get transformation Jacobian between builder parameters and propagated state.
      * <p>
      * Some propagators use an orbit type B as the propagator builder parameter, and
      * a different type Y for the propagated orbit. Typical examples are TLE or specialized
      * GNSS propagators that use Keplerian-like builder parameters but produce Cartesian states.
      * This method allows to convert between these types.
      * </p>
-     * @return jacobian matrix dY₀/dB₀ where Y₀ is initial propagated state and B₀
-     * is initial state as configured by the propagator builder, or null if Y₀ and B₀ have
-     * the same type
+     * <p>
+     * Applying this method to the propagator initial state gives the Jacobian dY₀/dB₀ between the initial propagated
+     * state and the initial builder parameters.
+     * </p>
+     * @param state state at which the Jacobian should be evaluated
+     * @return jacobian matrix dY/dB where Y is the propagated state, using the representation
+     * given by {@link #getOrbitType()} and {@link #getPositionAngleType()}, and B is the set of
+     * propagator builder parameters representing this very same state, or null if Y and B have
+     * the same type, in which case callers must consider the Jacobian is the identity matrix
      * @since 14.0
      */
-    default RealMatrix getInitialStateJacobianVsBuilderParameters() {
+    default RealMatrix getStateJacobianVsBuilderParameters(final SpacecraftState state) {
         return null;
     }
 

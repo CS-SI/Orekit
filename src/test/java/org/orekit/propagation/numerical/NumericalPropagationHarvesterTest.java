@@ -144,7 +144,7 @@ public class NumericalPropagationHarvesterTest {
         Assertions.assertEquals(deltaId, stm.subtract(identity7).getNorm1(), 1.0e-3);
         Assertions.assertEquals(type, harvester.getOrbitType());
         Assertions.assertEquals(angle, harvester.getPositionAngleType());
-        Assertions.assertNull(harvester.getInitialStateJacobianVsBuilderParameters());
+        Assertions.assertNull(harvester.getStateJacobianVsBuilderParameters(s));
     }
 
     @BeforeEach

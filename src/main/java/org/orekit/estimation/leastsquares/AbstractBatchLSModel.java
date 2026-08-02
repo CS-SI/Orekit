@@ -126,6 +126,16 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      */
     private final MatricesHarvester[] harvesters;
 
+    /** Initial states of the propagators built at the current iteration.
+     * <p>
+     * These are the states the builder parameters refer to, hence the states at which the
+     * {@link MatricesHarvester#getStateJacobianVsBuilderParameters(SpacecraftState) dY₀/dB₀} Jacobians must be
+     * evaluated.
+     * </p>
+     * @since 14.0
+     */
+    private final SpacecraftState[] initialStates;
+
     /** Model function Jacobian. */
     private final RealMatrix jacobian;
 
@@ -150,6 +160,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
         this.harvesters                      = new MatricesHarvester[builders.length];
+        this.initialStates                   = new SpacecraftState[builders.length];
 
         // allocate vector and matrix
         int rows = 0;
@@ -278,6 +289,9 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         for (int i = 0; i < propagators.length; ++i) {
             harvesters[i] = configureHarvester(propagators[i]);
             orbits[i]     = configureOrbits(harvesters[i], propagators[i]);
+            // base state is used here on purpose: retrieving the full initial state would
+            // trigger the additional data providers, hence the harvester derivatives cache
+            initialStates[i] = propagators[i].getBaseInitialState();
         }
         final PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
@@ -467,7 +481,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
                     dYdY0 = dYdY0.getSubMatrix(0, 5, 0, 5);
                 }
                 final RealMatrix dMdY0  = dMdY.multiply(dYdY0);
-                final RealMatrix dY0dB0 = harvesters[p].getInitialStateJacobianVsBuilderParameters();
+                final RealMatrix dY0dB0 = harvesters[p].getStateJacobianVsBuilderParameters(initialStates[p]);
                 final RealMatrix dMdB0  = dY0dB0 == null ? dMdY0 : dMdY0.multiply(dY0dB0);
                 for (int i = 0; i < dMdB0.getRowDimension(); ++i) {
                     for (int j = orbitsStartColumns[p]; j < orbitsEndColumns[p]; ++j) {

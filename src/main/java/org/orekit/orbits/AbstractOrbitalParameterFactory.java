@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -158,6 +160,17 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
 
     }
 
+    /** {@inheritDoc}.
+     * <p>
+     * This implementation inverts {@link #getJacobianWrtParameters()} numerically, using the
+     * same decomposition as {@link Orbit} does for its own Jacobian matrices.
+     * </p>
+     */
+    @Override
+    public RealMatrix getJacobianWrtCartesian() {
+        return new QRDecomposition(getJacobianWrtParameters()).getSolver().getInverse();
+    }
+
     /** Convert an input into an array suitable to feed orbital parameters drivers.
      * @param orbit orbit to convert
      * @return arrays corresponding to orbit
@@ -182,7 +195,7 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
                 newDriver.setSelected(oldDriver.isSelected());
                 newDrivers.add(newDriver);
             }
-            orbitalDrivers = newDrivers;
+            clone.orbitalDrivers = newDrivers;
 
             return clone;
 
