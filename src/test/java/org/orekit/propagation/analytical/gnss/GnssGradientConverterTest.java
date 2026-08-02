@@ -31,11 +31,9 @@ import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -51,6 +49,7 @@ import org.orekit.time.GNSSDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -236,9 +235,6 @@ class GnssGradientConverterTest {
 
     }
 
-    /** The diagonal is only very roughly unitary because there are large non-Keplerian elements.
-     * @param initialState initial state
-     */
     /** Check the state transition matrix is the identity at the initial date.
      * <p>
      * The free variables of the converter are the six Cartesian coordinates of the initial

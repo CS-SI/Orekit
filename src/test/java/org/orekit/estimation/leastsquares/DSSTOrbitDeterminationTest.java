@@ -98,7 +98,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(referenceOrbit);
         return new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(equiOrbit,
                                                                      positionScale,
-                                                                     PositionAngleType.ECCENTRIC),
+                                                                     PositionAngleType.MEAN),
                                          builder, propagationType, stateType);
     }
 
