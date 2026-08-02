@@ -20,7 +20,9 @@ import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.NonLinearEvolution;
 import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
 import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -54,6 +56,20 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
 
     /** Propagators for the reference trajectories, up to current date. */
     private Propagator[] referenceTrajectories;
+
+    /** Jacobians dY/dB of the predicted states with respect to the builder parameters.
+     * <p>
+     * These Jacobians are evaluated once per measurement and shared by the error state
+     * transition matrix and the measurement matrix.
+     * </p>
+     * <p>
+     * An entry is null when no change of representation is needed, either because the
+     * builder parameters already are the propagated state, or because no orbital parameter
+     * is estimated for this propagator.
+     * </p>
+     * @since 14.0
+     */
+    private RealMatrix[] predictedStateVsBuilderParamJacobians;
 
     /** Kalman process model constructor.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
@@ -105,24 +121,29 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
     private RealMatrix getErrorStateTransitionMatrix() {
 
         /* The state transition matrix is obtained as follows, with:
-         *  - Y  : Current state vector
-         *  - Y0 : Initial state vector
+         *  - B  : Current builder parameters (the orbital part of the Kalman state vector)
+         *  - B0 : Initial builder parameters
          *  - Pp : Current propagation parameter
          *  - Pp0: Initial propagation parameter
          *  - Mp : Current measurement parameter
          *  - Mp0: Initial measurement parameter
          *
          *       |        |         |         |   |        |        |   .    |
-         *       | dY/dY0 | dY/dPp  | dY/dMp  |   | dY/dY0 | dY/dPp | ..0..  |
+         *       | dB/dB0 | dB/dPp  | dB/dMp  |   | dB/dB0 | dB/dPp | ..0..  |
          *       |        |         |         |   |        |        |   .    |
          *       |--------|---------|---------|   |--------|--------|--------|
          *       |        |         |         |   |   .    | 1 0 0..|   .    |
-         * STM = | dP/dY0 | dP/dPp0 | dP/dMp  | = | ..0..  | 0 1 0..| ..0..  |
+         * STM = | dP/dB0 | dP/dPp0 | dP/dMp  | = | ..0..  | 0 1 0..| ..0..  |
          *       |        |         |         |   |   .    | 0 0 1..|   .    |
          *       |--------|---------|---------|   |--------|--------|--------|
          *       |        |         |         |   |   .    |   .    | 1 0 0..|
-         *       | dM/dY0 | dM/dPp0 | dM/dMp0 |   | ..0..  | ..0..  | 0 1 0..|
+         *       | dM/dB0 | dM/dPp0 | dM/dMp0 |   | ..0..  | ..0..  | 0 1 0..|
          *       |        |         |         |   |   .    |   .    | 0 0 1..|
+         *
+         * Most propagators use the propagated state representation Y as their builder
+         * parameters, so B and Y coincide and the harvesters matrices can be used as is.
+         * TLE and specialized GNSS propagators do not: they are built from Keplerian-like
+         * parameters but propagate Cartesian coordinates, hence the conversions below.
          */
 
         // Initialize to the proper size identity matrix
@@ -143,6 +164,13 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
             // Indexes
             final int[] indK = covarianceIndirection[k];
 
+            // Change of representation between the propagated state Y and the builder
+            // parameters B the Kalman state vector is made of, at the current date. It is
+            // null when both representations coincide, in which case the harvesters
+            // matrices can be used as is. Shared by the two blocks below.
+            final RealMatrix dYdB = predictedStateVsBuilderParamJacobians[k];
+            final DecompositionSolver solver = dYdB == null ? null : new QRDecomposition(dYdB).getSolver();
+
             // Derivatives of the state vector with respect to initial state vector
             final int nbOrbParams = estimatedOrbitalParameters[k].getNbParams();
             if (nbOrbParams > 0) {
@@ -156,14 +184,28 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
                     dYdY0 = dYdY0.getSubMatrix(0, 5, 0, 5);
                 }
 
-                // Fill upper left corner (dY/dY0)
+                final RealMatrix dBdB0;
+                if (solver == null) {
+                    dBdB0 = dYdY0;
+                } else {
+                    // whether a change of representation is needed is a property of the
+                    // propagator, not of the state, so the Jacobian at the previous
+                    // measurement date is non-null as well. That date is the initial date
+                    // of the reference trajectory
+                    final RealMatrix dY0dB0 = harvesters[k].
+                            getStateJacobianVsBuilderParameters(referenceTrajectories[k].getBaseInitialState());
+                    // dB/dB0 = (dY/dB)⁻¹ dY/dY0 dY0/dB0
+                    dBdB0 = solver.solve(dYdY0.multiply(dY0dB0));
+                }
+
+                // Fill upper left corner (dB/dB0)
                 int stmRow = 0;
-                for (int i = 0; i < dYdY0.getRowDimension(); ++i) {
+                for (int i = 0; i < dBdB0.getRowDimension(); ++i) {
                     int stmCol = 0;
                     if (orbitalParameterDrivers.get(i).isSelected()) {
                         for (int j = 0; j < nbOrbParams; ++j) {
                             if (orbitalParameterDrivers.get(j).isSelected()) {
-                                stm.setEntry(indK[stmRow], indK[stmCol], dYdY0.getEntry(i, j));
+                                stm.setEntry(indK[stmRow], indK[stmCol], dBdB0.getEntry(i, j));
                                 stmCol += 1;
                             }
                         }
@@ -177,12 +219,15 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
             if (nbOrbParams > 0 && nbParams > 0) {
                 final RealMatrix dYdPp = getParametersJacobian(harvesters[k], predictedSpacecraftStates[k]);
 
-                // Fill 1st row, 2nd column (dY/dPp)
+                // dB/dPp = (dY/dB)⁻¹ dY/dPp
+                final RealMatrix dBdPp = solver == null ? dYdPp : solver.solve(dYdPp);
+
+                // Fill 1st row, 2nd column (dB/dPp)
                 int stmRow = 0;
-                for (int i = 0; i < dYdPp.getRowDimension(); ++i) {
+                for (int i = 0; i < dBdPp.getRowDimension(); ++i) {
                     if (orbitalParameterDrivers.get(i).isSelected()) {
                         for (int j = 0; j < nbParams; ++j) {
-                            stm.setEntry(indK[stmRow], indK[j + nbOrbParams], dYdPp.getEntry(i, j));
+                            stm.setEntry(indK[stmRow], indK[j + nbOrbParams], dBdPp.getEntry(i, j));
                         }
                         stmRow += 1;
                     }
@@ -202,6 +247,32 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
 
         // Return the error state transition matrix
         return stm;
+    }
+
+    /** Evaluate the Jacobians dY/dB of the predicted states with respect to the builder parameters.
+     * <p>
+     * The Jacobians are evaluated on the predicted states, which are the very states the
+     * measurement will be evaluated on, so that both the error state transition matrix and
+     * the measurement matrix can share them instead of computing them twice.
+     * </p>
+     * <p>
+     * Propagators for which no orbital parameter is estimated are skipped: their Jacobian
+     * would never be used.
+     * </p>
+     * @since 14.0
+     */
+    private void updatePredictedStateVsBuilderParamJacobians() {
+
+        final SpacecraftState[] predictedSpacecraftStates = getPredictedSpacecraftStates();
+        final ParameterDriversList[] estimatedOrbitalParameters = getEstimatedOrbitalParametersArray();
+
+        predictedStateVsBuilderParamJacobians = new RealMatrix[predictedSpacecraftStates.length];
+        for (int k = 0; k < predictedSpacecraftStates.length; ++k) {
+            if (estimatedOrbitalParameters[k].getNbParams() > 0) {
+                predictedStateVsBuilderParamJacobians[k] =
+                        harvesters[k].getStateJacobianVsBuilderParameters(predictedSpacecraftStates[k]);
+            }
+        }
 
     }
 
@@ -267,15 +338,20 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
             // Jacobian of the measurement with respect to current orbital state
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
+            // Jacobian of the measurement with respect to the current builder parameters,
+            // which are the ones the Kalman state vector is made of.
+            final RealMatrix dYdB = predictedStateVsBuilderParamJacobians[p];
+            final RealMatrix dMdB = dYdB == null ? dMdY : dMdY.multiply(dYdB);
+
             // Fill the normalized measurement matrix's columns related to estimated orbital parameters
             final List<DelegatingDriver> drivers = factory.getOrbitalParametersDrivers().getDrivers();
-            for (int i = 0; i < dMdY.getRowDimension(); ++i) {
+            for (int i = 0; i < dMdB.getRowDimension(); ++i) {
                 int jOrb = orbitsStartColumns[p];
-                for (int j = 0; j < dMdY.getColumnDimension(); ++j) {
+                for (int j = 0; j < dMdB.getColumnDimension(); ++j) {
                     final ParameterDriver driver = drivers.get(j);
                     if (driver.isSelected()) {
                         measurementMatrix.setEntry(i, jOrb++,
-                                                   dMdY.getEntry(i, j) / sigma[i] * driver.getScale());
+                                                   dMdB.getEntry(i, j) / sigma[i] * driver.getScale());
                     }
                 }
             }
@@ -353,6 +429,10 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
 
         // Predict the state vector (mx1)
         final RealVector predictedState = predictState(observedMeasurement.getDate());
+
+        // Evaluate the changes of representation between propagated states and builder
+        // parameters, shared by the two matrices built below
+        updatePredictedStateVsBuilderParamJacobians();
 
         // Get the error state transition matrix (mxm)
         final RealMatrix stateTransitionMatrix = getErrorStateTransitionMatrix();
