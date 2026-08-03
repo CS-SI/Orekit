@@ -1224,10 +1224,15 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
     private double localSolarTime(final AbsoluteDate date,
                                   final Vector3D position,
                                   final Frame frame) {
-        final Vector3D sunPos = getSunPosition(date, frame);
+        // the hour angle below is only meaningful about Earth's rotation axis, so the
+        // position and Sun must be expressed in the Earth-fixed body frame (see issue 1993);
+        // DTM2000 performs the identical computation the same way
+        final Frame bodyFrame = earth.getBodyFrame();
+        final Vector3D pBody  = frame.getStaticTransformTo(bodyFrame, date).transformPosition(position);
+        final Vector3D sunPos = getSunPosition(date, bodyFrame);
         final double lst = FastMath.PI + FastMath.atan2(
-                sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
-                sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
+                sunPos.getX() * pBody.getY() - sunPos.getY() * pBody.getX(),
+                sunPos.getX() * pBody.getX() + sunPos.getY() * pBody.getY());
         return lst * 12. / FastMath.PI;
     }
 
@@ -1241,9 +1246,14 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
     private <T extends CalculusFieldElement<T>> T localSolarTime(final FieldAbsoluteDate<T> date,
                                                              final FieldVector3D<T> position,
                                                              final Frame frame) {
-        final FieldVector3D<T> sunPos = getSunPosition(date, frame);
-        final T y  = position.getY().multiply(sunPos.getX()).subtract(position.getX().multiply(sunPos.getY()));
-        final T x  = position.getX().multiply(sunPos.getX()).add(position.getY().multiply(sunPos.getY()));
+        // the hour angle below is only meaningful about Earth's rotation axis, so the
+        // position and Sun must be expressed in the Earth-fixed body frame (see issue 1993);
+        // DTM2000 performs the identical computation the same way
+        final Frame bodyFrame = earth.getBodyFrame();
+        final FieldVector3D<T> pBody  = frame.getStaticTransformTo(bodyFrame, date).transformPosition(position);
+        final FieldVector3D<T> sunPos = getSunPosition(date, bodyFrame);
+        final T y  = pBody.getY().multiply(sunPos.getX()).subtract(pBody.getX().multiply(sunPos.getY()));
+        final T x  = pBody.getX().multiply(sunPos.getX()).add(pBody.getY().multiply(sunPos.getY()));
         final T hl = y.atan2(x).add(y.getPi());
 
         return hl.divide(y.getPi()).multiply(12.);
