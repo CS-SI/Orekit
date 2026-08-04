@@ -391,6 +391,9 @@
           <action dev="bryan" type="fix" issue="1054">
               Fixed default value of optional parameters in ODParameters by using Java Optional.
           </action>
+          <action dev="xiaozhongguo" type="update" issue="778">
+              Update PredefinedIAUPoles to WGCCRE 2015 report
+          </action>
     </release>
     <release version="13.1.7" date="2026-07-03" description="Orekit 13.1.7 is a patch release. It solves various bugs related to propagators, solid tides and Alpha-5 parsing.">
         <action dev="luc" type="fix" issue="1977">

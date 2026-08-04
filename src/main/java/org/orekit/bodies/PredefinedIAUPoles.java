@@ -32,18 +32,18 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 
-/** Enumerate for predefined IAU poles.
- * <p>The pole models provided here come from the <a
- * href="http://astropedia.astrogeology.usgs.gov/alfresco/d/d/workspace/SpacesStore/28fd9e81-1964-44d6-a58b-fbbf61e64e15/WGCCRE2009reprint.pdf">
- * 2009 report</a> and the <a href="http://astropedia.astrogeology.usgs.gov/alfresco/d/d/workspace/SpacesStore/04d348b0-eb2b-46a2-abe9-6effacb37763/WGCCRE-Erratum-2011reprint.pdf">
- * 2011 erratum</a> of the IAU/IAG Working Group on Cartographic Coordinates
- * and Rotational Elements of the Planets and Satellites (WGCCRE). Note that these value
- * differ from earliest reports (before 2005).
- *</p>
+/** Abstract class for predefined IAU poles.
+ * <p>The pole models provided here come from the
+ * <a href="https://doi.org/10.1007/s10569-017-9805-5"> Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015 </a>
+ * (WGCCRE 2015).</p>
+ * <p>WGCCRE 2015 provides recommendations that define and relate the coordinate systems of solar system bodies to their rotational elements to support making
+ * cartographic products (i.e., “mapping”) of such bodies, including planets and their satellites, dwarf/minor planets and their satellites, and comets.
+ * Here predefined models for the Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, and the Moon, are provided.
+ * </p>
  * @author Luc Maisonobe
  * @since 9.0
  */
-abstract class PredefinedIAUPoles implements IAUPole {
+public abstract class PredefinedIAUPoles implements IAUPole {
 
     /** Serializable UID. */
     @Serial
@@ -129,7 +129,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     }
 
-    /** IAU pole and prime meridian model for Mercury. */
+    /** IAU pole and prime meridian model for Mercury.
+     * <p>The 20◦ meridian of Mercury is defined by the crater Hun Kal.</p>
+     */
     private static class Mercury extends PredefinedIAUPoles {
 
         /** Serializable UID. */
@@ -137,64 +139,64 @@ abstract class PredefinedIAUPoles implements IAUPole {
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
-        private static final double ALPHA_0 = 281.0097;
+        private static final double ALPHA_0 = 281.0103;
 
         /** Rate term of the right ascension of the pole. */
         private static final double ALPHA_DOT = -0.0328;
 
         /** Constant term of the declination of the pole. */
-        private static final double DELTA_0 = 61.4143;
+        private static final double DELTA_0 = 61.4155;
 
         /** Rate term of the declination of the pole. */
         private static final double DELTA_DOT = -0.0049;
 
-        /** Constant term of the prime meridian. */
-        private static final double W_0 = 329.5469;
+        /** Constant term of the prime meridian with an uncertainty of +-0.0037. */
+        private static final double W_0 = 329.5988;
 
         /** Rate term of the prime meridian. */
-        private static final double W_DOT = 6.1385025;
+        private static final double W_DOT = 6.1385108;
 
         /** M1 coefficient of the prime meridian. */
-        private static final double M1_COEFF = 0.00993822;
+        private static final double M1_COEFF = 0.01067257;
 
         /** M2 coefficient of the prime meridian. */
-        private static final double M2_COEFF = -0.00104581;
+        private static final double M2_COEFF = -0.00112309;
 
         /** M3 coefficient of the prime meridian. */
-        private static final double M3_COEFF = -0.00010280;
+        private static final double M3_COEFF = -0.00011040;
 
         /** M4 coefficient of the prime meridian. */
-        private static final double M4_COEFF = -0.00002364;
+        private static final double M4_COEFF = -0.00002539;
 
         /** M5 coefficient of the prime meridian. */
-        private static final double M5_COEFF = -0.00000532;
+        private static final double M5_COEFF = -0.00000571;
 
         /** Constant term of the M1 angle. */
-        private static final double M1_0   = 174.791086;
+        private static final double M1_0   = 174.7910857;
 
         /** Rate term of the M1 angle. */
         private static final double M1_DOT = 4.092335;
 
         /** Constant term of the M2 angle. */
-        private static final double M2_0   = 349.582171;
+        private static final double M2_0   = 349.5821714;
 
         /** Rate term of the M1 angle. */
         private static final double M2_DOT = 8.184670;
 
         /** Constant term of the M3 angle. */
-        private static final double M3_0   = 164.373257;
+        private static final double M3_0   = 164.3732571;
 
         /** Rate term of the M1 angle. */
         private static final double M3_DOT = 12.277005;
 
         /** Constant term of the M4 angle. */
-        private static final double M4_0   = 339.164343;
+        private static final double M4_0   = 339.1643429;
 
         /** Rate term of the M1 angle. */
         private static final double M4_DOT = 16.369340;
 
         /** Constant term of the M5 angle. */
-        private static final double M5_0   = 153.955429;
+        private static final double M5_0   = 153.9554286;
 
         /** Rate term of the M1 angle. */
         private static final double M5_DOT = 20.461675;
@@ -246,7 +248,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     }
 
-    /** IAU pole and prime meridian model for Venus. */
+    /** IAU pole and prime meridian model for Venus.
+     * The 0◦ meridian of Venus is defined by the central peak in the crater Ariadne.
+     */
     private static class Venus extends PredefinedIAUPoles {
 
         /** Serializable UID. */
@@ -294,7 +298,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     }
 
-    /** IAU pole and prime meridian model for Earth. */
+    /** Approximate expressions for the Earth
+     * have been removed in order to avoid confusion in WGCCRE 2015.
+     * <p>IAU pole and prime meridian model for Earth.</p>
+     */
     private static class Earth extends PredefinedIAUPoles {
 
         /** Serializable UID. */
@@ -370,7 +377,13 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     }
 
-    /** IAU pole and prime meridian model for the Moon. */
+    /** Due to low precision of following series expression,
+     * WGCCRE 2015 has removed this model for the Moon’s orientation.
+     * For high accuracy work (e.g., spacecraft operations, high-resolution mapping, and gravity
+     * field determination), it is recommended that a lunar ephemeris be used to obtain the libration
+     * angles for the Moon, from which the pole position and rotation can be derived.
+     * <p>IAU pole and prime meridian model for the Moon.</p>
+     */
     private static class Moon extends PredefinedIAUPoles {
 
         /** Serializable UID. */
@@ -674,7 +687,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     }
 
-    /** IAU pole and prime meridian model for Mars. */
+    /** IAU pole and prime meridian model for Mars.
+     * <p>The longitude of the Viking 1 lander on Mars is defined to be 47◦.95137 west,
+     * maintaining the 0◦ meridian through the crater Airy-0.</p>
+     */
     private static class Mars extends PredefinedIAUPoles {
 
         /** Serializable UID. */
@@ -682,22 +698,166 @@ abstract class PredefinedIAUPoles implements IAUPole {
         private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
-        private static final double ALPHA_0 = 317.68143;
+        private static final double ALPHA_0 = 317.269202;
 
         /** Rate term of the right ascension of the pole. */
-        private static final double ALPHA_DOT = -0.1061;
+        private static final double ALPHA_DOT = -0.10927547;
+
+        /** Alpha1 constant term. */
+        private static final double ALPHA1_0 = 198.991226;
+
+        /** Alpha1 rate term. */
+        private static final double ALPHA1_DOT = 19139.4819985;
+
+        /** Alpha1 sine coefficient. */
+        private static final double ALPHA1_SIN = 0.000068;
+
+        /** Alpha2 constant term. */
+        private static final double ALPHA2_0 = 226.292679;
+
+        /** Alpha2 rate term. */
+        private static final double ALPHA2_DOT = 38280.8511281;
+
+        /** Alpha2 sine coefficient. */
+        private static final double ALPHA2_SIN = 0.000238;
+
+        /** Alpha3 constant term. */
+        private static final double ALPHA3_0 = 249.663391;
+
+        /** Alpha3 rate term. */
+        private static final double ALPHA3_DOT = 57420.7251593;
+
+        /** Alpha3 sine coefficient. */
+        private static final double ALPHA3_SIN = 0.000052;
+
+        /** Alpha4 constant term. */
+        private static final double ALPHA4_0 = 266.183510;
+
+        /** Alpha4 rate term. */
+        private static final double ALPHA4_DOT = 76560.6367950;
+
+        /** Alpha4 sine coefficient. */
+        private static final double ALPHA4_SIN = 0.000009;
+
+        /** Alpha5 constant term. */
+        private static final double ALPHA5_0 = 79.398797;
+
+        /** Alpha5 rate term. */
+        private static final double ALPHA5_DOT = 0.5042615;
+
+        /** Alpha5 sine coefficient. */
+        private static final double ALPHA5_SIN = 0.419057;
 
         /** Constant term of the declination of the pole. */
-        private static final double DELTA_0 =  52.88650;
+        private static final double DELTA_0 = 54.432516;
 
         /** Rate term of the declination of the pole. */
-        private static final double DELTA_DOT = -0.0609;
+        private static final double DELTA_DOT = -0.05827105;
+
+        /** Delta1 constant term. */
+        private static final double DELTA1_0 = 122.433576;
+
+        /** Delta1 rate term. */
+        private static final double DELTA1_DOT = 19139.9407476;
+
+        /** Delta1 cosine coefficient. */
+        private static final double DELTA1_COS = 0.000051;
+
+        /** Delta2 constant term. */
+        private static final double DELTA2_0 = 43.058401;
+
+        /** Delta2 rate term. */
+        private static final double DELTA2_DOT = 38280.8753272;
+
+        /** Delta2 cosine coefficient. */
+        private static final double DELTA2_COS = 0.000141;
+
+        /** Delta3 constant term. */
+        private static final double DELTA3_0 = 57.663379;
+
+        /** Delta3 rate term. */
+        private static final double DELTA3_DOT = 57420.7517205;
+
+        /** Delta3 cosine coefficient. */
+        private static final double DELTA3_COS = 0.000031;
+
+        /** Delta4 constant term. */
+        private static final double DELTA4_0 = 79.476401;
+
+        /** Delta4 rate term. */
+        private static final double DELTA4_DOT = 76560.6495004;
+
+        /** Delta4 cosine coefficient. */
+        private static final double DELTA4_COS = 0.000005;
+
+        /** Delta5 constant term. */
+        private static final double DELTA5_0 = 166.325722;
+
+        /** Delta5 rate term. */
+        private static final double DELTA5_DOT = 0.5042615;
+
+        /** Delta5 cosine coefficient. */
+        private static final double DELTA5_COS = 1.591274;
 
         /** Constant term of the prime meridian. */
-        private static final double W_0 = 176.630;
+        private static final double W_0 = 176.049863;
 
         /** Rate term of the prime meridian. */
-        private static final double W_DOT = 350.89198226;
+        private static final double W_DOT = 350.891982443297;
+
+        /** W1 constant term. */
+        private static final double W1_0 = 129.071773;
+
+        /** W1 rate term. */
+        private static final double W1_DOT = 19140.0328244;
+
+        /** W1 sine coefficient. */
+        private static final double W1_SIN = 0.000145;
+
+        /** W2 constant term. */
+        private static final double W2_0 = 36.352167;
+
+        /** W2 rate term. */
+        private static final double W2_DOT = 38281.0473591;
+
+        /** W2 sine coefficient. */
+        private static final double W2_SIN = 0.000157;
+
+        /** W3 constant term. */
+        private static final double W3_0 = 56.668646;
+
+        /** W3 rate term. */
+        private static final double W3_DOT = 57420.9295360;
+
+        /** W3 sine coefficient. */
+        private static final double W3_SIN = 0.000040;
+
+        /** W4 constant term. */
+        private static final double W4_0 = 67.364003;
+
+        /** W4 rate term. */
+        private static final double W4_DOT = 76560.2552215;
+
+        /** W4 sine coefficient. */
+        private static final double W4_SIN = 0.000001;
+
+        /** W5 constant term. */
+        private static final double W5_0 = 104.792680;
+
+        /** W5 rate term. */
+        private static final double W5_DOT = 95700.4387578;
+
+        /** W5 sine coefficient. */
+        private static final double W5_SIN = 0.000001;
+
+        /** W6 constant term. */
+        private static final double W6_0 = 95.391654;
+
+        /** W6 rate term. */
+        private static final double W6_DOT = 0.5042615;
+
+        /** W6 sine coefficient. */
+        private static final double W6_SIN = 0.584542;
 
         /**
          * Simple constructor.
@@ -711,25 +871,75 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             final double t = t(date);
-            return new Vector3D(FastMath.toRadians(t * ALPHA_DOT + ALPHA_0),
-                                FastMath.toRadians(t * DELTA_DOT + DELTA_0));
+
+            final double alpha = t * ALPHA_DOT + ALPHA_0 +
+                FastMath.sin(FastMath.toRadians(t * ALPHA1_DOT + ALPHA1_0)) * ALPHA1_SIN +
+                FastMath.sin(FastMath.toRadians(t * ALPHA2_DOT + ALPHA2_0)) * ALPHA2_SIN +
+                FastMath.sin(FastMath.toRadians(t * ALPHA3_DOT + ALPHA3_0)) * ALPHA3_SIN +
+                FastMath.sin(FastMath.toRadians(t * ALPHA4_DOT + ALPHA4_0)) * ALPHA4_SIN +
+                FastMath.sin(FastMath.toRadians(t * ALPHA5_DOT + ALPHA5_0)) * ALPHA5_SIN;
+
+            final double delta = t * DELTA_DOT + DELTA_0 +
+                FastMath.cos(FastMath.toRadians(t * DELTA1_DOT + DELTA1_0)) * DELTA1_COS +
+                FastMath.cos(FastMath.toRadians(t * DELTA2_DOT + DELTA2_0)) * DELTA2_COS +
+                FastMath.cos(FastMath.toRadians(t * DELTA3_DOT + DELTA3_0)) * DELTA3_COS +
+                FastMath.cos(FastMath.toRadians(t * DELTA4_DOT + DELTA4_0)) * DELTA4_COS +
+                FastMath.cos(FastMath.toRadians(t * DELTA5_DOT + DELTA5_0)) * DELTA5_COS;
+
+            return new Vector3D(FastMath.toRadians(alpha), FastMath.toRadians(delta));
         }
 
         /** {@inheritDoc} */
         public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
-                                       FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
+
+            final T alpha = t.multiply(ALPHA_DOT).add(ALPHA_0)
+                .add(FastMath.toRadians(t.multiply(ALPHA1_DOT).add(ALPHA1_0)).sin().multiply(ALPHA1_SIN))
+                .add(FastMath.toRadians(t.multiply(ALPHA2_DOT).add(ALPHA2_0)).sin().multiply(ALPHA2_SIN))
+                .add(FastMath.toRadians(t.multiply(ALPHA3_DOT).add(ALPHA3_0)).sin().multiply(ALPHA3_SIN))
+                .add(FastMath.toRadians(t.multiply(ALPHA4_DOT).add(ALPHA4_0)).sin().multiply(ALPHA4_SIN))
+                .add(FastMath.toRadians(t.multiply(ALPHA5_DOT).add(ALPHA5_0)).sin().multiply(ALPHA5_SIN));
+
+            final T delta = t.multiply(DELTA_DOT).add(DELTA_0)
+                .add(FastMath.toRadians(t.multiply(DELTA1_DOT).add(DELTA1_0)).cos().multiply(DELTA1_COS))
+                .add(FastMath.toRadians(t.multiply(DELTA2_DOT).add(DELTA2_0)).cos().multiply(DELTA2_COS))
+                .add(FastMath.toRadians(t.multiply(DELTA3_DOT).add(DELTA3_0)).cos().multiply(DELTA3_COS))
+                .add(FastMath.toRadians(t.multiply(DELTA4_DOT).add(DELTA4_0)).cos().multiply(DELTA4_COS))
+                .add(FastMath.toRadians(t.multiply(DELTA5_DOT).add(DELTA5_0)).cos().multiply(DELTA5_COS));
+
+            return new FieldVector3D<>(FastMath.toRadians(alpha), FastMath.toRadians(delta));
         }
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            return FastMath.toRadians(d(date) * W_DOT + W_0);
+            final double d = d(date);
+            final double t = t(date);
+
+            final double w = d * W_DOT + W_0 +
+                FastMath.sin(FastMath.toRadians(t * W1_DOT + W1_0)) * W1_SIN +
+                FastMath.sin(FastMath.toRadians(t * W2_DOT + W2_0)) * W2_SIN +
+                FastMath.sin(FastMath.toRadians(t * W3_DOT + W3_0)) * W3_SIN +
+                FastMath.sin(FastMath.toRadians(t * W4_DOT + W4_0)) * W4_SIN +
+                FastMath.sin(FastMath.toRadians(t * W5_DOT + W5_0)) * W5_SIN +
+                FastMath.sin(FastMath.toRadians(t * W6_DOT + W6_0)) * W6_SIN;
+
+            return FastMath.toRadians(w);
         }
 
         /** {@inheritDoc} */
         public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
+            final T d = d(date);
+            final T t = t(date);
+
+            final T w = d.multiply(W_DOT).add(W_0)
+                .add(FastMath.toRadians(t.multiply(W1_DOT).add(W1_0)).sin().multiply(W1_SIN))
+                .add(FastMath.toRadians(t.multiply(W2_DOT).add(W2_0)).sin().multiply(W2_SIN))
+                .add(FastMath.toRadians(t.multiply(W3_DOT).add(W3_0)).sin().multiply(W3_SIN))
+                .add(FastMath.toRadians(t.multiply(W4_DOT).add(W4_0)).sin().multiply(W4_SIN))
+                .add(FastMath.toRadians(t.multiply(W5_DOT).add(W5_0)).sin().multiply(W5_SIN))
+                .add(FastMath.toRadians(t.multiply(W6_DOT).add(W6_0)).sin().multiply(W6_SIN));
+
+            return FastMath.toRadians(w);
         }
 
     }
@@ -1029,10 +1239,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         private static final double DELTA_COS = -0.51;
 
         /** Constant term of the prime meridian. */
-        private static final double W_0 = 253.18;
+        private static final double W_0 = 249.978;
 
         /** Rate term of the prime meridian. */
-        private static final double W_DOT = 536.3128492;
+        private static final double W_DOT = 541.1397757;
 
         /** Sine term of the prime meridian. */
         private static final double W_SIN = -0.48;
@@ -1082,7 +1292,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     }
 
-    /** IAU pole and prime meridian model for Pluto. */
+    /** IAU pole and prime meridian model for Pluto.
+     * <p>The 0 meridian for Pluto is defined as the mean sub-Charon meridian.</p>
+     */
     private static class Pluto extends PredefinedIAUPoles {
 
         /** Serializable UID. */
@@ -1131,11 +1343,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
     }
 
     /** Default IAUPole implementation for barycenters.
-     * <p>
-     * This implementation defines directions such that the inertially oriented and body
+     * <p>This implementation defines directions such that the inertially oriented and body
      * oriented frames are identical and aligned with GCRF. It is used for example
-     * to define the ICRF.
-     * </p>
+     * to define the ICRF.</p>
      */
     private static class GcrfAligned extends PredefinedIAUPoles {
 
