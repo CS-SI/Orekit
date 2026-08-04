@@ -108,9 +108,7 @@ public class SinexParser extends AbstractSinexParser<Sinex, SinexParseInfo> {
     /** {@inheritDoc} */
     @Override
     protected SinexParseInfo buildParseInfo() {
-        final SinexParseInfo parseInfo = new SinexParseInfo(getTimeScales());
-        parseInfo.setTimeScale(getTimeScales().getUTC());
-        return parseInfo;
+        return new SinexParseInfo(getTimeScales());
     }
 
 }

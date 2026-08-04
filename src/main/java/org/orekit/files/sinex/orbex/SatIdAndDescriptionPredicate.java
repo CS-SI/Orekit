@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 /** Predicate for satellite id and description blocks.
  * @author Luc Maisonobe
- * @since 13.0
+ * @since 14.0
  */
 public class SatIdAndDescriptionPredicate implements Predicate<OrbexParseInfo> {
 
@@ -38,10 +38,7 @@ public class SatIdAndDescriptionPredicate implements Predicate<OrbexParseInfo> {
         final Matcher matcher = ID_AND_DESC_PATTERN.matcher(parseInfo.getLine());
         if (matcher.matches()) {
             // this is the data type we are concerned with
-            final SatIdAndDescription sad =
-                new SatIdAndDescription(new SatInSystem(matcher.group(1)),
-                                        matcher.group(2));
-            parseInfo.addSatIdAndDescription(sad);
+            parseInfo.addSatIdAndDescription(new SatInSystem(matcher.group(1)), matcher.group(2));
             return true;
         } else {
             // it is a data type for another predicate

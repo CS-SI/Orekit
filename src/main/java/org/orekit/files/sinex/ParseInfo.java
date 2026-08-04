@@ -80,6 +80,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
      */
     protected ParseInfo(final TimeScales timeScales) {
         this.timeScales = timeScales;
+        this.timeScale  = timeScales.getUTC();
     }
 
     /** Start parsing of a new data source.
@@ -145,7 +146,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
     /** Set start date if earlier than previous setting.
      * @param candidateStartDateString candidate start date
      */
-    protected void setStartDateIfEarlier(final String candidateStartDateString) {
+    public void setStartDateIfEarlier(final String candidateStartDateString) {
         final AbsoluteDate candidateStart = stringEpochToAbsoluteDate(candidateStartDateString, true);
         if (startDate == null || candidateStart.isBefore(startDate)) {
             // this is either the first setting
@@ -165,7 +166,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
     /** Set end date if later than previous setting.
      * @param candidateEndDateString end date
      */
-    protected void setEndDateIfLater(final String candidateEndDateString) {
+    public void setEndDateIfLater(final String candidateEndDateString) {
         final AbsoluteDate candidateEnd = stringEpochToAbsoluteDate(candidateEndDateString, true);
         if (endDate == null || candidateEnd.isAfter(endDate)) {
             // this is either the first setting

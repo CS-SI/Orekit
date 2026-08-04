@@ -43,14 +43,13 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
         /** {@inheritDoc} */
         @Override
         protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
-            final DateTimeComponents timeTag =
-                new DateTimeComponents(Integer.parseInt(matcher.group(1)),
-                                       Integer.parseInt(matcher.group(2)),
-                                       Integer.parseInt(matcher.group(3)),
-                                       Integer.parseInt(matcher.group(4)),
-                                       Integer.parseInt(matcher.group(5)),
-                                       Double.parseDouble(matcher.group(6)));
-            parseInfo.newTimeTag(timeTag, Integer.parseInt(matcher.group(7)));
+            parseInfo.timeTag(new DateTimeComponents(Integer.parseInt(matcher.group(1)),
+                                                     Integer.parseInt(matcher.group(2)),
+                                                     Integer.parseInt(matcher.group(3)),
+                                                     Integer.parseInt(matcher.group(4)),
+                                                     Integer.parseInt(matcher.group(5)),
+                                                     Double.parseDouble(matcher.group(6))),
+                              Integer.parseInt(matcher.group(7)));
         }
 
     },

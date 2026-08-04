@@ -50,7 +50,7 @@ public class BlockParser<T extends ParseInfo<?>> implements LineParser<T> {
         this.endPattern     = null;
         this.inBlockParsers = new ArrayList<>(1 + predicates.size());
         for (final Predicate<T> predicate : predicates) {
-            inBlockParsers.add(new LineParser<T>() {
+            inBlockParsers.add(new LineParser<>() {
 
                 /** {@inheritDoc} */
                 @Override

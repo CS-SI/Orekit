@@ -17,7 +17,6 @@
 package org.orekit.files.sinex.orbex;
 
 import org.orekit.files.sinex.LineParser;
-import org.orekit.files.sinex.ParseInfo;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

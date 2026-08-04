@@ -20,7 +20,7 @@ package org.orekit.utils.units;
  * @author Luc Maisonobe
  * @since 11.0
  */
-enum Prefix {
+public enum Prefix {
 
     /** Septillion. */
     YOTTA("Y", 1.0e24),

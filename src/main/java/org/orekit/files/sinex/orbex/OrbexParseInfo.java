@@ -21,7 +21,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sinex.ParseInfo;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatInSystem;
+import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScales;
@@ -29,9 +31,12 @@ import org.orekit.time.clocks.ClockOffset;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.units.Unit;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /** Parse information for Orbit Exchange Format (ORBEX) files.
  * @author Luc Maisonobe
@@ -39,8 +44,62 @@ import java.util.Map;
  */
 public class OrbexParseInfo extends ParseInfo<Orbex> {
 
+    /** Mapping from frame identifier in the file to a {@link Frame}. */
+    private final Function<? super String, ? extends Frame> frameBuilder;
+
+    /** Mapper from string to time system. */
+    private final Function<? super String, ? extends TimeSystem> timeSystemBuilder;
+
     /** Completed ephemeris data. */
     private final Map<SatInSystem, Orbex.Data> ephemerisData;
+
+    /** Satellite parsed. */
+    private final HashMap<SatInSystem, SatData> parsedSatellites;
+
+    /** Description of the file content. */
+    private String description;
+
+    /** Name of agency which created the file. */
+    private String createdBy;
+
+    /** Input used to generate this file. */
+    private String inputData;
+
+    /** E-mail address of the relevant contact person. */
+    private String contact;
+
+    /** Time system. */
+    private TimeSystem timeSystem;
+
+    /** Number of seconds between each epoch (NaN if irregular). */
+    private double epochInterval;
+
+    /** Reference frame. */
+    private Frame coordinateSystem;
+
+    /** Frame type. */
+    private String frameType;
+
+    /** Orbit type. */
+    private String orbitType;
+
+    /** Record types. */
+    private List<EphemerisDataPredicate> recordTypes;
+
+    /** Orbit reference. */
+    private String orbitReference;
+
+    /** Orbit position unit. */
+    private Unit positionUnit;
+
+    /** Orbit velocity unit. */
+    private Unit velocityUnit;
+
+    /** Clock correction unit. */
+    private Unit clockCorrectionUnit;
+
+    /** Clock rate unit. */
+    private Unit clockRateUnit;
 
     /** Current date. */
     private AbsoluteDate date;
@@ -48,16 +107,37 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
     /** Expected number of satellites for this time tag. */
     private int expectedSatellites;
 
-    /** Satellite parsed. */
-    private final HashMap<SatInSystem, SatData> parsedSatellites;
-
     /** Simple constructor.
-     * @param timeScales time scales
+     * <p>
+     * If not specified in the FILE/DESCRIPTION block, then units will be:
+     * </p>
+     * <ul>
+     *   <li>m for position</li>
+     *   <li>m/s for velocity</li>
+     *   <li>µs for clock correction</li>
+     *   <li>ns/s for clock rate</li>
+     * </ul>
+     * @param frameBuilder      is a function that can construct a frame from an orbex file
+     *                          coordinate system string. The coordinate system can be
+     *                          any 5 characters string e.g., ITR92, IGb08.
+     * @param timeSystemBuilder mapper from string to time system (useful for user-defined time systems)
+     * @param timeScales        the set of time scales used for parsing dates
      */
-    OrbexParseInfo(final TimeScales timeScales) {
+    OrbexParseInfo(final Function<? super String, ? extends Frame> frameBuilder,
+                   final Function<? super String, ? extends TimeSystem> timeSystemBuilder,
+                   final TimeScales timeScales) {
         super(timeScales);
-        ephemerisData    = new HashMap<>();
-        parsedSatellites = new HashMap<>();
+        this.frameBuilder      = frameBuilder;
+        this.timeSystemBuilder = timeSystemBuilder;
+        this.ephemerisData     = new HashMap<>();
+        this.parsedSatellites  = new HashMap<>();
+
+        // set default units
+        this.positionUnit        = Unit.parse("m");
+        this.velocityUnit        = Unit.parse("m/s");
+        this.clockCorrectionUnit = Unit.parse("µs");
+        this.clockRateUnit       = Unit.parse("ns/s");
+
     }
 
     /** {@inheritDoc} */
@@ -65,10 +145,115 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
     protected Orbex build() {
 
         // close last parsed group
-        newTimeTag(DateTimeComponents.JULIAN_EPOCH, 0);
+        timeTag(DateTimeComponents.JULIAN_EPOCH, 0);
 
         return new Orbex(getTimeScales(), getCreationDate(), getStartDate(), getEndDate(), ephemerisData);
 
+    }
+
+    /** Set the description of the file content.
+     * @param description description of the file content
+     */
+    void setDescription(final String description) {
+        this.description = description;
+    }
+
+    /** Set the name of agency which created the file.
+     * @param createdBy name of agency which created the file*/
+    void setCreatedBy(final String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    /** Set the input used to generate this file.
+     * @param inputData input used to generate this file
+     */
+    void setInputData(final String inputData) {
+        this.inputData = inputData;
+    }
+
+    /** Set the E-mail address of the relevant contact person.
+     * @param contact E-mail address of the relevant contact person
+     */
+    void setContact(final String contact) {
+        this.contact = contact;
+    }
+
+    /** Set the time system.
+     * @param timeSystem time system
+     */
+    void setTimeSystem(final String timeSystem) {
+        this.timeSystem = timeSystemBuilder.apply(timeSystem);
+        setTimeScale(this.timeSystem.getTimeScale(getTimeScales()));
+    }
+
+    /** Set the number of seconds between each epoch.
+     * @param epochInterval number of seconds between each epoch (NaN if irregular)
+     */
+    void setEpochInterval(final double epochInterval) {
+        this.epochInterval = epochInterval;
+    }
+
+    /** Set the name of reference frame.
+     * @param coordinateSystem name of reference frame
+     */
+    void setCoordinateSystem(final String coordinateSystem) {
+        this.coordinateSystem = frameBuilder.apply(coordinateSystem);
+    }
+
+    /** Set the frame type.
+     * @param frameType frame type
+     */
+    void setFrameType(final String frameType) {
+        this.frameType = frameType;
+    }
+
+    /** Set the orbit type.
+     * @param orbitType orbit type
+     */
+    void setOrbitType(final String orbitType) {
+        this.orbitType = orbitType;
+    }
+
+    /** Set the record types.
+     * @param recordTypes recordTypes
+     */
+    void setRecordTypes(final List<EphemerisDataPredicate> recordTypes) {
+        this.recordTypes = recordTypes;
+    }
+
+    /** Set the orbit reference.
+     * @param orbitReference orbit reference
+     */
+    void setOrbitReference(final String orbitReference) {
+        this.orbitReference = orbitReference;
+    }
+
+    /** Set the unit for position.
+     * @param positionUnit unit for position
+     */
+    void setPositionUnit(final Unit positionUnit) {
+        this.positionUnit = positionUnit;
+    }
+
+    /** Set the unit for velocity.
+     * @param velocityUnit unit for velocity
+     */
+    void setVelocityUnit(final Unit velocityUnit) {
+        this.velocityUnit = velocityUnit;
+    }
+
+    /** Set the unit for clock correction.
+     * @param clockCorrectionUnit unit for clock correction
+     */
+    void setClockCorrectionUnit(final Unit clockCorrectionUnit) {
+        this.clockCorrectionUnit = clockCorrectionUnit;
+    }
+
+    /** Set the unit for clock rate.
+     * @param clockRateUnit unit for clock rate
+     */
+    void setClockRateUnit(final Unit clockRateUnit) {
+        this.clockRateUnit = clockRateUnit;
     }
 
     /** Add a satellite id and description.
@@ -145,7 +330,7 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
      * @param timeTag time tag
      * @param nbSats expected number of satellites
      */
-    void newTimeTag(final DateTimeComponents timeTag, final int nbSats) {
+    void timeTag(final DateTimeComponents timeTag, final int nbSats) {
 
         // close previous time tag
         closeTimeTag();

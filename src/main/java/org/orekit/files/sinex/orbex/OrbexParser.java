@@ -22,13 +22,15 @@ import org.orekit.files.sinex.FooterParser;
 import org.orekit.files.sinex.IgnoredBlockContentPredicate;
 import org.orekit.files.sinex.IgnoredBlockParser;
 import org.orekit.files.sinex.LineParser;
-import org.orekit.files.sinex.VersionParser;
+import org.orekit.frames.Frame;
+import org.orekit.gnss.TimeSystem;
 import org.orekit.time.TimeScales;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /** Parser for Orbit Exchange Format (ORBEX) files.
  * @author Luc Maisonobe
@@ -36,18 +38,52 @@ import java.util.List;
  */
 public class OrbexParser extends AbstractSinexParser<Orbex, OrbexParseInfo> {
 
+    /** Mapping from frame identifier in the file to a {@link Frame}. */
+    private final Function<? super String, ? extends Frame> frameBuilder;
+
+    /** Mapper from string to time system. */
+    private final Function<? super String, ? extends TimeSystem> timeSystemBuilder;
+
     /** Top level parsers. */
     private final List<LineParser<OrbexParseInfo>> topParsers;
 
     /** Simple constructor.
-     * @param timeScales time scales
+     * @param frameBuilder      is a function that can construct a frame from an orbex file
+     *                          coordinate system string. The coordinate system can be
+     *                          any 5 characters string e.g., ITR92, IGb08.
+     * @param timeSystemBuilder mapper from string to time system (useful for user-defined time systems)
+     * @param timeScales        the set of time scales used for parsing dates
      */
-    public OrbexParser(final TimeScales timeScales) {
+    public OrbexParser(final Function<? super String, ? extends Frame> frameBuilder,
+                       final Function<? super String, ? extends TimeSystem> timeSystemBuilder,
+                       final TimeScales timeScales) {
 
         super(timeScales);
 
+        this.frameBuilder      = frameBuilder;
+        this.timeSystemBuilder = timeSystemBuilder;
+
         // set up parsers for supported blocks
         final List<BlockParser<OrbexParseInfo>> blockParsers = new ArrayList<>();
+        blockParsers.add(new BlockParser<>("FILE/DESCRIPTION",
+                                           Arrays.asList(FileDescriptionPredicate.DESCRIPTION,
+                                                         FileDescriptionPredicate.CREATED_BY,
+                                                         FileDescriptionPredicate.CREATION_DATE,
+                                                         FileDescriptionPredicate.INPUT_DATA,
+                                                         FileDescriptionPredicate.CONTACT,
+                                                         FileDescriptionPredicate.TIME_SYSTEM,
+                                                         FileDescriptionPredicate.START_TIME,
+                                                         FileDescriptionPredicate.END_TIME,
+                                                         FileDescriptionPredicate.EPOCH_INTERVAL,
+                                                         FileDescriptionPredicate.COORD_SYSTEM,
+                                                         FileDescriptionPredicate.FRAME_TYPE,
+                                                         FileDescriptionPredicate.ORBIT_TYPE,
+                                                         FileDescriptionPredicate.LIST_OF_REC_TYPES,
+                                                         FileDescriptionPredicate.ORBIT_XYZ_UNITS,
+                                                         FileDescriptionPredicate.ORBIT_XYZ_REFERENCE,
+                                                         FileDescriptionPredicate.ORBIT_VEL_UNITS,
+                                                         FileDescriptionPredicate.SVCLK_UNITS,
+                                                         FileDescriptionPredicate.SVCLK_RATE_UNITS)));
         blockParsers.add(new BlockParser<>("SATELLITE/ID_AND_DESCRIPTION",
                                            Collections.singletonList(new SatIdAndDescriptionPredicate())));
         blockParsers.add(new BlockParser<>("EPHEMERIS/DATA",
@@ -89,9 +125,7 @@ public class OrbexParser extends AbstractSinexParser<Orbex, OrbexParseInfo> {
     /** {@inheritDoc} */
     @Override
     protected OrbexParseInfo buildParseInfo() {
-        final OrbexParseInfo parseInfo = new OrbexParseInfo(getTimeScales());
-        parseInfo.setTimeScale(getTimeScales().getUTC());
-        return parseInfo;
+        return new OrbexParseInfo(frameBuilder, timeSystemBuilder, getTimeScales());
     }
 
 }
