@@ -1110,6 +1110,9 @@ DAF_INSUFFICIENT_COMMENT_RECORDS = <MISSING TRANSLATION>
 # File description string is {0} characters long but should be at most 60 characters
 DAF_TOO_LONG_FILEDESCRIPTION_STRING = <MISSING TRANSLATION>
 
+# unit for {0} record (line {2} of file {3}) was not set in FILE/DESCRIPTION block
+MISSING_ORBEX_UNIT=l''unité pour l''enregistrement {0} (ligne {2}, fichier {3}) n''a pas été renseignée dans le bloc FILE/DESCRIPTION
+
 # expected {0} satellites for time tag {1} but got {2} (line {3} of file {4})
 INCOMPLETE_ORBEX_DATA={0} satellites étaient attendus pour la date {1}, mais {2} ont été vus (ligne {3}, fichier {4})
 

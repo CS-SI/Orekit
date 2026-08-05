@@ -108,15 +108,6 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
     private int expectedSatellites;
 
     /** Simple constructor.
-     * <p>
-     * If not specified in the FILE/DESCRIPTION block, then units will be:
-     * </p>
-     * <ul>
-     *   <li>m for position</li>
-     *   <li>m/s for velocity</li>
-     *   <li>µs for clock correction</li>
-     *   <li>ns/s for clock rate</li>
-     * </ul>
      * @param frameBuilder      is a function that can construct a frame from an orbex file
      *                          coordinate system string. The coordinate system can be
      *                          any 5 characters string e.g., ITR92, IGb08.
@@ -131,13 +122,6 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
         this.timeSystemBuilder = timeSystemBuilder;
         this.ephemerisData     = new HashMap<>();
         this.parsedSatellites  = new HashMap<>();
-
-        // set default units
-        this.positionUnit        = Unit.parse("m");
-        this.velocityUnit        = Unit.parse("m/s");
-        this.clockCorrectionUnit = Unit.parse("µs");
-        this.clockRateUnit       = Unit.parse("ns/s");
-
     }
 
     /** {@inheritDoc} */
@@ -343,34 +327,54 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
 
     /** Add a position.
      * @param satId satellite id
-     * @param position position
+     * @param parsedPosition parsed position (without unit conversion)
+     * @param recordType type of record
      */
-    void addPosition(final SatInSystem satId, final Vector3D position) {
-        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).position = position;
+    void addPosition(final SatInSystem satId, final Vector3D parsedPosition,
+                     final String recordType) {
+        checkUnit(positionUnit, recordType);
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).position =
+            new Vector3D(positionUnit.toSI(parsedPosition.getX()),
+                         positionUnit.toSI(parsedPosition.getY()),
+                         positionUnit.toSI(parsedPosition.getZ()));
     }
 
     /** Add a velocity.
      * @param satId satellite id
-     * @param velocity velocity
+     * @param parsedVelocity parsed velocity (without unit conversion)
+     * @param recordType type of record
      */
-    void addVelocity(final SatInSystem satId, final Vector3D velocity) {
-        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).velocity = velocity;
+    void addVelocity(final SatInSystem satId, final Vector3D parsedVelocity,
+                     final String recordType) {
+        checkUnit(velocityUnit, recordType);
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).velocity =
+            new Vector3D(velocityUnit.toSI(parsedVelocity.getX()),
+                         velocityUnit.toSI(parsedVelocity.getY()),
+                         velocityUnit.toSI(parsedVelocity.getZ()));
     }
 
     /** Add a clock correction.
      * @param satId satellite id
-     * @param clockCorrection clock correction
+     * @param parsedClockCorrection parsed clock correction (without unit conversion)
+     * @param recordType type of record
      */
-    void addClockCorrection(final SatInSystem satId, final double clockCorrection) {
-        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).clockCorrection = clockCorrection;
+    void addClockCorrection(final SatInSystem satId, final double parsedClockCorrection,
+                     final String recordType) {
+        checkUnit(clockCorrectionUnit, recordType);
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).clockCorrection =
+            clockCorrectionUnit.toSI(parsedClockCorrection);
     }
 
     /** Add a clock rate.
      * @param satId satellite id
-     * @param clockRate clock rate
+     * @param parsedClockRate parsed clock rate (without unit conversion)
+     * @param recordType type of record
      */
-    void addClockRate(final SatInSystem satId, final double clockRate) {
-        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).clockRate = clockRate;
+    void addClockRate(final SatInSystem satId, final double parsedClockRate,
+                     final String recordType) {
+        checkUnit(clockRateUnit, recordType);
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).clockRate =
+            clockRateUnit.toSI(parsedClockRate);
     }
 
     /** Add an attitude.
@@ -379,6 +383,17 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
      */
     void addAttitude(final SatInSystem satId, final Rotation attitude) {
         parsedSatellites.computeIfAbsent(satId, k -> new SatData()).attitude = attitude;
+    }
+
+    /** Check unit has been initialized.
+     * @param unit unit to check
+     * @param recordType type of record
+     */
+    private void checkUnit(final Unit unit, final String recordType) {
+        if (unit == null) {
+            throw new OrekitException(OrekitMessages.MISSING_ORBEX_UNIT,
+                                      recordType, getLineNumber(), getName());
+        }
     }
 
     /** Container for one satellite parsed data. */

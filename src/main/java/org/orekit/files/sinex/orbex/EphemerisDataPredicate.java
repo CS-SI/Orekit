@@ -65,10 +65,12 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
             parseInfo.addPosition(satId,
                                   new Vector3D(Double.parseDouble(matcher.group(3)),
                                                Double.parseDouble(matcher.group(4)),
-                                               Double.parseDouble(matcher.group(5))));
+                                               Double.parseDouble(matcher.group(5))),
+                                  name());
             if (columns > 3) {
                 parseInfo.addClockCorrection(satId,
-                                             Double.parseDouble(matcher.group(6)));
+                                             Double.parseDouble(matcher.group(6)),
+                                             name());
             }
         }
     },
@@ -83,10 +85,12 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
             parseInfo.addVelocity(satId,
                                   new Vector3D(Double.parseDouble(matcher.group(3)),
                                                Double.parseDouble(matcher.group(4)),
-                                               Double.parseDouble(matcher.group(5))));
+                                               Double.parseDouble(matcher.group(5))),
+                                  name());
             if (columns > 3) {
                 parseInfo.addClockRate(satId,
-                                       Double.parseDouble(matcher.group(6)));
+                                       Double.parseDouble(matcher.group(6)),
+                                       name());
             }
         }
     },
@@ -101,7 +105,8 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
             parseInfo.addPosition(new SatInSystem(matcher.group(1)),
                                   new Vector3D(Double.parseDouble(matcher.group(3)),
                                                Double.parseDouble(matcher.group(4)),
-                                               Double.parseDouble(matcher.group(5))));
+                                               Double.parseDouble(matcher.group(5))),
+                                  name());
         }
     },
 
@@ -114,7 +119,8 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
             parseInfo.addVelocity(new SatInSystem(matcher.group(1)),
                                   new Vector3D(Double.parseDouble(matcher.group(3)),
                                                Double.parseDouble(matcher.group(4)),
-                                               Double.parseDouble(matcher.group(5))));
+                                               Double.parseDouble(matcher.group(5))),
+                                  name());
         }
     },
 
@@ -125,7 +131,8 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
         @Override
         protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
             parseInfo.addClockCorrection(new SatInSystem(matcher.group(1)),
-                                         Double.parseDouble(matcher.group(3)));
+                                         Double.parseDouble(matcher.group(3)),
+                                         name());
         }
     },
 
@@ -136,7 +143,8 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
         @Override
         protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
             parseInfo.addClockRate(new SatInSystem(matcher.group(1)),
-                                   Double.parseDouble(matcher.group(3)));
+                                   Double.parseDouble(matcher.group(3)),
+                                   name());
         }
     },
 
