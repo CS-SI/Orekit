@@ -33,7 +33,7 @@ public abstract class VersionParser<T extends ParseInfo<?>> implements LineParse
      * @param key file format key
      */
     protected VersionParser(final String key) {
-        pattern = Pattern.compile("%=" + key + " \\d\\.\\d\\d .+" +
+        pattern = Pattern.compile("%=" + key + " (\\d\\.\\d\\d) .+" +
                                   " (\\d{2,4}:\\d{3}:\\d{5}) .+" +
                                   " (\\d{2,4}:\\d{3}:\\d{5}) (\\d{2,4}:\\d{3}:\\d{5})" +
                                   " . .*");
@@ -45,10 +45,11 @@ public abstract class VersionParser<T extends ParseInfo<?>> implements LineParse
         final Matcher matcher = pattern.matcher(parseInfo.getLine());
         if (matcher.matches()) {
             // we have recognized a SINEX file first line
-            // parse the various dates it contains
-            parseInfo.setCreationDate(matcher.group(1));
-            parseInfo.setStartDateIfEarlier(matcher.group(2));
-            parseInfo.setEndDateIfLater(matcher.group(3));
+            // parse the various fields it contains
+            parseInfo.setVersion(Double.parseDouble(matcher.group(1)));
+            parseInfo.setCreationDate(matcher.group(2));
+            parseInfo.setStartDateIfEarlier(matcher.group(3));
+            parseInfo.setEndDateIfLater(matcher.group(4));
             return true;
         } else {
             // this is not an expected SINEX file

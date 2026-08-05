@@ -20,12 +20,7 @@ import org.orekit.files.sinex.AbstractSinex;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
-import org.orekit.time.clocks.ClockOffset;
-import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /** Orbit Exchange Format (ORBEX) files.
@@ -34,21 +29,35 @@ import java.util.Map;
  */
 public class Orbex extends AbstractSinex {
 
+    /** Description. */
+    private final Description description;
+
     /** Ephemeris data. */
     private final Map<SatInSystem, Data> data;
 
     /** Simple constructor.
-     * @param timeScales time scales
-     * @param creationDate SINEX file creation date
-     * @param startDate start time of the data used in the Sinex solution
-     * @param endDate end time of the data used in the Sinex solution
-     * @param data ephemeris data
+     * @param version      version number
+     * @param timeScales   time scales
+     * @param creationDate ORBEX file creation date
+     * @param startDate    start time of the data
+     * @param endDate      end time of the data
+     * @param description  description
+     * @param data         ephemeris data
      */
-    Orbex(final TimeScales timeScales, final AbsoluteDate creationDate,
+    Orbex(final double version, final TimeScales timeScales,
+          final AbsoluteDate creationDate,
           final AbsoluteDate startDate, final AbsoluteDate endDate,
-          final Map<SatInSystem, Data> data) {
-        super(timeScales, creationDate, startDate, endDate);
-        this.data = data;
+          final Description description, final Map<SatInSystem, Data> data) {
+        super(version, timeScales, creationDate, startDate, endDate);
+        this.description = description;
+        this.data        = data;
+    }
+
+    /** Get the file description.
+     * @return file description
+     */
+    public Description getDescription() {
+        return description;
     }
 
     /** Get ephemeris data.
@@ -56,28 +65,6 @@ public class Orbex extends AbstractSinex {
      */
     public Map<SatInSystem, Data> getData() {
         return data;
-    }
-
-    /** Container for one satellite data in Orbex files.
-     * @param satId       satellite id
-     * @param description satellite description
-     * @param orbit       orbit ephemeris
-     * @param clock       clock ephemeris
-     * @param attitude    attitude ephemeris
-     */
-    public record Data(SatInSystem satId, String description,
-                       List<TimeStampedPVCoordinates> orbit,
-                       List<ClockOffset> clock,
-                       List<AngularCoordinates> attitude) {
-
-        /** Constructor from id and description only.
-         * @param satId       satellite id
-         * @param description satellite description
-         */
-        public Data(final SatInSystem satId, final String description) {
-            this(satId, description, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-        }
-
     }
 
 }

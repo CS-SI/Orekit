@@ -368,7 +368,8 @@ public class SinexParseInfo extends ParseInfo<Sinex> {
 
         }
 
-        return new Sinex(getTimeScales(), getCreationDate(), getStartDate(), getEndDate(),
+        return new Sinex(getVersion(), getTimeScales(), getCreationDate(),
+                         getStartDate(), getEndDate(),
                          satellitesPhaseCenters, stations, eop);
     }
 

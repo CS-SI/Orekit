@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.sinex.ParseInfo;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.time.DateTimeComponents;
 
@@ -35,14 +36,14 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
 
     /** Predicate for time tag line. */
     TIME_TAG(RegexParts.LINE_START + "##" +
-             RegexParts.STORED_FOUR_DIGITS + RegexParts.STORED_TWO_DIGITS + " " + RegexParts.STORED_TWO_DIGITS +
-             RegexParts.STORED_TWO_DIGITS + " " + RegexParts.STORED_TWO_DIGITS + RegexParts.STORED_SINGLE_REAL +
+             RegexParts.STORED_FOUR_DIGITS + RegexParts.STORED_INTEGER + RegexParts.STORED_INTEGER +
+             RegexParts.STORED_INTEGER + RegexParts.STORED_INTEGER + RegexParts.STORED_SINGLE_REAL +
              RegexParts.STORED_INTEGER + RegexParts.LINE_END,
              -1) {
 
         /** {@inheritDoc} */
         @Override
-        protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
+        protected void store(final Matcher matcher, final double[] columns, final OrbexParseInfo parseInfo) {
             parseInfo.timeTag(new DateTimeComponents(Integer.parseInt(matcher.group(1)),
                                                      Integer.parseInt(matcher.group(2)),
                                                      Integer.parseInt(matcher.group(3)),
@@ -55,111 +56,87 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
     },
 
     /** Predicate for PCS record. */
-    PCS(RegexParts.LINE_START + "PCS" + RegexParts.STORED_SAT_ID +
+    PCS(RegexParts.LINE_START + " PCS" + RegexParts.STORED_SAT_ID +
         RegexParts.IGNORED_FLAGS +
         RegexParts.STORED_ONE_DIGIT + RegexParts.STORED_MULTIPLE_REALS + RegexParts.LINE_END,
         2, 3, 4, 7, 8) {
         @Override
-        protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
+        protected void store(final Matcher matcher, final double[] columns, final OrbexParseInfo parseInfo) {
             final SatInSystem satId = new SatInSystem(matcher.group(1));
-            parseInfo.addPosition(satId,
-                                  new Vector3D(Double.parseDouble(matcher.group(3)),
-                                               Double.parseDouble(matcher.group(4)),
-                                               Double.parseDouble(matcher.group(5))),
-                                  name());
-            if (columns > 3) {
-                parseInfo.addClockCorrection(satId,
-                                             Double.parseDouble(matcher.group(6)),
-                                             name());
+            parseInfo.addPosition(satId, new Vector3D(columns[0], columns[1], columns[2]), name());
+            if (columns.length > 3) {
+                parseInfo.addClockCorrection(satId, columns[3], name());
             }
         }
     },
 
     /** Predicate for VCS record. */
-    VCS(RegexParts.LINE_START + "VCS" + RegexParts.STORED_SAT_ID +
+    VCS(RegexParts.LINE_START + " VCS" + RegexParts.STORED_SAT_ID +
         RegexParts.STORED_ONE_DIGIT + RegexParts.STORED_MULTIPLE_REALS + RegexParts.LINE_END,
         2, 3, 4, 7, 8) {
         @Override
-        protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
+        protected void store(final Matcher matcher, final double[] columns, final OrbexParseInfo parseInfo) {
             final SatInSystem satId = new SatInSystem(matcher.group(1));
-            parseInfo.addVelocity(satId,
-                                  new Vector3D(Double.parseDouble(matcher.group(3)),
-                                               Double.parseDouble(matcher.group(4)),
-                                               Double.parseDouble(matcher.group(5))),
-                                  name());
-            if (columns > 3) {
-                parseInfo.addClockRate(satId,
-                                       Double.parseDouble(matcher.group(6)),
-                                       name());
+            parseInfo.addVelocity(satId, new Vector3D(columns[0], columns[1], columns[2]), name());
+            if (columns.length > 3) {
+                parseInfo.addClockRate(satId, columns[3], name());
             }
         }
     },
 
     /** Predicate for POS record. */
-    POS(RegexParts.LINE_START + "POS" + RegexParts.STORED_SAT_ID +
+    POS(RegexParts.LINE_START + " POS" + RegexParts.STORED_SAT_ID +
         RegexParts.IGNORED_FLAGS +
         RegexParts.STORED_ONE_DIGIT + RegexParts.STORED_MULTIPLE_REALS + RegexParts.LINE_END,
         2, 3) {
         @Override
-        protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
-            parseInfo.addPosition(new SatInSystem(matcher.group(1)),
-                                  new Vector3D(Double.parseDouble(matcher.group(3)),
-                                               Double.parseDouble(matcher.group(4)),
-                                               Double.parseDouble(matcher.group(5))),
-                                  name());
+        protected void store(final Matcher matcher, final double[] columns, final OrbexParseInfo parseInfo) {
+            final SatInSystem satId = new SatInSystem(matcher.group(1));
+            parseInfo.addPosition(satId, new Vector3D(columns[0], columns[1], columns[2]), name());
         }
     },
 
     /** Predicate for VEL record. */
-    VEL(RegexParts.LINE_START + "VEL" + RegexParts.STORED_SAT_ID +
+    VEL(RegexParts.LINE_START + " VEL" + RegexParts.STORED_SAT_ID +
         RegexParts.STORED_ONE_DIGIT + RegexParts.STORED_MULTIPLE_REALS + RegexParts.LINE_END,
         2, 3) {
         @Override
-        protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
-            parseInfo.addVelocity(new SatInSystem(matcher.group(1)),
-                                  new Vector3D(Double.parseDouble(matcher.group(3)),
-                                               Double.parseDouble(matcher.group(4)),
-                                               Double.parseDouble(matcher.group(5))),
-                                  name());
+        protected void store(final Matcher matcher, final double[] columns, final OrbexParseInfo parseInfo) {
+            final SatInSystem satId = new SatInSystem(matcher.group(1));
+            parseInfo.addVelocity(satId, new Vector3D(columns[0], columns[1], columns[2]), name());
         }
     },
 
     /** Predicate for CLK record. */
-    CLK(RegexParts.LINE_START + "CLK" + RegexParts.STORED_SAT_ID +
+    CLK(RegexParts.LINE_START + " CLK" + RegexParts.STORED_SAT_ID +
         RegexParts.STORED_ONE_DIGIT + RegexParts.STORED_MULTIPLE_REALS + RegexParts.LINE_END,
         2, 1) {
         @Override
-        protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
-            parseInfo.addClockCorrection(new SatInSystem(matcher.group(1)),
-                                         Double.parseDouble(matcher.group(3)),
-                                         name());
+        protected void store(final Matcher matcher, final double[] columns, final OrbexParseInfo parseInfo) {
+            final SatInSystem satId = new SatInSystem(matcher.group(1));
+            parseInfo.addClockCorrection(satId, columns[0], name());
         }
     },
 
     /** Predicate for CRT record. */
-    CRT(RegexParts.LINE_START + "CRT" + RegexParts.STORED_SAT_ID +
+    CRT(RegexParts.LINE_START + " CRT" + RegexParts.STORED_SAT_ID +
         RegexParts.STORED_ONE_DIGIT + RegexParts.STORED_MULTIPLE_REALS + RegexParts.LINE_END,
         2, 1) {
         @Override
-        protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
-            parseInfo.addClockRate(new SatInSystem(matcher.group(1)),
-                                   Double.parseDouble(matcher.group(3)),
-                                   name());
+        protected void store(final Matcher matcher, final double[] columns, final OrbexParseInfo parseInfo) {
+            final SatInSystem satId = new SatInSystem(matcher.group(1));
+            parseInfo.addClockRate(satId, columns[0], name());
         }
     },
 
     /** Predicate for ATT record. */
-    ATT(RegexParts.LINE_START + "ATT" + RegexParts.STORED_SAT_ID +
+    ATT(RegexParts.LINE_START + " ATT" + RegexParts.STORED_SAT_ID +
         RegexParts.STORED_ONE_DIGIT + RegexParts.STORED_MULTIPLE_REALS + RegexParts.LINE_END,
         2, 4) {
         @Override
-        protected void store(final Matcher matcher, final int columns, final OrbexParseInfo parseInfo) {
-            parseInfo.addAttitude(new SatInSystem(matcher.group(1)),
-                                  new Rotation(Double.parseDouble(matcher.group(3)),
-                                               Double.parseDouble(matcher.group(4)),
-                                               Double.parseDouble(matcher.group(5)),
-                                               Double.parseDouble(matcher.group(6)),
-                                               true));
+        protected void store(final Matcher matcher, final double[] columns, final OrbexParseInfo parseInfo) {
+            final SatInSystem satId = new SatInSystem(matcher.group(1));
+            parseInfo.addAttitude(satId, new Rotation(columns[0], columns[1], columns[2], columns[3], true));
         }
     };
 
@@ -191,21 +168,39 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
             // the line corresponds to this predicate
 
             // check the number of columns
-            final int columns;
+            final double[] columns;
             if (columnGroup < 0) {
-                columns = 0;
+                columns = null;
             } else {
-                columns = Integer.parseInt(matcher.group(columnGroup));
+
+                // check the internal consistency of the line itself
+                // beware that the fields array as a spurious empty first element
+                final int nbAnnounced = Integer.parseInt(matcher.group(columnGroup));
+                final String[] fields = ParseInfo.SPLIT_AT_BLANKS.split(matcher.group(columnGroup + 1));
+                if (nbAnnounced != fields.length - 1) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              parseInfo.getLineNumber(), parseInfo.getName(),
+                                              parseInfo.getLine());
+                }
+
+                // check the number of fields with respect to the type of record
                 boolean found = false;
                 for (final int allowed : allowedColumns) {
-                    // check if the parsed number of columns matches one of the allowed numbers
-                    found |= columns == allowed;
+                    // check if the announced number of columns matches one of the allowed numbers
+                    found |= nbAnnounced == allowed;
                 }
-                if (!found || matcher.groupCount() != columnGroup + columns) {
+                if (!found) {
                     throw new OrekitException(OrekitMessages.ORBEX_WRONG_COLUMNS,
                                               parseInfo.getLineNumber(), parseInfo.getName(),
-                                              name(), columns);
+                                              name(), nbAnnounced);
                 }
+
+                // get the columns as real numbers
+                columns = new double[nbAnnounced];
+                for (int i = 0; i < nbAnnounced; i++) {
+                    columns[i] = Double.parseDouble(fields[i + 1]);
+                }
+
             }
 
             store(matcher, columns, parseInfo);
@@ -221,10 +216,10 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
      * Store parsed fields.
      *
      * @param matcher   matcher for the record regex
-     * @param columns   number of real columns
+     * @param columns   real columns
      * @param parseInfo container for parse info
      */
-    protected abstract void store(Matcher matcher, int columns, OrbexParseInfo parseInfo);
+    protected abstract void store(Matcher matcher, double[] columns, OrbexParseInfo parseInfo);
 
     /** Utility class for defining regex parts. */
     private static class RegexParts {
@@ -233,13 +228,10 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
         private static final String LINE_START = "^";
 
         /** Regex for satellite ID. */
-        private static final String STORED_SAT_ID = "\\p{Blank}+(\\p{Alpha}\\p{Digit}{2})";
+        private static final String STORED_SAT_ID = "\\p{Blank}(\\p{Alpha}\\p{Digit}{2})";
 
         /** Regex for one digit integer. */
         private static final String STORED_ONE_DIGIT = "\\p{Blank}+(\\p{Digit})";
-
-        /** Regex for two digits integer. */
-        private static final String STORED_TWO_DIGITS = "\\p{Blank}+(\\p{Digit}{2})";
 
         /** Regex for four digits integer. */
         private static final String STORED_FOUR_DIGITS = "\\p{Blank}+(\\p{Digit}{4})";
@@ -251,10 +243,10 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
         private static final String STORED_SINGLE_REAL = "\\p{Blank}+([-0-9.]+)";
 
         /** Regex for several real numbers. */
-        private static final String STORED_MULTIPLE_REALS = "(?\\p{Blank}+([-0-9.]+))+";
+        private static final String STORED_MULTIPLE_REALS = "((?:\\p{Blank}+[-0-9.]+)+)";
 
         /** Regex for ignored flagS. */
-        private static final String IGNORED_FLAGS = " {4}[ E][ P] {2}[ M][ P]";
+        private static final String IGNORED_FLAGS = " {4}[ E][ P] {2}[ M][ P] {3}";
 
         /** Regex for line end. */
         private static final String LINE_END = "\\p{Blank}*$";

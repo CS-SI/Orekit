@@ -17,6 +17,8 @@
 package org.orekit.files.sinex;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
@@ -33,17 +35,19 @@ import java.util.regex.Pattern;
  */
 public abstract class ParseInfo<T extends AbstractSinex> {
 
-    /** 00:000:00000 epoch. */
-    private static final String DEFAULT_EPOCH_TWO_DIGITS = "00:000:00000";
+    /** Pattern for splitting blank separated lists.
+     * @since 14.0
+     */
+    public static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
-    /** 0000:000:00000 epoch. */
-    private static final String DEFAULT_EPOCH_FOUR_DIGITS = "0000:000:00000";
-
-    /** Pattern for delimiting regular expressions. */
-    private static final Pattern SEPARATOR = Pattern.compile(":");
+    /** Pattern for splitting date components of the form yyyy:dd:ssss. */
+    private static final Pattern SPLIT_AT_COLON = Pattern.compile(":");
 
     /** Time scales. */
     private final TimeScales timeScales;
+
+    /** Version number. */
+    private double version;
 
     /** Name of the data source. */
     private String name;
@@ -128,6 +132,21 @@ public abstract class ParseInfo<T extends AbstractSinex> {
         return lineNumber;
     }
 
+    /** Set version number.
+     * @param version version number
+     * @since 14.0
+     */
+    public void setVersion(final double version) {
+        this.version = version;
+    }
+
+    /** Get version number.
+     * @return version number
+     */
+    public double getVersion() {
+        return version;
+    }
+
     /** Set creation date.
      * @param dateString creation date
      */
@@ -190,7 +209,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
 
         this.timeScale = timeScale;
 
-        // A time scale has been parsed, update start, end, and creation dates
+        // update start, end, and creation dates
         // to take into account the time scale
         if (startDateString != null) {
             startDate = stringEpochToAbsoluteDate(startDateString, true);
@@ -215,7 +234,7 @@ public abstract class ParseInfo<T extends AbstractSinex> {
      * @return time scale
      * @since 14.0
      */
-    protected TimeScale getTimeScale() {
+    public TimeScale getTimeScale() {
         return timeScale;
     }
 
@@ -271,22 +290,48 @@ public abstract class ParseInfo<T extends AbstractSinex> {
      */
     protected AbsoluteDate stringEpochToAbsoluteDate(final String stringDate, final boolean isStart) {
 
+        try {
+
+            // extract date components
+            final String[] colonSeparated = SPLIT_AT_COLON.split(stringDate);
+            if (colonSeparated.length == 3) {
+                return parseYDS(colonSeparated, isStart);
+            } else {
+                final String[] blankSeparated = SPLIT_AT_BLANKS.split(stringDate);
+                if (blankSeparated.length == 6) {
+                    return parseYMDHMS(blankSeparated);
+                }
+            }
+
+        } catch (NumberFormatException nfe) {
+            // do nothing here (exception will be generated below)
+        }
+
+        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
+
+    }
+
+    /** Parse a date of the form yyyy:ddd:ssss.
+     * @param fields  date fields
+     * @param isStart true if epoch is a start validity epoch
+     * @return parsed date
+     * @since 14.0
+     */
+    private AbsoluteDate parseYDS(final String[] fields, final boolean isStart) {
+
+        // Read fields
+        final int digitsYear = Integer.parseInt(fields[0]);
+        final int day        = Integer.parseInt(fields[1]);
+        final int secInDay   = Integer.parseInt(fields[2]);
+
         // Deal with 00:000:00000 epochs
-        if (DEFAULT_EPOCH_TWO_DIGITS.equals(stringDate) || DEFAULT_EPOCH_FOUR_DIGITS.equals(stringDate)) {
+        if (digitsYear == 0 && day == 0 && secInDay == 0) {
             // If it's a start validity epoch, the file start date shall be used.
             // For end validity epoch, future infinity is acceptable.
             return isStart ? startDate : AbsoluteDate.FUTURE_INFINITY;
         }
 
-        // Date components
-        final String[] fields = SEPARATOR.split(stringDate);
-
-        // Read fields
-        final int digitsYear = Integer.parseInt(fields[0]);
-        final int day = Integer.parseInt(fields[1]);
-        final int secInDay = Integer.parseInt(fields[2]);
-
-        // Data year
+        // Date year
         final int year;
         if (digitsYear > 50 && digitsYear < 100) {
             year = 1900 + digitsYear;
@@ -303,6 +348,21 @@ public abstract class ParseInfo<T extends AbstractSinex> {
                shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                shiftedBy(secInDay);
 
+    }
+
+    /** Parse a date of the form yyyy mm dd hh mm ssss.
+     * @param fields date fields
+     * @return parsed date
+     * @since 14.0
+     */
+    private AbsoluteDate parseYMDHMS(final String[] fields) {
+        return new AbsoluteDate(Integer.parseInt(fields[0]),
+                                Integer.parseInt(fields[1]),
+                                Integer.parseInt(fields[2]),
+                                Integer.parseInt(fields[3]),
+                                Integer.parseInt(fields[4]),
+                                Double.parseDouble(fields[5]),
+                                getTimeScale());
     }
 
 }

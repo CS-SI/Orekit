@@ -103,7 +103,7 @@ public class OrbexParser extends AbstractSinexParser<Orbex, OrbexParseInfo> {
 
         // add the parser for the footer
         topParsers = new ArrayList<>(blockParsers);
-        topParsers.add(new FooterParser<>("%=END_ORBEX"));
+        topParsers.add(new FooterParser<>("%END_ORBEX"));
 
         // set up siblings
         blockParsers.forEach(parser -> parser.setSiblingParsers(topParsers));
@@ -113,13 +113,7 @@ public class OrbexParser extends AbstractSinexParser<Orbex, OrbexParseInfo> {
     /** {@inheritDoc} */
     @Override
     protected LineParser<OrbexParseInfo> firstLineParser() {
-        return new OrbexVersionParser() {
-            /** {@inheritDoc} */
-            @Override
-            public Iterable<LineParser<OrbexParseInfo>> allowedNextParsers(final OrbexParseInfo parseInfo) {
-                return topParsers;
-            }
-        };
+        return new OrbexHeaderParser(topParsers);
     }
 
     /** {@inheritDoc} */

@@ -18,6 +18,7 @@ package org.orekit.files.sinex.orbex;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.sinex.ParseInfo;
 import org.orekit.utils.units.Prefix;
 import org.orekit.utils.units.Unit;
 
@@ -147,7 +148,7 @@ enum FileDescriptionPredicate
         protected void store(final OrbexParseInfo parseInfo, final String information) {
             final List<EphemerisDataPredicate> recordTypes = new ArrayList<>();
             try {
-                for (final String type : SPLIT_AT_BLANKS.split(information)) {
+                for (final String type : ParseInfo.SPLIT_AT_BLANKS.split(information)) {
                     recordTypes.add(EphemerisDataPredicate.valueOf(type));
                 }
             } catch (IllegalArgumentException iae) {
@@ -198,9 +199,6 @@ enum FileDescriptionPredicate
             parseInfo.setClockRateUnit(Unit.parse(normalizeUnit(information)));
         }
     };
-
-    /** Pattern for splitting strings at blanks. */
-    private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** {@inheritDoc} */
     @Override

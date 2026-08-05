@@ -51,7 +51,7 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
     private final Function<? super String, ? extends TimeSystem> timeSystemBuilder;
 
     /** Completed ephemeris data. */
-    private final Map<SatInSystem, Orbex.Data> ephemerisData;
+    private final Map<SatInSystem, Data> ephemerisData;
 
     /** Satellite parsed. */
     private final HashMap<SatInSystem, SatData> parsedSatellites;
@@ -131,7 +131,13 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
         // close last parsed group
         timeTag(DateTimeComponents.JULIAN_EPOCH, 0);
 
-        return new Orbex(getTimeScales(), getCreationDate(), getStartDate(), getEndDate(), ephemerisData);
+        return new Orbex(getVersion(), getTimeScales(), getCreationDate(),
+                         getStartDate(), getEndDate(),
+                         new Description(description, createdBy, inputData, contact, timeSystem,
+                                         epochInterval, coordinateSystem, frameType,
+                                         orbitType, recordTypes, orbitReference,
+                                         positionUnit, velocityUnit, clockCorrectionUnit, clockRateUnit),
+                         ephemerisData);
 
     }
 
@@ -249,7 +255,7 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
             throw new OrekitException(OrekitMessages.DUPLICATED_SATELLITE,
                                       satId, getLineNumber(), getName());
         } else {
-            ephemerisData.put(satId, new Orbex.Data(satId, description));
+            ephemerisData.put(satId, new Data(satId, description));
         }
     }
 
@@ -267,7 +273,7 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
         // store coordinates for current time tag
         for (final Map.Entry<SatInSystem, SatData> entry : parsedSatellites.entrySet()) {
 
-            final Orbex.Data orbexData = ephemerisData.get(entry.getKey());
+            final Data orbexData = ephemerisData.get(entry.getKey());
 
             // check the satellite was properly declared in the SATELLITE/ID_AND_DESCRIPTION block
             if (orbexData == null) {

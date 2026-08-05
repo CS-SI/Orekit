@@ -27,6 +27,11 @@ import org.orekit.time.TimeScales;
  */
 public class AbstractSinex {
 
+    /** Version number.
+     * @since 14.0
+     */
+    private final double version;
+
     /** Time scales. */
     private final TimeScales timeScales;
 
@@ -40,17 +45,29 @@ public class AbstractSinex {
     private final AbsoluteDate endDate;
 
     /** Simple constructor.
-     * @param timeScales time scales
+     * @param version      version number
+     * @param timeScales   time scales
      * @param creationDate SINEX file creation date
-     * @param startDate start time of the data used in the Sinex solution
-     * @param endDate end time of the data used in the Sinex solution
+     * @param startDate    start time of the data used in the Sinex solution
+     * @param endDate      end time of the data used in the Sinex solution
+     * @since 14.0
      */
-    public AbstractSinex(final TimeScales timeScales, final AbsoluteDate creationDate,
+    public AbstractSinex(final double version, final TimeScales timeScales,
+                         final AbsoluteDate creationDate,
                          final AbsoluteDate startDate, final AbsoluteDate endDate) {
+        this.version      = version;
         this.timeScales   = timeScales;
         this.creationDate = creationDate;
         this.startDate    = startDate;
         this.endDate      = endDate;
+    }
+
+    /** Get the version number.
+     * @return version number
+     * @since 14.0
+     */
+    public double getVersion() {
+        return version;
     }
 
     /** Get the time scales.

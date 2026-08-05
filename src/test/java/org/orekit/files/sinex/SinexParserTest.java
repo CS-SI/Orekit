@@ -56,6 +56,7 @@ public class SinexParserTest {
 
         final Sinex sinex = load("/sinex/cod20842-small.snx");
 
+        assertEquals(2.01, sinex.getVersion(), 1.0e-6);
         assertEquals(2, sinex.getStations().size());
 
         checkStation(sinex.getStations().get("ABMF"), 2019, 350, 0.0, 2019, 352, 86370, 2019, 351, 43185,

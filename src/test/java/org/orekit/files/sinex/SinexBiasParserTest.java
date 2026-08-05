@@ -39,6 +39,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class SinexBiasParserTest {
 
     @BeforeAll
@@ -211,6 +213,7 @@ public class SinexBiasParserTest {
     @Test
     public void testOsbSatellite() {
         SinexBias sinexBias = load("/sinex/code.bia");
+        assertEquals(1.00, sinexBias.getVersion(), 1.0e-6);
         SatelliteObservableSpecificSignalBias satOsb = sinexBias.getSatellitesOsb().get(new SatInSystem("E08"));
         ObservableSpecificSignalBias osb = satOsb.getOsb();
         Assertions.assertTrue(sinexBias.getSatellitesDsb().isEmpty());

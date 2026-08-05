@@ -30,7 +30,7 @@ public class SatIdAndDescriptionPredicate implements Predicate<OrbexParseInfo> {
 
     /** Pattern for id and description lines. */
     private static final Pattern ID_AND_DESC_PATTERN =
-        Pattern.compile("^ (\\p{Alpha}\\p{Digit}{2}) {4}(.*)\\p{Blank}*$");
+        Pattern.compile("^ (\\p{Alpha}\\p{Digit}{2})(?: {4}(.*)\\p{Blank}*)?$");
 
     /** {@inheritDoc} */
     @Override
@@ -38,7 +38,8 @@ public class SatIdAndDescriptionPredicate implements Predicate<OrbexParseInfo> {
         final Matcher matcher = ID_AND_DESC_PATTERN.matcher(parseInfo.getLine());
         if (matcher.matches()) {
             // this is the data type we are concerned with
-            parseInfo.addSatIdAndDescription(new SatInSystem(matcher.group(1)), matcher.group(2));
+            parseInfo.addSatIdAndDescription(new SatInSystem(matcher.group(1)),
+                                             matcher.groupCount() > 1 ? matcher.group(2) : "");
             return true;
         } else {
             // it is a data type for another predicate
