@@ -17,7 +17,7 @@
  ORBIT_TYPE          HLM
  LIST_OF_REC_TYPES   PCS
  ORBIT_XYZ_UNITS     METERS
- ORBIT_XYZ_REFERENCE CENTER-OF_MASS
+ ORBIT_XYZ_REFERENCE CENTER-OF-MASS
  SVCLK_UNITS         MICROSECONDS
 -FILE/DESCRIPTION
 *----------------------------------------------------------------------------------------------------------------------
