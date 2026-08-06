@@ -16,10 +16,6 @@
  */
 package org.orekit.files.sinex.orbex;
 
-/** Container for ORBEX files description bloc.
- * @param description description of the file content
- * @param createdBy name of agency which created the file*/
-
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.utils.units.Unit;
