@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.FieldVector2D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
@@ -309,6 +310,17 @@ public class TestUtils {
         Assertions.assertEquals(expected.getX(), computed.getX().getReal(), threshold);
         Assertions.assertEquals(expected.getY(), computed.getY().getReal(), threshold);
 
+    }
+
+    /**
+     * Validate rotation.
+     *
+     * @param expected expected rotation
+     * @param computed computed rotation
+     * @param threshold absolute threshold
+     */
+    public static void validateRotation(final Rotation expected, final Rotation computed, final double threshold) {
+        Assertions.assertEquals(0, Rotation.distance(expected, computed), threshold);
     }
 
     /**

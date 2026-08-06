@@ -194,7 +194,7 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
                 if (!found) {
                     throw new OrekitException(OrekitMessages.ORBEX_WRONG_COLUMNS,
                                               parseInfo.getLineNumber(), parseInfo.getName(),
-                                              name(), nbAnnounced);
+                                              nbAnnounced, name());
                 }
 
                 // get the columns as real numbers
