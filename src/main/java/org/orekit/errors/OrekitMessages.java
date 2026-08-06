@@ -1153,7 +1153,7 @@ public enum OrekitMessages implements Localizable {
     DAF_TOO_LONG_FILEDESCRIPTION_STRING("File description string is {0} characters long but should be at most 60 characters"),
 
     /** MISSING_ORBEX_UNIT. */
-    MISSING_ORBEX_UNIT("unit for {0} record (line {1} of file {2}) was not set in FILE/DESCRIPTION block"),
+    MISSING_ORBEX_UNIT("missing unit for {0} record (line {1} of file {2})"),
 
     /** INCOMPLETE_ORBEX_DATA. */
     INCOMPLETE_ORBEX_DATA("expected {0} satellites for time tag {1} but got {2} (line {3} of file {4})"),
