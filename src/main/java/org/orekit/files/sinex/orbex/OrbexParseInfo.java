@@ -385,10 +385,12 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
 
     /** Add an attitude.
      * @param satId satellite id
-     * @param attitude attitude
+     * @param bodyToCoordinateSystem rotation from spacecraft body to coordinate system
      */
-    void addAttitude(final SatInSystem satId, final Rotation attitude) {
-        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).attitude = attitude;
+    void addAttitude(final SatInSystem satId, final Rotation bodyToCoordinateSystem) {
+        // beware attitude are stored using system frame to spacecraft body convention
+        // which is the other way round with respect to Orbex format
+        parsedSatellites.computeIfAbsent(satId, k -> new SatData()).attitude = bodyToCoordinateSystem.revert();
     }
 
     /** Check unit has been initialized.

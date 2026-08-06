@@ -136,7 +136,9 @@ enum EphemerisDataPredicate implements Predicate<OrbexParseInfo> {
         @Override
         protected void store(final Matcher matcher, final double[] columns, final OrbexParseInfo parseInfo) {
             final SatInSystem satId = new SatInSystem(matcher.group(1));
-            parseInfo.addAttitude(satId, new Rotation(columns[0], columns[1], columns[2], columns[3], true));
+            final Rotation bodyToCoordinateSystem = new Rotation(columns[0], columns[1], columns[2], columns[3],
+                                                                 true);
+            parseInfo.addAttitude(satId, bodyToCoordinateSystem);
         }
     };
 
