@@ -24,6 +24,7 @@ import org.orekit.time.TimeScales;
 import java.util.Map;
 
 /** Orbit Exchange Format (ORBEX) files.
+ * @see <a href="https://acc.igs.org/misc/ORBEX009.pdf">ORBEX - The orbit Exchange format - Draft version 0.09</a>
  * @author Luc Maisonobe
  * @since 14.0
  */

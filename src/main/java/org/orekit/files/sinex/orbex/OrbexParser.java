@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.function.Function;
 
 /** Parser for Orbit Exchange Format (ORBEX) files.
+ * @see <a href="https://acc.igs.org/misc/ORBEX009.pdf">ORBEX - The orbit Exchange format - Draft version 0.09</a>
  * @author Luc Maisonobe
  * @since 14.0
  */
