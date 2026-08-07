@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public class OrbexHeaderParser implements LineParser<OrbexParseInfo> {
 
     /** Pattern for version line. */
-    private final Pattern pattern;
+    private static final Pattern FIRST_LINE_PATTERN = Pattern.compile("^%=ORBEX\\p{Blank}+([0-9.]+).*$");
 
     /** Top level parsers. */
     private final List<LineParser<OrbexParseInfo>> topParsers;
@@ -39,7 +39,6 @@ public class OrbexHeaderParser implements LineParser<OrbexParseInfo> {
      * @param topParsers top level parsers
      */
     protected OrbexHeaderParser(final List<LineParser<OrbexParseInfo>> topParsers) {
-        this.pattern    = Pattern.compile("^%=ORBEX\\p{Blank}+([0-9.]+).*$");
         this.topParsers = topParsers;
     }
 
@@ -48,7 +47,7 @@ public class OrbexHeaderParser implements LineParser<OrbexParseInfo> {
     public boolean parseIfRecognized(final OrbexParseInfo parseInfo) {
         return switch (parseInfo.getLineNumber()) {
             case 1 -> {
-                final Matcher matcher = pattern.matcher(parseInfo.getLine());
+                final Matcher matcher = FIRST_LINE_PATTERN.matcher(parseInfo.getLine());
                 if (matcher.matches()) {
                     // we have recognized an ORBEX file first line
                     // parse the version number
