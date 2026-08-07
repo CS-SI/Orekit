@@ -39,7 +39,7 @@ public class SatIdAndDescriptionPredicate implements Predicate<OrbexParseInfo> {
         if (matcher.matches()) {
             // this is the data type we are concerned with
             parseInfo.addSatIdAndDescription(new SatInSystem(matcher.group(1)),
-                                             matcher.groupCount() > 1 ? matcher.group(2) : "");
+                                             matcher.group(2) == null ? "" : matcher.group(2));
             return true;
         } else {
             // it is a data type for another predicate

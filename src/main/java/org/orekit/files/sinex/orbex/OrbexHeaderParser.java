@@ -54,7 +54,7 @@ public class OrbexHeaderParser implements LineParser<OrbexParseInfo> {
                     parseInfo.setVersion(Double.parseDouble(matcher.group(1)));
                     yield true;
                 } else {
-                    // this is not an expected OREBEX file
+                    // this is not an expected ORBEX file
                     yield false;
                 }
             }

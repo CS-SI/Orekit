@@ -259,8 +259,9 @@ public class OrbexParserTest {
         Assertions.assertEquals(ITRFVersion.ITRF_2005,                         ((VersionedITRF) orbex.getDescription().coordinateSystem()).getITRFVersion());
         Assertions.assertEquals("ECEF",                                        orbex.getDescription().frameType());
         Assertions.assertEquals("HLM",                                         orbex.getDescription().orbitType());
-        Assertions.assertEquals(1,                                             orbex.getDescription().recordTypes().size());
-        Assertions.assertEquals(EphemerisDataPredicate.PCS,                    orbex.getDescription().recordTypes().getFirst());
+        Assertions.assertEquals(2,                                             orbex.getDescription().recordTypes().size());
+        Assertions.assertEquals(EphemerisDataPredicate.PCS,                    orbex.getDescription().recordTypes().get(0));
+        Assertions.assertEquals(EphemerisDataPredicate.VCS,                    orbex.getDescription().recordTypes().get(1));
         Assertions.assertEquals("m",                                           orbex.getDescription().positionUnit().getName());
         Assertions.assertEquals("CENTER-OF-MASS",                              orbex.getDescription().orbitReference());
         Assertions.assertEquals("µs",                                          orbex.getDescription().clockCorrectionUnit().getName());
@@ -271,7 +272,7 @@ public class OrbexParserTest {
         Assertions.assertEquals("BLOCK IIA",   orbex.getData().get(new SatInSystem("G04")).description());
         Assertions.assertEquals("BLOCK IIR-M", orbex.getData().get(new SatInSystem("G29")).description());
         Assertions.assertEquals("BLOCK IIA",   orbex.getData().get(new SatInSystem("G30")).description());
-        Assertions.assertEquals("BLOCK IIR-M", orbex.getData().get(new SatInSystem("G31")).description());
+        Assertions.assertEquals("",            orbex.getData().get(new SatInSystem("G31")).description());
         Assertions.assertEquals("BLOCK IIA",   orbex.getData().get(new SatInSystem("G32")).description());
 
         final Data g30Data = orbex.getData().get(new SatInSystem("G30"));
@@ -339,6 +340,18 @@ public class OrbexParserTest {
     public void testInvalidSatId() {
         doTryParseFail("/sinex/orbex/invalid-sat-id.obx",
                        OrekitMessages.INVALID_SATELLITE_ID, -1, -1, 0, "G99");
+    }
+
+    @Test
+    public void testNotOrbex() {
+        doTryParseFail("/sinex/code.bia",
+                       OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 0, 1, -1, null);
+    }
+
+    @Test
+    public void testMissingSecondLineHeader() {
+        doTryParseFail("/sinex/orbex/missing-second-line-header.obx",
+                       OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 0, 2, -1, null);
     }
 
     private void doTryParseFail(final String name, final Localizable specifier,
