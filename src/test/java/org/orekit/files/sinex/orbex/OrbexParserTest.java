@@ -156,9 +156,9 @@ public class OrbexParserTest {
     }
 
     @Test
-    public void testPosVelClkAtt() {
+    public void testPosVelClkCrtAtt() {
 
-        final Orbex orbex = load("/sinex/orbex/pos-vel-clk-att.obx");
+        final Orbex orbex = load("/sinex/orbex/pos-vel-clk-crt-att.obx");
 
         final TimeScale gps = TimeScalesFactory.getGPS();
 
@@ -175,11 +175,12 @@ public class OrbexParserTest {
         Assertions.assertEquals(ITRFVersion.ITRF_2005,                          ((VersionedITRF) orbex.getDescription().coordinateSystem()).getITRFVersion());
         Assertions.assertEquals("ECEF",                                         orbex.getDescription().frameType());
         Assertions.assertEquals("FIT",                                          orbex.getDescription().orbitType());
-        Assertions.assertEquals(4,                                              orbex.getDescription().recordTypes().size());
+        Assertions.assertEquals(5,                                              orbex.getDescription().recordTypes().size());
         Assertions.assertEquals(EphemerisDataPredicate.POS,                     orbex.getDescription().recordTypes().get(0));
         Assertions.assertEquals(EphemerisDataPredicate.VEL,                     orbex.getDescription().recordTypes().get(1));
         Assertions.assertEquals(EphemerisDataPredicate.CLK,                     orbex.getDescription().recordTypes().get(2));
-        Assertions.assertEquals(EphemerisDataPredicate.ATT,                     orbex.getDescription().recordTypes().get(3));
+        Assertions.assertEquals(EphemerisDataPredicate.CRT,                     orbex.getDescription().recordTypes().get(3));
+        Assertions.assertEquals(EphemerisDataPredicate.ATT,                     orbex.getDescription().recordTypes().get(4));
         Assertions.assertEquals("m",                                            orbex.getDescription().positionUnit().getName());
         Assertions.assertEquals("CENTER-OF-MASS",                               orbex.getDescription().orbitReference());
         Assertions.assertEquals("m/s",                                          orbex.getDescription().velocityUnit().getName());
@@ -320,6 +321,24 @@ public class OrbexParserTest {
     public void testWrongCreationDate2() {
         doTryParseFail("/sinex/orbex/wrong-creation-date-2.obx",
                        OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 0, 6, -1, null);
+    }
+
+    @Test
+    public void testDuplicatedId() {
+        doTryParseFail("/sinex/orbex/duplicated-id.obx",
+                       OrekitMessages.DUPLICATED_SATELLITE, 1, 28, 0, "G03");
+    }
+
+    @Test
+    public void testIncompleteData() {
+        doTryParseFail("/sinex/orbex/incomplete-data.obx",
+                       OrekitMessages.INCOMPLETE_ORBEX_DATA, 3, 77, 0, "G03");
+    }
+
+    @Test
+    public void testInvalidSatId() {
+        doTryParseFail("/sinex/orbex/invalid-sat-id.obx",
+                       OrekitMessages.INVALID_SATELLITE_ID, -1, -1, 0, "G99");
     }
 
     private void doTryParseFail(final String name, final Localizable specifier,
