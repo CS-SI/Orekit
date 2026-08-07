@@ -1,0 +1,91 @@
+%=ORBEX  0.09
+%%
++FILE/DESCRIPTION
+ DESCRIPTION         EXAMPLE GPS + LEO ORBIT
+ CREATED_BY          Dr. P. Caspian
+ CREATION_DATE       2009  4 21 12  0  0
+ INPUT_DATA          d+p
+*                    Global tracking data for G01 and G02, and data from the receiver on-board CHAMP
+ CONTACT             pc@igsac.narnia.gov
+ TIME_SYSTEM         GPS
+ START_TIME          2002 12 29  0  0  0.000000000000  52637  0.00000000000000000  1199      0.000000000000
+ END_TIME            2002 12 29 23 45  0.000000000000  52637  0.98958333333333340  1199  85500.000000000000
+ EPOCH_INTERVAL      IRREGULAR
+ COORD_SYSTEM        IGS05
+ FRAME_TYPE          ECEF
+ ORBIT_TYPE          FIT
+ LIST_OF_REC_TYPES   POS VEL CLK ATT
+ ORBIT_XYZ_UNITS     METERS
+ ORBIT_XYZ_REFERENCE CENTER-OF-MASS
+ SVCLK_UNITS         MICROSECOND
+-FILE/DESCRIPTION
+*----------------------------------------------------------------------------------------------------------------------
++SATELLITE/ID_AND_DESCRIPTION
+*ID_    SATELLITE_DESCRIPTION___________________________________________________________
+ G02    GPS BLOCK IIR-B
+ G03    GPS BLOCK IIA
+ L06    CHAMP
+-SATELLITE/ID_AND_DESCRIPTION
+*----------------------------------------------------------------------------------------------------------------------
++SATELLITE/STD_DEVS
+*ID_    STDP(mm) STDCLK(psec) PF CL START_TIME_________ END_TIME___________
+ G02        5.00       19.000 OB OB 2002 12 29  0  0  0 2002 12 29 23 45  0
+ G03        4.00       15.000 OB OB 2002 12 29  0  0  0 2002 12 29 23 45  0
+ L06       24.00              OB OB 2002 12 29  0  0  0 2002 12 29 23 45  0
+-SATELLITE/STD_DEVS
+*----------------------------------------------------------------------------------------------------------------------
++EPHEMERIS/MODELS
+*MODEL_TYPE______________________________ DESCRIPTION_________________________________________________
+SATELLITE_ANTENNA_PCV_MODEL               igs05_1567.atx
+OCEAN_TIDE_LOADING_MODEL                  FES2004 EARTH_CMC_APPLIED
+ATMOSPHERIC_TIDE_LOADING_MODEL            NONE NO_EARTH_CMC_APPLIED
+ECEF_ORIGIN_DEFINITION_ORBITS             CENTER_OF_NETWORK
+ECEF_ORIGIN_DEFINITION_CLOCKS             CENTER_OF_NETWORK
+-EPHEMERIS/MODELS
+*----------------------------------------------------------------------------------------------------------------------
++SATELLITE/MANEUVER_INFO
+*ID_    MANEUVER_START_TIME_____________  MANEUVER_END_TIME_______________   DV_RADIA  DV_ALONG  DV_CROSS
+ G03    2002 12 29 12 36 07.123456789012  2002 12 29 12 36 29.123456789012     1.2300  324.5000  -10.2340
+-SATELLITE/MANEUVER_INFO
+*----------------------------------------------------------------------------------------------------------------------
++SATELLITE/ECLIPSE_INFO
+*ID_    ECLIPSE_START_TIME______________ ECLIPSE_END_TIME________________ TYPE_
+ G02    2002 12 29 01 48 30.123456789012 2002 12 29 02 42 30.123456789012 EARTH
+-SATELLITE/ECLIPSE_INFO
+*----------------------------------------------------------------------------------------------------------------------
++EPHEMERIS/DATA
+*
+## 2002 12 29  0  0  0.000000000000  3
+*REC ID_    FLAGS_    N ________X_(m)___ ________Y_(m)___ ________Z_(m)___
+ POS G02              3     4049646.6140    25594715.4960    -5815946.7980
+*REC ID_    FLAGS_    N ______VX_(m/s)__ ______VY_(m/s)__ ______VZ_(m/s)__
+ VEL G02              3        -353.5783         821.0842        2972.7179
+*REC ID_    FLAGS_    N __SVCLK_(usec)__
+ CLK G02              1      -39.2268190
+ POS G03              3      992811.0780    16781981.6600   -20596776.8060
+ VEL G03              3       -2362.6884        1126.0735         823.5752
+ CLK G03              1       92.5224210
+ POS L06              3     1781848.9098     5968846.1797    -2704551.4098
+ VEL L06              3        -816.9472       -2926.5637       -7019.8869
+*REC ID_    FLAGS_    N ___q0_(scalar)_____ ____q1__x__________ ____q2__y__________ ____q3__z__________
+ ATT L06              4  0.9164178227001020  0.3553674926002010  0.1624720204001450 -0.0865746035002370
+## 2002 12 29  0  0  1.000000000000  1
+ POS L06              3     1727998.7897     5780000.6581    -3119210.3412
+ VEL L06              3        -978.0014       -3365.6139       -6796.8063
+ ATT L06              4  0.9264178234567890  0.3653674934567890  0.1724720345678901 -0.0965746045678901
+## 2002 12 29  0  0  2.000000000000  1
+ POS L06              3     1664504.1705     5565312.9920    -3519546.7577
+ VEL L06              3       -1138.2837       -3787.6430       -6542.6599
+ ATT L06              4  0.9364178245678901  0.3753674945678901  0.1824720456789012 -0.1165746056789012
+## 2002 12 29 23 45  0.000000000000  3
+ POS G02              3     4304136.5610    24976241.1960    -7742704.1010
+ VEL G02              3        -399.3729        1052.1896        2877.2689
+ CLK G02              1      -39.7468990
+ POS G03              3     2577521.6400    16060438.0370   -21042936.0520
+ VEL G03              3       -2449.0774        1067.0806         533.4498
+ CLK G03              1       92.7929170
+ POS L06              3    -1761142.2643    -5848719.9669    -2970621.8193
+ VEL L06              3        -998.0043       -3184.4734        6880.3132
+ ATT L06              4 -0.5066930256001020 -0.2289786888002010  0.7772033941001450 -0.2945943349002370
+-EPHEMERIS/DATA
+%END_ORBEX

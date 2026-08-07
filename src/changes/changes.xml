@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="update" issue="1995">
+              Added support for ORBEX format.
+          </action>
           <action dev="ltafur" type="fix" issue="1993">
               Fixed NRLMSISE00 local solar time to be computed in the Earth-fixed body frame.
           </action>

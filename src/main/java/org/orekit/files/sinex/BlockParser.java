@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  * @author Luc Maisonobe
  * @since 13.0
  */
-class BlockParser<T extends ParseInfo<?>> implements LineParser<T> {
+public class BlockParser<T extends ParseInfo<?>> implements LineParser<T> {
 
     /** Start block pattern. */
     private final Pattern startPattern;
@@ -45,12 +45,12 @@ class BlockParser<T extends ParseInfo<?>> implements LineParser<T> {
      * @param blockId    regular expression for block name
      * @param predicates predicates for parsing block content lines
      */
-    protected BlockParser(final String blockId, final List<Predicate<T>> predicates) {
+    public BlockParser(final String blockId, final List<Predicate<T>> predicates) {
         this.startPattern   = Pattern.compile("^\\+(" + blockId + ") *$");
         this.endPattern     = null;
         this.inBlockParsers = new ArrayList<>(1 + predicates.size());
         for (final Predicate<T> predicate : predicates) {
-            inBlockParsers.add(new LineParser<T>() {
+            inBlockParsers.add(new LineParser<>() {
 
                 /** {@inheritDoc} */
                 @Override

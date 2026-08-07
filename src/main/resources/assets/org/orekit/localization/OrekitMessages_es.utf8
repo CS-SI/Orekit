@@ -1109,3 +1109,15 @@ DAF_INSUFFICIENT_COMMENT_RECORDS = Los comentarios requieren {0} registros pero 
 
 # File description string is {0} characters long but should be at most 60 characters
 DAF_TOO_LONG_FILEDESCRIPTION_STRING = La cadena de descripción del archivo tiene {0} caracteres pero debería tener como máximo 60 caracteres
+
+# missing unit for {0} record (line {1} of file {2})
+MISSING_ORBEX_UNIT=
+
+# expected {0} satellites for time tag {1} but got {2} (line {3} of file {4})
+INCOMPLETE_ORBEX_DATA=
+
+# wrong number of columns at line {0}, file {1}; {2} columns is not allowed for {3} record
+ORBEX_WRONG_COLUMNS=
+
+# duplicated satellite {0} (line {1}, file {2})
+DUPLICATED_SATELLITE=
