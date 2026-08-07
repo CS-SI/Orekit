@@ -248,14 +248,14 @@ public class OrbexParseInfo extends ParseInfo<Orbex> {
 
     /** Add a satellite id and description.
      * @param satId       satellite id
-     * @param description satellite description
+     * @param satDescription satellite description
      */
-    void addSatIdAndDescription(final SatInSystem satId, final String description) {
+    void addSatIdAndDescription(final SatInSystem satId, final String satDescription) {
         if (ephemerisData.containsKey(satId)) {
             throw new OrekitException(OrekitMessages.DUPLICATED_SATELLITE,
                                       satId, getLineNumber(), getName());
         } else {
-            ephemerisData.put(satId, new Data(satId, description));
+            ephemerisData.put(satId, new Data(satId, satDescription));
         }
     }
 

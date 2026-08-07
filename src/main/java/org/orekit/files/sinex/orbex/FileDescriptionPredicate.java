@@ -53,7 +53,7 @@ enum FileDescriptionPredicate
         }
     },
 
-    /** Predicate for .creation date */
+    /** Predicate for creation date. */
     CREATION_DATE {
         @Override
         protected void store(final OrbexParseInfo parseInfo, final String information) {
