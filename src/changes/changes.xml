@@ -129,6 +129,9 @@
           <action dev="vcucchie" type="add" issue="1926">
               Add .puml diagram specific to SpacecraftState.
           </action>
+          <action dev="brian.carter" type="update" issue="1924">
+              Generalize quadratic to polynomial clock in measurements.
+          </action>
           <action dev="serrof" type="update" issue="1923">
               Use crossed terms from covariance matrix in any non-scalar measurements with Kalman filters.
           </action>

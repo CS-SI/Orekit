@@ -43,7 +43,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.IERSConventions;
@@ -173,7 +173,7 @@ class BistaticRangeRateTest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                                                          context.BRRstations.getValue())) {
-            station.getClockBiasDriver().setValue(clockOffset);
+            station.getClockModel().getBiasDriver().setValue(clockOffset);
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -235,8 +235,8 @@ class BistaticRangeRateTest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                                                          context.BRRstations.getValue())) {
-            station.getClockBiasDriver().setValue(clockOffset);
-            station.getClockBiasDriver().setSelected(true);
+            station.getClockModel().getBiasDriver().setValue(clockOffset);
+            station.getClockModel().getBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -321,8 +321,8 @@ class BistaticRangeRateTest {
 
         final double clockOffset = 4.8e-9;
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockBiasDriver().setValue(clockOffset);
-        receiver.getClockBiasDriver().setSelected(true);
+        receiver.getClockModel().getBiasDriver().setValue(clockOffset);
+        receiver.getClockModel().getBiasDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
         receiver.getZenithOffsetDriver().setSelected(true);
@@ -359,7 +359,7 @@ class BistaticRangeRateTest {
                 emitterParameter.getEastOffsetDriver(),
                 emitterParameter.getNorthOffsetDriver(),
                 emitterParameter.getZenithOffsetDriver(),
-                receiverParameter.getClockBiasDriver(),
+                receiverParameter.getClockModel().getBiasDriver(),
                 receiverParameter.getEastOffsetDriver(),
                 receiverParameter.getNorthOffsetDriver(),
                 receiverParameter.getZenithOffsetDriver(),
@@ -436,7 +436,7 @@ class BistaticRangeRateTest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation receiver = new GroundStation(baseFrame, new QuadraticClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2, 0, 0));
+        final GroundStation receiver = new GroundStation(baseFrame, new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2));
         final GroundStation emitter = new GroundStation(new TopocentricFrame(earth, new GeodeticPoint(0.1, 0.1, 1e3), "emitter"));
         activateStation(receiver);
         activateStation(emitter);

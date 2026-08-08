@@ -16,6 +16,10 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -25,12 +29,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 public class SampledClockModelTest {
 
@@ -107,7 +111,7 @@ public class SampledClockModelTest {
         final SampledClockModel clockModel = new SampledClockModel(sample, 4);
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
-            final FieldClockOffset<T> co = clockModel.getOffset(t0F.shiftedBy(dtF));
+            final FieldClockOffset<T> co = clockModel.getFieldOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
             Assertions.assertEquals(c.value(dtF).getReal(),       co.getBias().getReal(),       1.0e-15);
             Assertions.assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
@@ -136,12 +140,30 @@ public class SampledClockModelTest {
         final SampledClockModel clockModel = new SampledClockModel(sample, 2);
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
-            final FieldClockOffset<T> co = clockModel.getOffset(t0F.shiftedBy(dtF));
+            final FieldClockOffset<T> co = clockModel.getFieldOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
             Assertions.assertEquals(c.value(dtF).getReal(),       co.getBias().getReal(),       1.0e-15);
             Assertions.assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
             Assertions.assertEquals(cDotDot.value(dtF).getReal(), co.getAcceleration().getReal(), 1.0e-15);
         }
+    }
+
+    @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final ClockOffset offset = mock();
+        final SampledClockModel clockModel = new SampledClockModel(List.of(offset), 1);
+        // WHEN & THEN
+        assertThrows(OrekitException.class, clockModel::getParametersDrivers);
+    }
+
+    @Test
+    void testGetFieldModel() {
+        // GIVEN
+        final ClockOffset offset = mock();
+        final SampledClockModel clockModel = new SampledClockModel(List.of(offset), 1);
+        // WHEN & THEN
+        assertThrows(OrekitException.class, () -> clockModel.getFieldModel(1, new HashMap<>(), AbsoluteDate.ARBITRARY_EPOCH));
     }
 
     @BeforeEach

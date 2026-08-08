@@ -40,7 +40,7 @@ import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.UT1Scale;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.ClockModel;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
@@ -80,7 +80,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>additional body rotation, controlled by {@link #getPrimeMeridianOffsetDriver()} and {@link #getPrimeMeridianDriftDriver()}</li>
  *   <li>additional polar motion, controlled by {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()},
  *   {@link #getPolarOffsetYDriver()} and {@link #getPolarDriftYDriver()}</li>
- *   <li>station clock offset, controlled by {@link #getClockBiasDriver()}</li>
+ *   <li>station clock offset, controlled by {@link #getClockOffset(AbsoluteDate)} )}</li>
  *   <li>station position offset, controlled by {@link #getEastOffsetDriver()},
  *   {@link #getNorthOffsetDriver()} and {@link #getZenithOffsetDriver()}</li>
  * </ol>
@@ -107,9 +107,9 @@ public class EarthBasedStation extends GroundStation {
      * <p>
      * The initial values for the pole and prime meridian parametric linear models
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
-     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetYDriver()},
-     * {@link #getPolarDriftYDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
+     * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
+     * ({@link #getClockModel()} ()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
      * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as these values are not changed, the
      * offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as some of these models are changed,
      * the offset frame moves away from the {@link #getBaseFrame() base frame}.
@@ -129,9 +129,9 @@ public class EarthBasedStation extends GroundStation {
      * <p>
      * The initial values for the pole and prime meridian parametric linear models
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
-     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetYDriver()},
-     * {@link #getPolarDriftYDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
+     * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
+     * ({@link #getClockModel()} ()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
      * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as these values are not changed, the
      * offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as some of these models are changed,
      * the offset frame moves away from the {@link #getBaseFrame() base frame}.
@@ -139,10 +139,10 @@ public class EarthBasedStation extends GroundStation {
      *
      * @param baseFrame base frame associated with the station, without *any* parametric model
      *                  (no station offset, no polar motion, no meridian shift)
-     * @param clock         new quadratic clock model with user-supplied displacements
+     * @param clock         new clock model with user-supplied displacements
      * @see #EarthBasedStation(TopocentricFrame, EOPHistory, StationDisplacement...)
      */
-    public EarthBasedStation(final TopocentricFrame baseFrame, final QuadraticClockModel clock) {
+    public EarthBasedStation(final TopocentricFrame baseFrame, final ClockModel clock) {
         this(baseFrame, FramesFactory.findEOP(baseFrame), clock);
     }
 
@@ -151,10 +151,11 @@ public class EarthBasedStation extends GroundStation {
      * <p>
      * The initial values for the pole and prime meridian parametric linear models
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetXDriver()},
+     * {@link #getPolarDriftXDriver()}) are set to 0. The initial values for the station offset model
+     * {@link #getZenithOffsetDriver()}, {@link #getClockModel()} ()}) are set to 0. This implies that as long as
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetYDriver()},
-     * {@link #getPolarDriftYDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
-     * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as
+     * {@link #getPolarDriftYDriver()}) are set to 0. This implies that as long as
      * these values are not changed, the offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as
      * some of these models are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
      * </p>
@@ -167,7 +168,7 @@ public class EarthBasedStation extends GroundStation {
      */
     public EarthBasedStation(final TopocentricFrame baseFrame, final EOPHistory eopHistory,
                              final StationDisplacement... displacements) {
-        this(baseFrame, eopHistory, createEmptyQuadraticClock(baseFrame.getName()), displacements);
+        this(baseFrame, eopHistory, createEmptyPolynomialClock(baseFrame.getName()), displacements);
     }
 
      /**
@@ -177,7 +178,7 @@ public class EarthBasedStation extends GroundStation {
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}, {@link #getPolarOffsetYDriver()},
      * {@link #getPolarDriftYDriver()}) are set to 0. The initial values for the station offset model
-     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * ({@link #getClockModel()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
      * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as
      * these values are not changed, the offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as
      * some of these models are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
@@ -186,12 +187,12 @@ public class EarthBasedStation extends GroundStation {
      * @param baseFrame     base frame associated with the station, without *any* parametric model (no station offset,
      *                      no polar motion, no meridian shift)
      * @param eopHistory    EOP history associated with Earth frames
-     * @param clock         new quadratic clock model with user-supplied displacements
+     * @param clock         new clock model with user-supplied displacements
      * @param displacements ground station displacement model (tides, ocean loading, atmospheric loading, thermal
      *                      effects...)
      */
     public EarthBasedStation(final TopocentricFrame baseFrame, final EOPHistory eopHistory,
-                             final QuadraticClockModel clock, final StationDisplacement... displacements) {
+                             final ClockModel clock, final StationDisplacement... displacements) {
         super(baseFrame, clock);
 
         if (eopHistory == null) {

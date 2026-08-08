@@ -16,38 +16,59 @@
  */
 package org.orekit.time.clocks;
 
-import org.hipparchus.CalculusFieldElement;
+import java.util.Map;
 
-/** Clock model computing the sum of two underlying models.
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+
+/**
+ * Clock model computing the sum of two underlying models.
+ *
  * @author Luc Maisonobe
  * @since 14.0
  */
 public class ClocksSum extends AbstractCombinedClocksPair {
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
      * <p>
      * The combined clock is {@code clock1 + clock2}
      * </p>
+     *
      * @param clock1 first underlying clock
      * @param clock2 second underlying clock
      */
-    public  ClocksSum(final ClockModel clock1, final ClockModel clock2) {
+    public ClocksSum(final ClockModel clock1, final ClockModel clock2) {
         super(clock1, clock2);
     }
 
+    @Override
     protected ClockOffset combine(final ClockOffset offset1, final ClockOffset offset2) {
         return offset1.add(offset2);
     }
 
-    /** Combine two offsets.
-     * @param <T> type of the field elements
+    /**
+     * Combine two offsets.
+     *
+     * @param <T>     type of the field elements
      * @param offset1 first offset
      * @param offset2 second offset
      * @return combined offset
      */
+    @Override
     protected <T extends CalculusFieldElement<T>> FieldClockOffset<T> combine(final FieldClockOffset<T> offset1,
-                                                                              final FieldClockOffset<T> offset2) {
+            final FieldClockOffset<T> offset2) {
         return offset1.add(offset2);
     }
+
+    @Override
+    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
+            final Map<String, Integer> indices, final AbsoluteDate date) {
+        throw new OrekitException(OrekitMessages.INTERNAL_ERROR); // "Unable to sum the field models of two classes"));
+    }
+
 
 }

@@ -466,8 +466,8 @@ public class InterSatellitesPhaseTest {
         final double remoteClockOffset = 469.0e-6;
         final InterSatellitesPhaseMeasurementCreator creator = new InterSatellitesPhaseMeasurementCreator(ephemeris, PredefinedGnssSignal.E01,
                                                                             ambiguity, localClockOffset, remoteClockOffset);
-        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockBiasDriver().setSelected(true);
+        creator.getLocalSatellite().getClockModel().getBiasDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockModel().getBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -500,8 +500,8 @@ public class InterSatellitesPhaseTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().getFirst().getClockBiasDriver(),
-                        measurement.getSatellites().get(1).getClockBiasDriver()
+                        measurement.getSatellites().getFirst().getClockModel().getBiasDriver(),
+                        measurement.getSatellites().get(1).getClockModel().getBiasDriver()
                     };
 
                     for (final ParameterDriver driver : drivers) {

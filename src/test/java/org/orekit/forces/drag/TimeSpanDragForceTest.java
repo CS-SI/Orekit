@@ -200,7 +200,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         }
     }
 
-    /** Test that the getParameterDrivers method is working as expected
+    /** Test that the getParametersDrivers method is working as expected
      * on an IsotropicDrag-based (ie. spherical) TimeSpanDragForce model.
      */
     @Test
@@ -512,7 +512,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                            1e3, tolerances[0], 6.0e-9);
     }
 
-    /** Test that the getParameterDrivers method is working as expected
+    /** Test that the getParametersDrivers method is working as expected
      * on an BoxAndSolarArraySpacecraft-based TimeSpanDragForce model.
      * Here only the drag coefficient is modeled.
      */
@@ -608,7 +608,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals("custom-Cd", drivers.get(3).getName());
     }
 
-    /** Test that the getParameterDrivers method is working as expected
+    /** Test that the getParametersDrivers method is working as expected
      * on an BoxAndSolarArraySpacecraft-based TimeSpanDragForce model.
      * Here both drag and lift coefficients are modeled.
      */

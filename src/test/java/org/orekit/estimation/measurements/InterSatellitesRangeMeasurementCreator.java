@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
@@ -51,9 +52,9 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockBiasDriver().setValue(localClockOffset);
+        this.local.getClockModel().getBiasDriver().setValue(localClockOffset);
         this.remote              = new ObservableSatellite(1);
-        this.remote.getClockBiasDriver().setValue(remoteClockOffset);
+        this.remote.getClockModel().getBiasDriver().setValue(remoteClockOffset);
     }
 
     public ObservableSatellite getLocalSatellite() {

@@ -1424,13 +1424,13 @@ class KalmanEstimatorTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Estimate clock drivers
-        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockBiasDriver().setSelected(true);
+        creator.getLocalSatellite().getClockModel().getBiasDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockModel().getBiasDriver().setSelected(true);
 
         // Estimated measurement parameter
         final ParameterDriversList estimatedMeasurementParameters = new ParameterDriversList();
-        estimatedMeasurementParameters.add(creator.getLocalSatellite().getClockBiasDriver());
-        estimatedMeasurementParameters.add(creator.getRemoteSatellite().getClockBiasDriver());
+        estimatedMeasurementParameters.add(creator.getLocalSatellite().getClockModel().getBiasDriver());
+        estimatedMeasurementParameters.add(creator.getRemoteSatellite().getClockModel().getBiasDriver());
 
         // create orbit estimator
         final RealMatrix processNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(new double[] {

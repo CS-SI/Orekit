@@ -280,7 +280,8 @@ class ParallacticRefractionModifierTest {
         final SpacecraftState state = new SpacecraftState(new AbsolutePVCoordinates(gcrf, date, pvCoordinates));
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final GroundStation station = new GroundStation(topocentricFrame);
-        station.getClockBiasDriver().setValue(0.01);
+        station.getClockModel().getBiasDriver().setReferenceDate(date);
+        station.getClockModel().getBiasDriver().setValue(0.01);
         final AngularRaDec observedMeasurement = new AngularRaDec(station, FramesFactory.getICRF(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
         final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = new EstimatedMeasurementBase<>(observedMeasurement,

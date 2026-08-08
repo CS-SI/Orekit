@@ -23,9 +23,13 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import static org.mockito.Mockito.mock;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -48,7 +52,7 @@ import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.IERSConventions;
@@ -56,10 +60,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.mockito.Mockito.mock;
 
 class AngularRaDecTest {
 
@@ -247,7 +247,7 @@ class AngularRaDecTest {
 
         // create perfect right-ascension/declination measurements
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setSelected(true);
+            station.getClockModel().getBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -422,7 +422,7 @@ class AngularRaDecTest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation stationWithOffset = new GroundStation(baseFrame, new QuadraticClockModel(epoch.shiftedBy(1), 1., 0., 0.));
+        final GroundStation stationWithOffset = new GroundStation(baseFrame, new PolynomialClockModel(epoch.shiftedBy(1), 1.));
         activateStation(stationWithOffset);
         final ObservableSatellite satellite = new ObservableSatellite(0);
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };

@@ -208,7 +208,7 @@ public class InterSatellitesOneWayRangeRateTest {
                     Assertions.assertEquals(2, participants.length);
                     final PVCoordinates delta = new PVCoordinates(participants[0], participants[1]);
                     final double radialVelocity = Vector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize());
-                    final AbsoluteDate t0 = measurement.getSatellites().getFirst().getClockBiasDriver().getReferenceDate();
+                    final AbsoluteDate t0 = measurement.getSatellites().getFirst().getClockModel().getBiasDriver().getReferenceDate();
                     final double dtLocal    = measurement.getDate().durationFrom(t0);
                     final double localRate  = 2 * localClockAcceleration * dtLocal + localClockRate;
                     final double dtRemote   = participants[0].getDate().durationFrom(t0);
@@ -480,12 +480,12 @@ public class InterSatellitesOneWayRangeRateTest {
             new InterSatellitesOneWayRangeRateMeasurementCreator(ephemeris,
                                                                  localClockOffset, localClockRate, localClockAcceleration,
                                                                  remoteClockOffset, remoteClockRate, remoteClockAcceleration);
-        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
-        creator.getLocalSatellite().getClockDriftDriver().setSelected(true);
-        creator.getLocalSatellite().getClockAccelerationDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockBiasDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockDriftDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockAccelerationDriver().setSelected(true);
+        creator.getLocalSatellite().getClockModel().getBiasDriver().setSelected(true);
+        creator.getLocalSatellite().getClockModel().getRateDriver().setSelected(true);
+        creator.getLocalSatellite().getClockModel().getAccelerationDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockModel().getBiasDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockModel().getRateDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockModel().getAccelerationDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -518,12 +518,12 @@ public class InterSatellitesOneWayRangeRateTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().getFirst().getClockBiasDriver(),
-                        measurement.getSatellites().getFirst().getClockDriftDriver(),
-                        measurement.getSatellites().getFirst().getClockAccelerationDriver(),
-                        measurement.getSatellites().get(1).getClockBiasDriver(),
-                        measurement.getSatellites().get(1).getClockDriftDriver(),
-                        measurement.getSatellites().get(1).getClockAccelerationDriver()
+                        measurement.getSatellites().getFirst().getClockModel().getBiasDriver(),
+                        measurement.getSatellites().getFirst().getClockModel().getRateDriver(),
+                        measurement.getSatellites().getFirst().getClockModel().getAccelerationDriver(),
+                        measurement.getSatellites().get(1).getClockModel().getBiasDriver(),
+                        measurement.getSatellites().get(1).getClockModel().getRateDriver(),
+                        measurement.getSatellites().get(1).getClockModel().getAccelerationDriver(),
                     };
 
                     for (final ParameterDriver driver : drivers) {

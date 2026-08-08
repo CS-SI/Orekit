@@ -763,7 +763,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(value);
     }
 
-    /** Test that the getParameterDrivers method is working as expected
+    /** Test that the getParametersDrivers method is working as expected
      * on an IsotropicDrag-based (ie. spherical) DragForce model with
      * several estimated values.
      */

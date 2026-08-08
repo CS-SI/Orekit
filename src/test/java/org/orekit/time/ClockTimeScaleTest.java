@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.gnss.PredefinedTimeSystem;
 
 public class ClockTimeScaleTest {
@@ -33,7 +33,7 @@ public class ClockTimeScaleTest {
         final String name = "Galileo+offset";
         final AbsoluteDate        t0    = new AbsoluteDate(2020, 4, 1,
                                                            TimeScalesFactory.getUTC());
-        final QuadraticClockModel clock = new QuadraticClockModel(t0,
+        final PolynomialClockModel clock = new PolynomialClockModel(t0,
                                                                   FastMath.scalb(1.0, -10),
                                                                   FastMath.scalb(1.0, -11),
                                                                   FastMath.scalb(1.0, -12));
@@ -57,7 +57,7 @@ public class ClockTimeScaleTest {
         final String name = "UTC+offset";
         final AbsoluteDate        t0    = new AbsoluteDate(2020, 4, 1,
                                                            TimeScalesFactory.getUTC());
-        final QuadraticClockModel clock = new QuadraticClockModel(t0,
+        final PolynomialClockModel clock = new PolynomialClockModel(t0,
                                                                   FastMath.scalb(1.0, -10),
                                                                   FastMath.scalb(1.0, -11),
                                                                   FastMath.scalb(1.0, -12));

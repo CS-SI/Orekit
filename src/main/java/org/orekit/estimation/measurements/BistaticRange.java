@@ -160,9 +160,8 @@ public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange
         // Clock offsets
         final int nbParams = field.getZero().getFreeParameters();
         final Map<String, Integer> paramIndices = getParameterIndices(states);
-
-        final Gradient dte = getEmitter().getFieldOffsetValue(nbParams, emissionDate.toAbsoluteDate(), paramIndices);
-        final Gradient dtr = getReceiver().getFieldOffsetValue(nbParams, receptionDate.toAbsoluteDate(), paramIndices);
+        final Gradient dte = getEmitter().getFieldOffsetValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
+        final Gradient dtr = getReceiver().getFieldOffsetValue(nbParams, paramIndices, receptionDate.toAbsoluteDate());
 
         // Range value
         final Gradient tau   = (shifts[1].add(shifts[2])).negate().add(dtr).subtract(dte);

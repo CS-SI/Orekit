@@ -37,7 +37,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
 import org.orekit.files.rinex.section.RinexComment;
@@ -228,7 +228,7 @@ public class RinexObservationWriterTest {
             RinexObservation patched = load(resourceName, typeBuilder, timeScaleBuilder, timeScales);
             patched.getHeader().setClockOffsetApplied(robs.getHeader().getClockOffsetApplied());
             if (FastMath.abs(expectedDt) > 1.0e-15) {
-                writer.setReceiverClockModel(new QuadraticClockModel(robs.getHeader().getTFirstObs(),
+                writer.setReceiverClockModel(new PolynomialClockModel(robs.getHeader().getTFirstObs(),
                                                                      expectedDt, 0.0, 0.0));
             }
             writer.writeCompleteFile(patched);

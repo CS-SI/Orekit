@@ -42,7 +42,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.IERSConventions;
@@ -175,7 +175,7 @@ class TDOATest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.TDOAstations.getKey(),
                                                          context.TDOAstations.getValue())) {
-            station.getClockBiasDriver().setValue(clockOffset);
+            station.getClockModel().getBiasDriver().setValue(clockOffset);
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -243,8 +243,8 @@ class TDOATest {
         primary.getZenithOffsetDriver().setSelected(true);
         final double clockOffset = 4.8e-9;
         final GroundStation secondary = context.TDOAstations.getValue();
-        secondary.getClockBiasDriver().setValue(clockOffset);
-        secondary.getClockBiasDriver().setSelected(true);
+        secondary.getClockModel().getBiasDriver().setValue(clockOffset);
+        secondary.getClockModel().getBiasDriver().setSelected(true);
         secondary.getEastOffsetDriver().setSelected(true);
         secondary.getNorthOffsetDriver().setSelected(true);
         secondary.getZenithOffsetDriver().setSelected(true);
@@ -277,7 +277,7 @@ class TDOATest {
                 primeParameter.getEastOffsetDriver(),
                 primeParameter.getNorthOffsetDriver(),
                 primeParameter.getZenithOffsetDriver(),
-                secondParameter.getClockBiasDriver(),
+                secondParameter.getClockModel().getBiasDriver(),
                 secondParameter.getEastOffsetDriver(),
                 secondParameter.getNorthOffsetDriver(),
                 secondParameter.getZenithOffsetDriver(),
@@ -327,8 +327,8 @@ class TDOATest {
         primary.getZenithOffsetDriver().setSelected(true);
         final double clockOffset = 4.8e-9;
         final GroundStation secondary = context.TDOAstations.getValue();
-        secondary.getClockBiasDriver().setValue(clockOffset);
-        secondary.getClockBiasDriver().setSelected(true);
+        secondary.getClockModel().getBiasDriver().setValue(clockOffset);
+        secondary.getClockModel().getBiasDriver().setSelected(true);
         secondary.getEastOffsetDriver().setSelected(true);
         secondary.getNorthOffsetDriver().setSelected(true);
         secondary.getZenithOffsetDriver().setSelected(true);
@@ -366,7 +366,7 @@ class TDOATest {
                 primeParameter.getEastOffsetDriver(),
                 primeParameter.getNorthOffsetDriver(),
                 primeParameter.getZenithOffsetDriver(),
-                secondParameter.getClockBiasDriver(),
+                secondParameter.getClockModel().getBiasDriver(),
                 secondParameter.getEastOffsetDriver(),
                 secondParameter.getNorthOffsetDriver(),
                 secondParameter.getZenithOffsetDriver(),
@@ -411,7 +411,7 @@ class TDOATest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation prime = new GroundStation(baseFrame, new QuadraticClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2, 0, 0));
+        final GroundStation prime = new GroundStation(baseFrame, new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2));
         final GroundStation second = new GroundStation(new TopocentricFrame(earth, new GeodeticPoint(0.1, 0.1, 1e3), "emitter"));
         activateStation(prime);
         activateStation(second);
