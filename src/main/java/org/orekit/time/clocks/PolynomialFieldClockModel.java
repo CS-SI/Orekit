@@ -28,7 +28,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Field Polynomial clock model.
- *
+ * @param <T> type of the field elements
  * @author Brian Carter
  * @since 14.0
  * @see PolynomialClockModel
