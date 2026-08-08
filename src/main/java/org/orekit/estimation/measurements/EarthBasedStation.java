@@ -80,7 +80,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>additional body rotation, controlled by {@link #getPrimeMeridianOffsetDriver()} and {@link #getPrimeMeridianDriftDriver()}</li>
  *   <li>additional polar motion, controlled by {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()},
  *   {@link #getPolarOffsetYDriver()} and {@link #getPolarDriftYDriver()}</li>
- *   <li>station clock offset, controlled by {@link #getClockOffset(AbsoluteDate)} )}</li>
+ *   <li>station clock offset, controlled by {@link #getClockModel()}</li>
  *   <li>station position offset, controlled by {@link #getEastOffsetDriver()},
  *   {@link #getNorthOffsetDriver()} and {@link #getZenithOffsetDriver()}</li>
  * </ol>

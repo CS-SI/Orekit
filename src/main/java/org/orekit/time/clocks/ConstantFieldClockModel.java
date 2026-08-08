@@ -21,7 +21,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Field Clock model for a clock with constant offset.
- *
+ * @param <T> type of the field elements
  * @author Brian Carter
  * @since 14.0
  * @see ConstantClockModel

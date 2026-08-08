@@ -21,7 +21,7 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** Container for clock field model.
  *
- * @param <T> type of of the field elements
+ * @param <T> type of the field elements
  * @author Brian Carter
  * @since 14.0
  */
