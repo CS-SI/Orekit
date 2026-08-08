@@ -16,6 +16,10 @@
  */
 package org.orekit.orbits;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Function;
+
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
@@ -38,10 +42,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.function.Function;
 
 
 public class CartesianOrbitTest {
@@ -149,7 +149,7 @@ public class CartesianOrbitTest {
         Assertions.assertEquals(22979265.3030773,  p.getA(), Utils.epsilonTest  * p.getA());
         Assertions.assertEquals(0.743502611664700, p.getE(), Utils.epsilonE     * FastMath.abs(p.getE()));
         Assertions.assertEquals(0.122182096220906, p.getI(), Utils.epsilonAngle * FastMath.abs(p.getI()));
-        double pa = kep.getPerigeeArgument();
+        double pa = kep.getPeriapsisArgument();
         Assertions.assertEquals(MathUtils.normalizeAngle(3.09909041016672, pa), pa,
                      Utils.epsilonAngle * FastMath.abs(pa));
         double raan = kep.getRightAscensionOfAscendingNode();

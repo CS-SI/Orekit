@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -54,9 +56,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.function.Function;
-
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 
@@ -631,9 +630,9 @@ class FieldCircularOrbitTest {
         Assertions.assertEquals(0.110283316961361e-03, kep.getE().getReal(), Utils.epsilonE * FastMath.abs(kep.getE().getReal()));
         Assertions.assertEquals(0.166901168553917e-03, kep.getI().getReal(),
                      Utils.epsilonAngle * FastMath.abs(kep.getI().getReal()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument().getReal()),
-                     kep.getPerigeeArgument().getReal(),
-                     Utils.epsilonTest * 6 * FastMath.abs(kep.getPerigeeArgument().getReal())); //numerical propagation we changed to 6 time the precision used
+        Assertions.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPeriapsisArgument().getReal()),
+                     kep.getPeriapsisArgument().getReal(),
+                     Utils.epsilonTest * 6 * FastMath.abs(kep.getPeriapsisArgument().getReal())); //numerical propagation we changed to 6 time the precision used
         Assertions.assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep.getRightAscensionOfAscendingNode().getReal()),
                      kep.getRightAscensionOfAscendingNode().getReal(),
                      Utils.epsilonTest * FastMath.abs(kep.getRightAscensionOfAscendingNode().getReal()));
@@ -685,7 +684,7 @@ class FieldCircularOrbitTest {
         T e       = p.getE();
         T eRatio  = one.subtract(e).divide(one.add(e)).sqrt();
         T raan    = kep.getRightAscensionOfAscendingNode();
-        T paPraan = kep.getPerigeeArgument().add(raan);
+        T paPraan = kep.getPeriapsisArgument().add(raan);
 
         T lv = zero.add(1.1);
         // formulations for elliptic case

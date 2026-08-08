@@ -123,7 +123,7 @@ public class FieldYamanakaAnkersenProvider<T extends CalculusFieldElement<T>> ex
     @Override
     public void setTargetTrueAnomaly(final T trueAnomaly) {
         final FieldKeplerianOrbit<T> orbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(getTargetOrbit());
-        setTargetOrbit(new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(), orbit.getPerigeeArgument(),
+        setTargetOrbit(new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(), orbit.getPeriapsisArgument(),
                                                  orbit.getRightAscensionOfAscendingNode(), trueAnomaly,
                                                  PositionAngleType.TRUE, orbit.getFrame(), orbit.getDate(),
                                                  orbit.getMu()));

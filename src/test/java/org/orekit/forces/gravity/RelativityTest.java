@@ -469,7 +469,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         //verify
         KeplerianOrbit endOrbit = new KeplerianOrbit(actual, frame, end, gm);
         KeplerianOrbit startOrbit = new KeplerianOrbit(orbit);
-        double dp = endOrbit.getPerigeeArgument() - startOrbit.getPerigeeArgument();
+        double dp = endOrbit.getPeriapsisArgument() - startOrbit.getPeriapsisArgument();
         double dtYears = end.durationFrom(orbit.getDate()) / Constants.JULIAN_YEAR;
         double dpDeg = FastMath.toDegrees(dp);
         //change in argument of perigee in arcseconds per year

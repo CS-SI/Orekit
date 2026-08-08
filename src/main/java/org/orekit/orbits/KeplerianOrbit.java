@@ -45,7 +45,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *     Ω
  *     v
  *   </pre>
- * where ω stands for the Perigee Argument, Ω stands for the
+ * where ω stands for the Periapsis Argument, Ω stands for the
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
  *
  * <p>
@@ -85,7 +85,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
     /** Inclination (rad). */
     private final double i;
 
-    /** Perigee Argument (rad). */
+    /** Periapsis Argument (rad). */
     private final double pa;
 
     /** Right Ascension of Ascending Node (rad). */
@@ -103,7 +103,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
     /** Inclination derivative (rad/s). */
     private final double iDot;
 
-    /** Perigee Argument derivative (rad/s). */
+    /** periapsis Argument derivative (rad/s). */
     private final double paDot;
 
     /** Right Ascension of Ascending Node derivative (rad/s). */
@@ -141,7 +141,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @param a  semi-major axis (m), negative for hyperbolic orbits
      * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
+     * @param pa periapsis argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
      * @param anomaly mean, eccentric or true anomaly (rad)
      * @param type type of anomaly
@@ -165,7 +165,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @param aDot  semi-major axis derivative (m/s)
      * @param eDot eccentricity derivative
      * @param iDot inclination derivative (rad/s)
-     * @param paDot perigee argument derivative (rad/s)
+     * @param paDot periapsis argument derivative (rad/s)
      * @param raanDot right ascension of ascending node derivative (rad/s)
      * @param anomalyDot mean, eccentric or true anomaly derivative, with same type than elements (rad/s)
      * @param cachedPositionAngleType type of cached anomaly
@@ -228,13 +228,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
      * @param a  semi-major axis (m), negative for hyperbolic orbits
      * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
+     * @param pa periapsis argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
      * @param anomaly mean, eccentric or true anomaly (rad)
      * @param aDot  semi-major axis derivative (m/s)
      * @param eDot eccentricity derivative
      * @param iDot inclination derivative (rad/s)
-     * @param paDot perigee argument derivative (rad/s)
+     * @param paDot periapsis argument derivative (rad/s)
      * @param raanDot right ascension of ascending node derivative (rad/s)
      * @param anomalyDot mean, eccentric or true anomaly derivative (rad/s)
      * @param type type of anomaly
@@ -437,21 +437,21 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
         return iDot;
     }
 
-    /** Get the perigee argument.
-     * @return perigee argument (rad)
+    /** Get the periapsis argument.
+     * @return periapsis argument (rad)
      */
-    public double getPerigeeArgument() {
+    public double getPeriapsisArgument() {
         return pa;
     }
 
-    /** Get the perigee argument derivative.
+    /** Get the periapsis argument derivative.
      * <p>
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
-     * @return perigee argument derivative (rad/s)
+     * @return periapsis argument derivative (rad/s)
      * @since 9.0
      */
-    public double getPerigeeArgumentDot() {
+    public double getPeriapsisArgumentDot() {
         return paDot;
     }
 

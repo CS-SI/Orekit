@@ -336,7 +336,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final double a    = keplerianTLE.getA();
         final double e    = keplerianTLE.getE();
         final double i    = keplerianTLE.getI();
-        final double pa   = keplerianTLE.getPerigeeArgument();
+        final double pa   = keplerianTLE.getPeriapsisArgument();
         final double raan = keplerianTLE.getRightAscensionOfAscendingNode();
         final double nu   = keplerianTLE.getTrueAnomaly();
 

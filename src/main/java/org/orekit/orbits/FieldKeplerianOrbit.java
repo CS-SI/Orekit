@@ -49,7 +49,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *     Ω
  *     v
  *   </pre>
- * where ω stands for the Perigee Argument, Ω stands for the
+ * where ω stands for the Periapsis Argument, Ω stands for the
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
  * <p>
  * This class supports hyperbolic orbits, using the convention that semi major
@@ -92,7 +92,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** Inclination (rad). */
     private final T i;
 
-    /** Perigee Argument (rad). */
+    /** Periapsis Argument (rad). */
     private final T pa;
 
     /** Right Ascension of Ascending Node (rad). */
@@ -152,7 +152,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param a  semi-major axis (m), negative for hyperbolic orbits
      * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
+     * @param pa periapsis argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
      * @param anomaly mean, eccentric or true anomaly (rad)
      * @param type type of anomaly
@@ -177,7 +177,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param aDot  semi-major axis derivative, null if unknown (m/s)
      * @param eDot eccentricity derivative, null if unknown
      * @param iDot inclination derivative, null if unknown (rad/s)
-     * @param paDot perigee argument derivative, null if unknown (rad/s)
+     * @param paDot periapsis argument derivative, null if unknown (rad/s)
      * @param raanDot right ascension of ascending node derivative, null if unknown (rad/s)
      * @param anomalyDot mean, eccentric or true anomaly derivative, null if unknown (rad/s)
      * @param cachedPositionAngleType type of cached anomaly
@@ -242,13 +242,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param a  semi-major axis (m), negative for hyperbolic orbits
      * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
+     * @param pa periapsis argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
      * @param anomaly mean, eccentric or true anomaly (rad)
      * @param aDot  semi-major axis derivative, null if unknown (m/s)
      * @param eDot eccentricity derivative, null if unknown
      * @param iDot inclination derivative, null if unknown (rad/s)
-     * @param paDot perigee argument derivative, null if unknown (rad/s)
+     * @param paDot periapsis argument derivative, null if unknown (rad/s)
      * @param raanDot right ascension of ascending node derivative, null if unknown (rad/s)
      * @param anomalyDot mean, eccentric or true anomaly derivative, null if unknown (rad/s)
      * @param type type of anomaly
@@ -414,7 +414,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                 field.getZero().newInstance(op.getADot()),
                 field.getZero().newInstance(op.getEDot()),
                 field.getZero().newInstance(op.getIDot()),
-                field.getZero().newInstance(op.getPerigeeArgumentDot()),
+                field.getZero().newInstance(op.getPeriapsisArgumentDot()),
                 field.getZero().newInstance(op.getRightAscensionOfAscendingNodeDot()),
                 field.getZero().newInstance(op.getAnomalyDot(op.getCachedPositionAngleType())),
                 op.getCachedPositionAngleType(), op.getFrame(),
@@ -473,17 +473,17 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         return iDot;
     }
 
-    /** Get the perigee argument.
-     * @return perigee argument (rad)
+    /** Get the periapsis argument.
+     * @return periapsis argument (rad)
      */
-    public T getPerigeeArgument() {
+    public T getPeriapsisArgument() {
         return pa;
     }
 
-    /** Get the perigee argument derivative.
-     * @return perigee argument derivative (rad/s)
+    /** Get the periapsis argument derivative.
+     * @return periapsis argument derivative (rad/s)
      */
-    public T getPerigeeArgumentDot() {
+    public T getPeriapsisArgumentDot() {
         return paDot;
     }
 

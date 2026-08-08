@@ -33,7 +33,19 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
-import org.orekit.estimation.measurements.*;
+import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
+import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
+import org.orekit.estimation.measurements.MultiplexedMeasurement;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurementCreator;
+import org.orekit.estimation.measurements.Range;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
@@ -145,7 +157,7 @@ class KalmanEstimatorTest {
                 propagatorBuilder.getOrbitalParametersDrivers().findByName("i").getValue());
         Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(),
                 propagatorBuilder.getOrbitalParametersDrivers().findByName("Ω").getValue());
-        Assertions.assertEquals(initialOrbit.getPerigeeArgument(),
+        Assertions.assertEquals(initialOrbit.getPeriapsisArgument(),
                 propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue());
 
         // Changed orbital parameters
@@ -255,7 +267,7 @@ class KalmanEstimatorTest {
                 propagatorBuilder1.getOrbitalParametersDrivers().findByName("i[0]").getValue());
         Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(),
                 propagatorBuilder1.getOrbitalParametersDrivers().findByName("Ω[0]").getValue());
-        Assertions.assertEquals(refOrbit1.getPerigeeArgument(),
+        Assertions.assertEquals(refOrbit1.getPeriapsisArgument(),
                 propagatorBuilder1.getOrbitalParametersDrivers().findByName("ω[0]").getValue());
 
         Assertions.assertEquals(refOrbit2.getA(),
@@ -264,7 +276,7 @@ class KalmanEstimatorTest {
                 propagatorBuilder2.getOrbitalParametersDrivers().findByName("i[1]").getValue());
         Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(),
                 propagatorBuilder2.getOrbitalParametersDrivers().findByName("Ω[1]").getValue());
-        Assertions.assertEquals(refOrbit2.getPerigeeArgument(),
+        Assertions.assertEquals(refOrbit2.getPeriapsisArgument(),
                 propagatorBuilder2.getOrbitalParametersDrivers().findByName("ω[1]").getValue());
 
         // Changed orbital parameters

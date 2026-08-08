@@ -16,6 +16,10 @@
  */
 package org.orekit.control.relative;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -64,10 +68,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Enumeration used to compute the relative maneuvers based on Clohessy-Wiltshire equations (only Circular cases) or
@@ -513,7 +513,7 @@ public enum RPOModel implements RPO {
                 // Update the target orbit and the velocity before the next maneuver.
                 final double trueAnomaly = ((KeplerianOrbit) OrbitType.KEPLERIAN.convertType(
                                 propagated.getOrbit())).getTrueAnomaly();
-                orbit = new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(), orbit.getPerigeeArgument(),
+                orbit = new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(), orbit.getPeriapsisArgument(),
                                            orbit.getRightAscensionOfAscendingNode(), trueAnomaly,
                                            PositionAngleType.TRUE, orbit.getFrame(), nextWaypoint.getDate(),
                                            orbit.getMu());
@@ -592,7 +592,7 @@ public enum RPOModel implements RPO {
                 final T trueAnomaly = ((FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(
                                 propagated.getOrbit())).getTrueAnomaly();
                 orbit = new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(),
-                                                  orbit.getPerigeeArgument(),
+                                                  orbit.getPeriapsisArgument(),
                                                   orbit.getRightAscensionOfAscendingNode(),
                                                   trueAnomaly, PositionAngleType.TRUE,
                                                   orbit.getFrame(), nextWaypoint.getDate(),
