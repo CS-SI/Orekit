@@ -169,7 +169,7 @@ public class TLEParametersDerivativesTest {
                        template.getLaunchYear(), template.getLaunchNumber(), template.getLaunchPiece(),
                        template.getEphemerisType(), template.getElementNumber(), template.getDate(),
                        template.getMeanMotion(), template.getMeanMotionFirstDerivative(), template.getMeanMotionSecondDerivative(),
-                       template.getE(), template.getI(), template.getPerigeeArgument(),
+                       template.getE(), template.getI(), template.getPeriapsisArgument(),
                        template.getRaan(), template.getMeanAnomaly(), template.getRevolutionNumberAtEpoch(),
                        newBStar);
     }

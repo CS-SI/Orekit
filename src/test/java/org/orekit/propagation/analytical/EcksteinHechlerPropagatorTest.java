@@ -645,7 +645,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void perigee() {
+    public void periapsis() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());

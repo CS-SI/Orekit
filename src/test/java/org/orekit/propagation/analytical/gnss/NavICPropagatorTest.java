@@ -71,7 +71,7 @@ public class NavICPropagatorTest {
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(4.758105460020e-01);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(-8.912102146884E-01);
         factory.getOmegaDotDriver().setValue(-4.414469594664e-09);
-        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(-2.999907424014);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(-2.999907424014);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-1.396094758025);
         factory.getAf0Driver().setValue(-9.473115205765e-04);
         factory.getAf1Driver().setValue(1.250555214938e-12);

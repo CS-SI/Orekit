@@ -43,7 +43,7 @@ class BrouwerLyddaneOrbitalStateTest {
         Assertions.assertEquals(elements.getAveragedSemiMajorAxis(), keplerianOrbit.getA(), 1e4);
         Assertions.assertEquals(elements.getAveragedEccentricity(), keplerianOrbit.getE(), 1e-3);
         Assertions.assertEquals(elements.getAveragedInclination(), keplerianOrbit.getI(), 1e-3);
-        Assertions.assertEquals(elements.getAveragedPerigeeArgument(),
+        Assertions.assertEquals(elements.getAveragedPeriapsisArgument(),
                 keplerianOrbit.getPeriapsisArgument(), 1e-2);
         Assertions.assertEquals(elements.getAveragedRightAscensionOfTheAscendingNode(),
                 keplerianOrbit.getRightAscensionOfAscendingNode(), 1e-3);

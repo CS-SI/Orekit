@@ -45,7 +45,7 @@ abstract class FieldSDP4<T extends CalculusFieldElement<T>>  extends FieldTLEPro
 
     // CHECKSTYLE: stop VisibilityModifier check
 
-    /** New perigee argument. */
+    /** New periapsis argument. */
     protected T omgadf;
 
     /** New mean motion. */
@@ -90,7 +90,7 @@ abstract class FieldSDP4<T extends CalculusFieldElement<T>>  extends FieldTLEPro
     protected void sxpPropagate(final T tSince, final T bStar) {
 
         // Update for secular gravity and atmospheric drag
-        omgadf = tle.getPerigeeArgument().add(omgdot.multiply(tSince));
+        omgadf = tle.getPeriapsisArgument().add(omgdot.multiply(tSince));
         final T xnoddf = tle.getRaan().add(xnodot.multiply(tSince));
         final T tSinceSq = tSince.square();
         xnode = xnoddf.add(xnodcf.multiply(tSinceSq));

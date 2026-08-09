@@ -456,12 +456,12 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         factory.setPrn(prn);
 
         // initialize the orbital parameters
-        reset(factory, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS,     KeplerianOrbit::getA);
-        reset(factory, GNSSOrbitalElementsFactory.ECCENTRICITY,        KeplerianOrbit::getE);
-        reset(factory, GNSSOrbitalElementsFactory.INCLINATION,         KeplerianOrbit::getI);
-        reset(factory, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE, KeplerianOrbit::getPerigeeArgument);
-        reset(factory, GNSSOrbitalElementsFactory.NODE_LONGITUDE,      KeplerianOrbit::getRightAscensionOfAscendingNode);
-        reset(factory, GNSSOrbitalElementsFactory.MEAN_ANOMALY,        KeplerianOrbit::getMeanAnomaly);
+        reset(factory, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS,       KeplerianOrbit::getA);
+        reset(factory, GNSSOrbitalElementsFactory.ECCENTRICITY,          KeplerianOrbit::getE);
+        reset(factory, GNSSOrbitalElementsFactory.INCLINATION,           KeplerianOrbit::getI);
+        reset(factory, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS, KeplerianOrbit::getPeriapsisArgument);
+        reset(factory, GNSSOrbitalElementsFactory.NODE_LONGITUDE,        KeplerianOrbit::getRightAscensionOfAscendingNode);
+        reset(factory, GNSSOrbitalElementsFactory.MEAN_ANOMALY,          KeplerianOrbit::getMeanAnomaly);
 
         // initialize the non-Keplerian elements
         reset(factory.getADotDriver(),       aDot);

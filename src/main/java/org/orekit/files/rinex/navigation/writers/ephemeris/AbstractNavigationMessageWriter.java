@@ -204,7 +204,7 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         writer.indentLine(header);
         writer.writeDouble(message.getOrbit().getI(), Unit.RADIAN);
         writer.writeDouble(message.getCrc(), Unit.METRE);
-        writer.writeDouble(message.getOrbit().getPerigeeArgument(), Unit.RADIAN);
+        writer.writeDouble(message.getOrbit().getPeriapsisArgument(), Unit.RADIAN);
         writer.writeDouble(message.getOmegaDot(), RinexNavigationParser.RAD_PER_S);
         writer.finishLine();
     }

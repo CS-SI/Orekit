@@ -73,7 +73,7 @@ public class Rtcm1046Test {
                         "0000000000000000" +                 // Cis
                         "00101000001111100011110011110000" + // i0
                         "0000000000000000" +                 // Crc
-                        "00001100001111100011110011110000" + // Argument of perigee
+                        "00001100001111100011110011110000" + // Argument of periapsis
                         "111111111011111111110100" +         // OMEGADOT
                         "0001101101" +                       // BGD E5a/E1
                         "0001101101" +                       // BGD E5b/E1
@@ -135,7 +135,7 @@ public class Rtcm1046Test {
         Assertions.assertEquals(0.0, galileoMessage.getCis(), eps);
         Assertions.assertEquals(0.987714701321906, galileoMessage.getOrbit().getI(), eps);
         Assertions.assertEquals(0.0, galileoMessage.getCrc(), eps);
-        Assertions.assertEquals(0.30049130834913723, galileoMessage.getOrbit().getPerigeeArgument(), eps);
+        Assertions.assertEquals(0.30049130834913723, galileoMessage.getOrbit().getPeriapsisArgument(), eps);
         Assertions.assertEquals(-5.855958209879004E-9, galileoMessage.getOmegaDot(), eps);
         Assertions.assertEquals(0.6980085385373721, galileoMessage.getOrbit().getRightAscensionOfAscendingNode(), eps);
         Assertions.assertEquals(2.537854E-8, galileoMessage.getBGDE1E5a(), eps);

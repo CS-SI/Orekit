@@ -95,7 +95,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(0., alm.getIDot(), 0.);
         Assertions.assertEquals(0.1426272192E+001, alm.getOrbit().getRightAscensionOfAscendingNode(), 0.);
         Assertions.assertEquals(-0.7737465154E-008, alm.getOmegaDot(), FastMath.ulp(-8E-09));
-        Assertions.assertEquals(0.248929953, alm.getOrbit().getPerigeeArgument(), 0.);
+        Assertions.assertEquals(0.248929953, alm.getOrbit().getPeriapsisArgument(), 0.);
         Assertions.assertEquals(0.1209154364E+001, alm.getOrbit().getMeanAnomaly(), 0.);
         Assertions.assertEquals(0.9536743164E-005, alm.getAf0(), 0.);
         Assertions.assertEquals(0.3637978807E-011, alm.getAf1(), 0.);
@@ -137,7 +137,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(0., alm.getIDot(), 0.);
         Assertions.assertEquals(-1.159458779E+000, alm.getOrbit().getRightAscensionOfAscendingNode(), 1.e-9);
         Assertions.assertEquals(-0.7897471819E-008, alm.getOmegaDot(), FastMath.ulp(-8E-09));
-        Assertions.assertEquals(0.451712027, alm.getOrbit().getPerigeeArgument(), 1.e-9);
+        Assertions.assertEquals(0.451712027, alm.getOrbit().getPeriapsisArgument(), 1.e-9);
         Assertions.assertEquals(-0.2105941778E+001, alm.getOrbit().getMeanAnomaly(), 1.e-9);
         Assertions.assertEquals(0.1621246338E-004, alm.getAf0(), 1.e-14);
         Assertions.assertEquals(0.0, alm.getAf1(), 0.);

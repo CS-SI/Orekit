@@ -74,7 +74,7 @@ public class BeidouPropagatorTest {
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(-0.01365602);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(1.40069711);
         factory.getOmegaDotDriver().setValue(-2.11437379e-9);
-        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(3.11461541);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(3.11461541);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-2.53029382);
         factory.getAf0Driver().setValue(0.0001096725);
         factory.getAf1Driver().setValue(7.27596e-12);
@@ -201,7 +201,7 @@ public class BeidouPropagatorTest {
         factory1.getIDotDriver().setValue(0.0);
         factory1.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(-0.6647664535282437);
         factory1.getOmegaDotDriver().setValue(-3.136916379444212E-9);
-        factory1.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(-2.6584351442773304);
+        factory1.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(-2.6584351442773304);
         factory1.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(0.9614806010234702);
         factory1.getCucDriver().setValue(7.306225597858429E-6);
         factory1.getCusDriver().setValue(-6.314832717180252E-6);

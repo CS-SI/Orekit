@@ -100,7 +100,7 @@ public class BrouwerLyddaneOrbitalState extends AbstractHarmonicsBasedOrbitalSta
     private KeplerianOrbit createOrekitOrbit() {
         return new KeplerianOrbit(averagedElements.getAveragedSemiMajorAxis(),
                 averagedElements.getAveragedEccentricity(), averagedElements.getAveragedInclination(),
-                averagedElements.getAveragedPerigeeArgument(),
+                averagedElements.getAveragedPeriapsisArgument(),
                 averagedElements.getAveragedRightAscensionOfTheAscendingNode(),
                 averagedElements.getAveragedMeanAnomaly(), getPositionAngleType(), getFrame(),
                 getDate(), getMu());

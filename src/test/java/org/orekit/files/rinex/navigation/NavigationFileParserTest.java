@@ -179,7 +179,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-0.558793544769e-07, gps.getCis(), 1.0e-15);
         Assertions.assertEquals(0.110192796930e+01,  gps.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(0.271187500000e+03,  gps.getCrc(), 1.0e-15);
-        Assertions.assertEquals(-0.232757915425e+01, gps.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(-0.232757915425e+01, gps.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(-0.619632953057e-08, gps.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(-0.785747015231e-11, gps.getIDot(), 1.0e-15);
         Assertions.assertEquals(1025,                gps.getTimeOfEphemeris().getWeekNumber());
@@ -388,7 +388,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-1.355074346066e-07, bdt.getCis(), 1.0e-15);
         Assertions.assertEquals(6.617987281734e-02,  bdt.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(-2.970000000000e+02, bdt.getCrc(), 1.0e-15);
-        Assertions.assertEquals(5.859907097566e-01,  bdt.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(5.859907097566e-01,  bdt.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(4.416612541069e-09,  bdt.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(-4.628764235181e-10, bdt.getIDot(), 1.0e-15);
         Assertions.assertEquals(790,                 bdt.getTimeOfEphemeris().getWeekNumber());
@@ -473,7 +473,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-1.303851604462e-08, list.getFirst().getCis(),        1.0e-15);
         Assertions.assertEquals(9.703601465722e-01,  list.getFirst().getOrbit().getI(),         1.0e-15);
         Assertions.assertEquals(2.000742187500e+02,  list.getFirst().getCrc(),        1.0e-15);
-        Assertions.assertEquals(-1.021547253715e+00, list.getFirst().getOrbit().getPerigeeArgument(),         1.0e-15);
+        Assertions.assertEquals(-1.021547253715e+00, list.getFirst().getOrbit().getPeriapsisArgument(),         1.0e-15);
         Assertions.assertEquals(-6.782425372384e-09, list.getFirst().getOmegaDot(),   1.0e-15);
         Assertions.assertEquals(-8.911085468192e-11, list.getFirst().getIDot(),       1.0e-15);
         Assertions.assertEquals(9.367106834964e-14,  list.getFirst().getDeltaN0Dot(), 1.0e-15);
@@ -574,7 +574,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(5.401670932770E-08,  gal.getCis(), 1.0e-15);
         Assertions.assertEquals(9.594902351453E-01,  gal.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(1.494687500000E+02,  gal.getCrc(), 1.0e-15);
-        Assertions.assertEquals(-1.602015041031E+00, gal.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(-1.602015041031E+00, gal.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(-5.460941755858E-09, gal.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(-6.350264514006E-10, gal.getIDot(), 1.0e-15);
         Assertions.assertEquals(1894,                gal.getTimeOfEphemeris().getWeekNumber());
@@ -711,7 +711,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.251457095146e-06,  qzss.getCis(), 1.0e-15);
         Assertions.assertEquals(0.107314257498e-02,  qzss.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(-0.291156250000e+03, qzss.getCrc(), 1.0e-15);
-        Assertions.assertEquals(-0.298090621453e+01, qzss.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(-0.298090621453e+01, qzss.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(0.116790579082e-08,  qzss.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  qzss.getIDot(), 1.0e-15);
         Assertions.assertEquals(2109,                qzss.getTimeOfEphemeris().getWeekNumber());
@@ -914,7 +914,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-5.215406417847e-08, navic.getCis(), 1.0e-15);
         Assertions.assertEquals(5.007869522210e-01,  navic.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(7.530000000000e+02,  navic.getCrc(), 1.0e-15);
-        Assertions.assertEquals(3.073412769875e+00,  navic.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(3.073412769875e+00,  navic.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(-5.227360597694e-09, navic.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(4.421612749348e-10,  navic.getIDot(), 1.0e-15);
         Assertions.assertEquals(2077,                navic.getTimeOfEphemeris().getWeekNumber());
@@ -1032,7 +1032,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-7.078051567078e-08, navICL1.getCis(),        1.0e-20);
         Assertions.assertEquals( 8.594830530333e-02, navICL1.getOrbit().getI(),         1.0e-14);
         Assertions.assertEquals( 1.214375000000e+02, navICL1.getCrc(),        1.0e-10);
-        Assertions.assertEquals(-5.136403830694e-02, navICL1.getOrbit().getPerigeeArgument(),         1.0e-14);
+        Assertions.assertEquals(-5.136403830694e-02, navICL1.getOrbit().getPeriapsisArgument(),         1.0e-14);
         Assertions.assertEquals(-5.858815471753e-09, navICL1.getOmegaDot(),   1.0e-21);
         Assertions.assertEquals(-4.846630453041e-10, navICL1.getIDot(),       1.0e-22);
         Assertions.assertEquals( 0.000000000000e+00, navICL1.getDeltaN0Dot(), 1.0e-15);
@@ -1255,7 +1255,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(1.644715666771e-06,  qzss.getCis(), 1.0e-15);
         Assertions.assertEquals(7.122509413449e-01,  qzss.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(9.670937500000e+02,  qzss.getCrc(), 1.0e-15);
-        Assertions.assertEquals(-1.550179221884e+00, qzss.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(-1.550179221884e+00, qzss.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(-1.478633019572e-09, qzss.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(-7.193156766709e-10, qzss.getIDot(), 1.0e-15);
         Assertions.assertEquals(2109,                qzss.getTimeOfEphemeris().getWeekNumber());
@@ -1354,7 +1354,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(1.136213541031E-07,  gps.getCis(), 1.0e-15);
         Assertions.assertEquals(9.833041013284E-01,  gps.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(2.525937500000E+02,  gps.getCrc(), 1.0e-15);
-        Assertions.assertEquals(8.208058952773E-01,  gps.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(8.208058952773E-01,  gps.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(-8.015691028563E-09, gps.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(-1.053615315878E-10, gps.getIDot(), 1.0e-15);
         Assertions.assertEquals(2147,                gps.getTimeOfEphemeris().getWeekNumber());
@@ -1442,7 +1442,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-4.842877388000e-08, gal.getCis(), 1.0e-15);
         Assertions.assertEquals(9.941388485934e-01,  gal.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(2.392812500000e+02,  gal.getCrc(), 1.0e-15);
-        Assertions.assertEquals(-9.613560467153e-01, gal.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(-9.613560467153e-01, gal.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(-5.551302662610e-09, gal.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(-8.321775206769e-11, gal.getIDot(), 1.0e-15);
         Assertions.assertEquals(2147,                gal.getTimeOfEphemeris().getWeekNumber());
@@ -1632,7 +1632,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2.160668373108e-07,  navic.getCis(), 1.0e-15);
         Assertions.assertEquals(5.051932936599e-01,  navic.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(-4.082500000000e+02, navic.getCrc(), 1.0e-15);
-        Assertions.assertEquals(-2.990028662993e+00, navic.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(-2.990028662993e+00, navic.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(-2.734399613005e-09, navic.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(6.389551864768e-10,  navic.getIDot(), 1.0e-15);
         Assertions.assertEquals(2148,                navic.getTimeOfEphemeris().getWeekNumber());
@@ -1710,7 +1710,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-6.519258022308e-09, bdt.getCis(), 1.0e-15);
         Assertions.assertEquals(9.657351895813e-01,  bdt.getOrbit().getI(), 1.0e-15);
         Assertions.assertEquals(1.491093750000e+02,  bdt.getCrc(), 1.0e-15);
-        Assertions.assertEquals(-1.225716188251e+00, bdt.getOrbit().getPerigeeArgument(), 1.0e-15);
+        Assertions.assertEquals(-1.225716188251e+00, bdt.getOrbit().getPeriapsisArgument(), 1.0e-15);
         Assertions.assertEquals(-6.454554572392e-09, bdt.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(2.217949529358e-10,  bdt.getIDot(), 1.0e-15);
         Assertions.assertEquals(790,                 bdt.getTimeOfEphemeris().getWeekNumber());

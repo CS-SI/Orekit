@@ -99,7 +99,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
     /** final inclination. */
     protected double i;
 
-    /** final perigee argument. */
+    /** final periapsis argument. */
     protected double omega;
 
     /** L from SPTRCK #3. */
@@ -123,7 +123,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
     /** common parameter for mean anomaly (M) computation. */
     protected double xmdot;
 
-    /** common parameter for perigee argument (omega) computation. */
+    /** common parameter for periapsis argument (omega) computation. */
     protected double omgdot;
 
     /** common parameter for raan (OMEGA) computation. */
@@ -137,7 +137,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
     /** sqrt (1 - e2). */
     protected double beta0;
 
-    /** perigee, expressed in KM and ALTITUDE. */
+    /** periapsis, expressed in KM and ALTITUDE. */
     protected double perige;
 
     /** eta squared. */
@@ -402,7 +402,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
 
         perige = (a0dp * (1 - tle.getE()) - TLEConstants.NORMALIZED_EQUATORIAL_RADIUS) * TLEConstants.EARTH_RADIUS; // perige
 
-        //  For perigee below 156 km, the values of s and qoms2t are changed :
+        //  For periapsis below 156 km, the values of s and qoms2t are changed :
         if (perige < 156.0) {
             if (perige <= 98.0) {
                 s4 = 20.0;
@@ -440,7 +440,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
                 tle.getE() * (0.5 + 2.0 * etasq) -
                 2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
                         (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
-                                0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPerigeeArgument())));
+                                0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPeriapsisArgument())));
 
         final double theta4 = theta2 * theta2;
         final double temp1 = 3 * TLEConstants.CK2 * pinvsq * xn0dp;
@@ -471,7 +471,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
      */
     private PVCoordinates computePVCoordinates() {
 
-        // Sine and cosine of final perigee argument
+        // Sine and cosine of final periapsis argument
         final SinCos scOmega = FastMath.sinCos(omega);
 
         // Long period periodics
@@ -655,7 +655,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
                       tle.getEphemerisType(), tle.getElementNumber(), tle.getDate(),
                       tle.getMeanMotion(), tle.getMeanMotionFirstDerivative(),
                       tle.getMeanMotionSecondDerivative(),
-                      tle.getE(), tle.getI(), tle.getPerigeeArgument(), tle.getRaan(),
+                      tle.getE(), tle.getI(), tle.getPeriapsisArgument(), tle.getRaan(),
                       tle.getMeanAnomaly(), tle.getRevolutionNumberAtEpoch(),
                       bStarDriver.getValue());
         initializeTle(tle);

@@ -47,7 +47,7 @@
  *  detects altitude crossing (and by default stop at descending)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
- *  detects apside crossing (and by default stop at perigee)
+ *  detects apside crossing (and by default stop at periapsis)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.DateDetector DateDetector}
  *  detects occurrence of a predefine instant (and by default stop there)

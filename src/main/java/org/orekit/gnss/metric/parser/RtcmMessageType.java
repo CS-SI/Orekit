@@ -164,7 +164,7 @@ public enum RtcmMessageType implements MessageType {
             factory.getCisDriver().setValue(RtcmDataField.DF096.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.INCLINATION, RtcmDataField.DF097, encodedMessage);
             factory.getCrcDriver().setValue(RtcmDataField.DF098.doubleValue(encodedMessage));
-            setValue(orb, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE, RtcmDataField.DF099, encodedMessage);
+            setValue(orb, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS, RtcmDataField.DF099, encodedMessage);
             factory.getOmegaDotDriver().setValue(RtcmDataField.DF100.doubleValue(encodedMessage));
             factory.setTgd(RtcmDataField.DF101.doubleValue(encodedMessage));
             factory.setSvHealth(RtcmDataField.DF102.intValue(encodedMessage));
@@ -301,7 +301,7 @@ public enum RtcmMessageType implements MessageType {
             factory.getCisDriver().setValue(RtcmDataField.DF508.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.INCLINATION, RtcmDataField.DF509, encodedMessage);
             factory.getCrcDriver().setValue(RtcmDataField.DF510.doubleValue(encodedMessage));
-            setValue(orb, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE, RtcmDataField.DF511, encodedMessage);
+            setValue(orb, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS, RtcmDataField.DF511, encodedMessage);
             factory.getOmegaDotDriver().setValue(RtcmDataField.DF512.doubleValue(encodedMessage));
             factory.setTgd1(RtcmDataField.DF513.doubleValue(encodedMessage));
             factory.setTgd2(RtcmDataField.DF514.doubleValue(encodedMessage));
@@ -353,7 +353,7 @@ public enum RtcmMessageType implements MessageType {
             factory.getCisDriver().setValue(RtcmDataField.DF445.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.INCLINATION, RtcmDataField.DF446, encodedMessage);
             factory.getCrcDriver().setValue(RtcmDataField.DF447.doubleValue(encodedMessage));
-            setValue(orb, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE, RtcmDataField.DF448, encodedMessage);
+            setValue(orb, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS, RtcmDataField.DF448, encodedMessage);
             factory.getOmegaDotDriver().setValue(RtcmDataField.DF449.doubleValue(encodedMessage));
             factory.getIDotDriver().setValue(RtcmDataField.DF450.doubleValue(encodedMessage));
 
@@ -1247,7 +1247,7 @@ public enum RtcmMessageType implements MessageType {
         factory.getCisDriver().setValue(RtcmDataField.DF307.doubleValue(encodedMessage));
         setValue(orb, GalileoNavigationMessageFactory.INCLINATION, RtcmDataField.DF308, encodedMessage);
         factory.getCrcDriver().setValue(RtcmDataField.DF309.doubleValue(encodedMessage));
-        setValue(orb, GalileoNavigationMessageFactory.ARGUMENT_OF_PERIGEE, RtcmDataField.DF310, encodedMessage);
+        setValue(orb, GalileoNavigationMessageFactory.ARGUMENT_OF_PERIAPSIS, RtcmDataField.DF310, encodedMessage);
         factory.getOmegaDotDriver().setValue(RtcmDataField.DF311.doubleValue(encodedMessage));
 
         // bias

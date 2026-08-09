@@ -305,7 +305,7 @@ class FixedPointTleGenerationAlgorithmTest {
         Assertions.assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), threshold * tle.getMeanMotion());
         Assertions.assertEquals(tle.getE(), converted.getE(), threshold * tle.getE());
         Assertions.assertEquals(tle.getI(), converted.getI(), threshold * tle.getI());
-        Assertions.assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), threshold * tle.getPerigeeArgument());
+        Assertions.assertEquals(tle.getPeriapsisArgument(), converted.getPeriapsisArgument(), threshold * tle.getPeriapsisArgument());
         Assertions.assertEquals(tle.getRaan(), converted.getRaan(), threshold * tle.getRaan());
         Assertions.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), threshold * tle.getMeanAnomaly());
         Assertions.assertEquals(tle.getBStar(), converted.getBStar(), threshold * tle.getBStar());
@@ -352,7 +352,7 @@ class FixedPointTleGenerationAlgorithmTest {
         Assertions.assertEquals(tle.getMeanMotion().getReal(), converted.getMeanMotion().getReal(),threshold * tle.getMeanMotion().getReal());
         Assertions.assertEquals(tle.getE().getReal(), converted.getE().getReal(), threshold * tle.getE().getReal());
         Assertions.assertEquals(tle.getI().getReal(), converted.getI().getReal(), threshold * tle.getI().getReal());
-        Assertions.assertEquals(tle.getPerigeeArgument().getReal(), converted.getPerigeeArgument().getReal(), threshold * tle.getPerigeeArgument().getReal());
+        Assertions.assertEquals(tle.getPeriapsisArgument().getReal(), converted.getPeriapsisArgument().getReal(), threshold * tle.getPeriapsisArgument().getReal());
         Assertions.assertEquals(tle.getRaan().getReal(), converted.getRaan().getReal(), threshold * tle.getRaan().getReal());
         Assertions.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), threshold * tle.getMeanAnomaly().getReal());
         Assertions.assertEquals(tle.getBStar().getReal(), converted.getBStar().getReal(), threshold * tle.getBStar().getReal());

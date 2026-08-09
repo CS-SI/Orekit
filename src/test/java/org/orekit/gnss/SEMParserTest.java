@@ -98,7 +98,7 @@ public class SEMParserTest {
         Assertions.assertEquals(0., alm.getIDot(), 0.);
         Assertions.assertEquals(-2.08778738975525E-01, alm.getOrbit().getRightAscensionOfAscendingNode() / GNSSConstants.GNSS_PI, FastMath.ulp(-2E-01));
         Assertions.assertEquals(-2.48837750405073E-09, alm.getOmegaDot() / GNSSConstants.GNSS_PI, FastMath.ulp(-3E-09));
-        Assertions.assertEquals(1.46086812019348E-01, alm.getOrbit().getPerigeeArgument() / GNSSConstants.GNSS_PI, FastMath.ulp(1E-01));
+        Assertions.assertEquals(1.46086812019348E-01, alm.getOrbit().getPeriapsisArgument() / GNSSConstants.GNSS_PI, FastMath.ulp(1E-01));
         Assertions.assertEquals(4.55284833908081E-01, alm.getOrbit().getMeanAnomaly() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
         Assertions.assertEquals(1.33514404296875E-05, alm.getAf0(), FastMath.ulp(1E-05));
         Assertions.assertEquals(0., alm.getAf1(), 0.);
@@ -142,7 +142,7 @@ public class SEMParserTest {
         Assertions.assertEquals(0., alm.getIDot(), 0.);
         Assertions.assertEquals(4.53996539115906E-01, alm.getOrbit().getRightAscensionOfAscendingNode() / GNSSConstants.GNSS_PI, FastMath.ulp(5E-01));
         Assertions.assertEquals(-2.46291165240109E-09, alm.getOmegaDot() / GNSSConstants.GNSS_PI, FastMath.ulp(-3E-09));
-        Assertions.assertEquals(7.92368650436401E-02, alm.getOrbit().getPerigeeArgument() / GNSSConstants.GNSS_PI, FastMath.ulp(8E-02));
+        Assertions.assertEquals(7.92368650436401E-02, alm.getOrbit().getPeriapsisArgument() / GNSSConstants.GNSS_PI, FastMath.ulp(8E-02));
         Assertions.assertEquals(3.84885787963867E-01, alm.getOrbit().getMeanAnomaly() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
         Assertions.assertEquals(9.5367431640625E-6, alm.getAf0(), 0.);
         Assertions.assertEquals(3.63797880709171E-12, alm.getAf1(), 0.);

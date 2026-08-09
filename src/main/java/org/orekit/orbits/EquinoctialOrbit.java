@@ -45,7 +45,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *     hy = tan(i/2) sin(Ω)
  *     lv = v + ω + Ω
  *   </pre>
- * where ω stands for the Perigee Argument and Ω stands for the
+ * where ω stands for the Periapsis Argument and Ω stands for the
  * Right Ascension of the Ascending Node.
  *
  * <p>

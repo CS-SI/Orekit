@@ -33,7 +33,7 @@ import org.orekit.utils.ParameterDriver;
 
 /**
  * Post-Newtonian correction force due to general relativity. The main effect is the
- * precession of perigee by a few arcseconds per year.
+ * precession of periapsis by a few arcseconds per year.
  *
  * <p> Implemented from Montenbruck and Gill equation 3.146.
  *

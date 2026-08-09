@@ -84,9 +84,9 @@ public interface GLONASSOrbitalElements extends TimeStamped {
     }
 
     /**
-     * Get the Argument of Perigee.
+     * Get the Argument of Periapsis.
      *
-     * @return the Argument of Perigee (rad)
+     * @return the Argument of Periapsis (rad)
      */
     default double getPa() {
         return 0.0;

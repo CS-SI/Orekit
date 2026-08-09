@@ -89,7 +89,7 @@ public class SGP4 extends TLEPropagator {
     @Override
     protected void sxpInitialize(final double bStar) {
 
-        // For perigee less than 220 kilometers, the equations are truncated to
+        // For periapsis less than 220 kilometers, the equations are truncated to
         // linear variation in sqrt a and quadratic variation in mean anomaly.
         // Also, the c3 term, the delta omega term, and the delta m term are dropped.
         lessThan220 = perige < 220;
@@ -114,7 +114,7 @@ public class SGP4 extends TLEPropagator {
                                   TLEConstants.NORMALIZED_EQUATORIAL_RADIUS * sini0 / tle.getE();
                 xmcof = -TLEConstants.TWO_THIRD * coef * bStar *
                         TLEConstants.NORMALIZED_EQUATORIAL_RADIUS / eeta;
-                omgcof = bStar * c3 * FastMath.cos(tle.getPerigeeArgument());
+                omgcof = bStar * c3 * FastMath.cos(tle.getPeriapsisArgument());
             }
         }
 
@@ -128,7 +128,7 @@ public class SGP4 extends TLEPropagator {
 
         // Update for secular gravity and atmospheric drag.
         final double xmdf = tle.getMeanAnomaly() + xmdot * tSince;
-        final double omgadf = tle.getPerigeeArgument() + omgdot * tSince;
+        final double omgadf = tle.getPeriapsisArgument() + omgdot * tSince;
         final double xn0ddf = tle.getRaan() + xnodot * tSince;
         omega = omgadf;
         double xmp = xmdf;

@@ -313,7 +313,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         // True Anomaly
         final UnivariateDerivative2 vk =  FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, ek);
         // Argument of Latitude
-        final UnivariateDerivative2 phik    = vk.add(orbit.getPerigeeArgument());
+        final UnivariateDerivative2 phik    = vk.add(orbit.getPeriapsisArgument());
         final FieldSinCos<UnivariateDerivative2> cs2phi = FastMath.sinCos(phik.multiply(2));
         // Argument of Latitude Correction
         final UnivariateDerivative2 dphik = cs2phi.cos().multiply(orbitalElements.getCuc()).add(cs2phi.sin().multiply(orbitalElements.getCus()));
@@ -484,7 +484,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
                 new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(updatedA,
                                                                          updatedE,
                                                                          previous.getI().add(correction.getEntry(2) * factor),
-                                                                         previous.getPerigeeArgument().add(correction.getEntry(3) * factor),
+                                                                         previous.getPeriapsisArgument().add(correction.getEntry(3) * factor),
                                                                          previous.getRightAscensionOfAscendingNode().add(correction.getEntry(4) * factor),
                                                                          previous.getMeanAnomaly().add(correction.getEntry(5) * factor),
                                                                          PositionAngleType.MEAN),
@@ -584,7 +584,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         final Gradient aG    = Gradient.variable(FREE_PARAMETERS, 0, orbit.getA());
         final Gradient eG    = Gradient.variable(FREE_PARAMETERS, 1, orbit.getE());
         final Gradient iG    = Gradient.variable(FREE_PARAMETERS, 2, orbit.getI());
-        final Gradient paG   = Gradient.variable(FREE_PARAMETERS, 3, orbit.getPerigeeArgument());
+        final Gradient paG   = Gradient.variable(FREE_PARAMETERS, 3, orbit.getPeriapsisArgument());
         final Gradient raanG = Gradient.variable(FREE_PARAMETERS, 4, orbit.getRightAscensionOfAscendingNode());
         final Gradient mG    = Gradient.variable(FREE_PARAMETERS, 5, orbit.getMeanAnomaly());
         final FieldKeplerianOrbit<Gradient> orbitG =

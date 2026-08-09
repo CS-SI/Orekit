@@ -365,7 +365,7 @@ class GPSPropagatorTest {
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE)
             .setValue(1.0479401362158658);
         factory.getOmegaDotDriver().setValue(-7.967117576712062E-9);
-        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE)
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS)
             .setValue(-2.4719019944000538);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY)
             .setValue(-1.0899023379614294);
@@ -415,7 +415,7 @@ class GPSPropagatorTest {
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE)
             .setValue(1.0479401362158658);
         factory.getOmegaDotDriver().setValue(-7.967117576712062E-9);
-        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE)
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS)
             .setValue(-2.4719019944000538);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY)
             .setValue(-1.0899023379614294);
@@ -542,7 +542,7 @@ class GPSPropagatorTest {
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE)
             .setValue(1.0479401362158658);
         factory.getOmegaDotDriver().setValue(-7.967117576712062E-9);
-        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE)
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS)
             .setValue(-2.4719019944000538);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY)
             .setValue(-1.0899023379614294);
@@ -594,8 +594,8 @@ class GPSPropagatorTest {
         checkParameter(oe2.getOrbit().getI(),
                        factory, GNSSOrbitalElementsFactory.INCLINATION,
                        false, 2.3e-16);
-        checkParameter(oe2.getOrbit().getPerigeeArgument(),
-                       factory, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE,
+        checkParameter(oe2.getOrbit().getPeriapsisArgument(),
+                       factory, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS,
                        true, 8.7e-14);
         checkParameter(oe2.getOrbit().getRightAscensionOfAscendingNode(),
                        factory, GNSSOrbitalElementsFactory.NODE_LONGITUDE,

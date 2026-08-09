@@ -81,7 +81,7 @@ class GnssGradientConverterTest {
         factory.getIDotDriver().setValue(-2.36081262303612E-10);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(-0.36639513583951266);
         factory.getOmegaDotDriver().setValue(-5.7695260382035525E-9);
-        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(-1.6870064194345724);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(-1.6870064194345724);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-0.38716557650888);
         factory.getCucDriver().setValue(-8.903443813323975E-7);
         factory.getCusDriver().setValue(6.61797821521759E-6);
@@ -148,7 +148,7 @@ class GnssGradientConverterTest {
         factory.getIDotDriver().setValue(-2.4608167886110235E-10);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(1.0479401362158658);
         factory.getOmegaDotDriver().setValue(-7.967117576712062E-9);
-        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(-2.4719019944000538);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(-2.4719019944000538);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-1.0899023379614294);
         factory.getCucDriver().setValue(4.3995678424835205E-6);
         factory.getCusDriver().setValue(1.002475619316101E-5);

@@ -72,7 +72,7 @@ public class QZSSAlmanacTest {
         Assertions.assertEquals(0., alm.getIDot(), 0.);
         Assertions.assertEquals(9.194173760E-01, alm.getOrbit().getRightAscensionOfAscendingNode(), 0.);
         Assertions.assertEquals(9.714690370E-10, alm.getOmegaDot(), FastMath.ulp(-8E-09));
-        Assertions.assertEquals(2.722442515, alm.getOrbit().getPerigeeArgument(), 0.);
+        Assertions.assertEquals(2.722442515, alm.getOrbit().getPeriapsisArgument(), 0.);
         Assertions.assertEquals(-1.158294811, alm.getOrbit().getMeanAnomaly(), 0.);
         Assertions.assertEquals(6.351470947E-04, alm.getAf0(), 0.);
         Assertions.assertEquals(0.0, alm.getAf1(), 0.);
@@ -111,7 +111,7 @@ public class QZSSAlmanacTest {
             "rate", // Rate of Right Ascen(r/s)
             "sqrt", // SQRT(A)  (m 1/2)
             "right", // Right Ascen at Week(rad)
-            "argument", // Argument of Perigee(rad)
+            "argument", // Argument of periapsis(rad)
             "mean", // Mean Anom(rad)
             "af0", // Af0(s)
             "af1", // Af1(s/s)
@@ -281,8 +281,8 @@ public class QZSSAlmanacTest {
                         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(Double.parseDouble(entry.getValue()));
                         checks[7] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[8])) {
-                        // Gets the Argument of Perigee
-                        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(Double.parseDouble(entry.getValue()));
+                        // Gets the Argument of periapsis
+                        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(Double.parseDouble(entry.getValue()));
                         checks[8] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[9])) {
                         // Gets the Mean Anomalie

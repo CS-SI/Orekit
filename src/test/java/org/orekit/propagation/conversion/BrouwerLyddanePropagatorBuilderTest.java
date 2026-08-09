@@ -146,7 +146,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(47.); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE, inertialFrame, initDate, mu);

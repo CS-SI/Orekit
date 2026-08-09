@@ -61,8 +61,8 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
     /** Name for inclination. */
     public static final String INCLINATION   = "TleInclination";
 
-    /** Name for perigee argument. */
-    public static final String PERIGEE_ARGUMENT = "TlePerigeeArgument";
+    /** Name for periapsis argument. */
+    public static final String PERIAPSIS_ARGUMENT = "TlePeriapsisArgument";
 
     /** Name for right ascension of ascending node. */
     public static final String RAAN    = "TleRighAscensionAscendingNode";
@@ -151,7 +151,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
         drivers.add(new ParameterDriver(INCLINATION, tle.getI(),
                                         FastMath.scalb(1.0, -22),
                                         0, FastMath.PI));
-        drivers.add(new ParameterDriver(PERIGEE_ARGUMENT, tle.getPerigeeArgument(),
+        drivers.add(new ParameterDriver(PERIAPSIS_ARGUMENT, tle.getPeriapsisArgument(),
                                         FastMath.scalb(1.0, -22),
                                         Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
         drivers.add(new ParameterDriver(RAAN, tle.getRaan(),
@@ -277,7 +277,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
                               Gradient.constant(DEFAULT_STATE_DIMENSION, tle.getMeanMotionSecondDerivative()),
                               Gradient.variable(DEFAULT_STATE_DIMENSION, 1, tle.getE()),
                               Gradient.variable(DEFAULT_STATE_DIMENSION, 2, tle.getI()),
-                              Gradient.variable(DEFAULT_STATE_DIMENSION, 3, tle.getPerigeeArgument()),
+                              Gradient.variable(DEFAULT_STATE_DIMENSION, 3, tle.getPeriapsisArgument()),
                               Gradient.variable(DEFAULT_STATE_DIMENSION, 4, tle.getRaan()),
                               Gradient.variable(DEFAULT_STATE_DIMENSION, 5, tle.getMeanAnomaly()),
                               tle.getRevolutionNumberAtEpoch(),

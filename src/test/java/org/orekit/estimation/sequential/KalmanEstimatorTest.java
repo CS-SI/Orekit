@@ -158,7 +158,7 @@ class KalmanEstimatorTest {
         Assertions.assertEquals(initialOrbit.getA(), drivers.findByName("a").getValue());
         Assertions.assertEquals(initialOrbit.getI(), drivers.findByName("i").getValue());
         Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(), drivers.findByName("Ω").getValue());
-        Assertions.assertEquals(initialOrbit.getPerigeeArgument(), drivers.findByName("ω").getValue());
+        Assertions.assertEquals(initialOrbit.getPeriapsisArgument(), drivers.findByName("ω").getValue());
 
         // Changed orbital parameters
         Assertions.assertNotEquals(initialOrbit.getE(), drivers.findByName("e").getValue());
@@ -264,12 +264,12 @@ class KalmanEstimatorTest {
         Assertions.assertEquals(refOrbit1.getA(), oDrivers1.findByName("a[0]").getValue());
         Assertions.assertEquals(refOrbit1.getI(), oDrivers1.findByName("i[0]").getValue());
         Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(), oDrivers1.findByName("Ω[0]").getValue());
-        Assertions.assertEquals(refOrbit1.getPerigeeArgument(), oDrivers1.findByName("ω[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getPeriapsisArgument(), oDrivers1.findByName("ω[0]").getValue());
 
         Assertions.assertEquals(refOrbit2.getA(), oDrivers2.findByName("a[1]").getValue());
         Assertions.assertEquals(refOrbit2.getI(), oDrivers2.findByName("i[1]").getValue());
         Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(), oDrivers2.findByName("Ω[1]").getValue());
-        Assertions.assertEquals(refOrbit2.getPerigeeArgument(), oDrivers2.findByName("ω[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getPeriapsisArgument(), oDrivers2.findByName("ω[1]").getValue());
 
         // Changed orbital parameters
         Assertions.assertNotEquals(refOrbit1.getE(), oDrivers1.findByName("e[0]").getValue());

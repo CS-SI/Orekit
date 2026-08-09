@@ -191,7 +191,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         // Current longitude of the ascending node
         final UnivariateDerivative2 lambda = computeLambda(dTpr, n, aeop2, i);
 
-        // Current argument of perigee
+        // Current argument of periapsis
         final UnivariateDerivative2 pa = computePA(dTpr, n, aeop2, i);
 
         // Mean longitude at the instant the spacecraft passes the current ascending node
@@ -491,12 +491,12 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
     }
 
     /**
-     * Computes the current argument of perigee.
+     * Computes the current argument of periapsis.
      * @param dTpr interval of prediction (s)
      * @param n mean motion (rad/s)
      * @param aeop2 square of the ratio between the radius of the ellipsoid and p, with p = sma * (1 - ecc²)
      * @param i inclination (rad)
-     * @return the current argument of perigee (rad)
+     * @return the current argument of periapsis (rad)
      */
     private UnivariateDerivative2 computePA(final UnivariateDerivative2 dTpr,
                                             final UnivariateDerivative2 n,

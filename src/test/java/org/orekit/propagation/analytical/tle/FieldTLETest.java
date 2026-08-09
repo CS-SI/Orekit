@@ -201,7 +201,7 @@ public class FieldTLETest {
         Assertions.assertEquals(98.749, FastMath.toDegrees(tle.getI().getReal()), 1e-10);
         Assertions.assertEquals(199.5121, FastMath.toDegrees(tle.getRaan().getReal()), 1e-10);
         Assertions.assertEquals(0.0001333, tle.getE().getReal(), 1e-10);
-        Assertions.assertEquals(133.9522, FastMath.toDegrees(tle.getPerigeeArgument().getReal()), 1e-10);
+        Assertions.assertEquals(133.9522, FastMath.toDegrees(tle.getPeriapsisArgument().getReal()), 1e-10);
         Assertions.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly().getReal()), 1e-10);
         Assertions.assertEquals(14.26113993, tle.getMeanMotion().getReal() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
         Assertions.assertEquals(7182888.814633288, tle.computeSemiMajorAxis().getReal(), 1e-10);
@@ -262,7 +262,7 @@ public class FieldTLETest {
         Assertions.assertEquals(tleA.getI().getReal(),               tleB.getI(), 1e-10);
         Assertions.assertEquals(tleA.getRaan().getReal(),            tleB.getRaan(), 1e-10);
         Assertions.assertEquals(tleA.getE().getReal(),               tleB.getE(), 1e-10);
-        Assertions.assertEquals(tleA.getPerigeeArgument().getReal(), tleB.getPerigeeArgument(), 1e-10);
+        Assertions.assertEquals(tleA.getPeriapsisArgument().getReal(), tleB.getPeriapsisArgument(), 1e-10);
         Assertions.assertEquals(tleA.getMeanAnomaly().getReal(),     tleB.getMeanAnomaly(), 1e-10);
         Assertions.assertEquals(tleA.getMeanMotion().getReal(),      tleB.getMeanMotion(), 0);
         Assertions.assertEquals(tleA.getRevolutionNumberAtEpoch(),   tleB.getRevolutionNumberAtEpoch(), 0);
@@ -286,7 +286,7 @@ public class FieldTLETest {
                 tleRef.getEphemerisType(), tleRef.getElementNumber(), tleRef.getDate(),
                 tleRef.getMeanMotion(), tleRef.getMeanMotionFirstDerivative(),
                 tleRef.getMeanMotionSecondDerivative(), tleRef.getE(), tleRef.getI(),
-                tleRef.getPerigeeArgument(), tleRef.getRaan(), tleRef.getMeanAnomaly(),
+                tleRef.getPeriapsisArgument(), tleRef.getRaan(), tleRef.getMeanAnomaly(),
                 tleRef.getRevolutionNumberAtEpoch(), tleRef.getBStar());
         Assertions.assertEquals(line1, tle.getLine1());
         Assertions.assertEquals(line2, tle.getLine2());
@@ -329,7 +329,7 @@ public class FieldTLETest {
         Assertions.assertEquals(tleA.getI().getReal(),               tleB.getI().getReal(), 1e-10);
         Assertions.assertEquals(tleA.getRaan().getReal(),            tleB.getRaan().getReal(), 1e-10);
         Assertions.assertEquals(tleA.getE().getReal(),               tleB.getE().getReal(), 1e-10);
-        Assertions.assertEquals(tleA.getPerigeeArgument().getReal(), tleB.getPerigeeArgument().getReal(), 1e-10);
+        Assertions.assertEquals(tleA.getPeriapsisArgument().getReal(), tleB.getPeriapsisArgument().getReal(), 1e-10);
         Assertions.assertEquals(tleA.getMeanAnomaly().getReal(),     tleB.getMeanAnomaly().getReal(), 1e-10);
         Assertions.assertEquals(tleA.getMeanMotion().getReal(),      tleB.getMeanMotion().getReal(), 0);
         Assertions.assertEquals(tleA.getRevolutionNumberAtEpoch(),   tleB.getRevolutionNumberAtEpoch(), 0);
@@ -748,7 +748,7 @@ public class FieldTLETest {
         Assertions.assertEquals(tleISS.getMeanMotion().getReal(),      rebuilt.getMeanMotion().getReal(),      eps * tleISS.getMeanMotion().getReal());
         Assertions.assertEquals(tleISS.getE().getReal(),               rebuilt.getE().getReal(),               eps * tleISS.getE().getReal());
         Assertions.assertEquals(tleISS.getI().getReal(),               rebuilt.getI().getReal(),               eps * tleISS.getI().getReal());
-        Assertions.assertEquals(tleISS.getPerigeeArgument().getReal(), rebuilt.getPerigeeArgument().getReal(), eps * tleISS.getPerigeeArgument().getReal());
+        Assertions.assertEquals(tleISS.getPeriapsisArgument().getReal(), rebuilt.getPeriapsisArgument().getReal(), eps * tleISS.getPeriapsisArgument().getReal());
         Assertions.assertEquals(tleISS.getRaan().getReal(),            rebuilt.getRaan().getReal(),            eps * tleISS.getRaan().getReal());
         Assertions.assertEquals(tleISS.getMeanAnomaly().getReal(),     rebuilt.getMeanAnomaly().getReal(),     eps * tleISS.getMeanAnomaly().getReal());
         Assertions.assertEquals(tleISS.getMeanAnomaly().getReal(),     rebuilt.getMeanAnomaly().getReal(),     eps * tleISS.getMeanAnomaly().getReal());

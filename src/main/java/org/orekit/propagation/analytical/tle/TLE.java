@@ -144,7 +144,7 @@ public class TLE implements OrbitalParameters {
     /** Inclination (rad). */
     private final double inclination;
 
-    /** Argument of perigee (rad). */
+    /** Argument of periapsis (rad). */
     private final double pa;
 
     /** Right Ascension of the Ascending node (rad). */
@@ -250,7 +250,7 @@ public class TLE implements OrbitalParameters {
      *
      * <p>
      * The mean anomaly, the right ascension of ascending node Ω and the argument of
-     * perigee ω are normalized into the [0, 2π] interval as they can be negative.
+     * periapsis ω are normalized into the [0, 2π] interval as they can be negative.
      * After that, a range check is performed on some of the orbital elements:
      *
      * <pre>
@@ -275,7 +275,7 @@ public class TLE implements OrbitalParameters {
      * @param meanMotionSecondDerivative mean motion second derivative (rad/s³)
      * @param e eccentricity
      * @param i inclination (rad)
-     * @param pa argument of perigee (rad)
+     * @param pa argument of periapsis (rad)
      * @param raan right ascension of ascending node (rad)
      * @param meanAnomaly mean anomaly (rad)
      * @param revolutionNumberAtEpoch revolution number at epoch
@@ -306,7 +306,7 @@ public class TLE implements OrbitalParameters {
      *
      * <p>
      * The mean anomaly, the right ascension of ascending node Ω and the argument of
-     * perigee ω are normalized into the [0, 2π] interval as they can be negative.
+     * periapsis ω are normalized into the [0, 2π] interval as they can be negative.
      * After that, a range check is performed on some of the orbital elements:
      *
      * <pre>
@@ -331,7 +331,7 @@ public class TLE implements OrbitalParameters {
      * @param meanMotionSecondDerivative mean motion second derivative (rad/s³)
      * @param e eccentricity
      * @param i inclination (rad)
-     * @param pa argument of perigee (rad)
+     * @param pa argument of periapsis (rad)
      * @param raan right ascension of ascending node (rad)
      * @param meanAnomaly mean anomaly (rad)
      * @param revolutionNumberAtEpoch revolution number at epoch
@@ -634,10 +634,10 @@ public class TLE implements OrbitalParameters {
         return inclination;
     }
 
-    /** Get the argument of perigee.
+    /** Get the argument of periapsis.
      * @return omega (rad)
      */
-    public double getPerigeeArgument() {
+    public double getPeriapsisArgument() {
         return pa;
     }
 

@@ -75,7 +75,7 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
         "rate", // Rate of Right Ascen(r/s)
         "sqrt", // SQRT(A)  (m 1/2)
         "right", // Right Ascen at Week(rad)
-        "argument", // Argument of Perigee(rad)
+        "argument", // Argument of Periapsis(rad)
         "mean", // Mean Anom(rad)
         "af0", // Af0(s)
         "af1", // Af1(s/s)
@@ -315,8 +315,8 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
                         setValue(Double.parseDouble(entry.getValue()));
                     checks[7] = true;
                 } else if (lowerCaseKey.startsWith(KEY[8])) {
-                    // Gets the Argument of Perigee
-                    orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).
+                    // Gets the Argument of Periapsis
+                    orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).
                         setValue(Double.parseDouble(entry.getValue()));
                     checks[8] = true;
                 } else if (lowerCaseKey.startsWith(KEY[9])) {

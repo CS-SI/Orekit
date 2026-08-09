@@ -499,18 +499,18 @@ class CircularOrbitTest {
         Vector3D velocity = p.getVelocity();
         Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
-        double apogeeRadius  = p.getA() * (1 + p.getE());
-        double perigeeRadius = p.getA() * (1 - p.getE());
+        double apoapsisRadius  = p.getA() * (1 + p.getE());
+        double periapsisRadius = p.getA() * (1 - p.getE());
 
         for (double alphaV = 0; alphaV <= 2 * FastMath.PI; alphaV += 2 * FastMath.PI/100.) {
             p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(), p.getI(),
                     p.getRightAscensionOfAscendingNode(),
                     alphaV, PositionAngleType.TRUE, p.getFrame(), date, mu);
             position = p.getPosition();
-            // test if the norm of the position is in the range [perigee radius, apogee radius]
+            // test if the norm of the position is in the range [periapsis radius, apoapsis radius]
             // Warning: these tests are without absolute value by choice
-            Assertions.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - apoapsisRadius)  <= (  apoapsisRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - periapsisRadius) >= (- periapsisRadius * Utils.epsilonTest));
 
             position= position.normalize();
             velocity = p.getVelocity();
@@ -543,10 +543,10 @@ class CircularOrbitTest {
         Vector3D velocity = pCirEqua.getVelocity();
         Vector3D momentum = pCirEqua.getPVCoordinates().getMomentum().normalize();
 
-        double apogeeRadius  = pCirEqua.getA() * (1 + pCirEqua.getE());
-        double perigeeRadius = pCirEqua.getA() * (1 - pCirEqua.getE());
-        // test if apogee equals perigee
-        Assertions.assertEquals(perigeeRadius, apogeeRadius, 1.e+4 * Utils.epsilonTest * apogeeRadius);
+        double apoapsisRadius  = pCirEqua.getA() * (1 + pCirEqua.getE());
+        double periapsisRadius = pCirEqua.getA() * (1 - pCirEqua.getE());
+        // test if apoapsis equals periapsis
+        Assertions.assertEquals(periapsisRadius, apoapsisRadius, 1.e+4 * Utils.epsilonTest * apoapsisRadius);
 
         for (double alphaV = 0; alphaV <= 2 * FastMath.PI; alphaV += 2 * FastMath.PI/100.) {
             pCirEqua = new CircularOrbit(pCirEqua.getA() , pCirEqua.getCircularEx(), pCirEqua.getCircularEy(), pCirEqua.getI(),
@@ -554,9 +554,9 @@ class CircularOrbitTest {
                     alphaV, PositionAngleType.TRUE, pCirEqua.getFrame(), date, mu);
             position = pCirEqua.getPosition();
 
-            // test if the norm pf the position is in the range [perigee radius, apogee radius]
-            Assertions.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
+            // test if the norm pf the position is in the range [periapsis radius, apoapsis radius]
+            Assertions.assertTrue((position.getNorm() - apoapsisRadius)  <= (  apoapsisRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - periapsisRadius) >= (- periapsisRadius * Utils.epsilonTest));
 
             position= position.normalize();
             velocity = pCirEqua.getVelocity();

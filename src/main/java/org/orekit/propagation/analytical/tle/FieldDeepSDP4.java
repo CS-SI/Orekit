@@ -165,10 +165,10 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
      */
     protected void luniSolarTermsComputation() {
 
-        final T zero = tle.getPerigeeArgument().getField().getZero();
+        final T zero = tle.getPeriapsisArgument().getField().getZero();
         final T pi   = zero.getPi();
 
-        final FieldSinCos<T> scg  = FastMath.sinCos(tle.getPerigeeArgument());
+        final FieldSinCos<T> scg  = FastMath.sinCos(tle.getPeriapsisArgument());
         final T sing = scg.sin();
         final T cosg = scg.cos();
 
@@ -191,7 +191,7 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
 
         thgr = thetaG(tle.getDate());
         xnq = xn0dp;
-        omegaq = tle.getPerigeeArgument();
+        omegaq = tle.getPeriapsisArgument();
 
         final double xnodce = 4.5236020 - 9.2422029e-4 * daysSince1900;
         final SinCos scTem  = FastMath.sinCos(xnodce);
@@ -451,7 +451,7 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
             del2 = del1.multiply(f220).multiply(g200).multiply(2 * TLEConstants.Q22);
             del3 = del1.multiply(f330).multiply(g300).multiply(aqnv).multiply(3 * TLEConstants.Q33);
             del1 = del1.multiply(f311).multiply(g310).multiply(TLEConstants.Q31).multiply(aqnv);
-            xlamo = tle.getMeanAnomaly().add(tle.getRaan()).add(tle.getPerigeeArgument()).subtract(thgr);
+            xlamo = tle.getMeanAnomaly().add(tle.getRaan()).add(tle.getPeriapsisArgument()).subtract(thgr);
             bfact = xmdot.add(omgdot).add(xnodot).subtract(TLEConstants.THDT);
             bfact = bfact.add(ssl).add(ssg).add(ssh);
         } else {

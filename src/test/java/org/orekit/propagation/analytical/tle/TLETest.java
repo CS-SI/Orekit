@@ -62,7 +62,7 @@ class TLETest {
         Assertions.assertEquals(98.749, FastMath.toDegrees(tle.getI()), 1e-10);
         Assertions.assertEquals(199.5121, FastMath.toDegrees(tle.getRaan()), 1e-10);
         Assertions.assertEquals(0.0001333, tle.getE(), 1e-10);
-        Assertions.assertEquals(133.9522, FastMath.toDegrees(tle.getPerigeeArgument()), 1e-10);
+        Assertions.assertEquals(133.9522, FastMath.toDegrees(tle.getPeriapsisArgument()), 1e-10);
         Assertions.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly()), 1e-10);
         Assertions.assertEquals(14.26113993, tle.getMeanMotion() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
         Assertions.assertEquals(7182888.814633288, tle.computeSemiMajorAxis(), 1e-10);
@@ -123,7 +123,7 @@ class TLETest {
         Assertions.assertEquals(tleA.getI(),                       tleB.getI(), 1e-10);
         Assertions.assertEquals(tleA.getRaan(),                    tleB.getRaan(), 1e-10);
         Assertions.assertEquals(tleA.getE(),                       tleB.getE(), 1e-10);
-        Assertions.assertEquals(tleA.getPerigeeArgument(),         tleB.getPerigeeArgument(), 1e-10);
+        Assertions.assertEquals(tleA.getPeriapsisArgument(),         tleB.getPeriapsisArgument(), 1e-10);
         Assertions.assertEquals(tleA.getMeanAnomaly(),             tleB.getMeanAnomaly(), 1e-10);
         Assertions.assertEquals(tleA.getMeanMotion(),              tleB.getMeanMotion(), 0);
         Assertions.assertEquals(tleA.getRevolutionNumberAtEpoch(), tleB.getRevolutionNumberAtEpoch(), 0);
@@ -148,7 +148,7 @@ class TLETest {
                           tleRef.getEphemerisType(), tleRef.getElementNumber(), tleRef.getDate(),
                           tleRef.getMeanMotion(), tleRef.getMeanMotionFirstDerivative(),
                           tleRef.getMeanMotionSecondDerivative(), tleRef.getE(), tleRef.getI(),
-                          tleRef.getPerigeeArgument(), tleRef.getRaan(), tleRef.getMeanAnomaly(),
+                          tleRef.getPeriapsisArgument(), tleRef.getRaan(), tleRef.getMeanAnomaly(),
                           tleRef.getRevolutionNumberAtEpoch(), tleRef.getBStar());
         Assertions.assertEquals(line1, tle.getLine1());
         Assertions.assertEquals(line2, tle.getLine2());
@@ -186,7 +186,7 @@ class TLETest {
         Assertions.assertEquals(tleA.getI(),                       tleB.getI(), 1e-10);
         Assertions.assertEquals(tleA.getRaan(),                    tleB.getRaan(), 1e-10);
         Assertions.assertEquals(tleA.getE(),                       tleB.getE(), 1e-10);
-        Assertions.assertEquals(tleA.getPerigeeArgument(),         tleB.getPerigeeArgument(), 1e-10);
+        Assertions.assertEquals(tleA.getPeriapsisArgument(),         tleB.getPeriapsisArgument(), 1e-10);
         Assertions.assertEquals(tleA.getMeanAnomaly(),             tleB.getMeanAnomaly(), 1e-10);
         Assertions.assertEquals(tleA.getMeanMotion(),              tleB.getMeanMotion(), 0);
         Assertions.assertEquals(tleA.getRevolutionNumberAtEpoch(), tleB.getRevolutionNumberAtEpoch(), 0);
@@ -549,7 +549,7 @@ class TLETest {
         Assertions.assertEquals(tleISS.getMeanMotion(),              rebuilt.getMeanMotion(),      eps * tleISS.getMeanMotion());
         Assertions.assertEquals(tleISS.getE(),                       rebuilt.getE(),               eps * tleISS.getE());
         Assertions.assertEquals(tleISS.getI(),                       rebuilt.getI(),               eps * tleISS.getI());
-        Assertions.assertEquals(tleISS.getPerigeeArgument(),         rebuilt.getPerigeeArgument(), eps * tleISS.getPerigeeArgument());
+        Assertions.assertEquals(tleISS.getPeriapsisArgument(),         rebuilt.getPeriapsisArgument(), eps * tleISS.getPeriapsisArgument());
         Assertions.assertEquals(tleISS.getRaan(),                    rebuilt.getRaan(),            eps * tleISS.getRaan());
         Assertions.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
         Assertions.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());

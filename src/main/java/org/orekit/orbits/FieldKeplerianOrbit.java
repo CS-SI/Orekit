@@ -110,7 +110,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** Inclination derivative (rad/s). */
     private final T iDot;
 
-    /** Perigee Argument derivative (rad/s). */
+    /** Periapsis Argument derivative (rad/s). */
     private final T paDot;
 
     /** Right Ascension of Ascending Node derivative (rad/s). */

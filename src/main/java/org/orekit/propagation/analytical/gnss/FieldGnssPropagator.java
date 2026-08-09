@@ -252,7 +252,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GN
         // True Anomaly
         final FieldUnivariateDerivative2<T> vk = FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, ek);
         // Argument of Latitude
-        final FieldUnivariateDerivative2<T> phik    = vk.add(orbit.getPerigeeArgument());
+        final FieldUnivariateDerivative2<T> phik    = vk.add(orbit.getPeriapsisArgument());
         final FieldSinCos<FieldUnivariateDerivative2<T>> cs2phi = FastMath.sinCos(phik.multiply(2));
         // Argument of Latitude Correction
         final FieldUnivariateDerivative2<T> dphik = cs2phi.cos().multiply(parameters[NonKeplerianDriversFactory.CUC_INDEX]).
@@ -421,7 +421,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GN
                 new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(updatedA,
                                                                          updatedE,
                                                                          previous.getI().getValue().add(correction.getEntry(2).multiply(factor)),
-                                                                         previous.getPerigeeArgument().getValue().add(correction.getEntry(3).multiply(factor)),
+                                                                         previous.getPeriapsisArgument().getValue().add(correction.getEntry(3).multiply(factor)),
                                                                          previous.getRightAscensionOfAscendingNode().getValue().add(correction.getEntry(4).multiply(factor)),
                                                                          previous.getMeanAnomaly().getValue().add(correction.getEntry(5).multiply(factor)),
                                                                          PositionAngleType.MEAN),
@@ -448,7 +448,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GN
         return gElements.toField(new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(initialOrbit.getA().getValue(),
                                                                                           initialOrbit.getE().getValue(),
                                                                                           initialOrbit.getI().getValue(),
-                                                                                          initialOrbit.getPerigeeArgument().getValue(),
+                                                                                          initialOrbit.getPeriapsisArgument().getValue(),
                                                                                           initialOrbit.getRightAscensionOfAscendingNode().getValue(),
                                                                                           initialOrbit.getMeanAnomaly().getValue(),
                                                                                           PositionAngleType.MEAN),
@@ -548,7 +548,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>, O extends GN
         final FieldGradient<T> aG    = FieldGradient.variable(FREE_PARAMETERS, 0, orbit.getA());
         final FieldGradient<T> eG    = FieldGradient.variable(FREE_PARAMETERS, 1, orbit.getE());
         final FieldGradient<T> iG    = FieldGradient.variable(FREE_PARAMETERS, 2, orbit.getI());
-        final FieldGradient<T> paG   = FieldGradient.variable(FREE_PARAMETERS, 3, orbit.getPerigeeArgument());
+        final FieldGradient<T> paG   = FieldGradient.variable(FREE_PARAMETERS, 3, orbit.getPeriapsisArgument());
         final FieldGradient<T> raanG = FieldGradient.variable(FREE_PARAMETERS, 4, orbit.getRightAscensionOfAscendingNode());
         final FieldGradient<T> mG    = FieldGradient.variable(FREE_PARAMETERS, 5, orbit.getMeanAnomaly());
         final FieldKeplerianOrbit<FieldGradient<T>> orbitG =

@@ -131,7 +131,7 @@ public abstract class AbstractNavigationParser<T extends AbstractNavigationMessa
         factory.getCrcDriver().setValue(parseInfo.parseDouble2(Unit.METRE));
         factory.
             getOrbitalParametersDrivers().
-            findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).
+            findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).
             setValue(parseInfo.parseDouble3(Unit.RADIAN));
         factory.getOmegaDotDriver().setValue(parseInfo.parseDouble4(RinexNavigationParser.RAD_PER_S));
     }

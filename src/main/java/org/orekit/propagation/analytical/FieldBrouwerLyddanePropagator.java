@@ -917,7 +917,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
         /** Secular correction for mean anomaly l: &delta;<sub>s</sub>l. */
         private final T dsl;
-        /** Secular correction for perigee argument g: &delta;<sub>s</sub>g. */
+        /** Secular correction for periapsis argument g: &delta;<sub>s</sub>g. */
         private final T dsg;
         /** Secular correction for raan h: &delta;<sub>s</sub>h. */
         private final T dsh;
@@ -1037,7 +1037,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                 multiply(ci2.multiply(35.0).subtract(30.0).multiply(ci2).add(3.));
             dsl = dsl1.multiply(dsl2).add(dsl3);
 
-            // perigee argument
+            // periapsis argument
             final T dsg1  = yp2.multiply(1.5).multiply(ci2X5M1);
             final T dsg2a = n.multiply(25.).add(24.).multiply(n).add(-35.);
             final T dsg2b = n.multiply(126.).add(192.).multiply(n).negate().add(90.);
@@ -1234,7 +1234,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final FieldUnivariateDerivative1<T> tmp = dtM2.multiply(eRate).add(mean.getE());
             final FieldUnivariateDerivative1<T> epp = FastMath.max(FastMath.min(tmp, MAX_ECC), 0.);
 
-            // mean argument of perigee
+            // mean argument of periapsis
             final T gp0 = MathUtils.normalizeAngle(mean.getPeriapsisArgument().add(dsg.multiply(not.getValue())), zero);
             final T gp1 = dsg.multiply(n0);
             final FieldUnivariateDerivative1<T> gpp = new FieldUnivariateDerivative1<>(gp0, gp1);
@@ -1434,7 +1434,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final FieldUnivariateDerivative1<T> h = FastMath.atan2(di.multiply(shpp).add(dh.multiply(chpp)),
                                                                    di.multiply(chpp).subtract(dh.multiply(shpp)));
 
-            // Argument of perigee
+            // Argument of periapsis
             final FieldUnivariateDerivative1<T> g = z.subtract(l).subtract(h);
 
             // Return a Keplerian orbit

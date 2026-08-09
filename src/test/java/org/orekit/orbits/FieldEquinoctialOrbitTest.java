@@ -830,8 +830,8 @@ class FieldEquinoctialOrbitTest {
         FieldVector3D<T> velocity = p.getVelocity();
         FieldVector3D<T> momentum = p.getPVCoordinates().getMomentum().normalize();
 
-        T apogeeRadius = p.getA().multiply(p.getE().add(1.0));
-        T perigeeRadius = p.getA().multiply(one.subtract(p.getE()));
+        T apoapsisRadius = p.getA().multiply(p.getE().add(1.0));
+        T periapsisRadius = p.getA().multiply(one.subtract(p.getE()));
 
         for (T lv = zero; lv.getReal() <= 2 * FastMath.PI; lv = lv.add(2 * FastMath.PI / 100.)) {
             p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
@@ -839,11 +839,10 @@ class FieldEquinoctialOrbitTest {
                                             p.getFrame(), p.getDate(), p.getMu());
             position = p.getPosition();
 
-            // test if the norm of the position is in the range [perigee radius,
-            // apogee radius]
+            // test if the norm of the position is in the range [periapsis radius, apoapsis radius]
             // Warning: these tests are without absolute value by choice
-            Assertions.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal()) <= (apogeeRadius.getReal() * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - apoapsisRadius.getReal()) <= (apoapsisRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - periapsisRadius.getReal()) >= (-periapsisRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = p.getVelocity();
@@ -870,11 +869,11 @@ class FieldEquinoctialOrbitTest {
 
         momentum = FieldVector3D.crossProduct(position, velocity).normalize();
 
-        apogeeRadius = pCirEqua.getA().multiply(pCirEqua.getE().add(1));
-        perigeeRadius = pCirEqua.getA().multiply(one.subtract(pCirEqua.getE()));
-        // test if apogee equals perigee
-        Assertions.assertEquals(perigeeRadius.getReal(), apogeeRadius.getReal(), 1.e+4 * Utils.epsilonTest
-                     * apogeeRadius.getReal());
+        apoapsisRadius = pCirEqua.getA().multiply(pCirEqua.getE().add(1));
+        periapsisRadius = pCirEqua.getA().multiply(one.subtract(pCirEqua.getE()));
+        // test if apoapsis equals periapsis
+        Assertions.assertEquals(periapsisRadius.getReal(), apoapsisRadius.getReal(), 1.e+4 * Utils.epsilonTest
+                     * apoapsisRadius.getReal());
 
         for (T lv = zero; lv.getReal() <= 2 * FastMath.PI; lv =lv.add(2 * FastMath.PI / 100.)) {
             pCirEqua = new FieldEquinoctialOrbit<>(pCirEqua.getA(), pCirEqua.getEquinoctialEx(),
@@ -882,10 +881,9 @@ class FieldEquinoctialOrbitTest {
                                                    pCirEqua.getFrame(), p.getDate(), p.getMu());
             position = pCirEqua.getPosition();
 
-            // test if the norm pf the position is in the range [perigee radius,
-            // apogee radius]
-            Assertions.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal()) <= (apogeeRadius.getReal() * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
+            // test if the norm pf the position is in the range [periapsis radius, apoapsis radius]
+            Assertions.assertTrue((position.getNorm().getReal() - apoapsisRadius.getReal()) <= (apoapsisRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - periapsisRadius.getReal()) >= (-periapsisRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = pCirEqua.getVelocity();

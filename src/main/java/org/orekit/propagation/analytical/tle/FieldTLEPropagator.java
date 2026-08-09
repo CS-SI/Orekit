@@ -96,7 +96,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     /** final inclination. */
     protected T i;
 
-    /** final perigee argument. */
+    /** final periapsis argument. */
     protected T omega;
 
     /** L from SPTRCK #3. */
@@ -120,7 +120,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     /** common parameter for mean anomaly (M) computation. */
     protected T xmdot;
 
-    /** common parameter for perigee argument (omega) computation. */
+    /** common parameter for periapsis argument (omega) computation. */
     protected T omgdot;
 
     /** common parameter for raan (OMEGA) computation. */
@@ -134,7 +134,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     /** sqrt (1 - e2). */
     protected T beta0;
 
-    /** perigee, expressed in KM and ALTITUDE. */
+    /** periapsis, expressed in KM and ALTITUDE. */
     protected T perige;
 
     /** eta squared. */
@@ -380,7 +380,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         perige = a0dp.multiply(tle.getE().negate().add(1.0)).subtract(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(
                 TLEConstants.EARTH_RADIUS); // perige
 
-        //  For perigee below 156 km, the values of s and qoms2t are changed :
+        //  For periapsis below 156 km, the values of s and qoms2t are changed :
         if (perige.getReal() < 156.0) {
             if (perige.getReal() <= 98.0) {
                 s4 = zero.newInstance(20.0);
@@ -420,7 +420,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
                 eta.multiply(etasq.multiply(0.5).add(2.0)).add(tle.getE().multiply(etasq.multiply(2.0).add(0.5))).subtract(
                         tsi.divide(a0dp.multiply(psisq)).multiply(2 * TLEConstants.CK2).multiply(
                                 x3thm1.multiply(-3).multiply(etasq.multiply(eeta.multiply(-0.5).add(1.5)).add(eeta.multiply(-2.0)).add(1.0)).add(
-                                        x1mth2.multiply(0.75).multiply(etasq.multiply(2.0).subtract(eeta.multiply(etasq.add(1.0)))).multiply(FastMath.cos(tle.getPerigeeArgument().multiply(2.0)))))));
+                                        x1mth2.multiply(0.75).multiply(etasq.multiply(2.0).subtract(eeta.multiply(etasq.add(1.0)))).multiply(FastMath.cos(tle.getPeriapsisArgument().multiply(2.0)))))));
 
         final T theta4 = theta2.multiply(theta2);
         final T temp1  = pinvsq.multiply(xn0dp).multiply(3 * TLEConstants.CK2);

@@ -890,7 +890,7 @@ public enum OrbitType {
     /** Name for inclination vector second component . */
     public static final String H_Y   = "hy";
 
-    /** Name for perigee argument. */
+    /** Name for periapsis argument. */
     public static final String PA    = "ω";
 
     /** Name for right ascension of ascending node. */

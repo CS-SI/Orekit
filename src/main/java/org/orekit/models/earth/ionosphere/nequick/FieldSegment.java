@@ -48,7 +48,7 @@ class FieldSegment<T extends CalculusFieldElement<T>> {
      * Constructor.
      *
      * @param n   number of intervals for integration (2 points per interval, hence 2n points will be generated)
-     * @param ray ray-perigee parameters
+     * @param ray ray-periapsis parameters
      * @param s1  lower boundary of integration
      * @param s2  upper boundary for integration
      */

@@ -277,7 +277,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
                         setValue(sqrtA * sqrtA);
             orb.findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).
                 setValue(toRadians(Double.parseDouble(token[1].trim())));
-            orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).
+            orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).
                 setValue(toRadians(Double.parseDouble(token[2].trim())));
 
             // Reads the sixth line to get anom, af0 and af1

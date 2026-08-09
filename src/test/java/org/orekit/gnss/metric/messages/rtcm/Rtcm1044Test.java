@@ -68,7 +68,7 @@ public class Rtcm1044Test {
                         "0000000000000000" +                 // Cis
                         "00101000001111100011110011110000" + // i0
                         "0000000000000000" +                 // Crc
-                        "00001100001111100011110011110000" + // Argument of perigee
+                        "00001100001111100011110011110000" + // Argument of periapsis
                         "111111111011111111110100" +         // OMEGADOT
                         "01011101111101" +                   // IDOT
                         "10" +                               // QZSS CODE ON L2
@@ -132,7 +132,7 @@ public class Rtcm1044Test {
         Assertions.assertEquals(0.0, qzssMessage.getCis(), eps);
         Assertions.assertEquals(0.987714701321906, qzssMessage.getOrbit().getI(), eps);
         Assertions.assertEquals(0.0, qzssMessage.getCrc(), eps);
-        Assertions.assertEquals(0.30049130834913723, qzssMessage.getOrbit().getPerigeeArgument(), eps);
+        Assertions.assertEquals(0.30049130834913723, qzssMessage.getOrbit().getPeriapsisArgument(), eps);
         Assertions.assertEquals(-5.855958209879004E-9, qzssMessage.getOmegaDot(), eps);
         Assertions.assertEquals(0.6980085385373721, qzssMessage.getOrbit().getRightAscensionOfAscendingNode(), eps);
         Assertions.assertEquals(1.3969839E-9, qzssMessage.getTgd(), eps);
@@ -172,7 +172,7 @@ public class Rtcm1044Test {
                         "0000000000000000" +                 // Cis
                         "00101000001111100011110011110000" + // i0
                         "0000000000000000" +                 // Crc
-                        "00001100001111100011110011110000" + // Argument of perigee
+                        "00001100001111100011110011110000" + // Argument of periapsis
                         "111111111011111111110100" +         // OMEGADOT
                         "01011101111101" +                   // IDOT
                         "10" +                               // QZSS CODE ON L2

@@ -71,9 +71,9 @@ public class Tide {
      * @param cTau coefficient for mean lunar time
      * @param cS coefficient for mean longitude of the Moon
      * @param cH coefficient for mean longitude of the Sun
-     * @param cP coefficient for longitude of Moon mean perigee
+     * @param cP coefficient for longitude of Moon mean periapsis
      * @param cNprime negative of the longitude of the Moon's mean ascending node on the ecliptic
-     * @param cPs coefficient for longitude of Sun mean perigee
+     * @param cPs coefficient for longitude of Sun mean periapsis
      */
     public Tide(final int cTau, final int cS, final int cH, final int cP, final int cNprime, final int cPs) {
         doodsonNumber      = doodsonMultipliersToDoodsonNumber(cTau, cS, cH, cP, cNprime, cPs);
@@ -113,9 +113,9 @@ public class Tide {
      * @param cTau coefficient for mean lunar time
      * @param cS coefficient for mean longitude of the Moon
      * @param cH coefficient for mean longitude of the Sun
-     * @param cP coefficient for longitude of Moon mean perigee
+     * @param cP coefficient for longitude of Moon mean periapsis
      * @param cNprime negative of the longitude of the Moon's mean ascending node on the ecliptic
-     * @param cPs coefficient for longitude of Sun mean perigee
+     * @param cPs coefficient for longitude of Sun mean periapsis
      * @return Doodson number
      */
     private static int doodsonMultipliersToDoodsonNumber(final int cTau, final int cS, final int cH,

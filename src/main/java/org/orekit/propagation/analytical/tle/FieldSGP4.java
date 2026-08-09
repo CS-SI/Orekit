@@ -74,7 +74,7 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
     @Override
     protected void sxpInitialize(final T bStar) {
 
-        // For perigee less than 220 kilometers, the equations are truncated to
+        // For periapsis less than 220 kilometers, the equations are truncated to
         // linear variation in sqrt a and quadratic variation in mean anomaly.
         // Also, the c3 term, the delta omega term, and the delta m term are dropped.
         lessThan220 = perige.getReal() < 220;
@@ -98,7 +98,7 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
             } else  {
                 final T c3 = coef.multiply(tsi).multiply(xn0dp).multiply(TLEConstants.A3OVK2 * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(sini0.divide(tle.getE()));
                 xmcof = coef.multiply(bStar).divide(eeta).multiply(-TLEConstants.TWO_THIRD * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS);
-                omgcof = bStar.multiply(c3).multiply(FastMath.cos(tle.getPerigeeArgument()));
+                omgcof = bStar.multiply(c3).multiply(FastMath.cos(tle.getPeriapsisArgument()));
             }
         }
 
@@ -112,7 +112,7 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
 
         // Update for secular gravity and atmospheric drag.
         final T xmdf = tle.getMeanAnomaly().add(xmdot.multiply(tSince));
-        final T omgadf = tle.getPerigeeArgument().add(omgdot.multiply(tSince));
+        final T omgadf = tle.getPeriapsisArgument().add(omgdot.multiply(tSince));
         final T xn0ddf = tle.getRaan().add(xnodot.multiply(tSince));
         omega = omgadf;
         T xmp = xmdf;

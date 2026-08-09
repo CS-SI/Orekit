@@ -63,8 +63,8 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     /** Name for inclination at reference time parameter. */
     public static final String INCLINATION = "GnssInclination";
 
-    /** Name for argument of perigee parameter. */
-    public static final String ARGUMENT_OF_PERIGEE = "GnssPerigeeArgument";
+    /** Name for argument of periapsis parameter. */
+    public static final String ARGUMENT_OF_PERIAPSIS = "GnssPeriapsisArgument";
 
     /** Name for longitude of ascending node at weekly epoch parameter. */
     public static final String NODE_LONGITUDE = "GnssNodeLongitude";
@@ -462,7 +462,7 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
             new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(DEFAULT_STATE_DIMENSION, 0, orbit.getA()),
                                                                      Gradient.variable(DEFAULT_STATE_DIMENSION, 1, orbit.getE()),
                                                                      Gradient.variable(DEFAULT_STATE_DIMENSION, 2, orbit.getI()),
-                                                                     Gradient.variable(DEFAULT_STATE_DIMENSION, 3, orbit.getPerigeeArgument()),
+                                                                     Gradient.variable(DEFAULT_STATE_DIMENSION, 3, orbit.getPeriapsisArgument()),
                                                                      Gradient.variable(DEFAULT_STATE_DIMENSION, 4, orbit.getRightAscensionOfAscendingNode()),
                                                                      Gradient.variable(DEFAULT_STATE_DIMENSION, 5, orbit.getMeanAnomaly()),
                                                                      PositionAngleType.MEAN),
@@ -528,7 +528,7 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
         drivers.add(new ParameterDriver(INCLINATION, FastMath.toRadians(56.0),
                                         FastMath.scalb(1.0, -24),
                                         0.0, FastMath.PI));
-        drivers.add(new ParameterDriver(ARGUMENT_OF_PERIGEE, 0.0,
+        drivers.add(new ParameterDriver(ARGUMENT_OF_PERIAPSIS, 0.0,
                                         FastMath.scalb(1.0, -24),
                                         Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
         drivers.add(new ParameterDriver(NODE_LONGITUDE, 0.0,

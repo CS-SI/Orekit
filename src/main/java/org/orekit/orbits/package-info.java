@@ -121,14 +121,14 @@
  * All representations can be converted into all other ones. No error is triggered
  * if some conversion is ambiguous (like converting a perfectly circular orbit from
  * Cartesian representation to Keplerian representation, with an ambiguity on the
- * perigee argument). This design choice is the result of <strong>many</strong>
+ * periapsis argument). This design choice is the result of <strong>many</strong>
  * different attempts and pragmatic considerations. The rationale is that from a
  * physical point of view, there is no singularity. The singularity is only introduced
  * by a choice of <em>representations</em>. Even considering this, it appears that
  * rather than having a parameter with <em>no</em> realistic value, there is an
  * <em>infinite</em> possible number of values that all represent the same physical
  * orbit. Orekit simply does an arbitrary choice, often choosing simply the value 0.
- * In our example case, we would then get a converted orbit with a 0 perigee argument.
+ * In our example case, we would then get a converted orbit with a 0 periapsis argument.
  * This choice is valid, just as any other choice (π/2, π, whatever ...) would
  * have been valid, in the sense that it <i>does</i> represent correctly the orbit
  * and when converted back to the original non-ambiguous representation it does give

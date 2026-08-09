@@ -164,7 +164,7 @@ public class DeepSDP4 extends SDP4 {
      */
     protected void luniSolarTermsComputation() {
 
-        final SinCos scg  = FastMath.sinCos(tle.getPerigeeArgument());
+        final SinCos scg  = FastMath.sinCos(tle.getPeriapsisArgument());
         final double sing = scg.sin();
         final double cosg = scg.cos();
 
@@ -187,7 +187,7 @@ public class DeepSDP4 extends SDP4 {
 
         thgr = thetaG(tle.getDate());
         xnq = xn0dp;
-        omegaq = tle.getPerigeeArgument();
+        omegaq = tle.getPeriapsisArgument();
 
         final double xnodce = 4.5236020 - 9.2422029e-4 * daysSince1900;
         final SinCos scTem  = FastMath.sinCos(xnodce);
@@ -441,7 +441,7 @@ public class DeepSDP4 extends SDP4 {
             del2 = 2 * del1 * f220 * g200 * TLEConstants.Q22;
             del3 = 3 * del1 * f330 * g300 * TLEConstants.Q33 * aqnv;
             del1 = del1 * f311 * g310 * TLEConstants.Q31 * aqnv;
-            xlamo = tle.getMeanAnomaly() + tle.getRaan() + tle.getPerigeeArgument() - thgr;
+            xlamo = tle.getMeanAnomaly() + tle.getRaan() + tle.getPeriapsisArgument() - thgr;
             bfact = xmdot + omgdot + xnodot - TLEConstants.THDT;
             bfact = bfact + ssl + ssg + ssh;
         } else {

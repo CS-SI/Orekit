@@ -41,7 +41,7 @@ abstract class SDP4  extends TLEPropagator {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
-    /** New perigee argument. */
+    /** New periapsis argument. */
     protected double omgadf;
 
     /** New mean motion. */
@@ -82,7 +82,7 @@ abstract class SDP4  extends TLEPropagator {
     protected void sxpPropagate(final double tSince, final double bStar) {
 
         // Update for secular gravity and atmospheric drag
-        omgadf = tle.getPerigeeArgument() + omgdot * tSince;
+        omgadf = tle.getPeriapsisArgument() + omgdot * tSince;
         final double xnoddf = tle.getRaan() + xnodot * tSince;
         final double tSinceSq = tSince * tSince;
         xnode = xnoddf + xnodcf * tSinceSq;

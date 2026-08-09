@@ -609,7 +609,7 @@ public abstract class NeQuickModel extends AbstractIonosphericModel {
      * This method allows the computation of the Slant Total Electron Content (STEC).
      *
      * @param dateTime current date
-     * @param ray      ray-perigee parameters
+     * @param ray      ray-periapsis parameters
      * @return the STEC in TECUnits
      */
     abstract double stec(DateTimeComponents dateTime, Ray ray);
@@ -619,7 +619,7 @@ public abstract class NeQuickModel extends AbstractIonosphericModel {
      *
      * @param <T>      type of the field elements
      * @param dateTime current date
-     * @param ray      ray-perigee parameters
+     * @param ray      ray-periapsis parameters
      * @return the STEC in TECUnits
      */
     abstract <T extends CalculusFieldElement<T>> T stec(DateTimeComponents dateTime, FieldRay<T> ray);

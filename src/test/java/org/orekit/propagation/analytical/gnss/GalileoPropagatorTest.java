@@ -78,7 +78,7 @@ public class GalileoPropagatorTest {
         factory.getIDotDriver().setValue(-2.36081262303612E-10);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(-0.36639513583951266);
         factory.getOmegaDotDriver().setValue(-5.7695260382035525E-9);
-        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(-1.6870064194345724);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(-1.6870064194345724);
         factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-0.38716557650888);
         factory.getCucDriver().setValue(-8.903443813323975E-7);
         factory.getCusDriver().setValue(6.61797821521759E-6);
@@ -112,9 +112,9 @@ public class GalileoPropagatorTest {
         orb.findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.000152587890625);
         orb.findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(GalileoAlmanac.I0 + 0.003356933593);
         almanacFactory.setIod(4);
-        orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(0.2739257812499857891);
+        orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(0.2739257812499857891);
         almanacFactory.getOmegaDotDriver().setValue(-1.74622982740407E-9);
-        orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(0.7363586425);
+        orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(0.7363586425);
         orb.findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(0.27276611328124);
         almanacFactory.getAf0Driver().setValue(-0.0006141662597);
         almanacFactory.getAf1Driver().setValue(-7.275957614183E-12);
@@ -163,7 +163,7 @@ public class GalileoPropagatorTest {
         almanacFactory.setIod(4);
         orb.findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(0.2739257812499857891);
         almanacFactory.getOmegaDotDriver().setValue(-1.74622982740407E-9);
-        orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(0.7363586425);
+        orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(0.7363586425);
         orb.findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(0.27276611328124);
         almanacFactory.getAf0Driver().setValue(-0.0006141662597);
         almanacFactory.getAf1Driver().setValue(-7.275957614183E-12);

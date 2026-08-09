@@ -75,7 +75,7 @@ public class Rtcm1019Test {
                         "0000000000000000" +                 // Cis
                         "00101000001111100011110011110000" + // i0
                         "0000000000000000" +                 // Crc
-                        "00001100001111100011110011110000" + // Argument of perigee
+                        "00001100001111100011110011110000" + // Argument of periapsis
                         "111111111011111111110100" +         // OMEGADOT
                         "00000011" +                         // tGD
                         "000000" +                           // SV Health
@@ -135,7 +135,7 @@ public class Rtcm1019Test {
         Assertions.assertEquals(0.0, gpsMessage.getCis(), eps);
         Assertions.assertEquals(0.987714701321906, gpsMessage.getOrbit().getI(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getCrc(), eps);
-        Assertions.assertEquals(0.30049130834913723, gpsMessage.getOrbit().getPerigeeArgument(), eps);
+        Assertions.assertEquals(0.30049130834913723, gpsMessage.getOrbit().getPeriapsisArgument(), eps);
         Assertions.assertEquals(-5.855958209879004E-9, gpsMessage.getOmegaDot(), eps);
         Assertions.assertEquals(0.6980085385373721, gpsMessage.getOrbit().getRightAscensionOfAscendingNode(), eps);
         Assertions.assertEquals(1.3969839E-9, gpsMessage.getTgd(), eps);
@@ -182,7 +182,7 @@ public class Rtcm1019Test {
                         "0000000000000000" +                 // Cis
                         "00101000001111100011110011110000" + // i0
                         "0000000000000000" +                 // Crc
-                        "00001100001111100011110011110000" + // Argument of perigee
+                        "00001100001111100011110011110000" + // Argument of periapsis
                         "111111111011111111110100" +         // OMEGADOT
                         "00000011" +                         // tGD
                         "000000" +                           // SV Health

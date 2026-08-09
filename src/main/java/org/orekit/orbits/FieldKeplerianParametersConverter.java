@@ -97,7 +97,7 @@ public class FieldKeplerianParametersConverter<T extends CalculusFieldElement<T>
             eccentricAnomaly = (eCH.add(eSH)).divide(eCH.subtract(eSH)).log().divide(2);
         }
 
-        // compute perigee argument
+        // compute periapsis argument
         final FieldVector3D<T> node = new FieldVector3D<>(raan, field.getZero());
         final T px = FieldVector3D.dotProduct(pvP, node);
         final T py = FieldVector3D.dotProduct(pvP, FieldVector3D.crossProduct(momentum, node)).divide(m2.sqrt());
@@ -168,7 +168,7 @@ public class FieldKeplerianParametersConverter<T extends CalculusFieldElement<T>
     /** Compute reference axes.
      * @param <W> type of the field elements
      * @param i inclination
-     * @param pa perigee argument
+     * @param pa periapsis argument
      * @param raan right ascension of ascending node
      * @return reference axes
      */

@@ -72,7 +72,7 @@ public class Rtcm1042Test {
                         "000000000000000000" +               // Cis
                         "00101000001111100011110011110000" + // i0
                         "000000000000000000" +               // Crc
-                        "00001100001111100011110011110000" + // Argument of perigee
+                        "00001100001111100011110011110000" + // Argument of periapsis
                         "111111111011111111110100" +         // OMEGADOT
                         "0001001111" +                       // tGD1
                         "0111001111" +                       // tGD2
@@ -131,7 +131,7 @@ public class Rtcm1042Test {
         Assertions.assertEquals(0.0, beidouMessage.getCis(), eps);
         Assertions.assertEquals(0.987714701321906, beidouMessage.getOrbit().getI(), eps);
         Assertions.assertEquals(0.0, beidouMessage.getCrc(), eps);
-        Assertions.assertEquals(0.30049130834913723, beidouMessage.getOrbit().getPerigeeArgument(), eps);
+        Assertions.assertEquals(0.30049130834913723, beidouMessage.getOrbit().getPeriapsisArgument(), eps);
         Assertions.assertEquals(-5.855958209879004E-9, beidouMessage.getOmegaDot(), eps);
         Assertions.assertEquals(0.6980085385373721, beidouMessage.getOrbit().getRightAscensionOfAscendingNode(), eps);
         Assertions.assertEquals(7.9E-9, beidouMessage.getTGD1(), eps);
@@ -175,7 +175,7 @@ public class Rtcm1042Test {
                         "000000000000000000" +               // Cis
                         "00101000001111100011110011110000" + // i0
                         "000000000000000000" +               // Crc
-                        "00001100001111100011110011110000" + // Argument of perigee
+                        "00001100001111100011110011110000" + // Argument of periapsis
                         "111111111011111111110100" +         // OMEGADOT
                         "0001001111" +                       // tGD1
                         "0111001111" +                       // tGD2

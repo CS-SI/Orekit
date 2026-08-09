@@ -170,7 +170,7 @@ There are also several predefined events detectors already available, amongst wh
   a ground based Field Of View, which can be non-convex, split in different sub-zones, have holes, 
 * an `EclipseDetector`, which is triggered when some body enters or exits the umbra or the
   penumbra of another occulting body,
-* an `ApsideDetector`, which is triggered at apogee and perigee,
+* an `ApsideDetector`, which is triggered at apoapsis and periapsis,
 * a `NodeDetector`, which is triggered at ascending and descending nodes,
 * a `PositionAngleDetector`, which is triggered when satellite angle on orbit crosses some
   value (works with either anomaly, latitude argument or longitude argument and with either
@@ -301,7 +301,7 @@ At the opposite of the Eckstein-Hechler model, the Brouwer-Lyddane model is
 suited for elliptical orbits. In other words, there is no problem having a small
 (or big) eccentricity or inclination. Lyddane helped to solve this issue with
 the Brouwer model by summing the long and short periodic variations of the mean anomaly
-with the ones of the argument of perigee. One needs still to be careful with
+with the ones of the Argument of periapsis. One needs still to be careful with
 eccentricities lower than 5e-4. Singularity for the critical inclination i = 63.4° is
 avoided using the method developed in Warren Phipps' 1992 thesis.
 

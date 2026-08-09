@@ -77,7 +77,7 @@ public class LeastSquaresTleGenerationAlgorithmTest {
         Assertions.assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), threshold * tle.getMeanMotion());
         Assertions.assertEquals(tle.getE(), converted.getE(), threshold * tle.getE());
         Assertions.assertEquals(tle.getI(), converted.getI(), threshold * tle.getI());
-        Assertions.assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), threshold * tle.getPerigeeArgument());
+        Assertions.assertEquals(tle.getPeriapsisArgument(), converted.getPeriapsisArgument(), threshold * tle.getPeriapsisArgument());
         Assertions.assertEquals(tle.getRaan(), converted.getRaan(), threshold * tle.getRaan());
         Assertions.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), threshold * tle.getMeanAnomaly());
 

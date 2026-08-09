@@ -302,7 +302,7 @@ public class BrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
@@ -372,7 +372,7 @@ public class BrouwerLyddanePropagatorTest {
         final double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + 400e3; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
@@ -467,7 +467,7 @@ public class BrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
@@ -534,7 +534,7 @@ public class BrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
@@ -588,7 +588,7 @@ public class BrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lV = 0; // true anomaly
         final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lV, PositionAngleType.TRUE,
@@ -673,7 +673,7 @@ public class BrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.acos(1.0 / FastMath.sqrt(5.0)); // critical inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lV = 0; // true anomaly
 
@@ -730,7 +730,7 @@ public class BrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.9; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double pa = FastMath.toRadians(180); // perigee argument
+        final double pa = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final Orbit orbit = new KeplerianOrbit(a, e, i, pa, raan, lM, PositionAngleType.MEAN,

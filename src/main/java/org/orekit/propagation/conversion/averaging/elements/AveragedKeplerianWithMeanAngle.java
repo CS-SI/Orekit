@@ -32,8 +32,8 @@ public class AveragedKeplerianWithMeanAngle implements AveragedOrbitalElements {
     private final double averagedEccentricity;
     /** Averaged inclination in arbitrary theory. */
     private final double averagedInclination;
-    /** Averaged perigee argument in arbitrary theory. */
-    private final double averagedPerigeeArgument;
+    /** Averaged periapsis argument in arbitrary theory. */
+    private final double averagedPeriapsisArgument;
     /** Averaged right ascension of the ascending node in arbitrary theory. */
     private final double averagedRightAscensionOfTheAscendingNode;
     /** Averaged mean anomaly in arbitrary theory. */
@@ -44,20 +44,20 @@ public class AveragedKeplerianWithMeanAngle implements AveragedOrbitalElements {
      * @param averagedSemiMajorAxis averaged semi-major axis
      * @param averagedEccentricity averaged eccentricity
      * @param averagedInclination averaged inclination
-     * @param averagedPerigeeArgument averaged perigee argument
+     * @param averagedPeriapsisArgument averaged periapsis argument
      * @param averagedRightAscensionOfTheAscendingNode averaged RAAN
      * @param averagedMeanAnomaly averaged mean anomaly
      */
     public AveragedKeplerianWithMeanAngle(final double averagedSemiMajorAxis,
                                           final double averagedEccentricity,
                                           final double averagedInclination,
-                                          final double averagedPerigeeArgument,
+                                          final double averagedPeriapsisArgument,
                                           final double averagedRightAscensionOfTheAscendingNode,
                                           final double averagedMeanAnomaly) {
         this.averagedSemiMajorAxis = averagedSemiMajorAxis;
         this.averagedEccentricity = averagedEccentricity;
         this.averagedInclination = averagedInclination;
-        this.averagedPerigeeArgument = averagedPerigeeArgument;
+        this.averagedPeriapsisArgument = averagedPeriapsisArgument;
         this.averagedRightAscensionOfTheAscendingNode = averagedRightAscensionOfTheAscendingNode;
         this.averagedMeanAnomaly = averagedMeanAnomaly;
     }
@@ -66,7 +66,7 @@ public class AveragedKeplerianWithMeanAngle implements AveragedOrbitalElements {
     @Override
     public double[] toArray() {
         return new double[] { averagedSemiMajorAxis, averagedEccentricity, averagedInclination,
-            averagedPerigeeArgument, averagedRightAscensionOfTheAscendingNode, averagedMeanAnomaly };
+            averagedPeriapsisArgument, averagedRightAscensionOfTheAscendingNode, averagedMeanAnomaly };
     }
 
     /**
@@ -94,11 +94,11 @@ public class AveragedKeplerianWithMeanAngle implements AveragedOrbitalElements {
     }
 
     /**
-     * Getter for the averaged perigee argument.
-     * @return perigee argument.
+     * Getter for the averaged periapsis argument.
+     * @return periapsis argument.
      */
-    public double getAveragedPerigeeArgument() {
-        return averagedPerigeeArgument;
+    public double getAveragedPeriapsisArgument() {
+        return averagedPeriapsisArgument;
     }
 
     /**

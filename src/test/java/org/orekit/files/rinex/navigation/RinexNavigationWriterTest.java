@@ -715,7 +715,7 @@ public class RinexNavigationWriterTest {
         checkDouble(first.getOrbit().getE(), second.getOrbit().getE());
         checkDouble(first.getOrbit().getI(), second.getOrbit().getI());
         checkDouble(first.getOrbit().getRightAscensionOfAscendingNode(), second.getOrbit().getRightAscensionOfAscendingNode());
-        checkDouble(first.getOrbit().getPerigeeArgument(), second.getOrbit().getPerigeeArgument());
+        checkDouble(first.getOrbit().getPeriapsisArgument(), second.getOrbit().getPeriapsisArgument());
         checkDouble(first.getOrbit().getMeanAnomaly(), second.getOrbit().getMeanAnomaly());
 
         // check data specific to this message

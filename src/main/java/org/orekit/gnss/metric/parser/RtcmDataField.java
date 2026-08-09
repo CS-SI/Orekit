@@ -321,7 +321,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /** GPS ω (Argument of Perigee). */
+    /** GPS ω (Argument of Periapsis). */
     DF099 {
         /** {@inheritDoc} */
         @Override
