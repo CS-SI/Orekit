@@ -294,6 +294,166 @@
     <Method name="getData" />
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
+  <Match>
+    <Or>
+      <Class name="org.orekit.files.rinex.navigation.RinexNavigationParser"/>
+      <Class name="org.orekit.files.rinex.navigation.parsers.ParseInfo"/>
+    </Or>
+    <Method name="&lt;init>"  params="org.orekit.time.TimeScales,org.orekit.frames.Frame,org.orekit.frames.Frame" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.files.rinex.navigation.parsers.ephemeris.CivilianLevel1NavigationParser"/>
+    <Method name="getParseInfo" />
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Or>
+      <Class name="org.orekit.gnss.SEMParser"/>
+      <Class name="org.orekit.gnss.YUMAParser"/>
+    </Or>
+    <Method name="&lt;init>"  params="java.lang.String,org.orekit.data.DataProvidersManager,org.orekit.time.TimeScales,org.orekit.frames.Frame,org.orekit.frames.Frame" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019Data"/>
+    <Method name="&lt;init>"  params="int,org.orekit.gnss.metric.messages.common.AccuracyProvider,org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessageFactory" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042Data"/>
+    <Method name="&lt;init>"  params="int,org.orekit.gnss.metric.messages.common.AccuracyProvider,org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessageFactory" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data"/>
+    <Method name="&lt;init>"  params="int,org.orekit.gnss.metric.messages.common.AccuracyProvider,org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1046Data"/>
+    <Method name="&lt;init>"  params="int,org.orekit.gnss.metric.messages.common.AccuracyProvider,org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.gnss.metric.ntrip.NtripClient"/>
+    <Method name="&lt;init>"  params="java.lang.String,int,org.orekit.time.TimeScales,org.orekit.frames.Frame,org.orekit.frames.Frame" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.gnss.metric.ntrip.StreamMonitor"/>
+    <Method name="&lt;init>"  params="org.orekit.gnss.metric.ntrip.NtripClient,java.lang.String,org.orekit.gnss.metric.ntrip.Type,boolean,boolean,double,double,int,org.orekit.frames.Frame,org.orekit.frames.Frame" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.orbits.AbstractOrbitalParameterFactory"/>
+    <Or>
+      <Method name="getOrbitalParametersDrivers" />
+      <Method name="getFrame" />
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.orbits.AbstractOrbitalParameterFactory"/>
+    <Method name="setFrame" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Or>
+      <Class name="org.orekit.propagation.analytical.gnss.data.FieldBeidouCivilianNavigationMessage"/>
+      <Class name="org.orekit.propagation.analytical.gnss.data.FieldBeidouLegacyNavigationMessage"/>
+      <Class name="org.orekit.propagation.analytical.gnss.data.FieldCivilianNavigationMessage"/>
+      <Class name="org.orekit.propagation.analytical.gnss.data.FieldGalileoNavigationMessage"/>
+      <Class name="org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements"/>
+      <Class name="org.orekit.propagation.analytical.gnss.data.FieldLegacyNavigationMessage"/>
+      <Class name="org.orekit.propagation.analytical.gnss.data.FieldNavicL1NvNavigationMessage"/>
+    </Or>
+    <Method name="&lt;init>" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements"/>
+    <Or>
+      <Method name="getOrbit" />
+      <Method name="getADot" />
+      <Method name="getDeltaN0" />
+      <Method name="getDeltaN0Dot" />
+      <Method name="getIDot" />
+      <Method name="getOmegaDot" />
+      <Method name="getCuc" />
+      <Method name="getCus" />
+      <Method name="getCrc" />
+      <Method name="getCrs" />
+      <Method name="getCic" />
+      <Method name="getCis" />
+      <Method name="getAf0" />
+      <Method name="getAf1" />
+      <Method name="getAf2" />
+      <Method name="getTgd" />
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.analytical.gnss.data.GnssOrbitalElements"/>
+    <Method name="getOrbit" />
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory"/>
+    <Or>
+      <Method name="getInertial" />
+      <Method name="getBodyFixed" />
+      <Method name="getNonKeplerianParametersDrivers" />
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory"/>
+    <Or>
+      <Method name="getTimeDriver" />
+      <Method name="getADotDriver" />
+      <Method name="getDeltaN0Driver" />
+      <Method name="getDeltaN0DotDriver" />
+      <Method name="getIdotDriver" />
+      <Method name="getOmegaDotDriver" />
+      <Method name="getCucDriver" />
+      <Method name="getCusDriver" />
+      <Method name="getCrcDriver" />
+      <Method name="getCrsDriver" />
+      <Method name="getCicDriver" />
+      <Method name="getCisDriver" />
+      <Method name="getAf0Driver" />
+      <Method name="getAf1Driver" />
+      <Method name="getAf2Driver" />
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Or>
+      <Class name="org.orekit.propagation.analytical.tle.FieldTLE"/>
+      <Class name="org.orekit.propagation.analytical.tle.generation.LeastSquaresTleGenerationAlgorithm"/>
+    </Or>
+    <Method name="&lt;init>" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.analytical.tle.FieldTLE"/>
+    <Method name="getBStar"/>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm"/>
+    <Or>
+      <Method name="getConverter"/>
+      <Method name="getNonKeplerianParametersDrivers"/>
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.conversion.AbstractPropagatorBuilder"/>
+    <Method name="getOrbitalParameterFactory"/>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
 
   <!-- the following is an intended switch fall-through in the SP3Parser -->
   <Match>

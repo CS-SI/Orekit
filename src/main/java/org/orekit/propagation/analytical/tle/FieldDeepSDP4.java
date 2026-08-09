@@ -130,7 +130,7 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
     private boolean synchronous;
 
     /** Flag for compliance with Dundee modifications. */
-    private final boolean isDundeeCompliant = true;
+    private boolean isDundeeCompliant = true;
 
     /** Constructor for a unique initial TLE.
      *
