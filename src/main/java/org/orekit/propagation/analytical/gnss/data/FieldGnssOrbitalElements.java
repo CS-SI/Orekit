@@ -231,53 +231,6 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
              tgd, toc);
     }
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    protected FieldGnssOrbitalElements(final FieldKeplerianOrbit<T> orbit, final O original) {
-        this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
-             original.getType(), original.getPrn(),
-             new FieldGNSSDate<>(orbit.getDate().getField(), original.getTimeOfEphemeris()), orbit,
-             orbit.getMu().newInstance(original.getADot()),
-             orbit.getMu().newInstance(original.getDeltaN0()), orbit.getMu().newInstance(original.getDeltaN0Dot()),
-             orbit.getMu().newInstance(original.getIDot()), orbit.getMu().newInstance(original.getOmegaDot()),
-             orbit.getMu().newInstance(original.getCuc()), orbit.getMu().newInstance(original.getCus()),
-             orbit.getMu().newInstance(original.getCrc()), orbit.getMu().newInstance(original.getCrs()),
-             orbit.getMu().newInstance(original.getCic()), orbit.getMu().newInstance(original.getCis()),
-             orbit.getMu().newInstance(original.getAf0()),
-             orbit.getMu().newInstance(original.getAf1()),
-             orbit.getMu().newInstance(original.getAf2()),
-             orbit.getMu().newInstance(original.getTgd()),
-             new FieldGNSSDate<>(orbit.getDate().getField(), original.getTimeOfClock()));
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    protected <V extends CalculusFieldElement<V>> FieldGnssOrbitalElements(final FieldKeplerianOrbit<T> orbit,
-                                                                           final Function<V, T> converter,
-                                                                           final FieldGnssOrbitalElements<V, O> original) {
-        this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
-             original.getType(), original.getPrn(),
-             new FieldGNSSDate<>(orbit.getDate().getField(), original.getTimeOfEphemeris().getGnssDate()),
-             orbit,
-             converter.apply(original.getADot()),
-             converter.apply(original.getDeltaN0()), converter.apply(original.getDeltaN0Dot()),
-             converter.apply(original.getIDot()), converter.apply(original.getOmegaDot()),
-             converter.apply(original.getCuc()), converter.apply(original.getCus()),
-             converter.apply(original.getCrc()), converter.apply(original.getCrs()),
-             converter.apply(original.getCic()), converter.apply(original.getCis()),
-             converter.apply(original.getAf0()),
-             converter.apply(original.getAf1()),
-             converter.apply(original.getAf2()),
-             converter.apply(original.getTgd()),
-             new FieldGNSSDate<>(orbit.getDate().getField(), original.getTimeOfClock().getGnssDate()));
-    }
-
     /** {@inheritDoc} */
     @Override
     public FieldAbsoluteDate<T> getDate() {

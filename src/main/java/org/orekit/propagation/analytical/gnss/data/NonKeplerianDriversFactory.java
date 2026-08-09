@@ -28,7 +28,6 @@ import org.orekit.utils.ParameterDriver;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.DoubleFunction;
 
 /** Factory for non-Keplerian drivers.
  * @since 14.0
@@ -414,33 +413,6 @@ public class NonKeplerianDriversFactory {
      */
     public ParameterDriver getAf2Driver() {
         return af2Driver;
-    }
-
-    /** Get the non-Keplerian elements as a flat array.
-     * @param <T> type of the field elements
-     * @param field field to which elements belong
-     * @param converter converter for parameters values
-     * @return non-Keplerian elements as a flat array
-     */
-    public <T extends CalculusFieldElement<T>> T[] toArray(final Field<T> field,
-                                                           final DoubleFunction<T> converter) {
-        final T[] array = MathArrays.buildArray(field, SIZE);
-        array[TIME_INDEX]         = converter.apply(timeDriver.getValue());
-        array[A_DOT_INDEX]        = converter.apply(aDotDriver.getValue());
-        array[DELTA_N0_INDEX]     = converter.apply(deltaN0Driver.getValue());
-        array[DELTA_N0_DOT_INDEX] = converter.apply(deltaN0DotDriver.getValue());
-        array[I_DOT_INDEX]        = converter.apply(iDotDriver.getValue());
-        array[OMEGA_DOT_INDEX]    = converter.apply(domDriver.getValue());
-        array[CUC_INDEX]          = converter.apply(cucDriver.getValue());
-        array[CUS_INDEX]          = converter.apply(cusDriver.getValue());
-        array[CRC_INDEX]          = converter.apply(crcDriver.getValue());
-        array[CRS_INDEX]          = converter.apply(crsDriver.getValue());
-        array[CIC_INDEX]          = converter.apply(cicDriver.getValue());
-        array[CIS_INDEX]          = converter.apply(cisDriver.getValue());
-        array[AF0_INDEX]          = converter.apply(af0Driver.getValue());
-        array[AF1_INDEX]          = converter.apply(af1Driver.getValue());
-        array[AF2_INDEX]          = converter.apply(af2Driver.getValue());
-        return array;
     }
 
     /** Get the non-Keplerian elements as gradient variables or constants, depending on selection status.
