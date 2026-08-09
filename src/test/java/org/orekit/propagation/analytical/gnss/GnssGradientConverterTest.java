@@ -51,7 +51,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.ToDoubleFunction;
 
@@ -196,13 +195,9 @@ class GnssGradientConverterTest {
                 final double finiteDifferences =
                     differentiate(propagator, inType, outType, state.getDate(), steps[j], i, j);
                 final double relativeError = (finiteDifferences - stm.getEntry(i, j)) / finiteDifferences;
-                System.out.format(Locale.ROOT, "%s%12.3f (%.4e %.4e)",
-                                  j == 3 ? "     " : " ", relativeError, finiteDifferences, stm.getEntry(i, j));
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs(relativeError));
             }
-            System.out.format(Locale.ROOT, "%n");
         }
-        System.out.format(Locale.ROOT, "maxRelativeError = %10.3e%n", maxRelativeError);
         Assertions.assertEquals(0.0, maxRelativeError, 2.0e-8);
 
         // check Jacobian against finite differences
