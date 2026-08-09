@@ -48,7 +48,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
@@ -443,7 +443,7 @@ class OneWayGNSSPhaseTest {
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
         final OneWayGNSSPhaseCreator creator = new OneWayGNSSPhaseCreator(ephemeris, "remote", RADIO_WAVE, ambiguity, localClockOffset, remoteClockOffset);
-        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
+        creator.getLocalSatellite().getClockModel().getBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -476,7 +476,7 @@ class OneWayGNSSPhaseTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().getFirst().getClockBiasDriver(),
+                        measurement.getSatellites().getFirst().getClockModel().getBiasDriver(),
                     };
 
                     for (ParameterDriver driver : drivers) {
@@ -573,7 +573,7 @@ class OneWayGNSSPhaseTest {
 
         // Create a phase measurement. Remote is set to null since it not used by the test
         final ObserverSatellite gnssSatellite = new ObserverSatellite("", null, 
-                                                                      new QuadraticClockModel(AbsoluteDate.J2000_EPOCH, 635.0e-6, 0.0, 0.0));
+                                                                      new PolynomialClockModel(AbsoluteDate.J2000_EPOCH, 635.0e-6));
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(gnssSatellite,
                                                           AbsoluteDate.J2000_EPOCH, 467614.701,
                                                           PredefinedGnssSignal.G01.getWavelength(), 0.02, 1.0,

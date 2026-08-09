@@ -71,8 +71,9 @@ import org.orekit.signal.SignalEmissionCondition;
 import org.orekit.signal.SignalReceptionCondition;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
-import org.orekit.time.clocks.QuadraticFieldClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
+import org.orekit.time.clocks.PolynomialFieldClockModel;
+import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
@@ -324,7 +325,7 @@ class RangeTest {
                                                                            propagatorBuilder);
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setValue(groundClockOffset);
+            station.getClockModel().getBiasDriver().setValue(groundClockOffset);
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -609,7 +610,7 @@ class RangeTest {
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setSelected(true);
+            station.getClockModel().getBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -656,7 +657,7 @@ class RangeTest {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        station.getClockBiasDriver(),
+                        station.getClockModel().getBiasDriver(),
                         station.getEastOffsetDriver(),
                         station.getNorthOffsetDriver(),
                         station.getZenithOffsetDriver()
@@ -910,9 +911,9 @@ class RangeTest {
         final Observer observer = mock();
         final GradientField field = GradientField.getField(6);
         final Gradient zero = field.getZero();
-        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, epoch);
-        when(observer.getQuadraticFieldClock(anyInt(), any(), anyMap())).thenReturn(new QuadraticFieldClockModel<>(fieldDate, zero, zero, zero));
-        when(observer.getFieldOffsetValue(anyInt(), any(), anyMap())).thenReturn(zero);
+        final PolynomialFieldClockModel<Gradient> fieldClockModel = mock();
+        when(observer.getFieldClockModel(anyInt(), anyMap(), any())).thenReturn(fieldClockModel);
+        when(observer.getFieldOffsetValue(anyInt(), anyMap(), any())).thenReturn(zero);
         when(observer.getPVCoordinatesProvider()).thenReturn(new AbsolutePVCoordinates(FramesFactory.getEME2000(), epoch, PVCoordinates.ZERO));
         final FieldPVCoordinatesProvider<Gradient> provider = mock(FieldPVCoordinatesProvider.class);
         when(provider.getPosition(any(FieldAbsoluteDate.class), any(Frame.class))).thenReturn(FieldVector3D.getZero(field));
@@ -939,7 +940,7 @@ class RangeTest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation station = new GroundStation(baseFrame, new QuadraticClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2, 0, 0));
+        final GroundStation station = new GroundStation(baseFrame, new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2));
         for (final ParameterDriver driver: station.getParametersDrivers()) {
             driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
         }

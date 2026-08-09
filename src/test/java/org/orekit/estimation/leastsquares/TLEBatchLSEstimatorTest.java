@@ -309,7 +309,7 @@ class TLEBatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final double groundClockDrift = 4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getParametersDrivers().get(1).setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
 

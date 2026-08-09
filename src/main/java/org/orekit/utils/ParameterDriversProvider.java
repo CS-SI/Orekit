@@ -192,6 +192,29 @@ public interface ParameterDriversProvider {
         throw new UnsupportedParameterException(name, getParametersDrivers());
     }
 
+    /** Get parameter that matches the sub-name.
+     * @param subString a string containing text unique to a single parameter driver
+     * @return parameter value
+     * @since 14.0
+     */
+    default ParameterDriver getParameterDriverWithSubstring(final String subString) {
+        ParameterDriver result = null;
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (driver.getName().contains(subString) && result == null) {
+                // we have found a parameter with that name
+                result = driver;
+            }
+            else if (driver.getName().contains(subString) && result != null) {
+                throw new UnsupportedParameterException(subString, getParametersDrivers());
+            }
+        }
+        if (result == null) {
+            throw new UnsupportedParameterException(subString, getParametersDrivers());
+        }
+        return result;
+    }
+
+
     /** Check if a parameter is supported.
      * <p>Supported parameters are those listed by {@link #getParametersDrivers()}.</p>
      * @param name parameter name to check

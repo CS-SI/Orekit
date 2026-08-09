@@ -50,15 +50,15 @@ public class SpaceTDOAMeasurementCreator extends MeasurementCreator {
         this.secondary = context.satellites.get(1);
         this.satellite = new ObservableSatellite(0);
 
-        primary.getClockBiasDriver().setValue(primaryBias);
-        primary.getClockDriftDriver().setValue(primaryDrift);
-        secondary.getClockBiasDriver().setValue(secondaryBias);
-        secondary.getClockDriftDriver().setValue(secondaryDrift);
+        primary.getClockModel().getParametersDrivers().get(0).setValue(primaryBias);
+        primary.getClockModel().getParametersDrivers().get(1).setValue(primaryDrift);
+        secondary.getClockModel().getParametersDrivers().get(0).setValue(secondaryBias);
+        secondary.getClockModel().getParametersDrivers().get(1).setValue(secondaryDrift);
 
-        primary.getClockBiasDriver().setReferenceDate(context.initialOrbit.getDate());
-        primary.getClockDriftDriver().setReferenceDate(context.initialOrbit.getDate());
-        secondary.getClockBiasDriver().setReferenceDate(context.initialOrbit.getDate());
-        secondary.getClockDriftDriver().setReferenceDate(context.initialOrbit.getDate());
+        primary.getClockModel().getParametersDrivers().get(0).setReferenceDate(context.initialOrbit.getDate());
+        primary.getClockModel().getParametersDrivers().get(1).setReferenceDate(context.initialOrbit.getDate());
+        secondary.getClockModel().getParametersDrivers().get(0).setReferenceDate(context.initialOrbit.getDate());
+        secondary.getClockModel().getParametersDrivers().get(1).setReferenceDate(context.initialOrbit.getDate());
     }
 
     public ObservableSatellite getSatellite() {

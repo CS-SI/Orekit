@@ -16,14 +16,22 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
-/** Offset clock model aggregating several other clock models.
+/**
+ * Offset clock model aggregating several other clock models.
+ *
  * @author Luc Maisonobe
  * @since 12.1
  */
@@ -60,17 +68,34 @@ public class AggregatedClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        final List<ParameterDriver> drivers = new ArrayList<>();
+        models.forEach(model -> drivers.addAll(model.getParametersDrivers()));
+        return drivers;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ClockOffset getOffset(final AbsoluteDate date) {
         return getModel(date).getOffset(date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
-        return getModel(date.toAbsoluteDate()).getOffset(date);
+    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(final FieldAbsoluteDate<T> date) {
+        return getModel(date.toAbsoluteDate()).getFieldOffset(date);
     }
 
-    /** Get the model valid at specified date.
+    /** {@inheritDoc} */
+    @Override
+    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
+            final Map<String, Integer> indices, final AbsoluteDate date) {
+        return getModel(date).getFieldModel(freeParameters, indices, date);
+    }
+
+    /**
+     * Get the model valid at specified date.
+     *
      * @param date date for which model is requested
      * @return clock model valid at date
      */

@@ -48,19 +48,21 @@ public class Sinex extends AbstractSinex {
     private final Map<AbsoluteDate, SinexEopEntry> eop;
 
     /** Simple constructor.
-     * @param timeScales time scales
-     * @param creationDate SINEX file creation date
-     * @param startDate start time of the data used in the Sinex solution
-     * @param endDate end time of the data used in the Sinex solution
+     * @param version                version number
+     * @param timeScales             time scales
+     * @param creationDate           SINEX file creation date
+     * @param startDate              start time of the data used in the Sinex solution
+     * @param endDate                end time of the data used in the Sinex solution
      * @param satellitesPhaseCenters satellites phase centers
-     * @param stations station data
-     * @param eop Earth Orientation Parameters data
+     * @param stations               station data
+     * @param eop                    Earth Orientation Parameters data
+     * @since 14.0
      */
-    public Sinex(final TimeScales timeScales,
+    public Sinex(final double version, final TimeScales timeScales,
                  final AbsoluteDate creationDate, final AbsoluteDate startDate, final AbsoluteDate endDate,
                  final Map<SatInSystem, Map<GnssSignal, Vector3D>> satellitesPhaseCenters,
                  final Map<String, Station> stations, final Map<AbsoluteDate, SinexEopEntry> eop) {
-        super(timeScales, creationDate, startDate, endDate);
+        super(version, timeScales, creationDate, startDate, endDate);
         this.satellitesPhaseCenters = satellitesPhaseCenters;
         this.stations               = stations;
         this.eop                    = eop;

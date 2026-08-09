@@ -651,7 +651,7 @@ public enum OrbitType {
             stateVector[0] = keplerianOrbit.getA();
             stateVector[1] = keplerianOrbit.getE();
             stateVector[2] = keplerianOrbit.getI();
-            stateVector[3] = keplerianOrbit.getPerigeeArgument();
+            stateVector[3] = keplerianOrbit.getPeriapsisArgument();
             stateVector[4] = keplerianOrbit.getRightAscensionOfAscendingNode();
             stateVector[5] = keplerianOrbit.getAnomaly(type);
 
@@ -659,7 +659,7 @@ public enum OrbitType {
                 stateVectorDot[0] = keplerianOrbit.getADot();
                 stateVectorDot[1] = keplerianOrbit.getEDot();
                 stateVectorDot[2] = keplerianOrbit.getIDot();
-                stateVectorDot[3] = keplerianOrbit.getPerigeeArgumentDot();
+                stateVectorDot[3] = keplerianOrbit.getPeriapsisArgumentDot();
                 stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
                 stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
             }
@@ -703,7 +703,7 @@ public enum OrbitType {
             stateVector[0] = keplerianOrbit.getA();
             stateVector[1] = keplerianOrbit.getE();
             stateVector[2] = keplerianOrbit.getI();
-            stateVector[3] = keplerianOrbit.getPerigeeArgument();
+            stateVector[3] = keplerianOrbit.getPeriapsisArgument();
             stateVector[4] = keplerianOrbit.getRightAscensionOfAscendingNode();
             stateVector[5] = keplerianOrbit.getAnomaly(type);
 
@@ -711,7 +711,7 @@ public enum OrbitType {
                 stateVectorDot[0] = keplerianOrbit.getADot();
                 stateVectorDot[1] = keplerianOrbit.getEDot();
                 stateVectorDot[2] = keplerianOrbit.getIDot();
-                stateVectorDot[3] = keplerianOrbit.getPerigeeArgumentDot();
+                stateVectorDot[3] = keplerianOrbit.getPeriapsisArgumentDot();
                 stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
                 stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
             }
@@ -779,7 +779,7 @@ public enum OrbitType {
             return new KeplerianOrbit(kO.getA(),
                                       kO.getE(),
                                       kO.getI(),
-                                      MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
+                                      MathUtils.normalizeAngle(kO.getPeriapsisArgument(), kR.getPeriapsisArgument()),
                                       MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(),
                                               kR.getRightAscensionOfAscendingNode()),
                                       MathUtils.normalizeAngle(kO.getAnomaly(cachedPositionAngleType),
@@ -787,7 +787,7 @@ public enum OrbitType {
                                       kO.getADot(),
                                       kO.getEDot(),
                                       kO.getIDot(),
-                                      kO.getPerigeeArgumentDot(),
+                                      kO.getPeriapsisArgumentDot(),
                                       kO.getRightAscensionOfAscendingNodeDot(),
                                       kO.getAnomalyDot(cachedPositionAngleType),
                                       cachedPositionAngleType,
@@ -811,7 +811,7 @@ public enum OrbitType {
                 return new FieldKeplerianOrbit<>(kO.getA(),
                                                  kO.getE(),
                                                  kO.getI(),
-                                                 MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
+                                                 MathUtils.normalizeAngle(kO.getPeriapsisArgument(), kR.getPeriapsisArgument()),
                                                  MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(),
                                                          kR.getRightAscensionOfAscendingNode()),
                                                  MathUtils.normalizeAngle(kO.getAnomaly(positionAngleType),
@@ -819,7 +819,7 @@ public enum OrbitType {
                                                  kO.getADot(),
                                                  kO.getEDot(),
                                                  kO.getIDot(),
-                                                 kO.getPerigeeArgumentDot(),
+                                                 kO.getPeriapsisArgumentDot(),
                                                  kO.getRightAscensionOfAscendingNodeDot(),
                                                  kO.getAnomalyDot(positionAngleType),
                                                  positionAngleType,
@@ -830,7 +830,7 @@ public enum OrbitType {
                 return new FieldKeplerianOrbit<>(kO.getA(),
                                                  kO.getE(),
                                                  kO.getI(),
-                                                 MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
+                                                 MathUtils.normalizeAngle(kO.getPeriapsisArgument(), kR.getPeriapsisArgument()),
                                                  MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(),
                                                          kR.getRightAscensionOfAscendingNode()),
                                                  MathUtils.normalizeAngle(kO.getAnomaly(positionAngleType),

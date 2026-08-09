@@ -45,6 +45,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class Range2Test {
 
@@ -443,7 +444,7 @@ public class Range2Test {
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setSelected(true);
+            station.getClockModel().getBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -490,7 +491,7 @@ public class Range2Test {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        stationParameter.getClockBiasDriver(),
+                        stationParameter.getClockModel().getBiasDriver(),
                         stationParameter.getEastOffsetDriver(),
                         stationParameter.getNorthOffsetDriver(),
                         stationParameter.getZenithOffsetDriver()

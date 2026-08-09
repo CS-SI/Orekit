@@ -54,7 +54,7 @@ public class PerfectClockModelTest {
         final PerfectClockModel clockModel = new PerfectClockModel();
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
-            final FieldClockOffset<T> co = clockModel.getOffset(t0F.shiftedBy(dtF));
+            final FieldClockOffset<T> co = clockModel.getFieldOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(), 1.0e-15);
             Assertions.assertEquals(0,  co.getBias().getReal(),                1.0e-15);
             Assertions.assertEquals(0,  co.getRate().getReal(),                  1.0e-15);

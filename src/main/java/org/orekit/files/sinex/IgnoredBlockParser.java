@@ -23,11 +23,11 @@ import java.util.Collections;
  * @author Luc Maisonobe
  * @since 13.0
  */
-class IgnoredBlockParser<T extends ParseInfo<?>> extends BlockParser<T> {
+public class IgnoredBlockParser<T extends ParseInfo<?>> extends BlockParser<T> {
 
     /** Simple constructor.
      */
-    protected IgnoredBlockParser() {
+    public IgnoredBlockParser() {
         // some files don't put the same number of trailing blanks after start and end markers,
         // so we ensure the block marker we will look for ends with a non-blank character
         super(".*[^ ]", Collections.emptyList());

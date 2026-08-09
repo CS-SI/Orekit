@@ -256,8 +256,8 @@ public class Phase extends SignalBasedMeasurement<Phase> {
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().getFirst();
 
-        final Gradient dts = satellite.getFieldOffsetValue(nbParams, state.getDate(), paramIndices);
-        final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, getDate(), paramIndices);
+        final Gradient dts = satellite.getFieldOffsetValue(nbParams, paramIndices, state.getDate());
+        final Gradient dtg = getObserver().getFieldOffsetValue(nbParams, paramIndices, getDate());
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;

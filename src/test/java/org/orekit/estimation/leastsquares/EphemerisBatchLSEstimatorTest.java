@@ -158,7 +158,7 @@ public class EphemerisBatchLSEstimatorTest {
 
         final double refClockBias = 653.47e-11;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, refClockBias);
-        creator.getSatellite().getClockDriftDriver().setSelected(true);
+        creator.getSatellite().getClockModel().getRateDriver().setSelected(true);
         final List<ObservedMeasurement<?>> measurements =
                 EstimationTestUtils.createMeasurements(ephemeris, creator, 1.0, 5.0, 10.0);
 

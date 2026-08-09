@@ -1006,109 +1006,121 @@ LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=nombre de révolutions {0} invalide, le no
 NUMBER_OF_FACETS_NOT_ODD={0} facettes est un nombre invalide, le nombre de facettes doit être impair
 
 # Invalid DAF FTP string found in DAF file {0}
-INVALID_DAF_FTPSTR = <MISSING TRANSLATION>
+INVALID_DAF_FTPSTR =
 
 # Incomplete DAF comment record found
-INCOMPLETE_DAF_COMMENT_RECORD = <MISSING TRANSLATION>
+INCOMPLETE_DAF_COMMENT_RECORD =
 
 # Incomplete DAF summary record found
-INCOMPLETE_DAF_SUMMARY_RECORD = <MISSING TRANSLATION>
+INCOMPLETE_DAF_SUMMARY_RECORD =
 
 # DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
-INVALID_DAF_ENDIANNESS = <MISSING TRANSLATION>
+INVALID_DAF_ENDIANNESS =
 
 # DAF file type string must be of the format DAF/XXXX, got {0}
-INVALID_DAF_FILETYPE_STRING = <MISSING TRANSLATION>
+INVALID_DAF_FILETYPE_STRING =
 
 # Incomplete DAF name record found
-INCOMPLETE_DAF_NAME_RECORD = <MISSING TRANSLATION>
+INCOMPLETE_DAF_NAME_RECORD =
 
 # DAF object cannot be null
-NULL_DAF = <MISSING TRANSLATION>
+NULL_DAF =
 
 # Initial position for two-body propagator is zero
-TWOBODY_ZERO_INITIAL_DISTANCE = <MISSING TRANSLATION>
+TWOBODY_ZERO_INITIAL_DISTANCE =
 
 # Initial velocity for two-body propagator is zero
-TWOBODY_ZERO_INITIAL_VELOCITY = <MISSING TRANSLATION>
+TWOBODY_ZERO_INITIAL_VELOCITY =
 
 # Rectilinear motion detected in two-body propagator
-TWOBODY_RECTILINEAR_MOTION = <MISSING TRANSLATION>
+TWOBODY_RECTILINEAR_MOTION =
 
 # Two-body propagation numerically unstable
-TWOBODY_UNSTABLE_PROPAGATION = <MISSING TRANSLATION>
+TWOBODY_UNSTABLE_PROPAGATION =
 
 # GM value cannot be negative
-NEGATIVE_GM = <MISSING TRANSLATION>
+NEGATIVE_GM =
 
 # Stumpff function order cannot be negative
-STUMPFF_NEGATIVE_ORDER = <MISSING TRANSLATION>
+STUMPFF_NEGATIVE_ORDER =
 
 # Semilatus rectum cannot be negative
-NEGATIVE_SEMILATUS_RECTUM = <MISSING TRANSLATION>
+NEGATIVE_SEMILATUS_RECTUM =
 
 # Eccentricity cannot be negative
-NEGATIVE_ECCENTRICITY = <MISSING TRANSLATION>
+NEGATIVE_ECCENTRICITY =
 
 # Central body radius cannot be negative
-NEGATIVE_CENTRAL_BODY_RADIUS = <MISSING TRANSLATION>
+NEGATIVE_CENTRAL_BODY_RADIUS =
 
 # Norm of trajectory pole vector is zero
-ZERO_NORM_TRAJECTORY_POLE_VECTOR = <MISSING TRANSLATION>
+ZERO_NORM_TRAJECTORY_POLE_VECTOR =
 
 # Norm of periapsis vector is zero
-ZERO_NORM_PERIAPSIS_VECTOR = <MISSING TRANSLATION>
+ZERO_NORM_PERIAPSIS_VECTOR =
 
 # Norm of central body pole vector is zero
-ZERO_NORM_CENTRAL_BODY_POLE_VECTOR = <MISSING TRANSLATION>
+ZERO_NORM_CENTRAL_BODY_POLE_VECTOR =
 
 # Trajectory pole and periapsis vectors are not orthogonal
-NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS = <MISSING TRANSLATION>
+NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS =
 
 # Semimajor axis cannot be negative
-NEGATIVE_SEMIMAJOR_AXIS = <MISSING TRANSLATION>
+NEGATIVE_SEMIMAJOR_AXIS =
 
 # Unknown SPK type {0}
-UNKNOWN_SPK_TYPE = <MISSING TRANSLATION>
+UNKNOWN_SPK_TYPE =
 
 # Unknown SPK subtype code found for SPK segment of type {0}
-UNKNOWN_SPK_SUBTYPE = <MISSING TRANSLATION>
+UNKNOWN_SPK_SUBTYPE =
 
 # Unexpected number of metadata items in type {0} SPK
-SPK_UNEXPECTED_NUMBER_METADATA = <MISSING TRANSLATION>
+SPK_UNEXPECTED_NUMBER_METADATA =
 
 # Unexpected number of constants in type {0} SPK
-SPK_UNEXPECTED_NUMBER_CONSTANTS = <MISSING TRANSLATION>
+SPK_UNEXPECTED_NUMBER_CONSTANTS =
 
 # Unexpected data packet size in type {0} SPK"
-SPK_UNEXPECTED_DATA_PACKET_SIZE = <MISSING TRANSLATION>
+SPK_UNEXPECTED_DATA_PACKET_SIZE =
 
 # Target date {0} is outside the interval covered by the SPK segment
-SPK_TARGET_DATE_OUTSIDE_INTERVAL = <MISSING TRANSLATION>
+SPK_TARGET_DATE_OUTSIDE_INTERVAL =
 
 # Segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
-SPK_INTERPOLATION_SEGMENT_TOO_SHORT = <MISSING TRANSLATION>
+SPK_INTERPOLATION_SEGMENT_TOO_SHORT =
 
 # Unknown PCK segment type {0}.
-UNKNOWN_PCK_TYPE = <MISSING TRANSLATION>
+UNKNOWN_PCK_TYPE =
 
 # Unexpected number of metadata items in type {0} PCK segment
-PCK_UNEXPECTED_NUMBER_METADATA = <MISSING TRANSLATION>
+PCK_UNEXPECTED_NUMBER_METADATA =
 
 # Unexpected number of constants in type {0} PCK segment
-PCK_UNEXPECTED_NUMBER_CONSTANTS = <MISSING TRANSLATION>
+PCK_UNEXPECTED_NUMBER_CONSTANTS =
 
 # Unexpected data packet size in type {0} PCK segment
-PCK_UNEXPECTED_DATA_PACKET_SIZE = <MISSING TRANSLATION>
+PCK_UNEXPECTED_DATA_PACKET_SIZE =
 
 # Target date {0} is outside the interval covered by the PCK segment
-PCK_TARGET_DATE_OUTSIDE_INTERVAL = <MISSING TRANSLATION>
+PCK_TARGET_DATE_OUTSIDE_INTERVAL =
 
 # PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
-PCK_INTERPOLATION_SEGMENT_TOO_SHORT = <MISSING TRANSLATION>
+PCK_INTERPOLATION_SEGMENT_TOO_SHORT =
 
 # Comments require {0} records but DAF file record specifies only {1} reserved records
-DAF_INSUFFICIENT_COMMENT_RECORDS = <MISSING TRANSLATION>
+DAF_INSUFFICIENT_COMMENT_RECORDS =
 
 # File description string is {0} characters long but should be at most 60 characters
-DAF_TOO_LONG_FILEDESCRIPTION_STRING = <MISSING TRANSLATION>
+DAF_TOO_LONG_FILEDESCRIPTION_STRING =
+
+# missing unit for {0} record (line {1} of file {2})
+MISSING_ORBEX_UNIT=unité manquante pour l''enregistrement {0} (ligne {1}, fichier {2})
+
+# expected {0} satellites for time tag {1} but got {2} (line {3} of file {4})
+INCOMPLETE_ORBEX_DATA={0} satellites étaient attendus pour la date {1}, mais {2} ont été vus (ligne {3}, fichier {4})
+
+# wrong number of columns at line {0}, file {1}; {2} columns is not allowed for {3} record
+ORBEX_WRONG_COLUMNS=nombre de colonnes erroné à la ligne {0} du fichier {1} ; les enregistrements {3} n''autorisent pas {2} colonnes
+
+# duplicated satellite {0} (line {1}, file {2})
+DUPLICATED_SATELLITE=satellite {0} dupliqué (ligne {1}, fichier {2})

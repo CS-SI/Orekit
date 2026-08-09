@@ -27,7 +27,7 @@ import org.orekit.estimation.measurements.ObserverSatellite;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 
 public class OneWayGNSSRangeCreator extends MeasurementCreator {
@@ -52,11 +52,11 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
                                   final Vector3D antennaPhaseCenter2) {
         this.ephemeris           = ephemeris;
         this.remoteClk           = remoteClockOffset;
-        this.remote              = new ObserverSatellite("", ephemeris, new QuadraticClockModel(ephemeris.getMinDate(), remoteClockOffset, 0.0, 0.0));
+        this.remote              = new ObserverSatellite("", ephemeris, new PolynomialClockModel(ephemeris.getMinDate(), remoteClockOffset));
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockBiasDriver().setValue(localClockOffset);
+        this.local.getClockModel().getBiasDriver().setValue(localClockOffset);
     }
 
     public ObservableSatellite getLocalSatellite() {
@@ -65,15 +65,15 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
 
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
-        if (local.getClockBiasDriver().getReferenceDate() == null) {
-            local.getClockBiasDriver().setReferenceDate(s0.getDate());
+        if (local.getClockModel().getBiasDriver().getReferenceDate() == null) {
+            local.getClockModel().getBiasDriver().setReferenceDate(s0.getDate());
         }
     }
 
     @Override
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double           localClk  = local.getClockBiasDriver().getValue(currentState.getDate());
+            final double           localClk  = local.getOffsetValue(currentState.getDate());
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);

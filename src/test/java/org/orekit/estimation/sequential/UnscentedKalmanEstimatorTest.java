@@ -31,8 +31,21 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.*;
-import org.orekit.estimation.measurements.*;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
+import org.orekit.estimation.measurements.MultiplexedMeasurement;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.Range;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -51,7 +64,7 @@ import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationA
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
@@ -1043,7 +1056,7 @@ public class UnscentedKalmanEstimatorTest {
 
         // Create a station
         final OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF(IERSConventions.IERS_2010, false));
-        final QuadraticClockModel blankClock = new QuadraticClockModel(reference, 0.0, 0.0, 0.0);
+        final PolynomialClockModel blankClock = new PolynomialClockModel(reference);
         final GroundStation station = new GroundStation(new TopocentricFrame(shape, new GeodeticPoint(1.44, 0.2, 100.0), "topo"), blankClock);
 
         // Create three different measurement types

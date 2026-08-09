@@ -22,6 +22,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -46,7 +49,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
@@ -55,9 +58,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RangeRateTest {
 
@@ -296,14 +296,14 @@ class RangeRateTest {
         // create perfect range rate measurements
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getRateDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
-        creator.getSatellite().getClockDriftDriver().setSelected(true);
+        creator.getSatellite().getClockModel().getRateDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setSelected(true);
-            station.getClockDriftDriver().setSelected(true);
+            station.getClockModel().getBiasDriver().setSelected(true);
+            station.getClockModel().getRateDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -336,11 +336,11 @@ class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
-                stationParameter.getClockDriftDriver(),
+                stationParameter.getClockModel().getRateDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
                 stationParameter.getZenithOffsetDriver(),
-                measurement.getSatellites().getFirst().getClockDriftDriver()
+                measurement.getSatellites().getFirst().getClockModel().getRateDriver()
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
@@ -382,12 +382,12 @@ class RangeRateTest {
         // create perfect range rate measurements
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getRateDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, true, satClkDrift);
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setSelected(true);
+            station.getClockModel().getBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -466,7 +466,7 @@ class RangeRateTest {
                                                                            propagatorBuilder);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getRateDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
@@ -532,7 +532,7 @@ class RangeRateTest {
 
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getRateDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
@@ -598,14 +598,14 @@ class RangeRateTest {
         // create perfect range rate measurements
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getRateDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
-        creator.getSatellite().getClockDriftDriver().setSelected(true);
+        creator.getSatellite().getClockModel().getRateDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setSelected(true);
-            station.getClockDriftDriver().setSelected(true);
+            station.getClockModel().getBiasDriver().setSelected(true);
+            station.getClockModel().getRateDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -640,11 +640,11 @@ class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
-                stationParameter.getClockDriftDriver(),
+                stationParameter.getClockModel().getRateDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
                 stationParameter.getZenithOffsetDriver(),
-                measurement.getSatellites().getFirst().getClockDriftDriver()
+                measurement.getSatellites().getFirst().getClockModel().getRateDriver()
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
@@ -688,7 +688,7 @@ class RangeRateTest {
 
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getRateDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
@@ -767,7 +767,7 @@ class RangeRateTest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation station = new GroundStation(baseFrame, new QuadraticClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2, 0, 0));
+        final GroundStation station = new GroundStation(baseFrame, new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2));
         for (final ParameterDriver driver: station.getParametersDrivers()) {
             driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
         }
@@ -820,29 +820,20 @@ class RangeRateTest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(-0.1, 0.1, 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation station = new GroundStation(baseFrame);
+        final PolynomialClockModel stationClock = new PolynomialClockModel(epoch, 0, -1e-4);
+        final GroundStation station = new GroundStation(baseFrame,stationClock);
         for (final ParameterDriver driver: station.getParametersDrivers()) {
             driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
             driver.setSelected(true);
         }
-        station.getClockDriftDriver().setValue(-1e-4);
-        final ObservableSatellite satellite = new ObservableSatellite(0);
-        satellite.getClockBiasDriver().setReferenceDate(epoch);
-        satellite.getClockBiasDriver().setValue(0.);
-        satellite.getClockDriftDriver().setReferenceDate(epoch);
-        satellite.getClockDriftDriver().setValue(1e-3);
-        satellite.getClockDriftDriver().setSelected(true);
+        final PolynomialClockModel satelliteClock = new PolynomialClockModel(epoch, 0, 1e-3, 0);
+        final ObservableSatellite satellite = new ObservableSatellite(0, null, satelliteClock);
         final SpacecraftState state = new SpacecraftState(orbit);
         // WHEN
         final RangeRate rangeRate = new RangeRate(station, epoch, 0., 1., 1., false, satellite);
         final EstimatedMeasurement<RangeRate> estimated = rangeRate.estimate(0, 0, new SpacecraftState[] {state});
         // THEN
-        final ObservableSatellite satellite2 = new ObservableSatellite(1);
-        satellite2.getClockDriftDriver().setReferenceDate(epoch);
-        satellite2.getClockDriftDriver().setValue(station.getClockDriftDriver().getValue());
-        satellite2.getClockBiasDriver().setReferenceDate(epoch);
-        satellite2.getClockBiasDriver().setValue(station.getClockBiasDriver().getValue());
-        satellite2.getClockDriftDriver().setSelected(true);
+        final ObservableSatellite satellite2 = new ObservableSatellite(1, null, stationClock);
         final SpacecraftState state2 = new SpacecraftState(new AbsolutePVCoordinates(orbit.getFrame(), epoch,
                 station.getPVCoordinatesProvider().getPVCoordinates(epoch, orbit.getFrame())));
         final SpacecraftState[] states = new SpacecraftState[] { state, state2 };
@@ -850,10 +841,10 @@ class RangeRateTest {
         final EstimatedMeasurement<InterSatellitesOneWayRangeRate> interRangeRate = interSatRangeRate.estimate(0, 0, states);
         assertEquals(interRangeRate.getEstimatedValue()[0], estimated.getEstimatedValue()[0], 1e0);
         assertArrayEquals(interRangeRate.getStateDerivatives(0)[0], estimated.getStateDerivatives(0)[0], 1e-7);
-        assertArrayEquals(interRangeRate.getParameterDerivatives(satellite2.getClockDriftDriver()),
-                estimated.getParameterDerivatives(station.getClockDriftDriver()));
-        assertArrayEquals(interRangeRate.getParameterDerivatives(satellite.getClockDriftDriver()),
-                estimated.getParameterDerivatives(satellite.getClockDriftDriver()));
+        assertArrayEquals(interRangeRate.getParameterDerivatives(satellite2.getClockModel().getRateDriver()),
+                estimated.getParameterDerivatives(station.getClockModel().getRateDriver()));
+        assertArrayEquals(interRangeRate.getParameterDerivatives(satellite.getClockModel().getRateDriver()),
+                estimated.getParameterDerivatives(satellite.getClockModel().getRateDriver()));
     }
 }
 

@@ -108,7 +108,8 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     /** {@inheritDoc} */
     @Override
     protected SinexBias build() {
-        return new SinexBias(getTimeScales(), getCreationDate(), getStartDate(), getEndDate(),
+        return new SinexBias(getVersion(), getTimeScales(), getCreationDate(),
+                             getStartDate(), getEndDate(),
                              description, stationsDsb, satellitesDsb, stationsOsb, satellitesOsb);
     }
 

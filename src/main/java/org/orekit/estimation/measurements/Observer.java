@@ -29,8 +29,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.ClockOffset;
+import org.orekit.time.clocks.FieldClockModel;
 import org.orekit.time.clocks.FieldClockOffset;
-import org.orekit.time.clocks.QuadraticFieldClockModel;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
@@ -95,7 +95,7 @@ public interface Observer extends MeasurementParticipant {
                                                          final int freeParameters,
                                                          final Map<String, Integer> indices) {
         // take clock offset into account
-        final Gradient offset = getFieldOffsetValue(freeParameters, clockDate, indices);
+        final Gradient offset = getFieldOffsetValue(freeParameters, indices, clockDate);
         final FieldAbsoluteDate<Gradient> offsetCompensatedDate = new FieldAbsoluteDate<>(clockDate, offset.negate());
 
         return getOffsetToInertial(inertial, offsetCompensatedDate, freeParameters, indices);
@@ -149,7 +149,7 @@ public interface Observer extends MeasurementParticipant {
      * @return corrected date
      */
     default AbsoluteDate getCorrectedReceptionDate(final AbsoluteDate date) {
-        final ClockOffset localClock = getQuadraticClockModel().getOffset(date);
+        final ClockOffset localClock = getClockModel().getOffset(date);
         return date.shiftedBy(-localClock.getBias());
     }
 
@@ -163,10 +163,10 @@ public interface Observer extends MeasurementParticipant {
     default FieldAbsoluteDate<Gradient> getCorrectedReceptionDateField(final AbsoluteDate date,
                                                                        final int nbParams,
                                                                        final Map<String, Integer> paramIndices) {
-        final QuadraticFieldClockModel<Gradient> quadraticClockModel = getQuadraticFieldClock(nbParams, date, paramIndices);
+        final FieldClockModel<Gradient> fieldClockModel = getFieldClockModel(nbParams, paramIndices, date);
         final GradientField field = GradientField.getField(nbParams);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
-        final FieldClockOffset<Gradient> localClock = quadraticClockModel.getOffset(fieldDate);
+        final FieldClockOffset<Gradient> localClock = fieldClockModel.getOffset(fieldDate);
         return fieldDate.shiftedBy(localClock.getBias().negate());
     }
 

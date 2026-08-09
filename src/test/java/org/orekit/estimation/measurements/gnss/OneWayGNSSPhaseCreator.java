@@ -27,13 +27,14 @@ import org.orekit.gnss.RadioWave;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.ClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 
 public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     private final BoundedPropagator                ephemeris;
-    private final QuadraticClockModel              remoteClk;
+    private final ClockModel                       remoteClk;
     private final ObserverSatellite                remoteSat;
     private final double                           wavelength;
     private final Vector3D                         antennaPhaseCenter1;
@@ -61,14 +62,14 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
                                   final Vector3D antennaPhaseCenter1,
                                   final Vector3D antennaPhaseCenter2) {
         this.ephemeris           = ephemeris;
-        this.remoteClk           = new QuadraticClockModel(ephemeris.getMinDate(),
+        this.remoteClk           = new PolynomialClockModel(ephemeris.getMinDate(),
                                                            remoteClockOffset, 0.0, 0.0);
         this.remoteSat           = new ObserverSatellite(remoteName, ephemeris, remoteClk);
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.wavelength          = radioWave.getWavelength();
         this.local               = new ObservableSatellite(0);
-        this.local.getClockBiasDriver().setValue(localClockOffset);
+        this.local.getClockModel().getBiasDriver().setValue(localClockOffset);
         this.cache               = new AmbiguityCache();
         this.ambiguityDriver     = cache.
                                    getAmbiguity(remoteName,
@@ -83,8 +84,8 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
-        if (local.getClockBiasDriver().getReferenceDate() == null) {
-            local.getClockBiasDriver().setReferenceDate(s0.getDate());
+        if (local.getClockModel().getBiasDriver().getReferenceDate() == null) {
+            local.getClockModel().getBiasDriver().setReferenceDate(s0.getDate());
         }
     }
 
@@ -92,7 +93,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
     public void handleStep(final SpacecraftState currentState) {
         try {
             final double           n         = ambiguityDriver.getValue(currentState.getDate());
-            final double           localClk  = local.getClockBiasDriver().getValue(currentState.getDate());
+            final double           localClk  = local.getClockModel().getBiasDriver().getValue(currentState.getDate());
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk -
                                                                            remoteClk.getOffset(currentState.getDate()).getBias());
             final AbsoluteDate     date      = currentState.getDate();

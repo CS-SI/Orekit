@@ -62,7 +62,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
         this.satelliteMeanPosition         = satelliteMeanPosition;
         this.satellitePhaseCenterVariation = satellitePhaseCenterVariation;
         this.satellite                     = new ObservableSatellite(0);
-        this.satellite.getClockBiasDriver().setValue(satClockOffset);
+        this.satellite.getClockModel().getBiasDriver().setValue(satClockOffset);
         this.cache                         = new AmbiguityCache();
     }
 
@@ -79,8 +79,8 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
             }
 
         }
-        if (satellite.getClockBiasDriver().getReferenceDate() == null) {
-            satellite.getClockBiasDriver().setReferenceDate(s0.getDate());
+        if (satellite.getClockModel().getBiasDriver().getReferenceDate() == null) {
+            satellite.getClockModel().getBiasDriver().setReferenceDate(s0.getDate());
         }
     }
 
@@ -112,8 +112,8 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                                                 stationPhaseCenterVariation.value(0.5 * FastMath.PI - staLosDown.getDelta(),
                                                                                   staLosDown.getAlpha());
 
-                    final double groundClk = station.getClockBiasDriver().getValue(date);
-                    final double satClk    = satellite.getClockBiasDriver().getValue(date);
+                    final double groundClk = station.getClockModel().getBiasDriver().getValue(date);
+                    final double satClk    = satellite.getClockModel().getBiasDriver().getValue(date);
                     final double correctedDownLinkDistance = downLinkDistance + satPCVDown + staPCVDown +
                                                              (groundClk - satClk) * Constants.SPEED_OF_LIGHT;
                     final Phase  phase = new Phase(station, receptionDate.shiftedBy(groundClk),

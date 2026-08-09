@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.orekit.time.clocks.ClockModel;
+
 /** Class modeling a satellite that can be observed.
  *
  * @author Luc Maisonobe
@@ -45,8 +47,29 @@ public class ObservableSatellite extends AbstractParticipant {
      * @since 13.0
      */
     public ObservableSatellite(final int propagatorIndex, final String name) {
-        super( name == null ? SAT_PREFIX + propagatorIndex : name );
+        super(getName(name, propagatorIndex));
         this.propagatorIndex = propagatorIndex;
+    }
+
+    /** Simple constructor.
+     * @param propagatorIndex index of the propagator related to this satellite
+     * @param name satellite name (if null, a default name built from index will be used)
+     * @param clockModel clock model for this satellite
+     * @since 14.0
+     */
+    public ObservableSatellite(final int propagatorIndex, final String name, final ClockModel clockModel) {
+        super(getName(name, propagatorIndex), clockModel);
+        this.propagatorIndex = propagatorIndex;
+    }
+
+    /**
+     * Get the name for a satellite.
+     * @param name name to use if any, or null for a default name
+     * @param propagatorIndex propagator index
+     * @return name
+     */
+    private static String getName(final String name, final int propagatorIndex) {
+        return name == null ? SAT_PREFIX + propagatorIndex : name;
     }
 
     /** Get the index of the propagator related to this satellite.

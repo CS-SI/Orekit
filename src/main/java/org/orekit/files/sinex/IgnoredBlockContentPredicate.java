@@ -23,7 +23,7 @@ import java.util.function.Predicate;
  * @author Luc Maisonobe
  * @since 13.0
  */
-class IgnoredBlockContentPredicate<T extends ParseInfo<?>> implements Predicate<T> {
+public class IgnoredBlockContentPredicate<T extends ParseInfo<?>> implements Predicate<T> {
 
     /** {@inheritDoc} */
     @Override

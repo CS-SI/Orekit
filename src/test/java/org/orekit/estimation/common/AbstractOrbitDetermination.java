@@ -1477,11 +1477,11 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final PressureTemperatureHumidityProvider pth0Provider =
                             TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER;
             final GroundStation station = new EarthBasedStation(topo, eopHistory, displacements);
-            station.getClockBiasDriver().setReferenceValue(stationClockOffsets[i]);
-            station.getClockBiasDriver().setValue(stationClockOffsets[i]);
-            station.getClockBiasDriver().setMinValue(stationClockOffsetsMin[i]);
-            station.getClockBiasDriver().setMaxValue(stationClockOffsetsMax[i]);
-            station.getClockBiasDriver().setSelected(stationClockOffsetEstimated[i]);
+            station.getClockModel().getBiasDriver().setReferenceValue(stationClockOffsets[i]);
+            station.getClockModel().getBiasDriver().setValue(stationClockOffsets[i]);
+            station.getClockModel().getBiasDriver().setMinValue(stationClockOffsetsMin[i]);
+            station.getClockModel().getBiasDriver().setMaxValue(stationClockOffsetsMax[i]);
+            station.getClockModel().getBiasDriver().setSelected(stationClockOffsetEstimated[i]);
             station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
@@ -1790,7 +1790,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
     private ObservableSatellite createObservableSatellite(final KeyValueFileParser<ParameterKey> parser)
         throws NoSuchElementException {
         final ObservableSatellite obsSat = new ObservableSatellite(0);
-        final ParameterDriver clockBiasDriver = obsSat.getClockBiasDriver();
+        final ParameterDriver clockBiasDriver = obsSat.getClockModel().getBiasDriver(); // TODO this is not a good long term solution
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET)) {
         	// date = null okay if validity period is infinite = only 1 estimation over the all period
             clockBiasDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));

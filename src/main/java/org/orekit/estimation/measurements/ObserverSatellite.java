@@ -26,7 +26,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.ClockModel;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -51,17 +51,17 @@ public class ObserverSatellite extends AbstractParticipant implements Observer {
      * @param pvCoordsProvider satellite propagator
      */
     public ObserverSatellite(final String name, final PVCoordinatesProvider pvCoordsProvider) {
-        this(name, pvCoordsProvider, createEmptyQuadraticClock(name));
+        this(name, pvCoordsProvider, createEmptyPolynomialClock(name));
     }
 
     /** Simple constructor.
      * @param name name of receiver
      * @param pvCoordsProvider position/velocity coordinates provider for receiver
-     * @param quadraticClock clock model for receiver
+     * @param clock clock model for receiver
      */
     public ObserverSatellite(final String name, final PVCoordinatesProvider pvCoordsProvider,
-                             final QuadraticClockModel quadraticClock) {
-        super(name, quadraticClock);
+                             final ClockModel clock) {
+        super(name, clock);
         this.pvCoordsProvider = pvCoordsProvider;
     }
 

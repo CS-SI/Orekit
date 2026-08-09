@@ -428,7 +428,7 @@ public class OneWayGNSSRangeTest {
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
         final OneWayGNSSRangeCreator creator = new OneWayGNSSRangeCreator(ephemeris, localClockOffset, remoteClockOffset);
-        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
+        creator.getLocalSatellite().getClockModel().getBiasDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -461,7 +461,7 @@ public class OneWayGNSSRangeTest {
                         ephemeris.propagate(date)
                     };
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        measurement.getSatellites().getFirst().getClockBiasDriver(),
+                        measurement.getSatellites().getFirst().getClockModel().getBiasDriver(),
                     };
 
                     for (int i = 0; i < drivers.length; ++i) {

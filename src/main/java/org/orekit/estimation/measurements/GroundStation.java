@@ -40,7 +40,7 @@ import org.orekit.frames.Transform;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.ClockModel;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
@@ -61,7 +61,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * if the ground station clock is slow and positive if it is fast).
  * </p>
  * <ol>
- *   <li>station clock offset, controlled by {@link #getClockBiasDriver()}</li>
+ *   <li>station clock offset, controlled by {@link #getClockModel()} )} ()}</li>
  *   <li>station position offset, controlled by {@link #getEastOffsetDriver()},
  *   {@link #getNorthOffsetDriver()} and {@link #getZenithOffsetDriver()}</li>
  * </ol>
@@ -93,26 +93,26 @@ public class GroundStation extends AbstractParticipant implements GroundObserver
     /**
      * Build a ground station ignoring {@link StationDisplacement station displacements}.
      * <p> The initial values for the station offset model
-     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * ({@link #getClockModel()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
      * {@link #getZenithOffsetDriver()}) are set to 0. This implies that as long as these values are not changed, the
      * offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as some of these models are changed,
      * the offset frame moves away from the {@link #getBaseFrame() base frame}.
      * </p>
      *
      * @param baseFrame base frame associated with the station, without *any* parametric model (no station offset)
-     * @see #GroundStation(TopocentricFrame, QuadraticClockModel)
+     * @see #GroundStation(TopocentricFrame, ClockModel)
      * @since 13.0
      */
     public GroundStation(final TopocentricFrame baseFrame) {
-        this(baseFrame, createEmptyQuadraticClock(baseFrame.getName()));
+        this(baseFrame, createEmptyPolynomialClock(baseFrame.getName()));
     }
 
      /**
      * Simple constructor.
      * <p>
      * The initial values for the station offset model
-     * ({@link #getClockBiasDriver()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
-     * {@link #getZenithOffsetDriver()}, {@link #getClockBiasDriver()}) are set to 0. This implies that as long as
+     * ({@link #getClockModel()}, {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * {@link #getZenithOffsetDriver()}, {@link #getClockModel()}) are set to 0. This implies that as long as
      * these values are not changed, the offset frame is the same as the {@link #getBaseFrame() base frame}. As soon as
      * some of these models are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
      * </p>
@@ -121,7 +121,7 @@ public class GroundStation extends AbstractParticipant implements GroundObserver
      * @param clock         new quadratic clock model with user-supplied displacements
      * @since 12.1
      */
-    public GroundStation(final TopocentricFrame baseFrame, final QuadraticClockModel clock) {
+    public GroundStation(final TopocentricFrame baseFrame, final ClockModel clock) {
         super(baseFrame.getName(), clock);
         this.baseFrame = baseFrame;
 

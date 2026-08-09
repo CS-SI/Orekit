@@ -491,11 +491,11 @@ public class TurnAroundRangeAnalyticTest {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    primaryStation = entry.getKey();
             final GroundStation    secondaryStation  = entry.getValue();
-            primaryStation.getClockBiasDriver().setSelected(false);
+            primaryStation.getClockModel().getBiasDriver().setSelected(false);
             primaryStation.getEastOffsetDriver().setSelected(true);
             primaryStation.getNorthOffsetDriver().setSelected(true);
             primaryStation.getZenithOffsetDriver().setSelected(true);
-            secondaryStation.getClockBiasDriver().setSelected(false);
+            secondaryStation.getClockModel().getBiasDriver().setSelected(false);
             secondaryStation.getEastOffsetDriver().setSelected(true);
             secondaryStation.getNorthOffsetDriver().setSelected(true);
             secondaryStation.getZenithOffsetDriver().setSelected(true);

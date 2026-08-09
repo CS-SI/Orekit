@@ -101,7 +101,7 @@ public class PhaseCentersRangeModifierTest {
                                                             LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setValue(groundClockOffset);
+            station.getClockModel().getBiasDriver().setValue(groundClockOffset);
         }
 
         // create perfect range measurements without antenna offset
@@ -167,7 +167,7 @@ public class PhaseCentersRangeModifierTest {
                                                             LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
-            station.getClockBiasDriver().setValue(groundClockOffset);
+            station.getClockModel().getBiasDriver().setValue(groundClockOffset);
         }
 
         // create perfect range measurements without antenna offset

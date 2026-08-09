@@ -1296,7 +1296,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             final UnivariateDerivative1 epp = tmp.withValue(FastMath.max(0., FastMath.min(tmp.getValue(), MAX_ECC)));
 
             // argument of perigee
-            final double gppVal = mean.getPerigeeArgument() + dsg * not.getValue();
+            final double gppVal = mean.getPeriapsisArgument() + dsg * not.getValue();
             final UnivariateDerivative1 gpp = new UnivariateDerivative1(MathUtils.normalizeAngle(gppVal, 0.),
                                                                         dsg * n0);
 

@@ -28,7 +28,8 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.ClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -38,7 +39,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Abstract class underlying both observed and observing measurement
- * objects.  Contains the QuadraticClockModel and the ability to store a
+ * objects.  Contains the ClockModel and the ability to store a
  * master list of all parameter drivers associated with the object.
  *
  * @author Brianna Aubin
@@ -57,8 +58,8 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
      */
     private static final double CLOCK_OFFSET_SCALE = FastMath.scalb(1.0, -10);
 
-    /** Stores quadratic clock model. */
-    private final QuadraticClockModel quadraticClockModel;
+    /** Stores clock model. */
+    private final ClockModel clockModel;
 
     /** Stores list of all ParameterDriver values. */
     private final List<ParameterDriver> parameterDrivers = new ArrayList<>();
@@ -70,38 +71,38 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
      * @param name name of MeasurementObject
      */
     protected AbstractParticipant(final String name) {
-        this(name, createEmptyQuadraticClock(name));
+        this(name, createEmptyPolynomialClock(name));
     }
 
     /** Simple constructor.
      * @param name name of MeasurementObject
-     * @param quadraticClock clock belonging to MeasurementObject
+     * @param clock clock belonging to MeasurementObject
      */
-    protected AbstractParticipant(final String name, final QuadraticClockModel quadraticClock) {
+    protected AbstractParticipant(final String name, final ClockModel clock) {
 
         // Initialize member variables
         this.name = name;
-        this.quadraticClockModel = quadraticClock;
+        this.clockModel = clock;
 
-        // Add clock parameters
-        parameterDrivers.add(quadraticClockModel.getClockBiasDriver());
-        parameterDrivers.add(quadraticClockModel.getClockDriftDriver());
-        parameterDrivers.add(quadraticClockModel.getClockAccelerationDriver());
+        for (ParameterDriver parameter: clock.getParametersDrivers()) {
+            parameterDrivers.add(parameter);
+        }
     }
 
     /** Get the MeasurementObject name.
      * @return name for the object
      */
+    @Override
     public final String getName() {
         return name;
     }
 
-    /** Creates a quadratic clock with zero displacement.
+    /** Creates a polynomial clock with zero displacement.
      * @param name name of object that is holding the clock
-     * @return new quadratic clock model
+     * @return new polynomial clock model
      */
-    protected static QuadraticClockModel createEmptyQuadraticClock(final String name) {
-        return new QuadraticClockModel(new ParameterDriver(name + CLOCK_STRING + BIAS_SUFFIX,
+    protected static PolynomialClockModel createEmptyPolynomialClock(final String name) {
+        return new PolynomialClockModel(new ParameterDriver(name + CLOCK_STRING + BIAS_SUFFIX,
                                                     0.0, CLOCK_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
                                            new ParameterDriver(name + CLOCK_STRING + DRIFT_SUFFIX,
@@ -112,11 +113,12 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
     }
 
-    /** Get a quadratic clock model valid at some date.
-     * @return quadratic clock model
+    /** Get the clock model valid at some date.
+     * @return clock model
      */
-    public final QuadraticClockModel getQuadraticClockModel() {
-        return quadraticClockModel;
+    @Override
+    public final ClockModel getClockModel() {
+        return clockModel;
     }
 
     /** Get model parameters.
@@ -125,6 +127,7 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
      * it's the case (if at least 1 PDriver of the model has several values
      * driven) the method {@link org.orekit.utils.ParameterDriversProvider#getParameters(AbsoluteDate)} must be used.
      */
+    @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.unmodifiableList(parameterDrivers);
     }

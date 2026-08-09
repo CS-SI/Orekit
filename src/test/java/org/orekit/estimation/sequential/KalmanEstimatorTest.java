@@ -34,7 +34,19 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
-import org.orekit.estimation.measurements.*;
+import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
+import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
+import org.orekit.estimation.measurements.MultiplexedMeasurement;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurementCreator;
+import org.orekit.estimation.measurements.Range;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
@@ -1408,13 +1420,13 @@ class KalmanEstimatorTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Estimate clock drivers
-        creator.getLocalSatellite().getClockBiasDriver().setSelected(true);
-        creator.getRemoteSatellite().getClockBiasDriver().setSelected(true);
+        creator.getLocalSatellite().getClockModel().getBiasDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockModel().getBiasDriver().setSelected(true);
 
         // Estimated measurement parameter
         final ParameterDriversList estimatedMeasurementParameters = new ParameterDriversList();
-        estimatedMeasurementParameters.add(creator.getLocalSatellite().getClockBiasDriver());
-        estimatedMeasurementParameters.add(creator.getRemoteSatellite().getClockBiasDriver());
+        estimatedMeasurementParameters.add(creator.getLocalSatellite().getClockModel().getBiasDriver());
+        estimatedMeasurementParameters.add(creator.getRemoteSatellite().getClockModel().getBiasDriver());
 
         // create orbit estimator
         final RealMatrix processNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(new double[] {

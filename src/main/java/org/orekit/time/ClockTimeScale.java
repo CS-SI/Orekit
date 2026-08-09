@@ -56,7 +56,7 @@ public class ClockTimeScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return reference.offsetFromTAI(date).add(clockModel.getOffset(date).getBias());
+        return reference.offsetFromTAI(date).add(clockModel.getFieldOffset(date).getBias());
     }
 
     /** {@inheritDoc} */

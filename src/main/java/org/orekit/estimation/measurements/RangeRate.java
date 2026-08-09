@@ -256,8 +256,8 @@ public class RangeRate extends AbstractRangeRelatedMeasurement<RangeRate> {
 
         // clock drifts, taken in account only in case of one way
         final ObservableSatellite satellite    = getSatellites().getFirst();
-        final Gradient dtsDot = satellite.getFieldOffsetRate(nbParams, emissionState.getDate(), indices);
-        final Gradient dtgDot = getObserver().getFieldOffsetRate(nbParams, receptionDate.toAbsoluteDate(), indices);
+        final Gradient dtsDot = satellite.getFieldOffsetRate(nbParams, indices, emissionState.getDate());
+        final Gradient dtgDot = getObserver().getFieldOffsetRate(nbParams, indices, receptionDate.toAbsoluteDate());
         final Gradient clockDriftBias = dtgDot.subtract(dtsDot).multiply(Constants.SPEED_OF_LIGHT);
         rangeRate = rangeRate.add(clockDriftBias);
 
