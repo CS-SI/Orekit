@@ -199,6 +199,9 @@
           <action dev="serrof" type="add" issue="issue-1870">
               Add FieldEphemeris.
           </action>
+          <action dev="luc" type="add" issue="1867">
+              Replaced template orbits by orbital parameters factory.
+          </action>
           <action dev="xiaozhongguo" type="add" issue="1865">
               Add a method of loadLibration in JPLEphemerisLoader and an new JPLLibration class.
           </action>
