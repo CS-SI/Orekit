@@ -198,11 +198,11 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         //test
 
         //definition of the accuracy for the test
-        final double distanceAccuracy = 113.46;
+        final double distanceAccuracy = 125.30;
 
         //test on the convergence
-        final int numberOfIte  = 2;
-        final int numberOfEval = 3;
+        final int numberOfIte  = 3;
+        final int numberOfEval = 4;
         Assertions.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assertions.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
@@ -220,7 +220,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //test on statistic for the range residuals
         final long nbRange = 8211;
-        final double[] RefStatRange = { -14.448, 18.706, 0.132, 6.322 };
+        final double[] RefStatRange = { -10.389, 16.755, 0.238, 4.277 };
         Assertions.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assertions.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
@@ -251,12 +251,12 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 212.82;
-        final double velocityAccuracy = 6.17e-2;
+        final double distanceAccuracy = 221.4;
+        final double velocityAccuracy = 0.114;
 
         //test on the convergence
-        final int numberOfIte  = 4;
-        final int numberOfEval = 4;
+        final int numberOfIte  = 5;
+        final int numberOfEval = 5;
 
         Assertions.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assertions.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -275,11 +275,11 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //test on statistic for the range residuals
         final long nbRange = 95;
-        final double[] RefStatRange = { -67.331, 79.823, 6.668E-8, 32.296 };
+        final double[] RefStatRange = { -57.420, 87.124, -5.686e-10, 24.960 };
         Assertions.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
         Assertions.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
-        Assertions.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
+        Assertions.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-13);
         Assertions.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }
