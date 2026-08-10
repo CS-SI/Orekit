@@ -32,6 +32,17 @@ public class SatIdAndDescriptionPredicate implements Predicate<OrbexParseInfo> {
     private static final Pattern ID_AND_DESC_PATTERN =
         Pattern.compile("^ (\\p{Alpha}\\p{Digit}{2})(?: {4}(.*)\\p{Blank}*)?$");
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 14.0
+     */
+    public SatIdAndDescriptionPredicate() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean test(final OrbexParseInfo parseInfo) {

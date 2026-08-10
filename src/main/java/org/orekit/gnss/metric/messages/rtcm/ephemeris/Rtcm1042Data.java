@@ -48,7 +48,7 @@ public class Rtcm1042Data extends RtcmEphemerisData {
      * Get the Beidou navigation message corresponding to the current RTCM data.
      * <p>
      * This object can be used to initialize a {@link GNSSPropagator}
-     * <p>
+     * </p>
      * @return the Beidou navigation message
      */
     public BeidouLegacyNavigationMessage getBeidouNavigationMessage() {

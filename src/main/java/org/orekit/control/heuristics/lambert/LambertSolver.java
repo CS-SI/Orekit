@@ -44,7 +44,7 @@ import org.orekit.utils.FieldPVCoordinates;
  *  Battin, R.H., An Introduction to the Mathematics and Methods of Astrodynamics, AIAA Education, 1999.
  *  Lancaster, E.R. and Blanchard, R.C., A Unified Form of Lambert’s Theorem, Goddard Space Flight Center, 1968.
  *  Dario Izzo. <a href="https://arxiv.org/abs/1403.2705">Revisiting Lambert’s problem. Celestial Mechanics and Dynamical Astronomy</a>, 2015
- *  Gim J. Der. <a href="https://amostech.com/TechnicalPapers/2011/Poster/DER.pdf>The Superior Lambert Algorithm. Advanced Maui Optical and Space Surveillance Technologies</a>, 2011.
+ *  Gim J. Der. <a href="https://amostech.com/TechnicalPapers/2011/Poster/DER.pdf">The Superior Lambert Algorithm. Advanced Maui Optical and Space Surveillance Technologies</a>, 2011.
  * </p>
  * @author Joris Olympio
  * @author Romain Serra

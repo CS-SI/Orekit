@@ -46,9 +46,10 @@ public interface CovarianceMatrixProvider {
      * In most cases, the initial covariance matrix will be the output matrix
      * of a previous run of the Kalman filter.
      * </p>
-     * @param initial initial state state
+     * @param initial initial state
      * @return physical (i.e. non normalized) initial covariance matrix
-     * @see org.orekit.propagation.conversion.PropagatorBuilder#getOrbitalParametersDrivers()
+     * @see org.orekit.propagation.conversion.PropagatorBuilder#getOrbitalParameterFactory()
+     * @see org.orekit.orbits.OrbitalParameterFactory#getOrbitalParametersDrivers()
      * @see org.orekit.propagation.conversion.PropagatorBuilder#getPropagationParametersDrivers()
      */
     RealMatrix getInitialCovarianceMatrix(SpacecraftState initial);
@@ -79,7 +80,8 @@ public interface CovarianceMatrixProvider {
      * @param current current state
      * @return physical (i.e. non normalized) process noise matrix between
      * previous and current states
-     * @see org.orekit.propagation.conversion.PropagatorBuilder#getOrbitalParametersDrivers()
+     * @see org.orekit.propagation.conversion.PropagatorBuilder#getOrbitalParameterFactory()
+     * @see org.orekit.orbits.OrbitalParameterFactory#getOrbitalParametersDrivers()
      * @see org.orekit.propagation.conversion.PropagatorBuilder#getPropagationParametersDrivers()
      */
     RealMatrix getProcessNoiseMatrix(SpacecraftState previous, SpacecraftState current);

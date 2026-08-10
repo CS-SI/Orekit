@@ -48,7 +48,7 @@ public class Rtcm1019Data extends RtcmEphemerisData {
      * Get the GPS navigation message corresponding to the current RTCM data.
      * <p>
      * This object can be used to initialize a {@link GNSSPropagator}
-     * <p>
+     * </p>
      * @return the GPS navigation message
      */
     public GPSLegacyNavigationMessage getGpsNavigationMessage() {

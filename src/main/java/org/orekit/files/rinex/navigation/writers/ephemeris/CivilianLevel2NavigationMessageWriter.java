@@ -32,6 +32,17 @@ import java.io.IOException;
 public abstract class CivilianLevel2NavigationMessageWriter<T extends CivilianNavigationMessage<T>>
     extends CivilianLevel1NavigationMessageWriter<T> {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 14.0
+     */
+    public CivilianLevel2NavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeEphLine5(final T message,

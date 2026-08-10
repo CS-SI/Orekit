@@ -33,8 +33,8 @@ import org.orekit.utils.FieldPVCoordinates;
  * <ul>
  *   <li>at index 0, the polynomial satellite clock model
  *       Δtₛₐₜ = {@link FieldGNSSClockElements#getAf0() a₀} +
- *               {@link FieldGNSSClockElements#getAf1() a₁} (t - {@link FieldGNSSClockElements#getToc() toc}) +
- *               {@link FieldGNSSClockElements#getAf1() a₂} (t - {@link FieldGNSSClockElements#getToc() toc})²
+ *               {@link FieldGNSSClockElements#getAf1() a₁} (t - {@link FieldGNSSClockElements#getTimeOfClock() toc}) +
+ *               {@link FieldGNSSClockElements#getAf1() a₂} (t - {@link FieldGNSSClockElements#getTimeOfClock() toc})²
  *   </li>
  *   <li>at index 1 the relativistic clock correction due to eccentricity</li>
  *   <li>at index 2 the estimated group delay differential {@link FieldGNSSClockElements#getTgd() TGD} for L1-L2 correction</li>

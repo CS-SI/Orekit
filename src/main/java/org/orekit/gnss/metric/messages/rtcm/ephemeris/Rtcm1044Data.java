@@ -50,7 +50,7 @@ public class Rtcm1044Data extends RtcmEphemerisData {
      * Get the QZSS navigation message corresponding to the current RTCM data.
      * <p>
      * This object can be used to initialize a {@link GNSSPropagator}
-     * <p>
+     * </p>
      * @return the QZSS navigation message
      */
     public QZSSLegacyNavigationMessage getQzssNavigationMessage() {
