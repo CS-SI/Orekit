@@ -380,7 +380,7 @@ class StateCovarianceBlenderTest {
         Assertions.assertEquals(  0.1221277684544951, relativeRMSSigmaError[0].getPercentile(50), tolerance);
         Assertions.assertEquals( 14.2883635138984033, relativeRMSSigmaError[1].getPercentile(50), tolerance);
         Assertions.assertEquals(  0.2314451107316701, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals( 82.0553307337049347, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
+        Assertions.assertEquals( 82.05546681996823, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());

@@ -16,6 +16,11 @@
  */
 package org.orekit.propagation;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.BlockRealMatrix;
@@ -76,11 +81,6 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 public class StateCovarianceKeplerianHermiteInterpolatorTest {
     private static Orbit  sergeiOrbit;
@@ -814,9 +814,9 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         Assertions.assertEquals(  0.071763476751, relativeRMSSigmaError[0].getMean(), TOLERANCE);
         Assertions.assertEquals( 19.568025195906, relativeRMSSigmaError[1].getMean(), TOLERANCE);
         Assertions.assertEquals(  0.069672633640, relativeRMSSigmaError[0].getPercentile(50), TOLERANCE);
-        Assertions.assertEquals( 14.222177093792, relativeRMSSigmaError[1].getPercentile(50), TOLERANCE);
+        Assertions.assertEquals( 14.222173837085968, relativeRMSSigmaError[1].getPercentile(50), TOLERANCE);
         Assertions.assertEquals(  0.143305248540, relativeRMSSigmaError[0].getMax(), TOLERANCE);
-        Assertions.assertEquals( 82.363117378396, relativeRMSSigmaError[1].getMax(), 3 * TOLERANCE);
+        Assertions.assertEquals( 82.36325388508108, relativeRMSSigmaError[1].getMax(), 3 * TOLERANCE);
     }
 
     @Test

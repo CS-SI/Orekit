@@ -19,6 +19,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.1.8" date="TBD" description="TBD">
+        <action dev="ltafur" type="fix" issue="1993">
+            Fixed NRLMSISE00 local solar time to be computed in the Earth-fixed body frame.
+        </action>
+    </release>
     <release version="13.1.7" date="2026-07-03" description="Orekit 13.1.7 is a patch release. It solves various bugs related to propagators, solid tides and Alpha-5 parsing.">
       <action dev="luc" type="fix" issue="1977">
           Fixed AbstractPropagatorConverter.getRMS().
